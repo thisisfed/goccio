@@ -311,73 +311,72 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
 .dock .num { font-weight: 400; opacity: .85; font-size: 15px; }
 @media (max-width: 760px) { .dock { display: block; } }
 
-/* BREW MODE: one job per zone. NOW (huge), NEXT (one line), track, two big buttons. */
+/* BREW MODE: fixed slots. Every zone keeps its place and size from pouring to waiting to drawdown;
+   only the words, numbers and colours change. The big number scales to the space it has (container units). */
 .bv { position: fixed; inset: 0; z-index: 100; background: #000; color: #f5f5f7; display: grid; grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto 1fr auto auto auto auto auto; gap: 12px; overflow: hidden;
-  padding: calc(10px + env(safe-area-inset-top)) 16px calc(12px + env(safe-area-inset-bottom)); }
+  grid-template-rows: auto minmax(0, 1fr) auto auto auto auto; gap: 10px; overflow: hidden;
+  padding: calc(8px + env(safe-area-inset-top)) 16px calc(10px + env(safe-area-inset-bottom)); }
 .bv > * { min-width: 0; }
-.bv-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.bv-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; height: 40px; }
 .bv-coffee { font-size: 14px; color: #8e8e93; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; font-variant-numeric: tabular-nums; }
 .bv-x { flex: none; background: #1c1c1e; border: 0; color: #f5f5f7; padding: 9px 16px; font-size: 15px; font-weight: 600; border-radius: 980px; }
-.bv-now { border-radius: 30px; background: #111; padding: 18px 20px 20px; display: grid; align-content: center; gap: 6px; min-height: 0; transition: background .25s ease; }
+.bv-now { container-type: size; min-height: 0; overflow: hidden; border-radius: 28px; background: #111; padding: 18px 20px;
+  display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto auto auto; row-gap: 6px; transition: background .25s ease; }
 .bv-now.pour { background: #2b1600; }
-.bv-now.wait { background: #111; }
 .bv-now.drain { background: #052211; }
 .bv-now.over { background: #2b0d00; }
-.bv-nowhead { display: flex; justify-content: space-between; align-items: center; }
-.bv-pill { font-size: 15px; font-weight: 700; letter-spacing: .02em; text-transform: uppercase; padding: 6px 12px; border-radius: 980px; background: #2c2c2e; color: #f5f5f7; }
+.bv-nowhead { display: flex; justify-content: space-between; align-items: center; height: 32px; }
+.bv-pill { font-size: 14px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; padding: 6px 12px; border-radius: 980px; background: #2c2c2e; color: #f5f5f7; white-space: nowrap; }
 .pour .bv-pill { background: #ff9f0a; color: #000; }
 .drain .bv-pill { background: #30d158; color: #000; }
 .over .bv-pill { background: #ff453a; color: #000; }
-.bv-clock { font-size: 26px; font-weight: 500; font-variant-numeric: tabular-nums; color: #8e8e93; }
-.bv-lbl { font-size: 19px; font-weight: 600; color: #8e8e93; margin-top: 6px; }
-.bv-big { font-size: clamp(110px, 38vw, 260px); font-weight: 700; line-height: .86; letter-spacing: -.06em; font-variant-numeric: tabular-nums; }
-.bv-big small { font-size: .26em; font-weight: 600; letter-spacing: 0; color: #8e8e93; margin-left: 6px; }
+.bv-clock { font-size: 24px; font-weight: 500; font-variant-numeric: tabular-nums; color: #8e8e93; }
+.bv-lbl { font-size: 18px; font-weight: 600; color: #8e8e93; height: 22px; line-height: 22px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bv-big { align-self: center; font-size: min(150px, 40cqw, 34cqh); font-weight: 700; line-height: 1; letter-spacing: -.055em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.bv-big small { font-size: .28em; font-weight: 600; letter-spacing: 0; color: #8e8e93; margin-left: 6px; }
 .pour .bv-big { color: #ff9f0a; }
-.idle .bv-big { color: #636366; }
-.bv-how { font-size: clamp(20px, 5.4vw, 28px); font-weight: 600; line-height: 1.2; letter-spacing: -.02em; }
-.bv-sub { font-size: 18px; color: #aeaeb2; font-variant-numeric: tabular-nums; min-height: 22px; font-weight: 500; }
-.bv-sub b { color: #f5f5f7; font-size: 24px; font-weight: 700; }
-.bv-step { height: 14px; border-radius: 980px; background: rgba(255,255,255,.12); overflow: hidden; margin-top: 4px; }
+.idle .bv-big { color: #8e8e93; }
+.bv-how { font-size: 21px; font-weight: 600; line-height: 26px; height: 52px; letter-spacing: -.02em; overflow: hidden;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.bv-sub { font-size: 17px; color: #aeaeb2; font-variant-numeric: tabular-nums; height: 26px; line-height: 26px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bv-sub b { color: #f5f5f7; font-size: 21px; font-weight: 700; }
+.bv-step { height: 10px; border-radius: 980px; background: rgba(255,255,255,.12); overflow: hidden; }
 .bv-step i { display: block; height: 100%; width: 0; border-radius: 980px; background: #8e8e93; }
 .pour .bv-step i { background: #ff9f0a; }
 .wait .bv-step i { background: #f5f5f7; }
 .drain .bv-step i { background: #30d158; }
 .over .bv-step i { background: #ff453a; }
-.bv-next { display: flex; align-items: center; gap: 12px; background: #1c1c1e; border-radius: 20px; padding: 14px 18px; min-height: 60px; }
-.bv-nextlbl { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #8e8e93; }
-.bv-next strong { font-size: 21px; font-weight: 600; font-variant-numeric: tabular-nums; flex: 1; }
-.bv-next .cd { font-size: 28px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.bv-next.soon { background: #3a2408; }
-.bv-next.soon .cd { color: #ff9f0a; }
-.bv-track { display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 12px; align-items: center; }
-.bv-cone { width: 54px; height: auto; }
-.bv-bar { position: relative; height: 12px; background: #1c1c1e; border-radius: 980px; }
+.bv-next { display: flex; align-items: center; gap: 12px; background: #1c1c1e; border-radius: 18px; padding: 0 18px; height: 54px; }
+.bv-nextlbl { flex: none; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #8e8e93; }
+.bv-next strong { font-size: 19px; font-weight: 600; font-variant-numeric: tabular-nums; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bv-next .cd { flex: none; font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; min-width: 3ch; text-align: right; }
+.bv-track { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 12px; align-items: center; height: 36px; }
+.bv-cone { width: 44px; height: auto; }
+.bv-bar { position: relative; height: 10px; background: #1c1c1e; border-radius: 980px; }
 .bv-bar .seg { position: absolute; top: 0; bottom: 0; background: #48484a; border-radius: 980px; }
 .bv-bar .seg.on { background: #ff9f0a; }
 .bv-bar .seg.done { background: #8e8e93; }
 .bv-bar .win { position: absolute; top: 0; bottom: 0; background: rgba(48, 209, 88, .35); border-radius: 980px; }
-.bv-bar .head { position: absolute; top: -6px; bottom: -6px; width: 3px; border-radius: 2px; background: #f5f5f7; }
+.bv-bar .head { position: absolute; top: -5px; bottom: -5px; width: 3px; border-radius: 2px; background: #f5f5f7; }
+/* two buttons, always the same size and place: left starts/pauses, right resets until the last pour, then becomes Drained */
 .bv-ctrls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.bv-ctrls button { min-height: 76px; font-size: 22px; font-weight: 700; border: 0; border-radius: 24px; }
-.bv-ctrls .bv-drain { grid-column: 1 / -1; order: -1; min-height: 96px; font-size: 30px; letter-spacing: -.02em; }
-.bv-ctrls.draining .bv-go { grid-column: 1 / -1; min-height: 54px; font-size: 18px; }
-.bv-opts { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
-.bv-opts button { background: #1c1c1e; color: #8e8e93; border: 0; border-radius: 980px; padding: 7px 14px; font-size: 13px; font-weight: 600; }
-.bv-opts button[aria-pressed="true"] { color: #f5f5f7; box-shadow: inset 0 0 0 1.5px #48484a; }
-.bv-opts button[aria-pressed="true"]::before { content: "● "; color: #30d158; }
+.bv-ctrls button { height: 72px; font-size: 22px; font-weight: 700; border: 0; border-radius: 22px; }
 .bv-go { background: #30d158; color: #000; }
 .bv-go.running { background: #2c2c2e; color: #f5f5f7; }
-.bv-drain { background: #30d158; color: #000; }
 .bv-reset { background: #1c1c1e; color: #f5f5f7; }
-.bv-note { font-size: 12px; color: #636366; text-align: center; min-height: 14px; }
+.bv-drain { background: #30d158; color: #000; }
+.bv-opts { display: flex; gap: 8px; justify-content: center; height: 32px; }
+.bv-opts button { background: #1c1c1e; color: #8e8e93; border: 0; border-radius: 980px; padding: 0 14px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.bv-opts button[aria-pressed="true"] { color: #f5f5f7; }
+.bv-opts button::before { content: "● "; color: #48484a; }
+.bv-opts button[aria-pressed="true"]::before { color: #30d158; }
+.bv-opts button.warn::before { color: #ff9f0a; }
 @media (orientation: landscape) and (max-height: 560px) {
-  .bv { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); grid-template-rows: auto 1fr auto auto auto auto; column-gap: 16px; }
+  .bv { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto auto auto auto; column-gap: 16px; }
   .bv-top { grid-column: 1 / -1; }
-  .bv-now { grid-row: 2 / 6; grid-column: 1; }
-  .bv-big { font-size: clamp(90px, 22vh, 200px); }
-  .bv-next, .bv-track, .bv-ctrls, .bv-opts, .bv-note { grid-column: 2; }
-  .bv-now { grid-row: 2 / 7; }
+  .bv-now { grid-row: 2 / 7; grid-column: 1; }
+  .bv-next, .bv-track, .bv-ctrls, .bv-opts { grid-column: 2; }
+  .bv-next { grid-row: 3; } .bv-track { grid-row: 4; } .bv-ctrls { grid-row: 5; } .bv-opts { grid-row: 6; }
 }
 @media (prefers-reduced-motion: no-preference) {
   .cone-fill { transition: y .3s linear, height .3s linear; }
@@ -544,7 +543,6 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     <button type="button" id="optSound" aria-pressed="true">Sound</button>
     <button type="button" id="optBuzz" aria-pressed="true">Haptics</button>
   </div>
-  <div class="bv-note" id="bvNote"></div>
 </div>
 
 <script>
@@ -1251,25 +1249,27 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
 
   // Screen Wake Lock: on by default in brew mode; the browser drops it when the tab hides, so re-take it on return
   async function wakeOn() {
-    if (!prefs.keepAwake) { wakeOff(); $("bvNote").textContent = "Screen may dim: Keep screen on is off."; return; }
+    if (!prefs.keepAwake) { wakeOff(); wakeChip(""); return; }
     if (bv.wake && !bv.wake.released) return;
     try {
       if ("wakeLock" in navigator) {
         bv.wake = await navigator.wakeLock.request("screen");
-        bv.wake.addEventListener && bv.wake.addEventListener("release", () => { if (!$("bv").hidden && prefs.keepAwake && document.visibilityState === "visible") $("bvNote").textContent = "Screen lock released. Tap Keep screen on to retry."; });
-        $("bvNote").textContent = "Screen stays on while brewing."; return;
+        bv.wake.addEventListener && bv.wake.addEventListener("release", () => { if (!$("bv").hidden && prefs.keepAwake && document.visibilityState === "visible") wakeChip("Screen may dim · tap"); });
+        wakeChip(""); return;
       }
     } catch (e) {}
-    $("bvNote").textContent = "This browser can’t keep the screen on. On iPhone, update iOS or set Auto-Lock to Never while you brew.";
+    wakeChip("Screen may dim");   // no Wake Lock here: on iPhone, update iOS or set Auto-Lock to Never
   }
   const wakeOff = () => { try { bv.wake && bv.wake.release(); } catch (e) {} bv.wake = null; };
   document.addEventListener("visibilitychange", () => { if (!$("bv").hidden && document.visibilityState === "visible") { wakeOn(); tick(); } });
+  // the chip says "Keep screen on"; if the lock can't be held it says so, same size, orange dot
+  function wakeChip(warn) { const b = $("optWake"); b.textContent = warn || "Keep screen on"; b.classList.toggle("warn", !!warn); b.dataset.warn = warn || ""; }
   function renderBvOpts() {
     $("optWake").setAttribute("aria-pressed", String(!!prefs.keepAwake));
     $("optSound").setAttribute("aria-pressed", String(!!prefs.sound));
     $("optBuzz").setAttribute("aria-pressed", String(!!prefs.buzz)); $("optBuzz").hidden = !canBuzz;   // iPhone Safari has no vibration API
   }
-  $("optWake").onclick = () => { prefs.keepAwake = !prefs.keepAwake; savePrefs(); renderBvOpts(); prefs.keepAwake ? wakeOn() : (wakeOff(), $("bvNote").textContent = "Screen may dim: Keep screen on is off."); };
+  $("optWake").onclick = () => { prefs.keepAwake = !prefs.keepAwake; savePrefs(); renderBvOpts(); prefs.keepAwake ? wakeOn() : wakeOff(); };
   $("optSound").onclick = () => { prefs.sound = !prefs.sound; savePrefs(); renderBvOpts(); if (prefs.sound) tone(880, .15, .12); };
   $("optBuzz").onclick = () => { prefs.buzz = !prefs.buzz; savePrefs(); renderBvOpts(); buzz(40); };
 
@@ -1293,7 +1293,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     stopLoop(); wakeOff(); $("bv").hidden = true; document.body.style.overflow = "";
     try { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {}); } catch (e) {}
   }
-  function resetBrew() { stopLoop(); bv.paused = 0; bv.lastIdx = -2; bv.lastTick = null; $("bvGo").textContent = "Start"; $("bvGo").classList.remove("running"); $("bvDrain").hidden = true; $("bvReset").hidden = false; $("bvCtrls").classList.remove("draining"); tick(); }
+  function resetBrew() { stopLoop(); bv.paused = 0; bv.lastIdx = -2; bv.lastTick = null; $("bvGo").textContent = "Start"; $("bvGo").classList.remove("running"); $("bvDrain").hidden = true; $("bvReset").hidden = false; tick(); }
   function stopLoop() { bv.running = false; cancelAnimationFrame(bv.raf); }
   function toggleBrew() {
     if (bv.running) { bv.paused = (now() - bv.t0) / 1000; stopLoop(); $("bvGo").textContent = "Resume"; $("bvGo").classList.remove("running"); tick(); return; }
@@ -1337,35 +1337,36 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     if (bv.running && next) { const left = Math.ceil(next.t - el); if (left <= 3 && left >= 1 && bv.lastTick !== left) { bv.lastTick = left; tone(1320, .06, .06); } }
 
     $("bvClock").textContent = fmt(Math.floor(el));
-    let expected = 0, nextLbl = "Next", nextT = "", nextCd = "", soon = false, prog = 0;
+    // same slots in every phase: pill · label · big number · instruction (2 lines) · one detail line · progress
+    let expected = 0, nextLbl = "Then", nextT = "", nextCd = "", prog = 0;
+    const n = P.length, cd = (sec) => fmt(Math.max(0, Math.ceil(sec)));
     if (idle) {
-      setNow("idle", "Ready", "First pour to", P[0].to, "g", "Tare with the coffee in. Press Start as you begin pouring.", `${P.length} pours · done by ${fmt(r.hi)}`);
-      nextT = `${P.length > 1 ? fmt(P[1].t) + " → " + P[1].to + " g" : "Then drain"}`; nextLbl = "Then";
+      setNow("idle", "Ready", "First pour, scale to", P[0].to, "g", "Tare with the coffee in. Press Start as you begin to pour.", `${n} pours · done by ${fmt(r.hi)}`);
+      nextT = n > 1 ? `${fmt(P[1].t)} → ${P[1].to} g` : `Drain · done by ${fmt(r.hi)}`;
     } else if (inPour) {
       const k = clamp((el - cur.t) / cur.dur, 0, 1);
-      expected = prevTo + (cur.to - prevTo) * k;
-      prog = k;
-      setNow("pour", `Pour ${idx + 1} of ${P.length}`, "Scale to", cur.to, "g", cur.note, `<b>+${cur.to - prevTo} g</b> this pour · ≈ ${Math.round(expected)} g now · ${Math.max(0, Math.ceil(cur.t + cur.dur - el))} s`);
-      if (next) { nextT = `${fmt(next.t)} → ${next.to} g`; nextCd = fmt(Math.ceil(next.t - el)); } else { nextLbl = "Then"; nextT = `Drain · done by ${fmt(r.hi)}`; }
+      expected = prevTo + (cur.to - prevTo) * k; prog = k;
+      setNow("pour", `Pour ${idx + 1} of ${n}`, "Scale to", cur.to, "g", cur.note, `<b>+${cur.to - prevTo} g</b> · ${Math.max(0, Math.ceil(cur.t + cur.dur - el))} s to pour it`);
+      if (next) { nextLbl = "Next"; nextT = `${fmt(next.t)} → ${next.to} g`; nextCd = cd(next.t - el); } else nextT = `Drain · done by ${fmt(r.hi)}`;
     } else if (!afterLast) {
       expected = cur.to;
       const left = next.t - el, gap = next.t - (cur.t + cur.dur);
       prog = gap > 0 ? clamp(1 - left / gap, 0, 1) : 1;
-      setNow("wait", "Wait", `Pour ${idx + 2}: scale to ${next.to} g in`, fmt(Math.ceil(left)), "", left <= 5 ? "Get ready to pour." : "Hands off. Let it settle.", `Scale reads <b>${cur.to} g</b> · next +${next.to - cur.to} g`);
-      nextLbl = "After that"; nextT = after ? `${fmt(after.t)} → ${after.to} g` : `Drain · done by ${fmt(r.hi)}`;
-      soon = left <= 5;
+      setNow("wait", "Wait", `Pour ${idx + 2} of ${n}, scale to`, next.to, "g", left <= 5 ? "Get ready to pour." : "Hands off. Let it settle.", `<b>Pour in ${cd(left)}</b> · +${next.to - cur.to} g`);
+      nextT = after ? `${fmt(after.t)} → ${after.to} g` : `Drain · done by ${fmt(r.hi)}`;
+      if (after) nextCd = cd(after.t - el);
     } else {
       expected = r.water;
       const end = cur.t + cur.dur;
       prog = el < r.lo ? clamp((el - end) / Math.max(1, r.lo - end), 0, 1) : clamp((el - r.lo) / Math.max(1, r.hi - r.lo), 0, 1);
-      if (el < r.lo) setNow("drain", "Drawdown", "Window opens in", fmt(Math.ceil(r.lo - el)), "", "Let it drain. Tap Drained when the bed goes dry.", `Target ${fmt(r.lo)}–${fmt(r.hi)}`);
-      else if (el <= r.hi) setNow("drain", "In the window", "Time left", fmt(Math.ceil(r.hi - el)), "", "Tap Drained the moment the bed goes dry.", `Target ${fmt(r.lo)}–${fmt(r.hi)}`);
-      else setNow("over", "Over time", "Over by", fmt(Math.floor(el - r.hi)), "", "Still dripping. Tap Drained when it stops; you’ll get a fix.", `Target ${fmt(r.lo)}–${fmt(r.hi)}`);
-      nextLbl = "Then"; nextT = "Log how it tastes";
+      const tgt = `Target ${fmt(r.lo)}–${fmt(r.hi)}`;
+      if (el < r.lo) setNow("drain", "Drawdown", "Window opens in", cd(r.lo - el), "", "Let it drain. Tap Drained when the bed goes dry.", tgt);
+      else if (el <= r.hi) setNow("drain", "In the window", "Time left", cd(r.hi - el), "", "Tap Drained the moment the bed goes dry.", tgt);
+      else { prog = 1; setNow("over", "Over time", "Over by", fmt(Math.floor(el - r.hi)), "", "Still dripping. Tap Drained when it stops.", tgt); }
+      nextT = "Log how it tastes";
     }
     $("bvStep").style.width = (prog * 100).toFixed(1) + "%";
     $("bvNextLbl").textContent = nextLbl; $("bvNextT").textContent = nextT; $("bvNextCd").textContent = nextCd;
-    $("bvNext").classList.toggle("soon", soon);
 
     const y = coneY(expected / r.water);
     $("bvFill").setAttribute("y", y.toFixed(1)); $("bvFill").setAttribute("height", (132 - y).toFixed(1));
@@ -1376,7 +1377,6 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     // Drained is live from the last pour on: you can tap it the moment the bed goes dry
     const canDrain = idx === P.length - 1 && (bv.running || bv.paused > 0);
     $("bvDrain").hidden = !canDrain; $("bvReset").hidden = canDrain;
-    $("bvCtrls").classList.toggle("draining", canDrain);
     if (bv.running && el > r.hi + 240) { stopLoop(); $("bvGo").textContent = "Resume"; }
   }
 
