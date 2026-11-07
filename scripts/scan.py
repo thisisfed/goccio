@@ -53,7 +53,7 @@ VARIETIES = ["Gesha", "Geisha", "Sidra", "Pink Bourbon", "Wush Wush", "Eugenioid
              "74110", "74112", "74158", "Heirloom", "Landrace", "Java", "Mokka", "Chiroso",
              "Tabi", "Villa Sarchi", "Parainema", "Marsellesa", "Catimor"]
 EXCLUDE = re.compile(r"subscri|abonnement|abbonamento|\babo\b|suscripci|prenumeration|geschenk|regalo|cadeau|gutschein|"
-                     r"\btasse\b|tazza|gift|voucher|capsule|\bpods?\b|nespresso|coffee bags?|drip bags?|"
+                     r"\btasse\b|tazza|origami|glass|server|carafe|porcelain|ceramic|brewer|filter holder|gift|voucher|capsule|\bpods?\b|nespresso|coffee bags?|drip bags?|"
                      r"steep|equipment|grinder|\bmug\b|kettle|dripper|filter papers?|papers\b|\bcups?\b(?! of excellence)|"
                      r"sampler|tasting pack|taster|bundle|merch|t-?shirt|hoodie|tote|cap\b|"
                      r"cold brew|concentrate|instant|\btea\b|chocolate bar|chocolate\b|cascara|"
