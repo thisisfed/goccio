@@ -123,8 +123,14 @@ details.more .opts { padding-top: 10px; }
 .need .chip { background: color-mix(in srgb, var(--ink) 7%, transparent); border-radius: 980px; padding: 10px 16px; font-size: 15px; }
 .need .chip:hover { background: var(--blue); color: #fff; }
 .rbody { display: grid; gap: 14px; }
-.adjusted { background: color-mix(in srgb, var(--accent) 12%, var(--card)); border-radius: 14px; padding: 12px 16px; font-size: 15px; }
-.adjusted button { background: none; border: 0; padding: 0; color: var(--blue); font-size: 15px; }
+.adjusted { background: var(--card); border-radius: 20px; padding: 18px 20px; font-size: 15px; display: grid; gap: 8px; box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 55%, transparent); }
+.adjusted p { margin: 0; }
+.adjusted button { justify-self: start; background: none; border: 0; padding: 0; color: var(--blue); font-size: 15px; }
+.lrn-h { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 17px; }
+.lrn-tag { background: var(--accent); color: #fff; font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 980px; text-transform: uppercase; letter-spacing: .03em; }
+.lrn-list { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 14px; }
+.spec .badge { font-size: 11px; font-weight: 700; color: var(--accent); background: color-mix(in srgb, var(--accent) 13%, transparent); padding: 3px 8px; border-radius: 980px; }
+.spec.tuned { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent); }
 
 .specs { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
 .spec { background: var(--card); border-radius: 20px; padding: 20px 14px 16px; display: grid; gap: 6px; justify-items: center; text-align: center; align-content: start; }
@@ -198,19 +204,25 @@ table.pours { width: 100%; border-collapse: separate; border-spacing: 0; backgro
 .shelf-tools input[type=search] { border: 0; background: var(--card); border-radius: 12px; padding: 11px 14px; min-width: 0; font-size: 16px; }
 @media (max-width: 680px) { .shelf-tools { grid-template-columns: minmax(0, 1fr); } }
 .shelf { display: grid; padding: 4px 20px; }
-.item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 16px; padding: 16px 0; border-bottom: 1px solid var(--rule); }
+.grp { font-size: 13px; font-weight: 600; color: var(--muted); padding: 16px 0 4px; border-bottom: 1px solid var(--rule); }
+.item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 14px; padding: 12px 0; border-bottom: 1px solid var(--rule); align-items: center; }
 .item:last-child { border-bottom: 0; }
-.item .l { display: grid; gap: 3px; min-width: 0; }
-.item .who { font-size: 13px; font-weight: 600; color: var(--muted); }
-.item .who .new { color: #fff; background: var(--accent); border-radius: 980px; padding: 2px 8px; font-size: 11px; margin-right: 6px; vertical-align: 1px; }
-.item .name { font-size: 19px; font-weight: 600; line-height: 1.2; letter-spacing: -.02em; }
-.item .meta { font-size: 14px; color: var(--muted); }
-.item .tn { font-size: 14px; }
-.item .r { display: grid; justify-items: end; gap: 6px; align-content: start; text-align: right; }
-.item .price { font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.item .date { font-size: 12px; color: var(--muted); }
-.item .acts { display: flex; gap: 14px; align-items: center; font-size: 14px; }
-.item .acts .btn { min-height: 32px; padding: 0 14px; font-size: 14px; }
+.item .l { display: grid; gap: 4px; min-width: 0; }
+.item .who { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.item .name { font-size: 17px; font-weight: 600; line-height: 1.2; letter-spacing: -.02em; }
+.pills { display: flex; flex-wrap: wrap; gap: 5px; }
+.pill { font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 980px; background: color-mix(in srgb, var(--ink) 7%, transparent); color: var(--ink); }
+.pill.p-nat { background: color-mix(in srgb, #af52de 16%, transparent); color: #8e3fb8; }
+.pill.p-wash { background: color-mix(in srgb, #30b0c7 18%, transparent); color: #1d7f90; }
+.pill.p-honey { background: color-mix(in srgb, #ff9f0a 20%, transparent); color: #a35f00; }
+.pill.p-exp { background: color-mix(in srgb, #ff2d55 15%, transparent); color: #c4163b; }
+.pill.miss { background: transparent; color: var(--accent); box-shadow: inset 0 0 0 1.5px var(--accent); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pill.p-nat { color: #d38cf5; } :root:not([data-theme="light"]) .pill.p-wash { color: #70d7ea; } :root:not([data-theme="light"]) .pill.p-honey { color: #ffc261; } :root:not([data-theme="light"]) .pill.p-exp { color: #ff7f97; } }
+.item .tn { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.item .r { display: grid; justify-items: end; gap: 6px; text-align: right; }
+.item .price { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.item .r .btn { min-height: 32px; padding: 0 16px; font-size: 14px; }
+.item .date { font-size: 12px; color: var(--muted); white-space: nowrap; }
 .more-btn { justify-self: center; }
 
 footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; color: var(--muted); display: grid; gap: 6px; }
@@ -222,53 +234,59 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
 .dock .num { font-weight: 400; opacity: .85; font-size: 15px; }
 @media (max-width: 760px) { .dock { display: block; } }
 
-/* BREW MODE */
-.bv { position: fixed; inset: 0; z-index: 100; background: #000; color: #f5f5f7; display: grid;
-  grid-template-rows: auto auto 1fr auto auto auto; padding: calc(12px + env(safe-area-inset-top)) 18px calc(14px + env(safe-area-inset-bottom)); gap: 14px; grid-template-columns: minmax(0, 1fr); overflow: hidden; }
+/* BREW MODE: one job per zone. NOW (huge), NEXT (one line), track, two big buttons. */
+.bv { position: fixed; inset: 0; z-index: 100; background: #000; color: #f5f5f7; display: grid; grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr auto auto auto auto; gap: 12px; overflow: hidden;
+  padding: calc(10px + env(safe-area-inset-top)) 16px calc(12px + env(safe-area-inset-bottom)); }
 .bv > * { min-width: 0; }
-.bv .cap { color: #86868b; }
 .bv-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-.bv-coffee { font-size: 17px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-.bv-x { flex: none; background: #1c1c1e; border: 0; color: #f5f5f7; padding: 10px 16px; font-size: 15px; border-radius: 980px; }
-.bv-clockrow { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
-.bv-clock { font-size: clamp(48px, 13vw, 88px); font-weight: 300; line-height: 1; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
-.bv-step { text-align: right; }
-.bv-step .cap { display: block; }
-.bv-step strong { font-size: 17px; font-weight: 600; }
-.bv-main { display: grid; grid-template-columns: minmax(110px, 40%) minmax(0, 1fr); gap: 18px; align-items: center; min-height: 0; }
-.bv-main svg { width: 100%; height: auto; max-height: 52vh; }
-.bv-read { display: grid; gap: 8px; align-content: center; min-width: 0; }
-.bv-target { font-size: clamp(88px, 27vw, 200px); font-weight: 600; line-height: .9; letter-spacing: -.05em; font-variant-numeric: tabular-nums; }
-.bv-target small { font-size: .28em; font-weight: 500; letter-spacing: 0; color: #86868b; margin-left: 4px; }
-.bv-target.pouring { color: #ff9f0a; }
-.bv-target.dim { color: #48484a; }
-.bv-how { font-size: 19px; line-height: 1.3; }
-.bv-pace { font-size: 15px; color: #86868b; min-height: 20px; font-variant-numeric: tabular-nums; }
-.bv-next { background: #1c1c1e; border-radius: 18px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 66px; }
-.bv-next .lbl { display: grid; gap: 2px; }
-.bv-next .lbl strong { font-size: 19px; font-weight: 600; }
-.bv-next .cd { font-size: 36px; font-weight: 600; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.bv-coffee { font-size: 14px; color: #8e8e93; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; font-variant-numeric: tabular-nums; }
+.bv-x { flex: none; background: #1c1c1e; border: 0; color: #f5f5f7; padding: 9px 16px; font-size: 15px; font-weight: 600; border-radius: 980px; }
+.bv-now { border-radius: 30px; background: #111; padding: 18px 20px 20px; display: grid; align-content: center; gap: 6px; min-height: 0; transition: background .25s ease; }
+.bv-now.pour { background: #2b1600; }
+.bv-now.wait { background: #111; }
+.bv-now.drain { background: #052211; }
+.bv-now.over { background: #2b0d00; }
+.bv-nowhead { display: flex; justify-content: space-between; align-items: center; }
+.bv-pill { font-size: 15px; font-weight: 700; letter-spacing: .02em; text-transform: uppercase; padding: 6px 12px; border-radius: 980px; background: #2c2c2e; color: #f5f5f7; }
+.pour .bv-pill { background: #ff9f0a; color: #000; }
+.drain .bv-pill { background: #30d158; color: #000; }
+.over .bv-pill { background: #ff453a; color: #000; }
+.bv-clock { font-size: 26px; font-weight: 500; font-variant-numeric: tabular-nums; color: #8e8e93; }
+.bv-lbl { font-size: 19px; font-weight: 600; color: #8e8e93; margin-top: 6px; }
+.bv-big { font-size: clamp(110px, 38vw, 260px); font-weight: 700; line-height: .86; letter-spacing: -.06em; font-variant-numeric: tabular-nums; }
+.bv-big small { font-size: .26em; font-weight: 600; letter-spacing: 0; color: #8e8e93; margin-left: 6px; }
+.pour .bv-big { color: #ff9f0a; }
+.idle .bv-big { color: #636366; }
+.bv-how { font-size: clamp(20px, 5.4vw, 28px); font-weight: 600; line-height: 1.2; letter-spacing: -.02em; }
+.bv-sub { font-size: 16px; color: #8e8e93; font-variant-numeric: tabular-nums; min-height: 20px; }
+.bv-next { display: flex; align-items: center; gap: 12px; background: #1c1c1e; border-radius: 20px; padding: 14px 18px; min-height: 60px; }
+.bv-nextlbl { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #8e8e93; }
+.bv-next strong { font-size: 21px; font-weight: 600; font-variant-numeric: tabular-nums; flex: 1; }
+.bv-next .cd { font-size: 28px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .bv-next.soon { background: #3a2408; }
 .bv-next.soon .cd { color: #ff9f0a; }
-.bv-bar { position: relative; height: 10px; background: #1c1c1e; border-radius: 980px; overflow: visible; }
+.bv-track { display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 12px; align-items: center; }
+.bv-cone { width: 54px; height: auto; }
+.bv-bar { position: relative; height: 12px; background: #1c1c1e; border-radius: 980px; }
 .bv-bar .seg { position: absolute; top: 0; bottom: 0; background: #48484a; border-radius: 980px; }
 .bv-bar .seg.on { background: #ff9f0a; }
 .bv-bar .seg.done { background: #8e8e93; }
-.bv-bar .win { position: absolute; top: 0; bottom: 0; background: rgba(48, 209, 88, .28); border-radius: 980px; }
-.bv-bar .head { position: absolute; top: -5px; bottom: -5px; width: 3px; border-radius: 2px; background: #f5f5f7; }
-.bv-foot { display: grid; gap: 10px; }
+.bv-bar .win { position: absolute; top: 0; bottom: 0; background: rgba(48, 209, 88, .35); border-radius: 980px; }
+.bv-bar .head { position: absolute; top: -6px; bottom: -6px; width: 3px; border-radius: 2px; background: #f5f5f7; }
 .bv-ctrls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.bv-ctrls button { min-height: 70px; font-size: 21px; font-weight: 600; border: 0; border-radius: 22px; }
+.bv-ctrls button { min-height: 76px; font-size: 22px; font-weight: 700; border: 0; border-radius: 24px; }
 .bv-go { background: #30d158; color: #000; }
 .bv-go.running { background: #2c2c2e; color: #f5f5f7; }
-.bv-drain { background: #ff9f0a; color: #000; }
+.bv-drain { background: #30d158; color: #000; }
 .bv-reset { background: #1c1c1e; color: #f5f5f7; }
-.bv-note { font-size: 13px; color: #86868b; text-align: center; min-height: 16px; }
+.bv-note { font-size: 12px; color: #636366; text-align: center; min-height: 14px; }
 @media (orientation: landscape) and (max-height: 560px) {
-  .bv { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto 1fr auto auto; column-gap: 24px; }
-  .bv-top, .bv-clockrow { grid-column: 1 / -1; }
-  .bv-main { grid-row: 2 / 5; grid-column: 1; }
-  .bv-next, .bv-bar, .bv-foot { grid-column: 2; }
+  .bv { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); grid-template-rows: auto 1fr auto auto; column-gap: 16px; }
+  .bv-top { grid-column: 1 / -1; }
+  .bv-now { grid-row: 2 / 6; grid-column: 1; }
+  .bv-big { font-size: clamp(90px, 22vh, 200px); }
+  .bv-next, .bv-track, .bv-ctrls, .bv-note { grid-column: 2; }
 }
 @media (prefers-reduced-motion: no-preference) {
   .cone-fill { transition: y .3s linear, height .3s linear; }
@@ -398,38 +416,34 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
 
 <!-- Brew mode -->
 <div class="bv" id="bv" hidden role="dialog" aria-modal="true" aria-label="Brew mode">
-  <div class="bv-top"><div class="bv-coffee" id="bvCoffee"></div><button class="bv-x" id="bvClose" type="button">Close</button></div>
-  <div class="bv-clockrow">
-    <div class="bv-clock" id="bvClock">0:00</div>
-    <div class="bv-step"><span class="cap" id="bvStepN">Ready</span><strong id="bvStepT">Tare the scale</strong></div>
+  <div class="bv-top">
+    <div class="bv-coffee" id="bvCoffee"></div>
+    <button class="bv-x" id="bvClose" type="button" aria-label="Close brew mode">Done</button>
   </div>
-  <div class="bv-main">
-    <svg viewBox="0 0 184 170" aria-hidden="true">
+  <div class="bv-now" id="bvNow">
+    <div class="bv-nowhead"><span class="bv-pill" id="bvState">Ready</span><span class="bv-clock" id="bvClock">0:00</span></div>
+    <div class="bv-lbl" id="bvLbl">First pour to</div>
+    <div class="bv-big"><span id="bvBig">0</span><small id="bvUnit">g</small></div>
+    <div class="bv-how" id="bvHow" aria-live="polite"></div>
+    <div class="bv-sub" id="bvSub"></div>
+  </div>
+  <div class="bv-next" id="bvNext"><span class="bv-nextlbl" id="bvNextLbl">Next</span><strong id="bvNextT">—</strong><span class="cd" id="bvNextCd"></span></div>
+  <div class="bv-track">
+    <svg viewBox="0 0 184 150" aria-hidden="true" class="bv-cone">
       <defs><clipPath id="bvClip"><path d="M14 18 L146 18 L80 132 Z"/></clipPath></defs>
       <rect class="cone-fill" id="bvFill" x="0" y="132" width="160" height="0" fill="#c67b3c" clip-path="url(#bvClip)"/>
       <g id="bvTicks"></g>
-      <path d="M14 18 L146 18 L80 132 Z" fill="none" stroke="#f4f2ee" stroke-width="1.4" stroke-linejoin="round"/>
-      <path d="M6 18 L154 18" stroke="#f4f2ee" stroke-width="2.6" stroke-linecap="round"/>
-      <path d="M72 132 L72 146 L88 146 L88 132" fill="none" stroke="#f4f2ee" stroke-width="1.4"/>
-      <text id="bvDrip" x="80" y="164" text-anchor="middle" font-size="9" fill="#8d8882" font-family="-apple-system, Helvetica, sans-serif"></text>
+      <path d="M14 18 L146 18 L80 132 Z" fill="none" stroke="#f5f5f7" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M4 18 L156 18" stroke="#f5f5f7" stroke-width="5" stroke-linecap="round"/>
     </svg>
-    <div class="bv-read">
-      <span class="cap" id="bvTargetLbl">Pour to</span>
-      <div class="bv-target dim" id="bvTarget">0<small>g</small></div>
-      <div class="bv-how" id="bvHow" aria-live="polite">Rinse the paper, add coffee, level the bed. Start the timer as you begin the bloom.</div>
-      <div class="bv-pace" id="bvPace"></div>
-    </div>
+    <div class="bv-bar" id="bvBar" aria-hidden="true"></div>
   </div>
-  <div class="bv-next" id="bvNext"><div class="lbl"><span class="cap">Next</span><strong id="bvNextT">—</strong></div><div class="cd" id="bvNextCd"></div></div>
-  <div class="bv-bar" id="bvBar" aria-hidden="true"></div>
-  <div class="bv-foot">
-    <div class="bv-ctrls">
-      <button class="bv-go" id="bvGo" type="button">Start</button>
-      <button class="bv-reset" id="bvReset" type="button">Reset</button>
-      <button class="bv-drain" id="bvDrain" type="button" hidden>Drained</button>
-    </div>
-    <div class="bv-note" id="bvNote"></div>
+  <div class="bv-ctrls">
+    <button class="bv-go" id="bvGo" type="button">Start</button>
+    <button class="bv-reset" id="bvReset" type="button">Reset</button>
+    <button class="bv-drain" id="bvDrain" type="button" hidden>Drained</button>
   </div>
+  <div class="bv-note" id="bvNote"></div>
 </div>
 
 <script>
@@ -540,6 +554,14 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     return dose >= 18 ? "hoffmannU" : "hoffmann";                    // washed: push extraction
   }
 
+  // what your nailed brews of one process × roast had in common (needs 2+)
+  function styleOffset(process, roast) {
+    const list = ((prefs.styles || {})[process + "|" + roast] || {}).nailed || [];
+    if (list.length < 2) return null;
+    const avg = (k) => list.reduce((a, x) => a + (x[k] || 0), 0) / list.length;
+    const d = { clicks: Math.round(avg("clicks")), temp: Math.round(avg("temp")), ratio: Math.round(avg("ratio") * 2) / 2 };
+    return d.clicks || d.temp || d.ratio ? { d, n: list.length } : null;
+  }
   const coffeeKey = (st) => {
     if (st.bag && st.bag.url) return "u:" + st.bag.url;
     const k = (st.text || "").toLowerCase().split(/\bnotes?\s*[:\-–]/)[0].replace(/[^a-z0-9]+/g, " ").trim().slice(0, 64);
@@ -556,10 +578,18 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     const m = pickMethod(st, c, agit);
 
     const key = coffeeKey(st);
-    const pc = (!opts.noPrefs && key && prefs.coffees[key]) || { clicks: 0, temp: 0, ratio: 0, n: 0 };
+    let learn = null;
+    if (!opts.noPrefs) {
+      const own = key && prefs.coffees[key];
+      if (own && own.optOut && !own.n && !own.clicks && !own.temp && !own.ratio) learn = null;
+      else if (own && (own.n || own.clicks || own.temp || own.ratio)) learn = { source: "coffee", d: { clicks: own.clicks || 0, temp: own.temp || 0, ratio: own.ratio || 0 }, n: own.n || 0, history: own.history || [] };
+      if (!learn && !(own && own.optOut) && c.process !== "unsure" && c.roast !== "unsure") { const so = styleOffset(c.process, c.roast); if (so) learn = { source: "style", d: so.d, n: so.n, history: [] }; }
+    }
+    const pc = learn ? learn.d : { clicks: 0, temp: 0, ratio: 0 };
 
     let ratio = m === "ten" ? (goal === "syrupy" ? 15 : 16)
       : goal === "light" ? 17 : goal === "balanced" ? (m.startsWith("hoffmann") ? 16.7 : 16.5) : 15.5;
+    const baseRatio = ratio;
     ratio = clamp(Math.round((ratio + (pc.ratio || 0)) * 10) / 10, 14, 18.5);
     const water = Math.round(dose * ratio);
 
@@ -573,6 +603,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     if (c.delicate) temp += 1;
     if (agit <= 1) temp = Math.min(temp, 95);                      // ferment-forward lots go boozy when pushed
     if (m === "ten" && (c.roast === "vlight" || c.roast === "light") && agit >= 2) temp = Math.max(temp, 95);
+    const baseTemp = clamp(temp, 82, 100);
     temp = clamp(temp + (pc.temp || 0), 82, 100);
 
     // pours: t = start (s), to = scale reading, dur = suggested pour length (s)
@@ -615,7 +646,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     const mid = (tds[0] + tds[1]) / 2;
     const body = mid < 1.25 ? "tea-like" : mid < 1.38 ? "light and clear" : mid < 1.5 ? "classic filter" : "rich";
 
-    return { m, method: METHOD[m], goal, c, agit, key, pc, baseClicks,
+    return { m, method: METHOD[m], goal, c, agit, key, pc, learn, baseClicks, baseTemp, baseRatio,
       dose, water, ratio, clicks, temp, yieldG: Math.round(bev), pours: P, lo, hi, tds, ey, body };
   }
 
@@ -701,6 +732,31 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     return true;
   }
 
+  function renderLearn(r) {
+    const box = $("adjusted"), L = r.learn;
+    const base = `${r.baseClicks + (prefs.grinder || 0)} clicks · ${r.baseTemp}°C · 1:${r.baseRatio}`;
+    const now = `${r.clicks} clicks · ${r.temp}°C · 1:${r.ratio}`;
+    const TL = (k) => (TASTES.find((x) => x[0] === k) || [k, k])[1];
+    if (!L) {
+      box.hidden = true; return;
+    }
+    box.hidden = false;
+    if (L.source === "style") {
+      box.innerHTML = `<div class="lrn-h"><span class="lrn-tag">Learned</span><b>From your ${L.n} nailed ${esc(PROCESS[r.c.process].label)}, ${esc(ROAST[r.c.roast].label)}-roast brews</b></div>
+        <p>You haven’t brewed this coffee yet, but your best brews of this style ended up here, so it starts there: <b>${now}</b> <span class="muted">(base ${base})</span>.</p>
+        <button type="button" id="undoAdj">Use the base recipe instead</button>`;
+      $("undoAdj").onclick = () => { prefs.coffees[r.key] = { clicks: 0, temp: 0, ratio: 0, n: 0, history: [], optOut: true }; savePrefs(); render(); };
+      return;
+    }
+    const changed = r.pc.clicks || r.pc.temp || r.pc.ratio;
+    const hist = (L.history || []).slice(0, 4).map((h) => `<li><span class="muted">${dmy(h.at)}</span> ${esc((h.tastes || []).map(TL).join(", ") || "logged")}${h.dd != null ? ` · drained ${fmt(h.dd)}` : ""}${h.fix ? ` → <b>${esc(h.fix)}</b>` : ""}</li>`).join("");
+    box.innerHTML = `<div class="lrn-h"><span class="lrn-tag">Learned</span><b>${L.n} brew${L.n === 1 ? "" : "s"} of this coffee logged</b></div>
+      ${changed ? `<p>Now <b>${now}</b> <span class="muted">· base was ${base}</span></p>` : `<p>Locked in at the base recipe: <b>${now}</b>.</p>`}
+      ${hist ? `<ul class="lrn-list">${hist}</ul>` : ""}
+      ${changed ? '<button type="button" id="undoAdj">Reset to the base recipe</button>' : ""}`;
+    if (changed) $("undoAdj").onclick = () => { const o = prefs.coffees[r.key] || {}; prefs.coffees[r.key] = { ...o, clicks: 0, temp: 0, ratio: 0 }; savePrefs(); render(); };
+  }
+
   function render() {
     const r = recipe = engine(state);
     const c = r.c;
@@ -718,27 +774,19 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     const src = (f) => f === "you" ? " (you set this)" : " (from the bag)";
     $("detected").innerHTML = state.text ? `Reading this as <b>${esc(PROCESS[c.process].label)}</b>${src(c.processFrom)}, <b>${esc(c.roast === "unsure" ? ROAST.unsure.label : ROAST[c.roast].label + " roast")}</b>${src(c.roastFrom)}. Wrong? Change it under Bag details.` : "";
 
-    // personal adjustment banner
-    const pc = r.pc, adj = [];
-    if (pc.clicks) adj.push(`${pc.clicks > 0 ? "+" : "−"}${Math.abs(pc.clicks)} click${Math.abs(pc.clicks) > 1 ? "s" : ""}`);
-    if (pc.temp) adj.push(`${pc.temp > 0 ? "+" : "−"}${Math.abs(pc.temp)}°C`);
-    if (pc.ratio) adj.push(`ratio ${pc.ratio > 0 ? "+" : "−"}${Math.abs(pc.ratio)}`);
-    if (adj.length) {
-      $("adjusted").hidden = false;
-      $("adjusted").innerHTML = `Adjusted from your journal: ${esc(adj.join(", "))}. <button type="button" id="undoAdj">Reset to the base recipe</button>`;
-      $("undoAdj").onclick = () => { delete prefs.coffees[r.key]; savePrefs(); render(); };
-    } else $("adjusted").hidden = true;
-    $("rsource").textContent = prefs.grinder ? `C40 zero ${prefs.grinder > 0 ? "+" : ""}${prefs.grinder}` : "";
-
+    renderLearn(r);
+    const sign = (n) => (n > 0 ? "+" : "−") + Math.abs(n);
+    const lw = r.learn ? (r.learn.source === "coffee" ? "your log" : "your style") : "";
+    const cBadges = [r.pc.clicks ? `${sign(r.pc.clicks)} ${lw}` : "", prefs.grinder ? `zero ${sign(prefs.grinder)}` : ""].filter(Boolean);
     const S = [
-      ["key", r.clicks, "", "clicks · C40"],
-      ["", r.dose, "g", "coffee"],
-      ["", r.water, "g", "water"],
-      ["", "1:" + r.ratio, "", `≈${r.yieldG} g in the cup`],
-      ["", r.temp, "°C", "kettle"],
-      ["", fmt(r.lo), "", `to ${fmt(r.hi)} total`],
+      ["key", r.clicks, "", "clicks · C40", cBadges.join(" · ")],
+      ["", r.dose, "g", "coffee", ""],
+      ["", r.water, "g", "water", ""],
+      ["", "1:" + r.ratio, "", `≈${r.yieldG} g in the cup`, r.pc.ratio ? `${sign(r.pc.ratio)} ${lw}` : ""],
+      ["", r.temp, "°C", "kettle", r.pc.temp ? `${sign(r.pc.temp)}° ${lw}` : ""],
+      ["", fmt(r.lo), "", `to ${fmt(r.hi)} total`, ""],
     ];
-    $("specs").innerHTML = S.map(([k, v, u, l]) => `<div class="spec ${k}"><b>${v}<small>${u}</small></b><span class="sub2">${l}</span></div>`).join("");
+    $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}"><b>${v}<small>${u}</small></b><span class="sub2">${l}</span>${badge ? `<span class="badge">${esc(badge)}</span>` : ""}</div>`).join("");
     const bloomTimes = (r.pours[0].to / r.dose).toFixed(1).replace(/\.0$/, "");
     $("tech").innerHTML = `<span><b>Agitation: ${AGIT[r.agit]}.</b> ${
       r.agit >= 3 ? "Stir or swirl the bloom, pour with energy, one swirl at the end." :
@@ -792,7 +840,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
 
     $("logTitle").textContent = `How did it taste? · ${coffeeTitle(state, r)}`;
     $("ddHint").textContent = `target ${fmt(r.lo)}–${fmt(r.hi)}`;
-    updateSuggest();
+    if (picked.size || $("ddIn").value) updateSuggest();
   }
 
   // ---------- options ----------
@@ -871,16 +919,33 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
   }
   function saveLog() {
     if (!recipe) return;
+    if (!picked.size && !$("ddIn").value.trim()) { $("saveLog").textContent = "Pick a taste first"; setTimeout(() => ($("saveLog").textContent = "Save to journal"), 1600); return; }
     const dd = parseMS($("ddIn").value);
     const s = lastSuggestion;
     const r = recipe;
-    if (s && r.key && Object.keys(s.d).length) {
-      const pc = { clicks: 0, temp: 0, ratio: 0, n: 0, ...(prefs.coffees[r.key] || {}) };
-      pc.clicks = clamp((pc.clicks || 0) + (s.d.clicks || 0), -8, 8);
-      pc.temp = clamp((pc.temp || 0) + (s.d.temp || 0), -6, 6);
-      pc.ratio = clamp((pc.ratio || 0) + (s.d.ratio || 0), -3, 3);
+    const before = { clicks: r.clicks, temp: r.temp, ratio: r.ratio };
+    const nailed = (picked.has("balanced") || picked.has("sweet")) && !["sour", "bitter", "flat", "harsh", "thin", "heavy"].some((k) => picked.has(k));
+    if (r.key) {
+      // start from whatever this brew actually used (incl. a style head-start), then apply the one fix
+      const pc = { clicks: r.pc.clicks || 0, temp: r.pc.temp || 0, ratio: r.pc.ratio || 0, n: 0, history: [], ...(prefs.coffees[r.key] || {}) };
+      if (!prefs.coffees[r.key] || prefs.coffees[r.key].optOut) { pc.clicks = r.pc.clicks || 0; pc.temp = r.pc.temp || 0; pc.ratio = r.pc.ratio || 0; }
+      delete pc.optOut;
+      const d = (s && s.d) || {};
+      pc.clicks = clamp(pc.clicks + (d.clicks || 0), -8, 8);
+      pc.temp = clamp(pc.temp + (d.temp || 0), -6, 6);
+      pc.ratio = clamp(pc.ratio + (d.ratio || 0), -3, 3);
+      const fix = Object.keys(d).length ? [d.clicks && `${d.clicks < 0 ? Math.abs(d.clicks) + " finer" : d.clicks + " coarser"}`, d.temp && `${d.temp > 0 ? "+" : "−"}${Math.abs(d.temp)}°C`, d.ratio && `ratio ${d.ratio > 0 ? "+" : "−"}${Math.abs(d.ratio)}`].filter(Boolean).join(", ") : (nailed ? "kept" : "");
+      pc.history = [{ at: new Date().toISOString(), tastes: [...picked], dd, fix }, ...(pc.history || [])].slice(0, 8);
       pc.n = (pc.n || 0) + 1; pc.last = new Date().toISOString();
-      prefs.coffees[r.key] = pc; savePrefs();
+      prefs.coffees[r.key] = pc;
+      // nailed it: remember the offsets that worked for this process × roast
+      if (nailed && r.c.process !== "unsure" && r.c.roast !== "unsure") {
+        prefs.styles = prefs.styles || {};
+        const k = r.c.process + "|" + r.c.roast, st = prefs.styles[k] || { nailed: [] };
+        st.nailed = [{ clicks: r.pc.clicks || 0, temp: r.pc.temp || 0, ratio: r.pc.ratio || 0, at: new Date().toISOString() }, ...st.nailed].slice(0, 6);
+        prefs.styles[k] = st;
+      }
+      savePrefs();
     }
     journal.unshift({ at: new Date().toISOString(), title: coffeeTitle(state, r), text: state.text, bag: state.bag, goal: state.goal, dose: r.dose,
       method: r.method, clicks: r.clicks, temp: r.temp, ratio: r.ratio, water: r.water, dd, tastes: [...picked], note: $("logNote").value.trim(),
@@ -888,6 +953,13 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     saveJournal();
     picked = new Set(); $("ddIn").value = ""; $("logNote").value = "";
     renderTaste(); render(); renderJournal();
+    const a = recipe, diff = [];
+    if (a.clicks !== before.clicks) diff.push(`${before.clicks} → <b>${a.clicks} clicks</b>`);
+    if (a.temp !== before.temp) diff.push(`${before.temp} → <b>${a.temp}°C</b>`);
+    if (a.ratio !== before.ratio) diff.push(`1:${before.ratio} → <b>1:${a.ratio}</b>`);
+    const box = $("suggest"); box.hidden = false;
+    box.innerHTML = diff.length ? `<span><b>Saved.</b> Next time for ${esc(coffeeTitle(state, a))}: ${diff.join(", ")}.</span><span class="muted">Shown on the recipe with a “your log” badge.</span>`
+      : `<span><b>Saved.</b> ${nailed ? "Recipe locked in for this coffee, and it counts towards your " + esc(PROCESS[a.c.process].label) + " brews." : "No change to the numbers."}</span>`;
     $("saveLog").textContent = "Saved"; setTimeout(() => ($("saveLog").textContent = "Save to journal"), 1400);
   }
   function renderJournal() {
@@ -910,7 +982,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
   let clearArmed = false;
   $("clearLog").onclick = () => {
     if (!clearArmed) { clearArmed = true; $("clearLog").textContent = "Tap again to clear"; setTimeout(() => { clearArmed = false; $("clearLog").textContent = "Clear journal"; }, 3000); return; }
-    journal = []; prefs.coffees = {}; saveJournal(); savePrefs(); clearArmed = false; $("clearLog").textContent = "Clear journal"; renderJournal(); render();
+    journal = []; prefs.coffees = {}; prefs.styles = {}; saveJournal(); savePrefs(); clearArmed = false; $("clearLog").textContent = "Clear journal"; renderJournal(); render();
   };
   const renderSettings = () => { $("gVal").textContent = (prefs.grinder > 0 ? "+" : "") + prefs.grinder; $("optSound").checked = !!prefs.sound; $("optBuzz").checked = !!prefs.buzz; };
   $("gMinus").onclick = () => { prefs.grinder = clamp(prefs.grinder - 1, -6, 6); savePrefs(); renderSettings(); render(); };
@@ -919,8 +991,10 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
   $("optBuzz").onchange = (e) => { prefs.buzz = e.target.checked; savePrefs(); };
 
   // ---------- BREW MODE ----------
+  // The big number is always the thing to act on: grams while pouring, seconds while waiting,
+  // time left while draining.
   const bv = { running: false, t0: 0, paused: 0, raf: 0, lastIdx: -2, lastTick: null, wake: null, audio: null };
-  const coneY = (f) => 132 - 114 * Math.cbrt(clamp(f, 0, 1));    // volume grows with height cubed
+  const coneY = (f) => 132 - 114 * Math.cbrt(clamp(f, 0, 1));    // cone volume grows with height cubed
 
   function tone(freq, len, gain) {
     if (!prefs.sound) return;
@@ -946,17 +1020,22 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
   function openBrew() {
     if (!recipe) render();
     const r = recipe;
-    $("bvCoffee").textContent = `${coffeeTitle(state, r)} · ${r.clicks} clk · ${r.temp}°C`;
-    // pour ticks on the cone + progress bar segments
+    if ($("rbody").hidden) return;
+    $("bvCoffee").textContent = `${coffeeTitle(state, r)} · ${r.clicks} clicks${prefs.grinder ? ` (zero ${prefs.grinder > 0 ? "+" : ""}${prefs.grinder})` : ""} · ${r.temp}°C · ${r.dose}→${r.water} g`;
     $("bvTicks").innerHTML = r.pours.map((p, i) => { const y = coneY(p.to / r.water).toFixed(1);
-      return `<line id="tk${i}" x1="148" x2="156" y1="${y}" y2="${y}" stroke="#57534f" stroke-width="1.2"/><text id="tt${i}" x="158" y="${(+y + 3).toFixed(1)}" font-size="7" fill="#57534f" font-family="-apple-system, Helvetica, sans-serif">${p.to}</text>`; }).join("");
+      return `<line id="tk${i}" x1="150" x2="182" y1="${y}" y2="${y}" stroke="#48484a" stroke-width="5" stroke-linecap="round"/>`; }).join("");
     const T = r.hi + 20;
     $("bvBar").innerHTML = `<div class="win" style="left:${(r.lo / T) * 100}%;width:${((r.hi - r.lo) / T) * 100}%"></div>` +
-      r.pours.map((p, i) => `<div class="seg" id="sg${i}" style="left:${(p.t / T) * 100}%;width:${Math.max(0.8, (p.dur / T) * 100)}%"></div>`).join("") + '<div class="head" id="bvHead" style="left:0"></div>';
+      r.pours.map((p, i) => `<div class="seg" id="sg${i}" style="left:${(p.t / T) * 100}%;width:${Math.max(1.2, (p.dur / T) * 100)}%"></div>`).join("") + '<div class="head" id="bvHead" style="left:0"></div>';
     $("bv").hidden = false; document.body.style.overflow = "hidden";
+    // hide the browser's own bars where allowed (Android, desktop); iOS keeps them
+    try { const el = document.documentElement; if (el.requestFullscreen && !document.fullscreenElement) el.requestFullscreen({ navigationUI: "hide" }).catch(() => {}); } catch (e) {}
     resetBrew(); $("bvGo").focus();
   }
-  function closeBrew() { stopLoop(); wakeOff(); $("bv").hidden = true; document.body.style.overflow = ""; }
+  function closeBrew() {
+    stopLoop(); wakeOff(); $("bv").hidden = true; document.body.style.overflow = "";
+    try { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {}); } catch (e) {}
+  }
   function resetBrew() { stopLoop(); bv.paused = 0; bv.lastIdx = -2; bv.lastTick = null; $("bvGo").textContent = "Start"; $("bvGo").classList.remove("running"); $("bvDrain").hidden = true; $("bvReset").hidden = false; tick(); }
   function stopLoop() { bv.running = false; cancelAnimationFrame(bv.raf); }
   function toggleBrew() {
@@ -968,9 +1047,15 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
   function loop() { tick(); if (bv.running) bv.raf = requestAnimationFrame(loop); }
   function drained() {
     const el = bv.running ? (performance.now() - bv.t0) / 1000 : bv.paused;
-    stopLoop(); wakeOff(); closeBrew();
+    closeBrew();
     $("ddIn").value = fmt(el); updateSuggest();
     $("journal").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function setNow(cls, pill, lbl, big, unit, how, sub) {
+    $("bvNow").className = "bv-now " + cls; $("bvState").textContent = pill; $("bvLbl").textContent = lbl;
+    $("bvBig").textContent = big; $("bvUnit").textContent = unit; $("bvUnit").hidden = !unit;
+    $("bvHow").textContent = how; $("bvSub").textContent = sub;
   }
 
   function tick() {
@@ -980,65 +1065,47 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     const P = r.pours;
     let idx = -1;
     if (!idle) for (let i = 0; i < P.length; i++) if (P[i].t <= el) idx = i;
-    const cur = idx >= 0 ? P[idx] : null, next = P[idx + 1] || null;
+    const cur = idx >= 0 ? P[idx] : null, next = P[idx + 1] || null, after = P[idx + 2] || null;
     const prevTo = idx > 0 ? P[idx - 1].to : 0;
     const inPour = cur && el < cur.t + cur.dur;
     const afterLast = idx === P.length - 1 && !inPour;
 
-    // cues: tone + buzz on each new pour, soft ticks 3-2-1 before it
     if (bv.running && idx !== bv.lastIdx) { if (idx >= 0) { tone(880, .35, .18); buzz(60); } bv.lastIdx = idx; }
     if (bv.running && next) { const left = Math.ceil(next.t - el); if (left <= 3 && left >= 1 && bv.lastTick !== left) { bv.lastTick = left; tone(1320, .06, .06); } }
 
     $("bvClock").textContent = fmt(Math.floor(el));
-    const tgt = $("bvTarget");
-    let expected = 0;
+    let expected = 0, nextLbl = "Next", nextT = "", nextCd = "", soon = false;
     if (idle) {
-      $("bvStepN").textContent = "Ready"; $("bvStepT").textContent = "Tare with coffee in";
-      $("bvTargetLbl").textContent = "First pour to"; tgt.className = "bv-target dim"; tgt.innerHTML = `${P[0].to}<small>g</small>`;
-      $("bvHow").textContent = "Rinse the paper, add coffee, level the bed. Press Start as you begin the bloom.";
-      $("bvPace").textContent = `${P.length} pours · finish ${fmt(r.lo)}–${fmt(r.hi)}`;
+      setNow("idle", "Ready", "First pour to", P[0].to, "g", "Tare with the coffee in. Press Start as you begin pouring.", `${P.length} pours · done by ${fmt(r.hi)}`);
+      nextT = `${P.length > 1 ? fmt(P[1].t) + " → " + P[1].to + " g" : "Then drain"}`; nextLbl = "Then";
     } else if (inPour) {
       const k = clamp((el - cur.t) / cur.dur, 0, 1);
       expected = prevTo + (cur.to - prevTo) * k;
-      $("bvStepN").textContent = `Pour ${idx + 1} of ${P.length}`; $("bvStepT").textContent = idx === 0 ? "Bloom" : "Pouring";
-      $("bvTargetLbl").textContent = "Pour to"; tgt.className = "bv-target pouring"; tgt.innerHTML = `${cur.to}<small>g</small>`;
-      $("bvHow").textContent = cur.note;
-      $("bvPace").textContent = `+${cur.to - prevTo} g over ~${cur.dur}s · on pace ≈ ${Math.round(expected)} g`;
+      setNow("pour", `Pour ${idx + 1} of ${P.length}`, "Pour to", cur.to, "g", cur.note, `Scale should read ≈ ${Math.round(expected)} g · +${cur.to - prevTo} g over ~${cur.dur} s`);
+      if (next) { nextT = `${fmt(next.t)} → ${next.to} g`; nextCd = fmt(Math.ceil(next.t - el)); } else { nextLbl = "Then"; nextT = `Drain · done by ${fmt(r.hi)}`; }
     } else if (!afterLast) {
       expected = cur.to;
-      $("bvStepN").textContent = `Pour ${idx + 1} of ${P.length} done`; $("bvStepT").textContent = "Let it settle";
-      $("bvTargetLbl").textContent = "Scale reads"; tgt.className = "bv-target"; tgt.innerHTML = `${cur.to}<small>g</small>`;
-      $("bvHow").textContent = "Hands off. Get the kettle ready.";
-      $("bvPace").textContent = `next: +${next.to - cur.to} g`;
+      const left = next.t - el;
+      setNow("wait", "Wait", `Next pour to ${next.to} g in`, fmt(Math.ceil(left)), "", left <= 5 ? "Get ready to pour." : "Hands off. Let it settle.", `Scale reads ${cur.to} g`);
+      nextLbl = "After that"; nextT = after ? `${fmt(after.t)} → ${after.to} g` : `Drain · done by ${fmt(r.hi)}`;
+      soon = left <= 5;
     } else {
       expected = r.water;
-      const over = el > r.hi;
-      $("bvStepN").textContent = "Drawdown"; $("bvStepT").textContent = over ? "Past target time" : `Finish ${fmt(r.lo)}–${fmt(r.hi)}`;
-      $("bvTargetLbl").textContent = "Total"; tgt.className = "bv-target"; tgt.innerHTML = `${r.water}<small>g</small>`;
-      $("bvHow").textContent = over ? "Still dripping? Note it: next time go coarser." : "Let it drain. Tap Drained the moment the bed goes dry.";
-      $("bvPace").textContent = el < r.lo ? `target window opens in ${fmt(r.lo - el)}` : over ? `+${fmt(el - r.hi)} over` : "in the window";
+      if (el < r.lo) setNow("drain", "Drawdown", "Window opens in", fmt(Math.ceil(r.lo - el)), "", "Let it drain. Tap Drained when the bed goes dry.", `Target ${fmt(r.lo)}–${fmt(r.hi)}`);
+      else if (el <= r.hi) setNow("drain", "In the window", "Time left", fmt(Math.ceil(r.hi - el)), "", "Tap Drained the moment the bed goes dry.", `Target ${fmt(r.lo)}–${fmt(r.hi)}`);
+      else setNow("over", "Over time", "Over by", fmt(Math.floor(el - r.hi)), "", "Still dripping. Tap Drained when it stops; you’ll get a fix.", `Target ${fmt(r.lo)}–${fmt(r.hi)}`);
+      nextLbl = "Then"; nextT = "Log how it tastes";
     }
-    // next callout
-    const nb = $("bvNext");
-    if (next && !idle) {
-      const left = next.t - el;
-      $("bvNextT").textContent = `${fmt(next.t)} → ${next.to} g`; $("bvNextCd").textContent = fmt(Math.ceil(left));
-      nb.classList.toggle("soon", left <= 5);
-    } else if (idle) {
-      $("bvNextT").textContent = `0:00 → ${P[0].to} g`; $("bvNextCd").textContent = ""; nb.classList.remove("soon");
-    } else {
-      $("bvNextT").textContent = `Done by ${fmt(r.hi)}`; $("bvNextCd").textContent = el < r.hi ? fmt(Math.ceil(r.hi - el)) : "—"; nb.classList.remove("soon");
-    }
-    // cone: fill to expected reading, highlight the current target tick
+    $("bvNextLbl").textContent = nextLbl; $("bvNextT").textContent = nextT; $("bvNextCd").textContent = nextCd;
+    $("bvNext").classList.toggle("soon", soon);
+
     const y = coneY(expected / r.water);
     $("bvFill").setAttribute("y", y.toFixed(1)); $("bvFill").setAttribute("height", (132 - y).toFixed(1));
     P.forEach((p, i) => { const on = i === idx && inPour, done = i < idx || (i === idx && !inPour);
-      const col = on ? "#ff9f0a" : done ? "#8e8e93" : "#48484a";
-      $("tk" + i)?.setAttribute("stroke", col); $("tt" + i)?.setAttribute("fill", col);
+      $("tk" + i)?.setAttribute("stroke", on ? "#ff9f0a" : done ? "#8e8e93" : "#48484a");
       const sg = $("sg" + i); if (sg) sg.className = "seg" + (on ? " on" : done ? " done" : ""); });
-    $("bvDrip").textContent = afterLast ? "draining" : "";
     const T = r.hi + 20; const h = $("bvHead"); if (h) h.style.left = `${clamp(el / T, 0, 1) * 100}%`;
-    $("bvDrain").hidden = !(afterLast && bv.running || afterLast && bv.paused > 0);
+    $("bvDrain").hidden = !(afterLast && (bv.running || bv.paused > 0));
     $("bvReset").hidden = !$("bvDrain").hidden;
     if (bv.running && el > r.hi + 240) { stopLoop(); $("bvGo").textContent = "Resume"; }
   }
@@ -1066,29 +1133,34 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
   async function cardImage() {
     const r = recipe, W = 1080, H = 1350, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
     const x = cv.getContext("2d");
-    try { await document.fonts.ready; } catch (e) {}
-    const ink = "#1d1d1f", mut = "#6e6e73", acc = "#f56300";
-    x.fillStyle = "#f5f5f7"; x.fillRect(0, 0, W, H); x.fillStyle = ink;
-    const M = 80;
-    x.font = "500 24px -apple-system, Helvetica, Arial, sans-serif"; x.fillStyle = mut; x.fillText("V60 BREW CARD", M, 110);
-    x.fillStyle = acc; x.fillText(r.method.toUpperCase(), M, 150);
-    x.fillStyle = ink; x.font = "600 84px -apple-system, Helvetica, Arial, sans-serif";
-    const words = coffeeTitle(state, r).split(" "); let line = "", y = 260;
-    for (const w of words) { if (x.measureText(line + w).width > W - 2 * M && line) { x.fillText(line.trim(), M, y); y += 88; line = ""; } line += w + " "; }
-    x.fillText(line.trim(), M, y); y += 40;
-    x.font = "400 28px -apple-system, Helvetica, Arial, sans-serif"; x.fillStyle = mut; x.fillText(`${GOAL[r.goal]} · ${PROCESS[r.c.process].label} · ${ROAST[r.c.roast].label} roast`, M, y + 20); y += 70;
-    x.strokeStyle = ink; x.lineWidth = 2; x.beginPath(); x.moveTo(M, y); x.lineTo(W - M, y); x.stroke();
-    const specs = [[r.clicks, "CLICKS C40"], [r.dose + "g", "COFFEE"], [r.water + "g", "WATER"], ["1:" + r.ratio, "RATIO"], [r.temp + "°", "KETTLE"], [fmt(r.hi), "DONE BY"]];
-    const cw = (W - 2 * M) / 3;
-    specs.forEach(([v, l], i) => { const cx = M + (i % 3) * cw, cy = y + 40 + Math.floor(i / 3) * 150;
-      x.fillStyle = i === 0 ? acc : ink; x.font = "500 76px -apple-system, Helvetica, Arial, sans-serif"; x.fillText(String(v), cx, cy + 70);
-      x.fillStyle = mut; x.font = "500 20px -apple-system, Helvetica, Arial, sans-serif"; x.fillText(l, cx, cy + 108); });
-    y += 360; x.strokeStyle = "rgba(11,11,11,.18)"; x.lineWidth = 1.5; x.beginPath(); x.moveTo(M, y); x.lineTo(W - M, y); x.stroke(); y += 56;
-    r.pours.slice(0, 10).forEach((p) => { x.fillStyle = mut; x.font = "400 28px -apple-system, Helvetica, Arial, sans-serif"; x.fillText(fmt(p.t), M, y);
-      x.fillStyle = ink; x.font = "500 34px -apple-system, Helvetica, Arial, sans-serif"; x.fillText(p.to + " g", M + 140, y);
-      x.font = "400 26px -apple-system, Helvetica, Arial, sans-serif"; x.fillStyle = mut; x.fillText(p.note.slice(0, 44), M + 340, y); y += r.pours.length > 6 ? 40 : 54; });
-    x.fillStyle = mut; x.font = "500 22px -apple-system, Helvetica, Arial, sans-serif"; x.fillText("v60.thisisfed.xyz", M, H - 70);
-    x.textAlign = "right"; x.fillText(dmy(new Date()), W - M, H - 70);
+    const F = (w, px) => `${w} ${px}px -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif`;
+    const ink = "#1d1d1f", mut = "#6e6e73", acc = "#f56300", blue = "#0071e3";
+    const rr = (X, Y, w, h, rad, fill) => { x.beginPath(); x.roundRect ? x.roundRect(X, Y, w, h, rad) : x.rect(X, Y, w, h); x.fillStyle = fill; x.fill(); };
+    const fit = (text, w, max) => { let px = max; x.font = F(700, px); while (px > 40 && x.measureText(text).width > w) { px -= 4; x.font = F(700, px); } return px; };
+    x.fillStyle = "#f5f5f7"; x.fillRect(0, 0, W, H);
+    const M = 64;
+    x.fillStyle = acc; x.font = F(600, 30); x.fillText(r.method, M, 108);
+    x.fillStyle = mut; x.textAlign = "right"; x.fillText(GOAL[r.goal], W - M, 108); x.textAlign = "left";
+    const title = coffeeTitle(state, r);
+    x.fillStyle = ink; const px = fit(title, W - 2 * M, 88); x.font = F(700, px); x.fillText(title, M, 108 + px + 20);
+    x.fillStyle = mut; x.font = F(400, 30);
+    x.fillText([r.c.origin, PROCESS[r.c.process].label, r.c.roast === "unsure" ? "roast not stated" : ROAST[r.c.roast].label + " roast"].filter(Boolean).join(" · "), M, 108 + px + 70);
+    let y = 108 + px + 110;
+    const specs = [[String(r.clicks), "clicks · C40"], [r.dose + " g", "coffee"], [r.water + " g", "water"], ["1:" + r.ratio, "ratio"], [r.temp + "°C", "kettle"], [fmt(r.hi), "done by"]];
+    const gap = 18, tw = (W - 2 * M - 2 * gap) / 3, th = 168;
+    specs.forEach(([v, l], i) => { const tx = M + (i % 3) * (tw + gap), ty = y + Math.floor(i / 3) * (th + gap);
+      rr(tx, ty, tw, th, 32, "#ffffff");
+      x.textAlign = "center"; x.fillStyle = i === 0 ? blue : ink; x.font = F(700, 64); x.fillText(v, tx + tw / 2, ty + 92);
+      x.fillStyle = mut; x.font = F(500, 24); x.fillText(l, tx + tw / 2, ty + 132); x.textAlign = "left"; });
+    y += 2 * th + gap + 34;
+    const rows = r.pours.slice(0, 10), rowH = rows.length > 6 ? 46 : 62, ph = rows.length * rowH + 48;
+    rr(M, y, W - 2 * M, ph, 32, "#ffffff");
+    let ry = y + 24 + rowH * 0.66;
+    rows.forEach((p) => { x.fillStyle = mut; x.font = F(500, 28); x.fillText(fmt(p.t), M + 32, ry);
+      x.fillStyle = ink; x.font = F(700, 34); x.fillText(p.to + " g", M + 150, ry);
+      x.fillStyle = mut; x.font = F(400, 26); x.fillText(p.note.length > 40 ? p.note.slice(0, 39) + "…" : p.note, M + 330, ry); ry += rowH; });
+    x.fillStyle = mut; x.font = F(500, 24); x.fillText("v60.thisisfed.xyz", M, H - 56);
+    x.textAlign = "right"; x.fillText(`Agitation ${AGIT[r.agit]} · ${dmy(new Date())}`, W - M, H - 56); x.textAlign = "left";
     return new Promise((res) => cv.toBlob(res, "image/png"));
   }
   $("cardBtn").onclick = async () => {
@@ -1109,27 +1181,38 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     $("shelfF").innerHTML = SHELF_F.map(([v, t]) => `<button type="button" class="chip" data-v="${v}" aria-pressed="${shelfF === v}">${t}</button>`).join("");
     $("shelfF").querySelectorAll("button").forEach((b) => b.onclick = () => { shelfF = b.dataset.v; shelfAll = false; renderShelfF(); renderShelf(); });
   }
+  const PROC_TONE = { natural: "p-nat", washed: "p-wash", honey: "p-honey", exp: "p-exp", other: "p-other" };
   function renderShelf() {
     const q = $("shelfQ").value.trim().toLowerCase();
     let list = shelf.filter((r) => shelfF === "all" || (shelfF === "new" ? r.new : bucket(r.process) === shelfF));
     if (q) list = list.filter((r) => [r.roaster, r.name, r.origin, r.region, r.process, r.variety, ...(r.notes || [])].join(" ").toLowerCase().includes(q));
     list.sort((a, b) => (b.new === true) - (a.new === true) || (b.published || b.found || "").localeCompare(a.published || a.found || ""));
-    const shown = shelfAll || q ? list : list.slice(0, 8);
+    const LIMIT = 12;
+    const shown = shelfAll || q ? list : list.slice(0, LIMIT);
+    let lastGroup = null;
     $("shelf").innerHTML = shown.length ? shown.map((r) => {
       const i = shelf.indexOf(r);
-      const meta = [r.origin, r.region, r.variety, r.process].filter(Boolean).join(" · ") || "Details on the roaster’s page";
-      return `<article class="item"><div class="l">
-          <span class="who">${r.new ? '<span class="new">New</span>' : ""}${esc(r.roaster)}</span>
+      const group = r.new ? "New in the last 3 weeks" : "Still on the shelves";
+      const head = group !== lastGroup && shelfF !== "new" ? `<div class="grp">${group}</div>` : ""; lastGroup = group;
+      const pills = [
+        r.process ? `<span class="pill ${PROC_TONE[bucket(r.process)]}">${esc(r.process)}</span>` : '<span class="pill miss">Process not listed</span>',
+        r.variety ? `<span class="pill">${esc(titleCase(r.variety))}</span>` : "",
+        r.roast_level ? `<span class="pill">${esc({ vlight: "Very light", light: "Light", medium: "Medium", mdark: "Medium-dark" }[r.roast_level] || r.roast_level)} roast</span>` : '<span class="pill miss">Roast not listed</span>',
+      ].join("");
+      const place = [r.origin, r.region].filter(Boolean).join(", ");
+      return `${head}<article class="item">
+        <div class="l">
+          <span class="who">${esc(r.roaster)}${place ? ` · ${esc(place)}` : ""}</span>
           <span class="name">${esc(r.name)}</span>
-          <span class="meta">${esc(meta)}</span>
-          ${r.notes && r.notes.length ? `<span class="tn">${esc(r.notes.join(", "))}</span>` : ""}
-          ${!r.process || !r.roast_level ? `<span class="meta">Not listed: ${[!r.process && "process", !r.roast_level && "roast"].filter(Boolean).join(", ")}</span>` : ""}
-        </div><div class="r">
+          <div class="pills">${pills}</div>
+          ${r.notes && r.notes.length ? `<span class="tn">${esc(r.notes.join(" · "))}</span>` : ""}
+        </div>
+        <div class="r">
           ${r.price ? `<span class="price">${esc(r.price)}</span>` : ""}
-          <span class="date">${r.published ? "listed " + isoDmy(r.published) : "seen " + isoDmy(r.found)}</span>
-          <span class="acts">${r.url ? `<a href="${esc(r.url)}" target="_blank" rel="noopener">Shop</a>` : ""}<button class="btn" type="button" data-i="${i}">Brew this</button></span>
-        </div></article>`; }).join("") : '<p class="muted">Nothing matches.</p>';
-    $("shelfMore").hidden = shelfAll || !!q || list.length <= 8;
+          <button class="btn" type="button" data-i="${i}">Brew</button>
+          <span class="date">${r.url ? `<a href="${esc(r.url)}" target="_blank" rel="noopener">Shop</a> · ` : ""}${r.published ? isoDmy(r.published).slice(0, 5) : isoDmy(r.found).slice(0, 5)}</span>
+        </div></article>`; }).join("") : '<p class="muted" style="padding:16px 0;margin:0">Nothing matches.</p>';
+    $("shelfMore").hidden = shelfAll || !!q || list.length <= LIMIT;
     $("shelfMore").textContent = `Show all ${list.length}`;
     $("shelf").querySelectorAll("button[data-i]").forEach((b) => b.onclick = () => brewThis(shelf[+b.dataset.i]));
   }
@@ -1168,7 +1251,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
   $("coffeeIn").value = state.text;
   renderAllOpts(); renderTaste(); renderSettings(); render(); renderJournal(); renderShelfF(); loadShelf();
 
-  window.__v60 = { parseCoffee, engine, suggest, cupNotes, get recipe() { return recipe; } };
+  window.__v60 = { parseCoffee, engine, suggest, cupNotes, cardImage, get recipe() { return recipe; } };
 })();
 </script>
 </body>
