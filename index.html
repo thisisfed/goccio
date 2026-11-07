@@ -10,6 +10,7 @@
 <meta property="og:title" content="V60 Brew Card">
 <meta property="og:description" content="The right V60 recipe for the bag in front of you.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M4 6h24L16 27z' fill='%230b0b0b'/%3E%3C/svg%3E">
+<script>try{var t=localStorage.getItem("v60.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
 <style>
 /* Layout idea: Apple product page. Light grey canvas, white rounded tiles, system type set tight,
    blue for actions, orange for "new" and "pour now". The black brew view is the one dark moment. */
@@ -57,7 +58,8 @@ button:disabled { opacity: .4; cursor: default; }
 .top-in { max-width: 1000px; margin: 0 auto; padding: 0 22px; height: 52px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .mark { font-weight: 600; font-size: 19px; letter-spacing: -.02em; display: flex; gap: 6px; }
 .mark .serif { font-weight: 400; color: var(--muted); }
-.nav { display: flex; gap: 20px; }
+.nav { display: flex; gap: 18px; align-items: center; }
+@media (max-width: 420px) { .nav { gap: 12px; } .nav button { font-size: 12px; } .mark .serif { display: none; } }
 .nav button { background: none; border: 0; padding: 6px 0; font-size: 13px; color: var(--ink); opacity: .8; }
 .nav button:hover { opacity: 1; }
 
@@ -149,11 +151,72 @@ details.more .opts { padding-top: 10px; }
 
 .specs { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
 .spec { background: var(--card); border-radius: 20px; padding: 20px 14px 16px; display: grid; gap: 6px; justify-items: center; text-align: center; align-content: start; }
-.spec b { font-size: clamp(30px, 4.6vw, 44px); font-weight: 600; line-height: 1; letter-spacing: -.035em; font-variant-numeric: tabular-nums; }
+.spec b { font-size: clamp(36px, 4.8vw, 48px); font-weight: 600; line-height: 1; letter-spacing: -.035em; font-variant-numeric: tabular-nums; }
 .spec b small { font-size: .42em; margin-left: 2px; letter-spacing: 0; color: var(--muted); }
 .spec.key b { color: var(--blue); }
 .spec .sub2 { font-size: 12px; color: var(--muted); line-height: 1.3; }
-@media (max-width: 760px) { .specs { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; } }
+@media (max-width: 760px) {
+  .specs { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
+  .spec { grid-column: span 2; }
+  .spec.key { grid-column: 1 / -1; padding: 22px 14px 18px; }
+  .spec.key b { font-size: 76px; }
+  .spec:nth-child(5), .spec:nth-child(6) { grid-column: span 3; }
+}
+/* how the clicks were set */
+details.clk { background: var(--card); border-radius: 20px; padding: 0 20px; font-size: 15px; }
+details.clk > summary { list-style: none; cursor: pointer; padding: 15px 0; display: flex; justify-content: space-between; gap: 10px; align-items: center; font-weight: 600; }
+details.clk > summary::-webkit-details-marker { display: none; }
+details.clk > summary::after { content: "›"; color: var(--muted); font-size: 22px; line-height: 1; transition: transform .2s; }
+details.clk[open] > summary::after { transform: rotate(90deg); }
+details.clk > summary .muted { font-weight: 400; font-size: 14px; flex: 1; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.clk-body { display: grid; gap: 12px; padding: 0 0 18px; }
+.clk-body p { margin: 0; }
+.clk-sum { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 0; font-variant-numeric: tabular-nums; background: var(--wash); border-radius: 14px; padding: 12px 14px; }
+.clk-sum span:nth-child(even) { text-align: right; font-weight: 600; padding-left: 14px; }
+.clk-sum .tot { border-top: 1px solid var(--rule); padding-top: 6px; font-weight: 700 !important; font-size: 17px; }
+.clk-zero { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.step { display: inline-flex; align-items: center; background: color-mix(in srgb, var(--ink) 7%, transparent); border-radius: 10px; }
+.step button { background: none; border: 0; width: 44px; height: 40px; font-size: 20px; }
+.step span { min-width: 44px; text-align: center; font-variant-numeric: tabular-nums; font-weight: 700; font-size: 18px; }
+.zero-pill { font-size: 13px; font-weight: 700; color: var(--accent); background: color-mix(in srgb, var(--accent) 13%, transparent); padding: 3px 10px; border-radius: 980px; }
+/* warnings */
+#why li.warn { list-style: none; margin-left: -18px; padding: 8px 12px; border-radius: 12px; background: color-mix(in srgb, #ff3b30 11%, transparent); color: var(--ink); font-weight: 500; }
+#why li.warn::before { content: "⚠︎ "; color: #ff3b30; font-weight: 700; }
+#why li.cons { list-style: none; margin-left: -18px; padding: 8px 12px; border-radius: 12px; background: color-mix(in srgb, var(--blue) 10%, transparent); }
+/* water card */
+details.water { background: var(--card); border-radius: 20px; padding: 0 20px; }
+details.water > summary { list-style: none; cursor: pointer; padding: 16px 0; display: grid; gap: 4px; }
+details.water > summary::-webkit-details-marker { display: none; }
+.w-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-weight: 600; font-size: 17px; }
+.w-head::after { content: "›"; color: var(--muted); font-size: 22px; line-height: 1; transition: transform .2s; }
+details.water[open] .w-head::after { transform: rotate(90deg); }
+.w-adv { font-size: 15px; color: var(--muted); }
+.w-adv.hard { color: var(--ink); background: color-mix(in srgb, var(--accent) 14%, transparent); border-radius: 12px; padding: 10px 12px; font-weight: 500; }
+.w-body { display: grid; gap: 12px; padding: 0 0 18px; font-size: 15px; }
+.w-body p { margin: 0; }
+.w-body .chips { flex-wrap: wrap; background: none; padding: 0; gap: 8px; }
+.w-body .chip { background: color-mix(in srgb, var(--ink) 7%, transparent); border-radius: 980px; padding: 10px 16px; font-size: 15px; }
+.w-body .chip[aria-pressed="true"] { background: var(--ink); color: var(--card); box-shadow: none; }
+.w-custom { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.w-custom label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); font-weight: 600; }
+.w-custom input { width: 120px; border: 0; background: var(--wash); border-radius: 10px; padding: 10px 12px; font-size: 17px; font-variant-numeric: tabular-nums; }
+.w-sca { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 14px; font-size: 14px; background: var(--wash); border-radius: 14px; padding: 12px 14px; font-variant-numeric: tabular-nums; }
+.w-sca b { font-weight: 600; }
+/* photo confirm */
+.confirm { display: grid; gap: 10px; background: var(--wash); border-radius: 16px; padding: 14px; }
+.confirm textarea { border: 0; background: var(--card); border-radius: 12px; padding: 12px; min-height: 104px; font-size: 16px; resize: vertical; }
+.confirm .acts { display: flex; gap: 10px; flex-wrap: wrap; }
+.confirm .acts .btn { min-height: 40px; font-size: 15px; }
+.fail { display: grid; gap: 8px; background: color-mix(in srgb, #ff3b30 9%, var(--card)); border-radius: 16px; padding: 14px; font-size: 15px; }
+.fail b { font-size: 17px; }
+.fail .btn { justify-self: start; min-height: 38px; font-size: 14px; }
+.found { font-size: 14px; color: var(--muted); }
+.found b { color: var(--ink); }
+/* theme toggle */
+.nav .theme-btn { background: color-mix(in srgb, var(--ink) 7%, transparent); border: 0; border-radius: 980px; padding: 5px 12px; font-size: 13px; color: var(--ink); display: inline-flex; gap: 6px; align-items: center; }
+.theme-btn svg { width: 14px; height: 14px; }
+.sources { font-size: 11px; }
+.sources a { color: var(--muted); text-decoration: underline; text-decoration-color: var(--rule); }
 
 .tech { font-size: 15px; display: grid; gap: 4px; background: var(--card); border-radius: 20px; padding: 18px 20px; }
 .tech b { font-weight: 600; }
@@ -163,21 +226,22 @@ details.more .opts { padding-top: 10px; }
 table.pours { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--card); border-radius: 20px; padding: 8px 20px; font-variant-numeric: tabular-nums; }
 .pours th { text-align: left; font-size: 12px; font-weight: 600; color: var(--muted); padding: 12px 10px 10px 0; border-bottom: 1px solid var(--rule); }
 .pours td { padding: 13px 10px 13px 0; border-bottom: 1px solid var(--rule); vertical-align: baseline; }
-.pours td.m { font-size: 14px; color: var(--muted); white-space: nowrap; }
-.pours td.to { font-size: 22px; font-weight: 600; letter-spacing: -.03em; white-space: nowrap; }
+.pours td.m { font-size: 15px; color: var(--muted); white-space: nowrap; }
+.pours td.to { font-size: 26px; font-weight: 600; letter-spacing: -.03em; white-space: nowrap; }
 .pours td.to small { font-size: 13px; color: var(--muted); font-weight: 400; margin-left: 2px; }
 .pours td.how { font-size: 15px; }
 .pours .last td { border-bottom: 0; }
 
 .cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.cols.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .col { background: var(--card); border-radius: 20px; padding: 20px; display: grid; gap: 8px; align-content: start; }
 .col h3 { margin: 0; font-size: 13px; font-weight: 600; color: var(--muted); letter-spacing: -.01em; }
-.col .big { font-size: 26px; font-weight: 600; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.col .big { font-size: 30px; font-weight: 600; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
 .col p { margin: 0; font-size: 15px; color: var(--muted); }
 .col ul { margin: 0; padding-left: 18px; display: grid; gap: 7px; font-size: 15px; }
 .notes-list { display: flex; flex-wrap: wrap; gap: 6px; }
 .notes-list span { font-size: 15px; font-weight: 500; padding: 5px 12px; border-radius: 980px; background: color-mix(in srgb, var(--accent) 12%, transparent); }
-@media (max-width: 760px) { .cols { grid-template-columns: minmax(0, 1fr); } .cols .col { grid-column: auto !important; } }
+@media (max-width: 760px) { .cols, .cols.two { grid-template-columns: minmax(0, 1fr); } .cols .col { grid-column: auto !important; } }
 
 .share { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
 .share .btn { min-height: 44px; font-size: 15px; }
@@ -204,10 +268,6 @@ table.pours { width: 100%; border-collapse: separate; border-spacing: 0; backgro
 .entry .what .num { font-size: 13px; color: var(--muted); }
 .entry .what .t { font-size: 14px; }
 .entry button { background: none; border: 0; padding: 4px 0; font-size: 14px; color: var(--blue); }
-.settings { display: flex; gap: 22px; flex-wrap: wrap; font-size: 15px; align-items: center; }
-.step { display: inline-flex; align-items: center; background: color-mix(in srgb, var(--ink) 7%, transparent); border-radius: 10px; }
-.step button { background: none; border: 0; width: 38px; height: 36px; font-size: 18px; }
-.step span { min-width: 40px; text-align: center; font-variant-numeric: tabular-nums; font-weight: 600; }
 .toggle { display: inline-flex; gap: 8px; align-items: center; }
 .toggle input { width: 18px; height: 18px; accent-color: var(--blue); }
 @media (max-width: 560px) { .entry { grid-template-columns: 1fr auto; } .entry .when { grid-column: 1 / -1; } }
@@ -234,6 +294,7 @@ table.pours { width: 100%; border-collapse: separate; border-spacing: 0; backgro
 .pill.p-exp { background: color-mix(in srgb, #ff2d55 15%, transparent); color: #c4163b; }
 .pill.miss { background: transparent; color: var(--accent); box-shadow: inset 0 0 0 1.5px var(--accent); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pill.p-nat { color: #d38cf5; } :root:not([data-theme="light"]) .pill.p-wash { color: #70d7ea; } :root:not([data-theme="light"]) .pill.p-honey { color: #ffc261; } :root:not([data-theme="light"]) .pill.p-exp { color: #ff7f97; } }
+[data-theme="dark"] .pill.p-nat { color: #d38cf5; } [data-theme="dark"] .pill.p-wash { color: #70d7ea; } [data-theme="dark"] .pill.p-honey { color: #ffc261; } [data-theme="dark"] .pill.p-exp { color: #ff7f97; }
 .item .tn { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .item .r { display: grid; justify-items: end; gap: 6px; text-align: right; }
 .item .price { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
@@ -252,7 +313,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
 
 /* BREW MODE: one job per zone. NOW (huge), NEXT (one line), track, two big buttons. */
 .bv { position: fixed; inset: 0; z-index: 100; background: #000; color: #f5f5f7; display: grid; grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto 1fr auto auto auto auto; gap: 12px; overflow: hidden;
+  grid-template-rows: auto 1fr auto auto auto auto auto; gap: 12px; overflow: hidden;
   padding: calc(10px + env(safe-area-inset-top)) 16px calc(12px + env(safe-area-inset-bottom)); }
 .bv > * { min-width: 0; }
 .bv-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
@@ -275,7 +336,14 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
 .pour .bv-big { color: #ff9f0a; }
 .idle .bv-big { color: #636366; }
 .bv-how { font-size: clamp(20px, 5.4vw, 28px); font-weight: 600; line-height: 1.2; letter-spacing: -.02em; }
-.bv-sub { font-size: 16px; color: #8e8e93; font-variant-numeric: tabular-nums; min-height: 20px; }
+.bv-sub { font-size: 18px; color: #aeaeb2; font-variant-numeric: tabular-nums; min-height: 22px; font-weight: 500; }
+.bv-sub b { color: #f5f5f7; font-size: 24px; font-weight: 700; }
+.bv-step { height: 14px; border-radius: 980px; background: rgba(255,255,255,.12); overflow: hidden; margin-top: 4px; }
+.bv-step i { display: block; height: 100%; width: 0; border-radius: 980px; background: #8e8e93; }
+.pour .bv-step i { background: #ff9f0a; }
+.wait .bv-step i { background: #f5f5f7; }
+.drain .bv-step i { background: #30d158; }
+.over .bv-step i { background: #ff453a; }
 .bv-next { display: flex; align-items: center; gap: 12px; background: #1c1c1e; border-radius: 20px; padding: 14px 18px; min-height: 60px; }
 .bv-nextlbl { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #8e8e93; }
 .bv-next strong { font-size: 21px; font-weight: 600; font-variant-numeric: tabular-nums; flex: 1; }
@@ -292,17 +360,24 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
 .bv-bar .head { position: absolute; top: -6px; bottom: -6px; width: 3px; border-radius: 2px; background: #f5f5f7; }
 .bv-ctrls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .bv-ctrls button { min-height: 76px; font-size: 22px; font-weight: 700; border: 0; border-radius: 24px; }
+.bv-ctrls .bv-drain { grid-column: 1 / -1; order: -1; min-height: 96px; font-size: 30px; letter-spacing: -.02em; }
+.bv-ctrls.draining .bv-go { grid-column: 1 / -1; min-height: 54px; font-size: 18px; }
+.bv-opts { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.bv-opts button { background: #1c1c1e; color: #8e8e93; border: 0; border-radius: 980px; padding: 7px 14px; font-size: 13px; font-weight: 600; }
+.bv-opts button[aria-pressed="true"] { color: #f5f5f7; box-shadow: inset 0 0 0 1.5px #48484a; }
+.bv-opts button[aria-pressed="true"]::before { content: "● "; color: #30d158; }
 .bv-go { background: #30d158; color: #000; }
 .bv-go.running { background: #2c2c2e; color: #f5f5f7; }
 .bv-drain { background: #30d158; color: #000; }
 .bv-reset { background: #1c1c1e; color: #f5f5f7; }
 .bv-note { font-size: 12px; color: #636366; text-align: center; min-height: 14px; }
 @media (orientation: landscape) and (max-height: 560px) {
-  .bv { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); grid-template-rows: auto 1fr auto auto; column-gap: 16px; }
+  .bv { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); grid-template-rows: auto 1fr auto auto auto auto; column-gap: 16px; }
   .bv-top { grid-column: 1 / -1; }
   .bv-now { grid-row: 2 / 6; grid-column: 1; }
   .bv-big { font-size: clamp(90px, 22vh, 200px); }
-  .bv-next, .bv-track, .bv-ctrls, .bv-note { grid-column: 2; }
+  .bv-next, .bv-track, .bv-ctrls, .bv-opts, .bv-note { grid-column: 2; }
+  .bv-now { grid-row: 2 / 7; }
 }
 @media (prefers-reduced-motion: no-preference) {
   .cone-fill { transition: y .3s linear, height .3s linear; }
@@ -320,6 +395,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
       <button type="button" data-jump="shelves">New coffees</button>
       <button type="button" data-jump="recipe">Recipe</button>
       <button type="button" data-jump="journal">Journal</button>
+      <button type="button" class="theme-btn" id="themeBtn" aria-label="Appearance">Auto</button>
     </nav>
   </div>
 </header>
@@ -353,10 +429,12 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
       </div>
       <div class="photo-row">
         <button class="btn ghost" id="scanBtn" type="button">Read the bag from a photo</button>
+        <button class="btn ghost" id="beanBtn2" type="button">Check roast from a photo</button>
         <input type="file" id="bagPhoto" accept="image/*" hidden>
         <input type="file" id="beanPhoto" accept="image/*" hidden>
-        <span class="muted photo-tip">Stays on your phone. Sharp, straight-on photo of the label works best.</span>
       </div>
+      <span class="muted photo-tip">Flat label, good light, no flash, whole beans on white paper for roast check. Photos never leave your phone.</span>
+      <div id="photoOut" aria-live="polite"></div>
       <div class="detected" id="detected" aria-live="polite"></div>
       <div class="opts" id="opts-main"></div>
       <details class="more" id="moreOpts">
@@ -369,7 +447,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
   <section class="sec" id="recipe" aria-labelledby="rtitle">
     <div class="sec-head"><span class="cap"><b>03</b>Your recipe.</span><span class="cap" id="rsource"></span></div>
     <div class="r-title">
-      <div class="r-kick"><span class="method" id="rmethod"></span><span class="cap" id="rgoal"></span></div>
+      <div class="r-kick"><span class="method" id="rmethod"></span><span class="cap" id="rgoal"></span><span class="zero-pill" id="rzero" hidden></span></div>
       <h2 id="rtitle"></h2>
       <p class="r-read" id="rread"></p>
     </div>
@@ -377,21 +455,22 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     <div class="rbody" id="rbody">
     <div class="adjusted" id="adjusted" hidden></div>
     <div class="specs" id="specs"></div>
+    <details class="clk" id="clkHow"><summary>How these clicks were set <span class="muted" id="clkSumm"></span></summary><div class="clk-body" id="clkBody"></div></details>
     <div class="tech" id="tech"></div>
     <button class="btn go-big" id="startBrew" type="button"><span>Start brewing</span><span class="num" id="startSum"></span></button>
     <table class="pours" aria-label="Pour schedule">
       <thead><tr><th>At</th><th>Scale reads</th><th>Pour</th><th>How</th></tr></thead>
       <tbody id="pourRows"></tbody>
     </table>
-    <div class="cols">
+    <div class="cols two">
       <div class="col"><h3>Expected strength</h3><div class="big" id="tds"></div><p id="tdsNote"></p></div>
       <div class="col"><h3 id="cupH">Likely in the cup</h3><div class="notes-list" id="cupNotes"></div><p id="cupNote"></p></div>
-      <div class="col"><h3>Water</h3><p id="water"></p></div>
     </div>
     <div class="cols">
       <div class="col" style="grid-column: span 1"><h3>Why this recipe</h3><ul id="why"></ul></div>
       <div class="col" style="grid-column: span 2"><h3>Dial it in · change one thing per brew</h3><ul id="dial"></ul></div>
     </div>
+    <details class="water" id="waterCard"><summary><span class="w-head">Water <span class="muted" id="wKind" style="font-weight:400;font-size:15px;margin-left:auto"></span></span><span class="w-adv" id="wAdv"></span></summary><div class="w-body" id="wBody"></div></details>
     <div class="share">
       <button class="btn ghost" id="copyBtn" type="button">Copy recipe</button>
       <button class="btn ghost" id="cardBtn" type="button">Save recipe card</button>
@@ -423,6 +502,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
 
   <footer>
     <span>Methods: James Hoffmann’s Better 1-Cup and Ultimate V60 · Tetsu Kasuya’s 4:6 and 10-Pour · Scott Rao’s bloom &amp; spin. Grind in clicks on a standard Comandante C40, counted from zero. Strength figures are estimates for a typical extraction, not a refractometer reading.</span>
+    <span class="sources">Sources: <a href="https://www.youtube.com/watch?v=1oB1oDrDkHM" target="_blank" rel="noopener">Hoffmann, A Better 1 Cup V60</a> · <a href="https://www.youtube.com/watch?v=AI4ynXzkSQo" target="_blank" rel="noopener">Hoffmann, The Ultimate V60</a> · <a href="https://en.philocoffea.com/blogs/blog/coffee-brewing-method" target="_blank" rel="noopener">Kasuya, 4:6 (Philocoffea)</a> · <a href="https://www.hario.co.uk/blogs/hario-ambassadors/hario-v60-recipe-interview-with-hario-ambassador-scott-rao" target="_blank" rel="noopener">Rao, bloom &amp; spin (Hario)</a></span>
     <span>Coffees come from roasters’ own shop listings, scanned every Monday. Not affiliated with any roaster. Your journal never leaves this device. Made by <a href="https://thisisfed.xyz">Federico Ferrari</a> · <a href="https://github.com/thisisfed/v60">Source</a></span>
   </footer>
 </main>
@@ -441,6 +521,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     <div class="bv-big"><span id="bvBig">0</span><small id="bvUnit">g</small></div>
     <div class="bv-how" id="bvHow" aria-live="polite"></div>
     <div class="bv-sub" id="bvSub"></div>
+    <div class="bv-step" aria-hidden="true"><i id="bvStep"></i></div>
   </div>
   <div class="bv-next" id="bvNext"><span class="bv-nextlbl" id="bvNextLbl">Next</span><strong id="bvNextT">—</strong><span class="cd" id="bvNextCd"></span></div>
   <div class="bv-track">
@@ -453,10 +534,15 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     </svg>
     <div class="bv-bar" id="bvBar" aria-hidden="true"></div>
   </div>
-  <div class="bv-ctrls">
+  <div class="bv-ctrls" id="bvCtrls">
     <button class="bv-go" id="bvGo" type="button">Start</button>
     <button class="bv-reset" id="bvReset" type="button">Reset</button>
     <button class="bv-drain" id="bvDrain" type="button" hidden>Drained</button>
+  </div>
+  <div class="bv-opts" id="bvOpts">
+    <button type="button" id="optWake" aria-pressed="true">Keep screen on</button>
+    <button type="button" id="optSound" aria-pressed="true">Sound</button>
+    <button type="button" id="optBuzz" aria-pressed="true">Haptics</button>
   </div>
   <div class="bv-note" id="bvNote"></div>
 </div>
@@ -470,7 +556,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
   const parseMS = (v) => { const m = /^\s*(\d{1,2})[:.](\d{1,2})\s*$/.exec(v || ""); return m ? (+m[1]) * 60 + (+m[2]) : (/^\s*\d{2,3}\s*$/.test(v || "") ? +v : null); };
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const cap1 = (s) => s ? s[0].toUpperCase() + s.slice(1) : s;
-  const titleCase = (s) => s ? String(s).replace(/\b\w/g, (m) => m.toUpperCase()) : s;
+  const titleCase = (s) => s ? String(s).replace(/\b\w/g, (m) => m.toUpperCase()).replace(/\bSl(\d)/g, "SL$1") : s;
   const dmy = (d) => { const x = d instanceof Date ? d : new Date(d); if (isNaN(x)) return ""; return `${String(x.getDate()).padStart(2, "0")}/${String(x.getMonth() + 1).padStart(2, "0")}/${x.getFullYear()}`; };
   const isoDmy = (iso) => { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || ""); return m ? `${m[3]}/${m[2]}/${m[1]}` : ""; };
 
@@ -481,7 +567,9 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
   };
   const DEFAULTS = { text: "", goal: "light", dose: 15, method: "best", roast: "auto", process: "auto", bag: null };
   let state = { ...DEFAULTS, ...store.get("v60.state", {}) };
-  let prefs = { coffees: {}, ...store.get("v60.prefs", {}), grinder: 0, sound: true, buzz: true };
+  // zero: permanent C40 zero offset in clicks (default 0). The old "grinder" key is ignored on purpose.
+  let prefs = { coffees: {}, zero: 0, sound: true, buzz: true, keepAwake: true, water: null, ...store.get("v60.prefs", {}) };
+  delete prefs.grinder;
   let journal = store.get("v60.log", []);
   const saveState = () => store.set("v60.state", state);
   const savePrefs = () => store.set("v60.prefs", prefs);
@@ -501,14 +589,15 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     const bagNotes = parts[1] ? parts[1].split(/[,·;\/]|\band\b/).map((s) => s.trim().replace(/\.$/, "")).filter((s) => s && s.length < 30).slice(0, 5) : [];
     let process = null;
     if (/\bdecaf|swiss water|mountain water|\bea process|sugar ?cane (?:decaf|process)|ethyl acetate/.test(t)) process = "decaf";
-    else if (/co-?ferment|infused|thermal shock|yeast|koji|inoculat|fruit ferment/.test(t)) process = "cofer";
+    else if (/co-?ferment|infused|infusion|thermal shock|yeast|koji|inoculat|fruit ferment|barrel[- ]aged|whisk(?:e)?y barrel|rum barrel|wine barrel/.test(t)) process = "cofer";
     else if (/anaerob|carbonic|anoxic|double ferment|extended ferment|\d+\s?-?h(?:ou)?r|mosto|lactic/.test(t)) process = "anaerobic";
     else if (/\bnatural\b|dry[- ]process|sun[- ]dried/.test(t)) process = "natural";
     else if (/\bhoney\b|pulped natural|semi[- ]washed/.test(t)) process = "honey";
     else if (/\bwashed\b|wet[- ]process/.test(t)) process = "washed";
     let roast = null;
     if (/very light|ultra[- ]light|nordic|extra[- ]light/.test(t)) roast = "vlight";
-    else if (/medium[- ]dark|dark roast|espresso roast|full city/.test(t)) roast = "mdark";
+    else if (/medium[- ]dark|full city/.test(t)) roast = "mdark";
+    else if (/\bdark roast|espresso roast|french roast|italian roast|vienna roast/.test(t)) roast = "dark";
     else if (/medium[- ]light|light roast|lightly roasted|filter roast/.test(t)) roast = "light";
     else if (/medium roast|\bmedium\b/.test(t)) roast = "medium";
     // a roaster name counts only at the start, or as "<name> coffee/roasters" (so "Java Blossom" isn't Blossom)
@@ -527,15 +616,21 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     natural:   { label: "natural",             agit: 1, dT: -1, dC: 1 },
     anaerobic: { label: "anaerobic",           agit: 1, dT: -2, dC: 1 },
     cofer:     { label: "co-ferment / infused", agit: 0, dT: -3, dC: 2 },
-    decaf:     { label: "decaf",               agit: 1, dT: -3, dC: 2 },
-    unsure:    { label: "process not stated",   agit: 2, dT: -1, dC: 0 },
+    decaf:     { label: "decaf",               agit: 1, dT: -2, dC: 2 },
+    // not stated: assume it could be fermented. Gentle pours, a little cooler and coarser.
+    unsure:    { label: "process not stated · gentle", agit: 1, dT: -1, dC: 1 },
   };
+  // hard temperature ceilings: above these, ferment and dark-roast flavours turn harsh
+  const T_CAP = { anaerobic: 93, cofer: 92, decaf: 92, unsure: 94 };
+  const T_CAP_ROAST = { medium: 93, mdark: 90, dark: 87 };
   const ROAST = {
     vlight: { label: "very light",  T: 96, dC: -1 },
     light:  { label: "light",       T: 94, dC: 0 },
     medium: { label: "medium",      T: 91, dC: 1 },
     mdark:  { label: "medium-dark", T: 88, dC: 3 },
-    unsure: { label: "roast not stated", T: 93, dC: 0 },
+    dark:   { label: "dark",        T: 86, dC: 4 },
+    // not sure: err towards less bitterness (cooler, a click coarser) rather than more extraction
+    unsure: { label: "roast not sure · safe middle", T: 92, dC: 1 },
   };
   const AGIT = ["very low", "low", "medium", "high"];
 
@@ -551,6 +646,31 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
   }
 
   // ---------- methods ----------
+  /* C40 ZERO POINT AND BASE CLICKS
+     Zero: a standard Comandante C40 (MK3/MK4, stock burrs, not Red Clix). Close the dial clockwise
+     until it stops gently with the burrs touching: that is 0. Count clicks back anticlockwise.
+     A grinder whose zero sits elsewhere (re-assembled, worn, different burrs) gets one permanent
+     offset, prefs.zero, set under "My C40 zero is different". Default 0.
+
+     Base clicks below are for 15 g. Dose moves them (+1 at 18 g, +2 at 20 g; 10-Pour +1 at both),
+     then roast, process, your journal and your zero. None of these authors gives a C40 number
+     except where noted, so each base is checked against what C40 users publish for that recipe:
+     - Hoffmann, A Better 1 Cup (15 g : 250 g). He says medium-fine, "a little finer than you think"
+       for one cup. Published C40 settings ~20–22 → 21.
+     - Hoffmann, The Ultimate V60 (30 g : 500 g; used here from 18 g). Published C40 settings 22–25
+       at 18–20 g; he has quoted 25–30 for the full 30 g → 23 at 15 g, so 24–25 at 18–20 g.
+     - Kasuya, 4:6 (20 g : 300 g, coarse). Widely cited at 30 clicks for 20 g → 28 at 15 g.
+     - Kasuya, 10-Pour (very coarse, ten small pours). Published 40–45 → 40 at 15 g.
+     - Rao, bloom & spin (22 g : 352 g, ~3:30). Rao publishes no C40 setting, only medium-fine for
+       his drawdown. One long pour drains slower than Hoffmann's pulses, so 1 click coarser
+       than the Ultimate → 24 at 15 g. Our estimate, flagged as such in the UI. */
+  const BASE = {
+    hoffmann:  { c: 21, pub: "~20–22", note: "Hoffmann says medium-fine, “a little finer than you think” for one cup.", url: "https://www.youtube.com/watch?v=1oB1oDrDkHM", src: "A Better 1 Cup V60" },
+    hoffmannU: { c: 23, pub: "22–25 at 18–20 g", note: "Hoffmann gives medium-fine; C40 users publish 22–25 at 18–20 g, and he has quoted 25–30 for the full 30 g brew.", url: "https://www.youtube.com/watch?v=AI4ynXzkSQo", src: "The Ultimate V60" },
+    fourSix:   { c: 28, pub: "30 at 20 g", note: "Kasuya’s 4:6 is coarse; 30 clicks at 20 g is the widely cited C40 setting, so 28 at 15 g.", url: "https://en.philocoffea.com/blogs/blog/coffee-brewing-method", src: "Philocoffea, 4:6" },
+    ten:       { c: 40, pub: "40–45", note: "The 10-Pour runs very coarse so ten small pours don’t stall; C40 users publish 40–45.", url: "https://en.philocoffea.com/blogs/blog/coffee-brewing-method", src: "Philocoffea" },
+    rao:       { c: 24, pub: "none published", est: true, note: "Rao publishes no C40 number, only medium-fine for a ~3:30 drawdown. One long pour drains slower than pulses, so we start a click coarser than Hoffmann’s Ultimate. Our estimate.", url: "https://www.hario.co.uk/blogs/hario-ambassadors/hario-v60-recipe-interview-with-hario-ambassador-scott-rao", src: "Hario UK interview" },
+  };
   const METHOD = {
     hoffmann:  "Hoffmann · Better 1-Cup",
     hoffmannU: "Hoffmann · Ultimate V60",
@@ -565,7 +685,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     if (st.method === "hoffmann") return dose >= 18 ? "hoffmannU" : "hoffmann";
     if (["fourSix", "ten", "rao"].includes(st.method)) return st.method;
     if (st.goal === "syrupy") return "ten";
-    if (agit <= 1 || c.roast === "mdark") return "fourSix";         // low agitation: few gentle pours
+    if (agit <= 1 || c.roast === "mdark" || c.roast === "dark") return "fourSix";   // low agitation: few gentle pours
     if (c.delicate) return "rao";                                    // flat bed, crisp florals
     if (c.process === "honey") return dose >= 18 ? "hoffmannU" : "fourSix";
     return dose >= 18 ? "hoffmannU" : "hoffmann";                    // washed: push extraction
@@ -592,6 +712,8 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     const dose = Number(st.dose), goal = st.goal;
     let agit = PROCESS[c.process].agit;
     if (c.roast === "mdark") agit = Math.min(agit, 1);
+    if (c.roast === "dark") agit = 0;                                // dark roasts extract fast: no stirring at all
+    if (c.delicate) agit = Math.min(agit, 2);                        // Geisha & co: keep the florals, don't thrash the bed
     const m = pickMethod(st, c, agit);
 
     const key = coffeeKey(st);
@@ -610,16 +732,23 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     ratio = clamp(Math.round((ratio + (pc.ratio || 0)) * 10) / 10, 14, 18.5);
     const water = Math.round(dose * ratio);
 
-    let clicks = { hoffmann: 23, hoffmannU: 23, rao: 24, fourSix: 28, ten: 40 }[m];
-    clicks += (m === "ten" ? { 12: -1, 15: 0, 18: 1, 20: 1 } : { 12: -1, 15: 0, 18: 1, 20: 2 })[dose] ?? 0;
-    clicks += ROAST[c.roast].dC + PROCESS[c.process].dC;
-    const baseClicks = clamp(clicks, 16, 45);
-    clicks = clamp(baseClicks + (pc.clicks || 0) + (prefs.grinder || 0), 14, 48);
+    // grind = method base at 15 g + dose + roast + process, then your log and your C40 zero (see BASE)
+    const B = BASE[m];
+    const doseAdj = (m === "ten" ? { 12: -1, 15: 0, 18: 1, 20: 1 } : { 12: -1, 15: 0, 18: 1, 20: 2 })[dose] ?? 0;
+    const roastAdj = ROAST[c.roast].dC, procAdj = PROCESS[c.process].dC;
+    const raw = B.c + doseAdj + roastAdj + procAdj;
+    const baseClicks = clamp(raw, 16, 45);
+    const zero = opts.noPrefs ? 0 : (prefs.zero || 0);
+    let clicks = clamp(baseClicks + (pc.clicks || 0) + zero, 12, 50);
+    const clickParts = { base: B.c, dose: doseAdj, roast: roastAdj, process: procAdj, learn: pc.clicks || 0, zero, clamped: raw !== baseClicks };
 
     let temp = ROAST[c.roast].T + PROCESS[c.process].dT + ({ hoffmann: 2, hoffmannU: 2, rao: 2, fourSix: 0, ten: 1 }[m]);
     if (c.delicate) temp += 1;
     if (agit <= 1) temp = Math.min(temp, 95);                      // ferment-forward lots go boozy when pushed
+    if (T_CAP[c.process]) temp = Math.min(temp, T_CAP[c.process]);
+    if (T_CAP_ROAST[c.roast]) temp = Math.min(temp, T_CAP_ROAST[c.roast]);
     if (m === "ten" && (c.roast === "vlight" || c.roast === "light") && agit >= 2) temp = Math.max(temp, 95);
+    if (c.roast === "vlight" && agit >= 2) temp = Math.max(temp, 96); // dense Nordic roasts under-extract below this
     const baseTemp = clamp(temp, 82, 100);
     temp = clamp(temp + (pc.temp || 0), 82, 100);
 
@@ -663,7 +792,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     const mid = (tds[0] + tds[1]) / 2;
     const body = mid < 1.25 ? "tea-like" : mid < 1.38 ? "light and clear" : mid < 1.5 ? "classic filter" : "rich";
 
-    return { m, method: METHOD[m], goal, c, agit, key, pc, learn, baseClicks, baseTemp, baseRatio,
+    return { m, method: METHOD[m], goal, c, agit, key, pc, learn, baseClicks, clickParts, baseTemp, baseRatio,
       dose, water, ratio, clicks, temp, yieldG: Math.round(bev), pours: P, lo, hi, tds, ey, body };
   }
 
@@ -714,6 +843,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
 
   // ---------- rendering the recipe ----------
   let recipe = null;
+  const roastLabel = (k) => k === "unsure" ? ROAST.unsure.label : ROAST[k].label + " roast";
   function coffeeTitle(st, r) {
     if (st.bag && st.bag.name) return st.bag.name;
     const first = (st.text || "").split(/[,.\n]|\bnotes?\s*[:\-–]/i).map((s) => s.trim()).filter(Boolean);
@@ -724,7 +854,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
   }
 
   const PROC_Q = [["washed", "Washed"], ["natural", "Natural"], ["honey", "Honey"], ["anaerobic", "Anaerobic"], ["cofer", "Co-ferment / infused"], ["decaf", "Decaf"], ["unsure", "Not stated"]];
-  const ROAST_Q = [["vlight", "Very light"], ["light", "Light"], ["medium", "Medium"], ["mdark", "Medium-dark"], ["unsure", "Not sure"]];
+  const ROAST_Q = [["vlight", "Very light"], ["light", "Light"], ["medium", "Medium"], ["mdark", "Medium-dark"], ["dark", "Dark"], ["unsure", "Not sure"]];
   function renderNeed(r) {
     const need = $("need"), body = $("rbody");
     const empty = !state.text && !state.bag;
@@ -743,18 +873,18 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     const where = missing.includes("process") ? (state.bag && state.bag.url ? ` The process is usually on the bag or <a href="${esc(state.bag.url)}" target="_blank" rel="noopener">the roaster’s page</a>.` : " The process is usually printed on the bag.") : "";
     need.innerHTML = `<h3>${missing.length === 2 ? "Two things" : "One thing"} before the numbers</h3>
       <p>The grind, temperature and how hard you pour all depend on ${missing.map((m) => m === "process" ? "the process" : "the roast level").join(" and ")}.${missing.includes("roast") ? " Roasters rarely print the roast level, so judge it by the colour of the beans." : ""}${where}</p>
-      ${missing.includes("process") ? q("process", "Process", PROC_Q) : ""}
-      ${missing.includes("roast") ? q("roast", "Roast level · look at the beans", ROAST_Q, "Very light: pale tan, dry and dense. Light: light brown, matt. Medium: milk-chocolate brown. Medium-dark: dark brown, a little sheen. “Not sure” uses a middle setting (93°C, standard grind) and says so.") +
+      ${missing.includes("process") ? q("process", "Process", PROC_Q, "“Not stated” is treated as possibly fermented: gentle pours, 94°C at most, a click coarser.") : ""}
+      ${missing.includes("roast") ? q("roast", "Roast level · look at the beans", ROAST_Q, "Very light: pale tan, dry and dense. Light: light brown, matt. Medium: milk-chocolate brown. Medium-dark: dark brown, a little sheen. Dark: near black, oily. “Not sure” plays safe (92°C, a click coarser) and says so.") +
         `<div class="beancheck"><button class="btn ghost" type="button" id="beanBtn">Check roast with a photo</button>
-         <span class="muted">20 or more whole beans on white paper, daylight, no flash.</span><div id="beanOut"></div></div>` : ""}`;
-    if (missing.includes("roast")) { $("beanBtn").onclick = () => $("beanPhoto").click(); }
+         <span class="muted">20 or more whole beans on white paper, good light, no flash.</span><div id="beanOut"></div></div>` : ""}`;
+    if (missing.includes("roast")) { $("beanBtn").onclick = () => { beanTarget = "beanOut"; $("beanPhoto").click(); }; }
     need.querySelectorAll("button[data-k]").forEach((b) => b.onclick = () => { state[b.dataset.k] = b.dataset.v; saveState(); renderAllOpts(); render(); });
     return true;
   }
 
   function renderLearn(r) {
     const box = $("adjusted"), L = r.learn;
-    const base = `${r.baseClicks + (prefs.grinder || 0)} clicks · ${r.baseTemp}°C · 1:${r.baseRatio}`;
+    const base = `${r.baseClicks + (prefs.zero || 0)} clicks · ${r.baseTemp}°C · 1:${r.baseRatio}`;
     const now = `${r.clicks} clicks · ${r.temp}°C · 1:${r.ratio}`;
     const TL = (k) => (TASTES.find((x) => x[0] === k) || [k, k])[1];
     if (!L) {
@@ -777,6 +907,90 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     if (changed) $("undoAdj").onclick = () => { const o = prefs.coffees[r.key] || {}; prefs.coffees[r.key] = { ...o, clicks: 0, temp: 0, ratio: 0 }; savePrefs(); render(); };
   }
 
+  // ---------- how the clicks were set ----------
+  const signed = (n) => (n > 0 ? "+" : n < 0 ? "−" : "±") + Math.abs(n);
+  const METHOD_REF = { hoffmann: "Hoffmann 1-Cup", hoffmannU: "Hoffmann Ultimate", fourSix: "Kasuya 4:6", ten: "Kasuya 10-Pour", rao: "Rao bloom & spin" };
+  function renderClicks(r) {
+    const p = r.clickParts, B = BASE[r.m], c = r.c;
+    const rows = [[`Base · ${METHOD_REF[r.m]} at 15 g`, String(p.base)]];
+    if (p.dose) rows.push([`Dose ${r.dose} g`, signed(p.dose)]);
+    if (p.roast) rows.push([`Roast · ${c.roast === "unsure" ? "not sure" : ROAST[c.roast].label}`, signed(p.roast)]);
+    if (p.process) rows.push([`Process · ${c.process === "unsure" ? "not stated" : PROCESS[c.process].label}`, signed(p.process)]);
+    if (p.learn) rows.push([r.learn && r.learn.source === "style" ? "Your nailed brews of this style" : "Your journal for this coffee", signed(p.learn)]);
+    if (p.zero) rows.push(["Your C40 zero", signed(p.zero)]);
+    $("clkSumm").textContent = rows.length > 1 ? `${p.base} base ${rows.slice(1).map((x) => x[1]).join(" ")} = ${r.clicks}` : `${p.base} base`;
+    $("clkBody").innerHTML = `
+      <p><b>C40 zero point.</b> Close the dial clockwise until it stops gently, burrs touching (don’t force it). That’s 0. Count clicks back anticlockwise. Stock C40 burrs, no Red Clix.</p>
+      <div class="clk-sum">${rows.map(([a, b]) => `<span>${esc(a)}</span><span>${b}</span>`).join("")}<span class="tot">Grind at</span><span class="tot">${r.clicks} clicks</span></div>
+      ${p.clamped ? '<p class="muted">Held inside 16–45 clicks, the useful V60 range on a C40.</p>' : ""}
+      <p class="muted"><b style="color:var(--ink)">Where ${p.base} comes from.</b> ${esc(B.note)} Published for this recipe: ${esc(B.pub)}. <a href="${B.url}" target="_blank" rel="noopener">${esc(B.src)}</a></p>
+      <div class="clk-zero" id="zeroBox"></div>`;
+    renderZero();
+  }
+  let zeroOpen = false;
+  function renderZero() {
+    const box = $("zeroBox"); if (!box) return;
+    if (!prefs.zero && !zeroOpen) {
+      box.innerHTML = `<button class="btn ghost" type="button" id="zeroOpen" style="min-height:38px;font-size:14px">My C40 zero is different</button>`;
+      $("zeroOpen").onclick = () => { zeroOpen = true; renderZero(); };
+      return;
+    }
+    box.innerHTML = `<span><b>My C40 zero</b></span>
+      <div class="step" role="group" aria-label="C40 zero offset"><button type="button" id="zMinus" aria-label="One click lower">−</button><span id="zVal">${signed(prefs.zero)}</span><button type="button" id="zPlus" aria-label="One click higher">+</button></div>
+      <span class="muted" style="font-size:13px;flex-basis:100%">Set once and it shifts every recipe. +1 if your 0 sits a click past burrs-touching, or if recipes you trust always need one more click. Saved on this device.</span>`;
+    const set = (d) => { prefs.zero = clamp((prefs.zero || 0) + d, -6, 6); savePrefs(); zeroOpen = true; $("clkHow").open = true; render(); };
+    $("zMinus").onclick = () => set(-1); $("zPlus").onclick = () => set(1);
+  }
+
+  // ---------- high-risk combinations (one line each, shown first under Why this recipe) ----------
+  function risks(r) {
+    const c = r.c, w = [];
+    const ferment = c.process === "anaerobic" || c.process === "cofer";
+    const busy = ["hoffmann", "hoffmannU", "rao", "ten"].includes(r.m);       // pulses, spins or many pours
+    const dark = c.roast === "mdark" || c.roast === "dark";
+    const pl = c.process === "cofer" ? "Co-ferment" : cap1(PROCESS[c.process].label);
+    if (ferment && r.temp >= 94) w.push(`${pl} at ${r.temp}°C: likely boozy and harsh. Drop to ${c.process === "cofer" ? 91 : 92}°C.`);
+    if (ferment && busy) w.push(`${pl} with ${METHOD_REF[r.m]}: that much agitation pulls out the harsh side of the ferment. Pour gently, skip the swirls, or use Kasuya 4:6.`);
+    if (dark && busy) w.push(`${cap1(ROAST[c.roast].label)} roast with ${METHOD_REF[r.m]}: high agitation turns it bitter fast. Pour gently with no swirl, or use Kasuya 4:6.`);
+    if (dark && r.temp >= (c.roast === "dark" ? 89 : 92)) w.push(`${cap1(ROAST[c.roast].label)} roast at ${r.temp}°C: expect bitterness. ${c.roast === "dark" ? 86 : 88}°C is safer.`);
+    if (c.process === "decaf" && r.temp >= 94) w.push(`Decaf at ${r.temp}°C extracts fast and can go papery and bitter. Try 90°C.`);
+    if (c.roast === "vlight" && !ferment && r.temp <= 93) w.push(`Very light roast at ${r.temp}°C: likely sour and thin. These want 96°C or hotter.`);
+    return w;
+  }
+
+  // ---------- water ----------
+  const WATER = [["soft", "Soft / Filtered"], ["hard", "Hard tap (London / SE England)"], ["custom", "Custom"]];
+  function waterLevel() {
+    const w = prefs.water; if (!w || !w.kind) return null;
+    if (w.kind !== "custom") return w.kind;
+    const h = Number(w.hard), a = Number(w.alk);
+    if (!(h > 0) && !(a > 0)) return "unknown";
+    if (h > 175 || a > 100) return "hard";
+    if ((h > 0 && h < 40) && !(a > 40)) return "vsoft";
+    return "soft";
+  }
+  function renderWater(r) {
+    const lv = waterLevel(), w = prefs.water || {};
+    const name = (WATER.find((x) => x[0] === w.kind) || [0, "Not set"])[1];
+    $("wKind").textContent = name;
+    const adv = $("wAdv"); adv.className = "w-adv" + (lv === "hard" ? " hard" : "");
+    adv.textContent = lv === "hard" ? `Hard water mutes acidity and pulls bitterness. Consider 1–2 clicks coarser (${r.clicks + 1}–${r.clicks + 2}) or dropping 2°C (to ${r.temp - 2}°C) before any other grind changes.`
+      : lv === "vsoft" ? "Very soft water can taste flat and thin. If it does, try 1–2°C hotter before changing the grind."
+      : lv === "soft" ? "Good for filter. Dial in with grind and temperature as usual."
+      : lv === "unknown" ? "Add your hardness or alkalinity to get advice."
+      : "What do you brew with? It changes the first fix for a bitter or flat cup.";
+    const custom = w.kind === "custom";
+    $("wBody").innerHTML = `<div class="chips" role="group" aria-label="Your water">${WATER.map(([k, t]) => `<button type="button" class="chip" data-w="${k}" aria-pressed="${w.kind === k}">${t}</button>`).join("")}</div>
+      ${custom ? `<div class="w-custom"><label>Hardness · ppm CaCO₃<input id="wHard" inputmode="numeric" value="${esc(w.hard ?? "")}" placeholder="e.g. 80"></label><label>Alkalinity · ppm CaCO₃<input id="wAlk" inputmode="numeric" value="${esc(w.alk ?? "")}" placeholder="e.g. 40"></label></div>
+        <p class="muted" style="font-size:13px">Your water company lists both by postcode. Bottled water labels give bicarbonate in mg/L: divide by 1.22 for ppm CaCO₃.</p>` : ""}
+      <div class="w-sca"><b>Hardness</b><span>50–175 ppm (calcium 17–85, aim ~68)</span><b>Alkalinity</b><span>40–75 ppm, aim ~40 (bicarbonate buffer)</span><b>TDS</b><span>75–250 ppm, aim ~150</span>
+        <b>London tap</b><span>~250–350 hardness, ~200+ alkalinity</span></div>
+      <p class="muted" style="font-size:13px">SCA water standard, all as CaCO₃. A jug filter, or tap cut with low-mineral bottled water, brings hard tap much closer.</p>`;
+    $("wBody").querySelectorAll("button[data-w]").forEach((b) => b.onclick = () => { prefs.water = { ...(prefs.water || {}), kind: b.dataset.w }; savePrefs(); $("waterCard").open = true; render(); });
+    const inp = (id, k) => { const el = $(id); if (!el) return; el.onchange = () => { const v = el.value.trim(); prefs.water = { ...(prefs.water || {}), [k]: v === "" ? null : Math.max(0, Math.round(Number(v) || 0)) }; savePrefs(); render(); }; };
+    inp("wHard", "hard"); inp("wAlk", "alk");
+  }
+
   function render() {
     const r = recipe = engine(state);
     const c = r.c;
@@ -787,17 +1001,18 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     }
     $("rmethod").textContent = r.method;
     $("rgoal").textContent = GOAL[r.goal] + " · " + r.dose + " g";
+    $("rzero").hidden = !prefs.zero; $("rzero").textContent = prefs.zero ? `C40 zero ${prefs.zero > 0 ? "+" : "−"}${Math.abs(prefs.zero)}` : "";
     $("rtitle").textContent = coffeeTitle(state, r);
     const bits = [c.roaster ? titleCase(c.roaster) : (state.bag && state.bag.roaster) || null, c.origin, c.variety ? titleCase(c.variety) : null,
-      PROCESS[c.process].label, c.roast === "unsure" ? ROAST.unsure.label : ROAST[c.roast].label + " roast"].filter(Boolean);
+      PROCESS[c.process].label, roastLabel(c.roast)].filter(Boolean);
     $("rread").textContent = bits.join(" · ");
     const src = (f) => f === "you" ? " (you set this)" : " (from the bag)";
-    $("detected").innerHTML = state.text ? `Reading this as <b>${esc(PROCESS[c.process].label)}</b>${src(c.processFrom)}, <b>${esc(c.roast === "unsure" ? ROAST.unsure.label : ROAST[c.roast].label + " roast")}</b>${src(c.roastFrom)}. Wrong? Change it under Bag details.` : "";
+    $("detected").innerHTML = state.text ? `Reading this as <b>${esc(PROCESS[c.process].label)}</b>${src(c.processFrom)}, <b>${esc(roastLabel(c.roast))}</b>${src(c.roastFrom)}. Wrong? Change it under Bag details.` : "";
 
     renderLearn(r);
     const sign = (n) => (n > 0 ? "+" : "−") + Math.abs(n);
     const lw = r.learn ? (r.learn.source === "coffee" ? "your log" : "your style") : "";
-    const cBadges = [r.pc.clicks ? `${sign(r.pc.clicks)} ${lw}` : "", prefs.grinder ? `zero ${sign(prefs.grinder)}` : ""].filter(Boolean);
+    const cBadges = [r.pc.clicks ? `${sign(r.pc.clicks)} ${lw}` : "", prefs.zero ? `zero ${sign(prefs.zero)}` : ""].filter(Boolean);
     const S = [
       ["key", r.clicks, "", "clicks · C40", cBadges.join(" · ")],
       ["", r.dose, "g", "coffee", ""],
@@ -806,6 +1021,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
       ["", r.temp, "°C", "kettle", r.pc.temp ? `${sign(r.pc.temp)}° ${lw}` : ""],
       ["", fmt(r.lo), "", `to ${fmt(r.hi)} total`, ""],
     ];
+    renderClicks(r);
     $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}"><b>${v}<small>${u}</small></b><span class="sub2">${l}</span>${badge ? `<span class="badge">${esc(badge)}</span>` : ""}</div>`).join("");
     const bloomTimes = (r.pours[0].to / r.dose).toFixed(1).replace(/\.0$/, "");
     $("tech").innerHTML = `<span><b>Agitation: ${AGIT[r.agit]}.</b> ${
@@ -829,7 +1045,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     $("cupNotes").innerHTML = cn.notes.map((n) => `<span>${esc(n)}</span>`).join("");
     $("cupNote").textContent = cn.from === "none" ? "Add the bag’s notes (e.g. “Notes: peach, jasmine”) to see them here. " + METHOD_EFFECT[r.m]
       : METHOD_EFFECT[r.m] + (cn.from === "typical" ? ` These are typical ${c.process === "unsure" ? "" : PROCESS[c.process].label + " "}${c.origin} notes, not this lot’s.` : "");
-    $("water").innerHTML = `Soft, filtered water is best: roughly 50–100 ppm hardness, low in bicarbonate. Hard tap water (most of London and the South East) mutes acidity and pulls bitterness. If that’s what you have, go ${r.temp >= 95 ? "1–2°C cooler" : "1 click coarser"} before touching anything else.`;
+    renderWater(r);
 
     const why = [];
     if (r.m === "hoffmann") why.push("Hoffmann’s Better 1-Cup: five even pulses keep a small brew hot and evenly extracted.");
@@ -837,14 +1053,22 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     if (r.m === "rao") why.push("Rao’s bloom & spin: 3× bloom, one continuous pour, a spin. Little late agitation, very high clarity.");
     if (r.m === "fourSix") why.push(r.goal === "light" ? "Kasuya’s 4:6: the first 40% sets sweetness vs acidity, the last 60% sets strength. Two big pours keep the body light." : "Kasuya’s 4:6 with three strength pours: rounder and sweeter.");
     if (r.m === "ten") why.push("Kasuya’s 10-Pour: coarse grind, small pours every 15 s. Syrupy and sweet.");
-    if (c.process === "unsure" || c.roast === "unsure") why.push(`Not stated on the bag: ${[c.process === "unsure" && "process", c.roast === "unsure" && "roast"].filter(Boolean).join(" and ")}. Using a middle setting; add it under Bag details for a sharper recipe.`);
-    if (state.method === "best") {
-      if (r.agit <= 1) why.push(`${cap1(PROCESS[c.process].label)} coffees carry ferment flavours that turn boozy or harsh with heat and agitation, so: fewer gentle pours, ${r.temp}°C cap, a click or two coarser.`);
-      else if (r.m === "rao") why.push("Delicate variety: a flat, undisturbed bed keeps the florals crisp.");
-      else if (c.process !== "unsure" && c.roast !== "unsure") why.push(`${cap1(PROCESS[c.process].label)}, ${ROAST[c.roast].label} roast: dense enough to take hot water and pulsed pours for full sweetness.`);
-    }
+    const cons = [];
+    if (c.process === "unsure") cons.push(`Process not stated, so it’s treated as possibly fermented: gentle pours, ${r.temp}°C (94 at most), 1 click coarser.`);
+    if (c.roast === "unsure") cons.push("Roast not sure, so it plays safe: 92°C base and 1 click coarser. Less bitterness risk, maybe a little less sweetness.");
+    if (cons.length) cons.push("Tell it the process and roast under Bag details for a sharper recipe.");
+    const pl = cap1(PROCESS[c.process].label), whyBase = why.length;
+    if (c.process === "anaerobic") why.push(`Anaerobic: long, sealed fermentation gives tropical and boozy notes that turn harsh with heat and agitation. Few gentle pours, ${r.temp}°C (93 at most), a click coarser.`);
+    else if (c.process === "cofer") why.push(`Co-fermented or infused: the added fruit, yeast or spice extracts fast and dominates when pushed. No stirring, ${r.temp}°C (92 at most), 2 clicks coarser.`);
+    else if (c.process === "decaf") why.push(`Decaf: the beans are more porous and extract fast, with more fines. Cooler (${r.temp}°C, 92 at most), 2 clicks coarser, gentle pours.`);
+    else if (c.process === "natural" && r.agit <= 1) why.push(`Natural: dried in the fruit, so heavy and fruity. Low agitation and ${r.temp}°C keep it clean, not winey.`);
+    if (c.roast === "dark") why.push(`Dark roast: soluble and quick to go bitter. No stirring, ${r.temp}°C (87 at most), 4 clicks coarser than a light roast.`);
+    else if (c.roast === "mdark") why.push(`Medium-dark: extracts easily. Low agitation, ${r.temp}°C (90 at most), 3 clicks coarser.`);
+    else if (c.roast === "vlight" && r.agit >= 2) why.push(`Very light (Nordic-style): dense and hard to extract. ${r.temp}°C, a click finer and full agitation so it isn’t sour.`);
+    if (c.delicate) why.push(`${c.variety ? titleCase(c.variety) : "Delicate variety"}: florals fade with rough pours. Hot water, but agitation capped at medium${r.m === "rao" ? " and a flat, undisturbed bed" : ""}.`);
+    if (state.method === "best" && why.length === whyBase && c.process !== "unsure" && c.roast !== "unsure") why.push(`${pl}, ${ROAST[c.roast].label} roast: dense enough to take hot water and pulsed pours for full sweetness.`);
     why.push(`Strength comes from the ratio (1:${r.ratio}). The grind is set for extraction, not strength.`);
-    $("why").innerHTML = why.map((w) => `<li>${esc(w)}</li>`).join("");
+    $("why").innerHTML = risks(r).map((w) => `<li class="warn">${esc(w)}</li>`).join("") + cons.map((w) => `<li class="cons">${esc(w)}</li>`).join("") + why.map((w) => `<li>${esc(w)}</li>`).join("");
 
     const dial = [
       `Taste first, then check when it drained. Target ${fmt(r.lo)}–${fmt(r.hi)}.`,
@@ -856,6 +1080,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
       "Sour and bitter at once → uneven bed: same grind, gentler pours, swirl once.",
     ];
     if (r.agit <= 1) dial.push("Fermenty, boozy, harsh → 2°C cooler before touching the grind.");
+    if (waterLevel() === "hard") dial.unshift("Hard tap water: if it’s bitter or flat, 2°C cooler or 1–2 clicks coarser first, then dial in as below.");
     $("dial").innerHTML = dial.map((w) => `<li>${esc(w)}</li>`).join("");
 
     $("logTitle").textContent = `How did it taste? · ${coffeeTitle(state, r)}`;
@@ -870,8 +1095,8 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     { key: "method", label: "Method", items: [["best", "Best for this coffee"], ["hoffmann", "Hoffmann"], ["fourSix", "Kasuya 4:6"], ["ten", "Kasuya 10-Pour"], ["rao", "Rao"]] },
   ];
   const OPTS_MORE = [
-    { key: "process", label: "Process", items: [["auto", "From the bag"], ["washed", "Washed"], ["natural", "Natural"], ["honey", "Honey"], ["anaerobic", "Anaerobic"], ["cofer", "Co-ferment"], ["decaf", "Decaf"]] },
-    { key: "roast", label: "Roast", items: [["auto", "From the bag"], ["vlight", "Very light"], ["light", "Light"], ["medium", "Medium"], ["mdark", "Medium-dark"]] },
+    { key: "process", label: "Process", items: [["auto", "From the bag"], ["washed", "Washed"], ["natural", "Natural"], ["honey", "Honey"], ["anaerobic", "Anaerobic"], ["cofer", "Co-ferment / infused"], ["decaf", "Decaf"], ["unsure", "Not stated"]] },
+    { key: "roast", label: "Roast", items: [["auto", "From the bag"], ["vlight", "Very light"], ["light", "Light"], ["medium", "Medium"], ["mdark", "Medium-dark"], ["dark", "Dark"], ["unsure", "Not sure"]] },
   ];
   function renderOpts(boxId, list) {
     const box = $(boxId); box.innerHTML = "";
@@ -1003,7 +1228,12 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
   // ---------- BREW MODE ----------
   // The big number is always the thing to act on: grams while pouring, seconds while waiting,
   // time left while draining.
+  // Timing: elapsed = wall clock now − wall clock at start. Nothing accumulates frame by frame, so
+  // there is no drift, and a phone that sleeps or throttles the tab is still right when it wakes.
+  // (performance.now() can pause while an iPhone is locked; Date.now() doesn't.)
   const bv = { running: false, t0: 0, paused: 0, raf: 0, lastIdx: -2, lastTick: null, wake: null, audio: null };
+  const now = () => Date.now();
+  const elapsed = () => bv.running ? (now() - bv.t0) / 1000 : bv.paused;
   const coneY = (f) => 132 - 114 * Math.cbrt(clamp(f, 0, 1));    // cone volume grows with height cubed
 
   function tone(freq, len, gain) {
@@ -1016,22 +1246,38 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
       g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime + len); o.stop(a.currentTime + len + 0.05);
     } catch (e) {}
   }
-  const buzz = (p) => { if (prefs.buzz && navigator.vibrate) { try { navigator.vibrate(p); } catch (e) {} } };
+  const canBuzz = typeof navigator.vibrate === "function";
+  const buzz = (p) => { if (prefs.buzz && canBuzz) { try { navigator.vibrate(p); } catch (e) {} } };
 
+  // Screen Wake Lock: on by default in brew mode; the browser drops it when the tab hides, so re-take it on return
   async function wakeOn() {
+    if (!prefs.keepAwake) { wakeOff(); $("bvNote").textContent = "Screen may dim: Keep screen on is off."; return; }
+    if (bv.wake && !bv.wake.released) return;
     try {
-      if ("wakeLock" in navigator) { bv.wake = await navigator.wakeLock.request("screen"); $("bvNote").textContent = "Screen stays on while brewing."; return; }
+      if ("wakeLock" in navigator) {
+        bv.wake = await navigator.wakeLock.request("screen");
+        bv.wake.addEventListener && bv.wake.addEventListener("release", () => { if (!$("bv").hidden && prefs.keepAwake && document.visibilityState === "visible") $("bvNote").textContent = "Screen lock released. Tap Keep screen on to retry."; });
+        $("bvNote").textContent = "Screen stays on while brewing."; return;
+      }
     } catch (e) {}
-    $("bvNote").textContent = "Your screen may dim. On iPhone set Auto-Lock to Never while you brew.";
+    $("bvNote").textContent = "This browser can’t keep the screen on. On iPhone, update iOS or set Auto-Lock to Never while you brew.";
   }
   const wakeOff = () => { try { bv.wake && bv.wake.release(); } catch (e) {} bv.wake = null; };
-  document.addEventListener("visibilitychange", () => { if (!$("bv").hidden && document.visibilityState === "visible" && bv.running) wakeOn(); });
+  document.addEventListener("visibilitychange", () => { if (!$("bv").hidden && document.visibilityState === "visible") { wakeOn(); tick(); } });
+  function renderBvOpts() {
+    $("optWake").setAttribute("aria-pressed", String(!!prefs.keepAwake));
+    $("optSound").setAttribute("aria-pressed", String(!!prefs.sound));
+    $("optBuzz").setAttribute("aria-pressed", String(!!prefs.buzz)); $("optBuzz").hidden = !canBuzz;   // iPhone Safari has no vibration API
+  }
+  $("optWake").onclick = () => { prefs.keepAwake = !prefs.keepAwake; savePrefs(); renderBvOpts(); prefs.keepAwake ? wakeOn() : (wakeOff(), $("bvNote").textContent = "Screen may dim: Keep screen on is off."); };
+  $("optSound").onclick = () => { prefs.sound = !prefs.sound; savePrefs(); renderBvOpts(); if (prefs.sound) tone(880, .15, .12); };
+  $("optBuzz").onclick = () => { prefs.buzz = !prefs.buzz; savePrefs(); renderBvOpts(); buzz(40); };
 
   function openBrew() {
     if (!recipe) render();
     const r = recipe;
     if ($("rbody").hidden) return;
-    $("bvCoffee").textContent = `${coffeeTitle(state, r)} · ${r.clicks} clicks${prefs.grinder ? ` (zero ${prefs.grinder > 0 ? "+" : ""}${prefs.grinder})` : ""} · ${r.temp}°C · ${r.dose}→${r.water} g`;
+    $("bvCoffee").textContent = `${coffeeTitle(state, r)} · ${r.clicks} clicks${prefs.zero ? ` (zero ${prefs.zero > 0 ? "+" : ""}${prefs.zero})` : ""} · ${r.temp}°C · ${r.dose}→${r.water} g`;
     $("bvTicks").innerHTML = r.pours.map((p, i) => { const y = coneY(p.to / r.water).toFixed(1);
       return `<line id="tk${i}" x1="150" x2="182" y1="${y}" y2="${y}" stroke="#48484a" stroke-width="5" stroke-linecap="round"/>`; }).join("");
     const T = r.hi + 20;
@@ -1040,38 +1286,45 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     $("bv").hidden = false; document.body.style.overflow = "hidden";
     // hide the browser's own bars where allowed (Android, desktop); iOS keeps them
     try { const el = document.documentElement; if (el.requestFullscreen && !document.fullscreenElement) el.requestFullscreen({ navigationUI: "hide" }).catch(() => {}); } catch (e) {}
+    renderBvOpts(); wakeOn();
     resetBrew(); $("bvGo").focus();
   }
   function closeBrew() {
     stopLoop(); wakeOff(); $("bv").hidden = true; document.body.style.overflow = "";
     try { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {}); } catch (e) {}
   }
-  function resetBrew() { stopLoop(); bv.paused = 0; bv.lastIdx = -2; bv.lastTick = null; $("bvGo").textContent = "Start"; $("bvGo").classList.remove("running"); $("bvDrain").hidden = true; $("bvReset").hidden = false; tick(); }
+  function resetBrew() { stopLoop(); bv.paused = 0; bv.lastIdx = -2; bv.lastTick = null; $("bvGo").textContent = "Start"; $("bvGo").classList.remove("running"); $("bvDrain").hidden = true; $("bvReset").hidden = false; $("bvCtrls").classList.remove("draining"); tick(); }
   function stopLoop() { bv.running = false; cancelAnimationFrame(bv.raf); }
   function toggleBrew() {
-    if (bv.running) { bv.paused = (performance.now() - bv.t0) / 1000; stopLoop(); $("bvGo").textContent = "Resume"; $("bvGo").classList.remove("running"); tick(); return; }
+    if (bv.running) { bv.paused = (now() - bv.t0) / 1000; stopLoop(); $("bvGo").textContent = "Resume"; $("bvGo").classList.remove("running"); tick(); return; }
     try { bv.audio = bv.audio || new (window.AudioContext || window.webkitAudioContext)(); bv.audio.resume && bv.audio.resume(); } catch (e) {}
     wakeOn();
-    bv.t0 = performance.now() - bv.paused * 1000; bv.running = true; $("bvGo").textContent = "Pause"; $("bvGo").classList.add("running"); loop();
+    bv.t0 = now() - bv.paused * 1000; bv.running = true; $("bvGo").textContent = "Pause"; $("bvGo").classList.add("running"); loop();
   }
   function loop() { tick(); if (bv.running) bv.raf = requestAnimationFrame(loop); }
+  // exact drawdown, to the second, straight into the journal form
   function drained() {
-    const el = bv.running ? (performance.now() - bv.t0) / 1000 : bv.paused;
+    const sec = Math.floor(elapsed());
+    const r = recipe;
     closeBrew();
-    $("ddIn").value = fmt(el); updateSuggest();
+    $("ddIn").value = fmt(sec);
+    const v = sec < r.lo - 5 ? `fast, target ${fmt(r.lo)}–${fmt(r.hi)}` : sec > r.hi + 10 ? `slow, target ${fmt(r.lo)}–${fmt(r.hi)}` : "in the window";
+    $("ddHint").innerHTML = `<b style="color:var(--ink)">Drained at ${fmt(sec)}</b> · ${v}. Now pick what you taste.`;
+    buzz([40, 60, 40]);
+    updateSuggest();
     $("journal").scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function setNow(cls, pill, lbl, big, unit, how, sub) {
     $("bvNow").className = "bv-now " + cls; $("bvState").textContent = pill; $("bvLbl").textContent = lbl;
     $("bvBig").textContent = big; $("bvUnit").textContent = unit; $("bvUnit").hidden = !unit;
-    $("bvHow").textContent = how; $("bvSub").textContent = sub;
+    $("bvHow").textContent = how; $("bvSub").innerHTML = sub;   // sub is built from numbers only
   }
 
   function tick() {
     const r = recipe; if (!r) return;
     const idle = !bv.running && bv.paused === 0;
-    const el = bv.running ? (performance.now() - bv.t0) / 1000 : bv.paused;
+    const el = elapsed();
     const P = r.pours;
     let idx = -1;
     if (!idle) for (let i = 0; i < P.length; i++) if (P[i].t <= el) idx = i;
@@ -1080,32 +1333,37 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     const inPour = cur && el < cur.t + cur.dur;
     const afterLast = idx === P.length - 1 && !inPour;
 
-    if (bv.running && idx !== bv.lastIdx) { if (idx >= 0) { tone(880, .35, .18); buzz(60); } bv.lastIdx = idx; }
+    if (bv.running && idx !== bv.lastIdx) { if (idx >= 0 && idx > bv.lastIdx) { tone(880, .35, .18); buzz([90]); } bv.lastIdx = idx; }
     if (bv.running && next) { const left = Math.ceil(next.t - el); if (left <= 3 && left >= 1 && bv.lastTick !== left) { bv.lastTick = left; tone(1320, .06, .06); } }
 
     $("bvClock").textContent = fmt(Math.floor(el));
-    let expected = 0, nextLbl = "Next", nextT = "", nextCd = "", soon = false;
+    let expected = 0, nextLbl = "Next", nextT = "", nextCd = "", soon = false, prog = 0;
     if (idle) {
       setNow("idle", "Ready", "First pour to", P[0].to, "g", "Tare with the coffee in. Press Start as you begin pouring.", `${P.length} pours · done by ${fmt(r.hi)}`);
       nextT = `${P.length > 1 ? fmt(P[1].t) + " → " + P[1].to + " g" : "Then drain"}`; nextLbl = "Then";
     } else if (inPour) {
       const k = clamp((el - cur.t) / cur.dur, 0, 1);
       expected = prevTo + (cur.to - prevTo) * k;
-      setNow("pour", `Pour ${idx + 1} of ${P.length}`, "Pour to", cur.to, "g", cur.note, `Scale should read ≈ ${Math.round(expected)} g · +${cur.to - prevTo} g over ~${cur.dur} s`);
+      prog = k;
+      setNow("pour", `Pour ${idx + 1} of ${P.length}`, "Scale to", cur.to, "g", cur.note, `<b>+${cur.to - prevTo} g</b> this pour · ≈ ${Math.round(expected)} g now · ${Math.max(0, Math.ceil(cur.t + cur.dur - el))} s`);
       if (next) { nextT = `${fmt(next.t)} → ${next.to} g`; nextCd = fmt(Math.ceil(next.t - el)); } else { nextLbl = "Then"; nextT = `Drain · done by ${fmt(r.hi)}`; }
     } else if (!afterLast) {
       expected = cur.to;
-      const left = next.t - el;
-      setNow("wait", "Wait", `Next pour to ${next.to} g in`, fmt(Math.ceil(left)), "", left <= 5 ? "Get ready to pour." : "Hands off. Let it settle.", `Scale reads ${cur.to} g`);
+      const left = next.t - el, gap = next.t - (cur.t + cur.dur);
+      prog = gap > 0 ? clamp(1 - left / gap, 0, 1) : 1;
+      setNow("wait", "Wait", `Pour ${idx + 2}: scale to ${next.to} g in`, fmt(Math.ceil(left)), "", left <= 5 ? "Get ready to pour." : "Hands off. Let it settle.", `Scale reads <b>${cur.to} g</b> · next +${next.to - cur.to} g`);
       nextLbl = "After that"; nextT = after ? `${fmt(after.t)} → ${after.to} g` : `Drain · done by ${fmt(r.hi)}`;
       soon = left <= 5;
     } else {
       expected = r.water;
+      const end = cur.t + cur.dur;
+      prog = el < r.lo ? clamp((el - end) / Math.max(1, r.lo - end), 0, 1) : clamp((el - r.lo) / Math.max(1, r.hi - r.lo), 0, 1);
       if (el < r.lo) setNow("drain", "Drawdown", "Window opens in", fmt(Math.ceil(r.lo - el)), "", "Let it drain. Tap Drained when the bed goes dry.", `Target ${fmt(r.lo)}–${fmt(r.hi)}`);
       else if (el <= r.hi) setNow("drain", "In the window", "Time left", fmt(Math.ceil(r.hi - el)), "", "Tap Drained the moment the bed goes dry.", `Target ${fmt(r.lo)}–${fmt(r.hi)}`);
       else setNow("over", "Over time", "Over by", fmt(Math.floor(el - r.hi)), "", "Still dripping. Tap Drained when it stops; you’ll get a fix.", `Target ${fmt(r.lo)}–${fmt(r.hi)}`);
       nextLbl = "Then"; nextT = "Log how it tastes";
     }
+    $("bvStep").style.width = (prog * 100).toFixed(1) + "%";
     $("bvNextLbl").textContent = nextLbl; $("bvNextT").textContent = nextT; $("bvNextCd").textContent = nextCd;
     $("bvNext").classList.toggle("soon", soon);
 
@@ -1115,8 +1373,10 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
       $("tk" + i)?.setAttribute("stroke", on ? "#ff9f0a" : done ? "#8e8e93" : "#48484a");
       const sg = $("sg" + i); if (sg) sg.className = "seg" + (on ? " on" : done ? " done" : ""); });
     const T = r.hi + 20; const h = $("bvHead"); if (h) h.style.left = `${clamp(el / T, 0, 1) * 100}%`;
-    $("bvDrain").hidden = !(afterLast && (bv.running || bv.paused > 0));
-    $("bvReset").hidden = !$("bvDrain").hidden;
+    // Drained is live from the last pour on: you can tap it the moment the bed goes dry
+    const canDrain = idx === P.length - 1 && (bv.running || bv.paused > 0);
+    $("bvDrain").hidden = !canDrain; $("bvReset").hidden = canDrain;
+    $("bvCtrls").classList.toggle("draining", canDrain);
     if (bv.running && el > r.hi + 240) { stopLoop(); $("bvGo").textContent = "Resume"; }
   }
 
@@ -1129,48 +1389,86 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
   });
 
   // ---------- share ----------
+  // plain text, aligned for a monospace notes app but still readable in a chat bubble
   function recipeText() {
-    const r = recipe;
-    return [`${coffeeTitle(state, r)}`, `${r.method} · ${GOAL[r.goal]}`,
-      `${r.clicks} clicks C40 · ${r.dose} g → ${r.water} g (1:${r.ratio}) · ${r.temp}°C · agitation ${AGIT[r.agit]}`,
-      ...r.pours.map((p) => `${fmt(p.t).padStart(5)}  → ${String(p.to).padStart(3)} g   ${p.note}`),
-      `Drain by ${fmt(r.lo)}–${fmt(r.hi)} · ≈${r.tds[0].toFixed(2)}–${r.tds[1].toFixed(2)}% TDS`, "v60.thisisfed.xyz"].join("\n");
+    const r = recipe, c = r.c;
+    const who = [c.roaster ? titleCase(c.roaster) : (state.bag && state.bag.roaster) || "", c.origin, PROCESS[c.process].label, roastLabel(c.roast)].filter(Boolean).join(" · ");
+    const lv = waterLevel();
+    const L = [
+      coffeeTitle(state, r), who, "",
+      `${r.method} · ${GOAL[r.goal]}`,
+      `Grind    ${r.clicks} clicks, Comandante C40 from zero${prefs.zero ? ` (my zero ${signed(prefs.zero)})` : ""}`,
+      `Coffee   ${r.dose} g`,
+      `Water    ${r.water} g (1:${r.ratio}) · ${r.temp}°C`,
+      `Drain    ${fmt(r.lo)}–${fmt(r.hi)}`,
+      `Pours    agitation ${AGIT[r.agit]}`,
+      ...r.pours.map((p, i) => `  ${fmt(p.t).padStart(4)}  ${String(p.to).padStart(3)} g  (+${p.to - (i ? r.pours[i - 1].to : 0)})  ${p.note}`),
+    ];
+    const rk = risks(r); if (rk.length) L.push("", ...rk.map((x) => "! " + x));
+    if (lv === "hard") L.push("", "Hard tap water: 1–2 clicks coarser or 2°C cooler first.");
+    L.push("", "v60.thisisfed.xyz");
+    return L.join("\n");
   }
   $("copyBtn").onclick = () => {
-    navigator.clipboard.writeText(recipeText()).then(() => { $("copyBtn").textContent = "Copied"; setTimeout(() => ($("copyBtn").textContent = "Copy recipe"), 1400); })
-      .catch(() => { $("copyBtn").textContent = "Couldn’t copy"; });
+    const done = () => { $("copyBtn").textContent = "Copied"; setTimeout(() => ($("copyBtn").textContent = "Copy recipe"), 1400); };
+    const fallback = () => { const t = document.createElement("textarea"); t.value = recipeText(); t.setAttribute("readonly", ""); t.style.cssText = "position:fixed;opacity:0";
+      document.body.appendChild(t); t.select(); let ok = false; try { ok = document.execCommand("copy"); } catch (e) {} t.remove(); ok ? done() : ($("copyBtn").textContent = "Couldn’t copy"); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(recipeText()).then(done, fallback); else fallback();
   };
+  // a static, always-light card: big grind number first, then the four numbers you weigh, then every pour
   async function cardImage() {
-    const r = recipe, W = 1080, H = 1350, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+    const r = recipe, c = r.c, W = 1080, H = 1350, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
     const x = cv.getContext("2d");
-    const F = (w, px) => `${w} ${px}px -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif`;
-    const ink = "#1d1d1f", mut = "#6e6e73", acc = "#f56300", blue = "#0071e3";
+    const F = (w, px) => `${w} ${px}px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif`;
+    const ink = "#1d1d1f", mut = "#6e6e73", acc = "#f56300", blue = "#0071e3", rule = "#e5e5ea";
     const rr = (X, Y, w, h, rad, fill) => { x.beginPath(); x.roundRect ? x.roundRect(X, Y, w, h, rad) : x.rect(X, Y, w, h); x.fillStyle = fill; x.fill(); };
-    const fit = (text, w, max) => { let px = max; x.font = F(700, px); while (px > 40 && x.measureText(text).width > w) { px -= 4; x.font = F(700, px); } return px; };
+    const fitPx = (text, w, max, weight) => { let px = max; x.font = F(weight, px); while (px > 34 && x.measureText(text).width > w) { px -= 2; x.font = F(weight, px); } return px; };
+    const clip = (text, w) => { if (x.measureText(text).width <= w) return text; let t = text; while (t.length > 1 && x.measureText(t + "…").width > w) t = t.slice(0, -1); return t.trimEnd() + "…"; };
+    const M = 64, IW = W - 2 * M;
     x.fillStyle = "#f5f5f7"; x.fillRect(0, 0, W, H);
-    const M = 64;
-    x.fillStyle = acc; x.font = F(600, 30); x.fillText(r.method, M, 108);
-    x.fillStyle = mut; x.textAlign = "right"; x.fillText(GOAL[r.goal], W - M, 108); x.textAlign = "left";
-    const title = coffeeTitle(state, r);
-    x.fillStyle = ink; const px = fit(title, W - 2 * M, 88); x.font = F(700, px); x.fillText(title, M, 108 + px + 20);
-    x.fillStyle = mut; x.font = F(400, 30);
-    x.fillText([r.c.origin, PROCESS[r.c.process].label, r.c.roast === "unsure" ? "roast not stated" : ROAST[r.c.roast].label + " roast"].filter(Boolean).join(" · "), M, 108 + px + 70);
-    let y = 108 + px + 110;
-    const specs = [[String(r.clicks), "clicks · C40"], [r.dose + " g", "coffee"], [r.water + " g", "water"], ["1:" + r.ratio, "ratio"], [r.temp + "°C", "kettle"], [fmt(r.hi), "done by"]];
-    const gap = 18, tw = (W - 2 * M - 2 * gap) / 3, th = 168;
-    specs.forEach(([v, l], i) => { const tx = M + (i % 3) * (tw + gap), ty = y + Math.floor(i / 3) * (th + gap);
-      rr(tx, ty, tw, th, 32, "#ffffff");
-      x.textAlign = "center"; x.fillStyle = i === 0 ? blue : ink; x.font = F(700, 64); x.fillText(v, tx + tw / 2, ty + 92);
-      x.fillStyle = mut; x.font = F(500, 24); x.fillText(l, tx + tw / 2, ty + 132); x.textAlign = "left"; });
-    y += 2 * th + gap + 34;
-    const rows = r.pours.slice(0, 10), rowH = rows.length > 6 ? 46 : 62, ph = rows.length * rowH + 48;
-    rr(M, y, W - 2 * M, ph, 32, "#ffffff");
-    let ry = y + 24 + rowH * 0.66;
-    rows.forEach((p) => { x.fillStyle = mut; x.font = F(500, 28); x.fillText(fmt(p.t), M + 32, ry);
-      x.fillStyle = ink; x.font = F(700, 34); x.fillText(p.to + " g", M + 150, ry);
-      x.fillStyle = mut; x.font = F(400, 26); x.fillText(p.note.length > 40 ? p.note.slice(0, 39) + "…" : p.note, M + 330, ry); ry += rowH; });
-    x.fillStyle = mut; x.font = F(500, 24); x.fillText("v60.thisisfed.xyz", M, H - 56);
-    x.textAlign = "right"; x.fillText(`Agitation ${AGIT[r.agit]} · ${dmy(new Date())}`, W - M, H - 56); x.textAlign = "left";
+    x.textBaseline = "alphabetic";
+    x.fillStyle = acc; x.font = F(600, 30); x.fillText(r.method, M, 104);
+    x.fillStyle = mut; x.textAlign = "right"; x.fillText(GOAL[r.goal], W - M, 104); x.textAlign = "left";
+    const title = coffeeTitle(state, r), tpx = fitPx(title, IW, 84, 700);
+    x.fillStyle = ink; x.font = F(700, tpx); x.fillText(title, M, 104 + 22 + tpx);
+    const sub = [c.roaster ? titleCase(c.roaster) : (state.bag && state.bag.roaster) || "", c.origin, PROCESS[c.process].label, roastLabel(c.roast)].filter(Boolean).join(" · ");
+    x.fillStyle = mut; x.font = F(400, 30); x.fillText(clip(sub, IW), M, 104 + 22 + tpx + 50);
+    // hero: clicks
+    let y = 104 + 22 + tpx + 86;
+    const hw = 400, hh = 300, g = 18;
+    rr(M, y, hw, hh, 36, "#ffffff");
+    x.textAlign = "center"; x.fillStyle = blue; x.font = F(700, 176); x.fillText(String(r.clicks), M + hw / 2, y + 196);
+    x.fillStyle = mut; x.font = F(600, 26); x.fillText("clicks · Comandante C40", M + hw / 2, y + 244);
+    x.font = F(500, 22); x.fillText(prefs.zero ? `counted from zero, my zero ${signed(prefs.zero)}` : "counted from zero", M + hw / 2, y + 276);
+    const tw = (IW - hw - g - g) / 2, th = (hh - g) / 2;
+    [[r.dose + " g", "coffee"], [r.water + " g", "water"], ["1:" + r.ratio, "ratio"], [r.temp + "°C", "kettle"]].forEach(([v, l], i) => {
+      const tx = M + hw + g + (i % 2) * (tw + g), ty = y + Math.floor(i / 2) * (th + g);
+      rr(tx, ty, tw, th, 30, "#ffffff");
+      x.fillStyle = ink; x.font = F(700, 62); x.fillText(v, tx + tw / 2, ty + 82);
+      x.fillStyle = mut; x.font = F(500, 24); x.fillText(l, tx + tw / 2, ty + 118);
+    });
+    x.textAlign = "left";
+    // pours
+    y += hh + 24;
+    const rows = r.pours, rowH = rows.length > 6 ? 48 : 64, ph = 78 + rows.length * rowH + 20;
+    rr(M, y, IW, ph, 36, "#ffffff");
+    x.fillStyle = ink; x.font = F(700, 30); x.fillText("Pours", M + 32, y + 50);
+    x.fillStyle = mut; x.font = F(500, 26); x.textAlign = "right"; x.fillText(`drain ${fmt(r.lo)}–${fmt(r.hi)} · agitation ${AGIT[r.agit]}`, W - M - 32, y + 50); x.textAlign = "left";
+    let ry = y + 78;
+    rows.forEach((p, i) => {
+      x.fillStyle = rule; x.fillRect(M + 32, ry, IW - 64, 2);
+      const base = ry + rowH * 0.66, add = p.to - (i ? rows[i - 1].to : 0);
+      x.fillStyle = mut; x.font = F(500, 28); x.fillText(fmt(p.t), M + 32, base);
+      x.fillStyle = ink; x.font = F(700, 36); x.fillText(p.to + " g", M + 140, base);
+      x.fillStyle = mut; x.font = F(500, 24); x.fillText("+" + add, M + 290, base);
+      x.font = F(400, 26); x.fillText(clip(p.note, IW - 64 - 360), M + 392, base);
+      ry += rowH;
+    });
+    const rk = risks(r)[0], lv = waterLevel();
+    const foot = rk ? "! " + rk : lv === "hard" ? "Hard tap water: 1–2 clicks coarser or 2°C cooler first." : "";
+    if (foot) { x.fillStyle = acc; x.font = F(500, 24); x.fillText(clip(foot, IW), M, Math.min(H - 104, y + ph + 48)); }
+    x.fillStyle = mut; x.font = F(600, 24); x.fillText("v60.thisisfed.xyz", M, H - 56);
+    x.textAlign = "right"; x.font = F(500, 24); x.fillText(dmy(new Date()), W - M, H - 56); x.textAlign = "left";
     return new Promise((res) => cv.toBlob(res, "image/png"));
   }
   $("cardBtn").onclick = async () => {
@@ -1302,29 +1600,43 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
       colour: `rgb(${Math.round(mr / k)},${Math.round(mg / k)},${Math.round(mb / k)})` };
   }
   const BAND_LABEL = { vlight: "very light", light: "light", medium: "medium", mdark: "medium-dark", dark: "dark" };
+  // where the roast check answers: next to whichever button you pressed
+  let beanTarget = "photoOut";
+  function failCard(out, why, retryInput) {
+    out.innerHTML = `<div class="fail" role="alert"><b>Couldn’t read clearly — fill in manually</b><span>${why}</span>
+      <div class="acts" style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" type="button" data-act="manual">Fill in manually</button><button class="btn ghost" type="button" data-act="again">Try another photo</button></div></div>`;
+    out.querySelector('[data-act="again"]').onclick = () => $(retryInput).click();
+    return out.querySelector('[data-act="manual"]');
+  }
+  function pickRoastManually() {
+    if (!$("need").hidden && $("need").querySelector('[data-k="roast"]')) { $("need").scrollIntoView({ behavior: "smooth", block: "center" }); return; }
+    $("moreOpts").open = true; $("opts-more").scrollIntoView({ behavior: "smooth", block: "center" });
+  }
   async function checkBeans(file) {
-    const out = $("beanOut"), btn = $("beanBtn");
-    if (btn) { btn.disabled = true; btn.textContent = "Measuring…"; }
+    const out = $(beanTarget) || $("photoOut"), btns = [$("beanBtn"), $("beanBtn2")].filter(Boolean);
+    btns.forEach((b) => { b.disabled = true; b.dataset.t = b.textContent; b.textContent = "Measuring…"; });
     try {
       const big = await prepColour(file);
       const res = analyseBeans(big);
-      if (!res.ok) { out.innerHTML = '<p class="muted">Couldn’t find enough beans in that photo. Fill about half the frame with whole beans on white paper.</p>'; return; }
+      // low confidence: say so plainly, show no guess at all
+      const why = !res.ok ? "Not enough beans in the frame. Fill about half of it with whole beans."
+        : !res.paper ? "No white paper found, so the colour of the light can’t be corrected. Put the beans on plain white paper, in daylight, no flash."
+        : res.spread > 16 ? "The colour varies too much across the photo: uneven light, shadows, or mixed beans."
+        : null;
+      if (why) { failCard(out, why, "beanPhoto").onclick = pickRoastManually; return; }
       const pos = clamp((res.L - 10) / (64 - 10), 0, 1) * 100;
-      const pick = res.band === "dark" ? "mdark" : res.band;
-      const warn = [!res.paper && "No white paper found, so the light’s colour isn’t corrected: treat this as rough.", res.spread > 14 && "The colour varies a lot across the photo (uneven light or a mixed roast)."].filter(Boolean);
+      const pick = res.band;
       out.innerHTML = `<div class="bean-res"><div class="bean-sw" style="background:${res.colour}"></div><div>
         <b>Looks ${BAND_LABEL[res.band]}</b> <span class="muted">· lightness ${res.L}/100</span>
         <div class="bean-scale"><i style="left:${pos}%"></i></div>
         <div class="bean-ticks"><span>Dark</span><span>Medium</span><span>Very light</span></div>
-        ${res.band === "dark" ? '<p class="muted" style="margin:6px 0 0">Darker than this tool’s range; medium-dark settings are the closest.</p>' : ""}
-        ${warn.map((x) => `<p class="muted" style="margin:6px 0 0">${x}</p>`).join("")}
-        <div class="acts"><button class="btn" type="button" id="beanUse">Use ${BAND_LABEL[pick]}</button><button class="btn ghost" type="button" id="beanAgain">Try another photo</button></div>
-        <p class="muted" style="margin:6px 0 0;font-size:12px">An estimate from colour. Lighting changes it, so trust your eye if it looks off.</p></div></div>`;
-      $("beanUse").onclick = () => { state.roast = pick; saveState(); renderAllOpts(); render(); };
-      $("beanAgain").onclick = () => $("beanPhoto").click();
+        <p class="muted" style="margin:6px 0 0;font-size:13px">An estimate from colour. Nothing changes until you confirm.</p>
+        <div class="acts"><button class="btn" type="button" id="beanUse">Yes, use ${BAND_LABEL[pick]}</button><button class="btn ghost" type="button" id="beanNo">Not right, I’ll pick</button></div></div></div>`;
+      $("beanUse").onclick = () => { state.roast = pick; saveState(); renderAllOpts(); render(); const o = $(beanTarget); if (o) o.innerHTML = `<p class="found">Roast set to <b>${BAND_LABEL[pick]}</b> from your photo.</p>`; };
+      $("beanNo").onclick = () => { out.innerHTML = ""; pickRoastManually(); };
     } catch (e) {
-      out.innerHTML = '<p class="muted">Couldn’t read that photo. Try another one.</p>';
-    } finally { if (btn) { btn.disabled = false; btn.textContent = "Check roast with a photo"; } }
+      failCard(out, "That photo couldn’t be opened. Try another one.", "beanPhoto").onclick = pickRoastManually;
+    } finally { btns.forEach((b) => { b.disabled = false; b.textContent = b.dataset.t || "Check roast with a photo"; }); }
   }
   // colour-faithful downscale (no greyscale) for the bean check
   function prepColour(file) {
@@ -1337,6 +1649,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
       img.src = url;
     });
   }
+  $("beanBtn2").onclick = () => { beanTarget = "photoOut"; $("beanPhoto").click(); };
   $("beanPhoto").onchange = (e) => { const f = e.target.files && e.target.files[0]; if (f) checkBeans(f); e.target.value = ""; };
 
   // ---------- read the bag from a photo (on-device OCR, loaded only when used) ----------
@@ -1397,7 +1710,8 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     return (body + (n ? ". Notes: " + n : "")).replace(/\s+/g, " ").trim();
   }
   async function readBag(file) {
-    const btn = $("scanBtn"), det = $("detected");
+    const btn = $("scanBtn"), det = $("detected"), out = $("photoOut");
+    out.innerHTML = "";
     btn.disabled = true; btn.textContent = "Reading the bag…";
     det.textContent = "Loading the text reader (first time only, a few MB)…";
     let worker = null;
@@ -1405,13 +1719,23 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
       const [T, canvas] = await Promise.all([loadOCR(), prepImage(file)]);
       worker = await T.createWorker("eng", 1, { logger: (m) => { if (m.status === "recognizing text") det.textContent = `Reading the label… ${Math.round((m.progress || 0) * 100)}%`; } });
       const { data } = await worker.recognize(canvas);
-      const text = cleanOCR(data && data.text);
-      if (!text || text.length < 8) { det.textContent = "Couldn’t read enough text from that photo. Try a sharper, straight-on shot of the label, or type it in."; return; }
-      $("coffeeIn").value = text;
-      build();
-      det.innerHTML = `<b>Read from your photo</b>: check the text above and fix anything it misread. ` + det.innerHTML;
+      det.textContent = "";
+      const text = cleanOCR(data && data.text), conf = Math.round((data && data.confidence) || 0);
+      const p = parseCoffee(text);
+      const found = [p.roaster && titleCase(p.roaster), p.origin, p.variety && titleCase(p.variety), p.process && PROCESS[p.process].label, p.roast && ROAST[p.roast].label + " roast"].filter(Boolean);
+      // confident enough = a decent mean confidence AND something recognisable; otherwise show nothing partial
+      const ok = text.length >= 12 && conf >= 45 && (conf >= 70 || found.length + (p.bagNotes.length ? 1 : 0) >= 1);
+      if (!ok) { failCard(out, `The label didn’t come through well enough${conf ? ` (${conf}% sure)` : ""}. Lay the bag flat, fill the frame with the label, good light, no flash. Or type what it says.`, "bagPhoto").onclick = () => $("coffeeIn").focus(); return; }
+      out.innerHTML = `<div class="confirm"><b>Read from your photo <span class="muted" style="font-weight:400">· ${conf}% sure</span></b>
+        <span class="found">${found.length ? "Found: <b>" + found.map(esc).join(" · ") + "</b>" : "No origin or process recognised."}${p.bagNotes.length ? " · notes: " + esc(p.bagNotes.join(", ")) : ""}</span>
+        <textarea id="ocrText" aria-label="Text read from the bag">${esc(text)}</textarea>
+        <span class="muted" style="font-size:13px">Fix anything it misread. Nothing is used until you confirm.</span>
+        <div class="acts"><button class="btn" type="button" id="ocrUse">Use this</button><button class="btn ghost" type="button" id="ocrNo">Discard</button></div></div>`;
+      $("ocrUse").onclick = () => { $("coffeeIn").value = $("ocrText").value.trim(); out.innerHTML = ""; build(); };
+      $("ocrNo").onclick = () => { out.innerHTML = ""; };
     } catch (e) {
-      det.textContent = e && e.message === "load" ? "Couldn’t load the text reader. Check your connection and try again." : "Couldn’t read that photo. Try another one, or type what’s on the bag.";
+      det.textContent = "";
+      failCard(out, e && e.message === "load" ? "The text reader didn’t load. Check your connection and try again, or type what’s on the bag." : "That photo couldn’t be read. Try another one, or type what’s on the bag.", "bagPhoto").onclick = () => $("coffeeIn").focus();
     } finally {
       try { worker && worker.terminate(); } catch (e) {}
       btn.disabled = false; btn.textContent = "Read the bag from a photo";
@@ -1419,6 +1743,21 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
   }
   $("scanBtn").onclick = () => $("bagPhoto").click();
   $("bagPhoto").onchange = (e) => { const f = e.target.files && e.target.files[0]; if (f) readBag(f); e.target.value = ""; };
+
+  // ---------- appearance: follows the system unless you pick ----------
+  const THEMES = ["auto", "light", "dark"], THEME_LBL = { auto: "Auto", light: "Light", dark: "Dark" };
+  function applyTheme(t) {
+    const root = document.documentElement;
+    if (t === "light" || t === "dark") root.setAttribute("data-theme", t); else root.removeAttribute("data-theme");
+    const dark = t === "dark" || (t === "auto" && matchMedia("(prefers-color-scheme: dark)").matches);
+    document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute("content", dark ? "#000000" : "#f5f5f7"));
+    $("themeBtn").textContent = THEME_LBL[t]; $("themeBtn").setAttribute("aria-label", `Appearance: ${THEME_LBL[t]}. Tap to change.`);
+  }
+  let theme = (() => { try { return localStorage.getItem("v60.theme") || "auto"; } catch (e) { return "auto"; } })();
+  if (!THEMES.includes(theme)) theme = "auto";
+  $("themeBtn").onclick = () => { theme = THEMES[(THEMES.indexOf(theme) + 1) % 3]; try { theme === "auto" ? localStorage.removeItem("v60.theme") : localStorage.setItem("v60.theme", theme); } catch (e) {} applyTheme(theme); };
+  matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => theme === "auto" && applyTheme(theme));
+  applyTheme(theme);
 
   // ---------- wire up ----------
   $("go").onclick = build;
@@ -1431,7 +1770,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
   $("coffeeIn").value = state.text;
   renderAllOpts(); renderTaste(); render(); renderJournal(); renderShelfR(); renderShelfF(); loadShelf();
 
-  window.__v60 = { parseCoffee, engine, suggest, cupNotes, cardImage, cleanOCR, analyseBeans, get recipe() { return recipe; } };
+  window.__v60 = { parseCoffee, engine, suggest, cupNotes, cardImage, cleanOCR, analyseBeans, risks, recipeText, BASE, get recipe() { return recipe; } };
 })();
 </script>
 </body>
