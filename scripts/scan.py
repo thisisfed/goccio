@@ -53,7 +53,7 @@ VARIETIES = ["Gesha", "Geisha", "Sidra", "Pink Bourbon", "Wush Wush", "Eugenioid
              "74110", "74112", "74158", "Heirloom", "Landrace", "Java", "Mokka", "Chiroso",
              "Tabi", "Villa Sarchi", "Parainema", "Marsellesa", "Catimor"]
 EXCLUDE = re.compile(r"subscri|abonnement|abbonamento|\babo\b|suscripci|prenumeration|geschenk|regalo|cadeau|gutschein|"
-                     r"\btasse\b|tazza|origami|glass|server|carafe|porcelain|ceramic|brewer|filter holder|gift|voucher|capsule|\bpods?\b|nespresso|coffee bags?|drip bags?|"
+                     r"\btasse\b|tazza|machine|maker|moccamaster|ticket|party|event|festival|origami|glass|server|carafe|porcelain|ceramic|brewer|filter holder|gift|voucher|capsule|\bpods?\b|nespresso|coffee bags?|drip bags?|"
                      r"steep|equipment|grinder|\bmug\b|kettle|dripper|filter papers?|papers\b|\bcups?\b(?! of excellence)|"
                      r"sampler|tasting pack|taster|bundle|merch|t-?shirt|hoodie|tote|cap\b|"
                      r"cold brew|concentrate|instant|\btea\b|chocolate bar|chocolate\b|cascara|"
@@ -160,12 +160,12 @@ def fetch_woo(shop):
 
 
 def first(pattern_list, text):
-    low = text.lower()
+    """Earliest whole-word match (so 'China' never matches inside 'Machina', or 'Peru' inside 'Perugia')."""
     best = None
     for w in pattern_list:
-        i = low.find(w.lower())
-        if i >= 0 and (best is None or i < best[0]):
-            best = (i, w)
+        m = re.search(r"(?<![\w])" + re.escape(w) + r"(?![\w])", text or "", re.I)
+        if m and (best is None or m.start() < best[0]):
+            best = (m.start(), w)
     return best[1] if best else None
 
 
@@ -174,15 +174,11 @@ ORIGIN_LABEL = re.compile(r"(?:origin|country|origine|herkunft|paese|pays|país|
 
 def count_origin(text):
     """Most-mentioned producing country in a long description (beats a stray mention)."""
-    low = text.lower(); best = (0, None)
-    for name in COUNTRIES:
-        n = low.count(name.lower())
+    best = (0, None)
+    for name, canon in [(c, c) for c in COUNTRIES] + list(COUNTRY_ALIASES.items()):
+        n = len(re.findall(r"(?<![\w])" + re.escape(name) + r"(?![\w])", text or "", re.I))
         if n > best[0]:
-            best = (n, name)
-    for alias, name in COUNTRY_ALIASES.items():
-        n = low.count(alias.lower())
-        if n > best[0]:
-            best = (n, name)
+            best = (n, canon)
     return best[1]
 
 
