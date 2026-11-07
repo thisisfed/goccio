@@ -15,6 +15,7 @@ import sys
 import time
 import urllib.error
 import urllib.request
+import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -129,6 +130,164 @@ def fetch_shopify(shop):
     return items
 
 
+def get_text(url, tries=2, limit=2_000_000):
+    for i in range(tries):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "text/html,application/xml;q=0.9,*/*;q=0.8"})
+            with urllib.request.urlopen(req, timeout=25) as r:
+                raw = r.read(limit)
+                enc = r.headers.get_content_charset() or "utf-8"
+                return raw.decode(enc, "replace")
+        except urllib.error.HTTPError as e:
+            if e.code in (401, 403, 404, 410) or i == tries - 1:
+                raise
+        except Exception:
+            if i == tries - 1:
+                raise
+        time.sleep(2)
+
+
+# ---------- any other shop: sitemap + schema.org Product data ----------
+PRODUCTISH = re.compile(r"/(products?|shop|store|negozio|tienda|boutique|butik|produkte?|produits?|prodotti|coffees?|kaffee|caffe|caffè|cafe|café|kaffe|kahvi|kawa|beans|filter|"
+                        r"single-origin|catalog|item|p)/", re.I)
+SKIP_URL = re.compile(r"/(blog|news|journal|pages?|about|contact|cart|account|collections?|category|categories|tag|"
+                      r"wholesale|subscriptions?|gift|equipment|merch)/?$", re.I)
+
+
+def sitemap_urls(shop):
+    """Product-like page URLs with lastmod, newest first. Follows robots.txt and sitemap indexes."""
+    cands = []
+    try:
+        for line in get_text(f"{shop}/robots.txt", tries=1).splitlines():
+            if line.lower().startswith("sitemap:"):
+                cands.append(line.split(":", 1)[1].strip())
+    except Exception:  # noqa: BLE001
+        pass
+    cands += [f"{shop}/sitemap.xml", f"{shop}/sitemap_index.xml", f"{shop}/product-sitemap.xml", f"{shop}/wp-sitemap.xml"]
+    seen, pages, queue = set(), [], []
+    for c in cands:
+        if c not in seen:
+            seen.add(c); queue.append(c)
+    fetched = 0
+    while queue and fetched < 8:
+        sm = queue.pop(0)
+        try:
+            xml = get_text(sm, tries=1)
+            root = ET.fromstring(xml.encode("utf-8", "replace"))
+        except Exception:  # noqa: BLE001
+            continue
+        fetched += 1
+        tag = root.tag.split("}")[-1]
+        ns = {"s": root.tag.split("}")[0].strip("{")} if "}" in root.tag else {}
+        q = (lambda path: root.findall(path, ns)) if ns else (lambda path: root.findall(path.replace("s:", "")))
+        if tag == "sitemapindex":
+            kids = [e.text.strip() for e in q(".//s:sitemap/s:loc") if e.text]
+            kids.sort(key=lambda u: (0 if re.search(r"product|shop|store|item", u, re.I) else 1))
+            for k in kids[:6]:
+                if k not in seen:
+                    seen.add(k); queue.append(k)
+        else:
+            from_product_map = bool(re.search(r"product", sm, re.I))
+            for u in q(".//s:url"):
+                loc = u.find("s:loc", ns) if ns else u.find("loc")
+                lm = u.find("s:lastmod", ns) if ns else u.find("lastmod")
+                if loc is None or not loc.text:
+                    continue
+                url = loc.text.strip()
+                if SKIP_URL.search(url):
+                    continue
+                if from_product_map or PRODUCTISH.search(url):
+                    pages.append((url, (lm.text or "")[:10] if lm is not None and lm.text else ""))
+        if len(pages) > 400:
+            break
+    uniq = {}
+    for u, lm in pages:
+        uniq.setdefault(u, lm)
+    return sorted(uniq.items(), key=lambda x: x[1], reverse=True)
+
+
+def ld_products(html_text):
+    """schema.org Product objects from every JSON-LD block on a page."""
+    out = []
+    for m in re.finditer(r'<script[^>]+type=["\']application/ld\+json["\'][^>]*>(.*?)</script>', html_text, re.S | re.I):
+        raw = m.group(1).strip()
+        try:
+            data = json.loads(raw)
+        except Exception:  # noqa: BLE001
+            try:
+                data = json.loads(re.sub(r",\s*([}\]])", r"\1", raw))
+            except Exception:  # noqa: BLE001
+                continue
+        stack = data if isinstance(data, list) else [data]
+        while stack:
+            d = stack.pop()
+            if isinstance(d, dict):
+                t = d.get("@type")
+                types = t if isinstance(t, list) else [t]
+                if any(str(x).lower() in ("product", "productgroup") for x in types):
+                    out.append(d)
+                for v in d.values():
+                    if isinstance(v, (list, dict)):
+                        stack.append(v)
+            elif isinstance(d, list):
+                stack.extend(d)
+    return out
+
+
+def ld_to_item(p, url, lastmod):
+    offers = p.get("offers") or []
+    if isinstance(offers, dict):
+        offers = offers.get("offers") if isinstance(offers.get("offers"), list) else [offers]
+    variants = p.get("hasVariant") or []
+    for v in variants if isinstance(variants, list) else []:
+        o = v.get("offers")
+        if isinstance(o, dict):
+            offers.append(o)
+    prices, ccy, avail = [], None, False
+    for o in offers:
+        if not isinstance(o, dict):
+            continue
+        pr = o.get("price") or o.get("lowPrice") or (o.get("priceSpecification") or {}).get("price")
+        try:
+            if pr not in (None, ""):
+                prices.append(float(str(pr).replace(",", ".")))
+        except ValueError:
+            pass
+        ccy = ccy or o.get("priceCurrency") or (o.get("priceSpecification") or {}).get("priceCurrency")
+        a = str(o.get("availability", "InStock"))
+        avail = avail or ("InStock" in a or "PreOrder" in a or "LimitedAvailability" in a)
+    if not offers:
+        avail = True
+    cat = p.get("category") or ""
+    if isinstance(cat, list):
+        cat = " ".join(map(str, cat))
+    brand = p.get("brand")
+    desc = p.get("description") or ""
+    return {"title": html.unescape(str(p.get("name") or "")).strip(), "type": str(cat), "tags": [],
+            "body": strip_html(str(desc)), "variants": "", "available": avail,
+            "price": min(prices) if prices else None, "currency": ccy, "url": p.get("url") or url,
+            "published": "", "lastmod": lastmod, "brand": brand}
+
+
+def fetch_generic(shop, max_pages=45):
+    items, pages = [], sitemap_urls(shop)
+    for url, lm in pages[:max_pages]:
+        try:
+            page = get_text(url, tries=1)
+        except Exception:  # noqa: BLE001
+            continue
+        for p in ld_products(page)[:1]:
+            it = ld_to_item(p, url, lm)
+            if it["title"]:
+                if len(it["body"]) < 60:   # thin JSON-LD: add the page's meta description
+                    m = re.search(r'<meta[^>]+(?:name|property)=["\'](?:og:)?description["\'][^>]+content=["\']([^"\']+)', page, re.I)
+                    if m:
+                        it["body"] = (it["body"] + "\n" + html.unescape(m.group(1))).strip()
+                items.append(it)
+        time.sleep(0.8)
+    return items
+
+
 def fetch_woo(shop):
     items = []
     for page in range(1, 4):
@@ -221,8 +380,9 @@ def find_roast(text):
     t = text.lower()
     for pat, lvl in [(r"(very|ultra|extra)[- ]light", "vlight"), (r"nordic", "vlight"),
                      (r"medium[- ]light|light[- ]medium", "light"),
-                     (r"light roast|lightly roasted|roast(?: level)?\s*[:\-]\s*light", "light"),
-                     (r"medium roast|roast(?: level)?\s*[:\-]\s*medium\b", "medium")]:
+                     (r"light roast|lightly roasted|roast(?: level)?\s*[:\-]\s*light|tostatura chiara|tostatura leggera|"
+                      r"helle röstung|hell geröstet|torréfaction claire|tueste claro|ljusrost|lys brent|lysristet", "light"),
+                     (r"medium roast|roast(?: level)?\s*[:\-]\s*medium\b|tostatura media|mittlere röstung|torréfaction moyenne|tueste medio", "medium")]:
         if re.search(pat, t):
             return lvl
     return None
@@ -336,11 +496,15 @@ def shop_currency(shop, kind, r):
 def scan_roaster(r):
     shop = r["shop"].rstrip("/")
     errors = []
-    for kind, fn in (("shopify", fetch_shopify), ("woocommerce", fetch_woo)):
+    for kind, fn in (("shopify", fetch_shopify), ("woocommerce", fetch_woo), ("sitemap", fetch_generic)):
         try:
             items = fn(shop)
             if items:
-                r["_ccy"] = shop_currency(shop, kind, r)
+                if kind == "sitemap":
+                    found = [i["currency"] for i in items if i.get("currency")]
+                    r["_ccy"] = r.get("currency") or (max(set(found), key=found.count) if found else shop_currency(shop, kind, r))
+                else:
+                    r["_ccy"] = shop_currency(shop, kind, r)
                 return kind, items, None
         except Exception as e:  # noqa: BLE001
             errors.append(f"{kind}: {type(e).__name__}: {str(e)[:80]}")
