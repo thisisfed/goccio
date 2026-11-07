@@ -24,6 +24,7 @@ OUT = ROOT / "data" / "releases.json"
 UA = "V60BrewCard/1.0 (+https://v60.thisisfed.xyz; weekly filter-coffee list)"
 NEW_DAYS = 21
 MAX_ITEMS = 150
+PER_ROASTER = 8
 
 COUNTRIES = ["Ethiopia", "Kenya", "Colombia", "Panama", "Costa Rica", "Guatemala", "El Salvador",
              "Honduras", "Nicaragua", "Peru", "Bolivia", "Ecuador", "Brazil", "Burundi", "Rwanda",
@@ -40,7 +41,7 @@ EXCLUDE = re.compile(r"subscri|gift|voucher|capsule|\bpods?\b|nespresso|coffee b
                      r"sampler|tasting pack|taster|bundle|merch|t-?shirt|hoodie|tote|cap\b|"
                      r"cold brew|concentrate|instant|\btea\b|chocolate bar|chocolate\b|cascara|"
                      r"workshop|course|class|training|advent|box\b|\bkit\b|scale\b|aeropress\b(?! recipe)|"
-                     r"\bblend\b|espresso blend|house blend", re.I)
+                     r"\bblend\b|espresso blend|house blend|\bgreen\b|unroasted|\bduo\b|\btrio\b|\bpack\b|\bset\b|selection|collection|wholesale|\b1\s?kg\b|\b2\s?kg\b", re.I)
 FILTERY = re.compile(r"\bfilter\b|\bomni\b|pour[- ]?over|\bv60\b|chemex|batch brew|filter roast", re.I)
 ESPRESSO = re.compile(r"\bespresso\b", re.I)
 COFFEE_HINT = re.compile(r"single origin|single-origin|altitude|masl|variet|process|tasting notes|"
@@ -184,7 +185,9 @@ def find_notes(item):
     out = []
     for b in bits:
         b = b.strip(" .;:-–").strip()
-        if 2 <= len(b) <= 28 and not re.search(r"\d{3,}|masl|process|altitude", b, re.I) and not first(COUNTRIES, b):
+        if (2 <= len(b) <= 28 and len(b.split()) <= 4 and ":" not in b
+                and not re.search(r"\d|masl|process|altitude|score|perfect|sharing|recommend|brew", b, re.I)
+                and not first(COUNTRIES, b)):
             out.append(b[:1].upper() + b[1:])
     return out[:4]
 
@@ -195,6 +198,7 @@ def clean_name(title, roaster, origin):
     parts = re.split(r"\s[-–|]\s", name)
     if len(parts) >= 3 or (len(parts) == 2 and first(COUNTRIES, parts[1])):
         name = parts[0]
+    name = re.sub(r"\s+by\s+" + re.escape(roaster) + r".*$", "", name, flags=re.I)
     if origin:
         name = re.sub(r"[,\s\-–|]+" + re.escape(origin) + r"\s*$", "", name, flags=re.I)
     name = re.sub(r"\(?\b\d{2,4}\s?g\b\)?", "", name, flags=re.I).strip(" -–|,")
@@ -306,7 +310,19 @@ def main():
     for x in found:
         x["new"] = (x.get("published") or x.get("found", "")) >= cutoff
     found.sort(key=lambda x: (x.get("published") or x.get("found") or ""), reverse=True)
-    found = found[:MAX_ITEMS]
+    # one listing per coffee: drop size/variant duplicates and stores that share a catalogue
+    seen, per_roaster, deduped = set(), {}, []
+    for x in found:
+        key_same = (x["roaster"], x["name"].lower())
+        key_shared = (x["name"].lower(), x.get("price"), x.get("origin"))
+        if key_same in seen or key_shared in seen:
+            continue
+        if per_roaster.get(x["roaster"], 0) >= PER_ROASTER:
+            continue
+        seen.update([key_same, key_shared])
+        per_roaster[x["roaster"]] = per_roaster.get(x["roaster"], 0) + 1
+        deduped.append(x)
+    found = deduped[:MAX_ITEMS]
 
     OUT.write_text(json.dumps({"updated": today, "new_window_days": NEW_DAYS, "roasters": status,
                                "releases": found}, ensure_ascii=False, indent=1) + "\n")
