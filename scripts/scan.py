@@ -101,9 +101,18 @@ def get_json(url, tries=2):
 
 
 def fetch_shopify(shop):
+    base = f"{shop}/products.json"
+    try:
+        get_json(f"{base}?limit=1")
+    except Exception:  # noqa: BLE001
+        base = f"{shop}/collections/all/products.json"   # some shops switch off the root list only
+    return _fetch_shopify(shop, base)
+
+
+def _fetch_shopify(shop, base):
     items = []
     for page in range(1, 5):
-        data = get_json(f"{shop}/products.json?limit=250&page={page}")
+        data = get_json(f"{base}?limit=250&page={page}")
         prods = data.get("products", [])
         if not prods:
             break
@@ -269,6 +278,62 @@ def ld_to_item(p, url, lastmod):
             "published": "", "lastmod": lastmod, "brand": brand}
 
 
+def next_products(page):
+    """Headless shops (Next.js / Nuxt): product data sits in an embedded JSON blob, often Shopify Storefront shaped."""
+    blobs = []
+    for m in re.finditer(r'<script[^>]+id=["\'](?:__NEXT_DATA__|__NUXT_DATA__)["\'][^>]*>(.*?)</script>', page, re.S | re.I):
+        blobs.append(m.group(1))
+    for m in re.finditer(r'self\.__next_f\.push\(\[1,"(.*?)"\]\)', page, re.S):   # Next.js app router stream
+        try:
+            blobs.append(json.loads('"' + m.group(1) + '"'))
+        except Exception:  # noqa: BLE001
+            pass
+    found = []
+    for b in blobs:
+        for chunk in [b]:
+            try:
+                data = json.loads(chunk)
+            except Exception:  # noqa: BLE001
+                # app-router chunks look like "1a:{...}"; try every JSON object start
+                for mm in re.finditer(r'\{"', chunk):
+                    try:
+                        data, _ = json.JSONDecoder().raw_decode(chunk[mm.start():]); break
+                    except Exception:  # noqa: BLE001
+                        data = None
+                if data is None:
+                    continue
+            stack = [data]
+            while stack:
+                d = stack.pop()
+                if isinstance(d, dict):
+                    if d.get("title") and ("descriptionHtml" in d or "description" in d) and ("priceRange" in d or "variants" in d or "handle" in d):
+                        found.append(d)
+                    stack.extend(v for v in d.values() if isinstance(v, (dict, list)))
+                elif isinstance(d, list):
+                    stack.extend(d)
+    out = []
+    for d in found[:1]:
+        pr = ((d.get("priceRange") or {}).get("minVariantPrice") or {})
+        price, ccy = pr.get("amount"), pr.get("currencyCode")
+        if price is None:
+            vs = d.get("variants")
+            vs = vs.get("edges") or vs.get("nodes") if isinstance(vs, dict) else vs
+            for v in vs or []:
+                v = v.get("node", v) if isinstance(v, dict) else {}
+                p2 = v.get("price")
+                if isinstance(p2, dict):
+                    price, ccy = p2.get("amount"), p2.get("currencyCode") or ccy
+                elif p2 is not None:
+                    price = p2
+                if price is not None:
+                    break
+        tags = d.get("tags") or []
+        out.append({"@type": "Product", "name": d.get("title"), "description": d.get("descriptionHtml") or d.get("description") or "",
+                    "category": " ".join([str(d.get("productType") or "")] + [t for t in tags if isinstance(t, str)]),
+                    "offers": {"price": price, "priceCurrency": ccy, "availability": "InStock" if d.get("availableForSale", True) else "OutOfStock"}})
+    return out
+
+
 def og_product(page):
     """Fallback for shops that only publish OpenGraph product tags (common on Squarespace and custom sites)."""
     meta = {}
@@ -286,14 +351,41 @@ def og_product(page):
              "offers": {"price": price, "priceCurrency": ccy, "availability": "InStock" if re.search(r"in ?stock|available|preorder", avail, re.I) else "OutOfStock"}}]
 
 
+def shopify_product_js(url, lastmod):
+    """Shopify serves every product as JSON at <product url>.js, even when /products.json is off."""
+    try:
+        p = get_json(url.split("?")[0].rstrip("/") + ".js", tries=1)
+    except Exception:  # noqa: BLE001
+        return None
+    if not isinstance(p, dict) or not p.get("title"):
+        return None
+    variants = p.get("variants") or []
+    prices = [v["price"] / 100 for v in variants if isinstance(v.get("price"), (int, float))]
+    tags = p.get("tags") or []
+    return {"title": p.get("title", ""), "type": p.get("type", ""), "tags": tags if isinstance(tags, list) else [tags],
+            "body": strip_html(p.get("description", "")), "variants": " / ".join(v.get("title", "") for v in variants),
+            "available": bool(p.get("available", True)), "price": min(prices) if prices else (p.get("price", 0) / 100 or None),
+            "currency": None, "url": url.split("?")[0], "published": (p.get("published_at") or "")[:10], "lastmod": lastmod}
+
+
+DIAG = {}
+
+
 def fetch_generic(shop, max_pages=45):
     items, pages = [], sitemap_urls(shop)
+    DIAG[shop] = {"sitemap_urls": len(pages), "pages_ok": 0, "pages_blocked": 0, "sample": pages[0][0] if pages else None}
     for url, lm in pages[:max_pages]:
+        if "/products/" in url:
+            it = shopify_product_js(url, lm)
+            if it:
+                items.append(it); time.sleep(0.6); continue
         try:
             page = get_text(url, tries=1)
+            DIAG[shop]["pages_ok"] += 1
         except Exception:  # noqa: BLE001
+            DIAG[shop]["pages_blocked"] += 1
             continue
-        prods = ld_products(page)[:1] or og_product(page)
+        prods = ld_products(page)[:1] or next_products(page) or og_product(page)
         for p in prods:
             it = ld_to_item(p, url, lm)
             if it["title"]:
@@ -533,7 +625,8 @@ def scan_roaster(r):
         except Exception as e:  # noqa: BLE001
             errors.append(f"{kind}: {type(e).__name__}: {str(e)[:80]}")
             continue
-        errors.append(f"{kind}: no product data")
+        d = DIAG.get(shop) if kind == "sitemap" else None
+        errors.append(f"{kind}: no product data" + (f" ({d['sitemap_urls']} product URLs in sitemap, {d['pages_ok']} pages read, {d['pages_blocked']} blocked; e.g. {d['sample']})" if d else ""))
     return None, [], "; ".join(errors) or "no products found"
 
 
@@ -557,6 +650,10 @@ def main():
         return
 
     roasters = json.loads(ROASTERS.read_text())
+    only = None
+    if "--only" in args:   # rescan just these roasters (comma-separated names), keep everyone else as is
+        only = {n.strip().lower() for n in args[args.index("--only") + 1].split(",") if n.strip()}
+        roasters = [r for r in roasters if r["name"].lower() in only]
     old, first_seen = {}, {}
     if OUT.exists():
         try:
@@ -570,6 +667,14 @@ def main():
             pass
 
     found, status = [], []
+    prev_status = []
+    if only and OUT.exists():
+        try:
+            prev = json.loads(OUT.read_text())
+            prev_status = [st for st in prev.get("roasters", []) if st["name"].lower() not in only]
+            found = [x for x in prev.get("releases", []) if x["roaster"].lower() not in only]
+        except Exception:  # noqa: BLE001
+            pass
     scanned_ok = set()
     for r in roasters:
         kind, items, err = scan_roaster(r)
@@ -590,6 +695,7 @@ def main():
         print(f"{r['name']:<26} {kind or 'FAILED':<12} {kept:>3} {err or ''}")
         time.sleep(1.5)
 
+    status = prev_status + status
     # keep last week's coffees from roasters that failed this time (temporary outages)
     urls = {x["url"] for x in found}
     for u, x in old.items():
