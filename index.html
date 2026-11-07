@@ -69,7 +69,8 @@ section.sec:first-of-type { border-top: 0; }
 .sec-head .cap b { color: var(--ink); font-weight: 500; margin-right: 10px; }
 
 /* 01 coffee */
-.intro { padding: 44px 0 26px; display: grid; gap: 10px; }
+.intro { padding: 44px 0 6px; display: grid; gap: 10px; }
+section.hero-sec { padding-bottom: 20px; }
 h1 { margin: 0; font-weight: 500; font-size: clamp(34px, 6.4vw, 64px); line-height: 1.02; letter-spacing: -.035em; max-width: 15ch; text-wrap: balance; }
 h1 .serif { font-weight: 400; letter-spacing: -.02em; }
 .lede { margin: 0; color: var(--muted); max-width: 52ch; font-size: 17px; }
@@ -109,6 +110,12 @@ details.more .opts { padding-top: 8px; }
 .r-kick { display: flex; gap: 10px; flex-wrap: wrap; align-items: baseline; }
 .r-kick .method { color: var(--accent); font: 500 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; }
 .r-read { margin: 0; color: var(--muted); font-size: 15px; }
+.need { border: 1px solid var(--ink); padding: 18px; display: grid; gap: 16px; }
+.need h3 { margin: 0; font-weight: 500; font-size: 20px; letter-spacing: -.02em; }
+.need p { margin: 0; color: var(--muted); font-size: 14px; }
+.need .q { display: grid; gap: 8px; }
+.need .chips { flex-wrap: wrap; overflow: visible; }
+.rbody { display: grid; gap: 22px; }
 .adjusted { border-left: 2px solid var(--accent); padding: 4px 0 4px 12px; font-size: 14px; }
 .adjusted button { background: none; border: 0; padding: 0; text-decoration: underline; color: var(--muted); font-size: 14px; }
 
@@ -264,21 +271,35 @@ footer { border-top: 1px solid var(--ink); padding: 16px 0 0; font-size: 12px; c
   <div class="top-in">
     <div class="mark">V60 <span class="serif">Brew Card</span></div>
     <nav class="nav" aria-label="Sections">
+      <button type="button" data-jump="shelves">New coffees</button>
       <button type="button" data-jump="recipe">Recipe</button>
       <button type="button" data-jump="journal">Journal</button>
-      <button type="button" data-jump="shelves">Shelves</button>
     </nav>
   </div>
 </header>
 
 <main class="page">
-  <section class="sec" id="coffee" aria-labelledby="h1">
+  <section class="sec hero-sec" aria-labelledby="h1">
     <div class="intro">
-      <h1 id="h1">The recipe for the bag <span class="serif">in front of you.</span></h1>
-      <p class="lede">Grind in Comandante C40 clicks, ratio, temperature and every pour, matched to process and roast from Hoffmann, Kasuya and Rao. Brew along full-screen, log how it tasted, and it adjusts next time.</p>
+      <h1 id="h1">New UK coffees, and the recipe <span class="serif">for each bag.</span></h1>
+      <p class="lede">Single-origin filter coffees from UK roasters, scanned every Monday. Pick one or type your own, and get Comandante C40 clicks, ratio, temperature and every pour from Hoffmann, Kasuya and Rao. Brew full-screen, log how it tasted, and it adjusts next time.</p>
     </div>
+  </section>
+
+  <section class="sec" id="shelves" aria-labelledby="sh">
+    <div class="sec-head"><span class="cap" id="sh"><b>01</b>New on UK shelves</span><span class="cap">Every Monday</span></div>
+    <p class="shelf-meta" id="shelfMeta">Loading this week’s scan…</p>
+    <div class="shelf-tools">
+      <input type="search" id="shelfQ" placeholder="Search roaster, origin, note…" aria-label="Search coffees">
+      <div class="chips" id="shelfF" role="group" aria-label="Filter"></div>
+    </div>
+    <div class="shelf" id="shelf"></div>
+    <button class="btn ghost more-btn" id="shelfMore" type="button" hidden>Show all</button>
+  </section>
+
+  <section class="sec" id="coffee" aria-labelledby="askLbl">
     <div class="ask">
-      <label for="coffeeIn">01 · What are you brewing?</label>
+      <label for="coffeeIn" id="askLbl">02 · What are you brewing?</label>
       <div class="field">
         <textarea id="coffeeIn" rows="2" placeholder="Roaster, coffee, origin, process, notes…"></textarea>
         <button class="btn" id="go" type="button">Build recipe</button>
@@ -293,12 +314,14 @@ footer { border-top: 1px solid var(--ink); padding: 16px 0 0; font-size: 12px; c
   </section>
 
   <section class="sec" id="recipe" aria-labelledby="rtitle">
-    <div class="sec-head"><span class="cap"><b>02</b>Recipe</span><span class="cap" id="rsource"></span></div>
+    <div class="sec-head"><span class="cap"><b>03</b>Recipe</span><span class="cap" id="rsource"></span></div>
     <div class="r-title">
       <div class="r-kick"><span class="method" id="rmethod"></span><span class="cap" id="rgoal"></span></div>
       <h2 id="rtitle"></h2>
       <p class="r-read" id="rread"></p>
     </div>
+    <div class="need" id="need" hidden></div>
+    <div class="rbody" id="rbody">
     <div class="adjusted" id="adjusted" hidden></div>
     <div class="specs" id="specs"></div>
     <div class="tech" id="tech"></div>
@@ -320,10 +343,11 @@ footer { border-top: 1px solid var(--ink); padding: 16px 0 0; font-size: 12px; c
       <button class="btn ghost" id="copyBtn" type="button">Copy recipe</button>
       <button class="btn ghost" id="cardBtn" type="button">Save recipe card</button>
     </div>
+    </div>
   </section>
 
   <section class="sec" id="journal" aria-labelledby="jh">
-    <div class="sec-head"><span class="cap" id="jh"><b>03</b>Journal</span><span class="cap">Stored on this device only</span></div>
+    <div class="sec-head"><span class="cap" id="jh"><b>04</b>Journal</span><span class="cap">Stored on this device only</span></div>
     <div class="log" id="logBox">
       <h3 id="logTitle">How did it taste?</h3>
       <div class="row">
@@ -350,16 +374,7 @@ footer { border-top: 1px solid var(--ink); padding: 16px 0 0; font-size: 12px; c
     </div>
   </section>
 
-  <section class="sec" id="shelves" aria-labelledby="sh">
-    <div class="sec-head"><span class="cap" id="sh"><b>04</b>New on UK shelves</span></div>
-    <p class="shelf-meta" id="shelfMeta">Loading this week’s scan…</p>
-    <div class="shelf-tools">
-      <input type="search" id="shelfQ" placeholder="Search roaster, origin, note…" aria-label="Search coffees">
-      <div class="chips" id="shelfF" role="group" aria-label="Filter"></div>
-    </div>
-    <div class="shelf" id="shelf"></div>
-    <button class="btn ghost more-btn" id="shelfMore" type="button" hidden>Show all</button>
-  </section>
+
 
   <footer>
     <span>Methods: James Hoffmann’s Better 1-Cup and Ultimate V60 · Tetsu Kasuya’s 4:6 and 10-Pour · Scott Rao’s bloom &amp; spin. Grind in clicks on a standard Comandante C40, counted from zero. Strength figures are estimates for a typical extraction, not a refractometer reading.</span>
@@ -434,7 +449,6 @@ footer { border-top: 1px solid var(--ink); padding: 16px 0 0; font-size: 12px; c
   // ---------- reading the bag ----------
   const COUNTRIES = ["Ethiopia","Kenya","Colombia","Panama","Costa Rica","Guatemala","El Salvador","Honduras","Nicaragua","Peru","Bolivia","Ecuador","Brazil","Burundi","Rwanda","Uganda","Tanzania","Yemen","Indonesia","Sumatra","Papua New Guinea","Mexico","China","Yunnan","Taiwan","India","Myanmar","Thailand","Vietnam","Congo","Malawi","Zambia","Jamaica","Hawaii","Dominican Republic","Timor"];
   const ROASTERS = ["sey","la cabra","tim wendelboe","manhattan","april","coffee collective","square mile","kiss the hippo","assembly","carnival","climpson","dak","onyx","friedhats","origin","colonna","round hill","dark arts","workshop","clifton","crankhouse","sweven","quarter horse","outpost","north star","obadiah","dear green","steampunk","manumit","pharmacie","skylark","horsham","cult","blossom","hasbean","rave","curve","ozone","girls who grind","neighbourhood"];
-  const VERY_LIGHT = ["sey","la cabra","tim wendelboe","april","friedhats","dak"];
   const DELICATE = /gesha|geisha|sidra|pink bourbon|wush ?wush|eugenioides|laurina|sudan rume/;
   const VARIETY_RE = /gesha|geisha|sidra|pink bourbon|wush ?wush|eugenioides|laurina|sudan rume|sl28|sl34|ruiru|batian|red bourbon|yellow bourbon|bourbon|typica|caturra|catuai|castillo|pacamara|74110|74158|heirloom|landrace|chiroso/;
 
@@ -457,7 +471,6 @@ footer { border-top: 1px solid var(--ink); padding: 16px 0 0; font-size: 12px; c
     else if (/medium[- ]light|light roast|lightly roasted|filter roast/.test(t)) roast = "light";
     else if (/medium roast|\bmedium\b/.test(t)) roast = "medium";
     const roaster = ROASTERS.find((r) => t.includes(r)) || null;
-    if (!roast && roaster) roast = VERY_LIGHT.includes(roaster) ? "vlight" : "light";
     const origin = COUNTRIES.find((o) => t.includes(o.toLowerCase())) || null;
     const delicate = DELICATE.test(t);
     const variety = (t.match(VARIETY_RE) || [null])[0];
@@ -472,22 +485,24 @@ footer { border-top: 1px solid var(--ink); padding: 16px 0 0; font-size: 12px; c
     anaerobic: { label: "anaerobic",           agit: 1, dT: -2, dC: 1 },
     cofer:     { label: "co-ferment / infused", agit: 0, dT: -3, dC: 2 },
     decaf:     { label: "decaf",               agit: 1, dT: -3, dC: 2 },
+    unsure:    { label: "process not stated",   agit: 2, dT: -1, dC: 0 },
   };
   const ROAST = {
     vlight: { label: "very light",  T: 96, dC: -1 },
     light:  { label: "light",       T: 94, dC: 0 },
     medium: { label: "medium",      T: 91, dC: 1 },
     mdark:  { label: "medium-dark", T: 88, dC: 3 },
+    unsure: { label: "roast not stated", T: 93, dC: 0 },
   };
   const AGIT = ["very low", "low", "medium", "high"];
 
   function resolved(st) {
     const p = parseCoffee(st.text);
-    const process = st.process !== "auto" ? st.process : (p.process || "washed");
-    const roast = st.roast !== "auto" ? st.roast : (p.roast || "light");
     const bag = st.bag || {};
-    return { ...p, process, roast,
-      processGuessed: st.process === "auto" && !p.process, roastGuessed: st.roast === "auto" && !p.roast,
+    // nothing is filled in silently: unknown stays null until you answer
+    const process = st.process !== "auto" ? st.process : p.process;
+    const roast = st.roast !== "auto" ? st.roast : p.roast;
+    return { ...p, process, roast, processFrom: st.process !== "auto" ? "you" : "bag", roastFrom: st.roast !== "auto" ? "you" : "bag",
       origin: p.origin || bag.origin || null, variety: p.variety || bag.variety || null,
       bagNotes: (bag.notes && bag.notes.length ? bag.notes : p.bagNotes) || [] };
   }
@@ -521,6 +536,8 @@ footer { border-top: 1px solid var(--ink); padding: 16px 0 0; font-size: 12px; c
 
   function engine(st, opts = {}) {
     const c = resolved(st);
+    c.missing = [!c.process && "process", !c.roast && "roast"].filter(Boolean);
+    c.process = c.process || "unsure"; c.roast = c.roast || "unsure";
     const dose = Number(st.dose), goal = st.goal;
     let agit = PROCESS[c.process].agit;
     if (c.roast === "mdark") agit = Math.min(agit, 1);
@@ -618,16 +635,14 @@ footer { border-top: 1px solid var(--ink); padding: 16px 0 0; font-size: 12px; c
   function cupNotes(r) {
     const c = r.c;
     if (c.bagNotes.length) return { from: "bag", notes: c.bagNotes.slice(0, 4) };
-    let notes = [];
     const o = ORIGIN_NOTES[c.origin];
-    if (o) notes = (o[c.process] || o._).slice();
-    else notes = { washed: ["citrus", "stone fruit", "cane sugar"], natural: ["ripe berries", "red wine", "cocoa"], honey: ["apricot", "honey", "caramel"],
-      anaerobic: ["tropical fruit", "cinnamon", "boozy fruit"], cofer: ["candied fruit", "spice", "syrup"], decaf: ["milk chocolate", "caramel", "dried fruit"] }[c.process].slice();
+    if (!o) return { from: "none", notes: [] };
+    let notes = (o[c.process] || o._).slice();
     if (/gesha|geisha/.test(c.variety || "")) notes = ["jasmine", "bergamot", ...notes].slice(0, 4);
     if (c.process === "anaerobic") notes = [...notes.slice(0, 2), "tropical, boozy edge"];
     if (c.process === "cofer") notes = ["the infusion leads", ...notes.slice(0, 2)];
     if (c.roast === "medium" || c.roast === "mdark") notes = [...notes.slice(0, 2), "caramel", "chocolate"];
-    return { from: "guess", notes: [...new Set(notes)].slice(0, 4) };
+    return { from: "typical", notes: [...new Set(notes)].slice(0, 4) };
   }
   const METHOD_EFFECT = {
     hoffmann: "Pulsed pours push extraction: acidity and florals up front, clean finish.",
@@ -648,16 +663,48 @@ footer { border-top: 1px solid var(--ink); padding: 16px 0 0; font-size: 12px; c
     return name ? titleCase(name) : "Your coffee";
   }
 
+  const PROC_Q = [["washed", "Washed"], ["natural", "Natural"], ["honey", "Honey"], ["anaerobic", "Anaerobic"], ["cofer", "Co-ferment / infused"], ["decaf", "Decaf"], ["unsure", "Not stated"]];
+  const ROAST_Q = [["vlight", "Very light"], ["light", "Light"], ["medium", "Medium"], ["mdark", "Medium-dark"], ["unsure", "Not stated"]];
+  function renderNeed(r) {
+    const need = $("need"), body = $("rbody");
+    const empty = !state.text && !state.bag;
+    const missing = empty ? [] : r.c.missing;
+    const blocked = empty || missing.length > 0;
+    need.hidden = !blocked; body.hidden = blocked;
+    $("startBrew").disabled = blocked; $("dockGo").disabled = blocked;
+    $("dock").hidden = blocked;
+    if (!blocked) return false;
+    if (empty) {
+      $("rmethod").textContent = ""; $("rgoal").textContent = ""; $("rtitle").textContent = "Pick a coffee"; $("rread").textContent = "";
+      need.innerHTML = "<h3>No coffee yet</h3><p>Choose one from New on UK shelves, or type what’s on your bag. The recipe appears here.</p>";
+      return true;
+    }
+    const q = (key, label, items, hint) => `<div class="q"><span class="cap">${label}</span><div class="chips">${items.map(([v, t]) => `<button type="button" class="chip" data-k="${key}" data-v="${v}">${t}</button>`).join("")}</div>${hint ? `<p>${hint}</p>` : ""}</div>`;
+    const where = state.bag && state.bag.url ? ` It’s usually on the bag or <a href="${esc(state.bag.url)}" target="_blank" rel="noopener">the roaster’s page</a>.` : " It’s usually printed on the bag.";
+    need.innerHTML = `<h3>${missing.length === 2 ? "Two things" : "One thing"} before the numbers</h3>
+      <p>The grind, temperature and how hard you pour all depend on ${missing.map((m) => m === "process" ? "the process" : "the roast level").join(" and ")}. I won’t guess.${where}</p>
+      ${missing.includes("process") ? q("process", "Process", PROC_Q) : ""}
+      ${missing.includes("roast") ? q("roast", "Roast level", ROAST_Q, "“Not stated” uses a middle setting (93°C, standard grind) and says so on the recipe.") : ""}`;
+    need.querySelectorAll("button[data-k]").forEach((b) => b.onclick = () => { state[b.dataset.k] = b.dataset.v; saveState(); renderAllOpts(); render(); });
+    return true;
+  }
+
   function render() {
     const r = recipe = engine(state);
     const c = r.c;
+    if (renderNeed(r)) {
+      $("detected").innerHTML = state.text && c.missing.length ? `Couldn’t find the ${c.missing.join(" or ")} in that. Answer below.` : "";
+      if (state.text || state.bag) { $("rtitle").textContent = coffeeTitle(state, r); $("rmethod").textContent = ""; $("rgoal").textContent = ""; $("rread").textContent = ""; }
+      return;
+    }
     $("rmethod").textContent = r.method;
     $("rgoal").textContent = GOAL[r.goal] + " · " + r.dose + " g";
     $("rtitle").textContent = coffeeTitle(state, r);
     const bits = [c.roaster ? titleCase(c.roaster) : (state.bag && state.bag.roaster) || null, c.origin, c.variety ? titleCase(c.variety) : null,
-      PROCESS[c.process].label + (c.processGuessed ? " (assumed)" : ""), ROAST[c.roast].label + " roast" + (c.roastGuessed ? " (assumed)" : "")].filter(Boolean);
+      PROCESS[c.process].label, c.roast === "unsure" ? ROAST.unsure.label : ROAST[c.roast].label + " roast"].filter(Boolean);
     $("rread").textContent = bits.join(" · ");
-    $("detected").innerHTML = state.text ? `Reading this as <b>${esc(PROCESS[c.process].label)}</b>${c.processGuessed ? " (assumed)" : ""}, <b>${esc(ROAST[c.roast].label)}</b> roast${c.roastGuessed ? " (assumed)" : ""}. Wrong? Change it under Bag details.` : "";
+    const src = (f) => f === "you" ? " (you set this)" : " (from the bag)";
+    $("detected").innerHTML = state.text ? `Reading this as <b>${esc(PROCESS[c.process].label)}</b>${src(c.processFrom)}, <b>${esc(c.roast === "unsure" ? ROAST.unsure.label : ROAST[c.roast].label + " roast")}</b>${src(c.roastFrom)}. Wrong? Change it under Bag details.` : "";
 
     // personal adjustment banner
     const pc = r.pc, adj = [];
@@ -698,9 +745,10 @@ footer { border-top: 1px solid var(--ink); padding: 16px 0 0; font-size: 12px; c
     $("tds").textContent = `${r.tds[0].toFixed(2)}–${r.tds[1].toFixed(2)}% TDS`;
     $("tdsNote").textContent = `At ${r.ey[0]}–${r.ey[1]}% extraction this lands ${r.body}. Estimate only: no refractometer needed. Too strong or weak? Change the ratio, not the grind.`;
     const cn = cupNotes(r);
-    $("cupH").textContent = cn.from === "bag" ? "On the bag" : "Likely in the cup";
+    $("cupH").textContent = cn.from === "bag" ? "On the bag" : cn.from === "typical" ? `Typical of ${c.origin}` : "In the cup";
     $("cupNotes").innerHTML = cn.notes.map((n) => `<span>${esc(n)}</span>`).join("");
-    $("cupNote").textContent = METHOD_EFFECT[r.m] + (cn.from === "guess" ? " A guess from origin, process and roast." : "");
+    $("cupNote").textContent = cn.from === "none" ? "Add the bag’s notes (e.g. “Notes: peach, jasmine”) to see them here. " + METHOD_EFFECT[r.m]
+      : METHOD_EFFECT[r.m] + (cn.from === "typical" ? ` These are typical ${c.process === "unsure" ? "" : PROCESS[c.process].label + " "}${c.origin} notes, not this lot’s.` : "");
     $("water").innerHTML = `Soft, filtered water is best: roughly 50–100 ppm hardness, low in bicarbonate. Hard tap water (most of London and the South East) mutes acidity and pulls bitterness. If that’s what you have, go ${r.temp >= 95 ? "1–2°C cooler" : "1 click coarser"} before touching anything else.`;
 
     const why = [];
@@ -709,10 +757,11 @@ footer { border-top: 1px solid var(--ink); padding: 16px 0 0; font-size: 12px; c
     if (r.m === "rao") why.push("Rao’s bloom & spin: 3× bloom, one continuous pour, a spin. Little late agitation, very high clarity.");
     if (r.m === "fourSix") why.push(r.goal === "light" ? "Kasuya’s 4:6: the first 40% sets sweetness vs acidity, the last 60% sets strength. Two big pours keep the body light." : "Kasuya’s 4:6 with three strength pours: rounder and sweeter.");
     if (r.m === "ten") why.push("Kasuya’s 10-Pour: coarse grind, small pours every 15 s. Syrupy and sweet.");
+    if (c.process === "unsure" || c.roast === "unsure") why.push(`Not stated on the bag: ${[c.process === "unsure" && "process", c.roast === "unsure" && "roast"].filter(Boolean).join(" and ")}. Using a middle setting; add it under Bag details for a sharper recipe.`);
     if (state.method === "best") {
       if (r.agit <= 1) why.push(`${cap1(PROCESS[c.process].label)} coffees carry ferment flavours that turn boozy or harsh with heat and agitation, so: fewer gentle pours, ${r.temp}°C cap, a click or two coarser.`);
       else if (r.m === "rao") why.push("Delicate variety: a flat, undisturbed bed keeps the florals crisp.");
-      else why.push(`${cap1(PROCESS[c.process].label)}, ${ROAST[c.roast].label} roast: dense enough to take hot water and pulsed pours for full sweetness.`);
+      else if (c.process !== "unsure" && c.roast !== "unsure") why.push(`${cap1(PROCESS[c.process].label)}, ${ROAST[c.roast].label} roast: dense enough to take hot water and pulsed pours for full sweetness.`);
     }
     why.push(`Strength comes from the ratio (1:${r.ratio}). The grind is set for extraction, not strength.`);
     $("why").innerHTML = why.map((w) => `<li>${esc(w)}</li>`).join("");
@@ -763,7 +812,7 @@ footer { border-top: 1px solid var(--ink); padding: 16px 0 0; font-size: 12px; c
 
   function build() {
     const t = $("coffeeIn").value.trim();
-    if (t !== state.text) state.bag = null;      // typed something new: forget the shelf coffee
+    if (t !== state.text) { state.bag = null; state.process = "auto"; state.roast = "auto"; renderAllOpts(); }   // new coffee: forget old answers
     state.text = t; saveState(); render();
     $("recipe").scrollIntoView({ behavior: "smooth", block: "start" });
   }
@@ -1053,7 +1102,7 @@ footer { border-top: 1px solid var(--ink); padding: 16px 0 0; font-size: 12px; c
     let list = shelf.filter((r) => shelfF === "all" || (shelfF === "new" ? r.new : bucket(r.process) === shelfF));
     if (q) list = list.filter((r) => [r.roaster, r.name, r.origin, r.region, r.process, r.variety, ...(r.notes || [])].join(" ").toLowerCase().includes(q));
     list.sort((a, b) => (b.new === true) - (a.new === true) || (b.published || b.found || "").localeCompare(a.published || a.found || ""));
-    const shown = shelfAll || q ? list : list.slice(0, 20);
+    const shown = shelfAll || q ? list : list.slice(0, 8);
     $("shelf").innerHTML = shown.length ? shown.map((r) => {
       const i = shelf.indexOf(r);
       const meta = [r.origin, r.region, r.variety, r.process].filter(Boolean).join(" · ") || "Details on the roaster’s page";
@@ -1062,12 +1111,13 @@ footer { border-top: 1px solid var(--ink); padding: 16px 0 0; font-size: 12px; c
           <span class="name">${esc(r.name)}</span>
           <span class="meta">${esc(meta)}</span>
           ${r.notes && r.notes.length ? `<span class="tn">${esc(r.notes.join(", "))}</span>` : ""}
+          ${!r.process || !r.roast_level ? `<span class="meta">Not listed: ${[!r.process && "process", !r.roast_level && "roast"].filter(Boolean).join(", ")}</span>` : ""}
         </div><div class="r">
           ${r.price ? `<span class="price">${esc(r.price)}</span>` : ""}
           <span class="date">${r.published ? "listed " + isoDmy(r.published) : "seen " + isoDmy(r.found)}</span>
           <span class="acts">${r.url ? `<a href="${esc(r.url)}" target="_blank" rel="noopener">Shop</a>` : ""}<button class="btn" type="button" data-i="${i}">Brew this</button></span>
         </div></article>`; }).join("") : '<p class="muted">Nothing matches.</p>';
-    $("shelfMore").hidden = shelfAll || !!q || list.length <= 20;
+    $("shelfMore").hidden = shelfAll || !!q || list.length <= 8;
     $("shelfMore").textContent = `Show all ${list.length}`;
     $("shelf").querySelectorAll("button[data-i]").forEach((b) => b.onclick = () => brewThis(shelf[+b.dataset.i]));
   }
@@ -1075,7 +1125,8 @@ footer { border-top: 1px solid var(--ink); padding: 16px 0 0; font-size: 12px; c
     const notes = r.notes || [];
     state.text = [r.roaster, r.name, r.origin, r.region, r.variety, r.process].filter(Boolean).join(", ") + (notes.length ? ". Notes: " + notes.join(", ") : "");
     state.bag = { roaster: r.roaster, name: r.name, origin: r.origin, variety: r.variety, notes, url: r.url };
-    state.process = r.process ? procKey(r.process) : "auto"; state.roast = "auto";
+    state.process = r.process ? procKey(r.process) : "auto";
+    state.roast = r.roast_level && ["vlight", "light", "medium", "mdark"].includes(r.roast_level) ? r.roast_level : "auto";
     $("coffeeIn").value = state.text; saveState(); renderAllOpts(); render();
     $("recipe").scrollIntoView({ behavior: "smooth", block: "start" });
   }
@@ -1102,7 +1153,6 @@ footer { border-top: 1px solid var(--ink); padding: 16px 0 0; font-size: 12px; c
   $("saveLog").onclick = saveLog;
   document.querySelectorAll("[data-jump]").forEach((b) => b.onclick = () => $(b.dataset.jump).scrollIntoView({ behavior: "smooth", block: "start" }));
 
-  if (!state.text) { state.text = "Carnival Coffee Roasters, Java Blossom, Tolima, Colombia, anaerobic natural. Notes: blueberry sweets, honeydew melon, kiwi"; }
   $("coffeeIn").value = state.text;
   renderAllOpts(); renderTaste(); renderSettings(); render(); renderJournal(); renderShelfF(); loadShelf();
 
