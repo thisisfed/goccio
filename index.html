@@ -394,14 +394,6 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
       <div class="share"><button class="btn" id="saveLog" type="button">Save to journal</button></div>
     </div>
     <div class="journal" id="journalList"></div>
-    <div class="settings">
-      <span class="toggle">Your C40 zero
-        <span class="step"><button type="button" id="gMinus" aria-label="One click less">−</button><span id="gVal">0</span><button type="button" id="gPlus" aria-label="One click more">+</button></span>
-      </span>
-      <label class="toggle"><input type="checkbox" id="optSound"> Sound cues</label>
-      <label class="toggle"><input type="checkbox" id="optBuzz"> Vibration (Android)</label>
-      <button class="btn ghost" id="clearLog" type="button" style="min-height:36px;font-size:13px">Clear journal</button>
-    </div>
   </section>
 
 
@@ -466,7 +458,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
   };
   const DEFAULTS = { text: "", goal: "light", dose: 15, method: "best", roast: "auto", process: "auto", bag: null };
   let state = { ...DEFAULTS, ...store.get("v60.state", {}) };
-  let prefs = { grinder: 0, sound: true, buzz: true, coffees: {}, ...store.get("v60.prefs", {}) };
+  let prefs = { coffees: {}, ...store.get("v60.prefs", {}), grinder: 0, sound: true, buzz: true };
   let journal = store.get("v60.log", []);
   const saveState = () => store.set("v60.state", state);
   const savePrefs = () => store.set("v60.prefs", prefs);
@@ -979,16 +971,6 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
       $("recipe").scrollIntoView({ behavior: "smooth", block: "start" });
     });
   }
-  let clearArmed = false;
-  $("clearLog").onclick = () => {
-    if (!clearArmed) { clearArmed = true; $("clearLog").textContent = "Tap again to clear"; setTimeout(() => { clearArmed = false; $("clearLog").textContent = "Clear journal"; }, 3000); return; }
-    journal = []; prefs.coffees = {}; prefs.styles = {}; saveJournal(); savePrefs(); clearArmed = false; $("clearLog").textContent = "Clear journal"; renderJournal(); render();
-  };
-  const renderSettings = () => { $("gVal").textContent = (prefs.grinder > 0 ? "+" : "") + prefs.grinder; $("optSound").checked = !!prefs.sound; $("optBuzz").checked = !!prefs.buzz; };
-  $("gMinus").onclick = () => { prefs.grinder = clamp(prefs.grinder - 1, -6, 6); savePrefs(); renderSettings(); render(); };
-  $("gPlus").onclick = () => { prefs.grinder = clamp(prefs.grinder + 1, -6, 6); savePrefs(); renderSettings(); render(); };
-  $("optSound").onchange = (e) => { prefs.sound = e.target.checked; savePrefs(); };
-  $("optBuzz").onchange = (e) => { prefs.buzz = e.target.checked; savePrefs(); };
 
   // ---------- BREW MODE ----------
   // The big number is always the thing to act on: grams while pouring, seconds while waiting,
@@ -1249,7 +1231,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
   document.querySelectorAll("[data-jump]").forEach((b) => b.onclick = () => $(b.dataset.jump).scrollIntoView({ behavior: "smooth", block: "start" }));
 
   $("coffeeIn").value = state.text;
-  renderAllOpts(); renderTaste(); renderSettings(); render(); renderJournal(); renderShelfF(); loadShelf();
+  renderAllOpts(); renderTaste(); render(); renderJournal(); renderShelfF(); loadShelf();
 
   window.__v60 = { parseCoffee, engine, suggest, cupNotes, cardImage, get recipe() { return recipe; } };
 })();
