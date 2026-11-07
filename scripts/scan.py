@@ -557,6 +557,10 @@ def main():
         return
 
     roasters = json.loads(ROASTERS.read_text())
+    only = None
+    if "--only" in args:   # rescan just these roasters (comma-separated names), keep everyone else as is
+        only = {n.strip().lower() for n in args[args.index("--only") + 1].split(",") if n.strip()}
+        roasters = [r for r in roasters if r["name"].lower() in only]
     old, first_seen = {}, {}
     if OUT.exists():
         try:
@@ -570,6 +574,14 @@ def main():
             pass
 
     found, status = [], []
+    prev_status = []
+    if only and OUT.exists():
+        try:
+            prev = json.loads(OUT.read_text())
+            prev_status = [st for st in prev.get("roasters", []) if st["name"].lower() not in only]
+            found = [x for x in prev.get("releases", []) if x["roaster"].lower() not in only]
+        except Exception:  # noqa: BLE001
+            pass
     scanned_ok = set()
     for r in roasters:
         kind, items, err = scan_roaster(r)
@@ -590,6 +602,7 @@ def main():
         print(f"{r['name']:<26} {kind or 'FAILED':<12} {kept:>3} {err or ''}")
         time.sleep(1.5)
 
+    status = prev_status + status
     # keep last week's coffees from roasters that failed this time (temporary outages)
     urls = {x["url"] for x in found}
     for u, x in old.items():
