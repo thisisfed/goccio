@@ -169,15 +169,38 @@ def first(pattern_list, text):
     return best[1] if best else None
 
 
+ORIGIN_LABEL = re.compile(r"(?:origin|country|origine|herkunft|paese|pays|país|ursprung|oprindelse|land)\s*[:\-–]\s*([^\n]{2,60})", re.I)
+
+
+def count_origin(text):
+    """Most-mentioned producing country in a long description (beats a stray mention)."""
+    low = text.lower(); best = (0, None)
+    for name in COUNTRIES:
+        n = low.count(name.lower())
+        if n > best[0]:
+            best = (n, name)
+    for alias, name in COUNTRY_ALIASES.items():
+        n = low.count(alias.lower())
+        if n > best[0]:
+            best = (n, name)
+    return best[1]
+
+
 def find_origin(*texts):
-    for t in texts:
+    *short, body = texts if len(texts) > 1 else (texts[0], "")
+    for t in short:
         o = first(COUNTRIES, t)
         if o:
             return o
         a = first(list(COUNTRY_ALIASES), t)
         if a:
             return COUNTRY_ALIASES[a]
-    return None
+    m = ORIGIN_LABEL.search(body or "")
+    if m:
+        o = first(COUNTRIES, m.group(1)) or COUNTRY_ALIASES.get(first(list(COUNTRY_ALIASES), m.group(1)) or "")
+        if o:
+            return o
+    return count_origin(body or "") if body else None
 
 
 def find_process(text):
@@ -348,11 +371,15 @@ def main():
         return
 
     roasters = json.loads(ROASTERS.read_text())
-    old = {}
+    old, first_seen = {}, {}
     if OUT.exists():
         try:
-            for x in json.loads(OUT.read_text()).get("releases", []):
+            prev = json.loads(OUT.read_text())
+            for x in prev.get("releases", []):
                 old[x["url"]] = x
+            for st in prev.get("roasters", []):
+                if st.get("platform"):
+                    first_seen[st["name"]] = st.get("first_seen") or prev.get("updated")
         except Exception:  # noqa: BLE001
             pass
 
@@ -369,7 +396,10 @@ def main():
                     rec["found"] = old.get(rec["url"], {}).get("found", today)
                     found.append(rec)
                     kept += 1
+        if kind and r["name"] not in first_seen:
+            first_seen[r["name"]] = today
         status.append({"name": r["name"], "shop": r["shop"], "market": r.get("region", "UK"), "country": r.get("country"),
+                       "first_seen": first_seen.get(r["name"]),
                        "currency": r.get("_ccy"), "platform": kind, "coffees": kept, "error": err})
         print(f"{r['name']:<26} {kind or 'FAILED':<12} {kept:>3} {err or ''}")
         time.sleep(1.5)
@@ -382,7 +412,11 @@ def main():
 
     cutoff = (datetime.now(timezone.utc) - timedelta(days=NEW_DAYS)).date().isoformat()
     for x in found:
-        x["new"] = (x.get("published") or x.get("found", "")) >= cutoff
+        if x.get("published"):
+            x["new"] = x["published"] >= cutoff
+        else:   # no listing date: new only if it appeared after we started watching this roaster
+            fs = first_seen.get(x["roaster"]) or today
+            x["new"] = x.get("found", today) > fs and x.get("found", "") >= cutoff
     found.sort(key=lambda x: (x.get("published") or x.get("found") or ""), reverse=True)
     # one listing per coffee: drop size/variant duplicates and stores that share a catalogue
     seen, per_roaster, deduped = set(), {}, []
