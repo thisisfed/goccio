@@ -312,8 +312,12 @@ def shopify_product_js(url, lastmod):
             "currency": None, "url": url.split("?")[0], "published": (p.get("published_at") or "")[:10], "lastmod": lastmod}
 
 
+DIAG = {}
+
+
 def fetch_generic(shop, max_pages=45):
     items, pages = [], sitemap_urls(shop)
+    DIAG[shop] = {"sitemap_urls": len(pages), "pages_ok": 0, "pages_blocked": 0, "sample": pages[0][0] if pages else None}
     for url, lm in pages[:max_pages]:
         if "/products/" in url:
             it = shopify_product_js(url, lm)
@@ -321,7 +325,9 @@ def fetch_generic(shop, max_pages=45):
                 items.append(it); time.sleep(0.6); continue
         try:
             page = get_text(url, tries=1)
+            DIAG[shop]["pages_ok"] += 1
         except Exception:  # noqa: BLE001
+            DIAG[shop]["pages_blocked"] += 1
             continue
         prods = ld_products(page)[:1] or og_product(page)
         for p in prods:
@@ -563,7 +569,8 @@ def scan_roaster(r):
         except Exception as e:  # noqa: BLE001
             errors.append(f"{kind}: {type(e).__name__}: {str(e)[:80]}")
             continue
-        errors.append(f"{kind}: no product data")
+        d = DIAG.get(shop) if kind == "sitemap" else None
+        errors.append(f"{kind}: no product data" + (f" ({d['sitemap_urls']} product URLs in sitemap, {d['pages_ok']} pages read, {d['pages_blocked']} blocked; e.g. {d['sample']})" if d else ""))
     return None, [], "; ".join(errors) or "no products found"
 
 
