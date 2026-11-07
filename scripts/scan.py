@@ -186,21 +186,21 @@ def count_origin(text):
     return best[1]
 
 
-def find_origin(*texts):
-    *short, body = texts if len(texts) > 1 else (texts[0], "")
-    for t in short:
+def find_origin(title, blob="", body=""):
+    """Title first, then a labelled 'Origin:' line, then tags/categories, then the most-mentioned country."""
+    def direct(t):
         o = first(COUNTRIES, t)
         if o:
             return o
         a = first(list(COUNTRY_ALIASES), t)
-        if a:
-            return COUNTRY_ALIASES[a]
+        return COUNTRY_ALIASES[a] if a else None
+    o = direct(title)
+    if o:
+        return o
     m = ORIGIN_LABEL.search(body or "")
-    if m:
-        o = first(COUNTRIES, m.group(1)) or COUNTRY_ALIASES.get(first(list(COUNTRY_ALIASES), m.group(1)) or "")
-        if o:
-            return o
-    return count_origin(body or "") if body else None
+    if m and direct(m.group(1)):
+        return direct(m.group(1))
+    return direct(blob) or (count_origin(body) if body else None)
 
 
 def find_process(text):
