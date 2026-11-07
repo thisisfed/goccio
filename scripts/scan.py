@@ -269,6 +269,23 @@ def ld_to_item(p, url, lastmod):
             "published": "", "lastmod": lastmod, "brand": brand}
 
 
+def og_product(page):
+    """Fallback for shops that only publish OpenGraph product tags (common on Squarespace and custom sites)."""
+    meta = {}
+    for m in re.finditer(r'<meta[^>]+(?:property|name)=["\']([^"\']+)["\'][^>]*content=["\']([^"\']*)["\']', page, re.I):
+        meta.setdefault(m.group(1).lower(), html.unescape(m.group(2)))
+    for m in re.finditer(r'<meta[^>]+content=["\']([^"\']*)["\'][^>]*(?:property|name)=["\']([^"\']+)["\']', page, re.I):
+        meta.setdefault(m.group(2).lower(), html.unescape(m.group(1)))
+    is_product = meta.get("og:type", "").lower().startswith("product") or "product:price:amount" in meta or "og:price:amount" in meta
+    if not is_product or not meta.get("og:title"):
+        return []
+    price = meta.get("product:price:amount") or meta.get("og:price:amount")
+    ccy = meta.get("product:price:currency") or meta.get("og:price:currency")
+    avail = meta.get("product:availability") or meta.get("og:availability") or "instock"
+    return [{"@type": "Product", "name": meta["og:title"], "description": meta.get("og:description") or meta.get("description", ""),
+             "offers": {"price": price, "priceCurrency": ccy, "availability": "InStock" if re.search(r"in ?stock|available|preorder", avail, re.I) else "OutOfStock"}}]
+
+
 def fetch_generic(shop, max_pages=45):
     items, pages = [], sitemap_urls(shop)
     for url, lm in pages[:max_pages]:
@@ -276,7 +293,8 @@ def fetch_generic(shop, max_pages=45):
             page = get_text(url, tries=1)
         except Exception:  # noqa: BLE001
             continue
-        for p in ld_products(page)[:1]:
+        prods = ld_products(page)[:1] or og_product(page)
+        for p in prods:
             it = ld_to_item(p, url, lm)
             if it["title"]:
                 if len(it["body"]) < 60:   # thin JSON-LD: add the page's meta description
@@ -502,12 +520,20 @@ def scan_roaster(r):
             if items:
                 if kind == "sitemap":
                     found = [i["currency"] for i in items if i.get("currency")]
-                    r["_ccy"] = r.get("currency") or (max(set(found), key=found.count) if found else shop_currency(shop, kind, r))
+                    home = r.get("currency") or COUNTRY_CCY.get(r.get("country"), "EUR" if r.get("region") == "Europe" else "GBP")
+                    seen = max(set(found), key=found.count) if found else home
+                    r["_ccy"] = seen
+                    if seen != home:   # geo-converted price: don't show a number we can't vouch for
+                        for i in items:
+                            i["price"] = None
+                        r["_note"] = f"prices shown in {seen} to the scanner, hidden"
                 else:
                     r["_ccy"] = shop_currency(shop, kind, r)
                 return kind, items, None
         except Exception as e:  # noqa: BLE001
             errors.append(f"{kind}: {type(e).__name__}: {str(e)[:80]}")
+            continue
+        errors.append(f"{kind}: no product data")
     return None, [], "; ".join(errors) or "no products found"
 
 
@@ -559,7 +585,7 @@ def main():
         if kind and r["name"] not in first_seen:
             first_seen[r["name"]] = today
         status.append({"name": r["name"], "shop": r["shop"], "market": r.get("region", "UK"), "country": r.get("country"),
-                       "first_seen": first_seen.get(r["name"]),
+                       "first_seen": first_seen.get(r["name"]), "note": r.get("_note"),
                        "currency": r.get("_ccy"), "platform": kind, "coffees": kept, "error": err})
         print(f"{r['name']:<26} {kind or 'FAILED':<12} {kept:>3} {err or ''}")
         time.sleep(1.5)
