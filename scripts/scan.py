@@ -101,9 +101,18 @@ def get_json(url, tries=2):
 
 
 def fetch_shopify(shop):
+    base = f"{shop}/products.json"
+    try:
+        get_json(f"{base}?limit=1")
+    except Exception:  # noqa: BLE001
+        base = f"{shop}/collections/all/products.json"   # some shops switch off the root list only
+    return _fetch_shopify(shop, base)
+
+
+def _fetch_shopify(shop, base):
     items = []
     for page in range(1, 5):
-        data = get_json(f"{shop}/products.json?limit=250&page={page}")
+        data = get_json(f"{base}?limit=250&page={page}")
         prods = data.get("products", [])
         if not prods:
             break
@@ -286,9 +295,30 @@ def og_product(page):
              "offers": {"price": price, "priceCurrency": ccy, "availability": "InStock" if re.search(r"in ?stock|available|preorder", avail, re.I) else "OutOfStock"}}]
 
 
+def shopify_product_js(url, lastmod):
+    """Shopify serves every product as JSON at <product url>.js, even when /products.json is off."""
+    try:
+        p = get_json(url.split("?")[0].rstrip("/") + ".js", tries=1)
+    except Exception:  # noqa: BLE001
+        return None
+    if not isinstance(p, dict) or not p.get("title"):
+        return None
+    variants = p.get("variants") or []
+    prices = [v["price"] / 100 for v in variants if isinstance(v.get("price"), (int, float))]
+    tags = p.get("tags") or []
+    return {"title": p.get("title", ""), "type": p.get("type", ""), "tags": tags if isinstance(tags, list) else [tags],
+            "body": strip_html(p.get("description", "")), "variants": " / ".join(v.get("title", "") for v in variants),
+            "available": bool(p.get("available", True)), "price": min(prices) if prices else (p.get("price", 0) / 100 or None),
+            "currency": None, "url": url.split("?")[0], "published": (p.get("published_at") or "")[:10], "lastmod": lastmod}
+
+
 def fetch_generic(shop, max_pages=45):
     items, pages = [], sitemap_urls(shop)
     for url, lm in pages[:max_pages]:
+        if "/products/" in url:
+            it = shopify_product_js(url, lm)
+            if it:
+                items.append(it); time.sleep(0.6); continue
         try:
             page = get_text(url, tries=1)
         except Exception:  # noqa: BLE001
