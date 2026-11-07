@@ -165,6 +165,18 @@ def find_process(text):
     return None
 
 
+def find_roast(text):
+    """Roast level only when the roaster states it; otherwise None (the site then asks)."""
+    t = text.lower()
+    for pat, lvl in [(r"(very|ultra|extra)[- ]light", "vlight"), (r"nordic", "vlight"),
+                     (r"medium[- ]light|light[- ]medium", "light"),
+                     (r"light roast|lightly roasted|roast(?: level)?\s*[:\-]\s*light", "light"),
+                     (r"medium roast|roast(?: level)?\s*[:\-]\s*medium\b", "medium")]:
+        if re.search(pat, t):
+            return lvl
+    return None
+
+
 def find_notes(item):
     text = item["body"]
     m = NOTES_RE.search(text)
@@ -238,6 +250,7 @@ def classify(item, roaster):
         "url": item["url"],
         "published": item["published"] or None,
         "roast": "filter" if filtery else "omni / unlabelled",
+        "roast_level": find_roast(title + " " + " ".join(item["tags"]) + " " + item["variants"]) or find_roast(item["body"]),
     }
     return {k: v for k, v in rec.items() if v not in (None, "", [])}
 
