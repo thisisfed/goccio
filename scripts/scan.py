@@ -278,6 +278,62 @@ def ld_to_item(p, url, lastmod):
             "published": "", "lastmod": lastmod, "brand": brand}
 
 
+def next_products(page):
+    """Headless shops (Next.js / Nuxt): product data sits in an embedded JSON blob, often Shopify Storefront shaped."""
+    blobs = []
+    for m in re.finditer(r'<script[^>]+id=["\'](?:__NEXT_DATA__|__NUXT_DATA__)["\'][^>]*>(.*?)</script>', page, re.S | re.I):
+        blobs.append(m.group(1))
+    for m in re.finditer(r'self\.__next_f\.push\(\[1,"(.*?)"\]\)', page, re.S):   # Next.js app router stream
+        try:
+            blobs.append(json.loads('"' + m.group(1) + '"'))
+        except Exception:  # noqa: BLE001
+            pass
+    found = []
+    for b in blobs:
+        for chunk in [b]:
+            try:
+                data = json.loads(chunk)
+            except Exception:  # noqa: BLE001
+                # app-router chunks look like "1a:{...}"; try every JSON object start
+                for mm in re.finditer(r'\{"', chunk):
+                    try:
+                        data, _ = json.JSONDecoder().raw_decode(chunk[mm.start():]); break
+                    except Exception:  # noqa: BLE001
+                        data = None
+                if data is None:
+                    continue
+            stack = [data]
+            while stack:
+                d = stack.pop()
+                if isinstance(d, dict):
+                    if d.get("title") and ("descriptionHtml" in d or "description" in d) and ("priceRange" in d or "variants" in d or "handle" in d):
+                        found.append(d)
+                    stack.extend(v for v in d.values() if isinstance(v, (dict, list)))
+                elif isinstance(d, list):
+                    stack.extend(d)
+    out = []
+    for d in found[:1]:
+        pr = ((d.get("priceRange") or {}).get("minVariantPrice") or {})
+        price, ccy = pr.get("amount"), pr.get("currencyCode")
+        if price is None:
+            vs = d.get("variants")
+            vs = vs.get("edges") or vs.get("nodes") if isinstance(vs, dict) else vs
+            for v in vs or []:
+                v = v.get("node", v) if isinstance(v, dict) else {}
+                p2 = v.get("price")
+                if isinstance(p2, dict):
+                    price, ccy = p2.get("amount"), p2.get("currencyCode") or ccy
+                elif p2 is not None:
+                    price = p2
+                if price is not None:
+                    break
+        tags = d.get("tags") or []
+        out.append({"@type": "Product", "name": d.get("title"), "description": d.get("descriptionHtml") or d.get("description") or "",
+                    "category": " ".join([str(d.get("productType") or "")] + [t for t in tags if isinstance(t, str)]),
+                    "offers": {"price": price, "priceCurrency": ccy, "availability": "InStock" if d.get("availableForSale", True) else "OutOfStock"}})
+    return out
+
+
 def og_product(page):
     """Fallback for shops that only publish OpenGraph product tags (common on Squarespace and custom sites)."""
     meta = {}
@@ -329,7 +385,7 @@ def fetch_generic(shop, max_pages=45):
         except Exception:  # noqa: BLE001
             DIAG[shop]["pages_blocked"] += 1
             continue
-        prods = ld_products(page)[:1] or og_product(page)
+        prods = ld_products(page)[:1] or next_products(page) or og_product(page)
         for p in prods:
             it = ld_to_item(p, url, lm)
             if it["title"]:
