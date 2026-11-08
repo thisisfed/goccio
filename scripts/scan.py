@@ -678,6 +678,15 @@ def fetch_woo(shop):
                 price = None
             if price is None and p.get("variations"):
                 price = woo_variation_price(shop, p["variations"])
+            prefix = ""
+            if price is None:   # last resort: the price line the shop itself shows ("From £3.90" at Monmouth, sold by weight)
+                m = re.search(r"([\d]+(?:[.,]\d{1,2})?)</span>", (p.get("price_html") or "").replace("&nbsp;", " "))
+                if m:
+                    try:
+                        price = float(m.group(1).replace(",", "."))
+                        prefix = "From " if re.search(r"\bfrom\b", p.get("price_html") or "", re.I) else ""
+                    except ValueError:
+                        price = None
             if price is None and shop not in PRICE_DIAG and "subscri" not in (p.get("type") or "") and not EXCLUDE.search(p.get("name", "")):
                 PRICE_DIAG[shop] = (f"{p.get('name')}: prices={json.dumps(pr)[:260]} type={p.get('type')} variations={json.dumps(p.get('variations'))[:300]} "
                                     f"price_html={(p.get('price_html') or '')[:200]!r}")
@@ -691,6 +700,7 @@ def fetch_woo(shop):
                 "variants": "",
                 "available": bool(p.get("is_in_stock", True)),
                 "price": price,
+                "price_prefix": prefix,
                 "url": p.get("permalink", ""),
                 "published": "",
             })
@@ -929,7 +939,7 @@ def classify(item, roaster):
         "process": process,
         "variety": variety,
         "notes": find_notes(item),
-        "price": money(item["price"], roaster.get("_ccy", "GBP")) if item["price"] else None,
+        "price": (item.get("price_prefix") or "") + money(item["price"], roaster.get("_ccy", "GBP")) if item["price"] else None,
         "url": item["url"],
         "published": item["published"] or None,
         "roast": "filter" if filtery else "omni / unlabelled",
