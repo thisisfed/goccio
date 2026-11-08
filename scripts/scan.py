@@ -700,6 +700,69 @@ def classify(item, roaster):
     return {k: v for k, v in rec.items() if v not in (None, "", [])}
 
 
+# ---------- product page details ----------
+# Many shops keep process and variety in theme fields (Shopify metafields) that never reach the
+# product JSON: Climpson shows "Process: Natural" on the page but not in body_html. When the JSON
+# gives no process or variety, read the product page and take the labelled value.
+PAGE_LABEL = {
+    "process": re.compile(r"\b(?:process(?:ing)?(?: method)?|processo|proceso|prozess|aufbereitung|proc[ée]d[ée]|bearbetning)\s*(?::|\n)", re.I),
+    "variety": re.compile(r"\b(?:variet(?:y|ies|al|als)|cultivars?|variedad(?:es)?|variet[àa]|sorte[n]?|vari[ée]t[ée]s?)\s*(?::|\n)", re.I),
+}
+PAGE_FETCHES_PER_ROASTER = 40
+
+
+def page_text(url):
+    raw = get_text(url, tries=1, limit=1_500_000)
+    raw = re.sub(r"<(script|style|noscript|svg|template)\b.*?</\1>", " ", raw, flags=re.I | re.S)
+    raw = re.sub(r"<(header|nav|footer)\b.*?</\1>", " ", raw, flags=re.I | re.S)
+    return strip_html(raw)
+
+
+def labelled(text, key, start=0):
+    """The value written after a "Process:" / "Variety:" label, or None."""
+    for m in PAGE_LABEL[key].finditer(text, start):
+        window = text[m.end():m.end() + 90]
+        if key == "process":
+            got = find_process(window)
+            if got:
+                return got
+        else:
+            line = next((l.strip(" :-") for l in window.split("\n") if l.strip(" :-")), "")
+            if line and not PAGE_LABEL["process"].match(line + ":") and len(line) <= 60 and \
+                    (first(VARIETIES, line) or re.search(r"[A-Z][a-z]+|\d{3,}", line)):
+                if not re.search(r"\b(?:process|altitude|origin|region|notes?|producer|farm)\b", line, re.I):
+                    return line
+    return None
+
+
+def add_page_details(recs, roaster, old):
+    """Fill missing process / variety from the product page (or last week's answer for the same URL)."""
+    fetched = 0
+    for rec in recs:
+        need = [k for k in ("process", "variety") if not rec.get(k)]
+        if not need:
+            continue
+        prev = old.get(rec["url"], {})
+        for k in need:
+            if prev.get(k) and prev.get(k + "_from") == "page":
+                rec[k], rec[k + "_from"] = prev[k], "page"
+        need = [k for k in need if not rec.get(k)]
+        if not need or fetched >= PAGE_FETCHES_PER_ROASTER:
+            continue
+        fetched += 1
+        try:
+            text = page_text(rec["url"])
+        except Exception:  # noqa: BLE001
+            continue
+        start = max(0, text.lower().find(rec["name"].lower()[:30]))
+        for k in need:
+            v = labelled(text, k, start) or (labelled(text, k) if start else None)
+            if v:
+                rec[k], rec[k + "_from"] = v, "page"
+        time.sleep(0.4)
+    return fetched
+
+
 def shop_currency(shop, kind, r):
     if r.get("currency"):
         return r["currency"]
@@ -798,12 +861,15 @@ def main():
         kept = 0
         if kind:
             scanned_ok.add(r["name"])
+            recs = []
             for it in items:
                 rec = classify(it, r)
                 if rec:
                     rec["found"] = old.get(rec["url"], {}).get("found", today)
-                    found.append(rec)
-                    kept += 1
+                    recs.append(rec)
+            add_page_details(recs, r, old)
+            found.extend(recs)
+            kept = len(recs)
         if kind and r["name"] not in first_seen:
             first_seen[r["name"]] = today
         status.append({"name": r["name"], "shop": r["shop"], "market": r.get("region", "UK"), "country": r.get("country"),
