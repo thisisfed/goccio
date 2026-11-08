@@ -10,6 +10,7 @@ Usage: python3 scripts/scan.py            (writes data/releases.json)
 """
 import html
 import json
+from concurrent.futures import ThreadPoolExecutor
 import re
 import sys
 import time
@@ -705,6 +706,10 @@ def cached_page(url):
 def origin_from_page(item, roaster):
     """Country for a coffee whose feed doesn't name one: a labelled Origin/Country on its page, else the
     country named most in the text right after its title (menus and footers are stripped first)."""
+    prev = (roaster.get("_old") or {}).get(item.get("url"), {})
+    if prev.get("origin_from") == "page" and prev.get("origin"):
+        item["_origin_from"] = "page"
+        return prev["origin"]
     n = roaster.setdefault("_origin_pages", 0)
     if n >= ORIGIN_PAGE_FETCHES or not item.get("url"):
         return None
@@ -722,6 +727,7 @@ def origin_from_page(item, roaster):
             break
     o = o or find_origin(window[:200]) or count_origin(window)
     if o:
+        item["_origin_from"] = "page"
         item["body"] = (item.get("body") or "") + "\n" + window   # lets process, variety and notes use the page too
     return o
 
@@ -786,6 +792,7 @@ def classify(item, roaster):
         "roast": "filter" if filtery else "omni / unlabelled",
         "blend": True if blend else None,
         "roast_level": roast_level,
+        "origin_from": item.get("_origin_from"),
     }
     rec["market"] = roaster.get("region", "UK")
     rec["roaster_country"] = roaster.get("country")
@@ -1015,27 +1022,33 @@ def main():
         except Exception:  # noqa: BLE001
             pass
     scanned_ok = set()
-    for r in roasters:
+    def run(r):
+        """Fetch and classify one roaster (runs in a thread pool: page look-ups made one-by-one were too slow)."""
+        r["_old"] = old
         kind, items, err = scan_roaster(r)
-        kept = 0
+        recs = []
         if kind:
-            scanned_ok.add(r["name"])
-            recs = []
             for it in items:
                 rec = classify(it, r)
                 if rec:
                     rec["found"] = old.get(rec["url"], {}).get("found", today)
                     recs.append(rec)
             add_page_details(recs, r, old)
+        return kind, err, recs
+
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        results = list(pool.map(run, roasters))
+    for r, (kind, err, recs) in zip(roasters, results):
+        kept = len(recs)
+        if kind:
+            scanned_ok.add(r["name"])
             found.extend(recs)
-            kept = len(recs)
         if kind and r["name"] not in first_seen:
             first_seen[r["name"]] = today
         status.append({"name": r["name"], "shop": r["shop"], "market": r.get("region", "UK"), "country": r.get("country"),
                        "first_seen": first_seen.get(r["name"]), "note": r.get("_note"),
                        "currency": r.get("_ccy"), "platform": kind, "coffees": kept, "error": err})
         print(f"{r['name']:<26} {kind or 'FAILED':<12} {kept:>3} {err or ''}")
-        time.sleep(1.5)
 
     status = prev_status + status
     # keep last week's coffees from roasters that failed this time (temporary outages)
