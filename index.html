@@ -299,7 +299,8 @@ table.pours { width: 100%; border-collapse: separate; border-spacing: 0; backgro
 .item .r { display: grid; justify-items: end; gap: 6px; text-align: right; }
 .item .price { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .item .r .btn { min-height: 32px; padding: 0 16px; font-size: 14px; }
-.item .date { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.item .date { font-size: 12px; color: var(--muted); white-space: nowrap; display: inline-flex; gap: 10px; align-items: baseline; }
+.item .date a { font-weight: 600; }
 .more-btn { justify-self: center; }
 
 footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; color: var(--muted); display: grid; gap: 6px; }
@@ -1586,7 +1587,7 @@ footer .bmc a { color: var(--coffee); font-weight: 600; }
         <div class="r">
           ${r.price ? `<span class="price">${esc(r.price)}</span>` : '<span class="date">Price on site</span>'}
           <button class="btn" type="button" data-i="${i}">Brew</button>
-          <span class="date">${r.url ? `<a href="${esc(r.url)}" target="_blank" rel="noopener">Shop</a> / ` : ""}${r.published ? isoDmy(r.published).slice(0, 5) : isoDmy(r.found).slice(0, 5)}</span>
+          <span class="date">${r.url ? `<a href="${esc(r.url)}" target="_blank" rel="noopener" aria-label="Buy ${esc(r.name)} from ${esc(r.roaster)}">Buy</a>` : ""}<span>${r.published ? isoDmy(r.published).slice(0, 5) : isoDmy(r.found).slice(0, 5)}</span></span>
         </div></article>`; }).join("") : '<p class="muted" style="padding:16px 0;margin:0">Nothing matches.</p>';
     $("shelfMore").hidden = shelfAll || !!q || list.length <= LIMIT;
     $("shelfMore").textContent = `Show all ${list.length}`;
