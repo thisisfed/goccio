@@ -25,7 +25,7 @@ OUT = ROOT / "data" / "releases.json"
 UA = "V60BrewCard/1.0 (+https://v60.thisisfed.xyz; weekly filter-coffee list)"
 NEW_DAYS = 21
 MAX_ITEMS = 1200
-PER_ROASTER = 8
+PER_ROASTER = 100   # was 8, which hid most of a big roaster's range
 
 COUNTRIES = ["Ethiopia", "Kenya", "Colombia", "Panama", "Costa Rica", "Guatemala", "El Salvador",
              "Honduras", "Nicaragua", "Peru", "Bolivia", "Ecuador", "Brazil", "Burundi", "Rwanda",
@@ -676,20 +676,30 @@ def money(v, ccy):
     return amount + sym if sym.startswith(" ") else sym + amount
 
 
+DROPS = {}   # roaster -> reason -> [titles], printed at the end of a scan so silent drops can be reviewed
+
+
+def _drop(roaster, reason, title):
+    DROPS.setdefault(roaster["name"], {}).setdefault(reason, []).append(title)
+    return None
+
+
 def classify(item, roaster):
     title = item["title"]
     blob = " ".join([title, item["type"], " ".join(item["tags"]), item["variants"]])
     full = blob + "\n" + item["body"]
     if not item["available"]:
-        return None
-    if EXCLUDE.search(title) or EXCLUDE.search(item["type"]):
-        return None
+        return _drop(roaster, "sold out", title)
+    m = EXCLUDE.search(title) or EXCLUDE.search(item["type"])
+    if m:
+        return _drop(roaster, f"not coffee ({m.group(0)})", title)
     why = not_beans(item) or not_one_coffee(item)
     if why:
         REJECTED.append(f"{roaster['name']}: {title} ({why})")
-        return None
-    if DARK.search(full):
-        return None
+        return _drop(roaster, why.split(":")[0], title)
+    m = DARK.search(full)
+    if m:
+        return _drop(roaster, f"dark ({m.group(0)})", title)
     origin = find_origin(title, blob, item["body"])
     blend = blend_reason(item)
     if blend:
@@ -697,13 +707,13 @@ def classify(item, roaster):
         origin = " / ".join(parts) if len(parts) >= 2 else (origin or (parts[0] if parts else None))
     is_coffee = bool(origin) and (bool(COFFEE_HINT.search(full)) or re.search(r"coffee|bean", blob, re.I))
     if not is_coffee:
-        return None
+        return _drop(roaster, "no origin found" if not origin else "no coffee details", title)
     filtery = bool(FILTERY.search(blob)) or bool(re.search(r"roasted for filter|filter roast|omni roast", item["body"], re.I))
     espresso_only = bool(ESPRESSO.search(title + " " + item["type"])) and not filtery
     if espresso_only:
-        return None
+        return _drop(roaster, "espresso (title/type)", title)
     if not filtery and ESPRESSO.search(" ".join(item["tags"])) and not FILTERY.search(item["body"]):
-        return None
+        return _drop(roaster, "espresso (tags)", title)
     process = find_process(title + " " + " ".join(item["tags"])) or find_process(item["body"])
     variety = first(VARIETIES, title + " " + " ".join(item["tags"])) or first(VARIETIES, item["body"])
     rec = {
@@ -1011,6 +1021,13 @@ def main():
     OUT.write_text(json.dumps({"updated": today, "new_window_days": NEW_DAYS, "roasters": status,
                                "releases": found}, ensure_ascii=False, indent=1) + "\n")
     print(f"\n{len(found)} coffees from {len(scanned_ok)}/{len(roasters)} roasters -> {OUT.relative_to(ROOT)}")
+    print("\nWhy products were not listed, per roaster (review this when a shop looks thin):")
+    for name in sorted(DROPS):
+        reasons = DROPS[name]
+        print(f"  {name}: " + ", ".join(f"{k} {len(v)}" for k, v in sorted(reasons.items(), key=lambda kv: -len(kv[1]))))
+        for k, v in reasons.items():
+            if k != "sold out":
+                print(f"      {k}: " + " | ".join(v[:6]))
     if REJECTED:
         print(f"\nNot coffee beans, skipped ({len(REJECTED)}):")
         for line in REJECTED:
