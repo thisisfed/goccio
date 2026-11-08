@@ -25,7 +25,7 @@ ROASTERS = ROOT / "data" / "roasters.json"
 OUT = ROOT / "data" / "releases.json"
 UA = "V60BrewCard/1.0 (+https://v60.thisisfed.xyz; weekly filter-coffee list)"
 NEW_DAYS = 21
-MAX_ITEMS = 1200
+MAX_ITEMS = 4000   # a safety cap only; the list is ~1,100 coffees
 PER_ROASTER = 100   # was 8, which hid most of a big roaster's range
 
 COUNTRIES = ["Ethiopia", "Kenya", "Colombia", "Panama", "Costa Rica", "Guatemala", "El Salvador",
