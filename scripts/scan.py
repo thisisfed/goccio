@@ -984,6 +984,54 @@ def labelled(text, key, start=0):
     return None
 
 
+PRICE_META = re.compile(r'<meta[^>]+(?:property|name)=["\'](?:og|product):price:(amount|currency)["\'][^>]+content=["\']([^"\']+)', re.I)
+PRICE_FETCHES_PER_ROASTER = 40
+
+
+def page_price(raw):
+    """(amount, currency) from a product page: schema.org offers first, then og/product price meta tags."""
+    for p in ld_products(raw):
+        it = ld_to_item(p, "", "")
+        if it.get("price"):
+            return it["price"], it.get("currency")
+    meta = {k.lower(): v for k, v in PRICE_META.findall(raw)}
+    try:
+        if meta.get("amount"):
+            return float(meta["amount"].replace(",", ".")), meta.get("currency")
+    except ValueError:
+        pass
+    return None, None
+
+
+def add_page_prices(recs, roaster, old):
+    """Last resort for "Price on site": read the price from the product page, asking for the shop's home market.
+    A price is only shown when the page states it in the shop's own currency, so a geo-converted figure never
+    gets through. Last week's page price for the same URL is reused when nothing changed."""
+    home, fetched, filled = home_currency(roaster), 0, 0
+    loc = f"country={roaster.get('country') or 'GB'}&currency={home}"
+    for rec in recs:
+        if rec.get("price"):
+            continue
+        prev = old.get(rec["url"], {})
+        if prev.get("price") and prev.get("price_from") == "page":
+            rec["price"], rec["price_from"] = prev["price"], "page"
+            continue
+        if fetched >= PRICE_FETCHES_PER_ROASTER:
+            break
+        fetched += 1
+        try:
+            raw = get_text(rec["url"] + ("&" if "?" in rec["url"] else "?") + loc, tries=1)
+        except Exception:  # noqa: BLE001
+            continue
+        amount, ccy = page_price(raw)
+        if amount and 1 <= amount <= 1000 and (ccy or "").upper() == home:
+            rec["price"], rec["price_from"] = money(amount, home), "page"
+            filled += 1
+        time.sleep(.4)
+    if fetched:
+        print(f"  prices from pages for {roaster['name']}: {filled} of {fetched}")
+
+
 def add_page_details(recs, roaster, old):
     """Fill missing process / variety from the product page (or last week's answer for the same URL)."""
     fetched, filled, errs = 0, 0, []
@@ -1185,6 +1233,7 @@ def main():
                     rec["found"] = old.get(rec["url"], {}).get("found", today)
                     recs.append(rec)
             add_page_details(recs, r, old)
+            add_page_prices(recs, r, old)
         return kind, err, recs
 
     with ThreadPoolExecutor(max_workers=8) as pool:
@@ -1243,6 +1292,11 @@ def main():
     OUT.write_text(json.dumps({"updated": today, "new_window_days": NEW_DAYS, "roasters": status,
                                "releases": found}, ensure_ascii=False, indent=1) + "\n")
     print(f"\n{len(found)} coffees from {len(scanned_ok)}/{len(roasters)} roasters -> {OUT.relative_to(ROOT)}")
+    miss = {}
+    for x in found:
+        miss.setdefault(x["roaster"], [0, 0])[0 if x.get("price") else 1] += 1
+    bad = sorted(((n, a, b) for n, (a, b) in miss.items() if b and b >= a), key=lambda t: -t[2])
+    print("\nRoasters with most coffees on 'Price on site': " + (", ".join(f"{n} {b}/{a + b}" for n, a, b in bad) or "none"))
     print("\nWhy products were not listed, per roaster (review this when a shop looks thin):")
     for name in sorted(DROPS):
         reasons = DROPS[name]
