@@ -1578,6 +1578,7 @@ footer .bmc a { color: var(--coffee); font-weight: 600; }
       const head = group !== lastGroup && shelfF !== "new" ? `<div class="grp">${group}</div>` : ""; lastGroup = group;
       const pills = [
         r.blend ? '<span class="pill">Blend</span>' : "",
+        r.roast_level ? `<span class="pill">${r.roast_level === "dark" ? "Dark roast" : "Medium-dark"}</span>` : "",
         r.process ? `<span class="pill ${PROC_TONE[bucket(r.process)]}">${esc(r.process)}</span>` : '<span class="pill miss">Process not listed</span>',
         r.variety ? `<span class="pill">${esc(titleCase(r.variety))}</span>` : "",
       ].join("");
@@ -1603,7 +1604,7 @@ footer .bmc a { color: var(--coffee); font-weight: 600; }
     state.text = [r.roaster, r.name, r.origin, r.region, r.variety, r.process].filter(Boolean).join(", ") + (notes.length ? ". Notes: " + notes.join(", ") : "");
     state.bag = { roaster: r.roaster, name: r.name, origin: r.origin, variety: r.variety, notes, url: r.url };
     state.process = r.process ? procKey(r.process) : "auto";
-    state.roast = "auto";
+    state.roast = r.roast_level === "dark" ? "dark" : r.roast_level === "medium-dark" ? "mdark" : "auto";
     $("coffeeIn").value = state.text; saveState(); renderAllOpts(); render();
     $("recipe").scrollIntoView({ behavior: "smooth", block: "start" });
   }

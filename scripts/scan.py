@@ -42,6 +42,13 @@ COUNTRY_ALIASES = {
     "Ouganda": "Uganda", "Tansania": "Tanzania", "Tanzanie": "Tanzania", "Jemen": "Yemen", "Yémen": "Yemen", "Salvador": "El Salvador",
     "Costa Rica": "Costa Rica", "Burundi": "Burundi", "Guatemala": "Guatemala", "Honduras": "Honduras", "Nicaragua": "Nicaragua",
     "Bolivie": "Bolivia", "Bolivien": "Bolivia", "Cina": "China", "Chine": "China", "Inde": "India", "Indien": "India",
+    # Spanish, Polish, Czech, Nordic, Italian spellings seen on shop pages
+    "Etiopía": "Ethiopia", "Etiópia": "Ethiopia", "Etiopie": "Ethiopia", "Keňa": "Kenya", "Kolumbie": "Colombia",
+    "Kostaryka": "Costa Rica", "Kostarika": "Costa Rica", "Gwatemala": "Guatemala", "Salwador": "El Salvador",
+    "Nikaragua": "Nicaragua", "Boliwia": "Bolivia", "Bolívie": "Bolivia", "Ekwador": "Ecuador", "Ekvádor": "Ecuador",
+    "Meksyk": "Mexico", "Mexiko": "Mexico", "Indonezja": "Indonesia", "Indonésie": "Indonesia", "Brazílie": "Brazil",
+    "Brazilië": "Brazil", "Ruandzie": "Rwanda", "Rwandy": "Rwanda", "Tanzánie": "Tanzania", "Tanzania": "Tanzania",
+    "Perù": "Peru", "Honduras": "Honduras", "Jemen": "Yemen", "Kongo": "DR Congo", "Kenija": "Kenya", "Ugandzie": "Uganda",
 }
 SYMBOL = {"GBP": "£", "EUR": "€", "USD": "$", "CAD": "CA$", "AUD": "A$", "NZD": "NZ$", "JPY": "¥", "DKK": " kr", "SEK": " kr", "NOK": " kr",
           "PLN": " zł", "CZK": " Kč", "CHF": "CHF "}
@@ -58,8 +65,11 @@ EXCLUDE = re.compile(r"subscri|abonnement|abbonamento|\babo\b|suscripci|prenumer
                      r"steep|equipment|grinder|\bmug\b|kettle|dripper|filter papers?|papers\b|\bcups?\b(?! of excellence)|"
                      r"sampler|tasting pack|taster|bundle|merch|t-?shirt|hoodie|tote|cap\b|"
                      r"cold brew|concentrate|instant|\btea\b|chocolate bar|chocolate\b|cascara|"
-                     r"workshop|course|class|training|advent|box\b|\bkit\b|scale\b|aeropress\b(?! recipe)|"
-                     r"\bblend\b|espresso blend|house blend|\bgreen\b|unroasted|\bduo\b|\btrio\b|\bpack\b|\bset\b|selection|collection|wholesale|\b1\s?kg\b|\b2\s?kg\b", re.I)
+                     r"workshop|course|\bclass(?:es)?\b|masterclass|training|advent|box\b|\bkit\b|scale\b|aeropress\b(?! recipe)|"
+                     r"green (?:beans?|coffee)|råkaffe|rohkaffee|unroasted|\bduo\b|\btrio\b|\bpack\b|\bset\b|selection|collection|wholesale|"
+                     r"\b\d+(?:[.,]\d+)?\s?kg\b|\btin\b|longjing|sencha|oolong|rooibos|darjeeling|\bassam\b|earl grey|bai hao|jasmine (?:green|tea|pearl)|"
+                     r"sticker|socks?\b|bandana|poster|\binsert\b|screw|basket|portafilter|gasket|spout|tablets?\b|cleaner|\bpin\b|scoop|\bjar\b|"
+                     r"\bcake\b|bread\b|sandwich|tumbler|calendar|kalender|shipping\b|postcard", re.I)
 FILTERY = re.compile(r"\bfilter\b|\bomni\b|pour[- ]?over|\bv60\b|chemex|batch brew|filter roast|\bfiltro\b|\bfiltre\b|"
                      r"filterröst|filterkaffe|handfilter|brew roast", re.I)
 ESPRESSO = re.compile(r"\bespresso\b", re.I)
@@ -69,6 +79,11 @@ NOTES_RE = re.compile(r"(?:tasting notes|flavour notes|flavor notes|flavour prof
                       r"note di degustazione|note aromatiche|note|geschmacksnoten|geschmack|aromen|notes de dégustation|"
                       r"smaksnoter|smagsnoter|smaksnotater|notas de cata|notas|notes)\s*[:\-–]\s*([^\n.]{3,120})", re.I)
 DARK = re.compile(r"dark roast|medium[- ]dark|french roast|italian roast", re.I)
+ROAST_LABEL = re.compile(r"(?:roast(?: level| degree)?|tostado|tueste|röstgrad|torréfaction|tostatura)\s*[:\-–]\s*(medium[- ]dark|dark)\b", re.I)
+# looks like a bag of coffee even when the feed names no country or tasting details
+BEANISH = re.compile(r"\b\d{3,4}\s?g\b|whole ?beans?|wholebean|hele bønner|en grains?|grano|ganze bohnen?|ziarn|zrnk|"
+                     r"\bfilter\b|\bespresso\b|\bomni\b|coffee|\bcaf[eé]\b|kaffe|kaffee|caff[eè]|\bkawa\b|k[aá]va|kahvi|"
+                     r"washed|natural|honey|anaerob|lavado|lavé|gewaschen|geisha|gesha", re.I)
 
 # --- "is this a bag of beans?" gate -------------------------------------------------------
 # Roasters also sell drinks made from coffee (liqueurs, cans, concentrates). Their pages name an
@@ -676,6 +691,41 @@ def money(v, ccy):
     return amount + sym if sym.startswith(" ") else sym + amount
 
 
+PAGES = {}   # url -> (raw html, visible text), shared by the origin and the process/variety look-ups
+ORIGIN_PAGE_FETCHES = 60
+
+
+def cached_page(url):
+    if url not in PAGES:
+        PAGES[url] = page_text(url)
+        time.sleep(0.4)
+    return PAGES[url]
+
+
+def origin_from_page(item, roaster):
+    """Country for a coffee whose feed doesn't name one: a labelled Origin/Country on its page, else the
+    country named most in the text right after its title (menus and footers are stripped first)."""
+    n = roaster.setdefault("_origin_pages", 0)
+    if n >= ORIGIN_PAGE_FETCHES or not item.get("url"):
+        return None
+    roaster["_origin_pages"] = n + 1
+    try:
+        raw, text = cached_page(item["url"])
+    except Exception:  # noqa: BLE001
+        return None
+    start = text.lower().find(item["title"].lower()[:30])
+    window = text[max(start, 0):max(start, 0) + 2500]
+    o = None
+    for m in ORIGIN_LABEL.finditer(window):
+        o = find_origin(m.group(1))
+        if o:
+            break
+    o = o or find_origin(window[:200]) or count_origin(window)
+    if o:
+        item["body"] = (item.get("body") or "") + "\n" + window   # lets process, variety and notes use the page too
+    return o
+
+
 DROPS = {}   # roaster -> reason -> [titles], printed at the end of a scan so silent drops can be reviewed
 
 
@@ -697,15 +747,22 @@ def classify(item, roaster):
     if why:
         REJECTED.append(f"{roaster['name']}: {title} ({why})")
         return _drop(roaster, why.split(":")[0], title)
-    m = DARK.search(full)
+    # dark roasts stay (the recipe handles them); read the level from the title/tags or a labelled roast line,
+    # not from anywhere on the page: Hasbean prints the whole light-to-dark scale on every coffee
+    m = DARK.search(blob) or ROAST_LABEL.search(item["body"])
+    roast_level = None
     if m:
-        return _drop(roaster, f"dark ({m.group(0)})", title)
+        lvl = (m.group(1) if m.re is ROAST_LABEL else m.group(0)).lower()
+        roast_level = "medium-dark" if "medium" in lvl else "dark"
     origin = find_origin(title, blob, item["body"])
+    if not origin and BEANISH.search(f"{blob} {item.get('url', '')}"):
+        # the shop's feed doesn't say where it's from (Nomad, Dak, Blossom...): read the product page
+        origin = origin_from_page(item, roaster)
     blend = blend_reason(item)
     if blend:
         parts = blend_origins(item)
         origin = " / ".join(parts) if len(parts) >= 2 else (origin or (parts[0] if parts else None))
-    is_coffee = bool(origin) and (bool(COFFEE_HINT.search(full)) or re.search(r"coffee|bean", blob, re.I))
+    is_coffee = bool(origin) and (bool(COFFEE_HINT.search(full)) or bool(BEANISH.search(blob)))
     if not is_coffee:
         return _drop(roaster, "no origin found" if not origin else "no coffee details", title)
     filtery = bool(FILTERY.search(blob)) or bool(re.search(r"roasted for filter|filter roast|omni roast", item["body"], re.I))
@@ -728,6 +785,7 @@ def classify(item, roaster):
         "published": item["published"] or None,
         "roast": "filter" if filtery else "omni / unlabelled",
         "blend": True if blend else None,
+        "roast_level": roast_level,
     }
     rec["market"] = roaster.get("region", "UK")
     rec["roaster_country"] = roaster.get("country")
@@ -823,7 +881,7 @@ def add_page_details(recs, roaster, old):
             continue
         fetched += 1
         try:
-            raw, text = page_text(rec["url"])
+            raw, text = cached_page(rec["url"])
         except Exception as e:  # noqa: BLE001
             errs.append(f"{type(e).__name__}: {str(e)[:60]}")
             time.sleep(1)
