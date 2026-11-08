@@ -161,21 +161,12 @@ body { overflow-x: clip; }
 .litext { margin: 0; max-width: 24ch; font-size: clamp(30px, 6.4vw, 64px); font-weight: 700; line-height: 1.12; letter-spacing: -.035em; text-wrap: balance; }
 .litext span { color: color-mix(in srgb, var(--ink) 18%, transparent); transition: color .35s ease; }
 .litext span.lit { color: var(--ink); }
-/* "pour." circles on a flat ellipse, like the kettle going round the bed: x and y swing a quarter-turn apart */
-.litext .orbit, .litext .ox, .litext .oy { display: inline-block; color: inherit; }
-.litext .orbit.lit .ox, .litext .orbit.lit .oy { color: var(--ink); }
 .outro-end { margin: 0; font-size: clamp(30px, 6.4vw, 64px); font-weight: 700; letter-spacing: -.035em; line-height: 1.1; }
 .sheen-text { background: linear-gradient(100deg, #8b4a22 0%, #c96f2a 18%, #e9a94f 32%, #d9705f 48%, #a8653a 64%, #e0a252 80%, #8b4a22 100%);
   background-size: 250% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; }
 @media (prefers-reduced-motion: no-preference) {
   .outro-end.on .sheen-text { animation: sheen 4s linear infinite; }
   footer .bmc .sheen-text { animation: sheen 4s linear infinite; }
-}
-@media (prefers-reduced-motion: no-preference) {
-  .litext .orbit.lit .ox { animation: ox 1.6s ease-in-out infinite alternate; }
-  .litext .orbit.lit .oy { animation: oy 1.6s ease-in-out -.8s infinite alternate; }
-  @keyframes ox { from { transform: translateX(-.16em) rotate(-2deg); } to { transform: translateX(.16em) rotate(2deg); } }
-  @keyframes oy { from { transform: translateY(-.05em); } to { transform: translateY(.05em); } }
 }
 @media (prefers-reduced-motion: reduce) { .litext span { color: var(--ink); } }
 
@@ -386,8 +377,8 @@ table.pours { width: 100%; border-collapse: separate; border-spacing: 0; backgro
 .item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 14px; padding: 12px 0; border-bottom: 1px solid var(--rule); align-items: center; }
 .item:last-child { border-bottom: 0; }
 .item .l { display: grid; gap: 4px; min-width: 0; }
-.item .who { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.item .name { font-size: 17px; font-weight: 600; line-height: 1.2; letter-spacing: -.02em; }
+.item .who { font-size: 15px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.item .name { font-size: 21px; font-weight: 600; line-height: 1.2; letter-spacing: -.02em; }
 .pills { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
 .pills .place { font-size: 13px; color: var(--muted); margin-right: 3px; }
 .pill { font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 980px; background: color-mix(in srgb, var(--ink) 7%, transparent); color: var(--ink); }
@@ -416,9 +407,6 @@ footer .bmc a { color: var(--coffee); font-weight: 600; }
 .dock .btn { width: 100%; min-height: 54px; display: flex; justify-content: space-between; align-items: center; padding: 0 22px; font-size: 17px; font-weight: 600; }
 .dock .num { font-weight: 400; opacity: .85; font-size: 15px; }
 @media (max-width: 760px) { .dock { display: block; } }
-.item .who .city { color: hsl(var(--ch) 62% 38%); font-weight: 600; }
-:root[data-theme="dark"] .item .who .city { color: hsl(var(--ch) 72% 72%); }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .item .who .city { color: hsl(var(--ch) 72% 72%); } }
 /* the sticky Start brewing slides away while the one in the recipe is on screen */
 .dock { transition: transform .35s ease, opacity .35s ease; }
 .dock.off { transform: translateY(110%); opacity: 0; pointer-events: none; }
@@ -610,7 +598,7 @@ footer .bmc a { color: var(--coffee); font-weight: 600; }
 
 
   <section class="sec outro" aria-label="How it learns">
-    <p class="litext" id="litext"><span>Every</span> <span>bag</span> <span>is</span> <span>different.</span> <span>The</span> <span>grind,</span> <span>the</span> <span>water,</span> <span>the</span> <span class="orbit"><span class="ox"><span class="oy">pour.</span></span></span> <span>Brew</span> <span>it,</span> <span>taste</span> <span>it,</span> <span>write</span> <span>down</span> <span>what</span> <span>you</span> <span>got,</span> <span>and</span> <span>the</span> <span>next</span> <span>cup</span> <span>lands</span> <span>closer</span> <span>to</span> <span>the</span> <span>one</span> <span>you</span> <span>wanted.</span></p>
+    <p class="litext" id="litext"><span>Every</span> <span>bag</span> <span>is</span> <span>different.</span> <span>The</span> <span>grind,</span> <span>the</span> <span>water,</span> <span>the</span> <span>pour.</span> <span>Brew</span> <span>it,</span> <span>taste</span> <span>it,</span> <span>write</span> <span>down</span> <span>what</span> <span>you</span> <span>got,</span> <span>and</span> <span>the</span> <span>next</span> <span>cup</span> <span>lands</span> <span>closer</span> <span>to</span> <span>the</span> <span>one</span> <span>you</span> <span>wanted.</span></p>
     <p class="outro-end"><span class="sheen-text">Brew something good.</span></p>
     <button type="button" class="hero-pill" data-jump="recipe">Back to the recipe</button>
   </section>
@@ -1671,7 +1659,6 @@ footer .bmc a { color: var(--coffee); font-weight: 600; }
 
   // ---------- shelves ----------
   let shelf = [], shelfF = "all", shelfR = "all", shelfAll = false;
-  const CITY_HUE = {};
   const SHELF_R = [["all", "Everywhere"], ["UK", "UK"], ["Europe", "Europe"], ["World", "Rest of world"]];
   const market = (r) => r.market || "UK";
   function renderShelfR() {
@@ -1708,7 +1695,7 @@ footer .bmc a { color: var(--coffee); font-weight: 600; }
       const place = [origins, r.region ? esc(r.region) : ""].filter(Boolean).join(", ");
       return `${head}<article class="item">
         <div class="l">
-          <span class="who">${esc(r.roaster)}${r.roaster_city ? `, <span class="city" style="--ch:${CITY_HUE[r.roaster_city] ?? 30}">${esc(r.roaster_city)}</span>` : ""}</span>
+          <span class="who">${esc(r.roaster)}${r.roaster_city ? `, ${esc(r.roaster_city)}` : ""}</span>
           <span class="name">${esc(r.name)}</span>
           <div class="pills">${place ? `<span class="place">${place}</span>` : ""}${pills}</div>
           ${r.notes && r.notes.length ? `<span class="tn">${esc(r.notes.join(", "))}</span>` : ""}
@@ -1739,10 +1726,6 @@ footer .bmc a { color: var(--coffee); font-weight: 600; }
       if (!res.ok) throw new Error(res.status);
       const d = await res.json();
       shelf = (d.releases || []).filter((r) => r.name && r.roaster);
-      // one colour per city: hues spread by the golden angle, so no two cities share one
-      // (in the order cities first appear, newest first, so cities that sit near each other in the list are far apart in colour)
-      [...new Set([...shelf].sort((a, b) => (b.new === true) - (a.new === true) || (b.published || b.found || "").localeCompare(a.published || a.found || ""))
-        .map((r) => r.roaster_city).filter(Boolean))].forEach((c, i) => { CITY_HUE[c] = Math.round((i * 137.508 + 140) % 360); });
       const okR = (d.roasters || []).filter((r) => r.platform);
       const by = (m) => okR.filter((r) => (r.market || "UK") === m).length;
       const nNew = shelf.filter((r) => r.new).length;
@@ -1775,7 +1758,7 @@ footer .bmc a { color: var(--coffee); font-weight: 600; }
   $("saveLog").onclick = saveLog;
   // bottom: light the words one by one as the paragraph scrolls up through the screen
   (function outro() {
-    const words = [...document.querySelectorAll("#litext > span")], end = document.querySelector(".outro-end");
+    const words = [...document.querySelectorAll("#litext span")], end = document.querySelector(".outro-end");
     if (!words.length) return;
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) { words.forEach((w) => w.classList.add("lit")); return; }
     let ticking = false;
