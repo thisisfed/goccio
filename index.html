@@ -204,7 +204,7 @@ details.water > summary::-webkit-details-marker { display: none; }
 .w-head::after { content: "›"; color: var(--muted); font-size: 22px; line-height: 1; transition: transform .2s; }
 details.water[open] .w-head::after { transform: rotate(90deg); }
 .w-adv { font-size: 15px; color: var(--muted); }
-.w-fix { display: block; font-size: 19px; font-weight: 700; line-height: 1.3; letter-spacing: -.01em; }
+.w-fix { display: block; font-size: 20px; font-weight: 700; line-height: 1.3; letter-spacing: -.01em; }
 .w-fixn { display: block; margin-top: 4px; font-size: 14px; font-weight: 500; color: var(--muted); font-variant-numeric: tabular-nums; }
 .w-adv.hard { color: var(--ink); background: color-mix(in srgb, var(--accent) 14%, transparent); border-radius: 12px; padding: 10px 12px; font-weight: 500; }
 .w-body { display: grid; gap: 12px; padding: 0 0 18px; font-size: 15px; }
@@ -246,8 +246,8 @@ table.pours { width: 100%; border-collapse: separate; border-spacing: 0; backgro
 .pours td.to small { font-size: 13px; color: var(--muted); font-weight: 400; margin-left: 2px; }
 .pours td.how { font-size: 15px; }
 .pours .last td { border-bottom: 0; }
-.pours td.to .scale { display: block; font-size: 13px; font-weight: 500; letter-spacing: 0; color: var(--muted); margin-top: 2px; }
-.pour-note { margin: -4px 0 0; padding: 0 6px; font-size: 13px; color: var(--muted); }
+.pours td.to .scale { display: block; font-size: 11.5px; font-weight: 400; letter-spacing: 0; color: var(--muted); opacity: .8; margin-top: 3px; }
+.pour-note { margin: -8px 0 0; padding: 0 20px; font-size: 13px; color: var(--muted); }
 .spec .ret { font-size: 12px; color: var(--muted); line-height: 1.3; max-width: 30ch; }
 
 .cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
@@ -473,6 +473,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     <div class="adjusted" id="adjusted" hidden></div>
     <div class="specs" id="specs"></div>
     <details class="clk why-ratio" id="ratioWhy"><summary><span id="ratioQ">Why this ratio?</span></summary><p class="clk-body" id="ratioWhyT" style="margin:0"></p></details>
+    <details class="water" id="waterCard"><summary><span class="w-head">Water <span class="muted" id="wKind" style="font-weight:400;font-size:15px;margin-left:auto"></span></span><span class="w-adv" id="wAdv"></span></summary><div class="w-body" id="wBody"></div></details>
     <div class="zero-row" id="zeroRow">
       <label class="zr-mill"><span class="zr-lbl">Grinder</span><select id="millSel" aria-label="Your grinder"></select></label>
       <div class="zr-ctl" id="zrCtl"><span class="zr-lbl" id="zrLbl">My C40 zero</span>
@@ -495,7 +496,6 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
       <div class="col" style="grid-column: span 1"><h3>Why this recipe</h3><ul id="why"></ul></div>
       <div class="col" style="grid-column: span 2"><h3>Dial it in · change one thing per brew</h3><ul id="dial"></ul></div>
     </div>
-    <details class="water" id="waterCard"><summary><span class="w-head">Water <span class="muted" id="wKind" style="font-weight:400;font-size:15px;margin-left:auto"></span></span><span class="w-adv" id="wAdv"></span></summary><div class="w-body" id="wBody"></div></details>
     <div class="share">
       <button class="btn ghost" id="copyBtn" type="button">Copy recipe</button>
       <button class="btn ghost" id="cardBtn" type="button">Save recipe card</button>
@@ -1186,8 +1186,9 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
       "Sour and bitter at once → uneven bed: same grind, gentler pours, swirl once.",
     ];
     if (r.agit <= 1) dial.push("Fermenty, boozy, harsh → 2°C cooler before touching the grind.");
-    if (waterLevel() === "hard") dial.unshift(`Hard tap first fix: try ${clRange(1, 2)} coarser or −2 °C before changing grind for bitterness or flatness.`);
-    $("dial").innerHTML = dial.map((w) => `<li>${esc(w)}</li>`).join("");
+    if (waterLevel() === "hard") dial.unshift(`Hard tap selected → first try ${clRange(1, 2)} coarser or −2 °C.`);
+    const hardFirst = waterLevel() === "hard";
+    $("dial").innerHTML = dial.map((w, i) => `<li${i === 0 && hardFirst ? ' style="font-weight:700"' : ""}>${esc(w)}</li>`).join("");
 
     $("logTitle").textContent = `How did it taste? · ${coffeeTitle(state, r)}`;
     $("ddHint").textContent = `target ${fmt(r.lo)}–${fmt(r.hi)}`;
