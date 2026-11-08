@@ -705,7 +705,7 @@ def classify(item, roaster):
 # product JSON: Climpson shows "Process: Natural" on the page but not in body_html. When the JSON
 # gives no process or variety, read the product page and take the labelled value.
 PAGE_LABEL = {
-    "process": re.compile(r"\b(?:process(?:ing)?(?: method)?|processo|proceso|prozess|aufbereitung|proc[ée]d[ée]|bearbetning)\s*(?::|\n)", re.I),
+    "process": re.compile(r"\b(?:process(?:ing)?(?: method)?|processo|proceso|prozess|aufbereitung|proc[ée]d[ée]|bearbetning|prosess|proces|zpracov[aá]n[ií]|obr[oó]bka)\s*(?::|\n)", re.I),
     "variety": re.compile(r"\b(?:variet(?:y|ies|al|als)|cultivars?|variedad(?:es)?|variet[àa]|sorte[n]?|vari[ée]t[ée]s?)\s*(?::|\n)", re.I),
 }
 PAGE_FETCHES_PER_ROASTER = 40
@@ -733,8 +733,9 @@ def from_json(raw, k):
 
 
 def _visible(raw):
-    raw = re.sub(r"<(script|style|noscript|svg|template)\b.*?</\1>", " ", raw, flags=re.I | re.S)
-    raw = re.sub(r"<(header|nav|footer)\b.*?</\1>", " ", raw, flags=re.I | re.S)
+    # (?=[\s>]) so a custom element like <header-drawer> is not read as <header> (that ate Climpson's whole product block)
+    raw = re.sub(r"<(script|style|noscript|svg|template)(?=[\s>]).*?</\1>", " ", raw, flags=re.I | re.S)
+    raw = re.sub(r"<(header|nav|footer)(?=[\s>]).*?</\1>", " ", raw, flags=re.I | re.S)
     return strip_html(raw)
 
 
