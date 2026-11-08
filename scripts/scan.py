@@ -269,7 +269,71 @@ def fetch_shopify(shop, extra=""):
         get_json(f"{base}?limit=1{extra}")
     except Exception:  # noqa: BLE001
         base = f"{shop}/collections/all/products.json"   # some shops switch off the root list only
-    return _fetch_shopify(shop, base, extra)
+    items = _fetch_shopify(shop, base, extra)
+    try:
+        shelves = shopify_shelves(shop)
+    except Exception:  # noqa: BLE001
+        shelves = {}
+    for it in items:
+        it["shelf"] = shelves.get(it["url"].rsplit("/", 1)[-1])
+    return items
+
+
+# --- filter or espresso, in the roaster's own words -------------------------------------------
+# Almost every shop sells every bean ground "for filter", so a grind option says nothing about the roast.
+# The most reliable signal is where the roaster puts the coffee: its filter / pour-over / omni shelf or
+# its espresso shelf (Shopify collections). Text is the fallback when a shop has no such shelves.
+FILTER_SHELF = re.compile(r"filter|pour[- ]?over|\bv60\b|\bomni|filtro|filtre|filterkaffe|filterröst|brew(?!ing equipment)|batch", re.I)
+ESPRESSO_SHELF = re.compile(r"espresso", re.I)
+NOT_COFFEE_SHELF = re.compile(r"equipment|machine|grinder|kit|merch|gift|subscri|wholesale|capsule|pod|accessor|paper", re.I)
+ESPRESSO_TEXT = re.compile(r"espresso[- ]roast|roasted (?:specifically |primarily |especially )?for espresso|classic espresso|house espresso|"
+                           r"(?:best|ideal|perfect|recommended|great|suited|designed) (?:brew(?:ing)? methods?:?\s*)?(?:for|as|:)\s*(?:an? )?espresso|"
+                           r"brew methods?:\s*espresso|crowd[- ]pleasing espresso|(?:our|this) (?:signature |seasonal |house )?espresso\b", re.I)
+FILTER_TEXT = re.compile(r"roasted (?:specifically |primarily |especially )?for filter|filter[- ]roast|omni[- ]?roast|\bomni\b|"
+                         r"(?:best|ideal|perfect|recommended|great|suited|designed) (?:brew(?:ing)? methods?:?\s*)?(?:for|as|:)\s*(?:pour[- ]?over|filter|v60)|"
+                         r"brew methods?:\s*(?:filter|pour)", re.I)
+
+
+def shopify_shelves(shop):
+    """product handle -> 'filter' | 'espresso' | 'both', from the shop's own coffee collections."""
+    cols = get_json(f"{shop}/collections.json?limit=250", tries=1).get("collections", [])
+    picks = []
+    for c in cols:
+        name = f"{c.get('title', '')} {c.get('handle', '')}"
+        if NOT_COFFEE_SHELF.search(name) or not c.get("products_count", 1):
+            continue
+        f, e = bool(FILTER_SHELF.search(name)), bool(ESPRESSO_SHELF.search(name))
+        if f != e:   # a shelf that is clearly one or the other ("Filter & Espresso" tells us nothing)
+            picks.append((c["handle"], "filter" if f else "espresso"))
+    out = {}
+    for handle, kind in picks[:10]:
+        for page in range(1, 4):
+            prods = get_json(f"{shop}/collections/{handle}/products.json?limit=250&page={page}", tries=1).get("products", [])
+            for p in prods:
+                h = p.get("handle", "")
+                out[h] = kind if out.get(h) in (None, kind) else "both"
+            if len(prods) < 250:
+                break
+        time.sleep(.3)
+    return out
+
+
+def roast_for(item):
+    """'espresso' when the roaster presents the coffee as an espresso roast, 'filter' when as filter/omni, else None."""
+    shelf = item.get("shelf")
+    if shelf in ("filter", "both"):
+        return "filter"
+    if shelf == "espresso":
+        return "espresso"
+    head = f"{item['title']} {item.get('type', '')} {' '.join(item.get('tags') or [])}"
+    body = item.get("body") or ""
+    f = FILTER_TEXT.search(body) or re.search(r"\bfilter\b|\bomni\b|pour[- ]?over", f"{item.get('type', '')} {' '.join(item.get('tags') or [])}", re.I)
+    e = ESPRESSO_TEXT.search(body) or re.search(r"\bespresso\b", head, re.I)
+    if e and not f:
+        return "espresso"
+    if f and not e:
+        return "filter"
+    return None
 
 
 def _fetch_shopify(shop, base, extra=""):
@@ -834,6 +898,7 @@ def classify(item, roaster):
         "url": item["url"],
         "published": item["published"] or None,
         "roast": "filter" if filtery else "omni / unlabelled",
+        "roast_for": roast_for(item),
         "blend": True if blend else None,
         "roast_level": roast_level,
         "origin_from": item.get("_origin_from"),
