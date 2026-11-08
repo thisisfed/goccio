@@ -95,6 +95,70 @@ WEIGHT = re.compile(r"\b\d+(?:[.,]\d+)?\s?(?:g|gr|grams?|kg|kilos?|oz|lbs?)\b", 
 VOLUME = re.compile(r"\b\d+(?:[.,]\d+)?\s?(?:ml|cl|l|ltr|litres?|liters?|fl ?oz)\b", re.I)
 
 
+# --- single origin only ------------------------------------------------------------------
+# Blends got through because the origin test only needs one country. A coffee is dropped when:
+#  1. its title, product type or URL slug names a blend, a house/seasonal/signature roast, a
+#     half-caff, a bundle of several coffees, or a subscription;
+#  2. its title or slug joins two producing countries ("Uganda and Brazil", "Brazil & Peru");
+#     two countries side by side are not enough: "La Indonesia, Colombia" is a farm, "San Roque
+#     Kenya" a variety. A "field blend" is several varieties from one farm, so it stays.
+#     Slugs are checked without the query string.
+#  3. its page gives a composition: two or more countries with percentages ("60% Brazil, 40% ...");
+#  4. its page calls it a blend, unless it also says single origin / estate / farm / lot and names
+#     only one country.
+BLEND_TITLE = re.compile(r"(?<!field )\bblends?\b|low[- ]caff?\b|house[- ](?:roast|coffee|blend)|signature[- ](?:roast|blend|coffee)|"
+                         r"seasonal[- ](?:filter|espresso|blend|roast)|half[- ]caff|\ball[- ]?\d\b|\b\d\s?x\s?\d{2,3}\s?g\b|"
+                         r"roaster'?s[- ]choice|mystery|rotating|subscri|abonnement|miscela|m[ée]lange|mezcla|mischung|"
+                         r"\bespresso\b(?!.*\b(?:filter|omni)\b)", re.I)
+BLEND_BODY = re.compile(r"\b(?:this|our|a|the) blend\b|\bblend of\b|\bblended\b|\bcomponents?\b|"
+                        r"\bblend(?:s|ing)? (?:together|two|three)\b|\bmix of (?:two|three)\b", re.I)
+SINGLE_BODY = re.compile(r"single[- ](?:origin|estate|farm|lot|producer|variety)", re.I)
+PCT_ORIGIN = re.compile(r"\b\d{1,3}\s?%\s*(?:of\s+)?([A-Z][a-z]+(?: [A-Z][a-z]+)?)")
+
+
+_CNAMES = sorted([c for c in COUNTRIES] + list(COUNTRY_ALIASES), key=len, reverse=True)
+_CANON = {**{c.lower(): c for c in COUNTRIES}, **{a.lower(): v for a, v in COUNTRY_ALIASES.items()}}
+_CALT = "|".join(re.escape(n) for n in _CNAMES)
+JOINED = re.compile(r"(?<![\w])(" + _CALT + r")(?![\w])\s*(?:and|&|\+|/|with)\s*(?<![\w])(" + _CALT + r")(?![\w])", re.I)
+
+
+def joined_countries(text):
+    for a, b in JOINED.findall(text or ""):
+        ca, cb = _CANON.get(a.lower(), a), _CANON.get(b.lower(), b)
+        if ca != cb:
+            return f"{ca} and {cb}"
+    return None
+
+
+def countries_in(text):
+    found = set()
+    for name, canon in [(c, c) for c in COUNTRIES] + list(COUNTRY_ALIASES.items()):
+        if re.search(r"(?<![\w])" + re.escape(name) + r"(?![\w])", text or "", re.I):
+            found.add(canon)
+    return found
+
+
+def not_single(item):
+    """Why an item is not a single-origin coffee, or None."""
+    title, ptype = item["title"], item.get("type") or ""
+    slug = re.sub(r"[-_/]+", " ", (item.get("url") or "").split("?")[0].split("#")[0].rstrip("/").rsplit("/", 1)[-1])
+    head = f"{title} {ptype} {slug}"
+    m = BLEND_TITLE.search(head)
+    if m:
+        return f"title says '{m.group(0)}'"
+    j = joined_countries(title) or joined_countries(slug)
+    if j:
+        return "title names " + j
+    body = item.get("body") or ""
+    pct = {canon for g in PCT_ORIGIN.findall(body) for canon in countries_in(g)}
+    if len(pct) >= 2:
+        return "composition " + " / ".join(sorted(pct))
+    m = BLEND_BODY.search(body)
+    if m and not (SINGLE_BODY.search(body) and len(countries_in(body)) <= 1):
+        return f"page says '{m.group(0)}'"
+    return None
+
+
 def not_beans(item):
     """Why an item is not a bag of coffee beans, or None if it may be one."""
     title, ptype = item["title"], item.get("type") or ""
@@ -585,7 +649,7 @@ def classify(item, roaster):
         return None
     if EXCLUDE.search(title) or EXCLUDE.search(item["type"]):
         return None
-    why = not_beans(item)
+    why = not_beans(item) or not_single(item)
     if why:
         REJECTED.append(f"{roaster['name']}: {title} ({why})")
         return None
@@ -744,7 +808,8 @@ def main():
     # earlier scans (they were classified under older rules and only keep name + url)
     def still_beans(x):
         slug = re.sub(r"[-_/]+", " ", x.get("url", "").rsplit("/", 1)[-1])
-        why = not_beans({"title": f"{x.get('name', '')} {slug}", "type": "", "tags": [], "variants": "", "body": ""})
+        probe = {"title": f"{x.get('name', '')} {slug}", "type": "", "tags": [], "variants": "", "body": "", "url": x.get("url", "")}
+        why = not_beans(probe) or not_single(probe)
         if why:
             REJECTED.append(f"{x.get('roaster')}: {x.get('name')} ({why}, dropped from list)")
         return not why
