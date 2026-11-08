@@ -88,7 +88,7 @@ ROAST_LABEL = re.compile(r"(?:roast(?: level| degree)?|tostado|tueste|röstgrad|
 BAG = re.compile(r"\b(?:100|125|150|200|227|250|300|340|350|454|500)\s?g\b|\b(?:8|10|12|16)\s?oz\b|whole ?beans?|wholebean|hele bønner|"
                  r"en grains?|en grano|grano entero|ganze bohnen?|ziarnist|zrnk|\bmolido\b|ground for|"
                  r"\b(?:washed|natural|honey|anaerobic|lavado|natural|lavé|gewaschen|geisha|gesha|bourbon|caturra|typica|sl28|pacamara)\b|"
-                 r"^(?:coffee|café|cafe|kaffe|kaffee|caffè|kawa|káva|filter coffee|single origin)", re.I)
+                 r"^(?:coffee|café|cafe|kaffe|kaffee|caffè|kawa|káva|filter coffee|single origin)|\b(?:filter|espresso|omni)\s*$", re.I)
 # looks like a bag of coffee even when the feed names no country or tasting details
 BEANISH = re.compile(r"\b\d{3,4}\s?g\b|whole ?beans?|wholebean|hele bønner|en grains?|grano|ganze bohnen?|ziarn|zrnk|"
                      r"\bfilter\b|\bespresso\b|\bomni\b|coffee|\bcaf[eé]\b|kaffe|kaffee|caff[eè]|\bkawa\b|k[aá]va|kahvi|"
