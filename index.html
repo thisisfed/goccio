@@ -23,17 +23,18 @@
   --wash: #f5f5f7;
   --blue: #0071e3;
   --accent: #f56300;
+  --coffee: #7b4a2b;      /* roasted-bean brown: method names, cup notes, the mark */
   --sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #000000; --card: #1c1c1e; --ink: #f5f5f7; --muted: #a1a1a6; --rule: #38383a; --wash: #2c2c2e; --blue: #2997ff; --accent: #ff9f0a;
+    --bg: #000000; --card: #1c1c1e; --ink: #f5f5f7; --muted: #a1a1a6; --rule: #38383a; --wash: #2c2c2e; --blue: #2997ff; --accent: #ff9f0a; --coffee: #d29c6c;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #000000; --card: #1c1c1e; --ink: #f5f5f7; --muted: #a1a1a6; --rule: #38383a; --wash: #2c2c2e; --blue: #2997ff; --accent: #ff9f0a;
+  --bg: #000000; --card: #1c1c1e; --ink: #f5f5f7; --muted: #a1a1a6; --rule: #38383a; --wash: #2c2c2e; --blue: #2997ff; --accent: #ff9f0a; --coffee: #d29c6c;
   color-scheme: dark;
 }
 
@@ -56,7 +57,7 @@ button:disabled { opacity: .4; cursor: default; }
 .top { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 78%, transparent);
   backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); }
 .top-in { max-width: 1000px; margin: 0 auto; padding: 0 22px; height: 52px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.mark { font-weight: 600; font-size: 19px; letter-spacing: -.02em; display: flex; gap: 6px; }
+.mark { font-weight: 600; font-size: 19px; letter-spacing: -.02em; display: flex; gap: 6px; color: var(--coffee); }
 .mark .serif { font-weight: 400; color: var(--muted); }
 .nav { display: flex; gap: 18px; align-items: center; }
 @media (max-width: 420px) { .nav { gap: 12px; } .nav button { font-size: 12px; } .mark .serif { display: none; } }
@@ -128,7 +129,7 @@ details.more .opts { padding-top: 10px; }
 .r-title { display: grid; gap: 6px; justify-items: center; text-align: center; }
 .r-title h2 { margin: 0; font-size: clamp(36px, 6.4vw, 64px); font-weight: 600; line-height: 1.05; letter-spacing: -.035em; text-wrap: balance; }
 .r-kick { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; align-items: baseline; }
-.r-kick .method { color: var(--accent); font-size: 17px; font-weight: 600; letter-spacing: -.02em; }
+.r-kick .method { color: var(--coffee); font-size: 17px; font-weight: 600; letter-spacing: -.02em; }
 .r-kick .cap { font-size: 17px; font-weight: 400; }
 .r-read { margin: 0; color: var(--muted); font-size: 17px; }
 .need { padding: 24px; display: grid; gap: 16px; }
@@ -235,8 +236,12 @@ details.water[open] .w-head::after { transform: rotate(90deg); }
 
 .tech { font-size: 15px; display: grid; gap: 4px; background: var(--card); border-radius: 20px; padding: 18px 20px; }
 .tech b { font-weight: 600; }
-.go-big { min-height: 64px; font-size: 19px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; padding: 0 26px; gap: 12px; }
+.go-big { min-height: 64px; font-size: 19px; font-weight: 600; display: flex; flex-wrap: nowrap; align-items: center; justify-content: space-between; padding: 0 26px; gap: 12px; }
+/* "Start brewing" never wraps; the numbers beside it give way first (ellipsis), then hide on very narrow screens */
+.go-big > span:first-child, .dock .btn > span:first-child { flex: none; white-space: nowrap; }
+.go-big .num, .dock .num { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .go-big .num { font-size: 15px; font-weight: 400; opacity: .85; }
+@media (max-width: 340px) { .go-big .num, .dock .num { display: none; } .go-big, .dock .btn { justify-content: center; } }
 
 table.pours { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--card); border-radius: 20px; padding: 8px 20px; font-variant-numeric: tabular-nums; }
 .pours th { text-align: left; font-size: 12px; font-weight: 600; color: var(--muted); padding: 12px 10px 10px 0; border-bottom: 1px solid var(--rule); }
@@ -258,7 +263,7 @@ table.pours { width: 100%; border-collapse: separate; border-spacing: 0; backgro
 .col p { margin: 0; font-size: 15px; color: var(--muted); }
 .col ul { margin: 0; padding-left: 18px; display: grid; gap: 7px; font-size: 15px; }
 .notes-list { display: flex; flex-wrap: wrap; gap: 6px; }
-.notes-list span { font-size: 15px; font-weight: 500; padding: 5px 12px; border-radius: 980px; background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.notes-list span { font-size: 15px; font-weight: 500; padding: 5px 12px; border-radius: 980px; color: var(--coffee); background: color-mix(in srgb, var(--coffee) 13%, transparent); }
 @media (max-width: 760px) { .cols, .cols.two { grid-template-columns: minmax(0, 1fr); } .cols .col { grid-column: auto !important; } }
 
 .share { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
@@ -494,7 +499,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     </div>
     <div class="cols">
       <div class="col" style="grid-column: span 1"><h3>Why this recipe</h3><ul id="why"></ul></div>
-      <div class="col" style="grid-column: span 2"><h3>Dial it in · change one thing per brew</h3><ul id="dial"></ul></div>
+      <div class="col" style="grid-column: span 2"><h3>Dial it in: change one thing per brew</h3><ul id="dial"></ul></div>
     </div>
     <div class="share">
       <button class="btn ghost" id="copyBtn" type="button">Copy recipe</button>
@@ -526,9 +531,9 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
 
 
   <footer>
-    <span>Methods: James Hoffmann’s Better 1-Cup and Ultimate V60 · Tetsu Kasuya’s 4:6 and 10-Pour · Scott Rao’s bloom &amp; spin. Grind in clicks on a standard Comandante C40, counted from zero; other grinders converted from those clicks with Honest Coffee Guide’s grind charts. Strength figures are estimates for a typical extraction, not a refractometer reading.</span>
-    <span class="sources">Sources: <a href="https://www.youtube.com/watch?v=1oB1oDrDkHM" target="_blank" rel="noopener">Hoffmann, A Better 1 Cup V60</a> · <a href="https://www.youtube.com/watch?v=AI4ynXzkSQo" target="_blank" rel="noopener">Hoffmann, The Ultimate V60</a> · <a href="https://en.philocoffea.com/blogs/blog/coffee-brewing-method" target="_blank" rel="noopener">Kasuya, 4:6 (Philocoffea)</a> · <a href="https://www.hario.co.uk/blogs/hario-ambassadors/hario-v60-recipe-interview-with-hario-ambassador-scott-rao" target="_blank" rel="noopener">Rao, bloom &amp; spin (Hario)</a></span>
-    <span>Coffees come from roasters’ own shop listings, scanned every Monday. Not affiliated with any roaster. Your journal never leaves this device. Made by <a href="https://thisisfed.xyz">Federico Ferrari</a> · <a href="https://github.com/thisisfed/v60">Source</a></span>
+    <span>Methods: James Hoffmann’s Better 1-Cup and Ultimate V60; Tetsu Kasuya’s 4:6 and 10-Pour; Scott Rao’s bloom &amp; spin. Grind in clicks on a standard Comandante C40, counted from zero; other grinders converted from those clicks with Honest Coffee Guide’s grind charts. Strength figures are estimates for a typical extraction, not a refractometer reading.</span>
+    <span class="sources">Sources: <a href="https://www.youtube.com/watch?v=1oB1oDrDkHM" target="_blank" rel="noopener">Hoffmann, A Better 1 Cup V60</a>; <a href="https://www.youtube.com/watch?v=AI4ynXzkSQo" target="_blank" rel="noopener">Hoffmann, The Ultimate V60</a>; <a href="https://en.philocoffea.com/blogs/blog/coffee-brewing-method" target="_blank" rel="noopener">Kasuya, 4:6 (Philocoffea)</a>; <a href="https://www.hario.co.uk/blogs/hario-ambassadors/hario-v60-recipe-interview-with-hario-ambassador-scott-rao" target="_blank" rel="noopener">Rao, bloom &amp; spin (Hario)</a></span>
+    <span>Coffees come from roasters’ own shop listings, scanned every Monday. Not affiliated with any roaster. Your journal never leaves this device. Made by <a href="https://thisisfed.xyz">Federico Ferrari</a> / <a href="https://github.com/thisisfed/v60">Source</a></span>
   </footer>
 </main>
 
@@ -552,7 +557,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
   <div class="bv-track">
     <svg viewBox="0 0 184 150" aria-hidden="true" class="bv-cone">
       <defs><clipPath id="bvClip"><path d="M14 18 L146 18 L80 132 Z"/></clipPath></defs>
-      <rect class="cone-fill" id="bvFill" x="0" y="132" width="160" height="0" fill="#c67b3c" clip-path="url(#bvClip)"/>
+      <rect class="cone-fill" id="bvFill" x="0" y="132" width="160" height="0" fill="#a0673f" clip-path="url(#bvClip)"/>
       <g id="bvTicks"></g>
       <path d="M14 18 L146 18 L80 132 Z" fill="none" stroke="#f5f5f7" stroke-width="3" stroke-linejoin="round"/>
       <path d="M4 18 L156 18" stroke="#f5f5f7" stroke-width="5" stroke-linecap="round"/>
@@ -642,7 +647,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     cofer:     { label: "co-ferment / infused", agit: 0, dT: -3, dC: 2 },
     decaf:     { label: "decaf",               agit: 1, dT: -2, dC: 2 },
     // not stated: assume it could be fermented. Gentle pours, a little cooler and coarser.
-    unsure:    { label: "process not stated · gentle", agit: 1, dT: -1, dC: 1 },
+    unsure:    { label: "process not stated (gentle)", agit: 1, dT: -1, dC: 1 },
   };
   // hard temperature ceilings: above these, ferment and dark-roast flavours turn harsh
   const T_CAP = { anaerobic: 93, cofer: 92, decaf: 92, unsure: 94 };
@@ -654,7 +659,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     mdark:  { label: "medium-dark", T: 88, dC: 3 },
     dark:   { label: "dark",        T: 86, dC: 4 },
     // not sure: err towards less bitterness (cooler, a click coarser) rather than more extraction
-    unsure: { label: "roast not sure · safe middle", T: 92, dC: 1 },
+    unsure: { label: "roast not sure (safe middle)", T: 92, dC: 1 },
   };
   const AGIT = ["very low", "low", "medium", "high"];
 
@@ -686,20 +691,20 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
   const nc = (v) => { const t = Math.round(v * 10); return `${Math.floor(t / 10)}.${t % 10}`; };
   const HCG = "https://honestcoffeeguide.com/";
   const GRINDERS = {
-    c40:    { name: "Comandante C40", short: "C40", lbl: "clicks · C40" },
-    ek43:   { name: "Mahlkönig EK43 / EK43 S", short: "EK43", lbl: "EK43 dial · 0–16", a: 5.7, b: 13.3, fp: 16, min: 0, max: 16, q: 0.1,
+    c40:    { name: "Comandante C40", short: "C40", lbl: "C40 clicks" },
+    ek43:   { name: "Mahlkönig EK43 / EK43 S", short: "EK43", lbl: "EK43 dial (0–16)", a: 5.7, b: 13.3, fp: 16, min: 0, max: 16, q: 0.1,
               show: (v) => v.toFixed(1), unit: "numbers", dec: true, src: HCG + "mahlkonig-ek43-0-16-grind-settings" },
-    ode2:   { name: "Fellow Ode Gen 2", short: "Ode Gen 2", lbl: "Ode Gen 2 · number.step (3 steps per number)", a: 2 + 2 / 3, b: 5 + 2 / 3, fp: 11, min: 1, max: 11, q: 1 / 3,
+    ode2:   { name: "Fellow Ode Gen 2", short: "Ode Gen 2", lbl: "Ode Gen 2, number.step (3 steps per number)", a: 2 + 2 / 3, b: 5 + 2 / 3, fp: 11, min: 1, max: 11, q: 1 / 3,
               show: thirds, unit: "step", src: HCG + "fellow-ode-brew-grinder-gen-2-grind-settings/" },
-    kultra: { name: "1Zpresso K-Ultra", short: "K-Ultra", lbl: "K-Ultra · rotation.number.tick", a: 5.3, b: 9.2, fp: 10, min: 0, max: 15, q: 0.1,
+    kultra: { name: "1Zpresso K-Ultra", short: "K-Ultra", lbl: "K-Ultra, rotation.number.tick", a: 5.3, b: 9.2, fp: 10, min: 0, max: 15, q: 0.1,
               show: rnt, unit: "tick", src: HCG + "1zpresso-k-ultra-grind-settings/" },
-    zp6:    { name: "1Zpresso ZP6 Special", short: "ZP6", lbl: "ZP6 · number.click", a: 1.4, b: 3.9, fp: 7, min: 0, max: 9, q: 0.1,
+    zp6:    { name: "1Zpresso ZP6 Special", short: "ZP6", lbl: "ZP6, number.click", a: 1.4, b: 3.9, fp: 7, min: 0, max: 9, q: 0.1,
               show: nc, unit: "click", src: HCG + "1zpresso-zp6-grind-settings/" },
-    encore: { name: "Baratza Encore", short: "Encore", lbl: "Encore setting · 1–40", a: 7, b: 18, min: 1, max: 40, q: 1,
+    encore: { name: "Baratza Encore", short: "Encore", lbl: "Encore setting (1–40)", a: 7, b: 18, min: 1, max: 40, q: 1,
               show: String, unit: "setting", src: HCG + "baratza-encore-grind-settings/" },
-    encoreEsp: { name: "Baratza Encore ESP", short: "Encore ESP", lbl: "Encore ESP setting · 1–40", a: 15, b: 25, fp: 38, min: 1, max: 40, q: 1,
+    encoreEsp: { name: "Baratza Encore ESP", short: "Encore ESP", lbl: "Encore ESP setting (1–40)", a: 15, b: 25, fp: 38, min: 1, max: 40, q: 1,
               show: String, unit: "setting", src: HCG + "baratza-encore-esp-grind-settings/" },
-    c3:     { name: "Timemore C3 / C3S / C3 Pro", short: "C3", lbl: "clicks · Timemore C3", a: 11, b: 18, fp: 25, min: 0, max: 25, q: 1,
+    c3:     { name: "Timemore C3 / C3S / C3 Pro", short: "C3", lbl: "Timemore C3 clicks", a: 11, b: 18, fp: 25, min: 0, max: 25, q: 1,
               show: String, unit: "click", src: HCG + "timemore-c3-grind-settings/" },
   };
   const mill = () => GRINDERS[prefs.mill] || GRINDERS.c40;
@@ -748,11 +753,11 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     rao:       { c: 24, pub: "none published", est: true, note: "Rao publishes no C40 number, only medium-fine for a ~3:30 drawdown. One long pour drains slower than pulses, so we start a click coarser than Hoffmann’s Ultimate. Our estimate.", url: "https://www.hario.co.uk/blogs/hario-ambassadors/hario-v60-recipe-interview-with-hario-ambassador-scott-rao", src: "Hario UK interview" },
   };
   const METHOD = {
-    hoffmann:  "Hoffmann · Better 1-Cup",
-    hoffmannU: "Hoffmann · Ultimate V60",
-    fourSix:   "Kasuya · 4:6",
-    ten:       "Kasuya · 10-Pour",
-    rao:       "Rao · Bloom & spin",
+    hoffmann:  "Hoffmann’s Better 1-Cup",
+    hoffmannU: "Hoffmann’s Ultimate V60",
+    fourSix:   "Kasuya’s 4:6",
+    ten:       "Kasuya’s 10-Pour",
+    rao:       "Rao’s Bloom & Spin",
   };
   const GOAL = { light: "Light & aromatic", balanced: "Balanced", syrupy: "Sweet & syrupy" };
 
@@ -830,9 +835,9 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
 
     // pours: t = start (s), to = scale reading, dur = suggested pour length (s)
     const P = [];
-    const bloomNote = agit >= 3 ? (m === "rao" ? "Bloom · stir until every ground is wet" : "Bloom · swirl to wet all grounds")
-      : agit === 2 ? "Bloom · gentle swirl" : "Bloom · gentle spiral, no stirring";
-    const lastNote = agit >= 3 ? "Last pour · then one swirl to flatten the bed" : agit === 2 ? "Last pour · one soft swirl" : "Last pour · no swirl, let it drain";
+    const bloomNote = agit >= 3 ? (m === "rao" ? "Bloom: stir until every ground is wet" : "Bloom: swirl to wet all grounds")
+      : agit === 2 ? "Bloom: gentle swirl" : "Bloom: gentle spiral, no stirring";
+    const lastNote = agit >= 3 ? "Last pour, then one swirl to flatten the bed" : agit === 2 ? "Last pour, one soft swirl" : "Last pour, no swirl, let it drain";
     // x = exact target to 0.1 g; to = the whole gram you pour to on the scale (rounded from x).
     // Targets are cumulative and the last one is exactly the total water, so the pours always add
     // up to the water: no drift, whether you sum the 0.1 g steps or the whole-gram steps.
@@ -846,7 +851,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     } else if (m === "hoffmannU") {
       add(0, dose * 2, bloomNote, 10);
       add(45, water * 0.6, "Steady pour, done by 1:15", 30);
-      add(75, water, agit >= 3 ? "Done by 1:45 · stir once each way, swirl" : "Done by 1:45 · gentle, no stir", 30);
+      add(75, water, agit >= 3 ? "Done by 1:45, stir once each way, swirl" : "Done by 1:45, gentle, no stir", 30);
       lo = 180; hi = 210;
     } else if (m === "rao") {
       add(0, dose * 3, bloomNote, 12);
@@ -958,7 +963,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     need.innerHTML = `<h3>${missing.length === 2 ? "Two things" : "One thing"} before the numbers</h3>
       <p>The grind, temperature and how hard you pour all depend on ${missing.map((m) => m === "process" ? "the process" : "the roast level").join(" and ")}.${missing.includes("roast") ? " Roasters rarely print the roast level, so judge it by the colour of the beans." : ""}${where}</p>
       ${missing.includes("process") ? q("process", "Process", PROC_Q, "“Not stated” is treated as possibly fermented: gentle pours, 94°C at most, a click coarser.") : ""}
-      ${missing.includes("roast") ? q("roast", "Roast level · look at the beans", ROAST_Q, "Very light: pale tan, dry and dense. Light: light brown, matt. Medium: milk-chocolate brown. Medium-dark: dark brown, a little sheen. Dark: near black, oily. “Not sure” plays safe (92°C, a click coarser) and says so.") +
+      ${missing.includes("roast") ? q("roast", "Roast level: look at the beans", ROAST_Q, "Very light: pale tan, dry and dense. Light: light brown, matt. Medium: milk-chocolate brown. Medium-dark: dark brown, a little sheen. Dark: near black, oily. “Not sure” plays safe (92°C, a click coarser) and says so.") +
         `<div class="beancheck"><button class="btn ghost" type="button" id="beanBtn">Check roast with a photo</button>
          <span class="muted">20 or more whole beans on white paper, good light, no flash.</span><div id="beanOut"></div></div>` : ""}`;
     if (missing.includes("roast")) { $("beanBtn").onclick = () => { beanTarget = "beanOut"; $("beanPhoto").click(); }; }
@@ -968,8 +973,8 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
 
   function renderLearn(r) {
     const box = $("adjusted"), L = r.learn;
-    const base = `${grindLine(r.baseClicks + (isC40() ? prefs.zero || 0 : 0))} · ${r.baseTemp}°C · 1:${r.baseRatio}`;
-    const now = `${grindLine(r.clicks)} · ${r.temp}°C · 1:${r.ratio}`;
+    const base = `${grindLine(r.baseClicks + (isC40() ? prefs.zero || 0 : 0))}, ${r.baseTemp}°C, 1:${r.baseRatio}`;
+    const now = `${grindLine(r.clicks)}, ${r.temp}°C, 1:${r.ratio}`;
     const TL = (k) => (TASTES.find((x) => x[0] === k) || [k, k])[1];
     if (!L) {
       box.hidden = true; return;
@@ -983,9 +988,9 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
       return;
     }
     const changed = r.pc.clicks || r.pc.temp || r.pc.ratio;
-    const hist = (L.history || []).slice(0, 4).map((h) => `<li><span class="muted">${dmy(h.at)}</span> ${esc((h.tastes || []).map(TL).join(", ") || "logged")}${h.dd != null ? ` · drained ${fmt(h.dd)}` : ""}${h.fix ? ` → <b>${esc(h.fix)}</b>` : ""}</li>`).join("");
+    const hist = (L.history || []).slice(0, 4).map((h) => `<li><span class="muted">${dmy(h.at)}</span> ${esc((h.tastes || []).map(TL).join(", ") || "logged")}${h.dd != null ? `, drained ${fmt(h.dd)}` : ""}${h.fix ? ` → <b>${esc(h.fix)}</b>` : ""}</li>`).join("");
     box.innerHTML = `<div class="lrn-h"><span class="lrn-tag">Learned</span><b>${L.n} brew${L.n === 1 ? "" : "s"} of this coffee logged</b></div>
-      ${changed ? `<p>Now <b>${now}</b> <span class="muted">· base was ${base}</span></p>` : `<p>Locked in at the base recipe: <b>${now}</b>.</p>`}
+      ${changed ? `<p>Now <b>${now}</b> <span class="muted">(base was ${base})</span></p>` : `<p>Locked in at the base recipe: <b>${now}</b>.</p>`}
       ${hist ? `<ul class="lrn-list">${hist}</ul>` : ""}
       ${changed ? '<button type="button" id="undoAdj">Reset to the base recipe</button>' : ""}`;
     if (changed) $("undoAdj").onclick = () => { const o = prefs.coffees[r.key] || {}; prefs.coffees[r.key] = { ...o, clicks: 0, temp: 0, ratio: 0 }; savePrefs(); render(); };
@@ -996,10 +1001,10 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
   const METHOD_REF = { hoffmann: "Hoffmann 1-Cup", hoffmannU: "Hoffmann Ultimate", fourSix: "Kasuya 4:6", ten: "Kasuya 10-Pour", rao: "Rao bloom & spin" };
   function renderClicks(r) {
     const p = r.clickParts, B = BASE[r.m], c = r.c;
-    const rows = [[`Base · ${METHOD_REF[r.m]} at 15 g`, String(p.base)]];
+    const rows = [[`Base: ${METHOD_REF[r.m]} at 15 g`, String(p.base)]];
     if (p.dose) rows.push([`Dose ${r.dose} g`, signed(p.dose)]);
-    if (p.roast) rows.push([`Roast · ${c.roast === "unsure" ? "not sure" : ROAST[c.roast].label}`, signed(p.roast)]);
-    if (p.process) rows.push([`Process · ${c.process === "unsure" ? "not stated" : PROCESS[c.process].label}`, signed(p.process)]);
+    if (p.roast) rows.push([`Roast: ${c.roast === "unsure" ? "not sure" : ROAST[c.roast].label}`, signed(p.roast)]);
+    if (p.process) rows.push([`Process: ${c.process === "unsure" ? "not stated" : PROCESS[c.process].label}`, signed(p.process)]);
     if (p.learn) rows.push([r.learn && r.learn.source === "style" ? "Your nailed brews of this style" : "Your journal for this coffee", signed(p.learn)]);
     if (p.zero) rows.push(["Your C40 zero", signed(p.zero)]);
     $("clkSumm").textContent = "Sources";
@@ -1014,7 +1019,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     const short = { dose: "dose", roast: "roast", process: "process", learn: "your log", zero: "zero" };
     const terms = ["dose", "roast", "process", "learn", "zero"].filter((k) => p[k]).map((k) => `${signed(p[k])} ${short[k]}`);
     const g = onMill(r.clicks);
-    $("zrMath").innerHTML = [`${p.base} base (${METHOD_REF[r.m]})`, ...terms].map(esc).join(" · ")
+    $("zrMath").innerHTML = [`${p.base} base (${METHOD_REF[r.m]})`, ...terms].map(esc).join(" ")
       + (isC40() ? ` = <b>${r.clicks} clicks</b>` : ` = ${r.clicks} C40 clicks → <b>${esc(g.txt)} on the ${esc(mill().short)}</b>`);
     $("zrCtl").hidden = !isC40();
     $("millSel").value = GRINDERS[prefs.mill] ? prefs.mill : "c40";
@@ -1086,7 +1091,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
       : "What do you brew with? It changes the first fix for a bitter or flat cup.";
     const custom = w.kind === "custom";
     $("wBody").innerHTML = `<div class="chips" role="group" aria-label="Your water">${WATER.map(([k, t]) => `<button type="button" class="chip" data-w="${k}" aria-pressed="${w.kind === k}">${t}</button>`).join("")}</div>
-      ${custom ? `<div class="w-custom"><label>Hardness · ppm CaCO₃<input id="wHard" inputmode="numeric" value="${esc(w.hard ?? "")}" placeholder="e.g. 80"></label><label>Alkalinity · ppm CaCO₃<input id="wAlk" inputmode="numeric" value="${esc(w.alk ?? "")}" placeholder="e.g. 40"></label></div>
+      ${custom ? `<div class="w-custom"><label>Hardness (ppm CaCO₃)<input id="wHard" inputmode="numeric" value="${esc(w.hard ?? "")}" placeholder="e.g. 80"></label><label>Alkalinity (ppm CaCO₃)<input id="wAlk" inputmode="numeric" value="${esc(w.alk ?? "")}" placeholder="e.g. 40"></label></div>
         <p class="muted" style="font-size:13px">Your water company lists both by postcode. Bottled water labels give bicarbonate in mg/L: divide by 1.22 for ppm CaCO₃.</p>` : ""}
       <div class="w-sca"><b>Hardness</b><span>50–175 ppm (calcium 17–85, aim ~68)</span><b>Alkalinity</b><span>40–75 ppm, aim ~40 (bicarbonate buffer)</span><b>TDS</b><span>75–250 ppm, aim ~150</span>
         <b>London tap</b><span>~250–350 hardness, ~200+ alkalinity</span></div>
@@ -1105,12 +1110,12 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
       return;
     }
     $("rmethod").textContent = r.method;
-    $("rgoal").textContent = GOAL[r.goal] + " · " + r.dose + " g";
+    $("rgoal").textContent = GOAL[r.goal] + ", " + r.dose + " g";
     $("rzero").hidden = !prefs.zero; $("rzero").textContent = prefs.zero ? `${prefs.zero > 0 ? "+" : "−"}${Math.abs(prefs.zero)} zero offset` : "";
     $("rtitle").textContent = coffeeTitle(state, r);
     const bits = [c.roaster ? titleCase(c.roaster) : (state.bag && state.bag.roaster) || null, c.origin, c.variety ? titleCase(c.variety) : null,
       PROCESS[c.process].label, roastLabel(c.roast)].filter(Boolean);
-    $("rread").textContent = bits.join(" · ");
+    $("rread").textContent = bits.join(", ");
     const src = (f) => f === "you" ? " (you set this)" : " (from the bag)";
     $("detected").innerHTML = state.text ? `Reading this as <b>${esc(PROCESS[c.process].label)}</b>${src(c.processFrom)}, <b>${esc(roastLabel(c.roast))}</b>${src(c.roastFrom)}. Wrong? Change it under Bag details.` : "";
 
@@ -1119,7 +1124,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     const lw = r.learn ? (r.learn.source === "coffee" ? "your log" : "your style") : "";
     const cBadges = [r.pc.clicks ? `${sign(r.pc.clicks)} ${lw}` : ""].filter(Boolean);
     const S = [
-      ["key", onMill(r.clicks).txt, "", mill().lbl, cBadges.join(" · ")],
+      ["key", onMill(r.clicks).txt, "", mill().lbl, cBadges.join(", ")],
       ["", r.dose, "g", "coffee", ""],
       ["", r.water, "g", "water", ""],
       ["ratio", "1:" + r.ratio, "", `≈${r.yieldG} g in the cup`, r.pc.ratio ? `${sign(r.pc.ratio)} ${lw}` : ""],
@@ -1128,19 +1133,19 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     ];
     renderClicks(r);
     $("ratioQ").textContent = `Why 1:${r.ratio}?`; $("ratioWhyT").textContent = ratioWhy(r);
-    $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}"><b>${v}<small>${u}</small></b><span class="sub2">${l}</span>${k === "key" && isC40() && prefs.zero ? `<span class="zo">${sign(prefs.zero)} zero offset</span>` : ""}${k === "key" && !isC40() ? `<span class="sub2">from ${r.clicks} C40 clicks${onMill(r.clicks).atMax ? " · coarsest setting, may still run fast" : onMill(r.clicks).atMin ? " · finest setting" : ""}</span>` : ""}${k === "ratio" ? `<span class="ret">(${r.water} g water − 2.1 × ${r.dose} g retained). Estimate only.</span>` : ""}${badge ? `<span class="badge">${esc(badge)}</span>` : ""}</div>`).join("");
+    $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}"><b>${v}<small>${u}</small></b><span class="sub2">${l}</span>${k === "key" && isC40() && prefs.zero ? `<span class="zo">${sign(prefs.zero)} zero offset</span>` : ""}${k === "key" && !isC40() ? `<span class="sub2">from ${r.clicks} C40 clicks${onMill(r.clicks).atMax ? ", coarsest setting, may still run fast" : onMill(r.clicks).atMin ? ", finest setting" : ""}</span>` : ""}${k === "ratio" ? `<span class="ret">(${r.water} g water − 2.1 × ${r.dose} g retained). Estimate only.</span>` : ""}${badge ? `<span class="badge">${esc(badge)}</span>` : ""}</div>`).join("");
     const bloomTimes = (r.pours[0].to / r.dose).toFixed(1).replace(/\.0$/, "");
     $("tech").innerHTML = `<span><b>Agitation: ${AGIT[r.agit]}.</b> ${
       r.agit >= 3 ? "Stir or swirl the bloom, pour with energy, one swirl at the end." :
       r.agit === 2 ? "Swirl the bloom gently, steady pours, one soft swirl at the end." :
       r.agit === 1 ? "No stirring. Pour low and gentle so the fruit stays clean." :
       "No stirring, no swirling. Pour from close to the bed, centre-weighted."}</span>
-      <span class="muted">Bloom ${bloomTimes}× the dose · preheat and rinse the paper · tare with coffee in.</span>`;
-    const sum = `${isC40() ? r.clicks + " clk" : onMill(r.clicks).txt + " " + mill().short} · ${r.dose}→${r.water} g · ${r.temp}°`;
+      <span class="muted">Bloom ${bloomTimes}× the dose. Preheat and rinse the paper. Tare with the coffee in.</span>`;
+    const sum = `${isC40() ? r.clicks + " clk" : onMill(r.clicks).txt + " " + mill().short} / ${r.dose}→${r.water} g / ${r.temp}°`;
     $("startSum").textContent = sum; $("dockSum").textContent = sum;
 
     $("pourRows").innerHTML = r.pours.map((p, i) => `<tr class="${i === r.pours.length - 1 ? "last" : ""}"><td class="m">${fmt(p.t)}</td>
-      <td class="to">${g1(p.x)}<small>g</small><span class="scale">(scale: ${p.to} g)</span></td><td class="m">+${g1(pourAdd(r, i))} g · ~${p.dur} s</td><td class="how">${esc(p.note)}</td></tr>`).join("");
+      <td class="to">${g1(p.x)}<small>g</small><span class="scale">(scale: ${p.to} g)</span></td><td class="m">+${g1(pourAdd(r, i))} g in ~${p.dur} s</td><td class="how">${esc(p.note)}</td></tr>`).join("");
 
     $("tds").textContent = `${r.tds[0].toFixed(2)}–${r.tds[1].toFixed(2)}% TDS`;
     $("tdsNote").textContent = `At ${r.ey[0]}–${r.ey[1]}% extraction this lands ${r.body}. Estimate only: no refractometer needed. Too strong or weak? Change the ratio, not the grind.`;
@@ -1190,7 +1195,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     const hardFirst = waterLevel() === "hard";
     $("dial").innerHTML = dial.map((w, i) => `<li${i === 0 && hardFirst ? ' style="font-weight:700"' : ""}>${esc(w)}</li>`).join("");
 
-    $("logTitle").textContent = `How did it taste? · ${coffeeTitle(state, r)}`;
+    $("logTitle").textContent = `How did ${coffeeTitle(state, r)} taste?`;
     $("ddHint").textContent = `target ${fmt(r.lo)}–${fmt(r.hi)}`;
     if (picked.size || $("ddIn").value) updateSuggest();
   }
@@ -1320,7 +1325,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     box.innerHTML = journal.slice(0, 12).map((e, i) => `<div class="entry">
       <span class="when">${dmy(e.at)}</span>
       <div class="what"><span class="serif">${esc(e.title)}</span>
-        <span class="num">${esc(e.method)} · ${esc(grindLine(e.clicks))} · ${e.dose}→${e.water} g · ${e.temp}°C${e.dd != null ? " · drained " + fmt(e.dd) : ""}</span>
+        <span class="num">${esc(e.method)} / ${esc(grindLine(e.clicks))} / ${e.dose}→${e.water} g / ${e.temp}°C${e.dd != null ? " / drained " + fmt(e.dd) : ""}</span>
         ${e.tastes && e.tastes.length ? `<span class="t">${esc(e.tastes.map((k) => (TASTES.find((x) => x[0] === k) || [k, k])[1]).join(", "))}${e.change ? " → " + esc(e.change) : ""}</span>` : ""}
         ${e.note ? `<span class="t muted">${esc(e.note)}</span>` : ""}</div>
       <button type="button" data-i="${i}">Brew again</button></div>`).join("");
@@ -1363,7 +1368,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     try {
       if ("wakeLock" in navigator) {
         bv.wake = await navigator.wakeLock.request("screen");
-        bv.wake.addEventListener && bv.wake.addEventListener("release", () => { if (!$("bv").hidden && prefs.keepAwake && document.visibilityState === "visible") wakeChip("Screen may dim · tap"); });
+        bv.wake.addEventListener && bv.wake.addEventListener("release", () => { if (!$("bv").hidden && prefs.keepAwake && document.visibilityState === "visible") wakeChip("Screen may dim, tap"); });
         wakeChip(""); return;
       }
     } catch (e) {}
@@ -1386,7 +1391,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     if (!recipe) render();
     const r = recipe;
     if ($("rbody").hidden) return;
-    $("bvCoffee").textContent = `${coffeeTitle(state, r)} · ${grindLine(r.clicks)}${isC40() && prefs.zero ? ` · ${prefs.zero > 0 ? "+" : "−"}${Math.abs(prefs.zero)} zero offset` : ""} · ${r.temp}°C · ${r.dose}→${r.water} g`;
+    $("bvCoffee").textContent = `${coffeeTitle(state, r)} / ${grindLine(r.clicks)}${isC40() && prefs.zero ? ` (${prefs.zero > 0 ? "+" : "−"}${Math.abs(prefs.zero)} zero offset)` : ""} / ${r.temp}°C / ${r.dose}→${r.water} g`;
     $("bvTicks").innerHTML = r.pours.map((p, i) => { const y = coneY(p.to / r.water).toFixed(1);
       return `<line id="tk${i}" x1="150" x2="182" y1="${y}" y2="${y}" stroke="#48484a" stroke-width="5" stroke-linecap="round"/>`; }).join("");
     const T = r.hi + 20;
@@ -1418,7 +1423,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     closeBrew();
     $("ddIn").value = fmt(sec);
     const v = sec < r.lo - 5 ? `fast, target ${fmt(r.lo)}–${fmt(r.hi)}` : sec > r.hi + 10 ? `slow, target ${fmt(r.lo)}–${fmt(r.hi)}` : "in the window";
-    $("ddHint").innerHTML = `<b style="color:var(--ink)">Drained at ${fmt(sec)}</b> · ${v}. Now pick what you taste.`;
+    $("ddHint").innerHTML = `<b style="color:var(--ink)">Drained at ${fmt(sec)}</b>, ${v}. Now pick what you taste.`;
     buzz([40, 60, 40]);
     updateSuggest();
     $("journal").scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1446,23 +1451,23 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     if (bv.running && next) { const left = Math.ceil(next.t - el); if (left <= 3 && left >= 1 && bv.lastTick !== left) { bv.lastTick = left; tone(1320, .06, .06); } }
 
     $("bvClock").textContent = fmt(Math.floor(el));
-    // same slots in every phase: pill · label · big number · instruction (2 lines) · one detail line · progress
+    // same slots in every phase: pill, label, big number, instruction (2 lines), one detail line, progress
     let expected = 0, nextLbl = "Then", nextT = "", nextCd = "", prog = 0;
     const n = P.length, cd = (sec) => fmt(Math.max(0, Math.ceil(sec)));
     if (idle) {
-      setNow("idle", "Ready", "First pour, scale to", P[0].to, "g", "Tare with the coffee in. Press Start as you begin to pour.", `${n} pours · done by ${fmt(r.hi)}`);
-      nextT = n > 1 ? `${fmt(P[1].t)} → ${P[1].to} g` : `Drain · done by ${fmt(r.hi)}`;
+      setNow("idle", "Ready", "First pour, scale to", P[0].to, "g", "Tare with the coffee in. Press Start as you begin to pour.", `${n} pours, done by ${fmt(r.hi)}`);
+      nextT = n > 1 ? `${fmt(P[1].t)} → ${P[1].to} g` : `Drain, done by ${fmt(r.hi)}`;
     } else if (inPour) {
       const k = clamp((el - cur.t) / cur.dur, 0, 1);
       expected = prevTo + (cur.to - prevTo) * k; prog = k;
-      setNow("pour", `Pour ${idx + 1} of ${n}`, "Scale to", cur.to, "g", cur.note, `<b>+${g1(pourAdd(r, idx))} g</b> · ${Math.max(0, Math.ceil(cur.t + cur.dur - el))} s to pour it`);
-      if (next) { nextLbl = "Next"; nextT = `${fmt(next.t)} → ${next.to} g`; nextCd = cd(next.t - el); } else nextT = `Drain · done by ${fmt(r.hi)}`;
+      setNow("pour", `Pour ${idx + 1} of ${n}`, "Scale to", cur.to, "g", cur.note, `<b>+${g1(pourAdd(r, idx))} g</b> in ${Math.max(0, Math.ceil(cur.t + cur.dur - el))} s`);
+      if (next) { nextLbl = "Next"; nextT = `${fmt(next.t)} → ${next.to} g`; nextCd = cd(next.t - el); } else nextT = `Drain, done by ${fmt(r.hi)}`;
     } else if (!afterLast) {
       expected = cur.to;
       const left = next.t - el, gap = next.t - (cur.t + cur.dur);
       prog = gap > 0 ? clamp(1 - left / gap, 0, 1) : 1;
-      setNow("wait", "Wait", `Pour ${idx + 2} of ${n}, scale to`, next.to, "g", left <= 5 ? "Get ready to pour." : "Hands off. Let it settle.", `<b>Pour in ${cd(left)}</b> · +${g1(pourAdd(r, idx + 1))} g`);
-      nextT = after ? `${fmt(after.t)} → ${after.to} g` : `Drain · done by ${fmt(r.hi)}`;
+      setNow("wait", "Wait", `Pour ${idx + 2} of ${n}, scale to`, next.to, "g", left <= 5 ? "Get ready to pour." : "Hands off. Let it settle.", `<b>Pour in ${cd(left)}</b>, +${g1(pourAdd(r, idx + 1))} g`);
+      nextT = after ? `${fmt(after.t)} → ${after.to} g` : `Drain, done by ${fmt(r.hi)}`;
       if (after) nextCd = cd(after.t - el);
     } else {
       expected = r.water;
@@ -1501,18 +1506,18 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
   // plain text, aligned for a monospace notes app but still readable in a chat bubble
   function recipeText() {
     const r = recipe, c = r.c;
-    const who = [c.roaster ? titleCase(c.roaster) : (state.bag && state.bag.roaster) || "", c.origin, PROCESS[c.process].label, roastLabel(c.roast)].filter(Boolean).join(" · ");
+    const who = [c.roaster ? titleCase(c.roaster) : (state.bag && state.bag.roaster) || "", c.origin, PROCESS[c.process].label, roastLabel(c.roast)].filter(Boolean).join(", ");
     const lv = waterLevel();
     const L = [
       coffeeTitle(state, r), who, "",
-      `${r.method} · ${GOAL[r.goal]}`,
+      `${r.method}, ${GOAL[r.goal]}`,
       isC40() ? `Grind    ${r.clicks} clicks, Comandante C40 from zero${prefs.zero ? ` (my zero ${signed(prefs.zero)})` : ""}`
         : `Grind    ${onMill(r.clicks).txt} on ${mill().name} (${mill().lbl}; from ${r.clicks} C40 clicks)`,
       `Coffee   ${r.dose} g`,
-      `Water    ${r.water} g (1:${r.ratio}) · ${r.temp}°C`,
+      `Water    ${r.water} g (1:${r.ratio}) at ${r.temp}°C`,
       `Drain    ${fmt(r.lo)}–${fmt(r.hi)}`,
       `Pours    agitation ${AGIT[r.agit]}`,
-      ...r.pours.flatMap((p, i) => [`  ${fmt(p.t).padStart(4)}  ${g1(p.x).padStart(5)} g  +${g1(pourAdd(r, i))} g · ~${p.dur} s  ${p.note}`, `${" ".repeat(13)}(scale: ${p.to} g)`]),
+      ...r.pours.flatMap((p, i) => [`  ${fmt(p.t).padStart(4)}  ${g1(p.x).padStart(5)} g  +${g1(pourAdd(r, i))} g in ~${p.dur} s  ${p.note}`, `${" ".repeat(13)}(scale: ${p.to} g)`]),
       "  Targets shown to 0.1 g. Pour to the nearest gram on your scale.",
     ];
     const rk = risks(r); if (rk.length) L.push("", ...rk.map((x) => "! " + x));
@@ -1531,18 +1536,18 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     const r = recipe, c = r.c, W = 1080, H = 1350, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
     const x = cv.getContext("2d");
     const F = (w, px) => `${w} ${px}px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif`;
-    const ink = "#1d1d1f", mut = "#6e6e73", acc = "#f56300", blue = "#0071e3", rule = "#e5e5ea";
+    const ink = "#1d1d1f", mut = "#6e6e73", acc = "#f56300", blue = "#0071e3", rule = "#e5e5ea", coffee = "#7b4a2b";
     const rr = (X, Y, w, h, rad, fill) => { x.beginPath(); x.roundRect ? x.roundRect(X, Y, w, h, rad) : x.rect(X, Y, w, h); x.fillStyle = fill; x.fill(); };
     const fitPx = (text, w, max, weight) => { let px = max; x.font = F(weight, px); while (px > 34 && x.measureText(text).width > w) { px -= 2; x.font = F(weight, px); } return px; };
     const clip = (text, w) => { if (x.measureText(text).width <= w) return text; let t = text; while (t.length > 1 && x.measureText(t + "…").width > w) t = t.slice(0, -1); return t.trimEnd() + "…"; };
     const M = 64, IW = W - 2 * M;
     x.fillStyle = "#f5f5f7"; x.fillRect(0, 0, W, H);
     x.textBaseline = "alphabetic";
-    x.fillStyle = acc; x.font = F(600, 30); x.fillText(r.method, M, 104);
+    x.fillStyle = coffee; x.font = F(600, 30); x.fillText(r.method, M, 104);
     x.fillStyle = mut; x.textAlign = "right"; x.fillText(GOAL[r.goal], W - M, 104); x.textAlign = "left";
     const title = coffeeTitle(state, r), tpx = fitPx(title, IW, 84, 700);
     x.fillStyle = ink; x.font = F(700, tpx); x.fillText(title, M, 104 + 22 + tpx);
-    const sub = [c.roaster ? titleCase(c.roaster) : (state.bag && state.bag.roaster) || "", c.origin, PROCESS[c.process].label, roastLabel(c.roast)].filter(Boolean).join(" · ");
+    const sub = [c.roaster ? titleCase(c.roaster) : (state.bag && state.bag.roaster) || "", c.origin, PROCESS[c.process].label, roastLabel(c.roast)].filter(Boolean).join(", ");
     x.fillStyle = mut; x.font = F(400, 30); x.fillText(clip(sub, IW), M, 104 + 22 + tpx + 50);
     // hero: clicks
     let y = 104 + 22 + tpx + 86;
@@ -1550,7 +1555,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     rr(M, y, hw, hh, 36, "#ffffff");
     const gm = onMill(r.clicks), big = gm.txt;
     x.textAlign = "center"; x.fillStyle = blue; x.font = F(700, big.length > 4 ? 120 : big.length > 3 ? 140 : 176); x.fillText(big, M + hw / 2, y + 196);
-    x.fillStyle = mut; x.font = F(600, 26); x.fillText(isC40() ? "clicks · Comandante C40" : clip(mill().name, hw - 40), M + hw / 2, y + 244);
+    x.fillStyle = mut; x.font = F(600, 26); x.fillText(isC40() ? "Comandante C40 clicks" : clip(mill().name, hw - 40), M + hw / 2, y + 244);
     x.font = F(500, 22); x.fillText(isC40() ? (prefs.zero ? `counted from zero, my zero ${signed(prefs.zero)}` : "counted from zero") : `from ${r.clicks} C40 clicks`, M + hw / 2, y + 276);
     const tw = (IW - hw - g - g) / 2, th = (hh - g) / 2;
     [[r.dose + " g", "coffee"], [r.water + " g", "water"], ["1:" + r.ratio, "ratio"], [r.temp + "°C", "kettle"]].forEach(([v, l], i) => {
@@ -1565,14 +1570,14 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     const rows = r.pours, rowH = rows.length > 6 ? 48 : 64, ph = 78 + rows.length * rowH + 44;
     rr(M, y, IW, ph, 36, "#ffffff");
     x.fillStyle = ink; x.font = F(700, 30); x.fillText("Pours", M + 32, y + 50);
-    x.fillStyle = mut; x.font = F(500, 26); x.textAlign = "right"; x.fillText(`drain ${fmt(r.lo)}–${fmt(r.hi)} · agitation ${AGIT[r.agit]}`, W - M - 32, y + 50); x.textAlign = "left";
+    x.fillStyle = mut; x.font = F(500, 26); x.textAlign = "right"; x.fillText(`drain ${fmt(r.lo)}–${fmt(r.hi)}, agitation ${AGIT[r.agit]}`, W - M - 32, y + 50); x.textAlign = "left";
     let ry = y + 78;
     rows.forEach((p, i) => {
       x.fillStyle = rule; x.fillRect(M + 32, ry, IW - 64, 2);
       const base = ry + rowH * 0.66;
       x.fillStyle = mut; x.font = F(500, 28); x.fillText(fmt(p.t), M + 32, base);
       x.fillStyle = ink; x.font = F(700, 34); x.fillText(g1(p.x) + " g", M + 120, base);
-      x.fillStyle = mut; x.font = F(500, 22); x.fillText(`+${g1(pourAdd(r, i))} · scale ${p.to} g`, M + 290, base);
+      x.fillStyle = mut; x.font = F(500, 22); x.fillText(`+${g1(pourAdd(r, i))}, scale ${p.to} g`, M + 290, base);
       x.font = F(400, 24); x.fillText(clip(p.note, IW - 64 - 500), M + 532, base);
       ry += rowH;
     });
@@ -1628,15 +1633,15 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
       const place = [r.origin, r.region].filter(Boolean).join(", ");
       return `${head}<article class="item">
         <div class="l">
-          <span class="who">${esc(r.roaster)}${r.roaster_city ? ` · ${esc(r.roaster_city)}` : ""}</span>
+          <span class="who">${esc(r.roaster)}${r.roaster_city ? `, ${esc(r.roaster_city)}` : ""}</span>
           <span class="name">${esc(r.name)}</span>
           <div class="pills">${place ? `<span class="place">${esc(place)}</span>` : ""}${pills}</div>
-          ${r.notes && r.notes.length ? `<span class="tn">${esc(r.notes.join(" · "))}</span>` : ""}
+          ${r.notes && r.notes.length ? `<span class="tn">${esc(r.notes.join(", "))}</span>` : ""}
         </div>
         <div class="r">
           ${r.price ? `<span class="price">${esc(r.price)}</span>` : '<span class="date">Price on site</span>'}
           <button class="btn" type="button" data-i="${i}">Brew</button>
-          <span class="date">${r.url ? `<a href="${esc(r.url)}" target="_blank" rel="noopener">Shop</a> · ` : ""}${r.published ? isoDmy(r.published).slice(0, 5) : isoDmy(r.found).slice(0, 5)}</span>
+          <span class="date">${r.url ? `<a href="${esc(r.url)}" target="_blank" rel="noopener">Shop</a> / ` : ""}${r.published ? isoDmy(r.published).slice(0, 5) : isoDmy(r.found).slice(0, 5)}</span>
         </div></article>`; }).join("") : '<p class="muted" style="padding:16px 0;margin:0">Nothing matches.</p>';
     $("shelfMore").hidden = shelfAll || !!q || list.length <= LIMIT;
     $("shelfMore").textContent = `Show all ${list.length}`;
@@ -1663,7 +1668,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
       const by = (m) => okR.filter((r) => (r.market || "UK") === m).length;
       const nNew = shelf.filter((r) => r.new).length;
       const where = okR.length ? ` from <b>${okR.length}</b> roasters (${["UK", "Europe", "World"].map((m) => by(m) ? `${by(m)} ${m === "World" ? "rest of world" : m}` : "").filter(Boolean).join(", ")})` : "";
-      $("shelfMeta").innerHTML = `<b>${shelf.length}</b> single-origin filter coffees${where} · <b>${nNew}</b> new in the last ${d.new_window_days || 21} days · scanned <b>${isoDmy(d.updated)}</b>.`;
+      $("shelfMeta").innerHTML = `<b>${shelf.length}</b> single-origin filter coffees${where}, <b>${nNew}</b> new in the last ${d.new_window_days || 21} days, scanned <b>${isoDmy(d.updated)}</b>.`;
       renderShelf();
     } catch (e) { $("shelfMeta").textContent = "Couldn’t load this week’s scan. Refresh to try again."; }
   }
@@ -1740,7 +1745,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
       const pos = clamp((res.L - 10) / (64 - 10), 0, 1) * 100;
       const pick = res.band;
       out.innerHTML = `<div class="bean-res"><div class="bean-sw" style="background:${res.colour}"></div><div>
-        <b>Looks ${BAND_LABEL[res.band]}</b> <span class="muted">· lightness ${res.L}/100</span>
+        <b>Looks ${BAND_LABEL[res.band]}</b> <span class="muted">(lightness ${res.L}/100)</span>
         <div class="bean-scale"><i style="left:${pos}%"></i></div>
         <div class="bean-ticks"><span>Dark</span><span>Medium</span><span>Very light</span></div>
         <p class="muted" style="margin:6px 0 0;font-size:13px">An estimate from colour. Nothing changes until you confirm.</p>
@@ -1839,8 +1844,8 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
       // confident enough = a decent mean confidence AND something recognisable; otherwise show nothing partial
       const ok = text.length >= 12 && conf >= 45 && (conf >= 70 || found.length + (p.bagNotes.length ? 1 : 0) >= 1);
       if (!ok) { failCard(out, `The label didn’t come through well enough${conf ? ` (${conf}% sure)` : ""}. Lay the bag flat, fill the frame with the label, good light, no flash. Or type what it says.`, "bagPhoto").onclick = () => $("coffeeIn").focus(); return; }
-      out.innerHTML = `<div class="confirm"><b>Read from your photo <span class="muted" style="font-weight:400">· ${conf}% sure</span></b>
-        <span class="found">${found.length ? "Found: <b>" + found.map(esc).join(" · ") + "</b>" : "No origin or process recognised."}${p.bagNotes.length ? " · notes: " + esc(p.bagNotes.join(", ")) : ""}</span>
+      out.innerHTML = `<div class="confirm"><b>Read from your photo <span class="muted" style="font-weight:400">(${conf}% sure)</span></b>
+        <span class="found">${found.length ? "Found: <b>" + found.map(esc).join(", ") + "</b>" : "No origin or process recognised."}${p.bagNotes.length ? ", notes: " + esc(p.bagNotes.join(", ")) : ""}</span>
         <textarea id="ocrText" aria-label="Text read from the bag">${esc(text)}</textarea>
         <span class="muted" style="font-size:13px">Fix anything it misread. Nothing is used until you confirm.</span>
         <div class="acts"><button class="btn" type="button" id="ocrUse">Use this</button><button class="btn ghost" type="button" id="ocrNo">Discard</button></div></div>`;
