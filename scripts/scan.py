@@ -76,7 +76,8 @@ FILTERY = re.compile(r"\bfilter\b|\bomni\b|pour[- ]?over|\bv60\b|chemex|batch br
                      r"filterröst|filterkaffe|handfilter|brew roast", re.I)
 ESPRESSO = re.compile(r"\bespresso\b", re.I)
 COFFEE_HINT = re.compile(r"single origin|single-origin|altitude|masl|variet|process|tasting notes|"
-                         r"flavour notes|flavor notes|producer|washing station|farm|finca|estate", re.I)
+                         r"flavour notes|flavor notes|producer|washing station|farm|finca|estate|"
+                         r"proces\b|vari[eë]teit|hoogte|smaak|producent|boerderij|koffiebonen", re.I)
 NOTES_RE = re.compile(r"(?:tasting notes|flavour notes|flavor notes|flavour profile|in the cup|tastes like|we taste|cup notes|"
                       r"note di degustazione|note aromatiche|note|geschmacksnoten|geschmack|aromen|notes de dégustation|"
                       r"smaksnoter|smagsnoter|smaksnotater|notas de cata|notas|notes)\s*[:\-–]\s*([^\n.]{3,120})", re.I)
@@ -92,7 +93,7 @@ BAG = re.compile(r"\b(?:100|125|150|200|227|250|300|340|350|454|500)\s?g\b|\b(?:
 # looks like a bag of coffee even when the feed names no country or tasting details
 BEANISH = re.compile(r"\b\d{3,4}\s?g\b|whole ?beans?|wholebean|hele bønner|en grains?|grano|ganze bohnen?|ziarn|zrnk|"
                      r"\bfilter\b|\bespresso\b|\bomni\b|coffee|\bcaf[eé]\b|kaffe|kaffee|caff[eè]|\bkawa\b|k[aá]va|kahvi|"
-                     r"washed|natural|honey|anaerob|lavado|lavé|gewaschen|geisha|gesha", re.I)
+                     r"washed|natural|honey|anaerob|lavado|lavé|gewaschen|geisha|gesha|koffie|bonen|gewassen|natuurlijk", re.I)
 
 # --- "is this a bag of beans?" gate -------------------------------------------------------
 # Roasters also sell drinks made from coffee (liqueurs, cans, concentrates). Their pages name an
@@ -133,7 +134,7 @@ VOLUME = re.compile(r"\b\d+(?:[.,]\d+)?\s?(?:ml|cl|l|ltr|litres?|liters?|fl ?oz)
 #  4. its page calls it a blend and the title names no country, unless the page names exactly one
 #     country. "A blend of harvests, lots, varieties or producers" describes one origin.
 NOT_ONE_COFFEE = re.compile(r"\ball[- ]?\d\b|\b\d\s?x\s?\d{2,3}\s?g\b|roaster'?s[- ]choice|mystery|rotating|subscp?ri|abonnement|"
-                            r"taste card|tasting (?:set|box|pack)|sampler|probierset|discovery (?:set|box|pack)|\bbundle\b|gift (?:set|box)", re.I)
+                            r"taste card|tasting (?:set|box|pack)|sampler|probierset|proefpakket|proefset|discovery (?:set|box|pack)|\bbundle\b|gift (?:set|box)", re.I)
 BLEND_TITLE = re.compile(r"(?<!field )\bblends?\b|low[- ]caff?\b|house[- ](?:roast|coffee|blend|espresso)|signature[- ](?:roast|blend|coffee)|"
                          r"seasonal[- ](?:filter|espresso|blend|roast)|half[- ]caff|miscela|m[ée]lange|mezcla|mischung", re.I)
 # "a blend of harvests / lots / varieties / producers" is still one origin, and so is a "field blend"
@@ -1035,6 +1036,24 @@ def page_price(raw):
         it = ld_to_item(p, "", "")
         if it.get("price"):
             return it["price"], it.get("currency")
+    # WooCommerce variable products keep their variation prices in a data attribute on the add-to-cart form
+    # (RAF: the Store API returns price 0 and no variations); prefer the 250 g bag, else the cheapest
+    sym = re.search(r'woocommerce-Price-currencySymbol">\s*([^<\s]+)', raw)
+    cur = {"&euro;": "EUR", "€": "EUR", "&pound;": "GBP", "£": "GBP", "&#36;": "USD", "$": "USD"}.get(sym.group(1) if sym else "")
+    m = re.search(r'data-product_variations="([^"]+)"', raw)
+    if m and cur:
+        try:
+            vs = [v for v in json.loads(html.unescape(m.group(1))) if isinstance(v, dict) and v.get("display_price")]
+        except ValueError:
+            vs = []
+        if vs:
+            pick = next((v for v in vs if re.search(r"\b250\s?g", json.dumps(v.get("attributes", {})), re.I)), None)
+            return float((pick or min(vs, key=lambda v: float(v["display_price"])))["display_price"]), cur
+    m = re.search(r'<p class="price">(.*?)</p>', raw, re.S)
+    if m and cur:
+        a = re.search(r'(\d+(?:[.,]\d{2})?)', re.sub(r"<[^>]+>|&nbsp;", " ", m.group(1)))
+        if a:
+            return float(a.group(1).replace(",", ".")), cur
     meta = {k.lower(): v for k, v in PRICE_META.findall(raw)}
     try:
         if meta.get("amount"):
