@@ -635,6 +635,9 @@ def fetch_generic(shop, max_pages=45, extra=""):
     return items
 
 
+PRICE_DIAG = {}
+
+
 def woo_variation_price(shop, variations):
     """Shops that sell by weight (Monmouth) only price each size: read the sizes, prefer the 250 g bag."""
     best = None
@@ -675,6 +678,8 @@ def fetch_woo(shop):
                 price = None
             if price is None and p.get("variations"):
                 price = woo_variation_price(shop, p["variations"])
+            if price is None and shop not in PRICE_DIAG:   # one sample per shop for the scan log
+                PRICE_DIAG[shop] = f"prices={json.dumps(pr)[:300]} variations={json.dumps(p.get('variations'))[:200]} type={p.get('type')}"
             cats = [c.get("name", "") for c in p.get("categories", [])]
             tags = [t.get("name", "") for t in p.get("tags", [])]
             items.append({
@@ -1322,6 +1327,8 @@ def main():
         miss.setdefault(x["roaster"], [0, 0])[0 if x.get("price") else 1] += 1
     bad = sorted(((n, a, b) for n, (a, b) in miss.items() if b and b >= a), key=lambda t: -t[2])
     print("\nRoasters with most coffees on 'Price on site': " + (", ".join(f"{n} {b}/{a + b}" for n, a, b in bad) or "none"))
+    for shop_url, d in PRICE_DIAG.items():
+        print(f"  no price sample {shop_url}: {d}")
     print("\nWhy products were not listed, per roaster (review this when a shop looks thin):")
     for name in sorted(DROPS):
         reasons = DROPS[name]
