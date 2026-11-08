@@ -1726,8 +1726,10 @@ footer .bmc a { color: var(--coffee); font-weight: 600; }
       if (!res.ok) throw new Error(res.status);
       const d = await res.json();
       shelf = (d.releases || []).filter((r) => r.name && r.roaster);
-      const okR = (d.roasters || []).filter((r) => r.platform);
-      const by = (m) => okR.filter((r) => (r.market || "UK") === m).length;
+      // count the roasters that actually have coffees on the list (same number the top animation shows)
+      const mk = new Map(); shelf.forEach((r) => { if (!mk.has(r.roaster)) mk.set(r.roaster, r.market || "UK"); });
+      const okR = [...mk.values()];
+      const by = (m) => okR.filter((x) => x === m).length;
       const nNew = shelf.filter((r) => r.new).length;
       const where = okR.length ? ` from <b>${okR.length}</b> roasters (${["UK", "Europe", "World"].map((m) => by(m) ? `${by(m)} ${m === "World" ? "rest of world" : m}` : "").filter(Boolean).join(", ")})` : "";
       $("shelfMeta").innerHTML = `<b>${shelf.length}</b> filter coffees${where}, <b>${nNew}</b> new in the last ${d.new_window_days || 21} days, scanned <b>${isoDmy(d.updated)}</b>.`;
