@@ -8,10 +8,11 @@ Below the recipe is **New on UK shelves**: single-origin filter coffees from UK 
 
 ## How it runs (free)
 
-- **Site:** one static `index.html`, served by GitHub Pages. No server, no tracking, no API keys.
+- **Site:** one static `index.html`, served by Cloudflare Pages (free plan) at v60.thisisfed.xyz. No server, no tracking, no API keys.
+- **What gets published:** Cloudflare's build copies only `index.html` and `data/releases.json` into `public/`, so the scanner, roaster list and workflow stay private.
 - **Recipes:** worked out in the browser from the coffee's process, roast, variety and the cup style you pick.
 - **Roaster scan:** `scripts/scan.py` (Python standard library only) reads each roaster's public shop feed: Shopify's `/products.json` or WooCommerce's Store API. It keeps in-stock single-origin coffees roasted for filter or omni, pulls origin, process, variety and tasting notes, and writes `data/releases.json`. A coffee counts as **new** if the shop listed it in the last 21 days.
-- **Schedule:** `.github/workflows/scan.yml` runs the scan every Monday at 05:31 UTC and commits the new list. Pages redeploys on its own. Run it any time from **Actions → Weekly roaster scan → Run workflow**.
+- **Schedule:** `.github/workflows/scan.yml` runs the scan every Monday at 05:31 UTC and commits the new list. Cloudflare Pages redeploys on its own. Run it any time from **Actions → Weekly roaster scan → Run workflow**.
 
 ## Adding a roaster
 
