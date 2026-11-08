@@ -70,7 +70,8 @@ EXCLUDE = re.compile(r"subscri|abonnement|abbonamento|\babo\b|suscripci|prenumer
                      r"green (?:beans?|coffee)|råkaffe|rohkaffee|unroasted|\bduo\b|\btrio\b|\bpack\b|\bset\b|selection|collection|wholesale|"
                      r"\b\d+(?:[.,]\d+)?\s?kg\b|\btin\b|longjing|sencha|oolong|rooibos|darjeeling|\bassam\b|earl grey|bai hao|jasmine (?:green|tea|pearl)|"
                      r"sticker|socks?\b|bandana|poster|\binsert\b|screw|basket|portafilter|gasket|spout|tablets?\b|cleaner|\bpin\b|scoop|\bjar\b|"
-                     r"\bcake\b|bread\b|sandwich|tumbler|calendar|kalender|shipping\b|postcard", re.I)
+                     r"\bcake\b|bread\b|sandwich|tumbler|calendar|kalender|shipping\b|postcard|\bpaper\b|filtry|\bfilters\b|\bcards?\b|\bhoney (?:jar|mini)|"
+                     r"coffee blossom honey|surprise|we choose", re.I)
 FILTERY = re.compile(r"\bfilter\b|\bomni\b|pour[- ]?over|\bv60\b|chemex|batch brew|filter roast|\bfiltro\b|\bfiltre\b|"
                      r"filterröst|filterkaffe|handfilter|brew roast", re.I)
 ESPRESSO = re.compile(r"\bespresso\b", re.I)
@@ -81,6 +82,13 @@ NOTES_RE = re.compile(r"(?:tasting notes|flavour notes|flavor notes|flavour prof
                       r"smaksnoter|smagsnoter|smaksnotater|notas de cata|notas|notes)\s*[:\-–]\s*([^\n.]{3,120})", re.I)
 DARK = re.compile(r"dark roast|medium[- ]dark|french roast|italian roast", re.I)
 ROAST_LABEL = re.compile(r"(?:roast(?: level| degree)?|tostado|tueste|röstgrad|torréfaction|tostatura)\s*[:\-–]\s*(medium[- ]dark|dark)\b", re.I)
+# sold like a bag of beans: a bag weight, a grind/bean option, a process or variety, or a coffee product type.
+# Gates the product-page origin look-up, so paper filters and gift cards never get a country from a
+# "you may also like" strip.
+BAG = re.compile(r"\b(?:100|125|150|200|227|250|300|340|350|454|500)\s?g\b|\b(?:8|10|12|16)\s?oz\b|whole ?beans?|wholebean|hele bønner|"
+                 r"en grains?|en grano|grano entero|ganze bohnen?|ziarnist|zrnk|\bmolido\b|ground for|"
+                 r"\b(?:washed|natural|honey|anaerobic|lavado|natural|lavé|gewaschen|geisha|gesha|bourbon|caturra|typica|sl28|pacamara)\b|"
+                 r"^(?:coffee|café|cafe|kaffe|kaffee|caffè|kawa|káva|filter coffee|single origin)", re.I)
 # looks like a bag of coffee even when the feed names no country or tasting details
 BEANISH = re.compile(r"\b\d{3,4}\s?g\b|whole ?beans?|wholebean|hele bønner|en grains?|grano|ganze bohnen?|ziarn|zrnk|"
                      r"\bfilter\b|\bespresso\b|\bomni\b|coffee|\bcaf[eé]\b|kaffe|kaffee|caff[eè]|\bkawa\b|k[aá]va|kahvi|"
@@ -725,7 +733,9 @@ def origin_from_page(item, roaster):
         o = find_origin(m.group(1))
         if o:
             break
-    o = o or find_origin(window[:200]) or count_origin(window)
+    o = o or find_origin(window[:200])
+    if not o and COFFEE_HINT.search(window):   # a bare count needs the page to read like a coffee page
+        o = count_origin(window)
     if o:
         item["_origin_from"] = "page"
         item["body"] = (item.get("body") or "") + "\n" + window   # lets process, variety and notes use the page too
@@ -761,7 +771,7 @@ def classify(item, roaster):
         lvl = (m.group(1) if m.re is ROAST_LABEL else m.group(0)).lower()
         roast_level = "medium-dark" if "medium" in lvl else "dark"
     origin = find_origin(title, blob, item["body"])
-    if not origin and BEANISH.search(f"{blob} {item.get('url', '')}"):
+    if not origin and BAG.search(f"{title} {item['type']} {' '.join(item['tags'])} {item['variants']}"):
         # the shop's feed doesn't say where it's from (Nomad, Dak, Blossom...): read the product page
         origin = origin_from_page(item, roaster)
     blend = blend_reason(item)
