@@ -635,6 +635,29 @@ def fetch_generic(shop, max_pages=45, extra=""):
     return items
 
 
+def woo_variation_price(shop, variations):
+    """Shops that sell by weight (Monmouth) only price each size: read the sizes, prefer the 250 g bag."""
+    best = None
+    for v in variations[:6]:
+        try:
+            d = get_json(f"{shop}/wp-json/wc/store/v1/products/{v.get('id')}", tries=1)
+        except Exception:  # noqa: BLE001
+            continue
+        pr = d.get("prices") or {}
+        raw = pr.get("price")
+        if raw in (None, "", "0"):
+            continue
+        val = int(raw) / (10 ** int(pr.get("currency_minor_unit", 2) or 2))
+        if val < 1:
+            continue
+        label = " ".join(str(a.get("value", "")) for a in (v.get("attributes") or [])) + " " + d.get("name", "")
+        if re.search(r"\b250\s?g", label, re.I):
+            return val
+        best = val if best is None else min(best, val)
+        time.sleep(.3)
+    return best
+
+
 def fetch_woo(shop):
     items = []
     for page in range(1, 4):
@@ -650,6 +673,8 @@ def fetch_woo(shop):
             price = int(raw) / (10 ** minor) if raw not in (None, "", "0") else None
             if price is not None and price < 1:   # a per-gram or sample price, not a bag
                 price = None
+            if price is None and p.get("variations"):
+                price = woo_variation_price(shop, p["variations"])
             cats = [c.get("name", "") for c in p.get("categories", [])]
             tags = [t.get("name", "") for t in p.get("tags", [])]
             items.append({
