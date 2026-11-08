@@ -76,12 +76,12 @@ section.sec > * { min-width: 0; }
 .hero-kick { margin: 0; font-size: clamp(15px, 1.9vw, 19px); font-weight: 600; letter-spacing: -.01em; color: var(--ink); }
 .stage { --hs: clamp(34px, 8.4vw, 80px); position: relative; width: 100%; height: calc(var(--hs) * 2.7); container-type: inline-size; }
 .scene { position: absolute; inset: 0; margin: 0; display: flex; align-items: center; justify-content: center; gap: .22em; white-space: nowrap;
-  font-size: min(var(--hs), var(--fit, 12cqi)); font-weight: 700; letter-spacing: -.035em; line-height: 1.05; color: var(--ink);
+  font-size: min(var(--hs), 7.4cqi); font-weight: 700; letter-spacing: -.035em; line-height: 1.05; color: var(--ink);
   opacity: 0; filter: blur(14px); transform: scale(1.06); pointer-events: none;
   transition: opacity .55s ease, filter .7s ease, transform .9s cubic-bezier(.2,.7,.2,1); }
 .scene.on { opacity: 1; filter: none; transform: none; pointer-events: auto; }
 .scene.final { display: grid; place-content: center; }
-.hero h1 { font-size: min(var(--hs), 7.4cqi); line-height: 1.08; letter-spacing: -.035em; font-weight: 700; }
+.hero h1 { font-size: 1em; line-height: 1.08; letter-spacing: -.035em; font-weight: 700; }
 .hero h1 .serif { color: var(--muted); }
 .g-coffee { background: linear-gradient(100deg, #d9a066 0%, #a8653a 45%, #6b3d22 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
 :root[data-theme="dark"] .g-coffee { background-image: linear-gradient(100deg, #ffd9a8 0%, #e2a56c 45%, #b06f3f 100%); }
@@ -91,9 +91,9 @@ section.sec > * { min-width: 0; }
 /* Apple-style motion: words blur in one after another, a counting stat, a Dynamic Island that grows from a dot,
    and a slow Apple Intelligence-style sheen, here in crema tones */
 .scene .w { display: inline-block; }
-.stat { flex-direction: column; gap: .12em; }
+.stat { flex-direction: column; gap: 0; }
 .stat-n { font-variant-numeric: tabular-nums; }
-.stat-s { font-size: .4em; font-weight: 600; letter-spacing: -.02em; color: var(--muted); }
+.stat-s { color: var(--muted); }
 .island { display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; border-radius: 980px;
   background: var(--ink); color: var(--bg); font: 600 15px/1 var(--sans); letter-spacing: -.01em; overflow: hidden; max-width: 100%;
   }
@@ -240,6 +240,8 @@ details.more .opts { padding-top: 10px; }
 details.clk { background: var(--card); border-radius: 20px; padding: 0 20px; font-size: 15px; }
 details.clk > summary { list-style: none; cursor: pointer; padding: 15px 0; display: flex; justify-content: space-between; gap: 10px; align-items: center; font-weight: 600; }
 details.clk > summary::-webkit-details-marker { display: none; }
+details.xp ul { margin: 0; padding: 0 0 18px 18px; display: grid; gap: 7px; font-size: 15px; }
+details.xp #whyHint.warn { color: var(--accent); font-weight: 600; }
 details.clk > summary::after { content: "›"; color: var(--muted); font-size: 22px; line-height: 1; transition: transform .2s; }
 details.clk[open] > summary::after { transform: rotate(90deg); }
 details.clk > summary .muted { font-weight: 400; font-size: 14px; flex: 1; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -482,11 +484,11 @@ footer .bmc a { color: var(--coffee); font-weight: 600; }
     <div class="hero">
       <p class="hero-kick">Scanned every Monday</p>
       <div class="stage" id="stage">
-        <p class="scene words" aria-hidden="true" style="--fit:13cqi"><span class="w" style="--i:0">Love</span> <span class="w" style="--i:1">coffee?</span></p>
-        <p class="scene" aria-hidden="true" style="--fit:12cqi">You’ll <svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff6fb5"/><stop offset="1" stop-color="#ff2d55"/></linearGradient></defs><path pathLength="1" d="M12 20.2S3.5 15 3.5 9.1A4.6 4.6 0 0 1 12 6.6a4.6 4.6 0 0 1 8.5 2.5c0 5.9-8.5 11.1-8.5 11.1z"/></svg> <span class="g-coffee">V60</span></p>
-        <div class="scene stat" aria-hidden="true" id="sceneStat" style="--fit:12cqi"><span class="stat-n"><span id="statN">0</span> coffees.</span><span class="stat-s" id="statS">From roasters near and far.</span></div>
-        <div class="scene" aria-hidden="true" id="sceneIsland" style="--fit:14cqi"><div class="island" id="island"><span class="isl-lbl">Just in</span><span class="isl-body"><span class="isl-dot" id="islDot"></span><b id="islName">New coffee</b><span class="isl-who" id="islWho"></span></span></div></div>
-        <p class="scene words" aria-hidden="true" style="--fit:8.4cqi"><span class="w" style="--i:0">Taste.</span> <span class="w" style="--i:1">Tweak.</span> <span class="w shimmer" style="--i:2">Nail it.</span></p>
+        <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">Love</span> <span class="w" style="--i:1">coffee?</span></p>
+        <p class="scene" aria-hidden="true">You’ll <svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff6fb5"/><stop offset="1" stop-color="#ff2d55"/></linearGradient></defs><path pathLength="1" d="M12 20.2S3.5 15 3.5 9.1A4.6 4.6 0 0 1 12 6.6a4.6 4.6 0 0 1 8.5 2.5c0 5.9-8.5 11.1-8.5 11.1z"/></svg> <span class="g-coffee">V60</span></p>
+        <div class="scene stat" aria-hidden="true" id="sceneStat"><span class="stat-n"><span id="statN">0</span> coffees.</span><span class="stat-s" id="statS">From near and far.</span></div>
+        <div class="scene" aria-hidden="true" id="sceneIsland"><div class="island" id="island"><span class="isl-lbl">Just in</span><span class="isl-body"><span class="isl-dot" id="islDot"></span><b id="islName">New coffee</b><span class="isl-who" id="islWho"></span></span></div></div>
+        <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">Taste.</span> <span class="w" style="--i:1">Tweak.</span> <span class="w shimmer" style="--i:2">Nail it.</span></p>
         <div class="scene final on"><h1 id="h1">New coffees. <span class="serif">The recipe for each bag.</span></h1></div>
       </div>
       <p class="lede">Filter coffees, single origins and blends, from roasters in the UK, Europe and beyond, scanned every Monday. Pick one or type your own, and get the grind for your grinder, the ratio, the temperature and every pour, from recipes by Hoffmann, Kasuya and Rao. Brew full screen, log how it tasted, and it adjusts next time.</p>
@@ -553,10 +555,8 @@ footer .bmc a { color: var(--coffee); font-weight: 600; }
       <div class="col"><h3>Expected strength</h3><div class="big" id="tds"></div><p id="tdsNote"></p></div>
       <div class="col"><h3 id="cupH">Likely in the cup</h3><div class="notes-list" id="cupNotes"></div><p id="cupNote"></p></div>
     </div>
-    <div class="cols">
-      <div class="col" style="grid-column: span 1"><h3>Why this recipe</h3><ul id="why"></ul></div>
-      <div class="col" style="grid-column: span 2"><h3>Dial it in: change one thing per brew</h3><ul id="dial"></ul></div>
-    </div>
+    <details class="clk xp" id="whyBox"><summary>Why this recipe <span class="muted" id="whyHint"></span></summary><ul id="why"></ul></details>
+    <details class="clk xp"><summary>Dial it in: change one thing per brew</summary><ul id="dial"></ul></details>
     <div class="share">
       <button class="btn ghost" id="copyBtn" type="button">Copy recipe</button>
       <button class="btn ghost" id="cardBtn" type="button">Save recipe card</button>
@@ -1229,7 +1229,10 @@ footer .bmc a { color: var(--coffee); font-weight: 600; }
     if (c.delicate) why.push(`${c.variety ? titleCase(c.variety) : "Delicate variety"}: florals fade with rough pours. Hot water, but agitation capped at medium${r.m === "rao" ? " and a flat, undisturbed bed" : ""}.`);
     if (state.method === "best" && why.length === whyBase && c.process !== "unsure" && c.roast !== "unsure") why.push(`${pl}, ${ROAST[c.roast].label} roast: dense enough to take hot water and pulsed pours for full sweetness.`);
     why.push(`Strength comes from the ratio (1:${r.ratio}). The grind is set for extraction, not strength.`);
-    $("why").innerHTML = risks(r).map((w) => `<li class="warn">${esc(w)}</li>`).join("") + cons.map((w) => `<li class="cons">${esc(w)}</li>`).join("") + why.map((w) => `<li>${esc(w)}</li>`).join("");
+    const rk = risks(r);
+    $("why").innerHTML = rk.map((w) => `<li class="warn">${esc(w)}</li>`).join("") + cons.map((w) => `<li class="cons">${esc(w)}</li>`).join("") + why.map((w) => `<li>${esc(w)}</li>`).join("");
+    // folded by default; a warning is named on the closed row so it is never missed
+    $("whyHint").textContent = rk.length ? `${rk.length} warning${rk.length > 1 ? "s" : ""}` : ""; $("whyHint").classList.toggle("warn", rk.length > 0);
 
     const dial = [
       `Taste first, then check when it drained. Target ${fmt(r.lo)}–${fmt(r.hi)}.`,
@@ -1768,7 +1771,7 @@ footer .bmc a { color: var(--coffee); font-weight: 600; }
     const prep = (el) => {
       if (el.id === "sceneStat") {
         const n = shelf.length, roasters = new Set(shelf.map((x) => x.roaster)).size;
-        $("statS").textContent = roasters ? `From ${roasters} roasters, this week.` : "From roasters near and far.";
+        $("statS").textContent = roasters ? `From ${roasters} roasters.` : "From near and far.";
         const to = n || 1000, t0 = performance.now();
         const step = (t) => { const k = Math.min(1, (t - t0) / 1300), e = 1 - Math.pow(1 - k, 4);
           $("statN").textContent = Math.round(to * e).toLocaleString("en-GB"); if (k < 1) requestAnimationFrame(step); };
