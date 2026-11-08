@@ -588,10 +588,10 @@ def og_product(page):
              "offers": {"price": price, "priceCurrency": ccy, "availability": "InStock" if re.search(r"in ?stock|available|preorder", avail, re.I) else "OutOfStock"}}]
 
 
-def shopify_product_js(url, lastmod):
+def shopify_product_js(url, lastmod, extra=""):
     """Shopify serves every product as JSON at <product url>.js, even when /products.json is off."""
     try:
-        p = get_json(url.split("?")[0].rstrip("/") + ".js", tries=1)
+        p = get_json(url.split("?")[0].rstrip("/") + ".js" + (f"?{extra}" if extra else ""), tries=1)
     except Exception:  # noqa: BLE001
         return None
     if not isinstance(p, dict) or not p.get("title"):
@@ -602,22 +602,22 @@ def shopify_product_js(url, lastmod):
     return {"title": p.get("title", ""), "type": p.get("type", ""), "tags": tags if isinstance(tags, list) else [tags],
             "body": strip_html(p.get("description", "")), "variants": " / ".join(v.get("title", "") for v in variants),
             "available": bool(p.get("available", True)), "price": min(prices) if prices else (p.get("price", 0) / 100 or None),
-            "currency": None, "url": url.split("?")[0], "published": (p.get("published_at") or "")[:10], "lastmod": lastmod}
+            "currency": None, "url": url.split("?")[0], "published": (p.get("published_at") or "")[:10], "lastmod": lastmod, "via": "js"}
 
 
 DIAG = {}
 
 
-def fetch_generic(shop, max_pages=45):
+def fetch_generic(shop, max_pages=45, extra=""):
     items, pages = [], sitemap_urls(shop)
     DIAG[shop] = {"sitemap_urls": len(pages), "pages_ok": 0, "pages_blocked": 0, "sample": pages[0][0] if pages else None}
     for url, lm in pages[:max_pages]:
         if "/products/" in url:
-            it = shopify_product_js(url, lm)
+            it = shopify_product_js(url, lm, extra)
             if it:
                 items.append(it); time.sleep(0.6); continue
         try:
-            page = get_text(url, tries=1)
+            page = get_text(url + (("&" if "?" in url else "?") + extra if extra else ""), tries=1)
             DIAG[shop]["pages_ok"] += 1
         except Exception:  # noqa: BLE001
             DIAG[shop]["pages_blocked"] += 1
@@ -645,7 +645,9 @@ def fetch_woo(shop):
             pr = p.get("prices") or {}
             minor = int(pr.get("currency_minor_unit", 2) or 2)
             raw = pr.get("price")
-            price = int(raw) / (10 ** minor) if raw not in (None, "") else None
+            if raw in (None, "", "0"):   # variable products (sizes) put the price in a range
+                raw = (pr.get("price_range") or {}).get("min_amount") or raw
+            price = int(raw) / (10 ** minor) if raw not in (None, "", "0") else None
             cats = [c.get("name", "") for c in p.get("categories", [])]
             tags = [t.get("name", "") for t in p.get("tags", [])]
             items.append({
@@ -1049,14 +1051,31 @@ def scan_roaster(r):
             items = fn(shop)
             if items:
                 if kind == "sitemap":
-                    found = [i["currency"] for i in items if i.get("currency")]
-                    home = r.get("currency") or COUNTRY_CCY.get(r.get("country"), "EUR" if r.get("region") == "Europe" else "GBP")
-                    seen = max(set(found), key=found.count) if found else home
+                    home = home_currency(r)
+                    is_shopify = any(i.get("via") == "js" for i in items)
+
+                    def seen_in(its, extra=""):
+                        if is_shopify:   # product .js carries no currency: ask the shop's cart, as for Shopify feeds
+                            return shop_currency(shop, "shopify", r, extra)
+                        found = [i["currency"] for i in its if i.get("currency")]
+                        return max(set(found), key=found.count) if found else home
+                    seen = seen_in(items)
+                    if seen != home:
+                        # the scanner runs abroad, so the shop showed foreign prices (Friedhats came back in USD):
+                        # ask again for the shop's home market before giving up on prices
+                        extra = f"country={r.get('country') or 'GB'}&currency={home}"
+                        try:
+                            again = fetch_generic(shop, extra=extra)
+                            if again and seen_in(again, extra) == home:
+                                items, seen = again, home
+                        except Exception:  # noqa: BLE001
+                            pass
                     r["_ccy"] = seen
-                    if seen != home:   # geo-converted price: don't show a number we can't vouch for
+                    if seen != home:   # still geo-converted: don't show a number we can't vouch for
                         for i in items:
                             i["price"] = None
                         r["_note"] = f"prices shown in {seen} to the scanner, hidden"
+                        r["_ccy"] = home
                 else:
                     r["_ccy"] = shop_currency(shop, kind, r)
                     home = home_currency(r)
