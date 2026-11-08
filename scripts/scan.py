@@ -678,8 +678,9 @@ def fetch_woo(shop):
                 price = None
             if price is None and p.get("variations"):
                 price = woo_variation_price(shop, p["variations"])
-            if price is None and shop not in PRICE_DIAG:   # one sample per shop for the scan log
-                PRICE_DIAG[shop] = f"prices={json.dumps(pr)[:300]} variations={json.dumps(p.get('variations'))[:200]} type={p.get('type')}"
+            if price is None and shop not in PRICE_DIAG and "subscri" not in (p.get("type") or "") and not EXCLUDE.search(p.get("name", "")):
+                PRICE_DIAG[shop] = (f"{p.get('name')}: prices={json.dumps(pr)[:260]} type={p.get('type')} variations={json.dumps(p.get('variations'))[:300]} "
+                                    f"price_html={(p.get('price_html') or '')[:200]!r}")
             cats = [c.get("name", "") for c in p.get("categories", [])]
             tags = [t.get("name", "") for t in p.get("tags", [])]
             items.append({
