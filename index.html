@@ -160,7 +160,8 @@ details.more .opts { padding-top: 10px; }
   .spec { grid-column: span 2; }
   .spec.key { grid-column: 1 / -1; padding: 22px 14px 18px; }
   .spec.key b { font-size: 76px; }
-  .spec:nth-child(5), .spec:nth-child(6) { grid-column: span 3; }
+  .spec:nth-child(2), .spec:nth-child(3), .spec:nth-child(5), .spec:nth-child(6) { grid-column: span 3; }
+  .spec.ratio { grid-column: 1 / -1; }
 }
 /* how the clicks were set */
 details.clk { background: var(--card); border-radius: 20px; padding: 0 20px; font-size: 15px; }
@@ -199,6 +200,8 @@ details.water > summary::-webkit-details-marker { display: none; }
 .w-head::after { content: "›"; color: var(--muted); font-size: 22px; line-height: 1; transition: transform .2s; }
 details.water[open] .w-head::after { transform: rotate(90deg); }
 .w-adv { font-size: 15px; color: var(--muted); }
+.w-fix { display: block; font-size: 19px; font-weight: 700; line-height: 1.3; letter-spacing: -.01em; }
+.w-fixn { display: block; margin-top: 4px; font-size: 14px; font-weight: 500; color: var(--muted); font-variant-numeric: tabular-nums; }
 .w-adv.hard { color: var(--ink); background: color-mix(in srgb, var(--accent) 14%, transparent); border-radius: 12px; padding: 10px 12px; font-weight: 500; }
 .w-body { display: grid; gap: 12px; padding: 0 0 18px; font-size: 15px; }
 .w-body p { margin: 0; }
@@ -239,6 +242,9 @@ table.pours { width: 100%; border-collapse: separate; border-spacing: 0; backgro
 .pours td.to small { font-size: 13px; color: var(--muted); font-weight: 400; margin-left: 2px; }
 .pours td.how { font-size: 15px; }
 .pours .last td { border-bottom: 0; }
+.pours td.to .scale { display: block; font-size: 13px; font-weight: 500; letter-spacing: 0; color: var(--muted); margin-top: 2px; }
+.pour-note { margin: -4px 0 0; padding: 0 6px; font-size: 13px; color: var(--muted); }
+.spec .ret { font-size: 12px; color: var(--muted); line-height: 1.3; max-width: 30ch; }
 
 .cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .cols.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -462,6 +468,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     <div class="rbody" id="rbody">
     <div class="adjusted" id="adjusted" hidden></div>
     <div class="specs" id="specs"></div>
+    <details class="clk why-ratio" id="ratioWhy"><summary><span id="ratioQ">Why this ratio?</span></summary><p class="clk-body" id="ratioWhyT" style="margin:0"></p></details>
     <div class="zero-row" id="zeroRow">
       <div class="zr-ctl"><span class="zr-lbl" id="zrLbl">My C40 zero</span>
         <div class="step" role="group" aria-labelledby="zrLbl"><button type="button" id="zMinus" aria-label="Zero offset one click lower">−</button><span id="zVal">0</span><button type="button" id="zPlus" aria-label="Zero offset one click higher">+</button></div></div>
@@ -471,9 +478,10 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     <div class="tech" id="tech"></div>
     <button class="btn go-big" id="startBrew" type="button"><span>Start brewing</span><span class="num" id="startSum"></span></button>
     <table class="pours" aria-label="Pour schedule">
-      <thead><tr><th>At</th><th>Scale reads</th><th>Pour</th><th>How</th></tr></thead>
+      <thead><tr><th>At</th><th>Target</th><th>Pour</th><th>How</th></tr></thead>
       <tbody id="pourRows"></tbody>
     </table>
+    <p class="pour-note">Targets shown to 0.1 g. Pour to the nearest gram on your scale.</p>
     <div class="cols two">
       <div class="col"><h3>Expected strength</h3><div class="big" id="tds"></div><p id="tdsNote"></p></div>
       <div class="col"><h3 id="cupH">Likely in the cup</h3><div class="notes-list" id="cupNotes"></div><p id="cupNote"></p></div>
@@ -739,7 +747,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
 
     let ratio = m === "ten" ? (goal === "syrupy" ? 15 : 16)
       : goal === "light" ? 17 : goal === "balanced" ? (m.startsWith("hoffmann") ? 16.7 : 16.5) : 15.5;
-    const baseRatio = ratio;
+    const baseRatio = ratio, ratioPre = ratio + (pc.ratio || 0);
     ratio = clamp(Math.round((ratio + (pc.ratio || 0)) * 10) / 10, 14, 18.5);
     const water = Math.round(dose * ratio);
 
@@ -768,7 +776,11 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     const bloomNote = agit >= 3 ? (m === "rao" ? "Bloom · stir until every ground is wet" : "Bloom · swirl to wet all grounds")
       : agit === 2 ? "Bloom · gentle swirl" : "Bloom · gentle spiral, no stirring";
     const lastNote = agit >= 3 ? "Last pour · then one swirl to flatten the bed" : agit === 2 ? "Last pour · one soft swirl" : "Last pour · no swirl, let it drain";
-    const add = (t, to, note, dur) => P.push({ t, to: Math.round(to), note, dur });
+    // x = exact target to 0.1 g; to = the whole gram you pour to on the scale (rounded from x).
+    // Targets are cumulative and the last one is exactly the total water, so the pours always add
+    // up to the water: no drift, whether you sum the 0.1 g steps or the whole-gram steps.
+    const r1 = (v) => Math.round(v * 10) / 10;
+    const add = (t, to, note, dur) => { const x = r1(to); P.push({ t, x, to: Math.round(x), note, dur }); };
     let lo, hi;
     if (m === "hoffmann") {
       const ts = [0, 45, 70, 90, 110];
@@ -784,7 +796,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
       add(45, water, agit >= 3 ? "One steady pour (~60 s), then spin" : "One slow pour (~60 s), gentle spin", 60);
       lo = 180; hi = 210;
     } else if (m === "fourSix") {
-      const first = Math.round(water * 0.4);
+      const first = water * 0.4;
       const split = goal === "light" ? 0.44 : goal === "syrupy" ? 0.4 : 0.42;   // smaller first pour = sweeter
       const strength = goal === "light" ? 2 : 3;                               // fewer pours = lighter body
       add(0, first * split, bloomNote, 10);
@@ -796,6 +808,8 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
       lo = 180; hi = 210;
     }
 
+    const lastP = P[P.length - 1]; lastP.x = water; lastP.to = water;   // guard: the schedule ends on the total, exactly
+
     // strength estimate: beverage = water − paper/grounds retention (~2.1 × dose)
     const bev = water - dose * 2.1;
     const ey = { hoffmann: [20, 22], hoffmannU: [20, 22], rao: [20.5, 22.5], fourSix: [19, 21], ten: [20, 22] }[m].map((x) => x - (agit <= 1 ? 0.5 : 0));
@@ -804,7 +818,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     const body = mid < 1.25 ? "tea-like" : mid < 1.38 ? "light and clear" : mid < 1.5 ? "classic filter" : "rich";
 
     return { m, method: METHOD[m], goal, c, agit, key, pc, learn, baseClicks, clickParts, baseTemp, baseRatio,
-      dose, water, ratio, clicks, temp, yieldG: Math.round(bev), pours: P, lo, hi, tds, ey, body };
+      dose, water, ratio, ratioClamped: Math.abs(ratioPre - ratio) > 0.05, clicks, temp, yieldG: Math.round(bev), bev, pours: P, lo, hi, tds, ey, body };
   }
 
   // ---------- what to expect in the cup ----------
@@ -854,6 +868,8 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
 
   // ---------- rendering the recipe ----------
   let recipe = null;
+  const g1 = (v) => v.toFixed(1);                                                     // grams to 0.1
+  const pourAdd = (r, i) => Math.round((r.pours[i].x - (i ? r.pours[i - 1].x : 0)) * 10) / 10;
   const roastLabel = (k) => k === "unsure" ? ROAST.unsure.label : ROAST[k].label + " roast";
   function coffeeTitle(st, r) {
     if (st.bag && st.bag.name) return st.bag.name;
@@ -947,6 +963,26 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
   const setZero = (d) => { prefs.zero = clamp((prefs.zero || 0) + d, -6, 6); savePrefs(); render(); };
   $("zMinus").onclick = () => setZero(-1); $("zPlus").onclick = () => setZero(1);
 
+  // ---------- why this ratio: published classic → goal → your journal ----------
+  const CLASSIC = {
+    hoffmann:  { r: 16.7, txt: "Classic Hoffmann 1-Cup is 1:16.7 (15→250 g)" },
+    hoffmannU: { r: 16.7, txt: "Classic Hoffmann Ultimate V60 is 1:16.7 (30→500 g)" },
+    rao:       { r: 16,   txt: "Classic Rao bloom & spin is 1:16 (22→352 g)" },
+    fourSix:   { r: 15,   txt: "Classic Kasuya 4:6 is 1:15 (20→300 g)" },
+    ten:       { r: 16,   txt: "Kasuya’s 10-Pour has no single published ratio; it starts here at 1:16" },
+  };
+  const GOAL_SHORT = { light: "Light & aromatic", balanced: "Balanced", syrupy: "Syrupy & sweet" };
+  const step = (d) => `${d > 0 ? "adds" : "takes off"} ${Math.abs(d).toFixed(1).replace(/\.0$/, "")}`;
+  function ratioWhy(r) {
+    const C = CLASSIC[r.m], parts = [C.txt + "."];
+    const dGoal = Math.round((r.baseRatio - C.r) * 10) / 10;
+    parts.push(dGoal ? `${GOAL_SHORT[r.goal]} goal ${step(dGoal)}, to 1:${r.baseRatio}.` : `${GOAL_SHORT[r.goal]} goal keeps it there.`);
+    if (r.pc.ratio) parts.push(`${r.learn && r.learn.source === "style" ? "Your nailed brews of this style" : "Your journal for this coffee"} ${step(r.pc.ratio)}.`);
+    if (r.ratioClamped) parts.push("Held inside 1:14–1:18.5.");
+    parts.push(`${r.dose} g × ${r.ratio} = ${r.water} g water. Strength is set by ratio, not grind.`);
+    return parts.join(" ");
+  }
+
   // ---------- high-risk combinations (one line each, shown first under Why this recipe) ----------
   function risks(r) {
     const c = r.c, w = [];
@@ -979,7 +1015,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     const name = (WATER.find((x) => x[0] === w.kind) || [0, "Not set"])[1];
     $("wKind").textContent = name;
     const adv = $("wAdv"); adv.className = "w-adv" + (lv === "hard" ? " hard" : "");
-    adv.innerHTML = lv === "hard" ? `<b>Hard tap: try 1–2 clicks coarser or −2 °C before adjusting grind for bitterness.</b><br><span style="font-weight:400">Here that’s ${r.clicks + 1}–${r.clicks + 2} clicks or ${r.temp - 2}°C. Hard water mutes acidity and pulls bitterness.</span>`
+    adv.innerHTML = lv === "hard" ? `<b class="w-fix">Hard tap first fix: try 1–2 clicks coarser or −2 °C before changing grind for bitterness or flatness.</b><span class="w-fixn">Here that’s ${r.clicks + 1}–${r.clicks + 2} clicks or ${r.temp - 2}°C.</span>`
       : lv === "vsoft" ? "Very soft water can taste flat and thin. If it does, try 1–2°C hotter before changing the grind."
       : lv === "soft" ? "Good for filter. Dial in with grind and temperature as usual."
       : lv === "unknown" ? "Add your hardness or alkalinity to get advice."
@@ -1022,12 +1058,13 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
       ["key", r.clicks, "", "clicks · C40", cBadges.join(" · ")],
       ["", r.dose, "g", "coffee", ""],
       ["", r.water, "g", "water", ""],
-      ["", "1:" + r.ratio, "", `≈${r.yieldG} g in the cup`, r.pc.ratio ? `${sign(r.pc.ratio)} ${lw}` : ""],
+      ["ratio", "1:" + r.ratio, "", `≈${r.yieldG} g in the cup`, r.pc.ratio ? `${sign(r.pc.ratio)} ${lw}` : ""],
       ["", r.temp, "°C", "kettle", r.pc.temp ? `${sign(r.pc.temp)}° ${lw}` : ""],
       ["", fmt(r.lo), "", `to ${fmt(r.hi)} total`, ""],
     ];
     renderClicks(r);
-    $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}"><b>${v}<small>${u}</small></b><span class="sub2">${l}</span>${k === "key" && prefs.zero ? `<span class="zo">${sign(prefs.zero)} zero offset</span>` : ""}${badge ? `<span class="badge">${esc(badge)}</span>` : ""}</div>`).join("");
+    $("ratioQ").textContent = `Why 1:${r.ratio}?`; $("ratioWhyT").textContent = ratioWhy(r);
+    $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}"><b>${v}<small>${u}</small></b><span class="sub2">${l}</span>${k === "key" && prefs.zero ? `<span class="zo">${sign(prefs.zero)} zero offset</span>` : ""}${k === "ratio" ? `<span class="ret">(${r.water} g water − 2.1 × ${r.dose} g retained). Estimate only.</span>` : ""}${badge ? `<span class="badge">${esc(badge)}</span>` : ""}</div>`).join("");
     const bloomTimes = (r.pours[0].to / r.dose).toFixed(1).replace(/\.0$/, "");
     $("tech").innerHTML = `<span><b>Agitation: ${AGIT[r.agit]}.</b> ${
       r.agit >= 3 ? "Stir or swirl the bloom, pour with energy, one swirl at the end." :
@@ -1038,10 +1075,8 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     const sum = `${r.clicks} clk · ${r.dose}→${r.water} g · ${r.temp}°`;
     $("startSum").textContent = sum; $("dockSum").textContent = sum;
 
-    $("pourRows").innerHTML = r.pours.map((p, i) => {
-      const add = p.to - (i ? r.pours[i - 1].to : 0);
-      return `<tr class="${i === r.pours.length - 1 ? "last" : ""}"><td class="m">${fmt(p.t)}</td><td class="to">${p.to}<small>g</small></td><td class="m">+${add} g · ~${p.dur}s</td><td class="how">${esc(p.note)}</td></tr>`;
-    }).join("");
+    $("pourRows").innerHTML = r.pours.map((p, i) => `<tr class="${i === r.pours.length - 1 ? "last" : ""}"><td class="m">${fmt(p.t)}</td>
+      <td class="to">${g1(p.x)}<small>g</small><span class="scale">(scale: ${p.to} g)</span></td><td class="m">+${g1(pourAdd(r, i))} g · ~${p.dur} s</td><td class="how">${esc(p.note)}</td></tr>`).join("");
 
     $("tds").textContent = `${r.tds[0].toFixed(2)}–${r.tds[1].toFixed(2)}% TDS`;
     $("tdsNote").textContent = `At ${r.ey[0]}–${r.ey[1]}% extraction this lands ${r.body}. Estimate only: no refractometer needed. Too strong or weak? Change the ratio, not the grind.`;
@@ -1085,7 +1120,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
       "Sour and bitter at once → uneven bed: same grind, gentler pours, swirl once.",
     ];
     if (r.agit <= 1) dial.push("Fermenty, boozy, harsh → 2°C cooler before touching the grind.");
-    if (waterLevel() === "hard") dial.unshift("Hard tap: try 1–2 clicks coarser or −2 °C before adjusting grind for bitterness.");
+    if (waterLevel() === "hard") dial.unshift("Hard tap first fix: try 1–2 clicks coarser or −2 °C before changing grind for bitterness or flatness.");
     $("dial").innerHTML = dial.map((w) => `<li>${esc(w)}</li>`).join("");
 
     $("logTitle").textContent = `How did it taste? · ${coffeeTitle(state, r)}`;
@@ -1353,13 +1388,13 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     } else if (inPour) {
       const k = clamp((el - cur.t) / cur.dur, 0, 1);
       expected = prevTo + (cur.to - prevTo) * k; prog = k;
-      setNow("pour", `Pour ${idx + 1} of ${n}`, "Scale to", cur.to, "g", cur.note, `<b>+${cur.to - prevTo} g</b> · ${Math.max(0, Math.ceil(cur.t + cur.dur - el))} s to pour it`);
+      setNow("pour", `Pour ${idx + 1} of ${n}`, "Scale to", cur.to, "g", cur.note, `<b>+${g1(pourAdd(r, idx))} g</b> · ${Math.max(0, Math.ceil(cur.t + cur.dur - el))} s to pour it`);
       if (next) { nextLbl = "Next"; nextT = `${fmt(next.t)} → ${next.to} g`; nextCd = cd(next.t - el); } else nextT = `Drain · done by ${fmt(r.hi)}`;
     } else if (!afterLast) {
       expected = cur.to;
       const left = next.t - el, gap = next.t - (cur.t + cur.dur);
       prog = gap > 0 ? clamp(1 - left / gap, 0, 1) : 1;
-      setNow("wait", "Wait", `Pour ${idx + 2} of ${n}, scale to`, next.to, "g", left <= 5 ? "Get ready to pour." : "Hands off. Let it settle.", `<b>Pour in ${cd(left)}</b> · +${next.to - cur.to} g`);
+      setNow("wait", "Wait", `Pour ${idx + 2} of ${n}, scale to`, next.to, "g", left <= 5 ? "Get ready to pour." : "Hands off. Let it settle.", `<b>Pour in ${cd(left)}</b> · +${g1(pourAdd(r, idx + 1))} g`);
       nextT = after ? `${fmt(after.t)} → ${after.to} g` : `Drain · done by ${fmt(r.hi)}`;
       if (after) nextCd = cd(after.t - el);
     } else {
@@ -1409,10 +1444,11 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
       `Water    ${r.water} g (1:${r.ratio}) · ${r.temp}°C`,
       `Drain    ${fmt(r.lo)}–${fmt(r.hi)}`,
       `Pours    agitation ${AGIT[r.agit]}`,
-      ...r.pours.map((p, i) => `  ${fmt(p.t).padStart(4)}  ${String(p.to).padStart(3)} g  (+${p.to - (i ? r.pours[i - 1].to : 0)})  ${p.note}`),
+      ...r.pours.flatMap((p, i) => [`  ${fmt(p.t).padStart(4)}  ${g1(p.x).padStart(5)} g  +${g1(pourAdd(r, i))} g · ~${p.dur} s  ${p.note}`, `${" ".repeat(13)}(scale: ${p.to} g)`]),
+      "  Targets shown to 0.1 g. Pour to the nearest gram on your scale.",
     ];
     const rk = risks(r); if (rk.length) L.push("", ...rk.map((x) => "! " + x));
-    if (lv === "hard") L.push("", "Hard tap: try 1–2 clicks coarser or −2 °C before adjusting grind for bitterness.");
+    if (lv === "hard") L.push("", "Hard tap first fix: try 1–2 clicks coarser or −2 °C before changing grind for bitterness or flatness.");
     L.push("", "v60.thisisfed.xyz");
     return L.join("\n");
   }
@@ -1457,22 +1493,23 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     x.textAlign = "left";
     // pours
     y += hh + 24;
-    const rows = r.pours, rowH = rows.length > 6 ? 48 : 64, ph = 78 + rows.length * rowH + 20;
+    const rows = r.pours, rowH = rows.length > 6 ? 48 : 64, ph = 78 + rows.length * rowH + 44;
     rr(M, y, IW, ph, 36, "#ffffff");
     x.fillStyle = ink; x.font = F(700, 30); x.fillText("Pours", M + 32, y + 50);
     x.fillStyle = mut; x.font = F(500, 26); x.textAlign = "right"; x.fillText(`drain ${fmt(r.lo)}–${fmt(r.hi)} · agitation ${AGIT[r.agit]}`, W - M - 32, y + 50); x.textAlign = "left";
     let ry = y + 78;
     rows.forEach((p, i) => {
       x.fillStyle = rule; x.fillRect(M + 32, ry, IW - 64, 2);
-      const base = ry + rowH * 0.66, add = p.to - (i ? rows[i - 1].to : 0);
+      const base = ry + rowH * 0.66;
       x.fillStyle = mut; x.font = F(500, 28); x.fillText(fmt(p.t), M + 32, base);
-      x.fillStyle = ink; x.font = F(700, 36); x.fillText(p.to + " g", M + 140, base);
-      x.fillStyle = mut; x.font = F(500, 24); x.fillText("+" + add, M + 290, base);
-      x.font = F(400, 26); x.fillText(clip(p.note, IW - 64 - 360), M + 392, base);
+      x.fillStyle = ink; x.font = F(700, 34); x.fillText(g1(p.x) + " g", M + 120, base);
+      x.fillStyle = mut; x.font = F(500, 22); x.fillText(`+${g1(pourAdd(r, i))} · scale ${p.to} g`, M + 290, base);
+      x.font = F(400, 24); x.fillText(clip(p.note, IW - 64 - 500), M + 532, base);
       ry += rowH;
     });
+    x.fillStyle = mut; x.font = F(400, 20); x.fillText("Targets shown to 0.1 g. Pour to the nearest gram on your scale.", M + 32, y + ph - 14);
     const rk = risks(r)[0], lv = waterLevel();
-    const foot = rk ? "! " + rk : lv === "hard" ? "Hard tap: try 1–2 clicks coarser or −2 °C before adjusting grind for bitterness." : "";
+    const foot = rk ? "! " + rk : lv === "hard" ? "Hard tap first fix: 1–2 clicks coarser or −2 °C before changing grind." : "";
     if (foot) { x.fillStyle = acc; x.font = F(500, 24); x.fillText(clip(foot, IW), M, Math.min(H - 104, y + ph + 48)); }
     x.fillStyle = mut; x.font = F(600, 24); x.fillText("v60.thisisfed.xyz", M, H - 56);
     x.textAlign = "right"; x.font = F(500, 24); x.fillText(dmy(new Date()), W - M, H - 56); x.textAlign = "left";
