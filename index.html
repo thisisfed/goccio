@@ -1673,9 +1673,10 @@ footer .bmc a { font-weight: 700; }
 
   // ---------- shelves ----------
   let shelf = [], shelfF = "all", shelfR = "all", shelfAll = false, shelfV = "v60";
-  // "Made for V60": single origins roasted for filter or omni. Blends, coffees named espresso and darker
+  // "Made for V60": single origins roasted for filter or omni. Blends, espresso roasts (the roaster shelves or
+  // describes them as espresso, even when sold ground for filter), coffees named espresso and darker
   // roasts stay on the list, one tap away under Everything. Search stays inside whichever one is chosen.
-  const forV60 = (r) => !r.blend && !/espresso/i.test(r.name || "") && !r.roast_level;
+  const forV60 = (r) => !r.blend && r.roast_for !== "espresso" && !/espresso/i.test(r.name || "") && !r.roast_level;
   const SHELF_V = [["v60", "Made for V60"], ["all", "Everything"]];
   function renderShelfV() {
     const n = shelf.length, k = shelf.filter(forV60).length;
