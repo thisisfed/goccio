@@ -71,7 +71,7 @@ EXCLUDE = re.compile(r"subscri|abonnement|abbonamento|\babo\b|suscripci|prenumer
                      r"\b\d+(?:[.,]\d+)?\s?kg\b|\btin\b|longjing|sencha|oolong|rooibos|darjeeling|\bassam\b|earl grey|bai hao|jasmine (?:green|tea|pearl)|"
                      r"sticker|socks?\b|bandana|poster|\binsert\b|screw|basket|portafilter|gasket|spout|tablets?\b|cleaner|\bpin\b|scoop|\bjar\b|"
                      r"\bcake\b|bread\b|sandwich|tumbler|calendar|kalender|shipping\b|postcard|\bpaper\b|filtry|\bfilters\b|\bcards?\b|\bhoney (?:jar|mini)|"
-                     r"coffee blossom honey|surprise|we choose|\boffice\b|\bgreen\s*$|\bsample\b|cupping|atelier|d[ée]gustation", re.I)
+                     r"coffee blossom honey|surprise|we choose|filter cone|\bcone\b|\boffice\b|\bgreen\s*$|\bsample\b|cupping|atelier|d[ée]gustation", re.I)
 FILTERY = re.compile(r"\bfilter\b|\bomni\b|pour[- ]?over|\bv60\b|chemex|batch brew|filter roast|\bfiltro\b|\bfiltre\b|"
                      r"filterröst|filterkaffe|handfilter|brew roast", re.I)
 ESPRESSO = re.compile(r"\bespresso\b", re.I)
@@ -648,6 +648,8 @@ def fetch_woo(shop):
             if raw in (None, "", "0"):   # variable products (sizes) put the price in a range
                 raw = (pr.get("price_range") or {}).get("min_amount") or raw
             price = int(raw) / (10 ** minor) if raw not in (None, "", "0") else None
+            if price is not None and price < 1:   # a per-gram or sample price, not a bag
+                price = None
             cats = [c.get("name", "") for c in p.get("categories", [])]
             tags = [t.get("name", "") for t in p.get("tags", [])]
             items.append({
