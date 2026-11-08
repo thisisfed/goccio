@@ -981,7 +981,28 @@ def scan_roaster(r):
             continue
         d = DIAG.get(shop) if kind == "sitemap" else None
         errors.append(f"{kind}: no product data" + (f" ({d['sitemap_urls']} product URLs in sitemap, {d['pages_ok']} pages read, {d['pages_blocked']} blocked; e.g. {d['sample']})" if d else ""))
-    return None, [], "; ".join(errors) or "no products found"
+    return None, [], "; ".join(errors + [probe_site(shop)]) or "no products found"
+
+
+def probe_site(shop):
+    """One line about a shop we couldn't read: what platform the home page says it runs, and what the sitemap answers."""
+    bits = []
+    try:
+        home = get_text(shop, tries=1, limit=400_000)
+        gen = re.search(r'<meta[^>]+name=["\']generator["\'][^>]+content=["\']([^"\']+)', home, re.I)
+        plat = next((p for p in ("Shopify", "Squarespace", "Wix", "WooCommerce", "Magento", "PrestaShop", "BigCommerce", "Webflow", "Shopware", "Ecwid", "Lightspeed")
+                     if p.lower() in home.lower()), None)
+        links = sorted(set(re.findall(r'href=["\'](/[^"\'#?]*(?:product|shop|coffee|kaffe|caf)[^"\'#?]*)', home, re.I)))[:6]
+        bits.append(f"home ok ({len(home)} B, generator={gen.group(1) if gen else '-'}, looks like {plat or '?'}, links {links})")
+    except Exception as e:  # noqa: BLE001
+        bits.append(f"home {type(e).__name__}: {str(e)[:60]}")
+    for path in ("/sitemap.xml", "/robots.txt"):
+        try:
+            t = get_text(shop + path, tries=1, limit=200_000)
+            bits.append(f"{path} ok {len(t)} B: {t[:120]!r}")
+        except Exception as e:  # noqa: BLE001
+            bits.append(f"{path} {type(e).__name__}: {str(e)[:40]}")
+    return "probe: " + " | ".join(bits)
 
 
 def main():
