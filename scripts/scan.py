@@ -71,7 +71,7 @@ EXCLUDE = re.compile(r"subscri|abonnement|abbonamento|\babo\b|suscripci|prenumer
                      r"\b\d+(?:[.,]\d+)?\s?kg\b|\btin\b|longjing|sencha|oolong|rooibos|darjeeling|\bassam\b|earl grey|bai hao|jasmine (?:green|tea|pearl)|"
                      r"sticker|socks?\b|bandana|poster|\binsert\b|screw|basket|portafilter|gasket|spout|tablets?\b|cleaner|\bpin\b|scoop|\bjar\b|"
                      r"\bcake\b|bread\b|sandwich|tumbler|calendar|kalender|shipping\b|postcard|\bpaper\b|filtry|\bfilters\b|\bcards?\b|\bhoney (?:jar|mini)|"
-                     r"coffee blossom honey|surprise|we choose", re.I)
+                     r"coffee blossom honey|surprise|we choose|\bgreen\s*$|\bsample\b|cupping|atelier|d[ée]gustation", re.I)
 FILTERY = re.compile(r"\bfilter\b|\bomni\b|pour[- ]?over|\bv60\b|chemex|batch brew|filter roast|\bfiltro\b|\bfiltre\b|"
                      r"filterröst|filterkaffe|handfilter|brew roast", re.I)
 ESPRESSO = re.compile(r"\bespresso\b", re.I)
@@ -1071,7 +1071,7 @@ def main():
     # earlier scans (they were classified under older rules and only keep name + url)
     def still_beans(x):
         probe = {"title": x.get("name", ""), "type": "", "tags": [], "variants": "", "body": "", "url": x.get("url", "")}
-        why = not_beans(probe) or not_one_coffee(probe)
+        why = not_beans(probe) or not_one_coffee(probe) or (f"not coffee ({EXCLUDE.search(probe['title']).group(0)})" if EXCLUDE.search(probe["title"]) else None)
         if why:
             REJECTED.append(f"{x.get('roaster')}: {x.get('name')} ({why}, dropped from list)")
         return not why
