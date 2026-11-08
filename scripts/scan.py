@@ -386,22 +386,28 @@ def ld_to_item(p, url, lastmod):
     offers = p.get("offers") or []
     if isinstance(offers, dict):
         offers = offers.get("offers") if isinstance(offers.get("offers"), list) else [offers]
+    offers = [o for o in offers if isinstance(o, dict)] if isinstance(offers, list) else []
     variants = p.get("hasVariant") or []
     for v in variants if isinstance(variants, list) else []:
-        o = v.get("offers")
+        o = v.get("offers") if isinstance(v, dict) else None
+        if isinstance(o, list):
+            offers.extend(x for x in o if isinstance(x, dict))
         if isinstance(o, dict):
             offers.append(o)
     prices, ccy, avail = [], None, False
     for o in offers:
         if not isinstance(o, dict):
             continue
-        pr = o.get("price") or o.get("lowPrice") or (o.get("priceSpecification") or {}).get("price")
+        spec = o.get("priceSpecification") or {}
+        if isinstance(spec, list):
+            spec = next((x for x in spec if isinstance(x, dict)), {})
+        pr = o.get("price") or o.get("lowPrice") or spec.get("price")
         try:
             if pr not in (None, ""):
                 prices.append(float(str(pr).replace(",", ".")))
         except ValueError:
             pass
-        ccy = ccy or o.get("priceCurrency") or (o.get("priceSpecification") or {}).get("priceCurrency")
+        ccy = ccy or o.get("priceCurrency") or spec.get("priceCurrency")
         a = str(o.get("availability", "InStock"))
         avail = avail or ("InStock" in a or "PreOrder" in a or "LimitedAvailability" in a)
     if not offers:
