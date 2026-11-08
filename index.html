@@ -403,7 +403,7 @@ footer .bmc a { color: var(--coffee); font-weight: 600; }
   <section class="sec hero-sec" aria-labelledby="h1">
     <div class="intro">
       <h1 id="h1">New coffees. <span class="serif">The V60 recipe for each bag.</span></h1>
-      <p class="lede">Single-origin filter coffees from roasters in the UK, Europe and beyond, scanned every Monday. Pick one or type your own, and get the grind for your grinder, the ratio, the temperature and every pour, from recipes by Hoffmann, Kasuya and Rao. Brew full screen, log how it tasted, and it adjusts next time.</p>
+      <p class="lede">Filter coffees, single origins and blends, from roasters in the UK, Europe and beyond, scanned every Monday. Pick one or type your own, and get the grind for your grinder, the ratio, the temperature and every pour, from recipes by Hoffmann, Kasuya and Rao. Brew full screen, log how it tasted, and it adjusts next time.</p>
     </div>
   </section>
 
@@ -1192,7 +1192,7 @@ footer .bmc a { color: var(--coffee); font-weight: 600; }
   }
 
   // ---------- journal ----------
-  const TASTES = [["sweet", "Sweet"], ["balanced", "Nailed it"], ["sour", "Sour"], ["bitter", "Bitter"], ["flat", "Flat"], ["harsh", "Harsh / drying"], ["thin", "Thin / watery"], ["heavy", "Heavy / muddy"]];
+  const TASTES = [["balanced", "Nailed it"], ["sweet", "Sweet"], ["sour", "Sour"], ["bitter", "Bitter"], ["flat", "Flat"], ["harsh", "Harsh / drying"], ["thin", "Thin / watery"], ["heavy", "Heavy / muddy"]];
   let picked = new Set();
   function renderTaste() {
     $("tasteChips").innerHTML = TASTES.map(([k, t]) => `<button type="button" class="chip" data-k="${k}" aria-pressed="${picked.has(k)}">${t}</button>`).join("");
@@ -1577,6 +1577,7 @@ footer .bmc a { color: var(--coffee); font-weight: 600; }
       const group = r.new ? "New in the last 3 weeks" : "Still on the shelves";
       const head = group !== lastGroup && shelfF !== "new" ? `<div class="grp">${group}</div>` : ""; lastGroup = group;
       const pills = [
+        r.blend ? '<span class="pill">Blend</span>' : "",
         r.process ? `<span class="pill ${PROC_TONE[bucket(r.process)]}">${esc(r.process)}</span>` : '<span class="pill miss">Process not listed</span>',
         r.variety ? `<span class="pill">${esc(titleCase(r.variety))}</span>` : "",
       ].join("");
@@ -1618,7 +1619,7 @@ footer .bmc a { color: var(--coffee); font-weight: 600; }
       const by = (m) => okR.filter((r) => (r.market || "UK") === m).length;
       const nNew = shelf.filter((r) => r.new).length;
       const where = okR.length ? ` from <b>${okR.length}</b> roasters (${["UK", "Europe", "World"].map((m) => by(m) ? `${by(m)} ${m === "World" ? "rest of world" : m}` : "").filter(Boolean).join(", ")})` : "";
-      $("shelfMeta").innerHTML = `<b>${shelf.length}</b> single-origin filter coffees${where}, <b>${nNew}</b> new in the last ${d.new_window_days || 21} days, scanned <b>${isoDmy(d.updated)}</b>.`;
+      $("shelfMeta").innerHTML = `<b>${shelf.length}</b> filter coffees${where}, <b>${nNew}</b> new in the last ${d.new_window_days || 21} days, scanned <b>${isoDmy(d.updated)}</b>.`;
       renderShelf();
     } catch (e) { $("shelfMeta").textContent = "Couldn’t load this week’s scan. Refresh to try again."; }
   }
