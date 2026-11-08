@@ -80,7 +80,8 @@ DARK = re.compile(r"dark roast|medium[- ]dark|french roast|italian roast", re.I)
 DRINK_WORDS = re.compile(r"liqueur|liquor|likör|licor|liquore|spirits?\b|vodka|\bgin\b|\brum\b|whisk(?:e)?y|brandy|"
                          r"martini|cocktail|negroni|\bbeer\b|\bstout\b|\bporter\b|\bwine\b|\bsake\b|kombucha|tonic|sparkling|"
                          r"\brtd\b|ready[- ]to[- ]drink|canned|\bcans?\b|bottled|\bbottles?\b|nitro\b|syrup|sauce|\bpowder\b|"
-                         r"ice cream|gelato|cookies?|biscuits?|brownies?|granola|candle|soap\b|\bscrub\b|\bbeverages?\b|\bdrinks?\b", re.I)
+                         r"ice cream|gelato|cookies?|biscuits?|brownies?|granola|candle|soap\b|\bscrub\b|\bbeverages?\b|\bdrinks?\b|"
+                         r"atlas of coffee|\bbooks?\b|\bdiary\b|\bmagazine\b|\bmatcha\b|\bchai\b", re.I)
 # a fermentation or barrel step named in a coffee's title is not a drink: strip it before checking
 NOT_A_DRINK = re.compile(r"(?:rum|whisk(?:e)?y|bourbon|wine|sake|gin|beer|tequila|mezcal|cognac|brandy|port|sherry)"
                          r"[- ]?(?:barrel|cask|yeast|ferment\w*|infus\w*)(?:[- ]?aged)?", re.I)
@@ -108,12 +109,16 @@ VOLUME = re.compile(r"\b\d+(?:[.,]\d+)?\s?(?:ml|cl|l|ltr|litres?|liters?|fl ?oz)
 #     Only the title counts here: product types and slugs say "espresso" on many filter lots;
 #  5. its page calls it a blend and the title names no country, unless the page names exactly one
 #     country. Pages use "blend" and "components" for varieties, lots and site boilerplate, so a
-#     page word alone never drops a coffee whose title says where it is from.
+#     page word alone never drops a coffee whose title says where it is from. "A blend of harvests,
+#     lots, varieties or producers" and "field blend" describe one origin and do not count.
 BLEND_TITLE = re.compile(r"(?<!field )\bblends?\b|low[- ]caff?\b|house[- ](?:roast|coffee|blend)|signature[- ](?:roast|blend|coffee)|"
                          r"seasonal[- ](?:filter|espresso|blend|roast)|half[- ]caff|\ball[- ]?\d\b|\b\d\s?x\s?\d{2,3}\s?g\b|"
-                         r"roaster'?s[- ]choice|mystery|rotating|subscri|abonnement|miscela|m[ée]lange|mezcla|mischung", re.I)
+                         r"roaster'?s[- ]choice|mystery|rotating|subscp?ri|abonnement|miscela|m[ée]lange|mezcla|mischung", re.I)
 ESPRESSO_TITLE = re.compile(r"^(?!.*\b(?:filter|omni)).*?\b(espresso)\b", re.I)
-BLEND_BODY = re.compile(r"\b(?:this|our|a|the) blend\b|\bblend of\b|\bblended\b|\bcomponents?\b|"
+# "a blend of harvests / lots / varieties / producers" is still one origin, and so is a "field blend"
+_ONE_ORIGIN = r"(?!\s+(?:of\s+)?(?:\w+\s+){0,2}(?:harvests?|lots?|varieties|cultivars|producers|smallholders|farmers|cherr(?:y|ies)|\w+[- ]processed|days?))"
+BLEND_BODY = re.compile(r"(?<!field )\b(?:this|our|a|the) blend\b" + _ONE_ORIGIN + r"|(?<!field )\bblend of\b" + _ONE_ORIGIN +
+                        r"|\bblended\b|\bcomponents?\b|"
                         r"\bblend(?:s|ing)? (?:together|two|three)\b|\bmix of (?:two|three)\b", re.I)
 SINGLE_BODY = re.compile(r"single[- ](?:origin|estate|farm|lot|producer|variety)", re.I)
 PCT_ORIGIN = re.compile(r"\b\d{1,3}\s?%\s*(?:of\s+)?([A-Z][a-z]+(?: [A-Z][a-z]+)?)")
