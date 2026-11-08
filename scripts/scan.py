@@ -96,25 +96,22 @@ WEIGHT = re.compile(r"\b\d+(?:[.,]\d+)?\s?(?:g|gr|grams?|kg|kilos?|oz|lbs?)\b", 
 VOLUME = re.compile(r"\b\d+(?:[.,]\d+)?\s?(?:ml|cl|l|ltr|litres?|liters?|fl ?oz)\b", re.I)
 
 
-# --- single origin only ------------------------------------------------------------------
-# Blends got through because the origin test only needs one country. A coffee is dropped when:
-#  1. its title, product type or URL slug names a blend, a house/seasonal/signature roast, a
-#     half-caff, a bundle of several coffees, or a subscription;
+# --- blends and bundles -----------------------------------------------------------------
+# Blends are kept (a blend brews fine on a V60) and labelled, so the shelf can say so.
+# Bundles, subscriptions, samplers and "roaster's choice" are dropped: they are not one coffee.
+# A coffee is labelled a blend when:
+#  1. its title, product type or URL slug says blend, house/seasonal/signature roast, half-caff;
 #  2. its title or slug joins two producing countries ("Uganda and Brazil", "Brazil & Peru");
 #     two countries side by side are not enough: "La Indonesia, Colombia" is a farm, "San Roque
-#     Kenya" a variety. A "field blend" is several varieties from one farm, so it stays.
-#     Slugs are checked without the query string.
+#     Kenya" a variety. A "field blend" is several varieties from one farm. Slugs are read
+#     without the query string;
 #  3. its page gives a composition: two or more countries with percentages ("60% Brazil, 40% ...");
-#  4. its title says "Espresso" (not "filter" or "omni"): an espresso roast, not a V60 coffee.
-#     Only the title counts here: product types and slugs say "espresso" on many filter lots;
-#  5. its page calls it a blend and the title names no country, unless the page names exactly one
-#     country. Pages use "blend" and "components" for varieties, lots and site boilerplate, so a
-#     page word alone never drops a coffee whose title says where it is from. "A blend of harvests,
-#     lots, varieties or producers" and "field blend" describe one origin and do not count.
-BLEND_TITLE = re.compile(r"(?<!field )\bblends?\b|low[- ]caff?\b|house[- ](?:roast|coffee|blend)|signature[- ](?:roast|blend|coffee)|"
-                         r"seasonal[- ](?:filter|espresso|blend|roast)|half[- ]caff|\ball[- ]?\d\b|\b\d\s?x\s?\d{2,3}\s?g\b|"
-                         r"roaster'?s[- ]choice|mystery|rotating|subscp?ri|abonnement|miscela|m[ée]lange|mezcla|mischung", re.I)
-ESPRESSO_TITLE = re.compile(r"^(?!.*\b(?:filter|omni)).*?\b(espresso)\b", re.I)
+#  4. its page calls it a blend and the title names no country, unless the page names exactly one
+#     country. "A blend of harvests, lots, varieties or producers" describes one origin.
+NOT_ONE_COFFEE = re.compile(r"\ball[- ]?\d\b|\b\d\s?x\s?\d{2,3}\s?g\b|roaster'?s[- ]choice|mystery|rotating|subscp?ri|abonnement|"
+                            r"taste card|tasting (?:set|box|pack)|sampler|probierset|discovery (?:set|box|pack)|\bbundle\b|gift (?:set|box)", re.I)
+BLEND_TITLE = re.compile(r"(?<!field )\bblends?\b|low[- ]caff?\b|house[- ](?:roast|coffee|blend|espresso)|signature[- ](?:roast|blend|coffee)|"
+                         r"seasonal[- ](?:filter|espresso|blend|roast)|half[- ]caff|miscela|m[ée]lange|mezcla|mischung", re.I)
 # "a blend of harvests / lots / varieties / producers" is still one origin, and so is a "field blend"
 _ONE_ORIGIN = r"(?!\s+(?:of\s+)?(?:\w+\s+){0,2}(?:harvests?|lots?|varieties|cultivars|producers|smallholders|farmers|cherr(?:y|ies)|\w+[- ]processed|days?))"
 BLEND_BODY = re.compile(r"(?<!field )\b(?:this|our|a|the) blend\b" + _ONE_ORIGIN + r"|(?<!field )\bblend of\b" + _ONE_ORIGIN +
@@ -146,17 +143,22 @@ def countries_in(text):
     return found
 
 
-def not_single(item):
-    """Why an item is not a single-origin coffee, or None."""
-    title, ptype = item["title"], item.get("type") or ""
-    slug = re.sub(r"[-_/]+", " ", (item.get("url") or "").split("?")[0].split("#")[0].rstrip("/").rsplit("/", 1)[-1])
-    head = f"{title} {ptype} {slug}"
-    m = BLEND_TITLE.search(head)
+def _slug(item):
+    return re.sub(r"[-_/]+", " ", (item.get("url") or "").split("?")[0].split("#")[0].rstrip("/").rsplit("/", 1)[-1])
+
+
+def not_one_coffee(item):
+    """Why an item is a bundle / subscription / sampler rather than one coffee, or None."""
+    m = NOT_ONE_COFFEE.search(f"{item['title']} {item.get('type') or ''} {_slug(item)}")
+    return f"title says '{m.group(0)}'" if m else None
+
+
+def blend_reason(item):
+    """Why a coffee looks like a blend, or None."""
+    title, ptype, slug = item["title"], item.get("type") or "", _slug(item)
+    m = BLEND_TITLE.search(f"{title} {ptype} {slug}")
     if m:
         return f"title says '{m.group(0)}'"
-    m = ESPRESSO_TITLE.search(title)
-    if m:
-        return f"title says '{m.group(1)}'"
     j = joined_countries(title) or joined_countries(slug)
     if j:
         return "title names " + j
@@ -168,10 +170,22 @@ def not_single(item):
     if m and not countries_in(f"{title} {slug}"):
         n = len(countries_in(body))
         if n != 1 and not (SINGLE_BODY.search(body) and n <= 1):
-            a, b = max(0, m.start() - 40), min(len(body), m.end() + 40)
-            ctx = re.sub(r"\s+", " ", body[a:b]).strip()
-            return f"page says '{m.group(0)}': ...{ctx}..."
+            return f"page says '{m.group(0)}'"
     return None
+
+
+def blend_origins(item):
+    """The producing countries a blend names, in the order they appear."""
+    text = f"{item['title']} {_slug(item)}\n{item.get('body') or ''}"
+    hits = []
+    for name in _CNAMES:
+        for m in re.finditer(r"(?<![\w])" + re.escape(name) + r"(?![\w])", text, re.I):
+            hits.append((m.start(), _CANON.get(name.lower(), name)))
+    out = []
+    for _, c in sorted(hits):
+        if c not in out:
+            out.append(c)
+    return out[:4]
 
 
 def not_beans(item):
@@ -225,19 +239,19 @@ def get_json(url, tries=2):
         time.sleep(2)
 
 
-def fetch_shopify(shop):
+def fetch_shopify(shop, extra=""):
     base = f"{shop}/products.json"
     try:
-        get_json(f"{base}?limit=1")
+        get_json(f"{base}?limit=1{extra}")
     except Exception:  # noqa: BLE001
         base = f"{shop}/collections/all/products.json"   # some shops switch off the root list only
-    return _fetch_shopify(shop, base)
+    return _fetch_shopify(shop, base, extra)
 
 
-def _fetch_shopify(shop, base):
+def _fetch_shopify(shop, base, extra=""):
     items = []
     for page in range(1, 5):
-        data = get_json(f"{base}?limit=250&page={page}")
+        data = get_json(f"{base}?limit=250&page={page}{extra}")
         prods = data.get("products", [])
         if not prods:
             break
@@ -664,13 +678,17 @@ def classify(item, roaster):
         return None
     if EXCLUDE.search(title) or EXCLUDE.search(item["type"]):
         return None
-    why = not_beans(item) or not_single(item)
+    why = not_beans(item) or not_one_coffee(item)
     if why:
         REJECTED.append(f"{roaster['name']}: {title} ({why})")
         return None
     if DARK.search(full):
         return None
     origin = find_origin(title, blob, item["body"])
+    blend = blend_reason(item)
+    if blend:
+        parts = blend_origins(item)
+        origin = " / ".join(parts) if len(parts) >= 2 else (origin or (parts[0] if parts else None))
     is_coffee = bool(origin) and (bool(COFFEE_HINT.search(full)) or re.search(r"coffee|bean", blob, re.I))
     if not is_coffee:
         return None
@@ -693,6 +711,7 @@ def classify(item, roaster):
         "url": item["url"],
         "published": item["published"] or None,
         "roast": "filter" if filtery else "omni / unlabelled",
+        "blend": True if blend else None,
     }
     rec["market"] = roaster.get("region", "UK")
     rec["roaster_country"] = roaster.get("country")
@@ -720,6 +739,18 @@ JSON_VARIETY = [re.compile(r'"(?:variet(?:y|ies|al)|cultivars?)"\s*:\s*"([^"]{2,
 def page_text(url):
     raw = get_text(url, tries=2, limit=1_500_000)
     return raw, _visible(raw)
+
+
+def raw_labelled(raw, k):
+    """A label that is a whole HTML text node (<h4>Process:</h4><p>Natural</p>), read straight from the HTML.
+    Works even when the page wraps its product block in something _visible() strips."""
+    words = PAGE_LABEL[k].pattern.split(r"\s*(?::|\n)")[0]
+    for m in re.finditer(r">\s*" + words + r"\s*:?\s*<", raw, re.I):
+        after = strip_html(raw[m.end() - 1:m.end() + 500])
+        got = labelled(("Process" if k == "process" else "Variety") + ":\n" + after, k)
+        if got:
+            return got
+    return None
 
 
 def from_json(raw, k):
@@ -784,7 +815,7 @@ def add_page_details(recs, roaster, old):
         start = max(0, text.lower().find(rec["name"].lower()[:30]))
         got = False
         for k in need:
-            v = labelled(text, k, start) or (labelled(text, k) if start else None) or from_json(raw, k)
+            v = labelled(text, k, start) or (labelled(text, k) if start else None) or raw_labelled(raw, k) or from_json(raw, k)
             if v:
                 rec[k], rec[k + "_from"] = v, "page"
                 got = True
@@ -798,12 +829,16 @@ def add_page_details(recs, roaster, old):
     return fetched
 
 
-def shop_currency(shop, kind, r):
+def home_currency(r):
+    return r.get("currency") or COUNTRY_CCY.get(r.get("country"), "EUR" if r.get("region") == "Europe" else "GBP")
+
+
+def shop_currency(shop, kind, r, extra=""):
     if r.get("currency"):
         return r["currency"]
     try:
         if kind == "shopify":
-            c = get_json(f"{shop}/cart.js", tries=1).get("currency")
+            c = get_json(f"{shop}/cart.js?{extra.lstrip('&')}", tries=1).get("currency")
             if c:
                 return c
         else:
@@ -834,6 +869,21 @@ def scan_roaster(r):
                         r["_note"] = f"prices shown in {seen} to the scanner, hidden"
                 else:
                     r["_ccy"] = shop_currency(shop, kind, r)
+                    home = home_currency(r)
+                    if kind == "shopify" and r["_ccy"] != home:
+                        # Shopify Markets priced the scanner as abroad (Girls Who Grind came back in SHP, +2%).
+                        # Ask for the home market; if the shop won't, hide prices rather than show wrong ones.
+                        extra = f"&country={r.get('country') or 'GB'}&currency={home}"
+                        try:
+                            if shop_currency(shop, kind, r, extra) == home:
+                                items, r["_ccy"] = fetch_shopify(shop, extra), home
+                        except Exception:  # noqa: BLE001
+                            pass
+                        if r["_ccy"] != home:
+                            for i in items:
+                                i["price"] = None
+                            r["_note"] = f"prices shown in {r['_ccy']} to the scanner, hidden"
+                            r["_ccy"] = home
                 return kind, items, None
         except Exception as e:  # noqa: BLE001
             errors.append(f"{kind}: {type(e).__name__}: {str(e)[:80]}")
@@ -924,7 +974,7 @@ def main():
     # earlier scans (they were classified under older rules and only keep name + url)
     def still_beans(x):
         probe = {"title": x.get("name", ""), "type": "", "tags": [], "variants": "", "body": "", "url": x.get("url", "")}
-        why = not_beans(probe) or not_single(probe)
+        why = not_beans(probe) or not_one_coffee(probe)
         if why:
             REJECTED.append(f"{x.get('roaster')}: {x.get('name')} ({why}, dropped from list)")
         return not why
