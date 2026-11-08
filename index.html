@@ -1674,7 +1674,7 @@ footer .bmc a { font-weight: 700; }
   // ---------- shelves ----------
   let shelf = [], shelfF = "all", shelfR = "all", shelfAll = false, shelfV = "v60";
   // "Made for V60": single origins roasted for filter or omni. Blends, coffees named espresso and darker
-  // roasts stay on the list, one tap away under Everything (a search always looks through everything).
+  // roasts stay on the list, one tap away under Everything. Search stays inside whichever one is chosen.
   const forV60 = (r) => !r.blend && !/espresso/i.test(r.name || "") && !r.roast_level;
   const SHELF_V = [["v60", "Made for V60"], ["all", "Everything"]];
   function renderShelfV() {
@@ -1713,7 +1713,7 @@ footer .bmc a { font-weight: 700; }
     const q = $("shelfQ").value.trim().toLowerCase();
     let list = shelf.filter((r) => (shelfR === "all" || market(r) === shelfR) && (shelfF === "all" || (shelfF === "new" ? r.new : bucket(r.process) === shelfF)));
     if (q) list = list.filter((r) => [r.roaster, r.roaster_city, r.name, r.origin, r.region, r.process, r.variety, ...(r.notes || [])].join(" ").toLowerCase().includes(q));
-    else if (shelfV === "v60") list = list.filter(forV60);
+    if (shelfV === "v60") list = list.filter(forV60);
     list = interleave(list);
     const LIMIT = 12;
     const shown = shelfAll || q ? list : list.slice(0, LIMIT);
@@ -1741,7 +1741,7 @@ footer .bmc a { font-weight: 700; }
           ${r.price ? `<span class="price">${esc(r.price)}</span>` : '<span class="date">Price on site</span>'}
           <button class="btn" type="button" data-i="${i}">Brew</button>
           <span class="date">${r.url ? `<a href="${esc(r.url)}" target="_blank" rel="noopener" aria-label="Buy ${esc(r.name)} from ${esc(r.roaster)}">Buy</a>` : ""}<span>${r.published ? isoDmy(r.published).slice(0, 5) : isoDmy(r.found).slice(0, 5)}</span></span>
-        </div></article>`; }).join("") : '<p class="muted" style="padding:16px 0;margin:0">Nothing matches. <a href="#" class="mail-me" data-s="Missing coffee">Email me</a> and I’ll add the roaster.</p>';
+        </div></article>`; }).join("") : `<p class="muted" style="padding:16px 0;margin:0">Nothing matches${shelfV === "v60" && shelf.some((r) => !forV60(r)) ? " in Made for V60. Try Everything, or" : "."} <a href="#" class="mail-me" data-s="Missing coffee">${shelfV === "v60" ? "email me" : "Email me"}</a> and I’ll add the roaster.</p>`;
     $("shelfMore").hidden = shelfAll || !!q || list.length <= LIMIT;
     $("shelfMore").textContent = `Show all ${list.length}`;
     $("shelf").querySelectorAll("button[data-i]").forEach((b) => b.onclick = () => brewThis(shelf[+b.dataset.i]));
