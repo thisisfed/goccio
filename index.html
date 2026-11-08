@@ -400,6 +400,13 @@ footer .bmc a { color: var(--coffee); font-weight: 600; }
 .dock .btn { width: 100%; min-height: 54px; display: flex; justify-content: space-between; align-items: center; padding: 0 22px; font-size: 17px; font-weight: 600; }
 .dock .num { font-weight: 400; opacity: .85; font-size: 15px; }
 @media (max-width: 760px) { .dock { display: block; } }
+.item .who .city { color: hsl(var(--ch) 62% 38%); font-weight: 600; }
+:root[data-theme="dark"] .item .who .city { color: hsl(var(--ch) 72% 72%); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .item .who .city { color: hsl(var(--ch) 72% 72%); } }
+/* the sticky Start brewing slides away while the one in the recipe is on screen */
+.dock { transition: transform .35s ease, opacity .35s ease; }
+.dock.off { transform: translateY(110%); opacity: 0; pointer-events: none; }
+
 
 /* BREW MODE: fixed slots. Every zone keeps its place and size from pouring to waiting to drawdown;
    only the words, numbers and colours change. The big number scales to the space it has (container units). */
@@ -648,7 +655,8 @@ footer .bmc a { color: var(--coffee); font-weight: 600; }
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
   };
   const DEFAULTS = { text: "", goal: "light", dose: 15, method: "best", roast: "auto", process: "auto", bag: null };
-  let state = { ...DEFAULTS, ...store.get("v60.state", {}) };
+  // a refresh starts with no coffee picked (goal, dose and method are kept); the journal and settings stay
+  let state = { ...DEFAULTS, ...store.get("v60.state", {}), text: "", bag: null, process: "auto", roast: "auto" };
   // zero: permanent C40 zero offset in clicks (default 0). The old "grinder" key is ignored on purpose.
   let prefs = { coffees: {}, zero: 0, mill: "c40", sound: true, buzz: true, keepAwake: true, water: null, ...store.get("v60.prefs", {}) };
   delete prefs.grinder;
@@ -1541,6 +1549,7 @@ footer .bmc a { color: var(--coffee); font-weight: 600; }
   }
 
   $("startBrew").onclick = openBrew; $("dockGo").onclick = openBrew;
+  new IntersectionObserver((es) => $("dock").classList.toggle("off", es[0].isIntersecting)).observe($("startBrew"));
   $("bvClose").onclick = closeBrew; $("bvGo").onclick = toggleBrew; $("bvReset").onclick = resetBrew; $("bvDrain").onclick = drained;
   document.addEventListener("keydown", (e) => {
     if ($("bv").hidden) return;
@@ -1646,6 +1655,7 @@ footer .bmc a { color: var(--coffee); font-weight: 600; }
 
   // ---------- shelves ----------
   let shelf = [], shelfF = "all", shelfR = "all", shelfAll = false;
+  const CITY_HUE = {};
   const SHELF_R = [["all", "Everywhere"], ["UK", "UK"], ["Europe", "Europe"], ["World", "Rest of world"]];
   const market = (r) => r.market || "UK";
   function renderShelfR() {
@@ -1682,7 +1692,7 @@ footer .bmc a { color: var(--coffee); font-weight: 600; }
       const place = [origins, r.region ? esc(r.region) : ""].filter(Boolean).join(", ");
       return `${head}<article class="item">
         <div class="l">
-          <span class="who">${esc(r.roaster)}${r.roaster_city ? `, ${esc(r.roaster_city)}` : ""}</span>
+          <span class="who">${esc(r.roaster)}${r.roaster_city ? `, <span class="city" style="--ch:${CITY_HUE[r.roaster_city] ?? 30}">${esc(r.roaster_city)}</span>` : ""}</span>
           <span class="name">${esc(r.name)}</span>
           <div class="pills">${place ? `<span class="place">${place}</span>` : ""}${pills}</div>
           ${r.notes && r.notes.length ? `<span class="tn">${esc(r.notes.join(", "))}</span>` : ""}
@@ -1713,6 +1723,10 @@ footer .bmc a { color: var(--coffee); font-weight: 600; }
       if (!res.ok) throw new Error(res.status);
       const d = await res.json();
       shelf = (d.releases || []).filter((r) => r.name && r.roaster);
+      // one colour per city: hues spread by the golden angle, so no two cities share one
+      // (in the order cities first appear, newest first, so cities that sit near each other in the list are far apart in colour)
+      [...new Set([...shelf].sort((a, b) => (b.new === true) - (a.new === true) || (b.published || b.found || "").localeCompare(a.published || a.found || ""))
+        .map((r) => r.roaster_city).filter(Boolean))].forEach((c, i) => { CITY_HUE[c] = Math.round((i * 137.508 + 140) % 360); });
       const okR = (d.roasters || []).filter((r) => r.platform);
       const by = (m) => okR.filter((r) => (r.market || "UK") === m).length;
       const nNew = shelf.filter((r) => r.new).length;
