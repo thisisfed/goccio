@@ -199,6 +199,7 @@ body { overflow-x: clip; }
 .chips { display: inline-flex; gap: 2px; padding: 2px; border-radius: 10px; background: color-mix(in srgb, var(--ink) 7%, transparent); overflow-x: auto; scrollbar-width: none; max-width: 100%; justify-self: start; }
 .chips::-webkit-scrollbar { display: none; }
 .chip { border: 0; background: transparent; padding: 7px 14px; font-size: 14px; white-space: nowrap; border-radius: 8px; }
+.chip .n { font-variant-numeric: tabular-nums; opacity: .55; font-weight: 500; margin-left: 2px; }
 .chip[aria-pressed="true"] { background: var(--card); font-weight: 600; box-shadow: 0 3px 8px rgba(0,0,0,.12), 0 3px 1px rgba(0,0,0,.04); }
 details.more summary { cursor: pointer; font-size: 15px; color: var(--blue); padding: 4px 0; list-style: none; }
 details.more summary::-webkit-details-marker { display: none; }
@@ -525,6 +526,7 @@ footer .bmc a { font-weight: 700; }
       <input type="search" id="shelfQ" placeholder="Search roaster, origin, note…" aria-label="Search coffees">
       <div class="chips" id="shelfR" role="group" aria-label="Where the roaster is"></div>
       <div class="chips" id="shelfF" role="group" aria-label="Process"></div>
+      <div class="chips" id="shelfV" role="group" aria-label="Which coffees"></div>
     </div>
     <div class="shelf" id="shelf"></div>
     <button class="btn ghost more-btn" id="shelfMore" type="button" hidden>Show all</button>
@@ -1670,7 +1672,29 @@ footer .bmc a { font-weight: 700; }
   };
 
   // ---------- shelves ----------
-  let shelf = [], shelfF = "all", shelfR = "all", shelfAll = false;
+  let shelf = [], shelfF = "all", shelfR = "all", shelfAll = false, shelfV = "v60";
+  // "Made for V60": single origins roasted for filter or omni. Blends, coffees named espresso and darker
+  // roasts stay on the list, one tap away under Everything (a search always looks through everything).
+  const forV60 = (r) => !r.blend && !/espresso/i.test(r.name || "") && !r.roast_level;
+  const SHELF_V = [["v60", "Made for V60"], ["all", "Everything"]];
+  function renderShelfV() {
+    const n = shelf.length, k = shelf.filter(forV60).length;
+    $("shelfV").innerHTML = SHELF_V.map(([v, t]) => `<button type="button" class="chip" data-v="${v}" aria-pressed="${shelfV === v}">${t}${n ? ` <span class="n">${v === "v60" ? k : n}</span>` : ""}</button>`).join("");
+    $("shelfV").querySelectorAll("button").forEach((b) => b.onclick = () => { shelfV = b.dataset.v; shelfAll = false; renderShelfV(); renderShelf(); });
+  }
+  // newest first, but one coffee per roaster per round so no single shop fills the screen;
+  // coffees whose process isn't listed go after the rest of their group
+  function interleave(list) {
+    const date = (r) => r.published || r.found || "";
+    const out = [];
+    for (const grp of [list.filter((r) => r.new), list.filter((r) => !r.new)]) for (const part of [grp.filter((r) => r.process), grp.filter((r) => !r.process)]) {
+      const q = new Map();
+      [...part].sort((a, b) => date(b).localeCompare(date(a))).forEach((r) => { if (!q.has(r.roaster)) q.set(r.roaster, []); q.get(r.roaster).push(r); });
+      const lanes = [...q.values()];
+      for (let round = 0; lanes.some((l) => l.length > round); round++) lanes.forEach((l) => { if (l[round]) out.push(l[round]); });
+    }
+    return out;
+  }
   const SHELF_R = [["all", "Everywhere"], ["UK", "UK"], ["Europe", "Europe"], ["World", "Rest of world"]];
   const market = (r) => r.market || "UK";
   function renderShelfR() {
@@ -1689,7 +1713,8 @@ footer .bmc a { font-weight: 700; }
     const q = $("shelfQ").value.trim().toLowerCase();
     let list = shelf.filter((r) => (shelfR === "all" || market(r) === shelfR) && (shelfF === "all" || (shelfF === "new" ? r.new : bucket(r.process) === shelfF)));
     if (q) list = list.filter((r) => [r.roaster, r.roaster_city, r.name, r.origin, r.region, r.process, r.variety, ...(r.notes || [])].join(" ").toLowerCase().includes(q));
-    list.sort((a, b) => (b.new === true) - (a.new === true) || (b.published || b.found || "").localeCompare(a.published || a.found || ""));
+    else if (shelfV === "v60") list = list.filter(forV60);
+    list = interleave(list);
     const LIMIT = 12;
     const shown = shelfAll || q ? list : list.slice(0, LIMIT);
     let lastGroup = null;
@@ -1738,6 +1763,7 @@ footer .bmc a { font-weight: 700; }
       if (!res.ok) throw new Error(res.status);
       const d = await res.json();
       shelf = (d.releases || []).filter((r) => r.name && r.roaster);
+      renderShelfV();
       // count the roasters that actually have coffees on the list (same number the top animation shows)
       const mk = new Map(); shelf.forEach((r) => { if (!mk.has(r.roaster)) mk.set(r.roaster, r.market || "UK"); });
       const okR = [...mk.values()];
@@ -1834,7 +1860,7 @@ footer .bmc a { font-weight: 700; }
   document.querySelectorAll("[data-jump]").forEach((b) => b.onclick = () => $(b.dataset.jump).scrollIntoView({ behavior: "smooth", block: "start" }));
 
   $("coffeeIn").value = state.text;
-  renderAllOpts(); renderTaste(); render(); renderJournal(); renderShelfR(); renderShelfF(); loadShelf();
+  renderAllOpts(); renderTaste(); render(); renderJournal(); renderShelfR(); renderShelfF(); renderShelfV(); loadShelf();
 
   window.__v60 = { parseCoffee, engine, suggest, cupNotes, cardImage, risks, recipeText, BASE, get recipe() { return recipe; } };
 })();
