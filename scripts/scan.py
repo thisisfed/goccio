@@ -712,7 +712,7 @@ PAGE_FETCHES_PER_ROASTER = 40
 
 
 def page_text(url):
-    raw = get_text(url, tries=1, limit=1_500_000)
+    raw = get_text(url, tries=2, limit=1_500_000)
     raw = re.sub(r"<(script|style|noscript|svg|template)\b.*?</\1>", " ", raw, flags=re.I | re.S)
     raw = re.sub(r"<(header|nav|footer)\b.*?</\1>", " ", raw, flags=re.I | re.S)
     return strip_html(raw)
@@ -730,21 +730,25 @@ def labelled(text, key, start=0):
             line = next((l.strip(" :-") for l in window.split("\n") if l.strip(" :-")), "")
             if line and not PAGE_LABEL["process"].match(line + ":") and len(line) <= 60 and \
                     (first(VARIETIES, line) or re.search(r"[A-Z][a-z]+|\d{3,}", line)):
-                if not re.search(r"\b(?:process|altitude|origin|region|notes?|producer|farm)\b", line, re.I):
+                junk = re.search(r"\b(?:process|altitude|elevation|masl|harvest|origin|region|notes?|producer|farm)\b|\b(?:19|20)\d\d\b", line, re.I)
+                vague = re.fullmatch(r"(?:various|mixed|mix(?:ed)? variet(?:y|ies)|multiple|n/?a|unknown)", line, re.I)
+                place_only = countries_in(line) and not first(VARIETIES, line)
+                if not (junk or vague or place_only):
                     return line
     return None
 
 
 def add_page_details(recs, roaster, old):
     """Fill missing process / variety from the product page (or last week's answer for the same URL)."""
-    fetched = 0
+    fetched, filled, errs = 0, 0, []
     for rec in recs:
         need = [k for k in ("process", "variety") if not rec.get(k)]
         if not need:
             continue
         prev = old.get(rec["url"], {})
         for k in need:
-            if prev.get(k) and prev.get(k + "_from") == "page":
+            ok = prev.get(k) and (labelled(f"Variety:\n{prev[k]}\n", "variety") if k == "variety" else find_process(prev[k]))
+            if ok and prev.get(k + "_from") == "page":
                 rec[k], rec[k + "_from"] = prev[k], "page"
         need = [k for k in need if not rec.get(k)]
         if not need or fetched >= PAGE_FETCHES_PER_ROASTER:
@@ -752,14 +756,24 @@ def add_page_details(recs, roaster, old):
         fetched += 1
         try:
             text = page_text(rec["url"])
-        except Exception:  # noqa: BLE001
+        except Exception as e:  # noqa: BLE001
+            errs.append(f"{type(e).__name__}: {str(e)[:60]}")
+            time.sleep(1)
             continue
         start = max(0, text.lower().find(rec["name"].lower()[:30]))
+        got = False
         for k in need:
             v = labelled(text, k, start) or (labelled(text, k) if start else None)
             if v:
                 rec[k], rec[k + "_from"] = v, "page"
+                got = True
+        if not got and "process" in need and not errs:
+            i = text.lower().find("process")
+            errs.append("no label, e.g. " + repr(text[max(0, i - 40):i + 60] if i >= 0 else text[:100]))
+        filled += got
         time.sleep(0.4)
+    if fetched:
+        print(f"  page details for {roaster['name']}: {fetched} pages read, {filled} filled" + (f" ({len(errs)} issues, first: {errs[0]})" if errs else ""))
     return fetched
 
 
