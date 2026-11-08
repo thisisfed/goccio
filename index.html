@@ -79,6 +79,7 @@ h1 { margin: 0; font-weight: 600; font-size: clamp(24px, 6.2vw, 40px); font-size
 /* second line always on one line: it shrinks to the width it has */
 /* both lines one size; the longer grey line sets it, so it always fits on one line */
 #h1 .serif { display: block; white-space: nowrap; }
+#h1 .h1-v60 { display: block; color: var(--coffee); }
 h1 .serif { color: var(--muted); }
 .lede { margin: 0; color: var(--muted); max-width: 52ch; font-size: clamp(17px, 2.4vw, 23px); line-height: 1.35; letter-spacing: -.015em; text-wrap: balance; }
 
@@ -402,7 +403,7 @@ footer .bmc a { color: var(--coffee); font-weight: 600; }
 <main class="page">
   <section class="sec hero-sec" aria-labelledby="h1">
     <div class="intro">
-      <h1 id="h1">New coffees. <span class="serif">The V60 recipe for each bag.</span></h1>
+      <h1 id="h1"><span class="h1-v60">V60</span> New coffees. <span class="serif">The recipe for each bag.</span></h1>
       <p class="lede">Filter coffees, single origins and blends, from roasters in the UK, Europe and beyond, scanned every Monday. Pick one or type your own, and get the grind for your grinder, the ratio, the temperature and every pour, from recipes by Hoffmann, Kasuya and Rao. Brew full screen, log how it tasted, and it adjusts next time.</p>
     </div>
   </section>
@@ -1557,8 +1558,8 @@ footer .bmc a { color: var(--coffee); font-weight: 600; }
     $("shelfR").querySelectorAll("button").forEach((b) => b.onclick = () => { shelfR = b.dataset.v; shelfAll = false; renderShelfR(); renderShelf(); });
   }
   const SHELF_F = [["all", "All"], ["new", "New"], ["natural", "Natural"], ["washed", "Washed"], ["honey", "Honey"], ["exp", "Anaerobic & co-ferment"]];
-  const bucket = (p) => { p = (p || "").toLowerCase(); if (/anaerob|co-?ferment|carbonic|thermal|infus|double/.test(p)) return "exp"; if (/natural/.test(p)) return "natural"; if (/honey/.test(p)) return "honey"; if (/washed/.test(p)) return "washed"; return "other"; };
-  const procKey = (p) => { const b = bucket(p); if (b === "exp") return /co-?ferment|infus|thermal/i.test(p || "") ? "cofer" : "anaerobic"; return ["natural", "washed", "honey"].includes(b) ? b : (/decaf/i.test(p || "") ? "decaf" : "auto"); };
+  const bucket = (p) => { p = (p || "").toLowerCase(); if (/anaerob|co-?ferment|carbonic|thermal|infus|double|yeast/.test(p)) return "exp"; if (/natural/.test(p)) return "natural"; if (/honey/.test(p)) return "honey"; if (/washed/.test(p)) return "washed"; return "other"; };
+  const procKey = (p) => { const b = bucket(p); if (b === "exp") return /co-?ferment|infus|thermal|yeast/i.test(p || "") ? "cofer" : "anaerobic"; return ["natural", "washed", "honey"].includes(b) ? b : (/decaf/i.test(p || "") ? "decaf" : "auto"); };
   function renderShelfF() {
     $("shelfF").innerHTML = SHELF_F.map(([v, t]) => `<button type="button" class="chip" data-v="${v}" aria-pressed="${shelfF === v}">${t}</button>`).join("");
     $("shelfF").querySelectorAll("button").forEach((b) => b.onclick = () => { shelfF = b.dataset.v; shelfAll = false; renderShelfF(); renderShelf(); });
