@@ -686,7 +686,12 @@ def find_notes(item):
 
 
 def clean_name(title, roaster, origin):
-    name = re.sub(r"^(filter|filtro|filtre|espresso|omni)\s*[-–:|/]\s*", "", title, flags=re.I)
+    # "Curve Coffee Roasters - FEATURE FILTER | El Silencio" -> drop the shop's own brand prefix first,
+    # otherwise every Curve coffee is named "Curve Coffee Roasters" and de-duplicates down to one
+    name = re.sub(r"^" + re.escape(roaster) + r"[\w\s&']*?\s[-–|:]\s*", "", title, flags=re.I)
+    name = re.sub(r"^[^-–|]*\b(?:coffee )?roast(?:ers?|ery)\s[-–|:]\s*", "", name, flags=re.I)
+    name = re.sub(r"^(?:feature|house|community|guest)\s+(?:filter|espresso)\s*[|:–-]\s*", "", name, flags=re.I)
+    name = re.sub(r"^(filter|filtro|filtre|espresso|omni)\s*[-–:|/]\s*", "", name, flags=re.I)
     name = re.sub(r"\s*[-–|(]\s*(filter|filtro|filtre|omni)( roast| röst)?\)?\s*$", "", name, flags=re.I)
     parts = re.split(r"\s[-–|]\s", name)
     if len(parts) >= 3 or (len(parts) == 2 and find_origin(parts[1])):
