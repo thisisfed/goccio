@@ -70,6 +70,52 @@ NOTES_RE = re.compile(r"(?:tasting notes|flavour notes|flavor notes|flavour prof
                       r"smaksnoter|smagsnoter|smaksnotater|notas de cata|notas|notes)\s*[:\-–]\s*([^\n.]{3,120})", re.I)
 DARK = re.compile(r"dark roast|medium[- ]dark|french roast|italian roast", re.I)
 
+# --- "is this a bag of beans?" gate -------------------------------------------------------
+# Roasters also sell drinks made from coffee (liqueurs, cans, concentrates). Their pages name an
+# origin and a producer, so the origin + "coffee" test alone lets them through. That is how
+# "Midnight Oil Decaf Coffee Liqueur 700ml" (Climpson & Sons) got listed. These checks run first.
+# Never add "bourbon" here: Bourbon (Pink, Yellow, Red...) is a coffee variety.
+# Drinks and food: checked on title and product type only. Tags and body hold tasting notes
+# ("rum", "whisky", "wine" are common notes), so they are not searched for these words.
+DRINK_WORDS = re.compile(r"liqueur|liquor|likör|licor|liquore|spirits?\b|vodka|\bgin\b|\brum\b|whisk(?:e)?y|brandy|"
+                         r"martini|cocktail|negroni|\bbeer\b|\bstout\b|\bporter\b|\bwine\b|\bsake\b|kombucha|tonic|sparkling|"
+                         r"\brtd\b|ready[- ]to[- ]drink|canned|\bcans?\b|bottled|\bbottles?\b|nitro\b|syrup|sauce|\bpowder\b|"
+                         r"ice cream|gelato|cookies?|biscuits?|brownies?|granola|candle|soap\b|\bscrub\b|\bbeverages?\b|\bdrinks?\b", re.I)
+# a fermentation or barrel step named in a coffee's title is not a drink: strip it before checking
+NOT_A_DRINK = re.compile(r"(?:rum|whisk(?:e)?y|bourbon|wine|sake|gin|beer|tequila|mezcal|cognac|brandy|port|sherry)"
+                         r"[- ]?(?:barrel|cask|yeast|ferment\w*|infus\w*)(?:[- ]?aged)?", re.I)
+# whole-tag matches only (a tag like "alcohol" or "18+" is a category, a tag like "rum" is a note)
+DRINK_TAGS = re.compile(r"^(?:alcohol(?:ic)?|spirits?|liqueurs?|drinks?|beverages?|rtd|ready to drink|cans?|"
+                        r"18\+|over 18|age[- ]restricted|cocktails?|merchandise|food)$", re.I)
+# age gates and alcohol strength anywhere on the page
+ALCOHOL_PAGE = re.compile(r"\b\d+(?:[.,]\d+)?\s?%\s?(?:abv|vol|alc)\b|\babv\b|alc\.?\s?/?\s?vol|drink ?aware|drink responsibly|"
+                          r"over (?:the age of )?18|aged? 18 or over|must be 18|18\+ only", re.I)
+# beans are sold by weight; liquids by volume
+WEIGHT = re.compile(r"\b\d+(?:[.,]\d+)?\s?(?:g|gr|grams?|kg|kilos?|oz|lbs?)\b", re.I)
+VOLUME = re.compile(r"\b\d+(?:[.,]\d+)?\s?(?:ml|cl|l|ltr|litres?|liters?|fl ?oz)\b", re.I)
+
+
+def not_beans(item):
+    """Why an item is not a bag of coffee beans, or None if it may be one."""
+    title, ptype = item["title"], item.get("type") or ""
+    head = NOT_A_DRINK.sub(" ", f"{title} {ptype}")
+    m = DRINK_WORDS.search(head)
+    if m:
+        return f"drink/food word '{m.group(0)}'"
+    tag = next((t for t in item.get("tags") or [] if DRINK_TAGS.match(str(t).strip())), None)
+    if tag:
+        return f"tag '{tag}'"
+    sold_as = f"{title} {item.get('variants') or ''}"
+    if VOLUME.search(sold_as) and not WEIGHT.search(item.get("variants") or ""):
+        return f"sold by volume '{VOLUME.search(sold_as).group(0)}'"
+    m = ALCOHOL_PAGE.search(f"{title}\n{item.get('body') or ''}")
+    if m:
+        return f"alcohol page '{m.group(0)}'"
+    return None
+
+
+REJECTED = []   # non-coffee items caught by not_beans(), written to the scan log for review
+
 
 def strip_html(s):
     s = re.sub(r"<(br|/p|/li|/h\d|/div)[^>]*>", "\n", s or "", flags=re.I)
@@ -539,6 +585,10 @@ def classify(item, roaster):
         return None
     if EXCLUDE.search(title) or EXCLUDE.search(item["type"]):
         return None
+    why = not_beans(item)
+    if why:
+        REJECTED.append(f"{roaster['name']}: {title} ({why})")
+        return None
     if DARK.search(full):
         return None
     origin = find_origin(title, blob, item["body"])
@@ -633,6 +683,8 @@ def main():
                           "published": p.get("published_at", "")[:10]})
         for it in items:
             print(json.dumps(classify(it, r), ensure_ascii=False))
+        for line in REJECTED:
+            print("skipped:", line)
         return
 
     roasters = json.loads(ROASTERS.read_text())
@@ -688,6 +740,16 @@ def main():
         if x["roaster"] not in scanned_ok and u not in urls:
             found.append(x)
 
+    # safety net: re-check everything that will be published, including entries carried over from
+    # earlier scans (they were classified under older rules and only keep name + url)
+    def still_beans(x):
+        slug = re.sub(r"[-_/]+", " ", x.get("url", "").rsplit("/", 1)[-1])
+        why = not_beans({"title": f"{x.get('name', '')} {slug}", "type": "", "tags": [], "variants": "", "body": ""})
+        if why:
+            REJECTED.append(f"{x.get('roaster')}: {x.get('name')} ({why}, dropped from list)")
+        return not why
+    found = [x for x in found if still_beans(x)]
+
     cutoff = (datetime.now(timezone.utc) - timedelta(days=NEW_DAYS)).date().isoformat()
     for x in found:
         if x.get("published"):
@@ -713,6 +775,10 @@ def main():
     OUT.write_text(json.dumps({"updated": today, "new_window_days": NEW_DAYS, "roasters": status,
                                "releases": found}, ensure_ascii=False, indent=1) + "\n")
     print(f"\n{len(found)} coffees from {len(scanned_ok)}/{len(roasters)} roasters -> {OUT.relative_to(ROOT)}")
+    if REJECTED:
+        print(f"\nNot coffee beans, skipped ({len(REJECTED)}):")
+        for line in REJECTED:
+            print("  " + line)
 
 
 if __name__ == "__main__":
