@@ -648,6 +648,7 @@ def find_process(text):
     for pat, name in [(r"anaerobic natural", "Anaerobic natural"), (r"anaerobic washed", "Anaerobic washed"),
                       (r"anaerobic honey", "Anaerobic honey"), (r"carbonic maceration", "Carbonic maceration"),
                       (r"co-?ferment", "Co-fermented"), (r"thermal shock", "Thermal shock"),
+                      (r"yeast|inoculat|\bkoji\b|mosto", "Yeast fermented"),
                       (r"anaerobic", "Anaerobic"), (r"double fermentation|double ferment", "Double fermented"),
                       (r"anaerob", "Anaerobic"),
                       (r"\bnatural\b|dry[- ]process|\bnaturale\b|\bnaturel\b|\bnatur\b|naturlig|\bnatuurlijk", "Natural"),
@@ -655,6 +656,30 @@ def find_process(text):
                       (r"\bwashed\b|wet[- ]process|\blavato\b|gewaschen|\blavé\b|\blavado\b|tvättad|\bvasket\b|gewassen|vaskad", "Washed")]:
         if re.search(pat, t):
             return name
+    return None
+
+
+# Free text names tasting notes as often as processes ("honey sweetness", "a natural sweetness",
+# "honeyed", "notes of honey"), so a description only counts when a sentence is about processing.
+PROC_CUE = re.compile(r"process|processed|processing|ferment|dried|drying|depulp|de-pulp|pulped|washing station|"
+                      r"verarbeit|aufbereit|procesad|proceso|lavado|lavé|trait|lavorazion|beneficio|mucilage|cherry|cherries|"
+                      r"\bwashed\b|anaerob|carbonic|maceration|sun[- ]dried|raised beds|patio|factory|station|yeast", re.I)
+NOTE_CUE = re.compile(r"notes?\b|tastes?\b|tasting|flavou?rs?\b|in the cup|cup profile|aroma|hints? of|reminiscent|sweetness|"
+                      r"acidity|mouthfeel|finish\b|we (?:get|taste|love)|expect", re.I)
+
+
+def process_from_text(body):
+    """Process from a description: a labelled 'Process:' line first, then a sentence about processing."""
+    if not body:
+        return None
+    got = labelled(body, "process")
+    if got:
+        return got
+    for sent in re.split(r"(?<=[.!?])\s+|\n+", body):
+        if PROC_CUE.search(sent) and not NOTE_CUE.search(sent):
+            got = find_process(sent)
+            if got:
+                return got
     return None
 
 
@@ -796,7 +821,7 @@ def classify(item, roaster):
         return _drop(roaster, "espresso (title/type)", title)
     if not filtery and ESPRESSO.search(" ".join(item["tags"])) and not FILTERY.search(item["body"]):
         return _drop(roaster, "espresso (tags)", title)
-    process = find_process(title + " " + " ".join(item["tags"])) or find_process(item["body"])
+    process = find_process(title + " " + " ".join(item["tags"])) or process_from_text(item["body"])
     variety = first(VARIETIES, title + " " + " ".join(item["tags"])) or first(VARIETIES, item["body"])
     rec = {
         "roaster": roaster["name"],
