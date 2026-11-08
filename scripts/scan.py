@@ -104,12 +104,15 @@ VOLUME = re.compile(r"\b\d+(?:[.,]\d+)?\s?(?:ml|cl|l|ltr|litres?|liters?|fl ?oz)
 #     Kenya" a variety. A "field blend" is several varieties from one farm, so it stays.
 #     Slugs are checked without the query string.
 #  3. its page gives a composition: two or more countries with percentages ("60% Brazil, 40% ...");
-#  4. its page calls it a blend, unless it also says single origin / estate / farm / lot and names
-#     only one country.
+#  4. its title says "Espresso" (not "filter" or "omni"): an espresso roast, not a V60 coffee.
+#     Only the title counts here: product types and slugs say "espresso" on many filter lots;
+#  5. its page calls it a blend and the title names no country, unless the page names exactly one
+#     country. Pages use "blend" and "components" for varieties, lots and site boilerplate, so a
+#     page word alone never drops a coffee whose title says where it is from.
 BLEND_TITLE = re.compile(r"(?<!field )\bblends?\b|low[- ]caff?\b|house[- ](?:roast|coffee|blend)|signature[- ](?:roast|blend|coffee)|"
                          r"seasonal[- ](?:filter|espresso|blend|roast)|half[- ]caff|\ball[- ]?\d\b|\b\d\s?x\s?\d{2,3}\s?g\b|"
-                         r"roaster'?s[- ]choice|mystery|rotating|subscri|abonnement|miscela|m[ée]lange|mezcla|mischung|"
-                         r"\bespresso\b(?!.*\b(?:filter|omni)\b)", re.I)
+                         r"roaster'?s[- ]choice|mystery|rotating|subscri|abonnement|miscela|m[ée]lange|mezcla|mischung", re.I)
+ESPRESSO_TITLE = re.compile(r"^(?!.*\b(?:filter|omni)).*?\b(espresso)\b", re.I)
 BLEND_BODY = re.compile(r"\b(?:this|our|a|the) blend\b|\bblend of\b|\bblended\b|\bcomponents?\b|"
                         r"\bblend(?:s|ing)? (?:together|two|three)\b|\bmix of (?:two|three)\b", re.I)
 SINGLE_BODY = re.compile(r"single[- ](?:origin|estate|farm|lot|producer|variety)", re.I)
@@ -146,6 +149,9 @@ def not_single(item):
     m = BLEND_TITLE.search(head)
     if m:
         return f"title says '{m.group(0)}'"
+    m = ESPRESSO_TITLE.search(title)
+    if m:
+        return f"title says '{m.group(1)}'"
     j = joined_countries(title) or joined_countries(slug)
     if j:
         return "title names " + j
@@ -154,8 +160,12 @@ def not_single(item):
     if len(pct) >= 2:
         return "composition " + " / ".join(sorted(pct))
     m = BLEND_BODY.search(body)
-    if m and not (SINGLE_BODY.search(body) and len(countries_in(body)) <= 1):
-        return f"page says '{m.group(0)}'"
+    if m and not countries_in(f"{title} {slug}"):
+        n = len(countries_in(body))
+        if n != 1 and not (SINGLE_BODY.search(body) and n <= 1):
+            a, b = max(0, m.start() - 40), min(len(body), m.end() + 40)
+            ctx = re.sub(r"\s+", " ", body[a:b]).strip()
+            return f"page says '{m.group(0)}': ...{ctx}..."
     return None
 
 
@@ -807,8 +817,7 @@ def main():
     # safety net: re-check everything that will be published, including entries carried over from
     # earlier scans (they were classified under older rules and only keep name + url)
     def still_beans(x):
-        slug = re.sub(r"[-_/]+", " ", x.get("url", "").rsplit("/", 1)[-1])
-        probe = {"title": f"{x.get('name', '')} {slug}", "type": "", "tags": [], "variants": "", "body": "", "url": x.get("url", "")}
+        probe = {"title": x.get("name", ""), "type": "", "tags": [], "variants": "", "body": "", "url": x.get("url", "")}
         why = not_beans(probe) or not_single(probe)
         if why:
             REJECTED.append(f"{x.get('roaster')}: {x.get('name')} ({why}, dropped from list)")
