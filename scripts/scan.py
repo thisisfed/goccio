@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Weekly scan of UK roasters' public shop feeds for single-origin filter coffees.
+"""Daily scan of UK roasters' public shop feeds for single-origin filter coffees.
 
 Free and key-less: most UK specialty roasters run on Shopify, which publishes every
 product at /products.json. WooCommerce shops expose /wp-json/wc/store/v1/products.
@@ -23,7 +23,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 ROASTERS = ROOT / "data" / "roasters.json"
 OUT = ROOT / "data" / "releases.json"
-UA = "V60BrewCard/1.0 (+https://v60.thisisfed.xyz; weekly filter-coffee list)"
+UA = "V60BrewCard/1.0 (+https://v60.thisisfed.xyz; daily filter-coffee list)"
 NEW_DAYS = 21
 MAX_ITEMS = 4000   # a safety cap only; the list is ~1,100 coffees
 PER_ROASTER = 100   # was 8, which hid most of a big roaster's range
