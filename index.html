@@ -181,6 +181,10 @@ details.clk > summary .muted { font-weight: 400; font-size: 14px; flex: 1; text-
 .step span { min-width: 44px; text-align: center; font-variant-numeric: tabular-nums; font-weight: 700; font-size: 18px; }
 .zero-row { background: var(--card); border-radius: 20px; padding: 12px 14px 12px 20px; display: flex; gap: 10px 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
 .zr-ctl { display: flex; align-items: center; gap: 12px; }
+.zr-mill { display: flex; align-items: center; gap: 10px; flex-basis: 100%; }
+.zr-mill select { flex: 1; min-width: 0; font: inherit; font-size: 16px; font-weight: 600; color: var(--ink); background: var(--wash); border: 0; border-radius: 12px; padding: 10px 12px; -webkit-appearance: none; appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%; background-size: 5px 5px; background-repeat: no-repeat; }
+.zr-math { flex-basis: 100%; }
 .zr-lbl { font-weight: 600; font-size: 15px; }
 .zero-row.on .step { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 55%, transparent); }
 .zero-row.on #zVal { color: var(--accent); }
@@ -470,7 +474,8 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     <div class="specs" id="specs"></div>
     <details class="clk why-ratio" id="ratioWhy"><summary><span id="ratioQ">Why this ratio?</span></summary><p class="clk-body" id="ratioWhyT" style="margin:0"></p></details>
     <div class="zero-row" id="zeroRow">
-      <div class="zr-ctl"><span class="zr-lbl" id="zrLbl">My C40 zero</span>
+      <label class="zr-mill"><span class="zr-lbl">Grinder</span><select id="millSel" aria-label="Your grinder"></select></label>
+      <div class="zr-ctl" id="zrCtl"><span class="zr-lbl" id="zrLbl">My C40 zero</span>
         <div class="step" role="group" aria-labelledby="zrLbl"><button type="button" id="zMinus" aria-label="Zero offset one click lower">−</button><span id="zVal">0</span><button type="button" id="zPlus" aria-label="Zero offset one click higher">+</button></div></div>
       <div class="zr-math num" id="zrMath" aria-label="How the clicks add up"></div>
     </div>
@@ -521,7 +526,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
 
 
   <footer>
-    <span>Methods: James Hoffmann’s Better 1-Cup and Ultimate V60 · Tetsu Kasuya’s 4:6 and 10-Pour · Scott Rao’s bloom &amp; spin. Grind in clicks on a standard Comandante C40, counted from zero. Strength figures are estimates for a typical extraction, not a refractometer reading.</span>
+    <span>Methods: James Hoffmann’s Better 1-Cup and Ultimate V60 · Tetsu Kasuya’s 4:6 and 10-Pour · Scott Rao’s bloom &amp; spin. Grind in clicks on a standard Comandante C40, counted from zero; other grinders converted from those clicks with Honest Coffee Guide’s grind charts. Strength figures are estimates for a typical extraction, not a refractometer reading.</span>
     <span class="sources">Sources: <a href="https://www.youtube.com/watch?v=1oB1oDrDkHM" target="_blank" rel="noopener">Hoffmann, A Better 1 Cup V60</a> · <a href="https://www.youtube.com/watch?v=AI4ynXzkSQo" target="_blank" rel="noopener">Hoffmann, The Ultimate V60</a> · <a href="https://en.philocoffea.com/blogs/blog/coffee-brewing-method" target="_blank" rel="noopener">Kasuya, 4:6 (Philocoffea)</a> · <a href="https://www.hario.co.uk/blogs/hario-ambassadors/hario-v60-recipe-interview-with-hario-ambassador-scott-rao" target="_blank" rel="noopener">Rao, bloom &amp; spin (Hario)</a></span>
     <span>Coffees come from roasters’ own shop listings, scanned every Monday. Not affiliated with any roaster. Your journal never leaves this device. Made by <a href="https://thisisfed.xyz">Federico Ferrari</a> · <a href="https://github.com/thisisfed/v60">Source</a></span>
   </footer>
@@ -587,7 +592,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
   const DEFAULTS = { text: "", goal: "light", dose: 15, method: "best", roast: "auto", process: "auto", bag: null };
   let state = { ...DEFAULTS, ...store.get("v60.state", {}) };
   // zero: permanent C40 zero offset in clicks (default 0). The old "grinder" key is ignored on purpose.
-  let prefs = { coffees: {}, zero: 0, sound: true, buzz: true, keepAwake: true, water: null, ...store.get("v60.prefs", {}) };
+  let prefs = { coffees: {}, zero: 0, mill: "c40", sound: true, buzz: true, keepAwake: true, water: null, ...store.get("v60.prefs", {}) };
   delete prefs.grinder;
   let journal = store.get("v60.log", []);
   const saveState = () => store.set("v60.state", state);
@@ -663,6 +668,58 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
       origin: p.origin || bag.origin || null, variety: p.variety || bag.variety || null,
       bagNotes: (bag.notes && bag.notes.length ? bag.notes : p.bagNotes) || [] };
   }
+
+  // ---------- grinders ----------
+  /* The engine works in Comandante C40 clicks. Other grinders get a converted starting point.
+     Conversion is linear, anchored on one source so every grinder shares the same micron model:
+     Honest Coffee Guide's V60 band for each grinder (C40 15–25 clicks ↔ EK43 5.7–13.3, Ode Gen 2
+     2.2–5.2, K-Ultra 0.5.3–0.9.2, ZP6 1.4–3.9, Encore 7–18, Encore ESP 15–25, Timemore C3 11–18).
+     Anchors: the V60 band's two ends, plus C40 40 clicks ↔ the top of the grinder's French press
+     band where HCG gives one (coarse ends compress on most grinders, so a straight line would
+     overshoot). Piecewise-linear between anchors, rounded to the grinder's smallest step and held
+     inside its dial.
+     Burr wear and zero calibration differ between units, so it's a starting point: dial in by
+     drawdown time. Niche Zero is left out on purpose: published V60 numbers for it disagree by a
+     full rotation (35–50 vs 85–95). */
+  const thirds = (v) => { let n = Math.floor(v + 1e-6), k = Math.round((v - n) * 3); if (k === 3) { n++; k = 0; } return k ? `${n}.${k}` : `${n}`; };
+  const rnt = (v) => { const t = Math.round(v * 10); return `${Math.floor(t / 100)}.${Math.floor((t % 100) / 10)}.${t % 10}`; };
+  const nc = (v) => { const t = Math.round(v * 10); return `${Math.floor(t / 10)}.${t % 10}`; };
+  const HCG = "https://honestcoffeeguide.com/";
+  const GRINDERS = {
+    c40:    { name: "Comandante C40", short: "C40", lbl: "clicks · C40" },
+    ek43:   { name: "Mahlkönig EK43 / EK43 S", short: "EK43", lbl: "EK43 dial · 0–16", a: 5.7, b: 13.3, fp: 16, min: 0, max: 16, q: 0.1,
+              show: (v) => v.toFixed(1), unit: "numbers", dec: true, src: HCG + "mahlkonig-ek43-0-16-grind-settings" },
+    ode2:   { name: "Fellow Ode Gen 2", short: "Ode Gen 2", lbl: "Ode Gen 2 · number.step (3 steps per number)", a: 2 + 2 / 3, b: 5 + 2 / 3, fp: 11, min: 1, max: 11, q: 1 / 3,
+              show: thirds, unit: "step", src: HCG + "fellow-ode-brew-grinder-gen-2-grind-settings/" },
+    kultra: { name: "1Zpresso K-Ultra", short: "K-Ultra", lbl: "K-Ultra · rotation.number.tick", a: 5.3, b: 9.2, fp: 10, min: 0, max: 15, q: 0.1,
+              show: rnt, unit: "tick", src: HCG + "1zpresso-k-ultra-grind-settings/" },
+    zp6:    { name: "1Zpresso ZP6 Special", short: "ZP6", lbl: "ZP6 · number.click", a: 1.4, b: 3.9, fp: 7, min: 0, max: 9, q: 0.1,
+              show: nc, unit: "click", src: HCG + "1zpresso-zp6-grind-settings/" },
+    encore: { name: "Baratza Encore", short: "Encore", lbl: "Encore setting · 1–40", a: 7, b: 18, min: 1, max: 40, q: 1,
+              show: String, unit: "setting", src: HCG + "baratza-encore-grind-settings/" },
+    encoreEsp: { name: "Baratza Encore ESP", short: "Encore ESP", lbl: "Encore ESP setting · 1–40", a: 15, b: 25, fp: 38, min: 1, max: 40, q: 1,
+              show: String, unit: "setting", src: HCG + "baratza-encore-esp-grind-settings/" },
+    c3:     { name: "Timemore C3 / C3S / C3 Pro", short: "C3", lbl: "clicks · Timemore C3", a: 11, b: 18, fp: 25, min: 0, max: 25, q: 1,
+              show: String, unit: "click", src: HCG + "timemore-c3-grind-settings/" },
+  };
+  const mill = () => GRINDERS[prefs.mill] || GRINDERS.c40;
+  const isC40 = () => !GRINDERS[prefs.mill] || prefs.mill === "c40";
+  // C40 clicks → this grinder: { txt, v, atMax, atMin }
+  function onMill(clicks) {
+    const G = mill(); if (isC40()) return { txt: String(clicks), v: clicks, atMax: false, atMin: false };
+    const raw = clicks <= 25 || G.fp == null ? G.a + (G.b - G.a) * (clicks - 15) / 10
+      : G.b + (G.fp - G.b) * Math.min(clicks - 25, 15) / 15;
+    const v = clamp(Math.round(raw / G.q) * G.q, G.min, G.max);
+    return { txt: G.show(v), v, atMax: raw >= G.max, atMin: raw <= G.min };
+  }
+  // "2 clicks" on a C40, the same change in the chosen grinder's own steps elsewhere
+  // (uses the V60-band slope: these are small corrections around a V60 setting)
+  const stepsFor = (n) => { const G = mill(), x = n * (G.b - G.a) / 10; return G.dec ? x.toFixed(1) : String(Math.max(1, Math.round(x / G.q))); };
+  const unitFor = (num) => { const G = mill(); return G.dec ? G.unit : G.unit + (num === "1" ? "" : "s"); };
+  const cl = (n) => { if (isC40()) return `${n} click${n === 1 ? "" : "s"}`; const k = stepsFor(n); return `${k} ${unitFor(k)}`; };
+  const clRange = (a, b) => { if (isC40()) return `${a}–${b} clicks`; const x = stepsFor(a), y = stepsFor(b); return x === y ? `${x} ${unitFor(x)}` : `${x}–${y} ${unitFor(y)}`; };
+  // one line for headers, copy text and the journal
+  const grindLine = (clicks) => isC40() ? `${clicks} clicks` : `${onMill(clicks).txt} ${mill().short}`;
 
   // ---------- methods ----------
   /* C40 ZERO POINT AND BASE CLICKS
@@ -757,7 +814,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     const roastAdj = ROAST[c.roast].dC, procAdj = PROCESS[c.process].dC;
     const raw = B.c + doseAdj + roastAdj + procAdj;
     const baseClicks = clamp(raw, 16, 45);
-    const zero = opts.noPrefs ? 0 : (prefs.zero || 0);
+    const zero = opts.noPrefs || !isC40() ? 0 : (prefs.zero || 0);   // the zero offset is a C40 calibration
     let clicks = clamp(baseClicks + (pc.clicks || 0) + zero, 12, 50);
     const clickParts = { base: B.c, dose: doseAdj, roast: roastAdj, process: procAdj, learn: pc.clicks || 0, zero, clamped: raw !== baseClicks };
 
@@ -911,8 +968,8 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
 
   function renderLearn(r) {
     const box = $("adjusted"), L = r.learn;
-    const base = `${r.baseClicks + (prefs.zero || 0)} clicks · ${r.baseTemp}°C · 1:${r.baseRatio}`;
-    const now = `${r.clicks} clicks · ${r.temp}°C · 1:${r.ratio}`;
+    const base = `${grindLine(r.baseClicks + (isC40() ? prefs.zero || 0 : 0))} · ${r.baseTemp}°C · 1:${r.baseRatio}`;
+    const now = `${grindLine(r.clicks)} · ${r.temp}°C · 1:${r.ratio}`;
     const TL = (k) => (TASTES.find((x) => x[0] === k) || [k, k])[1];
     if (!L) {
       box.hidden = true; return;
@@ -951,14 +1008,21 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
       <div class="clk-sum">${rows.map(([a, b]) => `<span>${esc(a)}</span><span>${b}</span>`).join("")}<span class="tot">Grind at</span><span class="tot">${r.clicks} clicks</span></div>
       ${p.clamped ? '<p class="muted">Held inside 16–45 clicks, the useful V60 range on a C40.</p>' : ""}
       <p class="muted"><b style="color:var(--ink)">Where ${p.base} comes from.</b> ${esc(B.note)} Published for this recipe: ${esc(B.pub)}. <a href="${B.url}" target="_blank" rel="noopener">${esc(B.src)}</a></p>
+      ${isC40() ? "" : `<p class="muted"><b style="color:var(--ink)">On your ${esc(mill().name)}.</b> ${r.clicks} C40 clicks → ${esc(onMill(r.clicks).txt)} (${esc(mill().lbl)}). Converted with Honest Coffee Guide’s V60 bands, which put C40 15–25 clicks level with ${esc(mill().show(mill().a))}–${esc(mill().show(mill().b))} here; in between and either side it’s linear. Units and zero points vary, so treat it as a starting point and dial in by drawdown time. <a href="${mill().src}" target="_blank" rel="noopener">Source</a></p>`}
       <p class="muted"><b style="color:var(--ink)">My C40 zero.</b> If your 0 isn’t burrs-touching, or recipes you trust always need a click or two more, set the offset once with − / + above. Every recipe shifts by it. Saved on this device; default 0.</p>`;
     // always-visible math + zero control
     const short = { dose: "dose", roast: "roast", process: "process", learn: "your log", zero: "zero" };
     const terms = ["dose", "roast", "process", "learn", "zero"].filter((k) => p[k]).map((k) => `${signed(p[k])} ${short[k]}`);
-    $("zrMath").innerHTML = [`${p.base} base`, ...terms].map(esc).join(" · ") + ` = <b>${r.clicks} clicks</b>`;
+    const g = onMill(r.clicks);
+    $("zrMath").innerHTML = [`${p.base} base (${METHOD_REF[r.m]})`, ...terms].map(esc).join(" · ")
+      + (isC40() ? ` = <b>${r.clicks} clicks</b>` : ` = ${r.clicks} C40 clicks → <b>${esc(g.txt)} on the ${esc(mill().short)}</b>`);
+    $("zrCtl").hidden = !isC40();
+    $("millSel").value = GRINDERS[prefs.mill] ? prefs.mill : "c40";
     $("zVal").textContent = prefs.zero ? signed(prefs.zero) : "0";
     $("zeroRow").classList.toggle("on", !!prefs.zero);
   }
+  $("millSel").innerHTML = Object.entries(GRINDERS).map(([k, G]) => `<option value="${k}">${esc(G.name)}</option>`).join("");
+  $("millSel").onchange = () => { prefs.mill = $("millSel").value; savePrefs(); render(); };
   // permanent C40 zero offset, stored in localStorage (v60.prefs.zero), default 0, range ±6
   const setZero = (d) => { prefs.zero = clamp((prefs.zero || 0) + d, -6, 6); savePrefs(); render(); };
   $("zMinus").onclick = () => setZero(-1); $("zPlus").onclick = () => setZero(1);
@@ -1015,7 +1079,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     const name = (WATER.find((x) => x[0] === w.kind) || [0, "Not set"])[1];
     $("wKind").textContent = name;
     const adv = $("wAdv"); adv.className = "w-adv" + (lv === "hard" ? " hard" : "");
-    adv.innerHTML = lv === "hard" ? `<b class="w-fix">Hard tap first fix: try 1–2 clicks coarser or −2 °C before changing grind for bitterness or flatness.</b><span class="w-fixn">Here that’s ${r.clicks + 1}–${r.clicks + 2} clicks or ${r.temp - 2}°C.</span>`
+    adv.innerHTML = lv === "hard" ? `<b class="w-fix">Hard tap first fix: try ${clRange(1, 2)} coarser or −2 °C before changing grind for bitterness or flatness.</b><span class="w-fixn">Here that’s ${isC40() ? `${r.clicks + 1}–${r.clicks + 2} clicks` : `${esc(onMill(r.clicks + 1).txt)}–${esc(onMill(r.clicks + 2).txt)} on the ${esc(mill().short)}`} or ${r.temp - 2}°C.</span>`
       : lv === "vsoft" ? "Very soft water can taste flat and thin. If it does, try 1–2°C hotter before changing the grind."
       : lv === "soft" ? "Good for filter. Dial in with grind and temperature as usual."
       : lv === "unknown" ? "Add your hardness or alkalinity to get advice."
@@ -1055,7 +1119,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     const lw = r.learn ? (r.learn.source === "coffee" ? "your log" : "your style") : "";
     const cBadges = [r.pc.clicks ? `${sign(r.pc.clicks)} ${lw}` : ""].filter(Boolean);
     const S = [
-      ["key", r.clicks, "", "clicks · C40", cBadges.join(" · ")],
+      ["key", onMill(r.clicks).txt, "", mill().lbl, cBadges.join(" · ")],
       ["", r.dose, "g", "coffee", ""],
       ["", r.water, "g", "water", ""],
       ["ratio", "1:" + r.ratio, "", `≈${r.yieldG} g in the cup`, r.pc.ratio ? `${sign(r.pc.ratio)} ${lw}` : ""],
@@ -1064,7 +1128,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     ];
     renderClicks(r);
     $("ratioQ").textContent = `Why 1:${r.ratio}?`; $("ratioWhyT").textContent = ratioWhy(r);
-    $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}"><b>${v}<small>${u}</small></b><span class="sub2">${l}</span>${k === "key" && prefs.zero ? `<span class="zo">${sign(prefs.zero)} zero offset</span>` : ""}${k === "ratio" ? `<span class="ret">(${r.water} g water − 2.1 × ${r.dose} g retained). Estimate only.</span>` : ""}${badge ? `<span class="badge">${esc(badge)}</span>` : ""}</div>`).join("");
+    $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}"><b>${v}<small>${u}</small></b><span class="sub2">${l}</span>${k === "key" && isC40() && prefs.zero ? `<span class="zo">${sign(prefs.zero)} zero offset</span>` : ""}${k === "key" && !isC40() ? `<span class="sub2">from ${r.clicks} C40 clicks${onMill(r.clicks).atMax ? " · coarsest setting, may still run fast" : onMill(r.clicks).atMin ? " · finest setting" : ""}</span>` : ""}${k === "ratio" ? `<span class="ret">(${r.water} g water − 2.1 × ${r.dose} g retained). Estimate only.</span>` : ""}${badge ? `<span class="badge">${esc(badge)}</span>` : ""}</div>`).join("");
     const bloomTimes = (r.pours[0].to / r.dose).toFixed(1).replace(/\.0$/, "");
     $("tech").innerHTML = `<span><b>Agitation: ${AGIT[r.agit]}.</b> ${
       r.agit >= 3 ? "Stir or swirl the bloom, pour with energy, one swirl at the end." :
@@ -1072,7 +1136,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
       r.agit === 1 ? "No stirring. Pour low and gentle so the fruit stays clean." :
       "No stirring, no swirling. Pour from close to the bed, centre-weighted."}</span>
       <span class="muted">Bloom ${bloomTimes}× the dose · preheat and rinse the paper · tare with coffee in.</span>`;
-    const sum = `${r.clicks} clk · ${r.dose}→${r.water} g · ${r.temp}°`;
+    const sum = `${isC40() ? r.clicks + " clk" : onMill(r.clicks).txt + " " + mill().short} · ${r.dose}→${r.water} g · ${r.temp}°`;
     $("startSum").textContent = sum; $("dockSum").textContent = sum;
 
     $("pourRows").innerHTML = r.pours.map((p, i) => `<tr class="${i === r.pours.length - 1 ? "last" : ""}"><td class="m">${fmt(p.t)}</td>
@@ -1094,17 +1158,19 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     if (r.m === "fourSix") why.push(r.goal === "light" ? "Kasuya’s 4:6: the first 40% sets sweetness vs acidity, the last 60% sets strength. Two big pours keep the body light." : "Kasuya’s 4:6 with three strength pours: rounder and sweeter.");
     if (r.m === "ten") why.push("Kasuya’s 10-Pour: coarse grind, small pours every 15 s. Syrupy and sweet.");
     const cons = [];
-    if (c.process === "unsure") cons.push(`Process not stated, so it’s treated as possibly fermented: gentle pours, ${r.temp}°C (94 at most), 1 click coarser.`);
-    if (c.roast === "unsure") cons.push("Roast not sure, so it plays safe: 92°C base and 1 click coarser. Less bitterness risk, maybe a little less sweetness.");
+    if (c.process === "unsure") cons.push(`Process not stated, so it’s treated as possibly fermented: gentle pours, ${r.temp}°C (94 at most), ${cl(1)} coarser.`);
+    if (c.roast === "unsure") cons.push(`Roast not sure, so it plays safe: 92°C base and ${cl(1)} coarser. Less bitterness risk, maybe a little less sweetness.`);
     if (cons.length) cons.push("Tell it the process and roast under Bag details for a sharper recipe.");
     const pl = cap1(PROCESS[c.process].label), whyBase = why.length;
     if (c.process === "anaerobic") why.push(`Anaerobic: long, sealed fermentation gives tropical and boozy notes that turn harsh with heat and agitation. Few gentle pours, ${r.temp}°C (93 at most), a click coarser.`);
     else if (c.process === "cofer") why.push(`Co-fermented or infused: the added fruit, yeast or spice extracts fast and dominates when pushed. No stirring, ${r.temp}°C (92 at most), 2 clicks coarser.`);
     else if (c.process === "decaf") why.push(`Decaf: the beans are more porous and extract fast, with more fines. Cooler (${r.temp}°C, 92 at most), 2 clicks coarser, gentle pours.`);
     else if (c.process === "natural" && r.agit <= 1) why.push(`Natural: dried in the fruit, so heavy and fruity. Low agitation and ${r.temp}°C keep it clean, not winey.`);
-    if (c.roast === "dark") why.push(`Dark roast: soluble and quick to go bitter. No stirring, ${r.temp}°C (87 at most), 4 clicks coarser than a light roast.`);
-    else if (c.roast === "mdark") why.push(`Medium-dark: extracts easily. Low agitation, ${r.temp}°C (90 at most), 3 clicks coarser.`);
+    if (c.roast === "dark") why.push(`Dark roast: soluble and quick to go bitter. No stirring, ${r.temp}°C (87 at most), ${cl(4)} coarser than a light roast.`);
+    else if (c.roast === "mdark") why.push(`Medium-dark: extracts easily. Low agitation, ${r.temp}°C (90 at most), ${cl(3)} coarser.`);
     else if (c.roast === "vlight" && r.agit >= 2) why.push(`Very light (Nordic-style): dense and hard to extract. ${r.temp}°C, a click finer and full agitation so it isn’t sour.`);
+    if ((c.roast === "mdark" || c.roast === "dark") && r.m === "fourSix" && state.method === "best")
+      why.push(`Why the grind jumps from a medium roast: darker roasts switch to Kasuya 4:6, which grinds coarser by design (base ${BASE.fourSix.c} vs Hoffmann’s ${BASE.hoffmann.c} C40 clicks). The roast itself only adds ${ROAST[c.roast].dC - ROAST.medium.dC} more. Pick Hoffmann above to stay finer.`);
     if (c.delicate) why.push(`${c.variety ? titleCase(c.variety) : "Delicate variety"}: florals fade with rough pours. Hot water, but agitation capped at medium${r.m === "rao" ? " and a flat, undisturbed bed" : ""}.`);
     if (state.method === "best" && why.length === whyBase && c.process !== "unsure" && c.roast !== "unsure") why.push(`${pl}, ${ROAST[c.roast].label} roast: dense enough to take hot water and pulsed pours for full sweetness.`);
     why.push(`Strength comes from the ratio (1:${r.ratio}). The grind is set for extraction, not strength.`);
@@ -1112,15 +1178,15 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
 
     const dial = [
       `Taste first, then check when it drained. Target ${fmt(r.lo)}–${fmt(r.hi)}.`,
-      `Sour, thin, drained before ${fmt(r.lo)} → 2 clicks finer.`,
+      `Sour, thin, drained before ${fmt(r.lo)} → ${cl(2)} finer.`,
       `Sour but on time → 2°C hotter (you’re at ${r.temp}°C).`,
-      `Bitter or drying, still dripping after ${fmt(r.hi)} → 2 clicks coarser.`,
+      `Bitter or drying, still dripping after ${fmt(r.hi)} → ${cl(2)} coarser.`,
       "Bitter but on time → 2°C cooler, or less swirling.",
       `Watery but sweet → 1:${Math.round((r.ratio - 1) * 10) / 10}. Heavy or muddy → 1:${Math.round((r.ratio + 1) * 10) / 10}. Leave the grind.`,
       "Sour and bitter at once → uneven bed: same grind, gentler pours, swirl once.",
     ];
     if (r.agit <= 1) dial.push("Fermenty, boozy, harsh → 2°C cooler before touching the grind.");
-    if (waterLevel() === "hard") dial.unshift("Hard tap first fix: try 1–2 clicks coarser or −2 °C before changing grind for bitterness or flatness.");
+    if (waterLevel() === "hard") dial.unshift(`Hard tap first fix: try ${clRange(1, 2)} coarser or −2 °C before changing grind for bitterness or flatness.`);
     $("dial").innerHTML = dial.map((w) => `<li>${esc(w)}</li>`).join("");
 
     $("logTitle").textContent = `How did it taste? · ${coffeeTitle(state, r)}`;
@@ -1176,15 +1242,15 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     const fast = dd != null && dd < r.lo - 5, slow = dd != null && dd > r.hi + 10;
     const ddTxt = dd != null ? ` (drained at ${fmt(dd)})` : "";
     if (has("sour") && has("bitter")) return { text: "Sour and bitter together means uneven extraction. Keep the numbers; pour gentler, keep the bed flat and swirl once at the end.", d: {} };
-    if (has("harsh")) return { text: `Harsh or drying${ddTxt}: 1 click coarser and gentler pours.`, d: { clicks: 1 } };
-    if (has("bitter")) return slow ? { text: `Bitter and slow${ddTxt}: 2 clicks coarser.`, d: { clicks: 2 } } : { text: `Bitter on time${ddTxt}: 2°C cooler.`, d: { temp: -2 } };
+    if (has("harsh")) return { text: `Harsh or drying${ddTxt}: ${cl(1)} coarser and gentler pours.`, d: { clicks: 1 } };
+    if (has("bitter")) return slow ? { text: `Bitter and slow${ddTxt}: ${cl(2)} coarser.`, d: { clicks: 2 } } : { text: `Bitter on time${ddTxt}: 2°C cooler.`, d: { temp: -2 } };
     if (has("sour")) {
-      if (fast) return { text: `Sour and fast${ddTxt}: 2 clicks finer.`, d: { clicks: -2 } };
+      if (fast) return { text: `Sour and fast${ddTxt}: ${cl(2)} finer.`, d: { clicks: -2 } };
       if (slow) return { text: `Sour but slow${ddTxt}: water is running past the coffee, not through it. Same grind, gentler pours, and 2°C hotter.`, d: { temp: 2 } };
-      if (r.temp >= 97) return { text: `Sour, already hot${ddTxt}: 1 click finer.`, d: { clicks: -1 } };
+      if (r.temp >= 97) return { text: `Sour, already hot${ddTxt}: ${cl(1)} finer.`, d: { clicks: -1 } };
       return { text: `Sour${dd != null ? " on time" : ""}${ddTxt}: 2°C hotter.`, d: { temp: 2 } };
     }
-    if (has("flat")) return { text: "Flat: 1°C hotter and 1 click finer. If it stays flat, check your water.", d: { temp: 1, clicks: -1 } };
+    if (has("flat")) return { text: `Flat: 1°C hotter and ${cl(1)} finer. If it stays flat, check your water.`, d: { temp: 1, clicks: -1 } };
     if (has("thin")) return { text: `Thin: less water next time, 1:${Math.round((r.ratio - 1) * 10) / 10}. Same grind.`, d: { ratio: -1 } };
     if (has("heavy")) return { text: `Heavy: more water next time, 1:${Math.round((r.ratio + 1) * 10) / 10}. Same grind.`, d: { ratio: 1 } };
     if (has("sweet") || has("balanced")) return { text: "Keep it. This is now your recipe for this coffee.", d: {} };
@@ -1239,7 +1305,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     picked = new Set(); $("ddIn").value = ""; $("logNote").value = "";
     renderTaste(); render(); renderJournal();
     const a = recipe, diff = [];
-    if (a.clicks !== before.clicks) diff.push(`${before.clicks} → <b>${a.clicks} clicks</b>`);
+    if (a.clicks !== before.clicks) diff.push(isC40() ? `${before.clicks} → <b>${a.clicks} clicks</b>` : `${esc(onMill(before.clicks).txt)} → <b>${esc(onMill(a.clicks).txt)} ${esc(mill().short)}</b>`);
     if (a.temp !== before.temp) diff.push(`${before.temp} → <b>${a.temp}°C</b>`);
     if (a.ratio !== before.ratio) diff.push(`1:${before.ratio} → <b>1:${a.ratio}</b>`);
     const box = $("suggest"); box.hidden = false;
@@ -1253,7 +1319,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     box.innerHTML = journal.slice(0, 12).map((e, i) => `<div class="entry">
       <span class="when">${dmy(e.at)}</span>
       <div class="what"><span class="serif">${esc(e.title)}</span>
-        <span class="num">${esc(e.method)} · ${e.clicks} clk · ${e.dose}→${e.water} g · ${e.temp}°C${e.dd != null ? " · drained " + fmt(e.dd) : ""}</span>
+        <span class="num">${esc(e.method)} · ${esc(grindLine(e.clicks))} · ${e.dose}→${e.water} g · ${e.temp}°C${e.dd != null ? " · drained " + fmt(e.dd) : ""}</span>
         ${e.tastes && e.tastes.length ? `<span class="t">${esc(e.tastes.map((k) => (TASTES.find((x) => x[0] === k) || [k, k])[1]).join(", "))}${e.change ? " → " + esc(e.change) : ""}</span>` : ""}
         ${e.note ? `<span class="t muted">${esc(e.note)}</span>` : ""}</div>
       <button type="button" data-i="${i}">Brew again</button></div>`).join("");
@@ -1319,7 +1385,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     if (!recipe) render();
     const r = recipe;
     if ($("rbody").hidden) return;
-    $("bvCoffee").textContent = `${coffeeTitle(state, r)} · ${r.clicks} clicks${prefs.zero ? ` · ${prefs.zero > 0 ? "+" : "−"}${Math.abs(prefs.zero)} zero offset` : ""} · ${r.temp}°C · ${r.dose}→${r.water} g`;
+    $("bvCoffee").textContent = `${coffeeTitle(state, r)} · ${grindLine(r.clicks)}${isC40() && prefs.zero ? ` · ${prefs.zero > 0 ? "+" : "−"}${Math.abs(prefs.zero)} zero offset` : ""} · ${r.temp}°C · ${r.dose}→${r.water} g`;
     $("bvTicks").innerHTML = r.pours.map((p, i) => { const y = coneY(p.to / r.water).toFixed(1);
       return `<line id="tk${i}" x1="150" x2="182" y1="${y}" y2="${y}" stroke="#48484a" stroke-width="5" stroke-linecap="round"/>`; }).join("");
     const T = r.hi + 20;
@@ -1439,7 +1505,8 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     const L = [
       coffeeTitle(state, r), who, "",
       `${r.method} · ${GOAL[r.goal]}`,
-      `Grind    ${r.clicks} clicks, Comandante C40 from zero${prefs.zero ? ` (my zero ${signed(prefs.zero)})` : ""}`,
+      isC40() ? `Grind    ${r.clicks} clicks, Comandante C40 from zero${prefs.zero ? ` (my zero ${signed(prefs.zero)})` : ""}`
+        : `Grind    ${onMill(r.clicks).txt} on ${mill().name} (${mill().lbl}; from ${r.clicks} C40 clicks)`,
       `Coffee   ${r.dose} g`,
       `Water    ${r.water} g (1:${r.ratio}) · ${r.temp}°C`,
       `Drain    ${fmt(r.lo)}–${fmt(r.hi)}`,
@@ -1448,7 +1515,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
       "  Targets shown to 0.1 g. Pour to the nearest gram on your scale.",
     ];
     const rk = risks(r); if (rk.length) L.push("", ...rk.map((x) => "! " + x));
-    if (lv === "hard") L.push("", "Hard tap first fix: try 1–2 clicks coarser or −2 °C before changing grind for bitterness or flatness.");
+    if (lv === "hard") L.push("", `Hard tap first fix: try ${clRange(1, 2)} coarser or −2 °C before changing grind for bitterness or flatness.`);
     L.push("", "v60.thisisfed.xyz");
     return L.join("\n");
   }
@@ -1480,9 +1547,10 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     let y = 104 + 22 + tpx + 86;
     const hw = 400, hh = 300, g = 18;
     rr(M, y, hw, hh, 36, "#ffffff");
-    x.textAlign = "center"; x.fillStyle = blue; x.font = F(700, 176); x.fillText(String(r.clicks), M + hw / 2, y + 196);
-    x.fillStyle = mut; x.font = F(600, 26); x.fillText("clicks · Comandante C40", M + hw / 2, y + 244);
-    x.font = F(500, 22); x.fillText(prefs.zero ? `counted from zero, my zero ${signed(prefs.zero)}` : "counted from zero", M + hw / 2, y + 276);
+    const gm = onMill(r.clicks), big = gm.txt;
+    x.textAlign = "center"; x.fillStyle = blue; x.font = F(700, big.length > 4 ? 120 : big.length > 3 ? 140 : 176); x.fillText(big, M + hw / 2, y + 196);
+    x.fillStyle = mut; x.font = F(600, 26); x.fillText(isC40() ? "clicks · Comandante C40" : clip(mill().name, hw - 40), M + hw / 2, y + 244);
+    x.font = F(500, 22); x.fillText(isC40() ? (prefs.zero ? `counted from zero, my zero ${signed(prefs.zero)}` : "counted from zero") : `from ${r.clicks} C40 clicks`, M + hw / 2, y + 276);
     const tw = (IW - hw - g - g) / 2, th = (hh - g) / 2;
     [[r.dose + " g", "coffee"], [r.water + " g", "water"], ["1:" + r.ratio, "ratio"], [r.temp + "°C", "kettle"]].forEach(([v, l], i) => {
       const tx = M + hw + g + (i % 2) * (tw + g), ty = y + Math.floor(i / 2) * (th + g);
@@ -1509,7 +1577,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: 12px; 
     });
     x.fillStyle = mut; x.font = F(400, 20); x.fillText("Targets shown to 0.1 g. Pour to the nearest gram on your scale.", M + 32, y + ph - 14);
     const rk = risks(r)[0], lv = waterLevel();
-    const foot = rk ? "! " + rk : lv === "hard" ? "Hard tap first fix: 1–2 clicks coarser or −2 °C before changing grind." : "";
+    const foot = rk ? "! " + rk : lv === "hard" ? `Hard tap first fix: ${clRange(1, 2)} coarser or −2 °C before changing grind.` : "";
     if (foot) { x.fillStyle = acc; x.font = F(500, 24); x.fillText(clip(foot, IW), M, Math.min(H - 104, y + ph + 48)); }
     x.fillStyle = mut; x.font = F(600, 24); x.fillText("v60.thisisfed.xyz", M, H - 56);
     x.textAlign = "right"; x.font = F(500, 24); x.fillText(dmy(new Date()), W - M, H - 56); x.textAlign = "left";
