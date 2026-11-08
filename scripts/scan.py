@@ -322,6 +322,8 @@ def get_text(url, tries=2, limit=2_000_000):
 # ---------- any other shop: sitemap + schema.org Product data ----------
 PRODUCTISH = re.compile(r"/(products?|shop|store|negozio|tienda|boutique|butik|produkte?|produits?|prodotti|coffees?|kaffee|caffe|caffè|cafe|café|kaffe|kahvi|kawa|beans|filter|"
                         r"single-origin|catalog|item|p)/", re.I)
+# Squarespace "/shop-coffee/<slug>" (Curve) and PrestaShop "/123-some-coffee.html" (Gardelli)
+SHOP_SECTION = re.compile(r"/shop-[\w-]+/[^/]+/?$|/\d+-[\w-]+\.html$", re.I)
 SKIP_URL = re.compile(r"/(blog|news|journal|pages?|about|contact|cart|account|collections?|category|categories|tag|"
                       r"wholesale|subscriptions?|gift|equipment|merch)/?$", re.I)
 
@@ -335,7 +337,9 @@ def sitemap_urls(shop):
                 cands.append(line.split(":", 1)[1].strip())
     except Exception:  # noqa: BLE001
         pass
-    cands += [f"{shop}/sitemap.xml", f"{shop}/sitemap_index.xml", f"{shop}/product-sitemap.xml", f"{shop}/wp-sitemap.xml"]
+    cands += [f"{shop}/sitemap.xml", f"{shop}/sitemap_index.xml", f"{shop}/product-sitemap.xml", f"{shop}/wp-sitemap.xml",
+              f"{shop}/xmlsitemap.php",                                   # BigCommerce (Extract)
+              f"{shop}/1_index_sitemap.xml", f"{shop}/1_en_0_sitemap.xml", f"{shop}/1_it_0_sitemap.xml"]   # PrestaShop (Gardelli)
     seen, pages, queue = set(), [], []
     for c in cands:
         if c not in seen:
@@ -368,7 +372,7 @@ def sitemap_urls(shop):
                 url = loc.text.strip()
                 if SKIP_URL.search(url):
                     continue
-                if from_product_map or PRODUCTISH.search(url):
+                if from_product_map or PRODUCTISH.search(url) or SHOP_SECTION.search(url):
                     pages.append((url, (lm.text or "")[:10] if lm is not None and lm.text else ""))
         if len(pages) > 400:
             break
