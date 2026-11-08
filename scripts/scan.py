@@ -711,8 +711,28 @@ PAGE_LABEL = {
 PAGE_FETCHES_PER_ROASTER = 40
 
 
+JSON_PROCESS = [re.compile(r'"(?:process(?:ing)?(?:_method|Method)?)"\s*:\s*"([^"]{2,60})"', re.I),
+                re.compile(r'"key"\s*:\s*"process[^"]*"[^{}]{0,300}?"value"\s*:\s*"([^"]{2,60})"', re.I)]
+JSON_VARIETY = [re.compile(r'"(?:variet(?:y|ies|al)|cultivars?)"\s*:\s*"([^"]{2,80})"', re.I),
+                re.compile(r'"key"\s*:\s*"variet[^"]*"[^{}]{0,300}?"value"\s*:\s*"([^"]{2,80})"', re.I)]
+
+
 def page_text(url):
     raw = get_text(url, tries=2, limit=1_500_000)
+    return raw, _visible(raw)
+
+
+def from_json(raw, k):
+    for rx in (JSON_PROCESS if k == "process" else JSON_VARIETY):
+        for m in rx.finditer(raw):
+            v = html.unescape(m.group(1)).strip()
+            got = find_process(v) if k == "process" else labelled(f"Variety:\n{v}\n", "variety")
+            if got:
+                return got
+    return None
+
+
+def _visible(raw):
     raw = re.sub(r"<(script|style|noscript|svg|template)\b.*?</\1>", " ", raw, flags=re.I | re.S)
     raw = re.sub(r"<(header|nav|footer)\b.*?</\1>", " ", raw, flags=re.I | re.S)
     return strip_html(raw)
@@ -755,7 +775,7 @@ def add_page_details(recs, roaster, old):
             continue
         fetched += 1
         try:
-            text = page_text(rec["url"])
+            raw, text = page_text(rec["url"])
         except Exception as e:  # noqa: BLE001
             errs.append(f"{type(e).__name__}: {str(e)[:60]}")
             time.sleep(1)
@@ -763,13 +783,13 @@ def add_page_details(recs, roaster, old):
         start = max(0, text.lower().find(rec["name"].lower()[:30]))
         got = False
         for k in need:
-            v = labelled(text, k, start) or (labelled(text, k) if start else None)
+            v = labelled(text, k, start) or (labelled(text, k) if start else None) or from_json(raw, k)
             if v:
                 rec[k], rec[k + "_from"] = v, "page"
                 got = True
         if not got and "process" in need and not errs:
-            i = text.lower().find("process")
-            errs.append("no label, e.g. " + repr(text[max(0, i - 40):i + 60] if i >= 0 else text[:100]))
+            hits = [m.start() for m in re.finditer(r"process", raw, re.I)][:6]
+            errs.append("no label; raw HTML around 'process': " + " || ".join(repr(raw[max(0, i - 80):i + 120]) for i in hits))
         filled += got
         time.sleep(0.4)
     if fetched:
