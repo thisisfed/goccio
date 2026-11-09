@@ -767,7 +767,7 @@ def find_origin(title, blob="", body=""):
 
 def find_process(text):
     t = text.lower()
-    if "decaf" in t:
+    if re.search(r"d[eé]caf|entkoffeiniert|bezkofein", t):
         return "Decaf"
     for pat, name in [(r"anaerobic natural", "Anaerobic natural"), (r"anaerobic washed", "Anaerobic washed"),
                       (r"anaerobic honey", "Anaerobic honey"), (r"carbonic maceration", "Carbonic maceration"),
