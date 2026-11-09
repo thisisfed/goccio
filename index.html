@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f6f1ea" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14100d" media="(prefers-color-scheme: dark)">
 <title>V60 Brew Card</title>
 <meta name="description" content="A V60 recipe for the coffee in front of you: the grind for your grinder, ratio, temperature, every pour, a full-screen brew timer and a private brew journal. Plus new filter coffees from roasters in the UK, Europe and beyond, updated every morning.">
 <meta property="og:title" content="V60 Brew Card">
@@ -12,29 +12,41 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M4 6h24L16 27z' fill='%230b0b0b'/%3E%3C/svg%3E">
 <script>try{var t=localStorage.getItem("v60.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
 <style>
-/* Layout idea: Apple product page. Light grey canvas, white rounded tiles, system type set tight,
-   blue for actions, orange for "new" and "pour now". The black brew view is the one dark moment. */
+/* Layout idea: Apple product page, warmed up. Cream paper canvas, warm-white rounded tiles, system type for
+   everything you read or tap, one serif for the big words. Blue only for actions, terracotta for "new" and
+   "pour now". The espresso-black brew view is the one dark moment. */
 :root {
-  --bg: #f5f5f7;
-  --card: #ffffff;
-  --ink: #1d1d1f;
-  --muted: #6e6e73;
-  --rule: #d2d2d7;
-  --wash: #f5f5f7;
-  --blue: #0071e3;
-  --accent: #f56300;
-  --coffee: #7b4a2b;      /* roasted-bean brown: method names, cup notes, the mark */
+  --bg: #f6f1ea;          /* cream paper */
+  --card: #fffdf9;        /* warm white */
+  --ink: #231b15;         /* roasted near-black */
+  --muted: #776a5f;
+  --rule: #e3d9cd;
+  --wash: #f2ebe2;
+  --blue: #0071e3;        /* actions only */
+  --accent: #c4521f;      /* terracotta */
+  --coffee: #6f3f22;      /* roasted-bean brown: method names, cup notes, the mark */
   --sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  /* New York on Apple devices, a book serif elsewhere; no web font to download */
+  --display: ui-serif, "New York", "Iowan Old Style", Charter, "Source Serif Pro", Georgia, serif;
+  --lift: 0 1px 1px rgba(70, 45, 25, .04), 0 12px 32px -18px rgba(70, 45, 25, .24);
+  --lift-hi: 0 1px 1px rgba(70, 45, 25, .05), 0 18px 40px -18px rgba(70, 45, 25, .32);
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .22 0 0 0 0 .12 .2 0 0 0 -.06'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #000000; --card: #1c1c1e; --ink: #f5f5f7; --muted: #a1a1a6; --rule: #38383a; --wash: #2c2c2e; --blue: #2997ff; --accent: #ff9f0a; --coffee: #d29c6c;
+    --bg: #14100d; --card: #201a16; --ink: #f4ede4; --muted: #a89a8c; --rule: #3a3029; --wash: #2a221d; --blue: #2997ff; --accent: #f08a4b; --coffee: #d9a273;
+    --lift: inset 0 1px 0 rgba(255, 235, 215, .05), 0 14px 32px -20px rgba(0, 0, 0, .9);
+    --lift-hi: inset 0 1px 0 rgba(255, 235, 215, .07), 0 18px 40px -20px rgba(0, 0, 0, .95);
+    --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .92 0 0 0 0 .84 .14 0 0 0 -.05'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #000000; --card: #1c1c1e; --ink: #f5f5f7; --muted: #a1a1a6; --rule: #38383a; --wash: #2c2c2e; --blue: #2997ff; --accent: #ff9f0a; --coffee: #d29c6c;
+  --bg: #14100d; --card: #201a16; --ink: #f4ede4; --muted: #a89a8c; --rule: #3a3029; --wash: #2a221d; --blue: #2997ff; --accent: #f08a4b; --coffee: #d9a273;
+    --lift: inset 0 1px 0 rgba(255, 235, 215, .05), 0 14px 32px -20px rgba(0, 0, 0, .9);
+    --lift-hi: inset 0 1px 0 rgba(255, 235, 215, .07), 0 18px 40px -20px rgba(0, 0, 0, .95);
+    --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .92 0 0 0 0 .84 .14 0 0 0 -.05'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   color-scheme: dark;
 }
 
@@ -42,7 +54,7 @@
 html, body { margin: 0; }
 /* one size for the big lines: the top animation, the recipe title and the closing paragraph */
 :root { --big: clamp(32px, 5.6vw, 56px); }
-body { background: var(--bg); color: var(--ink); font: 400 17px/1.47 var(--sans); letter-spacing: -.022em; -webkit-font-smoothing: antialiased; }
+body { background: var(--bg) var(--grain); background-size: 180px; color: var(--ink); font: 400 17px/1.47 var(--sans); letter-spacing: -.022em; -webkit-font-smoothing: antialiased; }
 a { color: var(--blue); text-decoration: none; }
 a:hover { text-decoration: underline; }
 button, input, textarea { font: inherit; color: inherit; letter-spacing: inherit; }
@@ -431,55 +443,56 @@ footer .bmc a { font-weight: 700; }
 
 /* BREW MODE: fixed slots. Every zone keeps its place and size from pouring to waiting to drawdown;
    only the words, numbers and colours change. The big number scales to the space it has (container units). */
-.bv { position: fixed; inset: 0; z-index: 100; background: #000; color: #f5f5f7; display: grid; grid-template-columns: minmax(0, 1fr);
+.bv { position: fixed; inset: 0; z-index: 100; background: #0e0b09; color: #f7f0e8; display: grid; grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto minmax(0, 1fr) auto auto auto; gap: 10px; overflow: hidden;
   padding: calc(8px + env(safe-area-inset-top)) 16px calc(10px + env(safe-area-inset-bottom)); }
 .bv > * { min-width: 0; }
 .bv-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; height: 40px; }
-.bv-coffee { font-size: 14px; color: #8e8e93; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; font-variant-numeric: tabular-nums; }
-.bv-x { flex: none; background: #1c1c1e; border: 0; color: #f5f5f7; padding: 9px 16px; font-size: 15px; font-weight: 600; border-radius: 980px; }
-.bv-now { container-type: size; min-height: 0; overflow: hidden; border-radius: 28px; background: #111; padding: 18px 20px;
-  display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto auto auto; row-gap: 6px; transition: background .25s ease; }
-.bv-now.pour { background: #2b1600; }
+.bv-coffee { font-size: 14px; color: #a2958a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; font-variant-numeric: tabular-nums; }
+.bv-x { flex: none; background: #1f1915; border: 0; color: #f7f0e8; padding: 9px 16px; font-size: 15px; font-weight: 600; border-radius: 980px; }
+.bv-now { position: relative; container-type: size; min-height: 0; overflow: hidden; border-radius: 28px; background: #17120e; padding: 18px 20px;
+  display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto auto auto; row-gap: 6px; transition: background .6s ease, box-shadow .6s ease; }
+.bv-now.pour { background: #2b1600; box-shadow: inset 0 0 0 1px rgba(255, 159, 10, .28), 0 0 90px -30px rgba(255, 159, 10, .45); }
+.pour .bv-how { color: #fff; }
 .bv-now.drain { background: #052211; }
 .bv-now.over { background: #2b0d00; }
 .bv-nowhead { display: flex; justify-content: space-between; align-items: center; height: 32px; }
-.bv-pill { font-size: 14px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; padding: 6px 12px; border-radius: 980px; background: #2c2c2e; color: #f5f5f7; white-space: nowrap; }
-.pour .bv-pill { background: #ff9f0a; color: #000; }
-.drain .bv-pill { background: #30d158; color: #000; }
-.over .bv-pill { background: #ff453a; color: #000; }
-.bv-clock { font-size: 24px; font-weight: 500; font-variant-numeric: tabular-nums; color: #8e8e93; }
-.bv-lbl { font-size: 18px; font-weight: 600; color: #8e8e93; height: 22px; line-height: 22px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.bv-big { align-self: center; font-size: min(150px, 40cqw, 34cqh); font-weight: 700; line-height: 1; letter-spacing: -.055em; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.bv-big small { font-size: .28em; font-weight: 600; letter-spacing: 0; color: #8e8e93; margin-left: 6px; }
+.bv-pill { font-size: 14px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; padding: 6px 12px; border-radius: 980px; background: #2d2520; color: #f7f0e8; white-space: nowrap; }
+.pour .bv-pill { background: #ff9f0a; color: #0e0b09; }
+.drain .bv-pill { background: #30d158; color: #0e0b09; }
+.over .bv-pill { background: #ff453a; color: #0e0b09; }
+.bv-clock { font-size: 24px; font-weight: 500; font-variant-numeric: tabular-nums; color: #a2958a; }
+.bv-lbl { font-size: 18px; font-weight: 600; color: #a2958a; height: 22px; line-height: 22px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bv-big { align-self: center; font-size: min(168px, 42cqw, 37cqh); font-weight: 700; line-height: 1; letter-spacing: -.055em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.bv-big small { font-size: .28em; font-weight: 600; letter-spacing: 0; color: #a2958a; margin-left: 6px; }
 .pour .bv-big { color: #ff9f0a; }
-.idle .bv-big { color: #8e8e93; }
-.bv-how { font-size: 21px; font-weight: 600; line-height: 26px; height: 52px; letter-spacing: -.02em; overflow: hidden;
+.idle .bv-big { color: #a2958a; }
+.bv-how { font-size: 24px; font-weight: 600; line-height: 30px; height: 60px; letter-spacing: -.02em; overflow: hidden;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-.bv-sub { font-size: 17px; color: #aeaeb2; font-variant-numeric: tabular-nums; height: 26px; line-height: 26px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.bv-sub b { color: #f5f5f7; font-size: 21px; font-weight: 700; }
-.bv-next { display: flex; align-items: center; gap: 12px; background: #1c1c1e; border-radius: 18px; padding: 0 18px; height: 54px; }
-.bv-nextlbl { flex: none; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #8e8e93; }
+.bv-sub { font-size: 17px; color: #c2b6aa; font-variant-numeric: tabular-nums; height: 26px; line-height: 26px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bv-sub b { color: #f7f0e8; font-size: 21px; font-weight: 700; }
+.bv-next { display: flex; align-items: center; gap: 12px; background: #1f1915; border-radius: 18px; padding: 0 18px; height: 54px; }
+.bv-nextlbl { flex: none; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #a2958a; }
 .bv-next strong { font-size: 19px; font-weight: 600; font-variant-numeric: tabular-nums; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bv-next .cd { flex: none; font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; min-width: 3ch; text-align: right; }
 /* one bar, full width of the panel: every pour as a segment, the drain window in green, a playhead for now */
-.bv-bar { position: relative; height: 12px; margin-top: 6px; background: rgba(255,255,255,.12); border-radius: 980px; }
-.bv-bar .seg { position: absolute; top: 0; bottom: 0; background: #636366; border-radius: 980px; }
+.bv-bar { position: relative; height: 8px; margin-top: 8px; background: rgba(255,235,215,.09); border-radius: 980px; }
+.bv-bar .seg { position: absolute; top: 0; bottom: 0; background: #5a4e45; border-radius: 980px; }
 .bv-bar .seg.on { background: #ff9f0a; }
-.bv-bar .seg.done { background: #8e8e93; }
+.bv-bar .seg.done { background: #a2958a; }
 .bv-bar .win { position: absolute; top: 0; bottom: 0; background: rgba(48, 209, 88, .35); border-radius: 980px; }
-.bv-bar .head { position: absolute; top: -4px; bottom: -4px; width: 4px; margin-left: -2px; border-radius: 2px; background: #f5f5f7; }
+.bv-bar .head { position: absolute; top: -5px; bottom: -5px; width: 3px; margin-left: -1.5px; border-radius: 2px; background: #f7f0e8; box-shadow: 0 0 10px rgba(255, 220, 180, .5); }
 /* two buttons, always the same size and place: left starts/pauses, right resets until the last pour, then becomes Drained */
 .bv-ctrls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .bv-ctrls button { height: 72px; font-size: 22px; font-weight: 700; border: 0; border-radius: 22px; }
-.bv-go { background: #30d158; color: #000; }
-.bv-go.running { background: #2c2c2e; color: #f5f5f7; }
-.bv-reset { background: #1c1c1e; color: #f5f5f7; }
-.bv-drain { background: #30d158; color: #000; }
+.bv-go { background: #30d158; color: #0e0b09; }
+.bv-go.running { background: #2d2520; color: #f7f0e8; }
+.bv-reset { background: #1f1915; color: #f7f0e8; }
+.bv-drain { background: #30d158; color: #0e0b09; }
 .bv-opts { display: flex; gap: 8px; justify-content: center; height: 32px; }
-.bv-opts button { background: #1c1c1e; color: #8e8e93; border: 0; border-radius: 980px; padding: 0 14px; font-size: 13px; font-weight: 600; white-space: nowrap; }
-.bv-opts button[aria-pressed="true"] { color: #f5f5f7; }
-.bv-opts button::before { content: "● "; color: #48484a; }
+.bv-opts button { background: #1f1915; color: #a2958a; border: 0; border-radius: 980px; padding: 0 14px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.bv-opts button[aria-pressed="true"] { color: #f7f0e8; }
+.bv-opts button::before { content: "● "; color: #4d433c; }
 .bv-opts button[aria-pressed="true"]::before { color: #30d158; }
 .bv-opts button.warn::before { color: #ff9f0a; }
 @media (orientation: landscape) and (max-height: 560px) {
@@ -491,6 +504,102 @@ footer .bmc a { font-weight: 700; }
 }
 @media (prefers-reduced-motion: no-preference) {
   .cone-fill { transition: y .3s linear, height .3s linear; }
+}
+
+/* ===== Warm craft layer: paper, roasted browns, a serif for the big words, softer tiles ===== */
+/* display face: headings, coffee names and recipe titles only; numbers, controls and body stay SF */
+.mark, .hero .scene, .hero h1, .sec-head .cap:first-child, .r-title h2, .need h3, .log h3, .ask label,
+.item .name, .entry .what .serif, .litext, .outro-end { font-family: var(--display); }
+.hero .scene, .hero h1, .r-title h2, .litext, .outro-end { font-weight: 600; letter-spacing: -.022em; }
+.mark { letter-spacing: -.02em; }
+.sec-head .cap:first-child { font-weight: 600; letter-spacing: -.018em; }
+.item .name { font-size: 22px; letter-spacing: -.012em; line-height: 1.18; }
+.ask label, .need h3, .log h3 { letter-spacing: -.012em; }
+.hero .island, .hero .island * { font-family: var(--sans); }
+.stat-n { font-feature-settings: "tnum"; }
+
+/* rhythm */
+.page { gap: 76px; }
+section.sec { gap: 24px; }
+@media (max-width: 760px) { .page { gap: 60px; } }
+
+/* tiles: more room, a touch rounder, a soft warm lift instead of flat white on grey */
+.tile, .ask, .need, .log, .pours-wrap, .note-tile, .journal { border-radius: 28px; }
+.spec, details.clk, details.water, .zero-row, .tech, table.pours, .col, .item, .adjusted { border-radius: 24px; }
+.ask, .need, .log, .spec, details.clk, details.water, .zero-row, .tech, table.pours, .col, .item, .journal, .shelf-tools input[type=search] { box-shadow: var(--lift); }
+.spec.tuned { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent), var(--lift); }
+.adjusted { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 55%, transparent), var(--lift); }
+.ask, .need, .log { padding: 30px; }
+.spec { padding: 28px 16px 22px; gap: 10px; }
+.item { padding: 20px 22px; }
+.col { padding: 24px; }
+details.clk, details.water { padding: 0 24px; }
+.tech { padding: 22px 24px; }
+.zero-row { padding: 14px 16px 14px 24px; }
+table.pours { padding: 10px 24px; }
+.journal { padding: 6px 24px; }
+@media (max-width: 560px) { .ask, .need, .log { padding: 22px; } .item { padding: 18px; } }
+.chip[aria-pressed="true"] { box-shadow: 0 3px 8px rgba(60, 35, 15, .12), 0 1px 1px rgba(60, 35, 15, .05); }
+
+/* the recipe reads like a card from a roaster: tracked small labels, bigger pour targets, calmer instructions */
+.r-kick .method { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; }
+.spec .sub2 { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; }
+.spec .sub2 + .sub2, .spec .ret { text-transform: none; letter-spacing: 0; font-weight: 400; }
+.pours th { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
+.pours td.to { letter-spacing: -.035em; }
+@media (min-width: 561px) { .pours td.to { font-size: 30px; } }
+.pours td.how { font-size: 16px; line-height: 1.4; }
+.pours td.m { font-weight: 600; }
+.col h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+.notes-list span { background: color-mix(in srgb, var(--coffee) 10%, transparent); }
+
+/* hero: one recipe at a glance, so it's clear what you get before you scroll */
+.glimpse { margin: 4px 0 0; width: min(100%, 520px); background: var(--card); border-radius: 28px; box-shadow: var(--lift); padding: 20px 22px 18px; display: grid; gap: 14px; text-align: left; }
+.glimpse figcaption { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.g-name { font: 600 19px/1.2 var(--display); letter-spacing: -.01em; color: var(--ink); }
+.g-eg { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); white-space: nowrap; }
+.g-specs { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 14px; color: var(--muted); }
+.g-specs b { font-size: 22px; font-weight: 600; letter-spacing: -.03em; color: var(--ink); }
+.g-specs span:first-child b { color: var(--blue); }
+/* the pours on a 0 to 3:15 line: an orange tick at each pour, the drawdown in the faded tail */
+.g-pours { list-style: none; margin: 0; padding: 16px 0 0; position: relative; height: 54px; }
+.g-pours::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 4px; border-radius: 980px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 30%, transparent) 0 56.4%, color-mix(in srgb, var(--ink) 9%, transparent) 56.4%); }
+.g-pours li { position: absolute; top: 0; left: calc(var(--t) / 195 * 100%); display: grid; gap: 2px; justify-items: start; font-size: 12px; color: var(--muted); padding-top: 12px; }
+.g-pours li::before { content: ""; position: absolute; top: -3px; left: -1px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px var(--card); }
+.g-pours li b { font-size: 15px; font-weight: 600; color: var(--ink); }
+.g-pours li.end { left: auto; right: 0; justify-items: end; }
+.g-pours li.end::before { left: auto; right: -1px; background: var(--muted); }
+.g-pours li i { font-style: normal; font-size: 15px; font-weight: 600; color: var(--muted); }
+.g-pours li b::after { content: " g"; font-size: 11px; font-weight: 400; color: var(--muted); }
+@media (max-width: 420px) { .g-pours li:nth-child(3), .g-pours li:nth-child(4) { visibility: hidden; } .g-pours li:nth-child(3)::before, .g-pours li:nth-child(4)::before { visibility: visible; } }
+
+/* loading: three quiet placeholder cards breathing while the list arrives */
+.shelf.loading:empty::before, .shelf.loading:empty::after { content: ""; display: block; height: 92px; border-radius: 24px; background: var(--card); box-shadow: var(--lift); }
+.shelf.loading:empty::after { height: 184px; background: linear-gradient(var(--card) 0 92px, transparent 92px 102px, var(--card) 102px); box-shadow: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .shelf.loading:empty::before, .shelf.loading:empty::after { animation: breathe 1.6s ease-in-out infinite alternate; }
+  @keyframes breathe { from { opacity: .45; } to { opacity: 1; } }
+}
+
+/* touch: everything pressable gives a little, the click steppers most */
+.step button { border-radius: 10px; transition: background-color .2s ease, transform .18s cubic-bezier(.2,.7,.2,1); }
+.step button:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+@media (prefers-reduced-motion: no-preference) {
+  .btn, .hero-pill, .chip, .nav .theme-btn, .bv-ctrls button, .bv-x, .bv-opts button { transition: transform .18s cubic-bezier(.2,.7,.2,1), background-color .2s ease, color .2s ease, filter .2s ease, box-shadow .2s ease, opacity .2s ease; }
+  .btn:active, .hero-pill:active, .chip:active, .nav .theme-btn:active, .bv-ctrls button:active, .bv-x:active { transform: scale(.97); }
+  .step button:active { transform: scale(.86); }
+  .item { transition: box-shadow .3s ease, transform .3s cubic-bezier(.2,.7,.2,1); }
+  @media (hover: hover) { .item:hover { transform: translateY(-2px); box-shadow: var(--lift-hi); } }
+  details.clk > summary::after, details.water .w-head::after, details.more summary::after { transition: transform .3s cubic-bezier(.2,.7,.2,1); }
+}
+
+/* brew view: a thin stream of water down the edge of the panel while you pour */
+.bv-now.pour::after { content: ""; position: absolute; right: 9px; top: 16%; bottom: 16%; width: 2px; border-radius: 2px; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(255, 190, 110, 0), rgba(255, 190, 110, .55) 50%, rgba(255, 190, 110, 0)); background-size: 100% 200%; opacity: .7; }
+@media (prefers-reduced-motion: no-preference) {
+  .bv-now.pour::after { animation: stream 1.8s linear infinite; }
+  @keyframes stream { from { background-position: 0 100%; } to { background-position: 0 -100%; } }
 }
 </style>
 </head>
@@ -516,11 +625,18 @@ footer .bmc a { font-weight: 700; }
         <p class="scene" aria-hidden="true">You’ll <svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" class="hg1"/><stop offset=".45" class="hg2"/><stop offset="1" class="hg3"/></linearGradient></defs><path pathLength="1" d="M12 20.2S3.5 15 3.5 9.1A4.6 4.6 0 0 1 12 6.6a4.6 4.6 0 0 1 8.5 2.5c0 5.9-8.5 11.1-8.5 11.1z"/></svg> <span>V60</span></p>
         <div class="scene stat" aria-hidden="true" id="sceneStat"><span class="stat-n"><span id="statN">0</span> coffees.</span><span class="stat-s" id="statS">From near and far.</span></div>
         <div class="scene" aria-hidden="true" id="sceneIsland"><div class="isl-stack" id="islStack"></div></div>
-        <div class="scene stat" aria-hidden="true" id="sceneGrind"><span class="stat-n">Got <span id="gT">3:15</span>?</span><span class="stat-s">That’s all a good cup takes.</span></div>
+        <div class="scene stat" aria-hidden="true" id="sceneGrind"><span class="stat-n">Got <span id="gT">3:15</span>?</span><span class="stat-s">It’s all it takes.</span></div>
         <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">Pour.</span> <span class="w" style="--i:1">Taste.</span> <span class="w" style="--i:2">Tweak.</span> <span class="w shimmer" style="--i:3">Nail it.</span></p>
         <div class="scene final on"><h1 id="h1">New coffees. <span class="serif">The recipe for each bag.</span></h1></div>
       </div>
       <p class="lede">Filter coffees, single origins and blends, from roasters in the UK, Europe and beyond, updated every morning. Pick one or type your own, and get the grind for your grinder, the ratio, the temperature and every pour, from recipes by Hoffmann, Kasuya and Rao. Brew full screen, log how it tasted, and it adjusts next time.</p>
+      <figure class="glimpse" aria-label="Example recipe: washed Ethiopia, light roast. 21 C40 clicks, 15 g coffee to 255 g water, 96°C, about 3:15. Pours at 0:00 to 51 g, 0:45 to 102 g, 1:10 to 153 g, 1:30 to 204 g, 1:50 to 255 g.">
+        <figcaption><span class="g-name">Washed Ethiopia, light roast</span><span class="g-eg">For example</span></figcaption>
+        <div class="g-specs num" aria-hidden="true"><span><b>21</b> clicks</span><span><b>15</b> → <b>255</b> g</span><span><b>96</b>°C</span></div>
+        <ol class="g-pours num" aria-hidden="true">
+          <li style="--t:0"><span>0:00</span><b>51</b></li><li style="--t:45"><span>0:45</span><b>102</b></li><li style="--t:70"><span>1:10</span><b>153</b></li><li style="--t:90"><span>1:30</span><b>204</b></li><li style="--t:110"><span>1:50</span><b>255</b></li><li class="end"><span>3:15</span><i>done</i></li>
+        </ol>
+      </figure>
       <button type="button" class="hero-pill" data-jump="shelves">See today’s coffees</button>
     </div>
   </section>
@@ -534,7 +650,7 @@ footer .bmc a { font-weight: 700; }
       <div class="chips" id="shelfF" role="group" aria-label="Process"></div>
       <div class="chips" id="shelfV" role="group" aria-label="Which coffees"></div>
     </div>
-    <div class="shelf" id="shelf"></div>
+    <div class="shelf loading" id="shelf" aria-busy="true"></div>
     <button class="btn ghost more-btn" id="shelfMore" type="button" hidden>Show all</button>
     <p class="missing">Can’t find your coffee? <a href="#" class="mail-me" data-s="Missing coffee">Email me</a> and I’ll add the roaster, or type it in the recipe box below.</p>
   </section>
@@ -1780,6 +1896,7 @@ footer .bmc a { font-weight: 700; }
       $("shelfMeta").innerHTML = `<b>${shelf.length}</b> filter coffees${where}, <b>${nNew}</b> new in the last ${d.new_window_days || 21} days, scanned <b>${isoDmy(d.updated)}</b>.`;
       renderShelf();
     } catch (e) { $("shelfMeta").textContent = "Couldn’t load the coffee list. Refresh to try again."; }
+    finally { $("shelf").classList.remove("loading"); $("shelf").removeAttribute("aria-busy"); }
   }
 
   // ---------- appearance: follows the system unless you pick ----------
@@ -1788,7 +1905,7 @@ footer .bmc a { font-weight: 700; }
     const root = document.documentElement;
     if (t === "light" || t === "dark") root.setAttribute("data-theme", t); else root.removeAttribute("data-theme");
     const dark = t === "dark" || (t === "auto" && matchMedia("(prefers-color-scheme: dark)").matches);
-    document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute("content", dark ? "#000000" : "#f5f5f7"));
+    document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute("content", dark ? "#14100d" : "#f6f1ea"));
     $("themeBtn").textContent = THEME_LBL[t]; $("themeBtn").setAttribute("aria-label", `Appearance: ${THEME_LBL[t]}. Tap to change.`);
   }
   let theme = (() => { try { return localStorage.getItem("v60.theme") || "auto"; } catch (e) { return "auto"; } })();
