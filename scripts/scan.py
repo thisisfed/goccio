@@ -1226,14 +1226,15 @@ def add_page_details(recs, roaster, old):
             rec["methods"] = prev["methods"]
             rec["roast_for"] = "filter" if "filter" in prev["methods"] else "espresso"
         need = [k for k in ("process", "variety") if not rec.get(k)]
-        if not need and not (icons and not rec.get("roast_for") and "methods" not in prev and not prev.get("methods_none")):
+        want_methods = icons and not rec.get("roast_for") and "methods" not in prev and not prev.get("methods_none")
+        if not need and not want_methods:
             continue
         for k in need:
             ok = prev.get(k) and (labelled(f"Variety:\n{prev[k]}\n", "variety") if k == "variety" else find_process(prev[k]))
             if ok and prev.get(k + "_from") == "page":
                 rec[k], rec[k + "_from"] = prev[k], "page"
         need = [k for k in need if not rec.get(k)]
-        if not need or fetched >= PAGE_FETCHES_PER_ROASTER:
+        if (not need and not want_methods) or fetched >= PAGE_FETCHES_PER_ROASTER:
             continue
         fetched += 1
         try:
