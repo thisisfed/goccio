@@ -572,6 +572,18 @@ def next_products(page):
     return out
 
 
+SEO_TITLE = re.compile(r"\||\bbuy\b|\bonline\b|\bshop\b", re.I)
+
+
+def heading_if_seo(name, page):
+    """Some shops (Nude) give every product the site's SEO title as its name; the page heading has the real one."""
+    if not SEO_TITLE.search(name or ""):
+        return name
+    h1 = re.search(r"<h1\b[^>]*>(.*?)</h1>", page, re.I | re.S)
+    h1 = html.unescape(re.sub(r"<[^>]+>|\s+", " ", h1.group(1))).strip() if h1 else ""
+    return h1 if h1 and len(h1) < 90 and not SEO_TITLE.search(h1) else name
+
+
 def og_product(page):
     """Fallback for shops that only publish OpenGraph product tags (common on Squarespace and custom sites)."""
     meta = {}
@@ -582,10 +594,7 @@ def og_product(page):
     is_product = meta.get("og:type", "").lower().startswith("product") or "product:price:amount" in meta or "og:price:amount" in meta
     if not is_product or not meta.get("og:title"):
         return []
-    h1 = re.search(r"<h1\b[^>]*>(.*?)</h1>", page, re.I | re.S)
-    h1 = html.unescape(re.sub(r"<[^>]+>|\s+", " ", h1.group(1))).strip() if h1 else ""
-    if h1 and len(h1) < 90 and re.search(r"\||\bbuy\b|\bonline\b|\bshop\b", meta["og:title"], re.I) and not re.search(r"\||\bbuy\b|\bonline\b", h1, re.I):
-        meta["og:title"] = h1
+    meta["og:title"] = heading_if_seo(meta["og:title"], page)
     price = meta.get("product:price:amount") or meta.get("og:price:amount")
     ccy = meta.get("product:price:currency") or meta.get("og:price:currency")
     avail = meta.get("product:availability") or meta.get("og:availability") or "instock"
@@ -630,6 +639,7 @@ def fetch_generic(shop, max_pages=45, extra=""):
         prods = ld_products(page)[:1] or next_products(page) or og_product(page)
         for p in prods:
             it = ld_to_item(p, url, lm)
+            it["title"] = heading_if_seo(it["title"], page)
             if it["title"]:
                 if len(it["body"]) < 60:   # thin JSON-LD: add the page's meta description
                     m = re.search(r'<meta[^>]+(?:name|property)=["\'](?:og:)?description["\'][^>]+content=["\']([^"\']+)', page, re.I)
@@ -833,7 +843,15 @@ def clean_name(title, roaster, origin):
     name = re.sub(r"^(filter|filtro|filtre|espresso|omni)\s*[-–:|/]\s*", "", name, flags=re.I)
     name = re.sub(r"\s*[-–|(]\s*(filter|filtro|filtre|omni)( roast| röst)?\)?\s*$", "", name, flags=re.I)
     parts = re.split(r"\s[-–|]\s", name)
-    if len(parts) >= 3 or (len(parts) == 2 and find_origin(parts[1])):
+    if len(parts) >= 3:
+        # "LIMITED | EL SALVADOR | La Siberia | Java | Natural" -> "La Siberia" (origin, variety and process show as tags)
+        def plain(p):
+            q = p.strip()
+            return not (GENERIC_SEG.match(q) or is_brand(q, roaster) or (find_origin(q) and len(q) <= len(find_origin(q)) + 1)
+                        or find_process(q) and len(q) < 30 and not re.search(r"\b(?:finca|farm|estate|hacienda|fazenda)\b", q, re.I)
+                        or any(q.lower() == v.lower() for v in VARIETIES))
+        name = next((p for p in parts if plain(p)), parts[0])
+    elif len(parts) == 2 and find_origin(parts[1]):
         name = parts[0]
     name = re.sub(r"\s+by\s+" + re.escape(roaster) + r".*$", "", name, flags=re.I)
     if origin:
@@ -844,7 +862,7 @@ def clean_name(title, roaster, origin):
 
 
 # title segments that are labels or shop/SEO text, not the coffee's name
-GENERIC_SEG = re.compile(r"^(?:farm|limited(?: release| edition)?|new|new release|feature(?:d)?|guest|seasonal|single origin|"
+GENERIC_SEG = re.compile(r"^(?:farm|fun|classic|daily|exclusive|rare|special|limited(?: release| edition)?|new|new release|feature(?:d)?|guest|seasonal|single origin|"
                          r"filter|omni|coffee|whole ?beans?|shop|store|"
                          r"(?:buy\b.*|.*\bonline\b.*|.*\bspecialty coffee beans?\b.*))$", re.I)
 BRAND_FILLER = re.compile(r"\b(?:the|coffee|co|company|roasters?|roastery|roasting|ltd|&|and|espresso)\b|[^\w\s]", re.I)
@@ -975,7 +993,8 @@ def classify(item, roaster):
         lvl = (m.group(1) if m.re is ROAST_LABEL else m.group(0)).lower()
         roast_level = "medium-dark" if "medium" in lvl else "dark"
     origin = find_origin(title, blob, item["body"])
-    if not origin and BAG.search(f"{title} {item['type']} {' '.join(item['tags'])} {item['variants']}"):
+    if not origin and (BAG.search(f"{title} {item['type']} {' '.join(item['tags'])} {item['variants']}")
+                       or re.search(r"/coff?ees?/[^/?#]+/?$", item.get("url") or "", re.I)):
         # the shop's feed doesn't say where it's from (Nomad, Dak, Blossom...): read the product page
         origin = origin_from_page(item, roaster)
     blend = blend_reason(item)
@@ -1402,7 +1421,7 @@ def main():
     # one listing per coffee: drop size/variant duplicates and stores that share a catalogue
     seen, per_roaster, deduped = set(), {}, []
     for x in found:
-        key_same = (x["roaster"], x["name"].lower())
+        key_same = (x["roaster"], x["name"].lower(), (x.get("process") or "").lower())
         key_shared = (x["name"].lower(), x.get("price"), x.get("origin"))
         if key_same in seen or key_shared in seen:
             continue
