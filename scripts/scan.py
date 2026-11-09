@@ -1333,9 +1333,43 @@ def probe_site(shop):
     return "probe: " + " | ".join(bits)
 
 
+INSPECT_WORDS = r"obr[óo]bk|odmian|metod|zaparz|przelew|kawiark|ekspres|proces|verwerk|vari[eë]t|bereid|zetmethode|espresso|filter|drip|v60|chemex|aeropress|moka|french|cold ?brew|process|variet|brew"
+
+
+def inspect(urls):
+    """Print what a product page says about process, variety and brew methods (labels, icons), so new page layouts
+    can be supported without guessing. Run from the workflow with the 'inspect' input; nothing is saved."""
+    for url in urls:
+        try:
+            raw = get_text(url, tries=1)
+        except Exception as e:  # noqa: BLE001
+            print(f"INSPECT {url}: {e}"); continue
+        body = re.sub(r"<script\b.*?</script>|<style\b.*?</style>", " ", raw, flags=re.S | re.I)
+        print(f"\nINSPECT {url}  ({len(raw)} bytes)")
+        h1 = re.search(r"<h1\b[^>]*>(.*?)</h1>", body, re.S | re.I)
+        print("  h1:", re.sub(r"<[^>]+>|\s+", " ", h1.group(1)).strip() if h1 else None)
+        for p in ld_products(raw)[:1]:
+            print("  json-ld:", json.dumps({k: p.get(k) for k in ("name", "category", "additionalProperty", "description")}, ensure_ascii=False)[:900])
+        seen = set()
+        for m in re.finditer(r"<(?:img|svg|i|span|use|li|div|a)\b[^>]*(?:alt|title|aria-label|class|data-[\w-]+|href)=[\"'][^\"']*(?:" + INSPECT_WORDS + r")[^\"']*[\"'][^>]*>", body, re.I):
+            tag = re.sub(r"\s+", " ", m.group(0))[:220]
+            if tag not in seen and len(seen) < 25:
+                seen.add(tag); print("  tag:", tag)
+        text = strip_html(body)
+        hits = 0
+        for m in re.finditer(INSPECT_WORDS, text, re.I):
+            snip = re.sub(r"\s+", " ", text[max(0, m.start() - 80): m.end() + 140])
+            if snip in seen or hits >= 30:
+                continue
+            seen.add(snip); hits += 1; print("  text:", snip)
+
+
 def main():
     today = datetime.now(timezone.utc).date().isoformat()
     args = sys.argv[1:]
+    if "--inspect" in args:
+        inspect([u.strip() for u in args[args.index("--inspect") + 1].split(",") if u.strip()])
+        return
     if "--fixture" in args:
         data = json.loads(Path(args[args.index("--fixture") + 1]).read_text())
         shop = args[args.index("--shop") + 1]
