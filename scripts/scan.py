@@ -892,6 +892,11 @@ def tidy_name(name, roaster):
         while len(bits) > 1 and find_process(bits[-1]) and len(bits[-1]) < 30:
             bits.pop()
         name = ", ".join(b[:1].upper() + b[1:] if b.islower() else b for b in bits)
+    first, _, rest = name.partition(", ")
+    caps = re.sub(r"[^A-Za-z]", "", first)
+    if rest and len(caps) >= 4 and caps.isupper() and not find_origin(first):
+        # "EFFLORESCE, Washed Thermal Shock, Sidra" -> "Effloresce" (process, variety and origin show as tags)
+        name = first
     parts = [p.strip() for p in re.split(r"\s[|–—]\s|\s-\s", name) if p.strip()]
     keep = [p for p in parts if not is_brand(p, roaster) and not GENERIC_SEG.match(p)]
     if len(parts) > 1:
