@@ -2,7 +2,11 @@ name: Daily roaster scan
 
 on:
   schedule:
-    - cron: "31 5 * * *"   # every morning, 05:31 UTC (05:31 UK in winter, 06:31 in summer)
+    # every morning at 05:31 UTC (05:31 UK in winter, 06:31 in summer). GitHub can delay or skip scheduled runs,
+    # so two backups follow; each one skips itself once today's full scan is in.
+    - cron: "31 5 * * *"
+    - cron: "13 7 * * *"
+    - cron: "47 9 * * *"
   workflow_dispatch:
     inputs:
       only:
@@ -23,15 +27,29 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 50
+      - name: Skip if today's full scan is already in
+        id: guard
+        if: github.event_name == 'schedule'
+        run: |
+          if git log --format=%s | grep -qx "Roaster scan $(date -u +%d/%m/%Y)"; then
+            echo "Today's scan is already in, nothing to do"; echo "skip=1" >> "$GITHUB_OUTPUT"
+          fi
       - uses: actions/setup-python@v5
+        if: steps.guard.outputs.skip != '1'
         with:
           python-version: "3.12"
       - name: Scan roasters
+        if: steps.guard.outputs.skip != '1'
         env:
           ONLY: ${{ github.event.inputs.only }}
         run: |
           if [ -n "$ONLY" ]; then python3 scripts/scan.py --only "$ONLY"; else python3 scripts/scan.py; fi
       - name: Commit updated list
+        if: steps.guard.outputs.skip != '1'
+        env:
+          ONLY: ${{ github.event.inputs.only }}
         run: |
           git config user.name "v60-scan-bot"
           git config user.email "v60-scan-bot@users.noreply.github.com"
@@ -39,6 +57,8 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes"
           else
-            git commit -m "Roaster scan $(date -u +%d/%m/%Y)"
-            git push
+            # a partial rescan is labelled differently so it never counts as the day's full scan
+            if [ -n "$ONLY" ]; then git commit -m "Roaster rescan ($ONLY) $(date -u +%d/%m/%Y)"; else git commit -m "Roaster scan $(date -u +%d/%m/%Y)"; fi
+            # main may have moved while the scan ran (a site change merged meanwhile)
+            git pull --rebase -q && git push
           fi
