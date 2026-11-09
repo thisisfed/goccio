@@ -328,7 +328,8 @@ def roast_for(item):
         return "espresso"
     head = f"{item['title']} {item.get('type', '')} {' '.join(item.get('tags') or [])}"
     body = item.get("body") or ""
-    f = FILTER_TEXT.search(body) or re.search(r"\bfilter\b|\bomni\b|pour[- ]?over", f"{item.get('type', '')} {' '.join(item.get('tags') or [])}", re.I)
+    f = FILTER_TEXT.search(body) or re.search(r"\bfilter\b|\bomni\b|pour[- ]?over", f"{item.get('type', '')} {' '.join(item.get('tags') or [])}", re.I) \
+        or re.search(r"\bfilt(?:er|re|ro)\b", item["title"], re.I)
     e = ESPRESSO_TEXT.search(body) or re.search(r"\bespresso\b", head, re.I)
     if e and not f:
         return "espresso"
@@ -857,6 +858,8 @@ def clean_name(title, roaster, origin):
             name = f"{o} {name}".strip()
     elif len(parts) == 2 and find_origin(parts[1]):
         name = parts[0]
+    elif len(parts) == 2 and find_origin(parts[0]) and len(parts[0]) <= len(find_origin(parts[0])) + 2:
+        name = parts[1]     # "Colombie - Penas Blancas" -> "Penas Blancas" (the origin is a tag)
     elif len(parts) == 2 and " | " in name:
         # "Impact Espresso | Well Grounded" -> "Impact Espresso"; "Kenya | Gichathaini" -> "Gichathaini"
         a, b = parts
@@ -905,6 +908,9 @@ def tidy_name(name, roaster):
     elif not keep:
         name = ""
     name = re.sub(r"^\s*\[[^\]]{3,40}\]\s*", "", name)   # "[Kawa bezkofeinowa] Kolumbia El Vergel Decaf": a shop category in brackets
+    # "El Diviso Ombligon ! DÉCAFÉINÉ !! Filtre & Espresso" -> "El Diviso Ombligon Décaféiné"
+    name = re.sub(r"\s*\b(?:filt(?:er|re|ro)\s*(?:&|and|et|/|\+)\s*espresso|espresso\s*(?:&|and|et|/|\+)\s*filt(?:er|re|ro))\s*$", "", name, flags=re.I)
+    name = re.sub(r"\s*!+\s*", " ", name).strip()
     # "Alo Bore [Washed]" -> "Alo Bore": a bracketed process at the end is already a tag
     name = re.sub(r"\s*[\[(]([^\])]{3,30})[\])]\s*$", lambda m: "" if find_process(m.group(1)) else m.group(0), name)
     return calm_caps(name).strip(" -–|,")
@@ -923,7 +929,7 @@ def calm_caps(name):
         # mixed case: capital runs are usually brands or acronyms (SNSC, CGLE), so only countries and DECAF are calmed
         def calm(m):
             run = m.group(0)
-            if run == "DECAF" or (find_origin(run) and len(run) <= len(find_origin(run)) + 1):
+            if re.fullmatch(r"D[EÉ]CAF[EÉ]?(?:IN[EÉ])?", run) or (find_origin(run) and len(run) <= len(find_origin(run)) + 1):
                 return " ".join(w.capitalize() for w in run.split())
             return run
         return re.sub(r"\b[A-ZÀ-Ý]{2,}(?:\s+[A-ZÀ-Ý]{2,})*\b", calm, name)
