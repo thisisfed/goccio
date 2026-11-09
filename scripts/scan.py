@@ -582,6 +582,10 @@ def og_product(page):
     is_product = meta.get("og:type", "").lower().startswith("product") or "product:price:amount" in meta or "og:price:amount" in meta
     if not is_product or not meta.get("og:title"):
         return []
+    h1 = re.search(r"<h1\b[^>]*>(.*?)</h1>", page, re.I | re.S)
+    h1 = html.unescape(re.sub(r"<[^>]+>|\s+", " ", h1.group(1))).strip() if h1 else ""
+    if h1 and len(h1) < 90 and re.search(r"\||\bbuy\b|\bonline\b|\bshop\b", meta["og:title"], re.I) and not re.search(r"\||\bbuy\b|\bonline\b", h1, re.I):
+        meta["og:title"] = h1
     price = meta.get("product:price:amount") or meta.get("og:price:amount")
     ccy = meta.get("product:price:currency") or meta.get("og:price:currency")
     avail = meta.get("product:availability") or meta.get("og:availability") or "instock"
@@ -835,7 +839,63 @@ def clean_name(title, roaster, origin):
     if origin:
         name = re.sub(r"[,\s\-–|]+" + re.escape(origin) + r"\s*$", "", name, flags=re.I)
     name = re.sub(r"\(?\b\d{2,4}\s?g\b\)?", "", name, flags=re.I).strip(" -–|,")
+    name = tidy_name(name, roaster)
     return name or title
+
+
+# title segments that are labels or shop/SEO text, not the coffee's name
+GENERIC_SEG = re.compile(r"^(?:farm|limited(?: release| edition)?|new|new release|feature(?:d)?|guest|seasonal|single origin|"
+                         r"filter|omni|coffee|whole ?beans?|shop|store|"
+                         r"(?:buy\b.*|.*\bonline\b.*|.*\bspecialty coffee beans?\b.*))$", re.I)
+BRAND_FILLER = re.compile(r"\b(?:the|coffee|co|company|roasters?|roastery|roasting|ltd|&|and|espresso)\b|[^\w\s]", re.I)
+
+
+def is_brand(seg, roaster):
+    """True when a title segment is just the shop's own name ("Nude Coffee Roasters", "doubleshot")."""
+    rest = re.sub(re.escape(roaster), " ", seg, flags=re.I)
+    return rest != seg and not BRAND_FILLER.sub(" ", rest).strip()
+
+
+def tidy_name(name, roaster):
+    """'Buy Specialty Coffee Beans Online UK | Nude Coffee Roasters' -> '' (caller falls back);
+    'Farm • Sagastume Geisha | doubleshot' -> 'Sagastume Geisha'; 'Limited Release | Franken Grind Blend' -> 'Franken Grind Blend';
+    'EAST BLEND' -> 'East Blend'."""
+    parts = [p.strip() for p in re.split(r"\s[|–—•·]\s|\s-\s", name) if p.strip()]
+    keep = [p for p in parts if not is_brand(p, roaster) and not GENERIC_SEG.match(p)]
+    if len(parts) > 1:
+        name = " ".join(keep[:1]) if len(keep) != len(parts) else name
+    elif not keep:
+        name = ""
+    return calm_caps(name).strip(" -–|,")
+
+
+GRADE = {"AA", "AB", "AAA", "PB", "SL", "EP", "SHB", "SHG", "FW", "HB", "DR", "PNG", "UK", "USA"}
+
+
+def calm_caps(name):
+    """Shouted titles in sentence-friendly caps: 'GATOMBOYA AA' -> 'Gatomboya AA', 'EL SALVADOR Tempisque' -> 'El Salvador Tempisque',
+    'A DROP OF SCIENCE' -> 'A Drop of Science'. Grades and codes (AA, SL28, 3FE) stay as they are."""
+    words = name.split()
+    letters = re.sub(r"[^A-Za-z]", "", name)
+    shouting = len(letters) >= 4 and letters.isupper()
+    if not shouting:
+        # mixed case: capital runs are usually brands or acronyms (SNSC, CGLE), so only countries and DECAF are calmed
+        def calm(m):
+            run = m.group(0)
+            if run == "DECAF" or (find_origin(run) and len(run) <= len(find_origin(run)) + 1):
+                return " ".join(w.capitalize() for w in run.split())
+            return run
+        return re.sub(r"\b[A-ZÀ-Ý]{2,}(?:\s+[A-ZÀ-Ý]{2,})*\b", calm, name)
+    out = []
+    for i, w in enumerate(words):
+        core = re.sub(r"[^A-Za-z]", "", w)
+        if not core.isupper() or re.search(r"\d", w) or core in GRADE or (not shouting and len(core) < 4):
+            out.append(w)
+        elif i and core.lower() in ("of", "and", "the", "with", "a"):
+            out.append(w.lower())
+        else:
+            out.append(w[:1] + w[1:].lower())
+    return " ".join(out)
 
 
 def money(v, ccy):
@@ -1334,6 +1394,10 @@ def main():
         else:   # no listing date: new only if it appeared after we started watching this roaster
             fs = first_seen.get(x["roaster"]) or today
             x["new"] = x.get("found", today) > fs and x.get("found", "") >= cutoff
+    week = (datetime.now(timezone.utc) - timedelta(days=7)).date().isoformat()
+    for x in found:
+        fs = first_seen.get(x["roaster"]) or today
+        x["just_in"] = x.get("found") == today and fs < today and (not x.get("published") or x["published"] >= week)
     found.sort(key=lambda x: (x.get("published") or x.get("found") or ""), reverse=True)
     # one listing per coffee: drop size/variant duplicates and stores that share a catalogue
     seen, per_roaster, deduped = set(), {}, []
