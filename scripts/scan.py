@@ -1419,6 +1419,8 @@ def main():
             REJECTED.append(f"{x.get('roaster')}: {x.get('name')} ({why}, dropped from list)")
         return not why
     found = [x for x in found if still_beans(x)]
+    for x in found:   # entries carried over from older scans get today's name clean-up too
+        x["name"] = tidy_name(x["name"], x["roaster"]) or x["name"]
 
     cutoff = (datetime.now(timezone.utc) - timedelta(days=NEW_DAYS)).date().isoformat()
     for x in found:
