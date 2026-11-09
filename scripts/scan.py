@@ -904,6 +904,7 @@ def tidy_name(name, roaster):
         name = " ".join(keep[:1]) if len(keep) != len(parts) else name
     elif not keep:
         name = ""
+    name = re.sub(r"^\s*\[[^\]]{3,40}\]\s*", "", name)   # "[Kawa bezkofeinowa] Kolumbia El Vergel Decaf": a shop category in brackets
     # "Alo Bore [Washed]" -> "Alo Bore": a bracketed process at the end is already a tag
     name = re.sub(r"\s*[\[(]([^\])]{3,30})[\])]\s*$", lambda m: "" if find_process(m.group(1)) else m.group(0), name)
     return calm_caps(name).strip(" -–|,")
