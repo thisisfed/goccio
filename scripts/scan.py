@@ -775,9 +775,10 @@ def find_process(text):
                       (r"yeast|inoculat|\bkoji\b|mosto", "Yeast fermented"),
                       (r"anaerobic", "Anaerobic"), (r"double fermentation|double ferment", "Double fermented"),
                       (r"anaerob", "Anaerobic"),
-                      (r"\bnatural\b|dry[- ]process|\bnaturale\b|\bnaturel\b|\bnatur\b|naturlig|\bnatuurlijk", "Natural"),
-                      (r"\bhoney\b|pulped natural|\bmiel\b|\bhonig\b|\bmiele\b", "Honey"),
-                      (r"\bwashed\b|wet[- ]process|\blavato\b|gewaschen|\blavé\b|\blavado\b|tvättad|\bvasket\b|gewassen|vaskad", "Washed")]:
+                      (r"wet[- ]hull|giling basah", "Wet-hulled"),
+                      (r"\bnatural\b|\bnaturalna\b|dry[- ]process|\bnaturale\b|\bnaturel\b|\bnatur\b|naturlig|\bnatuurlijk", "Natural"),
+                      (r"\bhoney\b|pulped natural|\bmiel\b|\bhonig\b|\bmiele\b|\bmiodowa\b", "Honey"),
+                      (r"\bwashed\b|wet[- ]process|\blavato\b|gewaschen|\blavé\b|\blavado\b|tvättad|\bvasket\b|gewassen|vaskad|\bmyta\b|\bmyt[aey]\b", "Washed")]:
         if re.search(pat, t):
             return name
     return None
@@ -1060,8 +1061,8 @@ def classify(item, roaster):
 # product JSON: Climpson shows "Process: Natural" on the page but not in body_html. When the JSON
 # gives no process or variety, read the product page and take the labelled value.
 PAGE_LABEL = {
-    "process": re.compile(r"\b(?:process(?:ing)?(?: method)?|processo|proceso|prozess|aufbereitung|proc[ée]d[ée]|bearbetning|prosess|proces|zpracov[aá]n[ií]|obr[oó]bka)\s*(?::|\n)", re.I),
-    "variety": re.compile(r"\b(?:variet(?:y|ies|al|als)|cultivars?|variedad(?:es)?|variet[àa]|sorte[n]?|vari[ée]t[ée]s?)\s*(?::|\n)", re.I),
+    "process": re.compile(r"\b(?:process(?:ing)?(?: method)?|processo|proceso|prozess|aufbereitung|proc[ée]d[ée]|bearbetning|prosess|proces|zpracov[aá]n[ií]|obr[oó]bka|verwerking(?: na oogst)?|verwerkingsmethode)\s*(?::|\n)", re.I),
+    "variety": re.compile(r"\b(?:variet(?:y|ies|al|als)|cultivars?|variedad(?:es)?|variet[àa]|sorte[n]?|vari[ée]t[ée]s?|vari[eë]teit(?:\(?en\)?)?|odmian[ay]?)\s*(?::|\n)", re.I),
 }
 PAGE_FETCHES_PER_ROASTER = 40
 
@@ -1119,7 +1120,8 @@ def labelled(text, key, start=0):
             if line and not PAGE_LABEL["process"].match(line + ":") and len(line) <= 60 and \
                     (first(VARIETIES, line) or re.search(r"[A-Z][a-z]+|\d{3,}", line)):
                 junk = re.search(r"\b(?:process|altitude|elevation|masl|harvest|origin|region|notes?|producer|farm)\b|\b(?:19|20)\d\d\b", line, re.I)
-                vague = re.fullmatch(r"(?:various|mixed|mix(?:ed)? variet(?:y|ies)|multiple|n/?a|unknown)", line, re.I)
+                vague = re.fullmatch(r"(?:various|mixed|mix(?:ed)? variet(?:y|ies)|multiple|n/?a|unknown|(?:100\s?%\s?)?arabi[ck]a)", line, re.I) or \
+                    re.match(r"mieszanka|mix of|blend of", line, re.I)
                 place_only = countries_in(line) and not first(VARIETIES, line)
                 if not (junk or vague or place_only):
                     return line
@@ -1192,14 +1194,39 @@ def add_page_prices(recs, roaster, old):
         print(f"  prices from pages for {roaster['name']}: {filled} of {fetched}")
 
 
+BREW_METHODS = [("filter", r"filter|filtr|pour[- ]?over|v60|chemex|kalita|origami|drip(?:per)?|przelew|aeropress|batch ?brew|handfilter|filtre|filtro"),
+                ("espresso", r"espresso|ekspres(?: kolbowy| ciśnieniowy)?"),
+                ("moka", r"kawiarka|moka(?: ?pot)?|mokapot|bialetti|cafetera"),
+                ("french press", r"french ?press|cafeti[eè]re|frenchpress"),
+                ("machine", r"automaat|bonenautomaat|volautomaat|lungo|bean[- ]to[- ]cup|ekspres automatyczny|vollautomat|automatic"),
+                ("cold brew", r"cold ?brew")]
+METHOD_ATTR = re.compile(r'\b(?:alt|title|aria-label)=["\'](?:(?:geschikt voor|suitable for|ideal for|perfect for|recommended for|great for|polecane do|empfohlen f[üu]r)\s+)?([^"\'<>]{3,30})["\']', re.I)
+
+
+def brew_methods(raw):
+    """Brew methods a product page shows as icons ("Geschikt voor espresso", <img alt="Kawiarka">), or an empty set.
+    Only attribute values that are nothing but a method name count, so menus and product photos don't."""
+    found = set()
+    for m in METHOD_ATTR.finditer(raw):
+        v = m.group(1).strip().lower()
+        for name, pat in BREW_METHODS:
+            if re.fullmatch(pat, v, re.I):
+                found.add(name)
+    return found
+
+
 def add_page_details(recs, roaster, old):
     """Fill missing process / variety from the product page (or last week's answer for the same URL)."""
     fetched, filled, errs = 0, 0, []
+    icons = any(x.get("roaster") == roaster["name"] and x.get("methods") for x in old.values())
     for rec in recs:
-        need = [k for k in ("process", "variety") if not rec.get(k)]
-        if not need:
-            continue
         prev = old.get(rec["url"], {})
+        if prev.get("methods") and not rec.get("roast_for"):
+            rec["methods"] = prev["methods"]
+            rec["roast_for"] = "filter" if "filter" in prev["methods"] else "espresso"
+        need = [k for k in ("process", "variety") if not rec.get(k)]
+        if not need and not (icons and not rec.get("roast_for") and "methods" not in prev and not prev.get("methods_none")):
+            continue
         for k in need:
             ok = prev.get(k) and (labelled(f"Variety:\n{prev[k]}\n", "variety") if k == "variety" else find_process(prev[k]))
             if ok and prev.get(k + "_from") == "page":
@@ -1214,6 +1241,13 @@ def add_page_details(recs, roaster, old):
             errs.append(f"{type(e).__name__}: {str(e)[:60]}")
             time.sleep(1)
             continue
+        ms = brew_methods(raw)
+        if len(ms) >= 2:
+            # the shop shows which brewers a coffee is for: no filter method means it isn't a V60 coffee
+            rec["methods"] = sorted(ms)
+            rec["roast_for"] = "filter" if "filter" in ms else "espresso"
+        elif icons:
+            rec["methods_none"] = True
         start = max(0, text.lower().find(rec["name"].lower()[:30]))
         got = False
         for k in need:
