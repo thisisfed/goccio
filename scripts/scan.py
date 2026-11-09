@@ -62,7 +62,7 @@ VARIETIES = ["Gesha", "Geisha", "Sidra", "Pink Bourbon", "Wush Wush", "Eugenioid
              "74110", "74112", "74158", "Heirloom", "Landrace", "Java", "Mokka", "Chiroso",
              "Tabi", "Villa Sarchi", "Parainema", "Marsellesa", "Catimor"]
 EXCLUDE = re.compile(r"subscri|abonnement|abbonamento|\babo\b|suscripci|prenumeration|geschenk|regalo|cadeau|gutschein|"
-                     r"\btasse\b|tazza|latte art|\bpen\b|\btool\b|accessor|machine|maker|moccamaster|ticket|party|event|festival|origami|glass|server|carafe|porcelain|ceramic|brewer|filter holder|gift|voucher|capsule|\bpods?\b|nespresso|coffee bags?|drip bags?|"
+                     r"\btasse\b|tazza|latte art|\bpen\b|\btool\b|accessor|machine|maker|moccamaster|ticket|party|event|festival|origami|glass|server|carafe|porcelain|ceramic|brewer|filter holder|gift|voucher|capsule|\bpods?\b|nespresso|coffee bags?|drip bags?|brew bags?|caf[ée] de poche|"
                      r"steep|equipment|grinder|\bmug\b|kettle|dripper|filter papers?|papers\b|\bcups?\b(?! of excellence)|"
                      r"sampler|tasting pack|taster|bundle|merch|t-?shirt|hoodie|tote|cap\b|"
                      r"cold brew|concentrate|instant|\btea\b|chocolate bar|chocolate\b|cascara|"
@@ -103,7 +103,7 @@ BEANISH = re.compile(r"\b\d{3,4}\s?g\b|whole ?beans?|wholebean|hele bønner|en g
 # Drinks and food: checked on title and product type only. Tags and body hold tasting notes
 # ("rum", "whisky", "wine" are common notes), so they are not searched for these words.
 DRINK_WORDS = re.compile(r"liqueur|liquor|likör|licor|liquore|spirits?\b|vodka|\bgin\b|\brum\b|whisk(?:e)?y|brandy|"
-                         r"martini|cocktail|negroni|\bbeer\b|\bstout\b|\bporter\b|\bwine\b|\bsake\b|kombucha|tonic|sparkling|"
+                         r"martini|cocktail|\bcha[iï]\b|negroni|\bbeer\b|\bstout\b|\bporter\b|\bwine\b|\bsake\b|kombucha|tonic|sparkling|"
                          r"\brtd\b|ready[- ]to[- ]drink|canned|\bcans?\b|bottled|\bbottles?\b|nitro\b|syrup|sauce|\bpowder\b|"
                          r"ice cream|gelato|cookies?|biscuits?|brownies?|granola|candle|soap\b|\bscrub\b|\bbeverages?\b|\bdrinks?\b|"
                          r"atlas of coffee|\bbooks?\b|\bdiary\b|\bmagazine\b|\bmatcha\b|\bchai\b", re.I)
@@ -289,10 +289,10 @@ ESPRESSO_SHELF = re.compile(r"espresso", re.I)
 NOT_COFFEE_SHELF = re.compile(r"equipment|machine|grinder|kit|merch|gift|subscri|wholesale|capsule|pod|accessor|paper", re.I)
 ESPRESSO_TEXT = re.compile(r"espresso[- ]roast|roasted (?:specifically |primarily |especially )?for espresso|classic espresso|house espresso|"
                            r"(?:best|ideal|perfect|recommended|great|suited|designed) (?:brew(?:ing)? methods?:?\s*)?(?:for|as|:)\s*(?:an? )?espresso|"
-                           r"brew methods?:\s*espresso|crowd[- ]pleasing espresso|(?:our|this) (?:signature |seasonal |house )?espresso\b", re.I)
+                           r"brew methods?:\s*espresso|crowd[- ]pleasing espresso|(?:id[ée]al|recommand[ée]|parfait|conseill[ée]|pens[ée])e?s? (?:pour|en) (?:l['’])?espresso|(?:our|this) (?:signature |seasonal |house )?espresso\b", re.I)
 FILTER_TEXT = re.compile(r"roasted (?:specifically |primarily |especially )?for filter|filter[- ]roast|omni[- ]?roast|\bomni\b|"
                          r"(?:best|ideal|perfect|recommended|great|suited|designed) (?:brew(?:ing)? methods?:?\s*)?(?:for|as|:)\s*(?:pour[- ]?over|filter|v60)|"
-                         r"brew methods?:\s*(?:filter|pour)", re.I)
+                         r"brew methods?:\s*(?:filter|pour)|(?:id[ée]al|recommand[ée]|parfait|conseill[ée]|pens[ée])e?s? (?:pour|en) (?:le |la |les )?(?:filtre|m[ée]thodes? douces|v60|chemex)|m[ée]thodes? douces", re.I)
 
 
 def shopify_shelves(shop):
@@ -1117,11 +1117,11 @@ def labelled(text, key, start=0):
             if got:
                 return got
         else:
-            line = next((l.strip(" :-") for l in window.split("\n") if l.strip(" :-")), "")
+            line = next((l.strip(" :-\xa0\t") for l in window.split("\n") if l.strip(" :-\xa0\t")), "")
             if line and not PAGE_LABEL["process"].match(line + ":") and len(line) <= 60 and \
                     (first(VARIETIES, line) or re.search(r"[A-Z][a-z]+|\d{3,}", line)):
                 junk = re.search(r"\b(?:process|altitude|elevation|masl|harvest|origin|region|notes?|producer|farm)\b|\b(?:19|20)\d\d\b", line, re.I)
-                vague = re.fullmatch(r"(?:various|mixed|mix(?:ed)? variet(?:y|ies)|multiple|n/?a|unknown|(?:100\s?%\s?)?arabi[ck]a)", line, re.I) or \
+                vague = re.fullmatch(r"(?:various|mixed|mix(?:ed)? variet(?:y|ies)|multiple|n/?a|unknown|(?:100\s?%\s?)?arabi[ck]a|m[ée]lange|blend de vari[ée]t[ée]s|mix de vari[ée]t[ée]s)", line, re.I) or \
                     re.match(r"mieszanka|mix of|blend of", line, re.I)
                 place_only = countries_in(line) and not first(VARIETIES, line)
                 if not (junk or vague or place_only):
@@ -1253,7 +1253,7 @@ def add_page_details(recs, roaster, old):
         for k in need:
             ok = prev.get(k) and (labelled(f"Variety:\n{prev[k]}\n", "variety") if k == "variety" else find_process(prev[k]))
             if ok and prev.get(k + "_from") == "page":
-                rec[k], rec[k + "_from"] = prev[k], "page"
+                rec[k], rec[k + "_from"] = prev[k].strip(" \xa0"), "page"
         need = [k for k in need if not rec.get(k)]
         if (not need and not want_methods) or fetched >= PAGE_FETCHES_PER_ROASTER:
             continue
