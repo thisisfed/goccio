@@ -1065,7 +1065,7 @@ PAGE_LABEL = {
     "process": re.compile(r"\b(?:process(?:ing)?(?: method)?|processo|proceso|prozess|aufbereitung|proc[ée]d[ée]|bearbetning|prosess|proces|zpracov[aá]n[ií]|obr[oó]bka|verwerking(?: na oogst)?|verwerkingsmethode)\s*(?::|\n)", re.I),
     "variety": re.compile(r"\b(?:variet(?:y|ies|al|als)|cultivars?|variedad(?:es)?|variet[àa]|sorte[n]?|vari[ée]t[ée]s?|vari[eë]teit(?:\(?en\)?)?|odmian[ay]?)\s*(?::|\n)", re.I),
 }
-PAGE_FETCHES_PER_ROASTER = 40
+PAGE_FETCHES_PER_ROASTER = 60
 
 
 JSON_PROCESS = [re.compile(r'"(?:process(?:ing)?(?:_method|Method)?)"\s*:\s*"([^"]{2,60})"', re.I),
@@ -1204,29 +1204,50 @@ BREW_METHODS = [("filter", r"filter|filtr|pour[- ]?over|v60|chemex|kalita|origam
 METHOD_ATTR = re.compile(r'\b(?:alt|title|aria-label)=["\'](?:(?:geschikt voor|suitable for|ideal for|perfect for|recommended for|great for|polecane do|empfohlen f[üu]r)\s+)?([^"\'<>]{3,30})["\']', re.I)
 
 
-def brew_methods(raw):
-    """Brew methods a product page shows as icons ("Geschikt voor espresso", <img alt="Kawiarka">), or an empty set.
-    Only attribute values that are nothing but a method name count, so menus and product photos don't."""
+METHOD_FILE = re.compile(r'(?:src=["\']|url\([\'"]?)[^"\')]*/(?:icons?|brew\w*|method\w*|zetwijze)/[^"\')/]*?'
+                         r'(espresso|moka|bialetti|kawiarka|french-?press|cafetiere|v60|chemex|kalita|filter|aeropress|drip|pour-?over|lungo|automa\w*)[^"\')/]*\.(?:svg|png|webp)', re.I)
+METHOD_LIST = re.compile(r"(?:brew(?:ing)? methods?|recommended (?:brew(?:ing)? )?(?:for|methods?)|suitable for|best for|metody parzenia|"
+                         r"zetwijze|bereidingswijze|zubereitung(?:sarten)?|m[ée]thodes? (?:d'extraction|de pr[ée]paration))\s*:?\s*([^\n]{3,140})", re.I)
+
+
+def method_names(v):
+    v = v.strip().lower()
+    return {name for name, pat in BREW_METHODS if re.fullmatch(pat, v, re.I)}
+
+
+def brew_methods(raw, text=""):
+    """Brew methods a product page names for the coffee, or an empty set: icons ("Geschikt voor espresso",
+    <img alt="Kawiarka">, .../brewing/moka.svg) or a labelled list ("Brewing methods: Espresso, Moka").
+    Only values that are nothing but a method name count, so menus, photos and prose don't."""
     found = set()
     for m in METHOD_ATTR.finditer(raw):
-        v = m.group(1).strip().lower()
-        for name, pat in BREW_METHODS:
-            if re.fullmatch(pat, v, re.I):
-                found.add(name)
+        found |= method_names(m.group(1))
+    for m in METHOD_FILE.finditer(raw):
+        found |= method_names(m.group(1).replace("-", " "))
+    if len(found) < 2 and text:
+        for m in METHOD_LIST.finditer(text):
+            got = set()
+            for part in re.split(r",|/|\band\b|\boraz\b|\ben\b|\bund\b|\bet\b|&|\+|·|\|", m.group(1)):
+                got |= method_names(part)
+            if len(got) >= 2:
+                found |= got
+                break
     return found
 
 
 def add_page_details(recs, roaster, old):
     """Fill missing process / variety from the product page (or last week's answer for the same URL)."""
     fetched, filled, errs = 0, 0, []
-    icons = any(x.get("roaster") == roaster["name"] and x.get("methods") for x in old.values())
     for rec in recs:
         prev = old.get(rec["url"], {})
         if prev.get("methods") and not rec.get("roast_for"):
             rec["methods"] = prev["methods"]
             rec["roast_for"] = "filter" if "filter" in prev["methods"] else "espresso"
+        if prev.get("methods_none"):
+            rec["methods_none"] = True
         need = [k for k in ("process", "variety") if not rec.get(k)]
-        want_methods = icons and not rec.get("roast_for") and "methods" not in prev and not prev.get("methods_none")
+        # every coffee the shop doesn't label filter or espresso gets its page read once for the brewers it names
+        want_methods = not rec.get("roast_for") and not rec.get("methods") and not rec.get("methods_none")
         if not need and not want_methods:
             continue
         for k in need:
@@ -1243,12 +1264,12 @@ def add_page_details(recs, roaster, old):
             errs.append(f"{type(e).__name__}: {str(e)[:60]}")
             time.sleep(1)
             continue
-        ms = brew_methods(raw)
+        ms = brew_methods(raw, text)
         if len(ms) >= 2:
             # the shop shows which brewers a coffee is for: no filter method means it isn't a V60 coffee
             rec["methods"] = sorted(ms)
             rec["roast_for"] = "filter" if "filter" in ms else "espresso"
-        elif icons:
+        else:
             rec["methods_none"] = True
         start = max(0, text.lower().find(rec["name"].lower()[:30]))
         got = False
