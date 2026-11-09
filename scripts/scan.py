@@ -851,8 +851,15 @@ def clean_name(title, roaster, origin):
                         or find_process(q) and len(q) < 30 and not re.search(r"\b(?:finca|farm|estate|hacienda|fazenda)\b", q, re.I)
                         or any(q.lower() == v.lower() for v in VARIETIES))
         name = next((p for p in parts if plain(p)), parts[0])
+        if len(re.sub(r"[^A-Za-z]", "", name)) < 4:     # "COLOMBIA | EA | Castillo | Decaf" -> "Colombia EA"
+            o = next((p for p in parts if find_origin(p)), "")
+            name = f"{o} {name}".strip()
     elif len(parts) == 2 and find_origin(parts[1]):
         name = parts[0]
+    elif len(parts) == 2 and " | " in name:
+        # "Impact Espresso | Well Grounded" -> "Impact Espresso"; "Kenya | Gichathaini" -> "Gichathaini"
+        a, b = parts
+        name = b if find_origin(a) and len(a) <= len(find_origin(a)) + 1 else a
     name = re.sub(r"\s+by\s+" + re.escape(roaster) + r".*$", "", name, flags=re.I)
     if origin:
         name = re.sub(r"[,\s\-–|]+" + re.escape(origin) + r"\s*$", "", name, flags=re.I)
@@ -878,7 +885,14 @@ def tidy_name(name, roaster):
     """'Buy Specialty Coffee Beans Online UK | Nude Coffee Roasters' -> '' (caller falls back);
     'Farm • Sagastume Geisha | doubleshot' -> 'Sagastume Geisha'; 'Limited Release | Franken Grind Blend' -> 'Franken Grind Blend';
     'EAST BLEND' -> 'East Blend'."""
-    parts = [p.strip() for p in re.split(r"\s[|–—•·]\s|\s-\s", name) if p.strip()]
+    if re.search(r"\s[•·]\s", name):
+        # "Honduras Finca El Puente • Geisha • Anaerobic Natural" -> "Honduras Finca El Puente, Geisha" (process shows as a tag)
+        bits = [b.strip() for b in re.split(r"\s[•·]\s", name) if b.strip()]
+        bits = [b for b in bits if not GENERIC_SEG.match(b) and not is_brand(b, roaster)]
+        while len(bits) > 1 and find_process(bits[-1]) and len(bits[-1]) < 30:
+            bits.pop()
+        name = ", ".join(b[:1].upper() + b[1:] if b.islower() else b for b in bits)
+    parts = [p.strip() for p in re.split(r"\s[|–—]\s|\s-\s", name) if p.strip()]
     keep = [p for p in parts if not is_brand(p, roaster) and not GENERIC_SEG.match(p)]
     if len(parts) > 1:
         name = " ".join(keep[:1]) if len(keep) != len(parts) else name
@@ -887,7 +901,7 @@ def tidy_name(name, roaster):
     return calm_caps(name).strip(" -–|,")
 
 
-GRADE = {"AA", "AB", "AAA", "PB", "SL", "EP", "SHB", "SHG", "FW", "HB", "DR", "PNG", "UK", "USA"}
+GRADE = {"EA", "AA", "AB", "AAA", "PB", "SL", "EP", "SHB", "SHG", "FW", "HB", "DR", "PNG", "UK", "USA"}
 
 
 def calm_caps(name):
