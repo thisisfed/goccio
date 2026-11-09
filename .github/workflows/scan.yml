@@ -13,6 +13,10 @@ on:
         description: "Rescan only these roasters (comma-separated names). Leave empty for all."
         required: false
         default: ""
+      inspect:
+        description: "Only print what these product pages say (comma-separated URLs); nothing is saved."
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -44,7 +48,9 @@ jobs:
         if: steps.guard.outputs.skip != '1'
         env:
           ONLY: ${{ github.event.inputs.only }}
+          INSPECT: ${{ github.event.inputs.inspect }}
         run: |
+          if [ -n "$INSPECT" ]; then python3 scripts/scan.py --inspect "$INSPECT"; exit 0; fi
           if [ -n "$ONLY" ]; then python3 scripts/scan.py --only "$ONLY"; else python3 scripts/scan.py; fi
       - name: Commit updated list
         if: steps.guard.outputs.skip != '1'
