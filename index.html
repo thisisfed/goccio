@@ -1005,6 +1005,27 @@ footer .bmc a:hover .sheen-text { text-decoration: underline; }
   .bv-now { grid-row: 2 / 5; } .bv-ctrls { grid-row: 3; align-self: end; } .bv-opts { grid-row: 4; }
 }
 .litext, .outro-end { max-width: none; width: 100%; text-wrap: pretty; }
+/* tracking: normal everywhere; only the big display sizes tighten, and only a little */
+* { letter-spacing: 0 !important; }
+.item .name, .r-title h2, .pours td.to, .sec-head .cap:first-child, .col .big, .spec b, .bv-big { letter-spacing: -.01em !important; }
+.litext, .outro-end, .scene, .hero h1 { letter-spacing: -.02em !important; }
+.wordmark, .wordmark * { letter-spacing: -.035em !important; }
+/* section titles one step up */
+.sec-head .cap:first-child { font-size: var(--fs-m); line-height: 1.1; }
+.sec-head .cap:first-child b { font-weight: 500; }
+/* custom water: same type and heights as the pills around it */
+.w-custom { gap: 8px 12px; }
+.w-custom label { font: 400 var(--fs-s)/1.2 var(--sans); color: var(--muted); gap: 6px; }
+.w-custom input { height: var(--pill-h); padding: 0 10px; font: 500 var(--fs-s)/1 var(--sans); width: 110px; box-sizing: border-box; }
+.w-sca { font-size: var(--fs-s); padding: 10px 12px; gap: 4px 12px; }
+.w-sca b { font-weight: 500; }
+.w-body .muted { font-size: var(--fs-s) !important; }
+/* footer: one centred bold line */
+footer .bmc { justify-self: center; text-align: center; font-weight: 600 !important; font-size: var(--fs); color: var(--ink); padding: 14px 0 4px; }
+footer .bmc a, footer .bmc .sheen-text { font-weight: 600 !important; color: var(--ink); text-decoration: none; display: inline; }
+footer .bmc a:hover { text-decoration: underline; }
+footer .bmc a[href*="buymeacoffee"] { display: inline; }
+footer .bmc { white-space: nowrap; font-size: min(var(--fs), 3.6vw); }
 </style>
 </head>
 <body>
@@ -1163,8 +1184,8 @@ footer .bmc a:hover .sheen-text { text-decoration: underline; }
   <footer>
     <span>Methods: V60 from James Hoffmann’s Better 1-Cup and Ultimate V60, Tetsu Kasuya’s 4:6 and 10-Pour, and Scott Rao’s bloom &amp; spin. Kalita Wave from George Howell; Chemex from Blue Bottle; AeroPress, cafetière and moka pot from James Hoffmann’s Ultimate techniques; cold brew from Ceremony Coffee. Grind in clicks on a standard Comandante C40, counted from zero; other grinders converted from those clicks with Honest Coffee Guide’s grind charts. Strength figures are estimates for a typical extraction, not a refractometer reading.</span>
     <span class="sources">Sources: <a href="https://www.youtube.com/watch?v=1oB1oDrDkHM" target="_blank" rel="noopener">Hoffmann, A Better 1 Cup V60</a>; <a href="https://www.youtube.com/watch?v=AI4ynXzkSQo" target="_blank" rel="noopener">Hoffmann, The Ultimate V60</a>; <a href="https://en.philocoffea.com/blogs/blog/coffee-brewing-method" target="_blank" rel="noopener">Kasuya, 4:6 (Philocoffea)</a>; <a href="https://www.hario.co.uk/blogs/hario-ambassadors/hario-v60-recipe-interview-with-hario-ambassador-scott-rao" target="_blank" rel="noopener">Rao, bloom &amp; spin (Hario)</a>; <a href="https://georgehowellcoffee.com/pages/brew-guide-kalita-155" target="_blank" rel="noopener">George Howell, Kalita 155</a>; <a href="https://bluebottlecoffee.com/brew-guides/chemex" target="_blank" rel="noopener">Blue Bottle, Chemex</a>; <a href="https://www.youtube.com/watch?v=j6VlT_jUVPc" target="_blank" rel="noopener">Hoffmann, The Ultimate AeroPress Technique</a>; <a href="https://www.youtube.com/results?search_query=James+Hoffmann+The+Ultimate+French+Press+Technique" target="_blank" rel="noopener">Hoffmann, The Ultimate French Press Technique</a>; <a href="https://www.youtube.com/results?search_query=James+Hoffmann+The+Ultimate+Moka+Pot+Technique" target="_blank" rel="noopener">Hoffmann, The Ultimate Moka Pot Technique</a>; <a href="https://ceremonycoffee.com/pages/cold-brew-guide" target="_blank" rel="noopener">Ceremony Coffee, cold brew</a></span>
-    <span>Coffees come from roasters’ own shop listings, checked every morning. Not affiliated with any roaster. Your journal never leaves this device. Made by <a href="https://thisisfed.xyz">Federico Ferrari</a>.</span>
-    <span class="bmc">Enjoying it? <a href="https://buymeacoffee.com/thisisfed" target="_blank" rel="noopener"><span class="sheen-text">Buy me a coffee</span></a></span>
+    <span>Coffees come from roasters’ own shop listings, checked every morning. Not affiliated with any roaster. Your journal never leaves this device.</span>
+    <span class="bmc">Made by <a href="https://thisisfed.xyz/" target="_blank" rel="noopener">Federico Ferrari</a>. Enjoying it? <a href="https://buymeacoffee.com/thisisfed" target="_blank" rel="noopener"><span class="sheen-text">Buy me a coffee</span></a></span>
   </footer>
 </main>
 
@@ -1726,7 +1747,7 @@ footer .bmc a:hover .sheen-text { text-decoration: underline; }
     if (!blocked) return false;
     if (empty) {
       $("rmethod").textContent = ""; $("rgoal").textContent = ""; $("rtitle").textContent = "Pick a coffee"; $("rread").textContent = "";
-      need.innerHTML = "<h3>No coffee yet</h3><p>Choose one from New releases, or type what’s on your bag. The recipe appears here.</p>";
+      need.innerHTML = ""; need.hidden = true;
       return true;
     }
     const dot = (key, v) => key === "roast" && ROAST_SW[v] ? `<i class="bean-dot" style="--c:${ROAST_SW[v]}"></i>` : "";
