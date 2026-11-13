@@ -5,21 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f6f1ea" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#14100d" media="(prefers-color-scheme: dark)">
-<title>V60 Brew Card</title>
-<meta name="description" content="A V60 recipe for the coffee in front of you: the grind for your grinder, ratio, temperature, every pour, a full-screen brew timer and a private brew journal. Plus new filter coffees from roasters in the UK, Europe and beyond, updated every morning.">
+<title>Bag to Cup</title>
+<meta name="description" content="A recipe for the coffee in front of you, on V60, Kalita Wave, Chemex, AeroPress, cafetière, cold brew or moka pot: the grind for your grinder, ratio, temperature, every step, a full-screen brew timer and a private brew journal. Plus new filter coffees from roasters in the UK, Europe and beyond, updated every morning.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://v60.thisisfed.xyz/">
-<meta property="og:site_name" content="V60 Brew Card">
-<meta property="og:title" content="V60 Brew Card: new coffees, the recipe for each bag">
-<meta property="og:description" content="Grind for your grinder, ratio, temperature and every pour. New filter coffees from 90+ roasters, checked every morning.">
-<meta property="og:image" content="https://v60.thisisfed.xyz/og/card-2.png">
+<meta property="og:site_name" content="Bag to Cup">
+<meta property="og:title" content="Bag to Cup: new coffees, the recipe for each bag">
+<meta property="og:description" content="Grind for your grinder, ratio, temperature and every step, for seven brewers. New coffees from 100+ roasters, checked every morning.">
+<meta property="og:image" content="https://v60.thisisfed.xyz/og/card-3.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="V60 Brew Card: an example recipe card with grind clicks, dose, water, temperature and the pour timeline">
+<meta property="og:image:alt" content="Bag to Cup: an example recipe card with dose, water, temperature and the pour timeline">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="V60 Brew Card: new coffees, the recipe for each bag">
-<meta name="twitter:description" content="Grind for your grinder, ratio, temperature and every pour. New filter coffees from 90+ roasters, checked every morning.">
-<meta name="twitter:image" content="https://v60.thisisfed.xyz/og/card-2.png">
+<meta name="twitter:title" content="Bag to Cup: new coffees, the recipe for each bag">
+<meta name="twitter:description" content="Grind for your grinder, ratio, temperature and every step, for seven brewers. New coffees from 100+ roasters, checked every morning.">
+<meta name="twitter:image" content="https://v60.thisisfed.xyz/og/card-3.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M4 6h24L16 27z' fill='%230b0b0b'/%3E%3C/svg%3E">
 <script>
 /* Auto appearance follows daylight where you are (light from sunrise to sunset), not the browser's own dark setting.
@@ -94,9 +94,13 @@ button:disabled { opacity: .4; cursor: default; }
 .mark { font-weight: 700; font-size: var(--big); line-height: 1; letter-spacing: -.035em; display: flex; align-items: baseline; gap: 8px; color: var(--coffee); }
 .mark .serif { font-weight: 700; color: var(--muted); }   /* same type as the hero title */
 .nav { display: flex; gap: 18px; align-items: center; }
-/* the title and the menu each stay on one line: below the width where both fit, "Brew Card" steps aside */
+/* the title and the menu each stay on one line: on a phone the name steps down a size rather than wrap */
 .mark, .nav button { white-space: nowrap; }
-@media (max-width: 560px) { .mark .serif { display: none; } }
+.mark { gap: .22em; }
+@media (max-width: 560px) { .mark { font-size: clamp(17px, 5vw, 28px); } }
+.nav .nc { display: none; }
+@media (max-width: 480px) { .nav .nw { display: none; } .nav .nc { display: inline; } .top-in { gap: 10px; } }
+@media (max-width: 340px) { .mark { font-size: 15px; } }
 @media (max-width: 420px) { .nav { gap: 12px; } .nav button { font-size: 12px; } }
 @media (max-width: 360px) { .top-in { padding-left: 14px; padding-right: 14px; gap: 10px; } .nav { gap: 8px; } .nav button { font-size: 11.5px; } .nav .theme-btn { padding: 5px 9px; } }
 .nav button { background: none; border: 0; padding: 6px 0; font-size: 13px; color: var(--ink); opacity: .8; }
@@ -177,6 +181,25 @@ section.sec > * { min-width: 0; }
   @keyframes draw { from { stroke-dashoffset: 1.06; } to { stroke-dashoffset: 0; } }
 }
 @media (prefers-reduced-motion: reduce) { .scene { transition: none; } }
+/* seven brewers drawn one after another, in the same crema gradient as the heart */
+.bi-row { display: flex; justify-content: center; gap: .16em; margin-bottom: .22em; }
+.bi { width: .78em; height: .78em; fill: none; stroke: url(#hg); stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; overflow: visible; }
+.bi path { stroke-dasharray: 1.06 1.06; stroke-dashoffset: 0; }
+.brewers .stat-n { font-size: .78em; } .brewers .stat-s { font-size: .62em; }
+/* a cafetière that plunges, just to the surface */
+.pani { width: 1.2em; height: 1.25em; fill: none; stroke: url(#hg); stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; overflow: visible; margin-right: .1em; }
+.pani .pcof { fill: #a8653a; opacity: .28; stroke: none; }
+.pani .pb { stroke-dasharray: 1.06 1.06; }
+@media (prefers-reduced-motion: no-preference) {
+  .scene.on .bi path { animation: draw .9s calc(.1s + var(--i) * .14s) ease both; }
+  .scene.on .bi { animation: wordin .6s calc(var(--i) * .14s) cubic-bezier(.2,.7,.2,1) both; }
+  .scene.on .pani .pb { animation: draw .9s .1s ease both; }
+  .scene.on .pani .pcof { animation: fillup 1s .35s ease both; transform-origin: 50% 100%; transform-box: fill-box; }
+  .scene.on .pani .pl { animation: plunge 1.1s .62s cubic-bezier(.55,0,.25,1) both; }
+  @keyframes fillup { from { transform: scaleY(0); } to { transform: none; } }
+  @keyframes plunge { from { transform: translateY(0); } to { transform: translateY(4.2px); } }
+}
+@media (prefers-reduced-motion: reduce) { .pani .pl { transform: translateY(4.2px); } }
 
 /* origin colours: one per producing country, shared by the hero and the coffee list */
 [data-o] { --oc: var(--muted); }
@@ -378,6 +401,9 @@ table.pours { width: 100%; border-collapse: separate; border-spacing: 0; backgro
 .pours td.to small { font-size: 13px; color: var(--muted); font-weight: 400; margin-left: 2px; }
 .pours td.how { font-size: 15px; }
 .pours .last td { border-bottom: 0; }
+.pours tr.act td.to { font-size: 20px; color: var(--coffee); }
+.pours.steps th:nth-child(3), .pours.steps td:nth-child(3) { display: none; }
+.pours.steps td.m { font-weight: 600; }
 .pours td.to .scale { display: block; font-size: 11.5px; font-weight: 400; letter-spacing: 0; color: var(--muted); opacity: .8; margin-top: 3px; }
 .pour-note { margin: -8px 0 0; padding: 0 20px; font-size: 13px; color: var(--muted); }
 .spec .ret { font-size: 12px; color: var(--muted); line-height: 1.35; max-width: 36ch; margin-top: -2px; }
@@ -500,6 +526,7 @@ footer .bmc a { font-weight: 700; }
 .bv-big { align-self: center; font-size: min(168px, 42cqw, 37cqh); font-weight: 700; line-height: 1; letter-spacing: -.055em; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .bv-big small { font-size: .28em; font-weight: 600; letter-spacing: 0; color: #a2958a; margin-left: 6px; }
 .pour .bv-big { color: #ff9f0a; }
+.bv-now.act .bv-big { font-size: min(120px, 26cqw, 30cqh); letter-spacing: -.035em; }
 .idle .bv-big { color: #a2958a; }
 .bv-how { font-size: 24px; font-weight: 600; line-height: 30px; height: 60px; letter-spacing: -.02em; overflow: hidden;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
@@ -514,6 +541,7 @@ footer .bmc a { font-weight: 700; }
 .bv-bar .seg { position: absolute; top: 0; bottom: 0; background: #5a4e45; border-radius: 980px; }
 .bv-bar .seg.on { background: #ff9f0a; }
 .bv-bar .seg.done { background: #a2958a; }
+.bv-bar .seg.act { top: 30%; bottom: 30%; }
 .bv-bar .win { position: absolute; top: 0; bottom: 0; background: rgba(48, 209, 88, .35); border-radius: 980px; }
 .bv-bar .head { position: absolute; top: -5px; bottom: -5px; width: 3px; margin-left: -1.5px; border-radius: 2px; background: #f7f0e8; box-shadow: 0 0 10px rgba(255, 220, 180, .5); }
 /* two buttons, always the same size and place: left starts/pauses, right resets until the last pour, then becomes Drained */
@@ -647,9 +675,9 @@ table.pours { padding: 10px 24px; }
 <body>
 <header class="top">
   <div class="top-in">
-    <div class="mark"><span class="g-coffee">V60</span> <span class="serif">Brew Card</span></div>
+    <div class="mark"><span class="g-coffee">Bag</span> <span class="serif">to Cup</span></div>
     <nav class="nav" aria-label="Sections">
-      <button type="button" data-jump="shelves">New coffees</button>
+      <button type="button" data-jump="shelves"><span class="nw">New c</span><span class="nc">C</span>offees</button>
       <button type="button" data-jump="recipe">Recipe</button>
       <button type="button" data-jump="journal">Journal</button>
       <button type="button" class="theme-btn" id="themeBtn" aria-label="Appearance">Auto</button>
@@ -663,14 +691,16 @@ table.pours { padding: 10px 24px; }
       <p class="hero-kick">Updated every morning</p>
       <div class="stage" id="stage">
         <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">Love</span> <span class="w" style="--i:1">coffee?</span></p>
-        <p class="scene" aria-hidden="true">You’ll <svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" class="hg1"/><stop offset=".45" class="hg2"/><stop offset="1" class="hg3"/></linearGradient></defs><path pathLength="1" d="M12 20.2S3.5 15 3.5 9.1A4.6 4.6 0 0 1 12 6.6a4.6 4.6 0 0 1 8.5 2.5c0 5.9-8.5 11.1-8.5 11.1z"/></svg> <span>V60</span></p>
+        <p class="scene" aria-hidden="true">You’ll <svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" class="hg1"/><stop offset=".45" class="hg2"/><stop offset="1" class="hg3"/></linearGradient></defs><path pathLength="1" d="M12 20.2S3.5 15 3.5 9.1A4.6 4.6 0 0 1 12 6.6a4.6 4.6 0 0 1 8.5 2.5c0 5.9-8.5 11.1-8.5 11.1z"/></svg> <span>every cup.</span></p>
         <div class="scene stat" aria-hidden="true" id="sceneStat"><span class="stat-n"><span id="statN">0</span> coffees.</span><span class="stat-s" id="statS">From near and far.</span></div>
         <div class="scene" aria-hidden="true" id="sceneIsland"><div class="isl-stack" id="islStack"></div></div>
+        <div class="scene stat brewers" aria-hidden="true"><span class="bi-row"><svg class="bi" viewBox="0 0 24 24" style="--i:0" role="img" aria-label="V60"><path pathLength="1" d="M4 6h16l-6 10h-4L4 6z M7.5 19h9"/></svg><svg class="bi" viewBox="0 0 24 24" style="--i:1" role="img" aria-label="Kalita Wave"><path pathLength="1" d="M5 7h14l-3 9H8L5 7z M9.2 9.5l.7 4 M12 9.5v4 M14.8 9.5l-.7 4 M7 19h10"/></svg><svg class="bi" viewBox="0 0 24 24" style="--i:2" role="img" aria-label="Chemex"><path pathLength="1" d="M7 3h10l-3.6 8L17 20.5H7l3.6-9.5z M10.2 10.2h3.6"/></svg><svg class="bi" viewBox="0 0 24 24" style="--i:3" role="img" aria-label="AeroPress"><path pathLength="1" d="M8.5 6h7v11h-7z M7 3.5h10 M12 3.5V6 M7.5 17h9 M9 20.5h6"/></svg><svg class="bi" viewBox="0 0 24 24" style="--i:4" role="img" aria-label="Cafetière"><path pathLength="1" d="M6 7.5h10.5v12a1.5 1.5 0 0 1-1.5 1.5H7.5A1.5 1.5 0 0 1 6 19.5z M16.5 10h1.5a1.5 1.5 0 0 1 1.5 1.5v4A1.5 1.5 0 0 1 18 17h-1.5 M11.25 2.5v9.5 M9.5 2.5h3.5 M6.6 12h9.3"/></svg><svg class="bi" viewBox="0 0 24 24" style="--i:5" role="img" aria-label="Cold brew"><path pathLength="1" d="M7 7h10v12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2z M8 3.5h8V7H8z M9.5 12h2.6v2.6H9.5z M12.4 15.6H15v2.6h-2.6z"/></svg><svg class="bi" viewBox="0 0 24 24" style="--i:6" role="img" aria-label="Moka pot"><path pathLength="1" d="M8.5 3.5h7l1.5 6.5H7z M9.5 10.5h5 M7 11h10l-1.5 9.5h-7z M8.5 3.5L6 2.5 M15.5 5h2.5v4.5L16.8 10.5"/></svg></span><span class="stat-n">Seven ways to brew.</span><span class="stat-s">The recipe for each.</span></div>
         <div class="scene stat" aria-hidden="true" id="sceneGrind"><span class="stat-n">Got <span id="gT">3:15</span>?</span><span class="stat-s">It’s all it takes.</span></div>
+        <p class="scene words press" aria-hidden="true"><svg class="w pani" style="--i:0" viewBox="0 -3 24 26"><path class="pcof" d="M6.7 12.5h9.1v7.2a.8.8 0 0 1-.8.8H7.5a.8.8 0 0 1-.8-.8z"/><path class="pb" pathLength="1" d="M6 7.5h10.5v12a1.5 1.5 0 0 1-1.5 1.5H7.5A1.5 1.5 0 0 1 6 19.5z M16.5 10h1.5a1.5 1.5 0 0 1 1.5 1.5v4A1.5 1.5 0 0 1 18 17h-1.5"/><path class="pl" d="M11.25 -2v10 M9.4 -2h3.7 M6.7 8h9.1"/></svg> <span class="w" style="--i:1">Steep.</span> <span class="w" style="--i:2">Press.</span> <span class="w shimmer" style="--i:3">Rest.</span></p>
         <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">Pour.</span> <span class="w" style="--i:1">Taste.</span> <span class="w" style="--i:2">Tweak.</span> <span class="w shimmer" style="--i:3">Nail it.</span></p>
         <div class="scene final on"><h1 id="h1">New coffees. <span class="serif">The recipe for each bag.</span></h1></div>
       </div>
-      <p class="lede">Filter coffees, single origins and blends, from roasters in the UK, Europe and beyond, updated every morning. Pick one or type your own, and get the grind for your grinder, the ratio, the temperature and every pour, from recipes by Hoffmann, Kasuya and Rao. Brew full screen, log how it tasted, and it adjusts next time.</p>
+      <p class="lede">New coffees from roasters in the UK, Europe and beyond, updated every morning. Pick one or type your own, choose your brewer, and get the grind for your grinder, the ratio, the temperature and every step. Brew full screen, log how it tasted, and it adjusts next time.</p>
       <figure class="glimpse" aria-label="Example recipe: washed Ethiopia, light roast. 15 g coffee to 255 g water, 96°C, about 3:15. Pours at 0:00 to 51 g, 0:45 to 102 g, 1:10 to 153 g, 1:30 to 204 g, 1:50 to 255 g.">
         <figcaption><span class="g-name">Washed Ethiopia, light roast</span><span class="g-eg">For example</span></figcaption>
         <div class="g-specs num" aria-hidden="true"><span><b>15</b> → <b>255</b> g</span><span><b>96</b>°C</span></div>
@@ -738,9 +768,9 @@ table.pours { padding: 10px 24px; }
       <thead><tr><th>At</th><th>Target</th><th>Pour</th><th>How</th></tr></thead>
       <tbody id="pourRows"></tbody>
     </table>
-    <p class="pour-note">Targets shown to 0.1 g. Pour to the nearest gram on your scale.</p>
+    <p class="pour-note" id="pourNote">Targets shown to 0.1 g. Pour to the nearest gram on your scale.</p>
     <div class="cols two">
-      <div class="col"><h3>Expected strength</h3><div class="big" id="tds"></div><p id="tdsNote"></p></div>
+      <div class="col" id="tdsCol"><h3>Expected strength</h3><div class="big" id="tds"></div><p id="tdsNote"></p></div>
       <div class="col"><h3 id="cupH">Likely in the cup</h3><div class="notes-list" id="cupNotes"></div><p id="cupNote"></p></div>
     </div>
     <details class="clk xp" id="whyBox"><summary>Why this recipe <span class="muted" id="whyHint"></span></summary><ul id="why"></ul></details>
@@ -760,7 +790,7 @@ table.pours { padding: 10px 24px; }
         <span class="cap">Pick what you taste</span>
         <div class="taste" id="tasteChips"></div>
       </div>
-      <div class="dd">
+      <div class="dd" id="ddRow">
         <label for="ddIn" class="cap">Drained at</label>
         <input id="ddIn" inputmode="numeric" placeholder="3:20" aria-describedby="ddHint">
         <span class="muted" id="ddHint"></span>
@@ -781,8 +811,8 @@ table.pours { padding: 10px 24px; }
   </section>
 
   <footer>
-    <span>Methods: James Hoffmann’s Better 1-Cup and Ultimate V60; Tetsu Kasuya’s 4:6 and 10-Pour; Scott Rao’s bloom &amp; spin. Grind in clicks on a standard Comandante C40, counted from zero; other grinders converted from those clicks with Honest Coffee Guide’s grind charts. Strength figures are estimates for a typical extraction, not a refractometer reading.</span>
-    <span class="sources">Sources: <a href="https://www.youtube.com/watch?v=1oB1oDrDkHM" target="_blank" rel="noopener">Hoffmann, A Better 1 Cup V60</a>; <a href="https://www.youtube.com/watch?v=AI4ynXzkSQo" target="_blank" rel="noopener">Hoffmann, The Ultimate V60</a>; <a href="https://en.philocoffea.com/blogs/blog/coffee-brewing-method" target="_blank" rel="noopener">Kasuya, 4:6 (Philocoffea)</a>; <a href="https://www.hario.co.uk/blogs/hario-ambassadors/hario-v60-recipe-interview-with-hario-ambassador-scott-rao" target="_blank" rel="noopener">Rao, bloom &amp; spin (Hario)</a></span>
+    <span>Methods: V60 from James Hoffmann’s Better 1-Cup and Ultimate V60, Tetsu Kasuya’s 4:6 and 10-Pour, and Scott Rao’s bloom &amp; spin. Kalita Wave from George Howell; Chemex from Blue Bottle; AeroPress, cafetière and moka pot from James Hoffmann’s Ultimate techniques; cold brew from Ceremony Coffee. Grind in clicks on a standard Comandante C40, counted from zero; other grinders converted from those clicks with Honest Coffee Guide’s grind charts. Strength figures are estimates for a typical extraction, not a refractometer reading.</span>
+    <span class="sources">Sources: <a href="https://www.youtube.com/watch?v=1oB1oDrDkHM" target="_blank" rel="noopener">Hoffmann, A Better 1 Cup V60</a>; <a href="https://www.youtube.com/watch?v=AI4ynXzkSQo" target="_blank" rel="noopener">Hoffmann, The Ultimate V60</a>; <a href="https://en.philocoffea.com/blogs/blog/coffee-brewing-method" target="_blank" rel="noopener">Kasuya, 4:6 (Philocoffea)</a>; <a href="https://www.hario.co.uk/blogs/hario-ambassadors/hario-v60-recipe-interview-with-hario-ambassador-scott-rao" target="_blank" rel="noopener">Rao, bloom &amp; spin (Hario)</a>; <a href="https://georgehowellcoffee.com/pages/brew-guide-kalita-155" target="_blank" rel="noopener">George Howell, Kalita 155</a>; <a href="https://bluebottlecoffee.com/brew-guides/chemex" target="_blank" rel="noopener">Blue Bottle, Chemex</a>; <a href="https://www.youtube.com/watch?v=j6VlT_jUVPc" target="_blank" rel="noopener">Hoffmann, The Ultimate AeroPress Technique</a>; <a href="https://www.youtube.com/results?search_query=James+Hoffmann+The+Ultimate+French+Press+Technique" target="_blank" rel="noopener">Hoffmann, The Ultimate French Press Technique</a>; <a href="https://www.youtube.com/results?search_query=James+Hoffmann+The+Ultimate+Moka+Pot+Technique" target="_blank" rel="noopener">Hoffmann, The Ultimate Moka Pot Technique</a>; <a href="https://ceremonycoffee.com/pages/cold-brew-guide" target="_blank" rel="noopener">Ceremony Coffee, cold brew</a></span>
     <span>Coffees come from roasters’ own shop listings, checked every morning. Not affiliated with any roaster. Your journal never leaves this device. Made by <a href="https://thisisfed.xyz">Federico Ferrari</a>.</span>
     <span class="bmc">Enjoying it? <a href="https://buymeacoffee.com/thisisfed" target="_blank" rel="noopener"><span class="sheen-text">Buy me a coffee</span></a></span>
   </footer>
@@ -835,7 +865,7 @@ table.pours { padding: 10px 24px; }
     get(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch (e) { return d; } },
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
   };
-  const DEFAULTS = { text: "", goal: "light", dose: 15, method: "best", roast: "auto", process: "auto", bag: null };
+  const DEFAULTS = { text: "", brewer: "v60", goal: "light", dose: 15, doses: {}, method: "best", roast: "auto", process: "auto", bag: null };
   // a refresh starts with no coffee picked (goal, dose and method are kept); the journal and settings stay
   let state = { ...DEFAULTS, ...store.get("v60.state", {}), text: "", bag: null, process: "auto", roast: "auto" };
   // zero: permanent C40 zero offset in clicks (default 0). The old "grinder" key is ignored on purpose.
@@ -1008,6 +1038,45 @@ table.pours { padding: 10px 24px; }
   };
   const GOAL = { light: "Light & aromatic", balanced: "Balanced", syrupy: "Sweet & syrupy" };
 
+  /* OTHER BREWERS
+     Each one starts from one published recipe, then takes the same process × roast moves as the V60
+     (grind and, where there's a kettle, temperature), held inside that brewer's own useful range.
+     - Kalita Wave: George Howell's Kalita 155 guide (16–19 g : 265 g, drip-medium, 94–96°C, done 2:55–3:05).
+       No C40 number published. A flat bed drains slower than a cone, so 3 clicks coarser than the 1-Cup → 24.
+     - Chemex: Blue Bottle (36–46 g : 600 g, medium-coarse, 4:30–5:30). The thick paper runs slow → 30 at 30 g.
+     - AeroPress: Hoffmann's Ultimate AeroPress (11 g : 200 g just off the boil, finer end of medium; 2:00 swirl,
+       2:30 press gently). No C40 number from Hoffmann → 18, between V60 and espresso. Our estimate.
+     - Cafetière: Hoffmann's Ultimate French Press (30 g : 500 g, medium; 4 min, break the crust, skim, rest 5–8 min,
+       plunger only to the surface). C40 users publish around 26–30 → 28 at 30 g.
+     - Cold brew: Ceremony Coffee (1:8, coarse, steeped cold, then diluted to taste) → 36.
+     - Moka pot: Hoffmann's moka technique (boiled water to just under the valve, basket full and level, no tamp,
+       lid open, off the heat as it turns pale). Finer than filter, far coarser than espresso → 15. Our estimate. */
+  const BREWERS = {
+    v60:    { name: "V60", kind: "pour", doses: [[12, "12 g"], [15, "15 g"], [18, "18 g"], [20, "20 g"]], dose: 15 },
+    kalita: { name: "Kalita Wave", kind: "pour", doses: [[12, "12 g"], [15, "15 g"], [18, "18 g"], [20, "20 g"], [25, "25 g"]], dose: 15,
+              base: 24, dA: { 12: -1, 15: 0, 18: 1, 20: 1, 25: 2 }, range: [18, 36], ratio: { light: 17, balanced: 16, syrupy: 15 }, dT: 1, ey: [20, 22] },
+    chemex: { name: "Chemex", kind: "pour", doses: [[20, "20 g"], [30, "30 g"], [40, "40 g"], [50, "50 g"]], dose: 30,
+              base: 30, dA: { 20: -1, 30: 0, 40: 1, 50: 2 }, range: [22, 42], ratio: { light: 17, balanced: 16, syrupy: 15 }, dT: 2, ey: [19.5, 21.5] },
+    aero:   { name: "AeroPress", kind: "imm", doses: [[11, "11 g"], [13, "13 g"], [15, "15 g"]], dose: 11,
+              base: 18, dA: { 11: 0, 13: 0, 15: 1 }, range: [12, 30], ratio: { light: 18, balanced: 16.5, syrupy: 15 }, dT: 4, cap: 250, ey: [19.5, 21.5] },
+    press:  { name: "Cafetière", kind: "imm", doses: [[15, "15 g"], [30, "30 g"], [60, "60 g"]], dose: 30,
+              base: 28, dA: { 15: -1, 30: 0, 60: 1 }, range: [20, 45], ratio: { light: 17, balanced: 16, syrupy: 15 }, dT: 2, ey: [19, 21] },
+    cold:   { name: "Cold brew", kind: "steps", doses: [[50, "50 g"], [100, "100 g"]], dose: 100, base: 36, dA: {}, range: [28, 45], fixed: 8 },
+    moka:   { name: "Moka pot", kind: "steps", doses: [[7, "1-cup"], [16, "3-cup"], [30, "6-cup"]], dose: 16, base: 15, dA: {}, range: [10, 22], water: { 7: 60, 16: 150, 30: 300 } },
+  };
+  const brewerOf = (st) => BREWERS[st.brewer] ? st.brewer : "v60";
+  const HOWELL = "https://georgehowellcoffee.com/pages/brew-guide-kalita-155";
+  const YT = (q) => "https://www.youtube.com/results?search_query=" + encodeURIComponent(q);
+  Object.assign(BASE, {
+    kalita: { c: 24, pub: "none published", est: true, note: "Howell gives drip-medium for the Kalita 155. A flat bed with three small holes drains slower than a cone, so we start 3 clicks coarser than Hoffmann’s 1-Cup. Our estimate.", url: HOWELL, src: "George Howell, Kalita 155" },
+    chemex: { c: 30, pub: "none published", est: true, note: "Blue Bottle gives medium-coarse. The thick bonded paper runs slow, so it starts well coarser than a V60. Our estimate.", url: "https://bluebottlecoffee.com/brew-guides/chemex", src: "Blue Bottle, Chemex" },
+    aero:   { c: 18, pub: "none published", est: true, note: "Hoffmann says the finer end of medium for a light roast, and a little coarser as roasts get darker. Our estimate, between a V60 and espresso.", url: "https://www.youtube.com/watch?v=j6VlT_jUVPc", src: "Hoffmann, The Ultimate AeroPress Technique" },
+    press:  { c: 28, pub: "~26–30", note: "Hoffmann says medium, not coarse: the long rest settles the fines, so you don’t need a coarse grind. C40 users publish around 26–30.", url: YT("James Hoffmann The Ultimate French Press Technique"), src: "Hoffmann, The Ultimate French Press Technique" },
+    cold:   { c: 36, pub: "none published", est: true, note: "Ceremony says coarse. Too fine and the concentrate turns muddy and hard to filter. Our estimate.", url: "https://ceremonycoffee.com/pages/cold-brew-guide", src: "Ceremony Coffee, cold brew" },
+    moka:   { c: 15, pub: "none published", est: true, note: "Hoffmann grinds a little finer than filter for light roasts, coarser for darker ones. Espresso-fine chokes the pot. Our estimate.", url: YT("James Hoffmann The Ultimate Moka Pot Technique"), src: "Hoffmann, The Ultimate Moka Pot Technique" },
+  });
+  Object.assign(METHOD, { kalita: "Kalita Wave, after George Howell", chemex: "Chemex, after Blue Bottle", aero: "Hoffmann’s Ultimate AeroPress", press: "Hoffmann’s Ultimate French Press", cold: "Cold brew, after Ceremony", moka: "Hoffmann’s Moka Pot" });
+
   function pickMethod(st, c, agit) {
     const dose = Number(st.dose);
     if (st.method === "hoffmann") return dose >= 18 ? "hoffmannU" : "hoffmann";
@@ -1020,17 +1089,19 @@ table.pours { padding: 10px 24px; }
   }
 
   // what your nailed brews of one process × roast had in common (needs 2+)
-  function styleOffset(process, roast) {
-    const list = ((prefs.styles || {})[process + "|" + roast] || {}).nailed || [];
+  const brewTag = (b) => b && b !== "v60" ? "|" + b : "";
+  function styleOffset(process, roast, b) {
+    const list = ((prefs.styles || {})[process + "|" + roast + brewTag(b)] || {}).nailed || [];
     if (list.length < 2) return null;
     const avg = (k) => list.reduce((a, x) => a + (x[k] || 0), 0) / list.length;
     const d = { clicks: Math.round(avg("clicks")), temp: Math.round(avg("temp")), ratio: Math.round(avg("ratio") * 2) / 2 };
     return d.clicks || d.temp || d.ratio ? { d, n: list.length } : null;
   }
   const coffeeKey = (st) => {
-    if (st.bag && st.bag.url) return "u:" + st.bag.url;
+    const t = brewTag(brewerOf(st));
+    if (st.bag && st.bag.url) return "u:" + st.bag.url + t;
     const k = (st.text || "").toLowerCase().split(/\bnotes?\s*[:\-–]/)[0].replace(/[^a-z0-9]+/g, " ").trim().slice(0, 64);
-    return k ? "t:" + k : null;
+    return k ? "t:" + k + t : null;
   };
 
   function engine(st, opts = {}) {
@@ -1042,7 +1113,8 @@ table.pours { padding: 10px 24px; }
     if (c.roast === "mdark") agit = Math.min(agit, 1);
     if (c.roast === "dark") agit = 0;                                // dark roasts extract fast: no stirring at all
     if (c.delicate) agit = Math.min(agit, 2);                        // Geisha & co: keep the florals, don't thrash the bed
-    const m = pickMethod(st, c, agit);
+    const brewer = brewerOf(st);
+    const m = brewer === "v60" ? pickMethod(st, c, agit) : brewer;
 
     const key = coffeeKey(st);
     let learn = null;
@@ -1050,9 +1122,10 @@ table.pours { padding: 10px 24px; }
       const own = key && prefs.coffees[key];
       if (own && own.optOut && !own.n && !own.clicks && !own.temp && !own.ratio) learn = null;
       else if (own && (own.n || own.clicks || own.temp || own.ratio)) learn = { source: "coffee", d: { clicks: own.clicks || 0, temp: own.temp || 0, ratio: own.ratio || 0 }, n: own.n || 0, history: own.history || [] };
-      if (!learn && !(own && own.optOut) && c.process !== "unsure" && c.roast !== "unsure") { const so = styleOffset(c.process, c.roast); if (so) learn = { source: "style", d: so.d, n: so.n, history: [] }; }
+      if (!learn && !(own && own.optOut) && c.process !== "unsure" && c.roast !== "unsure") { const so = styleOffset(c.process, c.roast, brewer); if (so) learn = { source: "style", d: so.d, n: so.n, history: [] }; }
     }
     const pc = learn ? learn.d : { clicks: 0, temp: 0, ratio: 0 };
+    if (brewer !== "v60") return engineOther(st, c, agit, brewer, key, learn, pc, opts);
 
     let ratio = m === "ten" ? (goal === "syrupy" ? 15 : 16)
       : goal === "light" ? 17 : goal === "balanced" ? (m.startsWith("hoffmann") ? 16.7 : 16.5) : 15.5;
@@ -1126,8 +1199,100 @@ table.pours { padding: 10px 24px; }
     const mid = (tds[0] + tds[1]) / 2;
     const body = mid < 1.25 ? "tea-like" : mid < 1.38 ? "light and clear" : mid < 1.5 ? "classic filter" : "rich";
 
-    return { m, method: METHOD[m], goal, c, agit, key, pc, learn, baseClicks, clickParts, baseTemp, baseRatio,
+    return { m, brewer: "v60", kind: "pour", method: METHOD[m], goal, c, agit, key, pc, learn, baseClicks, clickParts, baseTemp, baseRatio,
       dose, water, ratio, ratioClamped: Math.abs(ratioPre - ratio) > 0.05, clicks, temp, yieldG: Math.round(bev), bev, pours: P, lo, hi, tds, ey, body };
+  }
+
+  // the same roast × process temperature rules as the V60, from each brewer's own starting point
+  function tempFor(c, agit, add) {
+    let temp = ROAST[c.roast].T + PROCESS[c.process].dT + add;
+    if (c.delicate) temp += 1;
+    if (agit <= 1) temp = Math.min(temp, 95);
+    if (T_CAP[c.process]) temp = Math.min(temp, T_CAP[c.process]);
+    if (T_CAP_ROAST[c.roast]) temp = Math.min(temp, T_CAP_ROAST[c.roast]);
+    if (c.roast === "vlight" && agit >= 2) temp = Math.max(temp, 96);
+    return clamp(temp, 82, 100);
+  }
+  // steps: a pour has a scale target (x, to); an action (act) is something to do at a time: swirl, press, skim
+  function engineOther(st, c, agit, b, key, learn, pc, opts) {
+    const B = BREWERS[b], kind = B.kind;
+    const dose = B.doses.some(([v]) => v === Number(st.dose)) ? Number(st.dose) : B.dose;
+    const goal = B.ratio ? (GOAL[st.goal] ? st.goal : "light") : null;
+    let ratio, water, ratioPre, capped = false;
+    if (B.water) { water = B.water[dose]; ratio = Math.round((water / dose) * 10) / 10; ratioPre = ratio; }
+    else if (B.fixed) { ratio = B.fixed; ratioPre = ratio; water = Math.round(dose * ratio); }
+    else {
+      ratioPre = B.ratio[goal] + (pc.ratio || 0);
+      ratio = clamp(Math.round(ratioPre * 10) / 10, 14, 18.5);
+      water = Math.round(dose * ratio);
+      if (B.cap && water > B.cap) { water = B.cap; ratio = Math.round((water / dose) * 10) / 10; capped = true; }
+    }
+    const baseRatio = B.ratio ? B.ratio[goal] : ratio;
+
+    const doseAdj = B.dA[dose] ?? 0, roastAdj = ROAST[c.roast].dC, procAdj = PROCESS[c.process].dC;
+    const raw = B.base + doseAdj + roastAdj + procAdj;
+    const baseClicks = clamp(raw, B.range[0], B.range[1]);
+    const zero = opts.noPrefs || !isC40() ? 0 : (prefs.zero || 0);
+    const clicks = clamp(baseClicks + (pc.clicks || 0) + zero, B.range[0] - 4, B.range[1] + 5);
+    const clickParts = { base: B.base, dose: doseAdj, roast: roastAdj, process: procAdj, learn: pc.clicks || 0, zero, clamped: raw !== baseClicks, range: B.range };
+
+    let temp = null, baseTemp = null;
+    if (B.dT != null) { baseTemp = tempFor(c, agit, B.dT); temp = clamp(baseTemp + (pc.temp || 0), 82, 100); }
+
+    const P = [], r1 = (v) => Math.round(v * 10) / 10;
+    const add = (t, to, note, dur) => { const x = r1(to); P.push({ t, x, to: Math.round(x), note, dur }); };
+    const act = (t, lbl, note, dur) => P.push({ t, act: true, lbl, note, dur });
+    const bloomNote = agit >= 3 ? "Bloom: swirl to wet all grounds" : agit === 2 ? "Bloom: gentle swirl" : "Bloom: gentle spiral, no stirring";
+    let lo, hi;
+    if (b === "kalita") {            // Howell: equal pulses, 15 s on, 15 s to drop
+      const bl = dose * 2, n = 4;
+      add(0, bl, bloomNote, 10);
+      for (let i = 1; i <= n; i++) add(10 + i * 30, i === n ? water : bl + ((water - bl) * i) / n,
+        i === n ? (agit >= 2 ? "Last pour, then one gentle swirl to flatten the bed" : "Last pour, then let it drain") : "Centre out and back in, then let it drop", 15);
+      lo = 175 + Math.max(0, dose - 15) * 3; hi = lo + 35;
+    } else if (b === "chemex") {     // bloom, then two big pours; the thick paper sets the pace
+      add(0, dose * 2, bloomNote, 15);
+      add(45, water * 0.6, "Slow spiral from the centre, stay off the paper", 30);
+      add(90, water, agit >= 2 ? "The rest of the water, then one gentle swirl" : "The rest of the water, gently", 30);
+      lo = 240 + (dose - 30) * 3; hi = lo + 60;
+    } else if (b === "aero") {       // Hoffmann: standard way up, no stir, swirl at 2:00, press gently at 2:30
+      add(0, water, "Pour all the water in. Then set the plunger in about 1 cm so it stops dripping", 10);
+      act(120, "Swirl", "Lift the brewer and swirl it gently", 5);
+      act(150, "Press", "Press gently, about 30 s, all the way down", 30);
+      lo = hi = 180;
+    } else if (b === "press") {      // Hoffmann: 4 min, break the crust, skim, rest, pour through the mesh
+      add(0, water, "Pour all the water in, quickly. Leave the lid off", 15);
+      act(240, "Stir", "Break the crust: stir the top gently with a spoon", 10);
+      act(255, "Skim", "Spoon off the foam and the floating bits", 25);
+      act(540, "Pour", "Plunger down to the surface only, don’t push. Pour slowly and leave the last bit", 30);
+      lo = 540; hi = 720;
+    } else if (b === "cold") {
+      act(0, "Mix", `Grounds in a jar, ${water} g of cold water on top, stir until every ground is wet`, 0);
+      act(1, "Steep", "Lid on, into the fridge for 12–18 hours", 0);
+      act(2, "Filter", "Pour it through a paper filter (a V60 works) or a fine sieve", 0);
+      act(3, "Serve", "Over ice. Add water to taste, about 0.4 × the concentrate, or milk. Keeps a week in the fridge", 0);
+      lo = 12 * 3600; hi = 18 * 3600;
+    } else {                          // moka
+      act(0, "Heat", "Boil the kettle. Fill the base with the hot water to just under the valve", 0);
+      act(1, "Fill", "Fill the basket full and level. Don’t tamp. Wipe the rim", 0);
+      act(2, "Brew", "Screw it together with a tea towel (it’s hot). Medium heat, lid open", 0);
+      act(3, "Stop", "When the flow turns pale and starts to sputter, take it off the heat", 0);
+      act(4, "Cool", "Run the base under cold water to stop it. Stir the coffee and pour", 0);
+      lo = 240; hi = 300;
+    }
+    const wP = P.filter((p) => !p.act).pop(); if (wP) { wP.x = water; wP.to = water; }
+
+    const bev = water - dose * 2.1;
+    let tds = null, ey = null, body = null;
+    if (B.ey) {
+      ey = B.ey.map((x) => x - (agit <= 1 ? 0.5 : 0));
+      tds = ey.map((e) => (e / 100) * dose / bev * 100);
+      const mid = (tds[0] + tds[1]) / 2;
+      body = mid < 1.25 ? "tea-like" : mid < 1.38 ? "light and clear" : mid < 1.5 ? "classic filter" : "rich";
+    }
+    return { m: b, brewer: b, kind, method: METHOD[b], goal, c, agit, key, pc, learn, baseClicks, clickParts, baseTemp, baseRatio,
+      dose, water, ratio, ratioClamped: !!B.ratio && !capped && Math.abs(ratioPre - ratio) > 0.05, capped, clicks, temp,
+      yieldG: Math.round(bev), bev, pours: P, lo, hi, tds, ey, body };
   }
 
   // ---------- what to expect in the cup ----------
@@ -1173,6 +1338,12 @@ table.pours { padding: 10px 24px; }
     rao: "Highest clarity here: crisp top notes, tea-like texture.",
     fourSix: "Few, gentle pours: aromatics first, light body, sweetness without ferment.",
     ten: "Many small pours: syrup and sweetness over acidity.",
+    kalita: "Flat bed, even pulses: sweet and balanced, a little more body than a V60.",
+    chemex: "Thick paper holds back oils: very clean and bright, light body.",
+    aero: "Immersion through paper: sweet, round and clean.",
+    press: "Full immersion through metal: heavy body, oils and sweetness.",
+    cold: "Brewed cold: low acidity, chocolate and nuts, very smooth.",
+    moka: "Strong and syrupy, close to espresso: chocolate and caramel first.",
   };
 
   // ---------- rendering the recipe ----------
@@ -1270,8 +1441,9 @@ table.pours { padding: 10px 24px; }
 
   function renderLearn(r) {
     const box = $("adjusted"), L = r.learn;
-    const base = `${grindLine(r.baseClicks + (isC40() ? prefs.zero || 0 : 0))}, ${r.baseTemp}°C, 1:${r.baseRatio}`;
-    const now = `${grindLine(r.clicks)}, ${r.temp}°C, 1:${r.ratio}`;
+    const tc = (t) => t == null ? "" : `, ${t}°C`, rt = (v) => r.goal ? `, 1:${v}` : "";
+    const base = `${grindLine(r.baseClicks + (isC40() ? prefs.zero || 0 : 0))}${tc(r.baseTemp)}${rt(r.baseRatio)}`;
+    const now = `${grindLine(r.clicks)}${tc(r.temp)}${rt(r.ratio)}`;
     const TL = (k) => (TASTES.find((x) => x[0] === k) || [k, k])[1];
     if (!L) {
       box.hidden = true; return;
@@ -1295,10 +1467,11 @@ table.pours { padding: 10px 24px; }
 
   // ---------- how the clicks were set ----------
   const signed = (n) => (n > 0 ? "+" : n < 0 ? "−" : "±") + Math.abs(n);
-  const METHOD_REF = { hoffmann: "Hoffmann 1-Cup", hoffmannU: "Hoffmann Ultimate", fourSix: "Kasuya 4:6", ten: "Kasuya 10-Pour", rao: "Rao bloom & spin" };
+  const METHOD_REF = { hoffmann: "Hoffmann 1-Cup", hoffmannU: "Hoffmann Ultimate", fourSix: "Kasuya 4:6", ten: "Kasuya 10-Pour", rao: "Rao bloom & spin",
+    kalita: "Kalita Wave", chemex: "Chemex", aero: "AeroPress", press: "Cafetière", cold: "Cold brew", moka: "Moka pot" };
   function renderClicks(r) {
     const p = r.clickParts, B = BASE[r.m], c = r.c;
-    const rows = [[`Base: ${METHOD_REF[r.m]} at 15 g`, String(p.base)]];
+    const rows = [[`Base: ${METHOD_REF[r.m]} at ${r.brewer === "v60" ? 15 : BREWERS[r.brewer].kind === "steps" ? doseName(r) : BREWERS[r.brewer].dose + " g"}`, String(p.base)]];
     if (p.dose) rows.push([`Dose ${r.dose} g`, signed(p.dose)]);
     if (p.roast) rows.push([`Roast: ${c.roast === "unsure" ? "not sure" : ROAST[c.roast].label}`, signed(p.roast)]);
     if (p.process) rows.push([`Process: ${c.process === "unsure" ? "not stated" : PROCESS[c.process].label}`, signed(p.process)]);
@@ -1308,7 +1481,7 @@ table.pours { padding: 10px 24px; }
     $("clkBody").innerHTML = `
       <p><b>C40 zero point.</b> Close the dial clockwise until it stops gently, burrs touching (don’t force it). That’s 0. Count clicks back anticlockwise. Stock C40 burrs, no Red Clix.</p>
       <div class="clk-sum">${rows.map(([a, b]) => `<span>${esc(a)}</span><span>${b}</span>`).join("")}<span class="tot">Grind at</span><span class="tot">${r.clicks} clicks</span></div>
-      ${p.clamped ? '<p class="muted">Held inside 16–45 clicks, the useful V60 range on a C40.</p>' : ""}
+      ${p.clamped ? `<p class="muted">Held inside ${p.range ? p.range.join("–") : "16–45"} clicks, the useful ${esc(BREWERS[r.brewer].name)} range on a C40.</p>` : ""}
       <p class="muted"><b style="color:var(--ink)">Where ${p.base} comes from.</b> ${esc(B.note)} Published for this recipe: ${esc(B.pub)}. <a href="${B.url}" target="_blank" rel="noopener">${esc(B.src)}</a></p>
       ${isC40() ? "" : `<p class="muted"><b style="color:var(--ink)">On your ${esc(mill().name)}.</b> ${r.clicks} C40 clicks → ${esc(onMill(r.clicks).txt)} (${esc(mill().lbl)}). ${esc(mill().how || "Converted with Honest Coffee Guide’s V60 bands")}, which put C40 15–25 clicks level with ${esc(mill().show(mill().a))}–${esc(mill().show(mill().b))} here; in between and either side it’s linear. Units and zero points vary, so treat it as a starting point and dial in by drawdown time. <a href="${mill().src}" target="_blank" rel="noopener">Source</a></p>`}
       <p class="muted"><b style="color:var(--ink)">My C40 zero.</b> If your 0 isn’t burrs-touching, or recipes you trust always need a click or two more, set the offset once with − / + above. Every recipe shifts by it. Saved on this device; default 0.</p>`;
@@ -1336,15 +1509,23 @@ table.pours { padding: 10px 24px; }
     rao:       { r: 16,   txt: "Classic Rao bloom & spin is 1:16 (22→352 g)" },
     fourSix:   { r: 15,   txt: "Classic Kasuya 4:6 is 1:15 (20→300 g)" },
     ten:       { r: 16,   txt: "Kasuya’s 10-Pour has no single published ratio; it starts here at 1:16" },
+    kalita:    { r: 15,   txt: "George Howell’s Kalita 155 is about 1:15 (16–19→265 g)" },
+    chemex:    { r: 14.6, txt: "Blue Bottle’s Chemex is 1:13–1:16.7 (36–46→600 g)" },
+    aero:      { r: 18.2, txt: "Hoffmann’s Ultimate AeroPress is 1:18 (11→200 g) for a light roast; he goes to 60–65 g a litre, about 1:16, for darker ones" },
+    press:     { r: 16.7, txt: "Hoffmann’s Ultimate French Press is 1:16.7 (30→500 g), 60–70 g a litre" },
+    cold:      { r: 8,    txt: "Ceremony’s cold brew starts at 1:8, a light concentrate you dilute to taste" },
+    moka:      { r: 9.4,  txt: "A moka pot sets its own ratio: a full basket and water to the valve, about 1:9 to 1:10" },
   };
   const GOAL_SHORT = { light: "Light & aromatic", balanced: "Balanced", syrupy: "Syrupy & sweet" };
   const step = (d) => `${d > 0 ? "adds" : "takes off"} ${Math.abs(d).toFixed(1).replace(/\.0$/, "")}`;
   function ratioWhy(r) {
     const C = CLASSIC[r.m], parts = [C.txt + "."];
+    if (!r.goal) { parts.push(r.brewer === "cold" ? `${r.dose} g × 8 = ${r.water} g water. Strength is set when you dilute, not by the grind.` : "Change the strength in the cup, with a splash of hot water, not with the grind."); return parts.join(" "); }
     const dGoal = Math.round((r.baseRatio - C.r) * 10) / 10;
     parts.push(dGoal ? `${GOAL_SHORT[r.goal]} goal ${step(dGoal)}, to 1:${r.baseRatio}.` : `${GOAL_SHORT[r.goal]} goal keeps it there.`);
     if (r.pc.ratio) parts.push(`${r.learn && r.learn.source === "style" ? "Your nailed brews of this style" : "Your journal for this coffee"} ${step(r.pc.ratio)}.`);
     if (r.ratioClamped) parts.push("Held inside 1:14–1:18.5.");
+    if (r.capped) parts.push(`An AeroPress holds about 250 g, so it stops there: 1:${r.ratio}.`);
     parts.push(`${r.dose} g × ${r.ratio} = ${r.water} g water. Strength is set by ratio, not grind.`);
     return parts.join(" ");
   }
@@ -1361,7 +1542,7 @@ table.pours { padding: 10px 24px; }
     if (dark && busy) w.push(`${cap1(ROAST[c.roast].label)} roast with ${METHOD_REF[r.m]}: high agitation turns it bitter fast. Pour gently with no swirl, or use Kasuya 4:6.`);
     if (dark && r.temp >= (c.roast === "dark" ? 89 : 92)) w.push(`${cap1(ROAST[c.roast].label)} roast at ${r.temp}°C: expect bitterness. ${c.roast === "dark" ? 86 : 88}°C is safer.`);
     if (c.process === "decaf" && r.temp >= 94) w.push(`Decaf at ${r.temp}°C extracts fast and can go papery and bitter. Try 90°C.`);
-    if (c.roast === "vlight" && !ferment && r.temp <= 93) w.push(`Very light roast at ${r.temp}°C: likely sour and thin. These want 96°C or hotter.`);
+    if (c.roast === "vlight" && !ferment && r.temp != null && r.temp <= 93) w.push(`Very light roast at ${r.temp}°C: likely sour and thin. These want 96°C or hotter.`);
     return w;
   }
 
@@ -1381,7 +1562,7 @@ table.pours { padding: 10px 24px; }
     const name = (WATER.find((x) => x[0] === w.kind) || [0, "Not set"])[1];
     $("wKind").textContent = name;
     const adv = $("wAdv"); adv.className = "w-adv" + (lv === "hard" ? " hard" : "");
-    adv.innerHTML = lv === "hard" ? `<b class="w-fix">Hard tap first fix: try ${clRange(1, 2)} coarser or −2 °C before changing grind for bitterness or flatness.</b><span class="w-fixn">Here that’s ${isC40() ? `${r.clicks + 1}–${r.clicks + 2} clicks` : `${esc(onMill(r.clicks + 1).txt)}–${esc(onMill(r.clicks + 2).txt)} on the ${esc(mill().short)}`} or ${r.temp - 2}°C.</span>`
+    adv.innerHTML = lv === "hard" ? `<b class="w-fix">Hard tap first fix: try ${clRange(1, 2)} coarser or −2 °C before changing grind for bitterness or flatness.</b><span class="w-fixn">Here that’s ${isC40() ? `${r.clicks + 1}–${r.clicks + 2} clicks` : `${esc(onMill(r.clicks + 1).txt)}–${esc(onMill(r.clicks + 2).txt)} on the ${esc(mill().short)}`}${r.temp != null ? ` or ${r.temp - 2}°C` : ""}.</span>`
       : lv === "vsoft" ? "Very soft water can taste flat and thin. If it does, try 1–2°C hotter before changing the grind."
       : lv === "soft" ? "Good for filter. Dial in with grind and temperature as usual."
       : lv === "unknown" ? "Add your hardness or alkalinity to get advice."
@@ -1398,16 +1579,37 @@ table.pours { padding: 10px 24px; }
     inp("wHard", "hard"); inp("wAlk", "alk");
   }
 
+  const doseName = (r) => (BREWERS[r.brewer].doses.find(([v]) => v === r.dose) || [0, r.dose + " g"])[1];
+  const stepAt = (r, p, i) => r.kind === "steps" ? String(i + 1) : fmt(p.t);
+  const PREP = {
+    v60: "Preheat and rinse the paper. Tare with the coffee in.",
+    kalita: "Rinse the paper with the Kalita on the cup, tip the water out, then level the coffee bed with a gentle shake. Tare.",
+    chemex: "Thick side of the paper to the spout. Rinse it well and pour the rinse water out. Tare with the coffee in.",
+    aero: "Paper in the cap, no need to rinse. Standard way up, straight on the cup. Tare with the coffee in.",
+    press: "Warm the cafetière with hot water first. Tare with the coffee in. Have a spoon ready for the crust.",
+    cold: "Any jar or jug with a lid. Coarse and even, or the concentrate turns muddy.",
+    moka: "Hot water in the base means the coffee spends less time on the heat and tastes less burnt.",
+  };
+  const BLURB = {
+    kalita: "Kalita Wave, after George Howell’s 155 guide: a flat bed and three small holes slow the flow, so small even pulses give a forgiving, even extraction.",
+    chemex: "Chemex, after Blue Bottle: the thick bonded paper holds back oils and fines, so it grinds coarser and runs longer for a very clean cup.",
+    aero: "Hoffmann’s Ultimate AeroPress: all the water at once, a 2 minute steep, one swirl and a slow, gentle press. Hard to get wrong.",
+    press: "Hoffmann’s Ultimate French Press: 4 minutes, break the crust, skim, then a long rest so the silt sinks. The plunger is only a strainer.",
+    cold: "Cold brew, after Ceremony Coffee: 1:8 for a light concentrate, a coarse grind and a long cold steep. Low acidity, smooth and sweet.",
+    moka: "Hoffmann’s moka pot technique: boiled water in the base, a full level basket, lid open so you can stop it the moment it turns pale.",
+  };
   function render() {
     const r = recipe = engine(state);
-    const c = r.c;
+    const c = r.c, K = r.kind;
     if (renderNeed(r)) {
       $("detected").innerHTML = state.text && c.missing.length ? `Couldn’t find the ${c.missing.join(" or ")} in that. Answer below.` : "";
       if (state.text || state.bag) { $("rtitle").textContent = coffeeTitle(state, r); $("rmethod").textContent = ""; $("rgoal").textContent = ""; $("rread").textContent = ""; }
       return;
     }
+    const timed = K !== "steps";
+    $("startBrew").hidden = !timed; $("dock").hidden = !timed;
     $("rmethod").textContent = r.method;
-    $("rgoal").textContent = GOAL[r.goal] + ", " + r.dose + " g";
+    $("rgoal").textContent = (r.goal ? GOAL[r.goal] + ", " : "") + doseName(r);
     $("rzero").hidden = !prefs.zero; $("rzero").textContent = prefs.zero ? `${prefs.zero > 0 ? "+" : "−"}${Math.abs(prefs.zero)} zero offset` : "";
     $("rtitle").textContent = coffeeTitle(state, r);
     const bits = [c.roaster ? titleCase(c.roaster) : (state.bag && state.bag.roaster) || null, c.origin, c.variety ? titleCase(c.variety) : null,
@@ -1422,32 +1624,51 @@ table.pours { padding: 10px 24px; }
     const sign = (n) => (n > 0 ? "+" : "−") + Math.abs(n);
     const lw = r.learn ? (r.learn.source === "coffee" ? "your log" : "your style") : "";
     const cBadges = [r.pc.clicks ? `${sign(r.pc.clicks)} ${lw}` : ""].filter(Boolean);
+    const tBadge = r.pc.temp && r.temp != null ? `${sign(r.pc.temp)}° ${lw}` : "";
+    const ratioSpec = r.brewer === "moka" ? ["ratio", parseInt(doseName(r)), "-cup", "pot size, Bialetti Moka Express", ""]
+      : ["ratio", "1:" + r.ratio, "", r.brewer === "cold" ? "a concentrate: dilute to taste" : `≈${r.yieldG} g in the cup`, r.pc.ratio && r.goal ? `${sign(r.pc.ratio)} ${lw}` : ""];
+    const tempSpec = r.temp != null ? ["", r.temp, "°C", "kettle", tBadge] : r.brewer === "cold" ? ["", "Cold", "", "fridge-cold water", ""] : ["", "Boiled", "", "water into the base", ""];
+    const timeSpec = K === "pour" ? ["", fmt(r.lo), "", `to ${fmt(r.hi)} total`, ""]
+      : r.brewer === "aero" ? ["", fmt(r.hi), "", "total, pressed", ""]
+      : r.brewer === "press" ? ["", `${r.lo / 60}–${r.hi / 60}`, "min", "total, mostly waiting", ""]
+      : r.brewer === "cold" ? ["", "12–18", "h", readyAt(), ""]
+      : ["", "4–5", "min", "medium heat, lid open", ""];
     const S = [
       ["key", onMill(r.clicks).txt, "", mill().lbl, cBadges.join(", ")],
-      ["", r.dose, "g", "coffee", ""],
-      ["", r.water, "g", "water", ""],
-      ["ratio", "1:" + r.ratio, "", `≈${r.yieldG} g in the cup`, r.pc.ratio ? `${sign(r.pc.ratio)} ${lw}` : ""],
-      ["", r.temp, "°C", "kettle", r.pc.temp ? `${sign(r.pc.temp)}° ${lw}` : ""],
-      ["", fmt(r.lo), "", `to ${fmt(r.hi)} total`, ""],
+      ["", r.dose, "g", r.brewer === "moka" ? "basket, full and level" : "coffee", ""],
+      ["", r.water, "g", r.brewer === "moka" ? "hot, to just under the valve" : r.brewer === "cold" ? "cold water" : "water", ""],
+      ratioSpec, tempSpec, timeSpec,
     ];
     renderClicks(r);
+    $("ratioWhy").hidden = r.brewer === "moka";
     $("ratioQ").textContent = `Why 1:${r.ratio}?`; $("ratioWhyT").textContent = ratioWhy(r);
-    $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}"><b>${v}<small>${u}</small></b><span class="sub2">${l}</span>${k === "key" && isC40() && prefs.zero ? `<span class="zo">${sign(prefs.zero)} zero offset</span>` : ""}${k === "key" && !isC40() ? `<span class="sub2">from ${r.clicks} C40 clicks${onMill(r.clicks).atMax ? ", coarsest setting, may still run fast" : onMill(r.clicks).atMin ? ", finest setting" : ""}</span>` : ""}${k === "ratio" ? `<span class="ret">(${r.water} g water − 2.1 × ${r.dose} g retained). Estimate only.</span>` : ""}${badge ? `<span class="badge">${esc(badge)}</span>` : ""}</div>`).join("");
-    const bloomTimes = (r.pours[0].to / r.dose).toFixed(1).replace(/\.0$/, "");
-    $("tech").innerHTML = `<span><b>Agitation: ${AGIT[r.agit]}.</b> ${
-      r.agit >= 3 ? "Stir or swirl the bloom, pour with energy, one swirl at the end." :
+    const showRet = r.tds != null;
+    $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}"><b>${v}<small>${u}</small></b><span class="sub2">${l}</span>${k === "key" && isC40() && prefs.zero ? `<span class="zo">${sign(prefs.zero)} zero offset</span>` : ""}${k === "key" && !isC40() ? `<span class="sub2">from ${r.clicks} C40 clicks${onMill(r.clicks).atMax ? ", coarsest setting, may still run fast" : onMill(r.clicks).atMin ? ", finest setting" : ""}</span>` : ""}${k === "ratio" && showRet ? `<span class="ret">(${r.water} g water − 2.1 × ${r.dose} g retained). Estimate only.</span>` : ""}${badge ? `<span class="badge">${esc(badge)}</span>` : ""}</div>`).join("");
+    const agitTxt = r.agit >= 3 ? "Stir or swirl the bloom, pour with energy, one swirl at the end." :
       r.agit === 2 ? "Swirl the bloom gently, steady pours, one soft swirl at the end." :
       r.agit === 1 ? "No stirring. Pour low and gentle so the fruit stays clean." :
-      "No stirring, no swirling. Pour from close to the bed, centre-weighted."}</span>
-      <span class="muted">Bloom ${bloomTimes}× the dose. Preheat and rinse the paper. Tare with the coffee in.</span>`;
-    const sum = `${isC40() ? r.clicks + " clk" : onMill(r.clicks).txt + " " + mill().short} / ${r.dose}→${r.water} g / ${r.temp}°`;
+      "No stirring, no swirling. Pour from close to the bed, centre-weighted.";
+    if (K === "pour") {
+      const bloomTimes = (r.pours[0].to / r.dose).toFixed(1).replace(/\.0$/, "");
+      $("tech").innerHTML = `<span><b>Agitation: ${AGIT[r.agit]}.</b> ${agitTxt}</span>
+      <span class="muted">Bloom ${bloomTimes}× the dose. ${PREP[r.brewer]}</span>`;
+    } else $("tech").innerHTML = `<span>${esc(PREP[r.brewer])}</span>`;
+    const sum = `${isC40() ? r.clicks + " clk" : onMill(r.clicks).txt + " " + mill().short} / ${r.dose}→${r.water} g${r.temp != null ? ` / ${r.temp}°` : ""}`;
     $("startSum").textContent = sum; $("dockSum").textContent = sum;
 
-    $("pourRows").innerHTML = r.pours.map((p, i) => `<tr class="${i === r.pours.length - 1 ? "last" : ""}"><td class="m">${fmt(p.t)}</td>
-      <td class="to">${g1(p.x)}<small>g</small><span class="scale">(scale: ${p.to} g)</span></td><td class="m">+${g1(pourAdd(r, i))} g in ~${p.dur} s</td><td class="how">${esc(p.note)}</td></tr>`).join("");
+    const tbl = $("pourRows").closest("table");
+    tbl.classList.toggle("steps", K === "steps");
+    tbl.setAttribute("aria-label", K === "pour" ? "Pour schedule" : "Steps");
+    tbl.querySelector("thead tr").innerHTML = K === "steps" ? "<th>Step</th><th>Do</th><th></th><th>How</th>" : `<th>At</th><th>${K === "pour" ? "Target" : "Do"}</th><th>${K === "pour" ? "Pour" : ""}</th><th>How</th>`;
+    $("pourRows").innerHTML = r.pours.map((p, i) => `<tr class="${i === r.pours.length - 1 ? "last" : ""}${p.act ? " act" : ""}"><td class="m">${stepAt(r, p, i)}</td>
+      ${p.act ? `<td class="to">${esc(p.lbl)}</td><td class="m"></td>` : `<td class="to">${g1(p.x)}<small>g</small><span class="scale">(scale: ${p.to} g)</span></td><td class="m">+${g1(pourAdd(r, i))} g in ~${p.dur} s</td>`}<td class="how">${esc(p.note)}</td></tr>`).join("");
+    $("pourNote").hidden = K === "steps";
 
-    $("tds").textContent = `${r.tds[0].toFixed(2)}–${r.tds[1].toFixed(2)}% TDS`;
-    $("tdsNote").textContent = `At ${r.ey[0]}–${r.ey[1]}% extraction this lands ${r.body}. Estimate only: no refractometer needed. Too strong or weak? Change the ratio, not the grind.`;
+    $("tdsCol").hidden = !r.tds;
+    if (r.tds) {
+      $("tds").textContent = `${r.tds[0].toFixed(2)}–${r.tds[1].toFixed(2)}% TDS`;
+      $("tdsNote").textContent = `At ${r.ey[0]}–${r.ey[1]}% extraction this lands ${r.body}. Estimate only: no refractometer needed. Too strong or weak? Change the ratio, not the grind.`;
+    }
     const cn = cupNotes(r);
     $("cupH").textContent = cn.from === "bag" ? "On the bag" : cn.from === "typical" ? `Typical of ${c.origin}` : "In the cup";
     $("cupNotes").innerHTML = cn.notes.map((n) => `<span>${esc(n)}</span>`).join("");
@@ -1461,53 +1682,105 @@ table.pours { padding: 10px 24px; }
     if (r.m === "rao") why.push("Rao’s bloom & spin: 3× bloom, one continuous pour, a spin. Little late agitation, very high clarity.");
     if (r.m === "fourSix") why.push(r.goal === "light" ? "Kasuya’s 4:6: the first 40% sets sweetness vs acidity, the last 60% sets strength. Two big pours keep the body light." : "Kasuya’s 4:6 with three strength pours: rounder and sweeter.");
     if (r.m === "ten") why.push("Kasuya’s 10-Pour: coarse grind, small pours every 15 s. Syrupy and sweet.");
+    if (BLURB[r.m]) why.push(BLURB[r.m]);
+    const hasT = r.temp != null;
     const cons = [];
-    if (c.process === "unsure") cons.push(`Process not stated, so it’s treated as possibly fermented: gentle pours, ${r.temp}°C (94 at most), ${cl(1)} coarser.`);
-    if (c.roast === "unsure") cons.push(`Roast not sure, so it plays safe: 92°C base and ${cl(1)} coarser. Less bitterness risk, maybe a little less sweetness.`);
+    if (c.process === "unsure") cons.push(`Process not stated, so it’s treated as possibly fermented: ${K === "pour" ? "gentle pours, " : ""}${hasT ? `${r.temp}°C (94 at most), ` : ""}${cl(1)} coarser.`);
+    if (c.roast === "unsure") cons.push(`Roast not sure, so it plays safe: ${hasT ? "a cooler base temperature and " : ""}${cl(1)} coarser. Less bitterness risk, maybe a little less sweetness.`);
     if (cons.length) cons.push("Tell it the process and roast under Bag details for a sharper recipe.");
     const pl = cap1(PROCESS[c.process].label), whyBase = why.length;
-    if (c.process === "anaerobic") why.push(`Anaerobic: long, sealed fermentation gives tropical and boozy notes that turn harsh with heat and agitation. Few gentle pours, ${r.temp}°C (93 at most), a click coarser.`);
-    else if (c.process === "cofer") why.push(`Co-fermented or infused: the added fruit, yeast or spice extracts fast and dominates when pushed. No stirring, ${r.temp}°C (92 at most), 2 clicks coarser.`);
-    else if (c.process === "decaf") why.push(`Decaf: the beans are more porous and extract fast, with more fines. Cooler (${r.temp}°C, 92 at most), 2 clicks coarser, gentle pours.`);
-    else if (c.process === "natural" && r.agit <= 1) why.push(`Natural: dried in the fruit, so heavy and fruity. Low agitation and ${r.temp}°C keep it clean, not winey.`);
-    if (c.roast === "dark") why.push(`Dark roast: soluble and quick to go bitter. No stirring, ${r.temp}°C (87 at most), ${cl(4)} coarser than a light roast.`);
-    else if (c.roast === "mdark") why.push(`Medium-dark: extracts easily. Low agitation, ${r.temp}°C (90 at most), ${cl(3)} coarser.`);
-    else if (c.roast === "vlight" && r.agit >= 2) why.push(`Very light (Nordic-style): dense and hard to extract. ${r.temp}°C, a click finer and full agitation so it isn’t sour.`);
-    if ((c.roast === "mdark" || c.roast === "dark") && r.m === "fourSix" && state.method === "best")
-      why.push(`Why the grind jumps from a medium roast: darker roasts switch to Kasuya 4:6, which grinds coarser by design (base ${BASE.fourSix.c} vs Hoffmann’s ${BASE.hoffmann.c} C40 clicks). The roast itself only adds ${ROAST[c.roast].dC - ROAST.medium.dC} more. Pick Hoffmann above to stay finer.`);
-    if (c.delicate) why.push(`${c.variety ? titleCase(c.variety) : "Delicate variety"}: florals fade with rough pours. Hot water, but agitation capped at medium${r.m === "rao" ? " and a flat, undisturbed bed" : ""}.`);
-    if (state.method === "best" && why.length === whyBase && c.process !== "unsure" && c.roast !== "unsure") why.push(`${pl}, ${ROAST[c.roast].label} roast: dense enough to take hot water and pulsed pours for full sweetness.`);
-    why.push(`Strength comes from the ratio (1:${r.ratio}). The grind is set for extraction, not strength.`);
+    if (r.brewer === "v60") {
+      if (c.process === "anaerobic") why.push(`Anaerobic: long, sealed fermentation gives tropical and boozy notes that turn harsh with heat and agitation. Few gentle pours, ${r.temp}°C (93 at most), a click coarser.`);
+      else if (c.process === "cofer") why.push(`Co-fermented or infused: the added fruit, yeast or spice extracts fast and dominates when pushed. No stirring, ${r.temp}°C (92 at most), 2 clicks coarser.`);
+      else if (c.process === "decaf") why.push(`Decaf: the beans are more porous and extract fast, with more fines. Cooler (${r.temp}°C, 92 at most), 2 clicks coarser, gentle pours.`);
+      else if (c.process === "natural" && r.agit <= 1) why.push(`Natural: dried in the fruit, so heavy and fruity. Low agitation and ${r.temp}°C keep it clean, not winey.`);
+      if (c.roast === "dark") why.push(`Dark roast: soluble and quick to go bitter. No stirring, ${r.temp}°C (87 at most), ${cl(4)} coarser than a light roast.`);
+      else if (c.roast === "mdark") why.push(`Medium-dark: extracts easily. Low agitation, ${r.temp}°C (90 at most), ${cl(3)} coarser.`);
+      else if (c.roast === "vlight" && r.agit >= 2) why.push(`Very light (Nordic-style): dense and hard to extract. ${r.temp}°C, a click finer and full agitation so it isn’t sour.`);
+      if ((c.roast === "mdark" || c.roast === "dark") && r.m === "fourSix" && state.method === "best")
+        why.push(`Why the grind jumps from a medium roast: darker roasts switch to Kasuya 4:6, which grinds coarser by design (base ${BASE.fourSix.c} vs Hoffmann’s ${BASE.hoffmann.c} C40 clicks). The roast itself only adds ${ROAST[c.roast].dC - ROAST.medium.dC} more. Pick Hoffmann above to stay finer.`);
+      if (c.delicate) why.push(`${c.variety ? titleCase(c.variety) : "Delicate variety"}: florals fade with rough pours. Hot water, but agitation capped at medium${r.m === "rao" ? " and a flat, undisturbed bed" : ""}.`);
+      if (state.method === "best" && why.length === whyBase && c.process !== "unsure" && c.roast !== "unsure") why.push(`${pl}, ${ROAST[c.roast].label} roast: dense enough to take hot water and pulsed pours for full sweetness.`);
+    } else {
+      const moves = [r.clickParts.roast && `${ROAST[c.roast].label} roast ${signed(r.clickParts.roast)}`, r.clickParts.process && `${PROCESS[c.process].label} ${signed(r.clickParts.process)}`].filter(Boolean);
+      if (c.process !== "unsure" && c.roast !== "unsure") why.push(`${pl}, ${ROAST[c.roast].label} roast: ${moves.length ? `the grind moves ${moves.join(", ")} clicks` : "the grind stays at the base"}${hasT ? `, and the kettle goes to ${r.temp}°C` : ""}, the same rules as the V60 recipes.`);
+    }
+    if (r.goal) why.push(`Strength comes from the ratio (1:${r.ratio}). The grind is set for extraction, not strength.`);
     const rk = risks(r);
     $("why").innerHTML = rk.map((w) => `<li class="warn">${esc(w)}</li>`).join("") + cons.map((w) => `<li class="cons">${esc(w)}</li>`).join("") + why.map((w) => `<li>${esc(w)}</li>`).join("");
-    // folded by default; a warning is named on the closed row so it is never missed
     $("whyHint").textContent = rk.length ? `${rk.length} warning${rk.length > 1 ? "s" : ""}` : ""; $("whyHint").classList.toggle("warn", rk.length > 0);
 
-    const dial = [
+    const lighter = Math.round((r.ratio + 1) * 10) / 10, stronger = Math.round((r.ratio - 1) * 10) / 10;
+    let dial;
+    if (K === "pour") dial = [
       `Taste first, then check when it drained. Target ${fmt(r.lo)}–${fmt(r.hi)}.`,
       `Sour, thin, drained before ${fmt(r.lo)} → ${cl(2)} finer.`,
       `Sour but on time → 2°C hotter (you’re at ${r.temp}°C).`,
       `Bitter or drying, still dripping after ${fmt(r.hi)} → ${cl(2)} coarser.`,
       "Bitter but on time → 2°C cooler, or less swirling.",
-      `Watery but sweet → 1:${Math.round((r.ratio - 1) * 10) / 10}. Heavy or muddy → 1:${Math.round((r.ratio + 1) * 10) / 10}. Leave the grind.`,
+      `Watery but sweet → 1:${stronger}. Heavy or muddy → 1:${lighter}. Leave the grind.`,
       "Sour and bitter at once → uneven bed: same grind, gentler pours, swirl once.",
     ];
-    if (r.agit <= 1) dial.push("Fermenty, boozy, harsh → 2°C cooler before touching the grind.");
-    if (waterLevel() === "hard") dial.unshift(`Hard tap selected → first try ${clRange(1, 2)} coarser or −2 °C.`);
+    else if (r.brewer === "aero") dial = [
+      `Sour or thin → ${cl(2)} finer, or let it steep 30 s longer before the swirl.`,
+      `Bitter or drying → ${cl(2)} coarser, or 2°C cooler (you’re at ${r.temp}°C).`,
+      `The press is hard work or stalls → ${cl(2)} coarser. Press gently: it should take about 30 s.`,
+      `Watery but sweet → 1:${stronger}. Heavy → 1:${lighter}. Leave the grind.`,
+    ];
+    else if (r.brewer === "press") dial = [
+      "Sour or thin → leave it longer after skimming (up to 8 minutes) before grinding finer.",
+      `Still sour → ${cl(2)} finer. Bitter or drying → ${cl(2)} coarser, or 2°C cooler.`,
+      "Silty or muddy → wait longer before you pour, don’t push the plunger down, and leave the last bit in the press.",
+      `Watery → 1:${stronger}. Heavy → 1:${lighter}. Leave the grind.`,
+    ];
+    else if (r.brewer === "cold") dial = [
+      "Weak → dilute less, or not at all. Too strong → add more water or milk.",
+      `Sour or thin → steep longer (18 h), then ${cl(2)} finer.`,
+      `Bitter, woody or muddy → steep less (12 h), then ${cl(2)} coarser.`,
+      "Cloudy → filter it a second time through paper.",
+    ];
+    else dial = [
+      `Bitter or burnt → take it off the heat sooner, turn the flame down, then ${cl(2)} coarser.`,
+      `Sour or thin → ${cl(2)} finer, and fill the basket right to the top, level.`,
+      "Spits and sputters early → the heat is too high. Turn it down.",
+      `Nothing comes out → too fine or tamped. ${cap1(cl(2))} coarser, and never press the coffee down.`,
+      "Too strong → add a splash of hot water to the cup. Don’t underfill the basket.",
+    ];
+    if (r.agit <= 1 && r.temp != null) dial.push("Fermenty, boozy, harsh → 2°C cooler before touching the grind.");
+    if (waterLevel() === "hard") dial.unshift(r.temp != null ? `Hard tap selected → first try ${clRange(1, 2)} coarser or −2 °C.` : `Hard tap selected → first try ${clRange(1, 2)} coarser, or filtered water.`);
     const hardFirst = waterLevel() === "hard";
     $("dial").innerHTML = dial.map((w, i) => `<li${i === 0 && hardFirst ? ' style="font-weight:700"' : ""}>${esc(w)}</li>`).join("");
 
     $("logTitle").textContent = `How did ${coffeeTitle(state, r)} taste?`;
+    $("ddRow").hidden = K !== "pour";
     $("ddHint").textContent = `target ${fmt(r.lo)}–${fmt(r.hi)}`;
     if (picked.size || $("ddIn").value) updateSuggest();
   }
+  // cold brew: when it's ready if you start now
+  function readyAt() {
+    const t = (h) => { const d = new Date(Date.now() + h * 3600e3); return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`; };
+    return `in the fridge: ready ${t(12)}–${t(18)} if you start now`;
+  }
 
   // ---------- options ----------
-  const OPTS_MAIN = [
-    { key: "goal", label: "Cup", items: [["light", "Light & aromatic"], ["balanced", "Balanced"], ["syrupy", "Sweet & syrupy"]] },
-    { key: "dose", label: "Coffee", items: [[12, "12 g"], [15, "15 g"], [18, "18 g"], [20, "20 g"]] },
-    { key: "method", label: "Method", items: [["best", "Best for this coffee"], ["hoffmann", "Hoffmann"], ["fourSix", "Kasuya 4:6"], ["ten", "Kasuya 10-Pour"], ["rao", "Rao"]] },
-  ];
+  // switching brewer keeps each brewer's own last dose
+  function setBrewer(v) {
+    const old = brewerOf(state);
+    state.doses = { ...(state.doses || {}), [old]: state.dose };
+    state.brewer = v;
+    const B = BREWERS[v], d = state.doses[v];
+    state.dose = B.doses.some(([x]) => x === d) ? d : B.dose;
+    renderShelfV(); renderShelf();
+  }
+  const optsMain = () => {
+    const b = brewerOf(state), B = BREWERS[b];
+    return [
+      { key: "brewer", label: "Brewer", items: Object.entries(BREWERS).map(([k, x]) => [k, x.name]), on: setBrewer },
+      B.kind !== "steps" && { key: "goal", label: "Cup", items: [["light", "Light & aromatic"], ["balanced", "Balanced"], ["syrupy", "Sweet & syrupy"]] },
+      { key: "dose", label: b === "moka" ? "Pot" : "Coffee", items: B.doses },
+      b === "v60" && { key: "method", label: "Method", items: [["best", "Best for this coffee"], ["hoffmann", "Hoffmann"], ["fourSix", "Kasuya 4:6"], ["ten", "Kasuya 10-Pour"], ["rao", "Rao"]] },
+    ].filter(Boolean);
+  };
   const OPTS_MORE = [
     { key: "process", label: "Process", items: [["auto", "From the bag"], ["washed", "Washed"], ["natural", "Natural"], ["honey", "Honey"], ["anaerobic", "Anaerobic"], ["cofer", "Co-ferment / infused"], ["decaf", "Decaf"], ["unsure", "Not stated"]] },
     { key: "roast", label: "Roast", items: [["auto", "From the bag"], ["vlight", "Very light"], ["light", "Light"], ["medium", "Medium"], ["mdark", "Medium-dark"], ["dark", "Dark"], ["unsure", "Not sure"]] },
@@ -1520,8 +1793,8 @@ table.pours { padding: 10px 24px; }
       const g = document.createElement("div"); g.className = "chips"; g.setAttribute("role", "group"); g.setAttribute("aria-labelledby", lab.id);
       o.items.forEach(([v, t]) => {
         const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.textContent = t; b.id = `o-${o.key}-${v}`;
-        b.setAttribute("aria-pressed", String(state[o.key] === v));
-        b.onclick = () => { state[o.key] = v; if (o.key === "roast") state.roastPhoto = null; saveState(); renderAllOpts(); render(); };
+        b.setAttribute("aria-pressed", String((o.key === "brewer" ? brewerOf(state) : state[o.key]) === v));
+        b.onclick = () => { if (o.on) o.on(v); else state[o.key] = v; if (o.key === "roast") state.roastPhoto = null; saveState(); renderAllOpts(); render(); };
         if (o.key === "roast" && ROAST_SW[v]) b.insertAdjacentHTML("afterbegin", `<i class="bean-dot" style="--c:${ROAST_SW[v]}"></i>`);
         g.appendChild(b);
       });
@@ -1530,7 +1803,7 @@ table.pours { padding: 10px 24px; }
       if (o.key === "roast") { const m = document.createElement("div"); m.id = "rpMsgOpts"; m.className = "rp-msg"; box.appendChild(m); paintPhoto(m); }
     });
   }
-  const renderAllOpts = () => { renderOpts("opts-main", OPTS_MAIN); renderOpts("opts-more", OPTS_MORE); };
+  const renderAllOpts = () => { renderOpts("opts-main", optsMain()); renderOpts("opts-more", OPTS_MORE); };
 
   function build() {
     const t = $("coffeeIn").value.trim();
@@ -1552,6 +1825,16 @@ table.pours { padding: 10px 24px; }
     const has = (k) => tags.has(k);
     const fast = dd != null && dd < r.lo - 5, slow = dd != null && dd > r.hi + 10;
     const ddTxt = dd != null ? ` (drained at ${fmt(dd)})` : "";
+    if (r.temp == null) {   // cold brew and moka: no kettle temperature to move, so grind and time do the work
+      const moka = r.brewer === "moka";
+      if (has("sour") && has("bitter")) return { text: moka ? "Sour and bitter together: the heat was too high. Same grind, a lower flame, off as soon as it turns pale." : "Sour and bitter together: stir it well at the start so every ground is wet. Same grind.", d: {} };
+      if (has("harsh") || has("bitter")) return { text: moka ? `Bitter: ${cl(2)} coarser, and take it off the heat as soon as it turns pale.` : `Bitter or woody: ${cl(2)} coarser, or steep a few hours less.`, d: { clicks: 2 } };
+      if (has("sour") || has("flat")) return { text: moka ? `Sour or flat: ${cl(2)} finer, and fill the basket right to the top.` : `Sour or flat: ${cl(2)} finer, or steep a few hours longer.`, d: { clicks: -2 } };
+      if (has("thin")) return moka ? { text: `Thin: ${cl(1)} finer and a full, level basket.`, d: { clicks: -1 } } : { text: "Thin: dilute less, or not at all.", d: {} };
+      if (has("heavy")) return { text: moka ? "Heavy: add a splash of hot water to the cup." : "Heavy: dilute a little more.", d: {} };
+      if (has("sweet") || has("balanced")) return { text: "Keep it. This is now your recipe for this coffee.", d: {} };
+      return null;
+    }
     if (has("sour") && has("bitter")) return { text: "Sour and bitter together means uneven extraction. Keep the numbers; pour gentler, keep the bed flat and swirl once at the end.", d: {} };
     if (has("harsh")) return { text: `Harsh or drying${ddTxt}: ${cl(1)} coarser and gentler pours.`, d: { clicks: 1 } };
     if (has("bitter")) return slow ? { text: `Bitter and slow${ddTxt}: ${cl(2)} coarser.`, d: { clicks: 2 } } : { text: `Bitter on time${ddTxt}: 2°C cooler.`, d: { temp: -2 } };
@@ -1603,13 +1886,13 @@ table.pours { padding: 10px 24px; }
       // nailed it: remember the offsets that worked for this process × roast
       if (nailed && r.c.process !== "unsure" && r.c.roast !== "unsure") {
         prefs.styles = prefs.styles || {};
-        const k = r.c.process + "|" + r.c.roast, st = prefs.styles[k] || { nailed: [] };
+        const k = r.c.process + "|" + r.c.roast + brewTag(r.brewer), st = prefs.styles[k] || { nailed: [] };
         st.nailed = [{ clicks: r.pc.clicks || 0, temp: r.pc.temp || 0, ratio: r.pc.ratio || 0, at: new Date().toISOString() }, ...st.nailed].slice(0, 6);
         prefs.styles[k] = st;
       }
       savePrefs();
     }
-    journal.unshift({ at: new Date().toISOString(), title: coffeeTitle(state, r), text: state.text, bag: state.bag, goal: state.goal, dose: r.dose,
+    journal.unshift({ at: new Date().toISOString(), title: coffeeTitle(state, r), text: state.text, bag: state.bag, brewer: r.brewer, goal: state.goal, dose: r.dose,
       method: r.method, clicks: r.clicks, temp: r.temp, ratio: r.ratio, water: r.water, dd, tastes: [...picked], note: $("logNote").value.trim(),
       change: s ? s.text : "" });
     saveJournal();
@@ -1617,7 +1900,7 @@ table.pours { padding: 10px 24px; }
     renderTaste(); render(); renderJournal();
     const a = recipe, diff = [];
     if (a.clicks !== before.clicks) diff.push(isC40() ? `${before.clicks} → <b>${a.clicks} clicks</b>` : `${esc(onMill(before.clicks).txt)} → <b>${esc(onMill(a.clicks).txt)} ${esc(mill().short)}</b>`);
-    if (a.temp !== before.temp) diff.push(`${before.temp} → <b>${a.temp}°C</b>`);
+    if (a.temp !== before.temp && a.temp != null) diff.push(`${before.temp} → <b>${a.temp}°C</b>`);
     if (a.ratio !== before.ratio) diff.push(`1:${before.ratio} → <b>1:${a.ratio}</b>`);
     const box = $("suggest"); box.hidden = false;
     box.innerHTML = diff.length ? `<span><b>Saved.</b> Next time for ${esc(coffeeTitle(state, a))}: ${diff.join(", ")}.</span><span class="muted">Shown on the recipe with a “your log” badge.</span>`
@@ -1626,17 +1909,19 @@ table.pours { padding: 10px 24px; }
   }
   function renderJournal() {
     const box = $("journalList");
-    if (!journal.length) { box.innerHTML = '<p class="muted" style="margin:0;font-size:14px">No brews logged yet. Finish a brew in brew mode and tap Drained, or log one above.</p>'; return; }
+    if (!journal.length) { box.innerHTML = '<p class="muted" style="margin:0;font-size:14px">No brews logged yet. Finish a brew in brew mode, or log one above.</p>'; return; }
     box.innerHTML = journal.slice(0, 12).map((e, i) => `<div class="entry">
       <span class="when">${dmy(e.at)}</span>
       <div class="what"><span class="serif">${esc(e.title)}</span>
-        <span class="num">${esc(e.method)} / ${esc(grindLine(e.clicks))} / ${e.dose}→${e.water} g / ${e.temp}°C${e.dd != null ? " / drained " + fmt(e.dd) : ""}</span>
+        <span class="num">${esc(e.method)} / ${esc(grindLine(e.clicks))} / ${e.dose}→${e.water} g${e.temp != null ? ` / ${e.temp}°C` : ""}${e.dd != null ? " / drained " + fmt(e.dd) : ""}</span>
         ${e.tastes && e.tastes.length ? `<span class="t">${esc(e.tastes.map((k) => (TASTES.find((x) => x[0] === k) || [k, k])[1]).join(", "))}${e.change ? " → " + esc(e.change) : ""}</span>` : ""}
         ${e.note ? `<span class="t muted">${esc(e.note)}</span>` : ""}</div>
       <button type="button" data-i="${i}">Brew again</button></div>`).join("");
     box.querySelectorAll("button[data-i]").forEach((b) => b.onclick = () => {
       const e = journal[+b.dataset.i];
-      state.text = e.text || e.title; state.bag = e.bag || null; state.goal = e.goal || state.goal; state.dose = e.dose || state.dose;
+      state.text = e.text || e.title; state.bag = e.bag || null; state.goal = e.goal || state.goal;
+      if ((e.brewer || "v60") !== brewerOf(state)) setBrewer(e.brewer || "v60");
+      state.dose = e.dose || state.dose;
       $("coffeeIn").value = state.text; saveState(); renderAllOpts(); render();
       $("recipe").scrollIntoView({ behavior: "smooth", block: "start" });
     });
@@ -1694,8 +1979,9 @@ table.pours { padding: 10px 24px; }
   function openBrew() {
     if (!recipe) render();
     const r = recipe;
-    if ($("rbody").hidden) return;
-    $("bvCoffee").textContent = `${coffeeTitle(state, r)} / ${grindLine(r.clicks)}${isC40() && prefs.zero ? ` (${prefs.zero > 0 ? "+" : "−"}${Math.abs(prefs.zero)} zero offset)` : ""} / ${r.temp}°C / ${r.dose}→${r.water} g`;
+    if ($("rbody").hidden || r.kind === "steps") return;
+    $("bvCoffee").textContent = `${BREWERS[r.brewer].name} / ${coffeeTitle(state, r)} / ${grindLine(r.clicks)}${isC40() && prefs.zero ? ` (${prefs.zero > 0 ? "+" : "−"}${Math.abs(prefs.zero)} zero offset)` : ""} / ${r.temp}°C / ${r.dose}→${r.water} g`;
+    $("bvDrain").textContent = r.kind === "pour" ? "Drained" : "Done";
     const T = r.hi + 20;
     $("bvBar").innerHTML = `<div class="win" style="left:${(r.lo / T) * 100}%;width:${((r.hi - r.lo) / T) * 100}%"></div>` +
       r.pours.map((p, i) => `<div class="seg" id="sg${i}" style="left:${(p.t / T) * 100}%;width:${Math.max(1.2, (p.dur / T) * 100)}%"></div>`).join("") + '<div class="head" id="bvHead" style="left:0"></div>';
@@ -1723,6 +2009,7 @@ table.pours { padding: 10px 24px; }
     const sec = Math.floor(elapsed());
     const r = recipe;
     closeBrew();
+    if (r.kind !== "pour") { buzz([40, 60, 40]); $("journal").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
     $("ddIn").value = fmt(sec);
     const v = sec < r.lo - 5 ? `fast, target ${fmt(r.lo)}–${fmt(r.hi)}` : sec > r.hi + 10 ? `slow, target ${fmt(r.lo)}–${fmt(r.hi)}` : "in the window";
     $("ddHint").innerHTML = `<b style="color:var(--ink)">Drained at ${fmt(sec)}</b>, ${v}. Now pick what you taste.`;
@@ -1741,11 +2028,11 @@ table.pours { padding: 10px 24px; }
     const r = recipe; if (!r) return;
     const idle = !bv.running && bv.paused === 0;
     const el = elapsed();
-    const P = r.pours;
+    const P = r.pours, imm = r.kind === "imm";
     let idx = -1;
     if (!idle) for (let i = 0; i < P.length; i++) if (P[i].t <= el) idx = i;
     const cur = idx >= 0 ? P[idx] : null, next = P[idx + 1] || null, after = P[idx + 2] || null;
-    const prevTo = idx > 0 ? P[idx - 1].to : 0;
+    const prevTo = idx > 0 ? (P.slice(0, idx).filter((p) => !p.act).pop() || { to: 0 }).to : 0;
     const inPour = cur && el < cur.t + cur.dur;
     const afterLast = idx === P.length - 1 && !inPour;
 
@@ -1756,21 +2043,32 @@ table.pours { padding: 10px 24px; }
     // same slots in every phase: pill, label, big number, instruction (2 lines), one detail line, progress
     let expected = 0, nextLbl = "Then", nextT = "", nextCd = "", prog = 0;
     const n = P.length, cd = (sec) => fmt(Math.max(0, Math.ceil(sec)));
+    const what = (p) => p.act ? `${fmt(p.t)} → ${p.lbl}` : `${fmt(p.t)} → ${p.to} g`;
+    const endTxt = imm ? (r.lo === r.hi ? `Done at ${fmt(r.hi)}` : `Pour from ${fmt(r.lo)}, by ${fmt(r.hi)}`) : `Drain, done by ${fmt(r.hi)}`;
+    const word = imm ? "Step" : "Pour";
     if (idle) {
-      setNow("idle", "Ready", "First pour, scale to", P[0].to, "g", "Tare with the coffee in. Press Start as you begin to pour.", `${n} pours, done by ${fmt(r.hi)}`);
-      nextT = n > 1 ? `${fmt(P[1].t)} → ${P[1].to} g` : `Drain, done by ${fmt(r.hi)}`;
+      setNow("idle", "Ready", imm ? "Pour all the water, scale to" : "First pour, scale to", P[0].to, "g", "Tare with the coffee in. Press Start as you begin to pour.", `${n} ${imm ? "steps" : "pours"}, done by ${fmt(r.hi)}`);
+      nextT = n > 1 ? what(P[1]) : endTxt;
     } else if (inPour) {
       const k = clamp((el - cur.t) / cur.dur, 0, 1);
-      expected = prevTo + (cur.to - prevTo) * k; prog = k;
-      setNow("pour", `Pour ${idx + 1} of ${n}`, "Scale to", cur.to, "g", cur.note, `<b>+${g1(pourAdd(r, idx))} g</b> in ${Math.max(0, Math.ceil(cur.t + cur.dur - el))} s`);
-      if (next) { nextLbl = "Next"; nextT = `${fmt(next.t)} → ${next.to} g`; nextCd = cd(next.t - el); } else nextT = `Drain, done by ${fmt(r.hi)}`;
+      prog = k;
+      if (cur.act) { expected = prevTo; setNow("pour act", `${word} ${idx + 1} of ${n}`, "Now", cur.lbl, "", cur.note, `${Math.max(0, Math.ceil(cur.t + cur.dur - el))} s`); }
+      else { expected = prevTo + (cur.to - prevTo) * k;
+        setNow("pour", `${word} ${idx + 1} of ${n}`, "Scale to", cur.to, "g", cur.note, `<b>+${g1(pourAdd(r, idx))} g</b> in ${Math.max(0, Math.ceil(cur.t + cur.dur - el))} s`); }
+      if (next) { nextLbl = "Next"; nextT = what(next); nextCd = cd(next.t - el); } else nextT = endTxt;
     } else if (!afterLast) {
-      expected = cur.to;
+      expected = cur.act ? prevTo : cur.to;
       const left = next.t - el, gap = next.t - (cur.t + cur.dur);
       prog = gap > 0 ? clamp(1 - left / gap, 0, 1) : 1;
-      setNow("wait", "Wait", `Pour ${idx + 2} of ${n}, scale to`, next.to, "g", left <= 5 ? "Get ready to pour." : "Hands off. Let it settle.", `<b>Pour in ${cd(left)}</b>, +${g1(pourAdd(r, idx + 1))} g`);
-      nextT = after ? `${fmt(after.t)} → ${after.to} g` : `Drain, done by ${fmt(r.hi)}`;
+      const rest = imm && next.lbl === "Pour";   // the cafetière's long rest: the fines sink while you wait
+      if (next.act) setNow("wait", rest ? "Resting" : imm ? "Steeping" : "Wait", `${next.lbl} in`, cd(left), "", left <= 5 ? "Get ready." : rest ? "Hands off. The fines are sinking, so the cup pours clean." : next.note, `${word} ${idx + 2} of ${n}`);
+      else setNow("wait", "Wait", `${word} ${idx + 2} of ${n}, scale to`, next.to, "g", left <= 5 ? "Get ready to pour." : "Hands off. Let it settle.", `<b>Pour in ${cd(left)}</b>, +${g1(pourAdd(r, idx + 1))} g`);
+      nextT = after ? what(after) : endTxt;
       if (after) nextCd = cd(after.t - el);
+    } else if (imm) {
+      expected = r.water; prog = 1;
+      setNow("drain", "Done", "Brewed in", fmt(Math.floor(cur.t + cur.dur)), "", r.brewer === "press" ? "Leave the last bit in the press: it’s all silt. Tap Done, then log how it tastes." : "Tap Done, then log how it tastes.", "");
+      nextT = "Log how it tastes";
     } else {
       expected = r.water;
       const end = cur.t + cur.dur;
@@ -1784,9 +2082,9 @@ table.pours { padding: 10px 24px; }
     $("bvNextLbl").textContent = nextLbl; $("bvNextT").textContent = nextT; $("bvNextCd").textContent = nextCd;
 
     P.forEach((p, i) => { const on = i === idx && inPour, done = i < idx || (i === idx && !inPour);
-      const sg = $("sg" + i); if (sg) sg.className = "seg" + (on ? " on" : done ? " done" : ""); });
+      const sg = $("sg" + i); if (sg) sg.className = "seg" + (p.act ? " act" : "") + (on ? " on" : done ? " done" : ""); });
     const T = r.hi + 20; const h = $("bvHead"); if (h) h.style.left = `${clamp(el / T, 0, 1) * 100}%`;
-    // Drained is live from the last pour on: you can tap it the moment the bed goes dry
+    // Drained (Done for immersion) is live from the last step on
     const canDrain = idx === P.length - 1 && (bv.running || bv.paused > 0);
     $("bvDrain").hidden = !canDrain; $("bvReset").hidden = canDrain;
     if (bv.running && el > r.hi + 240) { stopLoop(); $("bvGo").textContent = "Resume"; }
@@ -1803,25 +2101,28 @@ table.pours { padding: 10px 24px; }
 
   // ---------- share ----------
   // plain text, aligned for a monospace notes app but still readable in a chat bubble
+  const SITE = () => /thisisfed\.xyz$/.test(location.hostname) ? location.hostname : "coffee.thisisfed.xyz";
   function recipeText() {
-    const r = recipe, c = r.c;
+    const r = recipe, c = r.c, K = r.kind;
     const who = [c.roaster ? titleCase(c.roaster) : (state.bag && state.bag.roaster) || "", c.origin, PROCESS[c.process].label, roastLabel(c.roast)].filter(Boolean).join(", ");
     const lv = waterLevel();
     const L = [
       coffeeTitle(state, r), who, "",
-      `${r.method}, ${GOAL[r.goal]}`,
+      `${r.method}${r.goal ? ", " + GOAL[r.goal] : ""}`,
       isC40() ? `Grind    ${r.clicks} clicks, Comandante C40 from zero${prefs.zero ? ` (my zero ${signed(prefs.zero)})` : ""}`
         : `Grind    ${onMill(r.clicks).txt} on ${mill().name} (${mill().lbl}; from ${r.clicks} C40 clicks)`,
-      `Coffee   ${r.dose} g`,
-      `Water    ${r.water} g (1:${r.ratio}) at ${r.temp}°C`,
-      `Drain    ${fmt(r.lo)}–${fmt(r.hi)}`,
-      `Pours    agitation ${AGIT[r.agit]}`,
-      ...r.pours.flatMap((p, i) => [`  ${fmt(p.t).padStart(4)}  ${g1(p.x).padStart(5)} g  +${g1(pourAdd(r, i))} g in ~${p.dur} s  ${p.note}`, `${" ".repeat(13)}(scale: ${p.to} g)`]),
-      "  Targets shown to 0.1 g. Pour to the nearest gram on your scale.",
+      `Coffee   ${r.dose} g${r.brewer === "moka" ? ` (${doseName(r)} pot, basket full and level)` : ""}`,
+      r.temp != null ? `Water    ${r.water} g (1:${r.ratio}) at ${r.temp}°C` : r.brewer === "cold" ? `Water    ${r.water} g cold (1:${r.ratio})` : `Water    ${r.water} g, boiled, to just under the valve`,
     ];
+    if (K === "pour") L.push(`Drain    ${fmt(r.lo)}–${fmt(r.hi)}`, `Pours    agitation ${AGIT[r.agit]}`,
+      ...r.pours.flatMap((p, i) => [`  ${fmt(p.t).padStart(4)}  ${g1(p.x).padStart(5)} g  +${g1(pourAdd(r, i))} g in ~${p.dur} s  ${p.note}`, `${" ".repeat(13)}(scale: ${p.to} g)`]),
+      "  Targets shown to 0.1 g. Pour to the nearest gram on your scale.");
+    else if (K === "imm") L.push(`Time     ${r.lo === r.hi ? fmt(r.hi) : `${fmt(r.lo)}–${fmt(r.hi)}`}`, "Steps",
+      ...r.pours.map((p) => `  ${fmt(p.t).padStart(4)}  ${p.act ? p.lbl.padEnd(7) : (p.to + " g").padEnd(7)}  ${p.note}`));
+    else L.push(r.brewer === "cold" ? "Time     12–18 h in the fridge" : "Heat     medium, lid open", "Steps", ...r.pours.map((p, i) => `  ${i + 1}. ${p.lbl}: ${p.note}`));
     const rk = risks(r); if (rk.length) L.push("", ...rk.map((x) => "! " + x));
-    if (lv === "hard") L.push("", `Hard tap first fix: try ${clRange(1, 2)} coarser or −2 °C before changing grind for bitterness or flatness.`);
-    L.push("", "v60.thisisfed.xyz");
+    if (lv === "hard") L.push("", r.temp != null ? `Hard tap first fix: try ${clRange(1, 2)} coarser or −2 °C before changing grind for bitterness or flatness.` : `Hard tap first fix: try ${clRange(1, 2)} coarser, or filtered water.`);
+    L.push("", SITE());
     return L.join("\n");
   }
   $("copyBtn").onclick = () => {
@@ -1843,7 +2144,7 @@ table.pours { padding: 10px 24px; }
     x.fillStyle = "#f5f5f7"; x.fillRect(0, 0, W, H);
     x.textBaseline = "alphabetic";
     x.fillStyle = coffee; x.font = F(600, 30); x.fillText(r.method, M, 104);
-    x.fillStyle = mut; x.textAlign = "right"; x.fillText(GOAL[r.goal], W - M, 104); x.textAlign = "left";
+    x.fillStyle = mut; x.textAlign = "right"; x.fillText(r.goal ? GOAL[r.goal] : doseName(r), W - M, 104); x.textAlign = "left";
     const title = coffeeTitle(state, r), tpx = fitPx(title, IW, 84, 700);
     x.fillStyle = ink; x.font = F(700, tpx); x.fillText(title, M, 104 + 22 + tpx);
     const sub = [c.roaster ? titleCase(c.roaster) : (state.bag && state.bag.roaster) || "", c.origin, PROCESS[c.process].label, roastLabel(c.roast)].filter(Boolean).join(", ");
@@ -1857,7 +2158,8 @@ table.pours { padding: 10px 24px; }
     x.fillStyle = mut; x.font = F(600, 26); x.fillText(isC40() ? "Comandante C40 clicks" : clip(mill().name, hw - 40), M + hw / 2, y + 244);
     x.font = F(500, 22); x.fillText(isC40() ? (prefs.zero ? `counted from zero, my zero ${signed(prefs.zero)}` : "counted from zero") : `from ${r.clicks} C40 clicks`, M + hw / 2, y + 276);
     const tw = (IW - hw - g - g) / 2, th = (hh - g) / 2;
-    [[r.dose + " g", "coffee"], [r.water + " g", "water"], ["1:" + r.ratio, "ratio"], [r.temp + "°C", "kettle"]].forEach(([v, l], i) => {
+    [[r.dose + " g", "coffee"], [r.water + " g", r.brewer === "cold" ? "cold water" : "water"], r.brewer === "moka" ? [doseName(r), "pot"] : ["1:" + r.ratio, "ratio"],
+      r.temp != null ? [r.temp + "°C", "kettle"] : r.brewer === "cold" ? ["12–18 h", "in the fridge"] : ["Boiled", "into the base"]].forEach(([v, l], i) => {
       const tx = M + hw + g + (i % 2) * (tw + g), ty = y + Math.floor(i / 2) * (th + g);
       rr(tx, ty, tw, th, 30, "#ffffff");
       x.fillStyle = ink; x.font = F(700, 62); x.fillText(v, tx + tw / 2, ty + 82);
@@ -1868,31 +2170,34 @@ table.pours { padding: 10px 24px; }
     y += hh + 24;
     const rows = r.pours, rowH = rows.length > 6 ? 48 : 64, ph = 78 + rows.length * rowH + 44;
     rr(M, y, IW, ph, 36, "#ffffff");
-    x.fillStyle = ink; x.font = F(700, 30); x.fillText("Pours", M + 32, y + 50);
-    x.fillStyle = mut; x.font = F(500, 26); x.textAlign = "right"; x.fillText(`drain ${fmt(r.lo)}–${fmt(r.hi)}, agitation ${AGIT[r.agit]}`, W - M - 32, y + 50); x.textAlign = "left";
+    const K = r.kind;
+    x.fillStyle = ink; x.font = F(700, 30); x.fillText(K === "pour" ? "Pours" : "Steps", M + 32, y + 50);
+    const right = K === "pour" ? `drain ${fmt(r.lo)}–${fmt(r.hi)}, agitation ${AGIT[r.agit]}` : K === "imm" ? (r.lo === r.hi ? `done at ${fmt(r.hi)}` : `pour from ${fmt(r.lo)}, by ${fmt(r.hi)}`) : r.brewer === "cold" ? "dilute to taste" : "medium heat, lid open";
+    x.fillStyle = mut; x.font = F(500, 26); x.textAlign = "right"; x.fillText(right, W - M - 32, y + 50); x.textAlign = "left";
     let ry = y + 78;
     rows.forEach((p, i) => {
       x.fillStyle = rule; x.fillRect(M + 32, ry, IW - 64, 2);
       const base = ry + rowH * 0.66;
-      x.fillStyle = mut; x.font = F(500, 28); x.fillText(fmt(p.t), M + 32, base);
-      x.fillStyle = ink; x.font = F(700, 34); x.fillText(g1(p.x) + " g", M + 120, base);
-      x.fillStyle = mut; x.font = F(500, 22); x.fillText(`+${g1(pourAdd(r, i))}, scale ${p.to} g`, M + 290, base);
-      x.font = F(400, 24); x.fillText(clip(p.note, IW - 64 - 500), M + 532, base);
+      x.fillStyle = mut; x.font = F(500, 28); x.fillText(stepAt(r, p, i), M + 32, base);
+      x.fillStyle = ink; x.font = F(700, 34); x.fillText(p.act ? p.lbl : g1(p.x) + " g", M + 120, base);
+      if (p.act) { x.fillStyle = mut; x.font = F(400, 24); x.fillText(clip(p.note, IW - 64 - 260), M + 292, base); }
+      else { x.fillStyle = mut; x.font = F(500, 22); x.fillText(`+${g1(pourAdd(r, i))}, scale ${p.to} g`, M + 290, base);
+        x.font = F(400, 24); x.fillText(clip(p.note, IW - 64 - 500), M + 532, base); }
       ry += rowH;
     });
-    x.fillStyle = mut; x.font = F(400, 20); x.fillText("Targets shown to 0.1 g. Pour to the nearest gram on your scale.", M + 32, y + ph - 14);
+    x.fillStyle = mut; x.font = F(400, 20); if (K === "pour") x.fillText("Targets shown to 0.1 g. Pour to the nearest gram on your scale.", M + 32, y + ph - 14);
     const rk = risks(r)[0], lv = waterLevel();
     const foot = rk ? "! " + rk : lv === "hard" ? `Hard tap first fix: ${clRange(1, 2)} coarser or −2 °C before changing grind.` : "";
     if (foot) { x.fillStyle = acc; x.font = F(500, 24); x.fillText(clip(foot, IW), M, Math.min(H - 104, y + ph + 48)); }
-    x.fillStyle = mut; x.font = F(600, 24); x.fillText("v60.thisisfed.xyz", M, H - 56);
+    x.fillStyle = mut; x.font = F(600, 24); x.fillText(SITE(), M, H - 56);
     x.textAlign = "right"; x.font = F(500, 24); x.fillText(dmy(new Date()), W - M, H - 56); x.textAlign = "left";
     return new Promise((res) => cv.toBlob(res, "image/png"));
   }
   $("cardBtn").onclick = async () => {
     const blob = await cardImage(); if (!blob) return;
-    const name = (coffeeTitle(state, recipe).toLowerCase().replace(/[^a-z0-9]+/g, "-") || "recipe") + "-v60.png";
+    const name = (coffeeTitle(state, recipe).toLowerCase().replace(/[^a-z0-9]+/g, "-") || "recipe") + "-" + recipe.brewer + ".png";
     const file = new File([blob], name, { type: "image/png" });
-    try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: "V60 recipe" }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
+    try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: BREWERS[recipe.brewer].name + " recipe" }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
   };
@@ -1903,9 +2208,14 @@ table.pours { padding: 10px 24px; }
   // describes them as espresso, even when sold ground for filter), coffees named espresso and darker
   // roasts stay on the list, one tap away under Everything. Search stays inside whichever one is chosen.
   const forV60 = (r) => !r.blend && r.roast_for !== "espresso" && !/espresso/i.test(r.name || "") && !r.roast_level;
-  const SHELF_V = [["v60", "Made for V60"], ["all", "Everything"]];
+  // the moka pot wants what espresso does: blends, espresso roasts, medium and darker, or listed for moka
+  const forMoka = (r) => !!(r.blend || r.roast_for === "espresso" || /espresso/i.test(r.name || "") || r.roast_level
+    || ["medium", "mdark", "dark"].includes(r.roast) || (r.methods || []).some((m) => /moka|espresso/.test(m)));
+  const shelfFit = () => brewerOf(state) === "moka" ? forMoka : forV60;
+  const shelfFitName = () => brewerOf(state) === "moka" ? "Made for moka" : "Made for filter";
   function renderShelfV() {
-    const n = shelf.length, k = shelf.filter(forV60).length;
+    const SHELF_V = [["v60", shelfFitName()], ["all", "Everything"]];
+    const n = shelf.length, k = shelf.filter(shelfFit()).length;
     $("shelfV").innerHTML = SHELF_V.map(([v, t]) => `<button type="button" class="chip" data-v="${v}" aria-pressed="${shelfV === v}">${t}${n ? ` <span class="n">${v === "v60" ? k : n}</span>` : ""}</button>`).join("");
     $("shelfV").querySelectorAll("button").forEach((b) => b.onclick = () => { shelfV = b.dataset.v; shelfAll = false; renderShelfV(); renderShelf(); });
   }
@@ -1943,7 +2253,7 @@ table.pours { padding: 10px 24px; }
     const q = $("shelfQ").value.trim().toLowerCase();
     let list = shelf.filter((r) => (shelfR === "all" || market(r) === shelfR) && (shelfF === "all" || (shelfF === "new" ? r.new : bucket(r.process) === shelfF)));
     if (q) list = list.filter((r) => [r.roaster, r.roaster_city, r.name, r.origin, r.region, r.process, r.variety, ...(r.notes || [])].join(" ").toLowerCase().includes(q));
-    if (shelfV === "v60") list = list.filter(forV60);
+    if (shelfV === "v60") list = list.filter(shelfFit());
     list = interleave(list);
     const LIMIT = 12;
     const shown = shelfAll || q ? list : list.slice(0, LIMIT);
@@ -1971,7 +2281,7 @@ table.pours { padding: 10px 24px; }
           ${r.price ? `<span class="price">${esc(r.price)}</span>` : '<span class="date">Price on site</span>'}
           <button class="btn" type="button" data-i="${i}">Brew</button>
           <span class="date">${r.url ? `<a href="${esc(r.url)}" target="_blank" rel="noopener" aria-label="Buy ${esc(r.name)} from ${esc(r.roaster)}">Buy</a>` : ""}<span>${r.published ? isoDmy(r.published).slice(0, 5) : isoDmy(r.found).slice(0, 5)}</span></span>
-        </div></article>`; }).join("") : `<p class="muted" style="padding:16px 0;margin:0">Nothing matches${shelfV === "v60" && shelf.some((r) => !forV60(r)) ? " in Made for V60. Try Everything, or" : "."} <a href="#" class="mail-me" data-s="Missing coffee">${shelfV === "v60" ? "email me" : "Email me"}</a> and I’ll add the roaster.</p>`;
+        </div></article>`; }).join("") : `<p class="muted" style="padding:16px 0;margin:0">Nothing matches${shelfV === "v60" && shelf.some((r) => !shelfFit()(r)) ? ` in ${shelfFitName()}. Try Everything, or` : "."} <a href="#" class="mail-me" data-s="Missing coffee">${shelfV === "v60" ? "email me" : "Email me"}</a> and I’ll add the roaster.</p>`;
     $("shelfMore").hidden = shelfAll || !!q || list.length <= LIMIT;
     $("shelfMore").textContent = `Show all ${list.length}`;
     $("shelf").querySelectorAll("button[data-i]").forEach((b) => b.onclick = () => brewThis(shelf[+b.dataset.i]));
@@ -2061,13 +2371,13 @@ table.pours { padding: 10px 24px; }
     const a = e.target.closest(".mail-me"); if (!a) return;
     e.preventDefault();
     const at = ["ciao", "thisisfed.xyz"].join(String.fromCharCode(64));
-    location.href = "mai" + "lto:" + at + "?subject=" + encodeURIComponent(a.dataset.s || "V60 Brew Card");
+    location.href = "mai" + "lto:" + at + "?subject=" + encodeURIComponent(a.dataset.s || "Bag to Cup");
   });
   // hero: play the scenes in turn like an Apple store attract loop, resting on the headline.
   // Pauses when the hero is off screen or the tab is hidden; reduced motion shows the headline only.
   (function heroLoop() {
     const scenes = [...document.querySelectorAll("#stage .scene")];
-    const HOLD = [1800, 2100, 2700, 3300, 3400, 3200, 5200];
+    const HOLD = [1800, 2100, 2700, 3300, 3100, 3400, 2900, 3200, 5200];
     if (!scenes.length || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let i = scenes.length - 1, timer = null, visible = true;
     const prep = (el) => {
