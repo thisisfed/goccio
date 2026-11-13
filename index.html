@@ -1103,9 +1103,12 @@ footer .bmc a, footer .bmc .sheen-text { font-weight: 500 !important; }
 /* Just in: five rows, all after the first in pill grey */
 .isl-stack .island:not(.k0) { background: var(--pill); color: var(--ink); }
 /* Bag details: always open, a label like the rows above */
-.more { padding-top: 14px; border-top: 1px solid var(--rule); display: grid; gap: 10px; }
+.more { padding: 0; border: 0; display: grid; gap: 0; }
 .more-h { margin: 0; font: 500 var(--fs)/1.35 var(--sans); color: var(--ink); }
 .more .opts { padding-top: 0 !important; }
+.litext .outro-end { display: inline; font: inherit; color: color-mix(in srgb, var(--ink) 18%, transparent); transition: color .35s ease; }
+.litext .outro-end.on { color: var(--ink); }
+@media (prefers-reduced-motion: reduce) { .litext .outro-end { color: var(--ink); } }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1116,8 +1119,14 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
 .scene .hw { vertical-align: -.08em; }
 .heart { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linejoin: round; stroke-linecap: round; overflow: visible; display: block; }
 .heart path { stroke-dasharray: 1 1; stroke-dashoffset: 0; }
+.hw { display: inline-flex; align-items: flex-end; vertical-align: -.1em; }
+.scene .w.hw, .stat-n .hw { display: inline-flex; align-items: center; white-space: nowrap; }
+.doodle { width: 1.12em !important; height: 1.12em !important; stroke-width: 2.1 !important; }
+.hw .doodle { margin-bottom: -.06em; }
+.scene .w.q { margin-left: -.2em; }
+.stat-n .hw { vertical-align: -.08em; }
 @media (prefers-reduced-motion: no-preference) {
-  .scene.on .heart path { animation: heartdraw 1.1s .3s cubic-bezier(.6,0,.3,1) both; }
+  .scene.on .heart path { animation: heartdraw 1s calc(.3s + var(--p, 0) * .22s) cubic-bezier(.6,0,.3,1) both; }
   @keyframes heartdraw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 }
 </style>
@@ -1143,14 +1152,12 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
       </div>
       <div class="hero-row">
       <div class="stage" id="stage">
-        <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">Love</span> <span class="w" style="--i:1">coffee?</span></p>
+        <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">Love</span> <span class="w hw" style="--i:1"><svg class="heart doodle" viewBox="0 0 24 24" role="img" aria-label="coffee"><path pathLength="1" style="--p:0" d="M4 10h13v3.5a6.5 6.5 0 0 1-6.5 6.5A6.5 6.5 0 0 1 4 13.5z"/><path pathLength="1" style="--p:1" d="M17 11.5h1.2a2.6 2.6 0 0 1 0 5.2H16.4"/><path pathLength="1" style="--p:2" d="M8.5 2.8c-1.2 1.4 1.2 2.6 0 4.4"/><path pathLength="1" style="--p:3" d="M12.5 2.8c-1.2 1.4 1.2 2.6 0 4.4"/></svg></span><span class="w q" style="--i:2">?</span></p>
         <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">You’ll</span> <span class="w hw" style="--i:1"><svg class="heart" viewBox="0 0 24 24" role="img" aria-label="love"><path pathLength="1" d="M12 20.2S3.5 15 3.5 9.1A4.6 4.6 0 0 1 12 6.6a4.6 4.6 0 0 1 8.5 2.5c0 5.9-8.5 11.1-8.5 11.1z"/></svg></span> <span class="w" style="--i:2">every</span> <span class="w" style="--i:3">cup.</span></p>
-        <div class="scene stat" aria-hidden="true" id="sceneStat"><span class="stat-n"><span id="statN">0</span> coffees.</span><span class="stat-s" id="statS">From near and far.</span></div>
-        <div class="scene" aria-hidden="true" id="sceneIsland"><div class="isl-stack" id="islStack"></div></div>
-        <p class="scene words two" aria-hidden="true"><span class="ln"><span class="w" style="--i:0">Seven</span> <span class="w" style="--i:1">brewers.</span></span><span class="ln"><span class="w" style="--i:2">One</span> <span class="w" style="--i:3">recipe.</span></span></p>
-        <div class="scene stat" aria-hidden="true" id="sceneGrind"><span class="stat-k" id="gB">V60</span><span class="stat-n">Got <span id="gT">3:15</span>?</span><span class="stat-s">It’s all it takes.</span></div>
-        <p class="scene words verbs-all" aria-hidden="true"><span class="w" style="--i:0">Rinse.</span> <span class="w" style="--i:1">Bloom.</span> <span class="w" style="--i:2">Pour.</span> <span class="w" style="--i:3">Swirl.</span> <span class="w" style="--i:4">Pulse.</span> <span class="w" style="--i:5">Stir.</span> <span class="w" style="--i:6">Steep.</span> <span class="w" style="--i:7">Skim.</span> <span class="w" style="--i:8">Press.</span> <span class="w" style="--i:9">Drain.</span> <span class="w" style="--i:10">Fill.</span> <span class="w" style="--i:11">Heat.</span> <span class="w" style="--i:12">Chill.</span> <span class="w" style="--i:13">Rest.</span> <span class="w" style="--i:14">Filter.</span> <span class="w" style="--i:15">Stop.</span></p>
-        <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">Pour.</span> <span class="w" style="--i:1">Taste.</span> <span class="w" style="--i:2">Tweak.</span> <span class="w" style="--i:3">Nail</span> <span class="w" style="--i:4">it.</span></p>
+        <div class="scene stat" aria-hidden="true" id="sceneStat"><span class="stat-n"><span class="hw"><svg class="heart doodle" viewBox="0 0 24 24" role="img" aria-label="bean"><path pathLength="1" style="--p:0" d="M12 3.5c4.4 0 6.8 4 6.8 8.5S16.4 20.5 12 20.5 5.2 16.5 5.2 12 7.6 3.5 12 3.5z"/><path pathLength="1" style="--p:1" d="M12 3.8c-2.8 2.6-2.8 5.6 0 8.2s2.8 5.6 0 8.2"/></svg></span> <span id="statN">0</span> coffees.</span><span class="stat-s" id="statS">From near and far.</span></div>
+        <p class="scene words two" aria-hidden="true"><span class="ln"><span class="w" style="--i:0">Seven</span> <span class="w" style="--i:1">brewers.</span> <span class="w hw" style="--i:2"><svg class="heart doodle" viewBox="0 0 24 24" role="img" aria-label="dripper"><path pathLength="1" style="--p:0" d="M3 4.5h18L14.5 14h-5z"/><path pathLength="1" style="--p:1" d="M6.5 14h11"/><path pathLength="1" style="--p:2" d="M12 16.5v1.2"/><path pathLength="1" style="--p:3" d="M12 20.5v.4"/></svg></span></span><span class="ln"><span class="w" style="--i:3">One</span> <span class="w" style="--i:4">recipe.</span></span></p>
+        <div class="scene stat" aria-hidden="true" id="sceneGrind"><span class="stat-k" id="gB">V60</span><span class="stat-n">Got <span class="hw"><svg class="heart doodle" viewBox="0 0 24 24" role="img" aria-label="timer"><path pathLength="1" style="--p:0" d="M12 21.5a8 8 0 1 0 0-16 8 8 0 0 0 0 16z"/><path pathLength="1" style="--p:1" d="M12 9.5v4l2.6 1.6"/><path pathLength="1" style="--p:2" d="M10 2.5h4"/><path pathLength="1" style="--p:3" d="M12 2.5v3"/></svg></span> <span id="gT">3:15</span>?</span><span class="stat-s">It’s all it takes.</span></div>
+        <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">Pour.</span> <span class="w" style="--i:1">Taste.</span> <span class="w" style="--i:2">Tweak.</span> <span class="w" style="--i:3">Nail</span> <span class="w hw" style="--i:4">it.&nbsp;<svg class="heart doodle" viewBox="0 0 24 24" role="img" aria-label="done"><path pathLength="1" style="--p:0" d="M4 12.5l5 5L20 6.5"/></svg></span></p>
         <div class="scene final on"><h1 id="h1">New coffees. <span class="serif">The recipe for each bag.</span></h1></div>
       </div>
       <div class="hero-side">
@@ -1203,7 +1210,6 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
       <div class="opts" id="opts-main"></div>
       <input type="file" accept="image/*" capture="environment" id="roastPhotoIn" hidden>
       <div class="more" id="moreOpts">
-        <p class="more-h">Bag details</p>
         <div class="opts" id="opts-more"></div>
       </div>
     </div>
@@ -1267,8 +1273,7 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
 
 
   <section class="sec outro" aria-label="How it learns">
-    <p class="litext" id="litext"><span>Every</span> <span>bag</span> <span>is</span> <span>different.</span> <span>The</span> <span>grind,</span> <span>the</span> <span>water,</span> <span>the</span> <span>pour.</span> <span>Brew</span> <span>it,</span> <span>taste</span> <span>it,</span> <span>write</span> <span>down</span> <span>what</span> <span>you</span> <span>got,</span> <span>and</span> <span>the</span> <span>next</span> <span>cup</span> <span>lands</span> <span>closer</span> <span>to</span> <span>the</span> <span>one</span> <span>you</span> <span>wanted.</span></p>
-    <p class="outro-end"><span class="sheen-text">Brew something good.</span></p>
+    <p class="litext" id="litext"><span>Every</span> <span>bag</span> <span>is</span> <span>different.</span> <span>The</span> <span>grind,</span> <span>the</span> <span>water,</span> <span>the</span> <span>pour.</span> <span>Brew</span> <span>it,</span> <span>taste</span> <span>it,</span> <span>write</span> <span>down</span> <span>what</span> <span>you</span> <span>got,</span> <span>and</span> <span>the</span> <span>next</span> <span>cup</span> <span>lands</span> <span>closer</span> <span>to</span> <span>the</span> <span>one</span> <span>you</span> <span>wanted.</span> <span class="outro-end">Brew something good.</span></p>
     <button type="button" class="hero-pill" data-jump="recipe">Back to the recipe</button>
   </section>
 
@@ -3027,7 +3032,7 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
   $("saveLog").onclick = saveLog;
   // bottom: light the words one by one as the paragraph scrolls up through the screen
   (function outro() {
-    const words = [...document.querySelectorAll("#litext span")], end = document.querySelector(".outro-end");
+    const words = [...document.querySelectorAll("#litext > span:not(.outro-end)")], end = document.querySelector(".outro-end");
     if (!words.length) return;
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) { words.forEach((w) => w.classList.add("lit")); return; }
     let ticking = false;
@@ -3037,7 +3042,7 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
       const k = Math.max(0, Math.min(1, (vh * .85 - r.top) / (r.height + vh * .35)));
       const n = Math.round(k * words.length);
       words.forEach((w, i) => w.classList.toggle("lit", i < n));
-      end.classList.toggle("on", end.getBoundingClientRect().top < vh);
+      end.classList.toggle("on", n >= words.length);   // lights up last, straight after "wanted."
     };
     addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(paint); } }, { passive: true });
     addEventListener("resize", paint); paint();
@@ -3064,7 +3069,7 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
   })();
   (function heroLoop() {
     const scenes = [...document.querySelectorAll("#stage .scene")];
-    const HOLD = [1800, 2100, 2700, 3600, 2600, 4600, 4600, 3200, 5200];
+    const HOLD = [2200, 2400, 2900, 2900, 4800, 3400, 5200];
     if (!scenes.length || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let i = scenes.length - 1, timer = null, visible = true;
     const prep = (el) => {
