@@ -1253,7 +1253,7 @@ footer .refs:not(.meth) { list-style: none; padding-left: 0 !important; gap: 0 !
 footer .refs:not(.meth) li { position: relative; padding-left: 1.9em; counter-increment: src; }
 footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolute; left: 0; color: var(--muted); }
 /* scan the bag, and water by postcode */
-.scan-opt { margin-top: 12px; }
+.scan-opt { margin-top: 0; }
 .scan-row { display: flex; align-items: center; gap: 4px 8px; flex-wrap: wrap; }
 .scan-msg { flex-basis: 100%; }
 .scan-msg:empty { display: none; }
@@ -1373,11 +1373,11 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
         <textarea id="coffeeIn" rows="2" placeholder="Roaster, coffee, origin, process, notes…"></textarea>
         <button class="btn" id="go" type="button">Build recipe</button>
       </div>
-      <div class="opt scan-opt"><span>Bag</span><div class="scan-row"><button type="button" class="chip" id="scanBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>Scan the bag</button><span class="beta">Beta</span><span class="scan-msg" id="scanMsg" aria-live="polite"></span>
-        <input type="file" accept="image/*" capture="environment" id="scanIn" hidden></div></div>
       <div class="detected" id="detected" aria-live="polite"></div>
       <div class="need" id="need" hidden></div>
       <div class="kit" id="kit">
+  <div class="opt scan-opt"><span>Coffee</span><div class="scan-row"><button type="button" class="chip" id="scanBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>Scan the bag</button><span class="beta">Beta</span><span class="scan-msg" id="scanMsg" aria-live="polite"></span>
+        <input type="file" accept="image/*" capture="environment" id="scanIn" hidden></div></div>
         <div class="opts" id="opts-kit"></div>
         <div class="opt"><span>Grinder</span><div class="kit-mill">
           <select id="millSel" aria-label="Your grinder"></select>
@@ -2624,7 +2624,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
     const b = brewerOf(state), B = BREWERS[b];
     return [
       B.kind !== "steps" && { key: "goal", label: "Cup", items: [["light", "Light & sweet"], ["balanced", "Balanced"], ["syrupy", "Rich & syrupy"]] },
-      { key: "dose", label: b === "moka" ? "Pot" : "Coffee", items: B.doses },
+      { key: "dose", label: b === "moka" ? "Pot" : "Grams", items: B.doses },
       b === "aero" && { key: "aeroWay", label: "Method", items: [["standard", "Standard"], ["inverted", "Inverted"]] },
       b === "v60" && { key: "method", label: "Method", items: [["best", "Best for this coffee"], ["hoffmann", "Hoffmann"], ["fourSix", "Kasuya 4:6"], ["ten", "Kasuya 10-Pour"], ["rao", "Rao"]] },
     ].filter(Boolean);
