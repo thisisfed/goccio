@@ -1285,9 +1285,6 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 /* the coffee list's pills match every other pill: 30 px, 10 px sides */
 .item .pills .pill, .item .pills .oc { height: var(--pill-h) !important; padding: 0 10px !important; display: inline-flex !important; align-items: center; border-radius: var(--r) !important; }
 .scan-opt[hidden] { display: none !important; }
-/* top bar: translucent, what scrolls under it shows through, blurred */
-.top { background: color-mix(in srgb, var(--bg) 72%, transparent) !important; backdrop-filter: saturate(180%) blur(18px) !important; -webkit-backdrop-filter: saturate(180%) blur(18px) !important; border-bottom-color: color-mix(in srgb, var(--rule) 70%, transparent) !important; }
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .top { background: var(--bg) !important; } }
 /* the clicks sum line under the time is gone: How these clicks were set explains it */
 #zeroRow { display: none !important; }
 /* Start brewing (bar and button): the same 13 px text as Build recipe; room under the numbers so the g isn't clipped */
@@ -1304,6 +1301,22 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 .r-title { display: none !important; }
 /* the arrow in Start brewing: the drawn one from the example, sized to the text */
 .go-big .num .arr, .dock .num .arr { display: inline-block; width: 1.1em; height: .62em; margin: 0 .35em; vertical-align: .12em; }
+/* golden-ratio type scale: 15 · 24 · 39 · 63 · 102 · 165 (each 1.618× the last). Phones take the lower step, big screens the next. */
+:root { --fs-l: 63px; --fs-xl: 39px; }
+.stage { --hs: 39px !important; }
+.litext, .outro-end { font-size: 39px !important; }
+.spec b, .spec.key b { font-size: 39px !important; }
+.spec.time b { font-size: min(39px, 13cqi) !important; }
+.bv-big { font-size: min(102px, 42cqw, 37cqh) !important; }
+.bv-now.act .bv-big { font-size: min(63px, 26cqw, 30cqh) !important; }
+@media (min-width: 1000px) {
+  .stage { --hs: 63px !important; }
+  .litext, .outro-end { font-size: 63px !important; }
+  .spec b, .spec.key b { font-size: 63px !important; }
+  .spec.time b { font-size: min(63px, 15cqi) !important; }
+  .bv-big { font-size: min(165px, 42cqw, 37cqh) !important; }
+  .bv-now.act .bv-big { font-size: min(102px, 42cqw, 37cqh) !important; }
+}
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1368,7 +1381,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
         <figcaption><span class="g-name">Washed Ethiopia, light roast</span><span class="g-eg">For example</span></figcaption>
         <div class="g-specs num" aria-hidden="true"><span><b>15</b><svg class="arr" viewBox="0 0 18 10" aria-hidden="true"><path d="M1 5h15M12 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><b>255</b> g</span><span><b>99</b>°C</span></div>
         <ol class="g-pours num" aria-hidden="true">
-          <li style="--t:0"><span>0:00</span><b>51</b></li><li style="--t:45"><span>0:45</span><b>102</b></li><li style="--t:70"><span>1:10</span><b>153</b></li><li style="--t:90"><span>1:30</span><b>204</b></li><li style="--t:110"><span>1:50</span><b>255</b></li><li class="end"><span>3:15</span><i>done</i></li>
+          <li style="--t:0"><span>0:00</span><b>51</b></li><li style="--t:45"><span>0:45</span><b>102</b></li><li style="--t:70"><span>1:10</span><b>153</b></li><li style="--t:90"><span>1:30</span><b>204</b></li><li style="--t:110"><span>1:50</span><b>255</b></li><li class="end"><span>3:15</span><i>Done</i></li>
         </ol>
       </figure>
       <button type="button" class="hero-pill" data-jump="shelves">See today’s coffees</button>
