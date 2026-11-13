@@ -1,6 +1,6 @@
 # Bag to Cup
 
-**Live at [v60.thisisfed.xyz](https://v60.thisisfed.xyz)**, moving to coffee.thisisfed.xyz.
+**Live at [v60.thisisfed.xyz](https://v60.thisisfed.xyz)**, moving to bagtocup.thisisfed.xyz.
 
 Type the coffee you're brewing, pick your brewer, and get a dialled-in recipe: grind for your grinder (Comandante C40 clicks or converted), dose, water, temperature and every step, with a brew-along timer.
 
