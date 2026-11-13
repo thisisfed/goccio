@@ -1508,8 +1508,9 @@ def inspect(urls):
         if dump:
             print(f"\nRAW {url}  ({len(raw)} bytes)")
             for line in re.sub(r"<style\b.*?</style>", "", raw, flags=re.S | re.I)[:120000].splitlines():
-                if line.strip():
-                    print("  |", line.strip()[:400])
+                line = line.strip()
+                for i in range(0, len(line), 1000):   # long lines (inline JSON) in pieces, nothing cut off
+                    print("  |", line[i:i + 1000])
             continue
         body = re.sub(r"<script\b.*?</script>|<style\b.*?</style>", " ", raw, flags=re.S | re.I)
         print(f"\nINSPECT {url}  ({len(raw)} bytes)")
