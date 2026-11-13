@@ -1499,10 +1499,18 @@ def inspect(urls):
     """Print what a product page says about process, variety and brew methods (labels, icons), so new page layouts
     can be supported without guessing. Run from the workflow with the 'inspect' input; nothing is saved."""
     for url in urls:
+        dump = url.startswith("raw:")   # raw:<url> prints the page source itself, for writing a reader for a custom shop
+        url = url[4:] if dump else url
         try:
             raw = get_text(url, tries=1)
         except Exception as e:  # noqa: BLE001
             print(f"INSPECT {url}: {e}"); continue
+        if dump:
+            print(f"\nRAW {url}  ({len(raw)} bytes)")
+            for line in re.sub(r"<style\b.*?</style>", "", raw, flags=re.S | re.I)[:120000].splitlines():
+                if line.strip():
+                    print("  |", line.strip()[:400])
+            continue
         body = re.sub(r"<script\b.*?</script>|<style\b.*?</style>", " ", raw, flags=re.S | re.I)
         print(f"\nINSPECT {url}  ({len(raw)} bytes)")
         h1 = re.search(r"<h1\b[^>]*>(.*?)</h1>", body, re.S | re.I)
