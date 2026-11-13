@@ -21,7 +21,18 @@
 <meta name="twitter:description" content="Grind for your grinder, ratio, temperature and every pour. New filter coffees from 90+ roasters, checked every morning.">
 <meta name="twitter:image" content="https://v60.thisisfed.xyz/og/card-2.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M4 6h24L16 27z' fill='%230b0b0b'/%3E%3C/svg%3E">
-<script>try{var t=localStorage.getItem("v60.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<script>
+/* Auto appearance follows daylight where you are (light from sunrise to sunset), not the browser's own dark setting.
+   Latitude comes from the time zone's city, longitude from its standard UTC offset; close enough for a colour scheme. */
+window.__autoDark=function(now){now=now||new Date();var z="",lat=48;try{z=Intl.DateTimeFormat().resolvedOptions().timeZone||"";}catch(e){}
+var L={Oslo:60,Stockholm:59.3,Helsinki:60.2,Copenhagen:55.7,Reykjavik:64.1,Tallinn:59.4,Riga:56.9,Vilnius:54.7,Dublin:53.3,London:51.5,Amsterdam:52.4,Berlin:52.5,Warsaw:52.2,Brussels:50.8,Prague:50.1,Paris:48.9,Vienna:48.2,Zurich:47.4,Budapest:47.5,Milan:45.5,Rome:41.9,Madrid:40.4,Lisbon:38.7,Athens:38,Istanbul:41,New_York:40.7,Chicago:41.9,Denver:39.7,Los_Angeles:34,Toronto:43.7,Vancouver:49.3,Sydney:-33.9,Melbourne:-37.8,Tokyo:35.7,Seoul:37.6,Singapore:1.3};
+var c=z.split("/").pop();if(L[c]!=null)lat=L[c];var y=now.getFullYear(),lon=-new Date(y,0,1).getTimezoneOffset()/4,
+n=Math.floor((now-new Date(y,0,0))/864e5),r=Math.PI/180,d=-23.44*Math.cos(2*Math.PI/365*(n+10))*r,
+B=2*Math.PI*(n-81)/364,eot=9.87*Math.sin(2*B)-7.53*Math.cos(B)-1.5*Math.sin(B),
+h=Math.acos(Math.max(-1,Math.min(1,(Math.sin(-.833*r)-Math.sin(lat*r)*Math.sin(d))/(Math.cos(lat*r)*Math.cos(d)))))/r,noon=12-lon/15-eot/60,u=now.getUTCHours()+now.getUTCMinutes()/60;
+return u<noon-h/15||u>noon+h/15;};
+try{var t=localStorage.getItem("v60.theme");document.documentElement.setAttribute("data-theme",t==="light"||t==="dark"?t:(window.__autoDark()?"dark":"light"));}catch(e){}
+</script>
 <style>
 /* Layout idea: Apple product page, warmed up. Cream paper canvas, warm-white rounded tiles, system type set
    tight throughout. Blue only for actions, terracotta for "new" and
@@ -253,6 +264,16 @@ details.more .opts { padding-top: 10px; }
 .need .chip { background: color-mix(in srgb, var(--ink) 7%, transparent); border-radius: 980px; padding: 10px 16px; font-size: 15px; }
 .need .chip:hover { background: var(--blue); color: #fff; }
 .rbody { display: grid; gap: 14px; }
+/* grid tracks never grow past the screen: a wide pour table or chip row wraps inside its card instead of pushing every card out to the right edge */
+.page, section.sec, .rbody { grid-template-columns: minmax(0, 1fr); }
+.zr-mill { min-width: 0; } .zr-mill select { width: 100%; }   /* a long grinder name never widens the card */
+.hero { overflow-x: clip; }   /* scenes waiting off to the side never add a sideways scroll */
+@media (max-width: 560px) {
+  table.pours { padding: 6px 16px; }
+  .pours th, .pours td { padding-right: 8px; }
+  .pours td.m + td.to + td.m { white-space: normal; min-width: 4.2em; }   /* "+51.0 g / in ~10 s" on two lines */
+}
+@media (max-width: 360px) { table.pours { padding: 4px 12px; } .pours td.to { font-size: 22px; } .pours td.to .scale { display: none; } .pours td.m, .pours td.how { font-size: 14px; } .pours th, .pours td { padding-right: 6px; } .pours th:nth-child(3), .pours td.m + td.to + td.m { display: none; } }
 .adjusted { background: var(--card); border-radius: 20px; padding: 18px 20px; font-size: 15px; display: grid; gap: 8px; box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 55%, transparent); }
 .adjusted p { margin: 0; }
 .adjusted button { justify-self: start; background: none; border: 0; padding: 0; color: var(--blue); font-size: 15px; }
@@ -1905,19 +1926,34 @@ table.pours { padding: 10px 24px; }
     finally { $("shelf").classList.remove("loading"); $("shelf").removeAttribute("aria-busy"); }
   }
 
-  // ---------- appearance: follows the system unless you pick ----------
+  // ---------- appearance: Auto follows daylight (sunrise to sunset), or pick Light or Dark ----------
   const THEMES = ["auto", "light", "dark"], THEME_LBL = { auto: "Auto", light: "Light", dark: "Dark" };
   function applyTheme(t) {
     const root = document.documentElement;
-    if (t === "light" || t === "dark") root.setAttribute("data-theme", t); else root.removeAttribute("data-theme");
-    const dark = t === "dark" || (t === "auto" && matchMedia("(prefers-color-scheme: dark)").matches);
+    const dark = t === "dark" || (t === "auto" && window.__autoDark());
+    root.setAttribute("data-theme", dark ? "dark" : "light");
     document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute("content", dark ? "#14100d" : "#f6f1ea"));
-    $("themeBtn").textContent = THEME_LBL[t]; $("themeBtn").setAttribute("aria-label", `Appearance: ${THEME_LBL[t]}. Tap to change.`);
+    $("themeBtn").textContent = THEME_LBL[t]; $("themeBtn").setAttribute("aria-label", t === "auto" ? `Appearance: Auto, light from sunrise to sunset. Tap to change.` : `Appearance: ${THEME_LBL[t]}. Tap to change.`);
   }
   let theme = (() => { try { return localStorage.getItem("v60.theme") || "auto"; } catch (e) { return "auto"; } })();
   if (!THEMES.includes(theme)) theme = "auto";
   $("themeBtn").onclick = () => { theme = THEMES[(THEMES.indexOf(theme) + 1) % 3]; try { theme === "auto" ? localStorage.removeItem("v60.theme") : localStorage.setItem("v60.theme", theme); } catch (e) {} applyTheme(theme); };
-  matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => theme === "auto" && applyTheme(theme));
+  setInterval(() => theme === "auto" && applyTheme(theme), 60000);   // turns at sunset and sunrise while the page is open
+
+  // ---------- stay current: a tab left open for days picks up a new version when you come back to it ----------
+  // (phones keep tabs alive, so a new grinder or fix would otherwise not show until a manual refresh).
+  // Never while brewing, and only when the page itself changed.
+  const pageTag = (r) => r.headers.get("etag") || r.headers.get("last-modified") || "";
+  let loadedTag = "", lastCheck = Date.now();
+  fetch(location.pathname, { method: "HEAD", cache: "no-store" }).then((r) => { loadedTag = pageTag(r); }).catch(() => {});
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState !== "visible" || !loadedTag || Date.now() - lastCheck < 20 * 60000) return;
+    lastCheck = Date.now();
+    fetch(location.pathname, { method: "HEAD", cache: "no-store" }).then((r) => {
+      const tag = pageTag(r);
+      if (tag && tag !== loadedTag && $("bv").hidden) location.reload();
+    }).catch(() => {});
+  });
   applyTheme(theme);
 
   // ---------- wire up ----------
