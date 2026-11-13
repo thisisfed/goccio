@@ -1137,6 +1137,13 @@ footer .bmc a, footer .bmc .sheen-text { font-weight: 500 !important; }
 .litext, .litext .outro-end { font-size: clamp(30px, 4.4vw, 60px) !important; line-height: 1.02 !important; }
 /* the smile after Buy me a coffee. drawn like the heart */
 footer .smile { width: .95em; height: .95em; vertical-align: -.14em; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+/* phones too: the row name on the left, its pills on the right */
+@media (max-width: 640px) { .opt { grid-template-columns: 72px minmax(0, 1fr) !important; gap: 10px !important; align-items: start; } .opt > span, .opt > label { padding-top: 8px; } }
+/* journal rows read like the option rows; the drained time is a pill-size box */
+#logBox .opt > span, #logBox .opt > label { font: 500 var(--fs-s)/1.2 var(--sans); color: var(--muted); margin: 0; }
+#logBox #tasteChips { margin-top: 0; }
+#logBox .dd-in { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+#ddIn { width: 64px !important; height: var(--pill-h) !important; padding: 0 10px !important; font: 500 var(--fs-s)/1 var(--sans) !important; box-sizing: border-box; }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1282,13 +1289,9 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
   <section class="sec" id="journal" aria-labelledby="jh">
     <div class="sec-head"><span class="cap" id="jh"><b>04</b>Journal.</span><span class="cap">Stored on this device only</span></div>
     <div class="log" id="logBox">
-      <h3 id="logTitle">How did it taste?</h3>
-      <div class="taste" id="tasteChips" role="group" aria-label="What you taste"></div>
-      <div class="dd" id="ddRow">
-        <label for="ddIn" class="cap">Drained at</label>
-        <input id="ddIn" inputmode="numeric" placeholder="3:20" aria-describedby="ddHint">
-        <span class="muted" id="ddHint"></span>
-      </div>
+      <div class="opt"><span id="logTitle">Taste?</span><div class="taste" id="tasteChips" role="group" aria-labelledby="logTitle"></div></div>
+      <div class="opt dd" id="ddRow"><label for="ddIn">Drained at</label>
+        <div class="dd-in"><input id="ddIn" inputmode="numeric" placeholder="3:20" aria-describedby="ddHint"><span class="muted" id="ddHint"></span></div></div>
       <textarea id="logNote" placeholder="Note (optional)"></textarea>
       <div class="suggest" id="suggest" hidden></div>
       <div class="share"><button class="btn" id="saveLog" type="button">Save to journal</button></div>
@@ -1991,7 +1994,7 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
   function kitState() {
     $("zrCtl").hidden = !isC40();
     $("millSel").value = GRINDERS[prefs.mill] ? prefs.mill : "c40";
-    $("zVal").textContent = prefs.zero ? signed(prefs.zero) : "0";
+    $("zVal").textContent = String(prefs.zero || 0).replace("-", "−").replace(/^−/, "−");   // no "+" in front
     $("zeroRow").classList.toggle("on", !!prefs.zero);
   }
   $("millSel").innerHTML = Object.entries(GRINDERS).map(([k, G]) => `<option value="${k}">${esc(G.name)}</option>`).join("");
@@ -2256,7 +2259,7 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
     const hardFirst = waterLevel() === "hard";
     $("dial").innerHTML = dial.map((w, i) => `<li${i === 0 && hardFirst ? ' style="font-weight:700"' : ""}>${esc(w)}</li>`).join("");
 
-    $("logTitle").textContent = `How did ${coffeeTitle(state, r)} taste?`;
+    $("logTitle").textContent = "Taste?";
     $("ddRow").hidden = K !== "pour";
     $("ddHint").textContent = `target ${fmt(r.lo)}–${fmt(r.hi)}`;
     if (picked.size || $("ddIn").value) updateSuggest();
