@@ -959,6 +959,41 @@ footer .bmc .sheen-text { background: none; -webkit-background-clip: border-box;
 .bv-opts button[aria-pressed="true"] { color: var(--ink); }
 .bv-opts button::before { color: var(--muted); }
 .spec.key { padding-left: 0; padding-right: 0; background: none; box-shadow: none; border-radius: 0; }
+
+/* ================= MODULE SKIN, PART 3 ================= */
+/* one pill: every chip, select, stepper and small button the same height, padding and type */
+:root { --pill-h: 30px; --btn-h: 40px; --fs-xl: 39px; }   /* 15 × 1.618 = 24, 24 × 1.618 = 39 */
+.chip, .need .chip, .w-body .chip, .taste .chip, .nav button, .nav .theme-btn, .entry button, .rp-go, .notes-list span, .pill, .oc, .ji-tag {
+  display: inline-flex; align-items: center; height: var(--pill-h); padding: 0 10px; font: 500 var(--fs-s)/1 var(--sans); border-radius: var(--r); white-space: nowrap; box-sizing: border-box; }
+.pill, .oc, .ji-tag, .notes-list span { height: 24px; padding: 0 8px; }
+.bean-dot { width: 10px; height: 10px; margin-right: 6px; vertical-align: 0; }
+.bean-dot.big { width: 10px; height: 10px; margin-right: 6px; vertical-align: 0; }
+.rp-go svg { width: 14px; height: 14px; }
+.kit-mill select { height: var(--pill-h); padding: 0 10px; font: 500 var(--fs-s)/1 var(--sans); flex: 0 1 auto; width: auto; max-width: 100%; }
+.step { height: var(--pill-h); display: inline-flex; align-items: center; }
+.step button, #zVal { font: 500 var(--fs-s)/1 var(--sans); height: var(--pill-h); min-width: var(--pill-h); padding: 0 8px; }
+.zr-lbl { font-size: var(--fs-s); }
+/* buttons: one height, one size (Build recipe, Save to journal, Back to the recipe, Copy, Save card) */
+.btn, .hero-pill, .share .btn, .more-btn { display: inline-flex; align-items: center; justify-content: center; height: var(--btn-h); min-height: var(--btn-h); padding: 0 14px; font: 500 var(--fs-s)/1 var(--sans); border-radius: var(--r); }
+.go-big, .dock .btn { height: 48px; min-height: 48px; justify-content: space-between; }
+/* the kit sits under the question */
+.kit { padding: 14px 0 0; margin: 0; border-bottom: 0; border-top: 1px solid var(--rule); }
+.w-row { display: grid; gap: 6px; min-width: 0; }
+.w-row .w-body { padding: 0; gap: 8px; }
+.w-row .chips { flex-wrap: wrap; gap: 4px; }
+.w-row .w-adv { margin: 0; font-size: var(--fs-s); color: var(--muted); }
+.w-row .w-adv.hard { color: var(--ink); padding: 8px 10px; }
+.w-row .w-fix { font-size: var(--fs-s); }
+/* coffee names a step up */
+.item .name { font-size: var(--fs-m); letter-spacing: -.03em; line-height: 1.1; }
+/* the closing lines on the golden ratio: 39 against 24 and 15 */
+.litext, .outro-end { font-size: var(--fs-xl); line-height: 1.05; letter-spacing: -.045em; max-width: 22ch; }
+@media (max-width: 560px) { .litext, .outro-end { font-size: 30px; } }
+/* buy me a coffee: plain text link */
+footer .bmc, footer .bmc a, footer .bmc .sheen-text { font-weight: 400; text-decoration: none; color: var(--ink); }
+footer .bmc a:hover .sheen-text { text-decoration: underline; }
+.field .btn, #go { height: var(--btn-h) !important; min-height: var(--btn-h) !important; align-self: end; }
+.step button, #zVal { display: inline-flex; align-items: center; justify-content: center; }
 </style>
 </head>
 <body>
@@ -986,7 +1021,7 @@ footer .bmc .sheen-text { background: none; -webkit-background-clip: border-box;
         <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">You’ll</span> <span class="w" style="--i:1">love</span> <span class="w" style="--i:2">every</span> <span class="w" style="--i:3">cup.</span></p>
         <div class="scene stat" aria-hidden="true" id="sceneStat"><span class="stat-n"><span id="statN">0</span> coffees.</span><span class="stat-s" id="statS">From near and far.</span></div>
         <div class="scene" aria-hidden="true" id="sceneIsland"><div class="isl-stack" id="islStack"></div></div>
-        <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">Seven</span> <span class="w" style="--i:1">brewers.</span><br><span class="w muted-w" style="--i:2">One</span> <span class="w muted-w" style="--i:3">recipe</span> <span class="w muted-w" style="--i:4">each.</span></p>
+        <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">Seven</span> <span class="w" style="--i:1">brewers.</span><br><span class="w muted-w" style="--i:2">One</span> <span class="w muted-w" style="--i:3">recipe.</span></p>
         <div class="scene stat" aria-hidden="true" id="sceneGrind"><span class="stat-k" id="gB">V60</span><span class="stat-n">Got <span id="gT">3:15</span>?</span><span class="stat-s">It’s all it takes.</span></div>
         <p class="scene words verbs" aria-hidden="true"><span class="stat-k">V60</span><span class="w" style="--i:0">Bloom.</span> <span class="w" style="--i:1">Pour.</span> <span class="w" style="--i:2">Swirl.</span></p>
         <p class="scene words verbs" aria-hidden="true"><span class="stat-k">Kalita Wave</span><span class="w" style="--i:0">Bloom.</span> <span class="w" style="--i:1">Pulse.</span> <span class="w" style="--i:2">Drain.</span></p>
@@ -1024,26 +1059,26 @@ footer .bmc .sheen-text { background: none; -webkit-background-clip: border-box;
       <div class="chips" id="shelfV" role="group" aria-label="Which coffees"></div>
     </div>
     <div class="shelf loading" id="shelf" aria-busy="true"></div>
-    <button class="btn ghost more-btn" id="shelfMore" type="button" hidden>Show all</button>
+    <button class="btn ghost more-btn" id="shelfMore" type="button" hidden aria-hidden="true">Show all</button>
   </section>
 
   <section class="sec" id="coffee" aria-labelledby="askLbl">
     <div class="ask">
-      <div class="kit" id="kit">
-        <div class="opts" id="opts-kit"></div>
-        <div class="opt"><span>Grinder</span><div class="kit-mill">
-          <select id="millSel" aria-label="Your grinder"></select>
-          <div class="zr-ctl" id="zrCtl"><span class="zr-lbl" id="zrLbl">My C40 zero</span>
-            <div class="step" role="group" aria-labelledby="zrLbl"><button type="button" id="zMinus" aria-label="Zero offset one click lower">−</button><span id="zVal">0</span><button type="button" id="zPlus" aria-label="Zero offset one click higher">+</button></div></div>
-        </div></div>
-        <div class="opt"><span>Water</span><details class="water" id="waterCard"><summary><span class="w-head"><span id="wKind"></span></span><span class="w-adv" id="wAdv"></span></summary><div class="w-body" id="wBody"></div></details></div>
-      </div>
       <label for="coffeeIn" id="askLbl">What are you brewing?</label>
       <div class="field">
         <textarea id="coffeeIn" rows="2" placeholder="Roaster, coffee, origin, process, notes…"></textarea>
         <button class="btn" id="go" type="button">Build recipe</button>
       </div>
       <div class="detected" id="detected" aria-live="polite"></div>
+      <div class="kit" id="kit">
+        <div class="opts" id="opts-kit"></div>
+        <div class="opt"><span>Grinder</span><div class="kit-mill">
+          <select id="millSel" aria-label="Your grinder"></select>
+          <div class="zr-ctl" id="zrCtl"><span class="zr-lbl" id="zrLbl">Adjust clicks</span>
+            <div class="step" role="group" aria-labelledby="zrLbl"><button type="button" id="zMinus" aria-label="Zero offset one click lower">−</button><span id="zVal">0</span><button type="button" id="zPlus" aria-label="Zero offset one click higher">+</button></div></div>
+        </div></div>
+        <div class="opt"><span>Water</span><div class="w-row" id="waterCard"><div class="w-body" id="wBody"></div><p class="w-adv" id="wAdv"></p></div></div>
+      </div>
       <div class="opts" id="opts-main"></div>
       <input type="file" accept="image/*" capture="environment" id="roastPhotoIn" hidden>
       <details class="more" id="moreOpts">
@@ -1867,21 +1902,20 @@ footer .bmc .sheen-text { background: none; -webkit-background-clip: border-box;
   function renderWater(r) {
     const lv = waterLevel(), w = prefs.water || {};
     const name = (WATER.find((x) => x[0] === w.kind) || [0, "Not set"])[1];
-    $("wKind").textContent = name;
     const adv = $("wAdv"); adv.className = "w-adv" + (lv === "hard" ? " hard" : "");
     adv.innerHTML = lv === "hard" ? `<b class="w-fix">Hard tap first fix: try ${clRange(1, 2)} coarser or −2 °C before changing grind for bitterness or flatness.</b><span class="w-fixn">Here that’s ${isC40() ? `${r.clicks + 1}–${r.clicks + 2} clicks` : `${esc(onMill(r.clicks + 1).txt)}–${esc(onMill(r.clicks + 2).txt)} on the ${esc(mill().short)}`}${r.temp != null ? ` or ${r.temp - 2}°C` : ""}.</span>`
       : lv === "vsoft" ? "Very soft water can taste flat and thin. If it does, try 1–2°C hotter before changing the grind."
       : lv === "soft" ? "Good for filter. Dial in with grind and temperature as usual."
       : lv === "unknown" ? "Add your hardness or alkalinity to get advice."
-      : "What do you brew with? It changes the first fix for a bitter or flat cup.";
+      : "Pick yours: it changes the first fix for a bitter or flat cup.";
     const custom = w.kind === "custom";
     $("wBody").innerHTML = `<div class="chips" role="group" aria-label="Your water">${WATER.map(([k, t]) => `<button type="button" class="chip" data-w="${k}" aria-pressed="${w.kind === k}">${t}</button>`).join("")}</div>
       ${custom ? `<div class="w-custom"><label>Hardness (ppm CaCO₃)<input id="wHard" inputmode="numeric" value="${esc(w.hard ?? "")}" placeholder="e.g. 80"></label><label>Alkalinity (ppm CaCO₃)<input id="wAlk" inputmode="numeric" value="${esc(w.alk ?? "")}" placeholder="e.g. 40"></label></div>
         <p class="muted" style="font-size:13px">Your water company lists both by postcode. Bottled water labels give bicarbonate in mg/L: divide by 1.22 for ppm CaCO₃.</p>` : ""}
-      <div class="w-sca"><b>Hardness</b><span>50–175 ppm (calcium 17–85, aim ~68)</span><b>Alkalinity</b><span>40–75 ppm, aim ~40 (bicarbonate buffer)</span><b>TDS</b><span>75–250 ppm, aim ~150</span>
+      ${custom ? `<div class="w-sca"><b>Hardness</b><span>50–175 ppm (calcium 17–85, aim ~68)</span><b>Alkalinity</b><span>40–75 ppm, aim ~40 (bicarbonate buffer)</span><b>TDS</b><span>75–250 ppm, aim ~150</span>
         <b>London tap</b><span>~250–350 hardness, ~200+ alkalinity</span></div>
-      <p class="muted" style="font-size:13px">SCA water standard, all as CaCO₃. A jug filter, or tap cut with low-mineral bottled water, brings hard tap much closer.</p>`;
-    $("wBody").querySelectorAll("button[data-w]").forEach((b) => b.onclick = () => { prefs.water = { ...(prefs.water || {}), kind: b.dataset.w }; savePrefs(); $("waterCard").open = true; render(); });
+      <p class="muted" style="font-size:13px">SCA water standard, all as CaCO₃. A jug filter, or tap cut with low-mineral bottled water, brings hard tap much closer.</p>` : ""}`;
+    $("wBody").querySelectorAll("button[data-w]").forEach((b) => b.onclick = () => { prefs.water = { ...(prefs.water || {}), kind: b.dataset.w }; savePrefs(); render(); });
     const inp = (id, k) => { const el = $(id); if (!el) return; el.onchange = () => { const v = el.value.trim(); prefs.water = { ...(prefs.water || {}), [k]: v === "" ? null : Math.max(0, Math.round(Number(v) || 0)) }; savePrefs(); render(); }; };
     inp("wHard", "hard"); inp("wAlk", "alk");
   }
@@ -2610,7 +2644,7 @@ footer .bmc .sheen-text { background: none; -webkit-background-clip: border-box;
           <button class="btn" type="button" data-i="${i}">Brew</button>
           <span class="date">${r.url ? `<a href="${esc(r.url)}" target="_blank" rel="noopener" aria-label="Buy ${esc(r.name)} from ${esc(r.roaster)}">Buy</a>` : ""}<span>${r.published ? isoDmy(r.published).slice(0, 5) : isoDmy(r.found).slice(0, 5)}</span></span>
         </div></article>`; }).join("") : `<p class="muted" style="padding:16px 0;margin:0">Nothing matches${shelfV === "v60" && shelf.some((r) => !shelfFit()(r)) ? ` in ${shelfFitName()}. Try Everything, or` : "."} <a href="#" class="mail-me" data-s="Missing coffee">${shelfV === "v60" ? "email me" : "Email me"}</a> and I’ll add the roaster.</p>`;
-    $("shelfMore").hidden = shelfAll || !!q || list.length <= LIMIT;
+    $("shelfMore").hidden = true;
     $("shelfMore").textContent = `Show all ${list.length}`;
     $("shelf").querySelectorAll("button[data-i]").forEach((b) => b.onclick = () => brewThis(shelf[+b.dataset.i]));
   }
