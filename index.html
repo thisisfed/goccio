@@ -1092,6 +1092,20 @@ footer .bmc a, footer .bmc .sheen-text { font-weight: 500 !important; }
 /* no strength estimate and no pour table: the timer carries the pours. Cold brew and moka (no timer) keep their step list */
 #tdsCol, #pourNote, table.pours:not(.steps) { display: none !important; }
 .cols.two { grid-template-columns: minmax(0, 1fr) !important; }
+/* the stage holds five Just in rows and every verb; no brewer named above "Got 3:15?" */
+.stage { height: max(calc(var(--hs) * 4.4), 196px) !important; }
+.isl-stack .island { height: var(--pill-h); padding: 0 10px; font: 500 var(--fs-s)/1 var(--sans); box-sizing: border-box; }
+.scene.verbs-all .w { --d: .07s; }
+@media (prefers-reduced-motion: no-preference) { .scene.words.verbs-all.on .w { animation-delay: calc(var(--i) * .07s); } }
+#gB { display: none !important; }
+/* no "Typical of …" either: the recipe ends with why, dial in and share */
+.cols.two { display: none !important; }
+/* Just in: five rows, all after the first in pill grey */
+.isl-stack .island:not(.k0) { background: var(--pill); color: var(--ink); }
+/* Bag details: always open, a label like the rows above */
+.more { padding-top: 14px; border-top: 1px solid var(--rule); display: grid; gap: 10px; }
+.more-h { margin: 0; font: 500 var(--fs)/1.35 var(--sans); color: var(--ink); }
+.more .opts { padding-top: 0 !important; }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1135,13 +1149,7 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
         <div class="scene" aria-hidden="true" id="sceneIsland"><div class="isl-stack" id="islStack"></div></div>
         <p class="scene words two" aria-hidden="true"><span class="ln"><span class="w" style="--i:0">Seven</span> <span class="w" style="--i:1">brewers.</span></span><span class="ln"><span class="w" style="--i:2">One</span> <span class="w" style="--i:3">recipe.</span></span></p>
         <div class="scene stat" aria-hidden="true" id="sceneGrind"><span class="stat-k" id="gB">V60</span><span class="stat-n">Got <span id="gT">3:15</span>?</span><span class="stat-s">It’s all it takes.</span></div>
-        <p class="scene words verbs" aria-hidden="true"><span class="stat-k">V60</span><span class="w" style="--i:0">Bloom.</span> <span class="w" style="--i:1">Pour.</span> <span class="w" style="--i:2">Swirl.</span></p>
-        <p class="scene words verbs" aria-hidden="true"><span class="stat-k">Kalita Wave</span><span class="w" style="--i:0">Bloom.</span> <span class="w" style="--i:1">Pulse.</span> <span class="w" style="--i:2">Drain.</span></p>
-        <p class="scene words verbs" aria-hidden="true"><span class="stat-k">Chemex</span><span class="w" style="--i:0">Rinse.</span> <span class="w" style="--i:1">Bloom.</span> <span class="w" style="--i:2">Pour.</span></p>
-        <p class="scene words verbs" aria-hidden="true"><span class="stat-k">AeroPress</span><span class="w" style="--i:0">Pour.</span> <span class="w" style="--i:1">Swirl.</span> <span class="w" style="--i:2">Press.</span></p>
-        <p class="scene words verbs" aria-hidden="true"><span class="stat-k">Cafetière</span><span class="w" style="--i:0">Steep.</span> <span class="w" style="--i:1">Skim.</span> <span class="w" style="--i:2">Rest.</span></p>
-        <p class="scene words verbs" aria-hidden="true"><span class="stat-k">Cold brew</span><span class="w" style="--i:0">Stir.</span> <span class="w" style="--i:1">Chill.</span> <span class="w" style="--i:2">Filter.</span></p>
-        <p class="scene words verbs" aria-hidden="true"><span class="stat-k">Moka pot</span><span class="w" style="--i:0">Fill.</span> <span class="w" style="--i:1">Heat.</span> <span class="w" style="--i:2">Stop.</span></p>
+        <p class="scene words verbs-all" aria-hidden="true"><span class="w" style="--i:0">Rinse.</span> <span class="w" style="--i:1">Bloom.</span> <span class="w" style="--i:2">Pour.</span> <span class="w" style="--i:3">Swirl.</span> <span class="w" style="--i:4">Pulse.</span> <span class="w" style="--i:5">Stir.</span> <span class="w" style="--i:6">Steep.</span> <span class="w" style="--i:7">Skim.</span> <span class="w" style="--i:8">Press.</span> <span class="w" style="--i:9">Drain.</span> <span class="w" style="--i:10">Fill.</span> <span class="w" style="--i:11">Heat.</span> <span class="w" style="--i:12">Chill.</span> <span class="w" style="--i:13">Rest.</span> <span class="w" style="--i:14">Filter.</span> <span class="w" style="--i:15">Stop.</span></p>
         <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">Pour.</span> <span class="w" style="--i:1">Taste.</span> <span class="w" style="--i:2">Tweak.</span> <span class="w" style="--i:3">Nail</span> <span class="w" style="--i:4">it.</span></p>
         <div class="scene final on"><h1 id="h1">New coffees. <span class="serif">The recipe for each bag.</span></h1></div>
       </div>
@@ -1194,10 +1202,10 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
       </div>
       <div class="opts" id="opts-main"></div>
       <input type="file" accept="image/*" capture="environment" id="roastPhotoIn" hidden>
-      <details class="more" id="moreOpts">
-        <summary>Bag details</summary>
+      <div class="more" id="moreOpts">
+        <p class="more-h">Bag details</p>
         <div class="opts" id="opts-more"></div>
-      </details>
+      </div>
     </div>
   </section>
 
@@ -1224,7 +1232,7 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
     <p class="pour-note" id="pourNote">Targets shown to 0.1 g. Pour to the nearest gram on your scale.</p>
     <div class="cols two">
       <div class="col" id="tdsCol"><h3>Expected strength</h3><div class="big" id="tds"></div><p id="tdsNote"></p></div>
-      <div class="col"><h3 id="cupH">Likely in the cup</h3><div class="notes-list" id="cupNotes"></div><p id="cupNote"></p></div>
+      <div class="col" id="cupCol"><h3 id="cupH">Likely in the cup</h3><div class="notes-list" id="cupNotes"></div><p id="cupNote"></p></div>
     </div>
     <details class="clk xp" id="whyBox"><summary>Why this recipe <span class="muted" id="whyHint"></span></summary><ul id="why"></ul></details>
     <details class="clk xp"><summary>Dial it in: change one thing per brew</summary><ul id="dial"></ul></details>
@@ -3056,7 +3064,7 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
   })();
   (function heroLoop() {
     const scenes = [...document.querySelectorAll("#stage .scene")];
-    const HOLD = [1800, 2100, 2700, 3300, 2600, 4600, 1900, 1900, 1900, 1900, 1900, 1900, 1900, 3200, 5200];
+    const HOLD = [1800, 2100, 2700, 3600, 2600, 4600, 4600, 3200, 5200];
     if (!scenes.length || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let i = scenes.length - 1, timer = null, visible = true;
     const prep = (el) => {
@@ -3080,9 +3088,9 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
         $("gB").textContent = "V60"; $("gT").textContent = "0:00"; requestAnimationFrame(step);
       }
       if (el.id === "sceneIsland") {
-        // the three newest, one per roaster so the stack shows three different shops
+        // the five newest, one per roaster so the stack shows five different shops
         const seen = new Set(), newest = [...shelf].sort((a, b) => (b.published || b.found || "").localeCompare(a.published || a.found || ""))
-          .filter((c) => !seen.has(c.roaster) && seen.add(c.roaster)).slice(0, 3);
+          .filter((c) => !seen.has(c.roaster) && seen.add(c.roaster)).slice(0, 5);
         $("islStack").innerHTML = newest.map((c, k) => { const o = (c.origin || "").split(" / ")[0];
           return `<div class="island k${k}" style="--k:${k}">${k === 0 ? '<span class="isl-lbl">Just in</span>' : ""}<span class="isl-body"><span class="isl-dot" data-o="${esc(o)}"></span><b>${esc([c.name, o].filter(Boolean).join(", "))}</b><span class="isl-who">${esc(c.roaster)}</span></span></div>`; }).join("");
       }
