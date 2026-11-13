@@ -1,6 +1,6 @@
 # Bag to Cup
 
-**Live at [v60.thisisfed.xyz](https://v60.thisisfed.xyz)**, moving to bagtocup.thisisfed.xyz.
+**Live at [bagtocup.thisisfed.xyz](https://bagtocup.thisisfed.xyz)** (v60.thisisfed.xyz forwards there, bringing each device's journal along).
 
 Type the coffee you're brewing, pick your brewer, and get a dialled-in recipe: grind for your grinder (Comandante C40 clicks or converted), dose, water, temperature and every step, with a brew-along timer.
 
@@ -13,7 +13,7 @@ Below the recipe is **New on UK shelves**: filter coffees (single origins and bl
 
 ## How it runs (free)
 
-- **Site:** one static `index.html`, served by Cloudflare Pages (free plan) at v60.thisisfed.xyz. No server, no tracking, no API keys.
+- **Site:** one static `index.html`, served by Cloudflare Pages (free plan) at bagtocup.thisisfed.xyz. No server, no tracking, no API keys.
 - **What gets published:** Cloudflare's build copies only `index.html` and `data/releases.json` into `public/`, so the scanner, roaster list and workflow stay private.
 - **Recipes:** worked out in the browser from the coffee's process, roast, variety and the cup style you pick.
 - **Roaster scan:** `scripts/scan.py` (Python standard library only) reads each roaster's public shop feed: Shopify's `/products.json` or WooCommerce's Store API. It keeps in-stock coffees roasted for filter or omni (blends are labelled; bundles and subscriptions are skipped), pulls origin, process, variety and tasting notes, and writes `data/releases.json`. A coffee counts as **new** if the shop listed it in the last 21 days.
@@ -31,4 +31,4 @@ After the next scan, `data/releases.json → roasters` shows whether each shop c
 
 ## Custom domain
 
-`CNAME` holds `v60.thisisfed.xyz`. DNS: a `CNAME` record for `v60` pointing to `thisisfed.github.io`.
+DNS at Spaceship: `CNAME` records `bagtocup` and `v60` pointing to `v60-auq.pages.dev`, both added as custom domains on the Pages project.

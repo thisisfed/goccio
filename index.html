@@ -2,24 +2,43 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script>
+/* The site moved from v60.thisisfed.xyz to bagtocup.thisisfed.xyz. Browser storage belongs to one address, so the old
+   address packs this device's journal, preferences and recipe into the link and the new one unpacks them. */
+(() => {
+  try {
+    const OLD = "v60.thisisfed.xyz", NEW = "bagtocup.thisisfed.xyz";
+    if (location.hostname === OLD) {
+      const carry = {};
+      for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith("v60.")) carry[k] = localStorage.getItem(k); }
+      const tail = Object.keys(carry).length ? "#carry=" + encodeURIComponent(JSON.stringify(carry)) : location.hash;
+      location.replace("https://" + NEW + location.pathname + location.search + tail);
+    } else if (location.hash.startsWith("#carry=")) {
+      const carry = JSON.parse(decodeURIComponent(location.hash.slice(7)));
+      for (const [k, v] of Object.entries(carry)) if (k.startsWith("v60.") && localStorage.getItem(k) == null) localStorage.setItem(k, v);
+      history.replaceState(null, "", location.pathname + location.search);
+    }
+  } catch (e) {}
+})();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <title>Bag to Cup</title>
 <meta name="description" content="A recipe for the coffee in front of you, on V60, Kalita Wave, Chemex, AeroPress, cafetière, cold brew or moka pot: the grind for your grinder, ratio, temperature, every step, a full-screen brew timer and a private brew journal. Plus new filter coffees from roasters in the UK, Europe and beyond, updated every morning.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://v60.thisisfed.xyz/">
+<meta property="og:url" content="https://bagtocup.thisisfed.xyz/">
 <meta property="og:site_name" content="Bag to Cup">
 <meta property="og:title" content="Bag to Cup: new coffees, the recipe for each bag">
 <meta property="og:description" content="Grind for your grinder, ratio, temperature and every step, for seven brewers. New coffees from 100+ roasters, checked every morning.">
-<meta property="og:image" content="https://v60.thisisfed.xyz/og/card-5.png">
+<meta property="og:image" content="https://bagtocup.thisisfed.xyz/og/card-5.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Bag to Cup: an example recipe card with dose, water, temperature and the pour timeline">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Bag to Cup: new coffees, the recipe for each bag">
 <meta name="twitter:description" content="Grind for your grinder, ratio, temperature and every step, for seven brewers. New coffees from 100+ roasters, checked every morning.">
-<meta name="twitter:image" content="https://v60.thisisfed.xyz/og/card-5.png">
+<meta name="twitter:image" content="https://bagtocup.thisisfed.xyz/og/card-5.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M4 6h24L16 27z' fill='%230b0b0b'/%3E%3C/svg%3E">
 <script>
 /* Auto appearance follows daylight where you are (light from sunrise to sunset), not the browser's own dark setting.
