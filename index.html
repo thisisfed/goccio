@@ -1241,13 +1241,16 @@ footer .fcol + .fcol > .refs-h:first-child { margin-top: 14px !important; }
 @media (min-width: 1000px) {
   footer { display: block !important; columns: 3; column-gap: 40px; column-fill: balance; }
   footer .fcol { display: block; }
-  footer .fcol + .fcol { margin-top: 28px; }   /* a clear gap between Disclaimer, Methods and Sources */
+  footer .fcol:not(:last-child) { padding-bottom: 28px; }   /* a clear gap between Disclaimer, Methods and Sources */
+  footer .fcol + .fcol > .refs-h:first-child { margin-top: 0 !important; }
   footer .refs-h { margin: 0 0 8px !important; break-after: avoid; }
   footer .foot-note:not(.refs-h) { margin: 0; }
   footer .refs { display: block !important; }
   footer .refs li { break-inside: avoid; }
-  footer .refs:not(.meth) li + li { margin-top: .8em; }
 }
+/* sources: numbers flush left, no hanging indent, no gap between entries */
+footer .refs:not(.meth) { list-style-position: inside; padding-left: 0 !important; gap: 0 !important; }
+footer .refs:not(.meth) li::marker { content: counter(list-item) ". "; }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
