@@ -1,0 +1,57 @@
+name: Publish to Cloudflare
+
+# Publishes the site straight to the Cloudflare Pages project "v60", so a stuck
+# Cloudflare <-> GitHub link can't hold updates back. Runs on every change to main,
+# after each roaster scan (scan commits don't trigger other workflows on their own),
+# and by hand from the Actions tab.
+on:
+  push:
+    branches: [main]
+  workflow_run:
+    workflows: ["Daily roaster scan"]
+    types: [completed]
+  workflow_dispatch:
+
+concurrency:
+  group: publish
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: 1c3773d3175301c1a989184b445ac1f2
+    steps:
+      - name: Skip until the token is added
+        id: gate
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "No CLOUDFLARE_API_TOKEN secret yet, nothing to do."
+            echo "go=no" >> "$GITHUB_OUTPUT"
+          else
+            echo "go=yes" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.gate.outputs.go == 'yes'
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        if: steps.gate.outputs.go == 'yes'
+        with:
+          node-version: 22
+
+      - name: Publish
+        if: steps.gate.outputs.go == 'yes'
+        run: |
+          # only what the site serves: the page, its data and the share-image function
+          mkdir -p /tmp/site
+          cp index.html CNAME /tmp/site/ 2>/dev/null || cp index.html /tmp/site/
+          cp -r data /tmp/site/data
+          cp -r functions /tmp/site/functions
+          cd /tmp/site
+          npx --yes wrangler@4 pages deploy . --project-name=v60 --branch=main --commit-dirty=true
