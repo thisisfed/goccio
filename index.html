@@ -1300,6 +1300,8 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 /* 15 px everywhere: on the narrowest phones the menu needs the room, so the name in the bar steps aside */
 @media (max-width: 400px) { .nav { gap: 4px !important; } .nav button, .nav .theme-btn { padding: 0 8px !important; } .top-in { gap: 8px !important; } }
 @media (max-width: 360px) { .top-in .mark { display: none !important; } .top-in { justify-content: flex-end !important; } }
+/* the recipe starts at the numbers: no method, coffee name or bag line above them */
+.r-title { display: none !important; }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1421,11 +1423,11 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
       <h2 id="rtitle"></h2>
       <p class="r-read" id="rread"></p>
     </div>
-    <div class="mine-bar" id="mineBar"></div>
-    <div class="mine-ed" id="mineEd" hidden></div>
     <div class="rbody" id="rbody">
     <div class="adjusted" id="adjusted" hidden></div>
     <div class="specs" id="specs"></div>
+    <div class="mine-bar" id="mineBar"></div>
+    <div class="mine-ed" id="mineEd" hidden></div>
     <div class="zero-row" id="zeroRow"><div class="zr-math num" id="zrMath" aria-label="How the clicks add up"></div></div>
     <div class="tech" id="tech"></div>
     <button class="btn go-big" id="startBrew" type="button"><span>Start brewing</span><span class="num" id="startSum"></span></button>
@@ -2521,7 +2523,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
       $("tech").innerHTML = `<span><b>Agitation: ${AGIT[r.agit]}.</b> ${agitTxt}</span>
       <span class="muted">Bloom ${bloomTimes}× the dose. ${prepFor(r)}</span>`;
     } else $("tech").innerHTML = `<span>${esc(prepFor(r))}</span>`;
-    const sum = `${isC40() ? r.clicks + " clk" : onMill(r.clicks).txt + " " + mill().short} / ${r.dose}→${r.water} g${r.temp != null ? ` / ${r.temp}°` : ""}`;
+    const sum = `${isC40() ? r.clicks + " clk" : onMill(r.clicks).txt + " " + mill().short} / ${r.dose} → ${r.water} g${r.temp != null ? ` / ${r.temp}°` : ""}`;
     $("startSum").textContent = sum; $("dockSum").textContent = sum;
 
     const tbl = $("pourRows").closest("table");
