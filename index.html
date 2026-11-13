@@ -1249,8 +1249,9 @@ footer .fcol + .fcol > .refs-h:first-child { margin-top: 14px !important; }
   footer .refs li { break-inside: avoid; }
 }
 /* sources: numbers flush left, no hanging indent, no gap between entries */
-footer .refs:not(.meth) { list-style-position: inside; padding-left: 0 !important; gap: 0 !important; }
-footer .refs:not(.meth) li::marker { content: counter(list-item) ". "; }
+footer .refs:not(.meth) { list-style: none; padding-left: 0 !important; gap: 0 !important; counter-reset: src; }
+footer .refs:not(.meth) li { position: relative; padding-left: 1.9em; counter-increment: src; }
+footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolute; left: 0; color: var(--muted); }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
