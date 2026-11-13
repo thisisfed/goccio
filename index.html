@@ -1209,6 +1209,10 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E") !important; }
 :root[data-theme="dark"] #millSel {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E") !important; }
+/* coffee rows: name and pills sit at the bottom, so the rule under each row is always the same distance from the pills */
+.item { align-items: stretch !important; }
+.item .l { display: flex !important; flex-direction: column; align-self: stretch; }
+.item .l .name { margin-top: auto; }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1360,7 +1364,7 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
     <div class="log" id="logBox">
       <div class="opt"><span id="logTitle">Taste?</span><div class="taste" id="tasteChips" role="group" aria-labelledby="logTitle"></div></div>
       <div class="opt dd" id="ddRow"><label for="ddIn">Drained at</label>
-        <div class="dd-in"><input id="ddIn" inputmode="numeric" placeholder="3:20" aria-describedby="ddHint"><span class="muted" id="ddHint"></span></div></div>
+        <div class="dd-in"><input id="ddIn" type="text" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" placeholder="3:20" aria-describedby="ddHint"><span class="muted" id="ddHint"></span></div></div>
       <textarea id="logNote" placeholder="Note (optional)"></textarea>
       <div class="suggest" id="suggest" hidden></div>
       <div class="share"><button class="btn" id="saveLog" type="button">Save to journal</button></div>
@@ -2514,7 +2518,7 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
         <div class="ed-f"><span>Grind, ${esc(G.lbl)}</span><div class="step"><button type="button" id="eG-">−</button><span id="eGv">${esc(showG(gv))}</span><button type="button" id="eG+">+</button></div></div>
         ${r.temp != null ? `<label class="ed-f"><span>Kettle, °C</span><input class="ed-in" id="eT" inputmode="numeric" value="${r.temp}"></label>` : ""}
         ${moka ? "" : `<label class="ed-f"><span>Water, g <i class="muted" id="eR">1:${r.ratio}</i></span><input class="ed-in" id="eW" inputmode="numeric" value="${r.water}"></label>`}
-        ${r.kind === "pour" ? `<div class="ed-f"><span>Done between</span><div class="ed-two"><input class="ed-in" id="eLo" inputmode="numeric" value="${fmt(r.lo)}" aria-label="Drawdown from"><input class="ed-in" id="eHi" inputmode="numeric" value="${fmt(r.hi)}" aria-label="Drawdown to"></div></div>` : ""}
+        ${r.kind === "pour" ? `<div class="ed-f"><span>Done between</span><div class="ed-two"><input class="ed-in" id="eLo" inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false" value="${fmt(r.lo)}" aria-label="Drawdown from"><input class="ed-in" id="eHi" inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false" value="${fmt(r.hi)}" aria-label="Drawdown to"></div></div>` : ""}
       </div>
       <div class="ed-steps" id="eSteps"></div>
       <div class="ed-add">${hasPours ? '<button type="button" class="chip" id="eAddP">Add a pour</button>' : ""}<button type="button" class="chip" id="eAddS">Add a step</button></div>
@@ -2531,7 +2535,7 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
     const paint = () => {
       const li = lastPourIdx();
       $("eSteps").innerHTML = rows.map((R, i) => `<div class="ed-step${R.act ? " act" : ""}">
-        ${timed ? `<input class="ed-in" data-k="t" value="${esc(R.tTxt ?? fmt(R.t))}" inputmode="numeric" aria-label="Step ${i + 1} starts at">` : `<span class="ed-n">${i + 1}</span>`}
+        ${timed ? `<input class="ed-in" data-k="t" value="${esc(R.tTxt ?? fmt(R.t))}" inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Step ${i + 1} starts at">` : `<span class="ed-n">${i + 1}</span>`}
         ${R.act ? `<input class="ed-in" data-k="lbl" value="${esc(R.lbl)}" maxlength="24" placeholder="Swirl" aria-label="Step ${i + 1} name">`
           : `<span class="ed-g"><input class="ed-in" data-k="g" value="${i === li ? Math.round(water0()) : esc(String(R.g))}" inputmode="decimal" aria-label="Pour ${i + 1}, scale to"${i === li ? " readonly" : ""}> g</span>`}
         <button type="button" class="chip ed-x" data-x="${i}" aria-label="Remove step ${i + 1}">Remove</button>
