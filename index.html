@@ -2511,7 +2511,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
     $("zeroRow").hidden = !!r.mine; $("clkHow").hidden = !!r.mine;
     renderMine(r);
     const showRet = r.tds != null;
-    $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}"><b>${v}${u ? `<small>${u === "-cup" ? u : " " + u}</small>` : ""}</b><span class="sub2">${l}</span>${k === "key" && isC40() && prefs.zero ? `<span class="zo">${sign(prefs.zero)} zero offset</span>` : ""}${k === "key" && !isC40() ? `<span class="sub2">from ${r.clicks} C40 clicks${onMill(r.clicks).atMax ? ", coarsest setting, may still run fast" : onMill(r.clicks).atMin ? ", finest setting" : ""}</span>` : ""}${k === "ratio" && showRet && false ? `<span class="ret">(${r.water} g water − 2.1 × ${r.dose} g retained). Estimate only.</span>` : ""}${badge ? `<span class="badge">${esc(badge)}</span>` : ""}</div>`).join("");
+    $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}"><b>${v}${u ? `<small>${u === "-cup" ? u : " " + u}</small>` : ""}</b><span class="sub2">${l.charAt(0).toUpperCase() + l.slice(1)}</span>${k === "key" && isC40() && prefs.zero ? `<span class="zo">${sign(prefs.zero)} zero offset</span>` : ""}${k === "key" && !isC40() ? `<span class="sub2">from ${r.clicks} C40 clicks${onMill(r.clicks).atMax ? ", coarsest setting, may still run fast" : onMill(r.clicks).atMin ? ", finest setting" : ""}</span>` : ""}${k === "ratio" && showRet && false ? `<span class="ret">(${r.water} g water − 2.1 × ${r.dose} g retained). Estimate only.</span>` : ""}${badge ? `<span class="badge">${esc(badge)}</span>` : ""}</div>`).join("");
     const agitTxt = r.agit >= 3 ? "Stir or swirl the bloom, pour with energy, one swirl at the end." :
       r.agit === 2 ? "Swirl the bloom gently, steady pours, one soft swirl at the end." :
       r.agit === 1 ? "No stirring. Pour low and gentle so the fruit stays clean." :
@@ -3243,8 +3243,8 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
     x.fillStyle = mut; x.font = F(600, 26); x.fillText(isC40() ? "Comandante C40 clicks" : clip(mill().name, hw - 40), M + hw / 2, y + 244);
     x.font = F(500, 22); x.fillText(isC40() ? (prefs.zero ? `counted from zero, my zero ${signed(prefs.zero)}` : "counted from zero") : `from ${r.clicks} C40 clicks`, M + hw / 2, y + 276);
     const tw = (IW - hw - g - g) / 2, th = (hh - g) / 2;
-    [[r.dose + " g", "coffee"], [r.water + " g", r.brewer === "cold" ? "cold water" : "water"], r.brewer === "moka" ? [doseName(r), "pot"] : ["1:" + r.ratio, "ratio"],
-      r.temp != null ? [r.temp + "°C", "kettle"] : r.brewer === "cold" ? ["12–18 h", "in the fridge"] : ["Boiled", "into the base"]].forEach(([v, l], i) => {
+    [[r.dose + " g", "Coffee"], [r.water + " g", r.brewer === "cold" ? "Cold water" : "Water"], r.brewer === "moka" ? [doseName(r), "Pot"] : ["1:" + r.ratio, "Ratio"],
+      r.temp != null ? [r.temp + "°C", "Kettle"] : r.brewer === "cold" ? ["12–18 h", "In the fridge"] : ["Boiled", "Into the base"]].forEach(([v, l], i) => {
       const tx = M + hw + g + (i % 2) * (tw + g), ty = y + Math.floor(i / 2) * (th + g);
       rr(tx, ty, tw, th, 30, "#ffffff");
       x.fillStyle = ink; x.font = F(700, 62); x.fillText(v, tx + tw / 2, ty + 82);
