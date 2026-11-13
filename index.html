@@ -1288,6 +1288,8 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 /* top bar: translucent, what scrolls under it shows through, blurred */
 .top { background: color-mix(in srgb, var(--bg) 72%, transparent) !important; backdrop-filter: saturate(180%) blur(18px) !important; -webkit-backdrop-filter: saturate(180%) blur(18px) !important; border-bottom-color: color-mix(in srgb, var(--rule) 70%, transparent) !important; }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .top { background: var(--bg) !important; } }
+/* the clicks sum line under the time is gone: How these clicks were set explains it */
+#zeroRow { display: none !important; }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1415,7 +1417,6 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
     <div class="adjusted" id="adjusted" hidden></div>
     <div class="specs" id="specs"></div>
     <div class="zero-row" id="zeroRow"><div class="zr-math num" id="zrMath" aria-label="How the clicks add up"></div></div>
-    <details class="clk" id="clkHow"><summary>How these clicks were set <span class="muted" id="clkSumm"></span></summary><div class="clk-body" id="clkBody"></div></details>
     <div class="tech" id="tech"></div>
     <button class="btn go-big" id="startBrew" type="button"><span>Start brewing</span><span class="num" id="startSum"></span></button>
     <table class="pours" aria-label="Pour schedule">
@@ -1428,6 +1429,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
       <div class="col" id="cupCol"><h3 id="cupH">Likely in the cup</h3><div class="notes-list" id="cupNotes"></div><p id="cupNote"></p></div>
     </div>
     <details class="clk xp" id="whyBox"><summary>Why this recipe <span class="muted" id="whyHint"></span></summary><ul id="why"></ul></details>
+    <details class="clk xp" id="clkHow"><summary>How these clicks were set <span class="muted" id="clkSumm" hidden></span></summary><div class="clk-body" id="clkBody"></div></details>
     <details class="clk xp" id="expBox"><summary>What to expect</summary><ul id="expect"></ul></details>
     <details class="clk xp"><summary>Dial it in: change one thing per brew</summary><ul id="dial"></ul></details>
     <div class="share">
@@ -2291,7 +2293,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
     if (p.process) rows.push([`Process: ${c.process === "unsure" ? "not stated" : PROCESS[c.process].label}`, signed(p.process)]);
     if (p.learn) rows.push([r.learn && r.learn.source === "style" ? "Your nailed brews of this style" : "Your journal for this coffee", signed(p.learn)]);
     if (p.zero) rows.push(["Your C40 zero", signed(p.zero)]);
-    $("clkSumm").textContent = "Sources";
+    $("clkSumm").textContent = "";
     $("clkBody").innerHTML = `
       <p><b>C40 zero point.</b> Close the dial clockwise until it stops gently, burrs touching (don’t force it). That’s 0. Count clicks back anticlockwise. Stock C40 burrs, no Red Clix.</p>
       <div class="clk-sum">${rows.map(([a, b]) => `<span>${esc(a)}</span><span>${b}</span>`).join("")}<span class="tot">Grind at</span><span class="tot">${r.clicks} clicks</span></div>
