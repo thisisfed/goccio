@@ -1515,6 +1515,8 @@ def inspect(urls):
             if tag not in seen and len(seen) < 25:
                 seen.add(tag); print("  tag:", tag)
         text = strip_html(body)
+        for m in list(re.finditer(r"\b(?:[A-Z]{1,2}-?)?\d{4,5}\s+[A-ZÄÖÜ][\wäöüßé.-]+(?:\s[A-ZÄÖÜ][\wäöüß.-]+)?", text))[:4]:   # a postcode and town (legal notice / footer)
+            print("  address:", re.sub(r"\s+", " ", text[max(0, m.start() - 60): m.end() + 20]))
         hits = 0
         for m in re.finditer(INSPECT_WORDS, text, re.I):
             snip = re.sub(r"\s+", " ", text[max(0, m.start() - 80): m.end() + 140])
