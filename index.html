@@ -1117,6 +1117,12 @@ footer .bmc a, footer .bmc .sheen-text { font-weight: 500 !important; }
 .scene.roasters { font-size: min(var(--hs), 8.6cqi); gap: .05em .5em; line-height: 1.05; }
 .scene.roasters .rs { white-space: nowrap; }
 .scene.roasters .cc { color: var(--muted); }
+/* the option rows read as one list: the same 12 px between every row, across the three groups */
+#opts-main, #moreOpts { margin-top: -4px; }
+/* no rule between the Journal title and the question */
+#logBox { border-top: 0 !important; }
+/* the location pill sits 5 px from the next one, like every other pill */
+.item .pills .place { margin: 0 !important; display: inline-flex; }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1192,7 +1198,7 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
       <input type="search" id="shelfQ" placeholder="Search roaster, origin, note…" aria-label="Search coffees">
       <div class="chips" id="shelfR" role="group" aria-label="Where the roaster is"></div>
       <div class="chips" id="shelfF" role="group" aria-label="Process"></div>
-      <div class="chips" id="shelfV" role="group" aria-label="Which coffees"></div>
+      <div class="chips" id="shelfV" role="group" aria-label="Which coffees" hidden></div>
     </div>
     <div class="shelf loading" id="shelf" aria-busy="true"></div>
     <button class="btn ghost more-btn" id="shelfMore" type="button" hidden aria-hidden="true">Show all</button>
@@ -2890,7 +2896,7 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
   };
 
   // ---------- shelves ----------
-  let shelf = [], shelfF = "all", shelfR = "all", shelfAll = false, shelfV = "v60";
+  let shelf = [], shelfF = "all", shelfR = "all", shelfAll = false, shelfV = "all";   // one list: every coffee
   // "Made for V60": single origins roasted for filter or omni. Blends, espresso roasts (the roaster shelves or
   // describes them as espresso, even when sold ground for filter), coffees named espresso and darker
   // roasts stay on the list, one tap away under Everything. Search stays inside whichever one is chosen.
