@@ -1544,7 +1544,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
   const COUNTRIES = ["Ethiopia","Kenya","Colombia","Panama","Costa Rica","Guatemala","El Salvador","Honduras","Nicaragua","Peru","Bolivia","Ecuador","Brazil","Burundi","Rwanda","Uganda","Tanzania","Yemen","Indonesia","Sumatra","Papua New Guinea","Mexico","China","Yunnan","Taiwan","India","Myanmar","Thailand","Vietnam","Congo","Malawi","Zambia","Jamaica","Hawaii","Dominican Republic","Timor"];
   const ROASTERS = ["sey","la cabra","tim wendelboe","manhattan","april","coffee collective","square mile","kiss the hippo","assembly","carnival","climpson","dak","onyx","friedhats","origin","colonna","round hill","dark arts","workshop","clifton","crankhouse","sweven","quarter horse","outpost","north star","obadiah","dear green","steampunk","manumit","pharmacie","skylark","horsham","cult","blossom","hasbean","rave","curve","ozone","girls who grind","neighbourhood"];
   const DELICATE = /gesha|geisha|sidra|pink bourbon|wush ?wush|eugenioides|laurina|sudan rume/;
-  const VARIETY_RE = /gesha|geisha|sidra|pink bourbon|wush ?wush|eugenioides|laurina|sudan rume|sl28|sl34|ruiru|batian|red bourbon|yellow bourbon|bourbon|typica|caturra|catuai|castillo|pacamara|74110|74158|heirloom|landrace|chiroso/;
+  const VARIETY_RE = /mundo novo|gesha|geisha|sidra|pink bourbon|wush ?wush|eugenioides|laurina|sudan rume|sl28|sl34|ruiru|batian|red bourbon|yellow bourbon|bourbon|typica|caturra|catuai|castillo|pacamara|74110|74158|heirloom|landrace|chiroso/;
 
   function parseCoffee(text) {
     const raw = text || "";
@@ -3355,6 +3355,14 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
       img.onerror = no; img.src = URL.createObjectURL(file); });
   }
   const norm = (t) => String(t || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+
+  // growing regions that name their country, for labels that print only the region (Cerrado Mineiro, Yirgacheffe...)
+  const REGIONS = [[/cerrado|mineir|minas gerais|mogiana|sul de minas|chapada/, "Brazil"], [/yirga|sidam|guji|gedeo|limu|jimma|harrar|hambela|bensa|shakiso|kaffa|bench maji|west arsi|uraga/, "Ethiopia"],
+    [/nyeri|kirinyaga|kiambu|murang|embu|meru|othaya/, "Kenya"], [/huila|narino|cauca|tolima|antioquia|quindio|santander|risaralda/, "Colombia"], [/boquete|chiriqui|volcan/, "Panama"],
+    [/tarrazu|west valley|central valley|naranjo|brunca/, "Costa Rica"], [/huehuetenango|antigua|atitlan|acatenango|coban/, "Guatemala"], [/santa barbara|marcala|copan|ocotepeque/, "Honduras"],
+    [/cajamarca|cusco|amazonas|jaen|san ignacio/, "Peru"], [/caranavi|yungas/, "Bolivia"], [/nyamasheke|rusizi|huye|nyaruguru/, "Rwanda"], [/kayanza|ngozi|kirundo/, "Burundi"],
+    [/aceh|gayo|sumatra|java|bali|flores|toraja/, "Indonesia"], [/yunnan|pu.?er|baoshan/, "China"], [/chiapas|veracruz|oaxaca/, "Mexico"]];
+  const regionCountry = (flat) => { const hit = REGIONS.find(([re]) => re.test(flat)); return hit ? hit[1] : ""; };
   function readBag(data) {
     const text = data.text || "", flat = norm(text);
     // 1. one of today's coffees: same roaster on the label and every word of the coffee's name
@@ -3366,14 +3374,31 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
     const hit = shelf.filter((r) => roasters.includes(r.roaster)).map((r) => ({ r, words: norm(calm(r.name)).split(" ").filter((w) => w.length > 2) }))
       .filter((x) => x.words.length && x.words.every((w) => flat.includes(w))).sort((a, b) => b.words.length - a.words.length)[0];
     if (hit) return { coffee: hit.r };
+    // the label's tasting notes: the line after "Tastes like" / "Notes". Kept aside, so the rest reads as origin, process and roast
+    const NOTE_RE = /(?:tasting notes|notes|tastes? (?:like|of)|flavou?rs?|cup profile)\s*[:\-–]?\s*\n?\s*([^\n]{3,80})/i;
+    const notesLine = (text.match(NOTE_RE) || [])[1];
+    const body = text.replace(NOTE_RE, "\n");
+    const p0 = parseCoffee(body + " " + regionCountry(flat));
+    // no roaster on the label (many print only the coffee): match on most of the name's words, plus the same origin or process
+    const NAME_STOP = /^(coffee|blend|espresso|filter|decaf|pick|edition|single|origin|natural|washed|honey|anaerobic|fazenda|finca|estate|farm|hacienda|station|washing|lot|micro|microlot|yellow|white|black|light|dark|medium|roast)$/;
+    const onLabel = (w) => new RegExp("(^| )" + w + "( |$)").test(flat);
+    const scored = !roasters.length ? shelf.map((r) => { const ws = [...new Set(norm(calm(r.name)).split(" ").filter((w) => w.length > 3 && !NAME_STOP.test(w) && !COUNTRIES.some((c) => norm(c) === w) && !VARIETY_RE.test(w)))];
+        const n = ws.filter(onLabel).length; return { r, n, of: ws.length }; })
+      .filter((x) => x.of && x.n >= Math.min(2, x.of) && x.n / x.of >= 0.6 && ((x.r.origin && p0.origin && x.r.origin === p0.origin) || (x.r.process && p0.process && procKey(x.r.process) === p0.process)))
+      .sort((a, b) => b.n - a.n) : [];
+    if (scored.length && (scored.length === 1 || scored[0].n > scored[1].n)) return { coffee: scored[0].r };
     // 2. otherwise build the line from what the label says
-    const p = parseCoffee(text);
+    const p = p0;
     const lines = (data.lines || []).map((l) => ({ t: (l.text || "").trim(), h: l.bbox ? l.bbox.y1 - l.bbox.y0 : 0 })).filter((l) => /[a-z]{3}/i.test(l.t));
     const rl = !roasters[0] && !p.roaster && lines.find((l) => /\b(roasters?|roastery|coffee roasters|coffee co)\b/i.test(l.t) && l.t.split(/\s+/).length <= 5);
     const roasterName = roasters[0] || (p.roaster ? titleCase(p.roaster) : rl ? titleCase(rl.t.toLowerCase().replace(/[^\p{L}\p{N} '&.-]/gu, "").trim()) : null);
     const skip = (t) => { const n = norm(t); return !n || (roasterName && n.includes(norm(roasterName))) || /\b(roast(ed|ery|ers)?|coffee|notes?|process|origin|variety|altitude|producer|farm|region|weight|net|whole bean|\d+ ?g)\b/.test(n) || COUNTRIES.some((c) => n === c.toLowerCase()); };
-    const big = lines.filter((l) => !skip(l.t) && l.t.length <= 40).sort((a, b) => b.h - a.h)[0];
-    const notesLine = (text.match(/(?:tasting notes|notes|tastes? (?:like|of)|flavou?rs?)\s*[:\-–]?\s*([^\n]{3,80})/i) || [])[1];
+    const words = (data.words || []).map((w) => ({ t: (w.text || "").replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, ""), h: w.bbox ? w.bbox.y1 - w.bbox.y0 : 0, c: w.confidence || 0 }))
+      .filter((w) => w.c >= 70 && w.t.length > 1 && /^[\p{L}][\p{L}'’.-]*$/u.test(w.t) && !skip(w.t));
+    const maxH = Math.max(0, ...words.map((w) => w.h));
+    const bigWords = words.filter((w) => w.h >= maxH * 0.7).map((w) => w.t);
+    const big = bigWords.length && bigWords.length <= 6 ? { t: titleCase(bigWords.join(" ").toLowerCase()) }
+      : lines.filter((l) => !skip(l.t) && l.t.length <= 40).sort((a, b) => b.h - a.h)[0];
     const PL = { washed: "washed", natural: "natural", honey: "honey", anaerobic: "anaerobic", cofer: "co-fermented", decaf: "decaf" };
     const parts = [roasterName, big ? big.t.replace(/[^\p{L}\p{N} '&.-]/gu, "").trim() : null, p.origin, p.variety ? titleCase(p.variety) : null, p.process ? PL[p.process] : null, p.roast ? ROAST[p.roast].label + " roast" : null].filter(Boolean);
     const found = parts.length - (roasterName ? 1 : 0) - (big ? 1 : 0);
@@ -3386,7 +3411,9 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
     const msg = $("scanMsg"), btn = $("scanBtn"); btn.disabled = true; msg.textContent = "Reading the bag…";
     try {
       const [T, canvas] = await Promise.all([loadOcr(), shrink(f)]);
-      const res = await T.recognize(canvas, "eng", { logger: (m) => { if (m.status === "recognizing text") msg.textContent = `Reading the bag… ${Math.round(m.progress * 100)}%`; } });
+      const worker = await T.createWorker("eng", 1, { logger: (m) => { if (m.status === "recognizing text") msg.textContent = `Reading the bag… ${Math.round(m.progress * 100)}%`; } });
+      await worker.setParameters({ tessedit_pageseg_mode: "11" });   // sparse text: labels are columns and blocks, not paragraphs
+      const res = await worker.recognize(canvas); worker.terminate();
       const got = readBag(res.data);
       if (!got) { msg.textContent = "Couldn’t make out the label. Try flat, close and in good light, or type it."; return; }
       if (got.coffee) { msg.textContent = `Found it: ${got.coffee.roaster}, ${calm(got.coffee.name)}.`; brewThis(got.coffee); return; }
