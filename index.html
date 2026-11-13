@@ -1144,6 +1144,14 @@ footer .smile { width: .95em; height: .95em; vertical-align: -.14em; fill: none;
 #logBox #tasteChips { margin-top: 0; }
 #logBox .dd-in { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 #ddIn { width: 64px !important; height: var(--pill-h) !important; padding: 0 10px !important; font: 500 var(--fs-s)/1 var(--sans) !important; box-sizing: border-box; }
+/* custom water labels in the small label size (the question's 24 px label rule was catching them) */
+#coffee .w-custom label { font: 400 var(--fs-s)/1.2 var(--sans) !important; color: var(--muted) !important; }
+.w-adv:empty { display: none; }
+/* journal rows: Drained at is a grid row like Taste?, so their pills line up */
+#ddRow { display: grid !important; }
+@media (min-width: 641px) { #logBox .opt { gap: 12px !important; } }
+/* phones: the grinder pill runs as wide as the Adjust clicks row under it */
+@media (max-width: 640px) { .kit-mill { display: inline-grid !important; grid-template-columns: max-content; justify-items: stretch; } #millSel { width: 100% !important; max-width: none !important; } }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -2064,7 +2072,7 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
     const adv = $("wAdv"); adv.className = "w-adv" + (lv === "hard" ? " hard" : "");
     adv.innerHTML = lv === "hard" ? `<b class="w-fix">Hard tap first fix: try ${clRange(1, 2)} coarser or −2 °C before changing grind for bitterness or flatness.</b>${r.clicks == null ? "" : `<span class="w-fixn">Here that’s ${isC40() ? `${r.clicks + 1}–${r.clicks + 2} clicks` : `${esc(onMill(r.clicks + 1).txt)}–${esc(onMill(r.clicks + 2).txt)} on the ${esc(mill().short)}`}${r.temp != null ? ` or ${r.temp - 2}°C` : ""}.</span>`}`
       : lv === "vsoft" ? "Very soft water can taste flat and thin. If it does, try 1–2°C hotter before changing the grind."
-      : lv === "soft" ? "Good for filter. Dial in with grind and temperature as usual."
+      : lv === "soft" ? ""
       : lv === "unknown" ? "Add your hardness or alkalinity to get advice."
       : "Pick yours: it changes the first fix for a bitter or flat cup.";
     const custom = w.kind === "custom";
