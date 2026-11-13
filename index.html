@@ -1366,6 +1366,7 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
       <div class="col" id="cupCol"><h3 id="cupH">Likely in the cup</h3><div class="notes-list" id="cupNotes"></div><p id="cupNote"></p></div>
     </div>
     <details class="clk xp" id="whyBox"><summary>Why this recipe <span class="muted" id="whyHint"></span></summary><ul id="why"></ul></details>
+    <details class="clk xp" id="expBox"><summary>What to expect</summary><ul id="expect"></ul></details>
     <details class="clk xp"><summary>Dial it in: change one thing per brew</summary><ul id="dial"></ul></details>
     <div class="share">
       <button class="btn" id="copyBtn" type="button">Copy recipe</button>
@@ -1993,6 +1994,59 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
     moka: "Strong and syrupy, close to espresso: chocolate and caramel first.",
   };
 
+
+  // ---------- what to expect: flavour from origin, process, variety and roast; mouthfeel from the recipe itself ----------
+  const BODY = { chemex: 1, rao: 1, fourSix: 2, hoffmann: 2, origami: 2, hoffmannU: 3, kalita: 3, switch: 3, clever: 3, aero: 3, cold: 3, ten: 4, press: 5, moka: 5 };
+  const BODY_TXT = ["light and tea-like, silky on the tongue.", "light and juicy, clean on the tongue.", "medium and round, smooth on the tongue.",
+    "full and syrupy, it coats the tongue.", "heavy and coating, with oils on the surface."];
+  function expectCup(r) {
+    const c = r.c, pr = c.process, ro = c.roast, out = [];
+    const fermented = ["natural", "anaerobic", "cofer"].includes(pr);
+    // flavour
+    let notes = [];
+    if (c.bagNotes && c.bagNotes.length) notes = c.bagNotes.slice(0, 4);
+    else {
+      const o = ORIGIN_NOTES[c.origin];
+      if (o) notes = (o[pr] || o._).slice();
+      else notes = pr === "washed" ? ["citrus", "stone fruit", "cane sugar"] : pr === "natural" ? ["ripe berries", "red fruit", "cocoa"]
+        : pr === "honey" ? ["apricot", "honey", "brown sugar"] : pr === "anaerobic" ? ["tropical fruit", "red wine", "cocoa"]
+        : pr === "cofer" ? ["the infusion leads", "candied fruit"] : pr === "decaf" ? ["brown sugar", "cocoa", "soft fruit"] : ["fruit", "caramel", "cocoa"];
+      if (/gesha|geisha/i.test(c.variety || "")) notes = ["jasmine", "bergamot", ...notes];
+      if (/sl ?28|sl ?34/i.test(c.variety || "")) notes = ["blackcurrant", ...notes];
+      if (pr === "anaerobic") notes = [...notes.slice(0, 2), "a boozy, tropical edge"];
+      if (pr === "cofer") notes = ["the infusion leads", ...notes.slice(0, 2)];
+      if (ro === "medium") notes = [...notes.slice(0, 2), "caramel"];
+      if (ro === "mdark") notes = [notes.find((n) => !/chocolate|caramel|cocoa/.test(n)) || notes[0], "caramel", "dark chocolate"];
+      if (ro === "dark") notes = ["dark chocolate", "toasted nuts", "a smoky edge"];
+      if (r.m === "cold") notes = [...notes.filter((n) => !/jasmine|bergamot|florals|lime|grapefruit/.test(n)).slice(0, 2), "chocolate"];
+    }
+    notes = [...new Set(notes)].slice(0, 4);
+    const list = notes.length > 1 ? notes.slice(0, -1).join(", ") + " and " + notes[notes.length - 1] : notes[0];
+    const basis = c.bagNotes && c.bagNotes.length ? "from your notes" : [pr && pr !== "unsure" ? PROCESS[pr].label : "", c.origin || "", c.variety ? titleCase(c.variety) : ""].filter(Boolean).join(" ");
+    out.push(`Flavour: ${list}.${basis && !(c.bagNotes && c.bagNotes.length) ? ` What a ${basis} usually gives; every lot is a little different.` : !c.origin ? " Add the country to the coffee to narrow it down." : ""}`);
+    // acidity
+    let acid = { vlight: 4, light: 3, medium: 2, mdark: 1, dark: 0, unsure: 2 }[ro] ?? 2;
+    if (/Kenya|Ethiopia|Rwanda|Burundi|Tanzania/.test(c.origin || "") && pr === "washed") acid += 1;
+    if (fermented) acid -= 1;
+    if (r.goal === "light") acid += 0.5; if (r.goal === "syrupy") acid -= 0.5;
+    if (r.m === "cold") acid = 0; if (r.m === "moka" || r.m === "press") acid -= 1;
+    acid = Math.max(0, Math.min(4, Math.round(acid)));
+    const acidKind = /Kenya|Tanzania/.test(c.origin || "") ? "blackcurrant-like" : pr === "washed" ? "citrus-like" : fermented ? "winey, fruity" : "malic, apple-like";
+    out.push(`Acidity: ${["very low, smooth", "low and soft", `medium, ${acidKind}`, `bright, ${acidKind}`, `sparkling, ${acidKind}`][acid]}.`);
+    // sweetness
+    out.push(`Sweetness: ${ro === "dark" || ro === "mdark" ? "bittersweet, like dark chocolate" : fermented ? "high and jammy" : pr === "honey" ? "high, like honey and brown sugar" : ro === "medium" ? "caramel-like" : "clean, like cane sugar"}${ro === "dark" || ro === "mdark" ? "" : r.goal === "light" ? ", lifted by the lighter ratio" : r.goal === "syrupy" ? ", held back a little by the stronger ratio" : ""}.`);
+    // mouthfeel
+    let b = BODY[r.m] ?? 3;
+    if (r.goal === "syrupy") b += 1; if (r.goal === "light") b -= 1;
+    if (ro === "mdark" || ro === "dark") b += 0.5; if (fermented) b += 0.5;
+    b = Math.max(1, Math.min(5, Math.round(b)));
+    out.push(`Mouthfeel: ${BODY_TXT[b - 1]}${r.m === "press" ? " A little silt settles at the bottom: leave the last sip." : r.m === "chemex" ? " The thick paper keeps it very clean." : ""}`);
+    // finish
+    out.push(`Finish: ${ro === "dark" || ro === "mdark" ? "long and cocoa-like, with a gentle bitterness" : fermented ? "long and fruity" : r.m === "chemex" || r.m === "rao" ? "short and very clean" : "clean and medium-long"}.`);
+    if (ro === "unsure" || pr === "unsure") out.push(`${ro === "unsure" && pr === "unsure" ? "Roast and process aren’t" : ro === "unsure" ? "Roast isn’t" : "Process isn’t"} stated, so this is a middle guess. Pick ${ro === "unsure" && pr === "unsure" ? "them" : "it"} above to sharpen it.`);
+    return out;
+  }
+
   // ---------- rendering the recipe ----------
   let recipe = null;
   const g1 = (v) => (Math.round(v * 10) % 10 ? v.toFixed(1) : String(Math.round(v)));                                                     // grams to 0.1
@@ -2378,6 +2432,7 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
     if (r.goal) why.push(`Strength comes from the ratio (1:${r.ratio}). In UC Davis tests, sweetness went down as strength went up (Frost et al. 2020): a lighter ratio tastes sweeter, a stronger one heavier.`);
     const rk = risks(r);
     $("why").innerHTML = rk.map((w) => `<li class="warn">${esc(w)}</li>`).join("") + cons.map((w) => `<li class="cons">${esc(w)}</li>`).join("") + why.map((w) => `<li>${esc(w)}</li>`).join("");
+    $("expect").innerHTML = expectCup(r).map((w) => { const i = w.indexOf(": "); return `<li><b>${esc(w.slice(0, i))}</b>${esc(w.slice(i))}</li>`; }).join("");
     $("whyHint").textContent = rk.length ? `${rk.length} warning${rk.length > 1 ? "s" : ""}` : ""; $("whyHint").classList.toggle("warn", rk.length > 0);
 
     const lighter = Math.round((r.ratio + 1) * 10) / 10, stronger = Math.round((r.ratio - 1) * 10) / 10;
