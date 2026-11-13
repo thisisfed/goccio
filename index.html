@@ -1262,6 +1262,19 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 .w-pc input { height: var(--pill-h); width: 140px; flex: none; border: 0; border-radius: var(--r); background: var(--pill); color: var(--ink); padding: 0 10px; font: 500 var(--fs-s)/1 var(--sans); text-transform: uppercase; }
 .w-pc input::placeholder { text-transform: none; color: var(--muted); }
 .w-pcn { font-size: var(--fs-s); color: var(--muted); margin: 0 0 8px; }
+/* live scan */
+.cam { position: fixed; inset: 0; z-index: 60; background: #000; color: #fff; }
+.cam video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cam-guide { position: absolute; left: 8%; right: 8%; top: 18%; bottom: 22%; border: 2px solid rgba(255,255,255,.9); border-radius: 12px; box-shadow: 0 0 0 100vmax rgba(0,0,0,.55); }
+.cam { overflow: hidden; }
+.cam-top { position: absolute; left: 0; right: 0; top: 0; padding: calc(14px + env(safe-area-inset-top)) 16px 0; display: grid; gap: 8px; }
+.cam-status { margin: 0; font-size: var(--fs); font-weight: 500; }
+.cam-found { display: flex; flex-wrap: wrap; gap: 4px; min-height: var(--pill-h); }
+.cam-tick { display: inline-flex; align-items: center; gap: 6px; height: var(--pill-h); padding: 0 10px; border-radius: var(--r); background: rgba(255,255,255,.16); font-size: var(--fs-s); font-weight: 500; }
+.cam-tick::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #3ecf6a; }
+.cam-ctrls { position: absolute; left: 0; right: 0; bottom: 0; padding: 0 16px calc(18px + env(safe-area-inset-bottom)); display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
+.cam-ctrls .chip { background: rgba(255,255,255,.16) !important; color: #fff !important; }
+.cam-ctrls .chip.on { background: #fff !important; color: #000 !important; }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1482,6 +1495,12 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
   </footer>
 </main>
 
+<div class="cam" id="camView" hidden role="dialog" aria-modal="true" aria-label="Scan the bag">
+  <video id="camVideo" playsinline muted autoplay></video>
+  <div class="cam-guide" id="camGuide" aria-hidden="true"></div>
+  <div class="cam-top"><p class="cam-status" id="camStatus"></p><div class="cam-found" id="camFound"></div></div>
+  <div class="cam-ctrls"><button type="button" class="chip" id="camClose">Cancel</button><button type="button" class="chip" id="camPhoto">Take a photo instead</button><button type="button" class="chip on" id="camDone">Use what it read</button></div>
+</div>
 <div class="dock" id="dock"><button class="btn" id="dockGo" type="button"><span>Start brewing</span><span class="num" id="dockSum"></span></button></div>
 
 <!-- Brew mode -->
@@ -3394,18 +3413,98 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
     const roasterName = roasters[0] || (p.roaster ? titleCase(p.roaster) : rl ? titleCase(rl.t.toLowerCase().replace(/[^\p{L}\p{N} '&.-]/gu, "").trim()) : null);
     const skip = (t) => { const n = norm(t); return !n || (roasterName && n.includes(norm(roasterName))) || /\b(roast(ed|ery|ers)?|coffee|notes?|process|origin|variety|altitude|producer|farm|region|weight|net|whole bean|\d+ ?g)\b/.test(n) || COUNTRIES.some((c) => n === c.toLowerCase()); };
     const words = (data.words || []).map((w) => ({ t: (w.text || "").replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, ""), h: w.bbox ? w.bbox.y1 - w.bbox.y0 : 0, c: w.confidence || 0 }))
-      .filter((w) => w.c >= 70 && w.t.length > 1 && /^[\p{L}][\p{L}'’.-]*$/u.test(w.t) && !skip(w.t));
+      .filter((w) => w.c >= 80 && w.t.length > 1 && /^[\p{L}][\p{L}'’.-]*$/u.test(w.t) && !skip(w.t) && !(notesLine && norm(notesLine).split(" ").includes(norm(w.t))));
     const maxH = Math.max(0, ...words.map((w) => w.h));
-    const bigWords = words.filter((w) => w.h >= maxH * 0.7).map((w) => w.t);
+    const bigWords = [...new Map(words.filter((w) => w.h >= maxH * 0.7).map((w) => [w.t.toLowerCase(), w.t])).values()];   // the same word from several camera frames counts once
     const big = bigWords.length && bigWords.length <= 6 ? { t: titleCase(bigWords.join(" ").toLowerCase()) }
       : lines.filter((l) => !skip(l.t) && l.t.length <= 40).sort((a, b) => b.h - a.h)[0];
     const PL = { washed: "washed", natural: "natural", honey: "honey", anaerobic: "anaerobic", cofer: "co-fermented", decaf: "decaf" };
     const parts = [roasterName, big ? big.t.replace(/[^\p{L}\p{N} '&.-]/gu, "").trim() : null, p.origin, p.variety ? titleCase(p.variety) : null, p.process ? PL[p.process] : null, p.roast ? ROAST[p.roast].label + " roast" : null].filter(Boolean);
     const found = parts.length - (roasterName ? 1 : 0) - (big ? 1 : 0);
     if (!parts.length || (found === 0 && !roasterName)) return null;
-    return { line: parts.join(", ") + (notesLine ? ". Notes: " + notesLine.replace(/\s+/g, " ").trim() : ""), p };
+    return { line: parts.join(", ") + (notesLine ? ". Notes: " + notesLine.replace(/\s+/g, " ").trim() : ""), p, name: big ? big.t : null, roaster: roasterName, notes: notesLine || null };
   }
-  $("scanBtn").onclick = () => { const i = $("scanIn"); i.value = ""; i.click(); };
+  const pickPhoto = () => { const i = $("scanIn"); i.value = ""; i.click(); };
+  $("scanBtn").onclick = () => (navigator.mediaDevices && navigator.mediaDevices.getUserMedia ? liveScan() : pickPhoto());
+
+  // ---------- live scan: the camera stays on and reads the label about once a second, adding up what each frame finds ----------
+  let live = null;
+  function stopLive() {
+    if (!live) return;
+    live.on = false; clearTimeout(live.timer);
+    if (live.stream) live.stream.getTracks().forEach((t) => t.stop());
+    $("camVideo").srcObject = null;
+    if (live.worker) live.worker.terminate();
+    $("camView").hidden = true; document.body.style.overflow = ""; live = null;
+  }
+  function liveTicks(got) {
+    const c = got || {}, p = c.p || {}, PL = { washed: "Washed", natural: "Natural", honey: "Honey", anaerobic: "Anaerobic", cofer: "Co-ferment", decaf: "Decaf" };
+    const items = [c.roaster, c.name, p.origin, p.variety ? titleCase(p.variety) : null, p.process ? PL[p.process] : null, p.roast ? titleCase(ROAST[p.roast].label) : null, c.notes ? "Notes" : null].filter(Boolean);
+    $("camFound").innerHTML = items.map((t) => `<span class="cam-tick">${esc(t)}</span>`).join("");
+  }
+  function grabFrame(v, guide) {   // the part of the picture inside the frame on screen, as the reader sees it
+    const vw = v.videoWidth, vh = v.videoHeight; if (!vw) return null;
+    const box = v.getBoundingClientRect(), g = guide.getBoundingClientRect();
+    const k = Math.max(box.width / vw, box.height / vh), ox = (box.width - vw * k) / 2, oy = (box.height - vh * k) / 2;
+    const sx = Math.max(0, (g.left - box.left - ox) / k), sy = Math.max(0, (g.top - box.top - oy) / k);
+    const sw = Math.min(vw - sx, g.width / k), sh = Math.min(vh - sy, g.height / k);
+    const out = Math.min(2, 1600 / Math.max(sw, sh)), c = document.createElement("canvas");   // small text reads better a little enlarged
+    c.width = Math.round(sw * out); c.height = Math.round(sh * out);
+    c.getContext("2d").drawImage(v, sx, sy, sw, sh, 0, 0, c.width, c.height);
+    return c;
+  }
+  async function liveScan() {
+    stopLive();
+    const msg = $("scanMsg"), view = $("camView"), v = $("camVideo"), st = $("camStatus");
+    live = { on: true, frames: 0, lines: new Map(), words: [], last: "", same: 0, start: Date.now() };
+    const me = live;
+    view.hidden = false; document.body.style.overflow = "hidden"; st.textContent = "Starting the camera…"; liveTicks(null);
+    try {
+      me.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false });
+    } catch (e) { stopLive(); msg.textContent = "No camera access, so take a photo instead."; pickPhoto(); return; }
+    if (!me.on) { me.stream.getTracks().forEach((t) => t.stop()); return; }
+    v.srcObject = me.stream; try { await v.play(); } catch (e) {}
+    st.textContent = "Getting the reader ready…";
+    try {
+      const T = await loadOcr(); if (!me.on) return;
+      me.worker = await T.createWorker("eng", 1); if (!me.on) { me.worker.terminate(); return; }
+      await me.worker.setParameters({ tessedit_pageseg_mode: "11" });
+    } catch (e) { stopLive(); msg.textContent = "Couldn’t load the reader. Check your connection and try again."; return; }
+    st.textContent = "Hold the label inside the frame. Move slowly across it.";
+    const finish = (got) => {
+      stopLive();
+      if (got && got.coffee) { msg.textContent = `Found it: ${got.coffee.roaster}, ${calm(got.coffee.name)}.`; brewThis(got.coffee); return; }
+      if (got && got.line) { $("coffeeIn").value = got.line; msg.textContent = "Here’s what the label says. Check it, then Build recipe."; $("coffeeIn").focus(); return; }
+      msg.textContent = "Couldn’t make out the label. Try more light, or take a photo instead.";
+    };
+    const tick = async () => {
+      if (!me.on) return;
+      const c = grabFrame(v, $("camGuide"));
+      if (c) {
+        try {
+          const r = await me.worker.recognize(c); if (!me.on) return;
+          const d = r.data || {}; me.frames++;
+          (d.lines || []).forEach((l) => { const k = norm(l.text); if (k && !me.lines.has(k) && (l.confidence || 0) >= 55) me.lines.set(k, l); });
+          me.words.push(...(d.words || []).filter((w) => (w.confidence || 0) >= 70));
+          const all = [...me.lines.values()];
+          const got = readBag({ text: all.map((l) => l.text.trim()).join("\n"), lines: all, words: me.words });
+          if (got && got.coffee) return finish(got);
+          liveTicks(got);
+          // done when the read stops changing for two frames and it has the name plus two more things
+          const key = got ? got.line : ""; me.same = key && key === me.last ? me.same + 1 : 0; me.last = key;
+          const p = (got && got.p) || {}, n = [p.origin, p.process, p.roast, p.variety, got && got.notes].filter(Boolean).length;
+          if (got && got.name && n >= 2 && me.same >= 2) return finish(got);
+          if (Date.now() - me.start > 20000) return finish(got);
+        } catch (e) { /* a bad frame: try the next one */ }
+      }
+      me.timer = setTimeout(tick, 250);
+    };
+    tick();
+    $("camDone").onclick = () => { const all = [...me.lines.values()]; finish(all.length ? readBag({ text: all.map((l) => l.text.trim()).join("\n"), lines: all, words: me.words }) : null); };
+  }
+  $("camClose").onclick = () => { stopLive(); $("scanMsg").textContent = ""; };
+  $("camPhoto").onclick = () => { stopLive(); pickPhoto(); };
+  document.addEventListener("visibilitychange", () => { if (document.hidden && live) stopLive(); });
   $("scanIn").addEventListener("change", async (e) => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
     const msg = $("scanMsg"), btn = $("scanBtn"); btn.disabled = true; msg.textContent = "Reading the bag…";
