@@ -891,6 +891,7 @@ def clean_name(title, roaster, origin):
     name = re.sub(r"^[^-–|]*\b(?:coffee )?roast(?:ers?|ery)\s[-–|:]\s*", "", name, flags=re.I)
     name = re.sub(r"^(?:feature|house|community|guest)\s+(?:filter|espresso)\s*[|:–-]\s*", "", name, flags=re.I)
     name = re.sub(r"^(filter|filtro|filtre|espresso|omni)\s*[-–:|/]\s*", "", name, flags=re.I)
+    name = re.sub(r"^\s*(?:\d{2,4}(?:/\d{2,4})?\s+)?new (?:season|crop)\b\s*[-–—:|]?\s*", "", name, flags=re.I)   # Big Sur: "26/27 New Season - …"
     name = re.sub(r"\s*[-–|(]\s*(filter|filtro|filtre|omni)( roast| röst)?\)?\s*$", "", name, flags=re.I)
     parts = re.split(r"\s[-–|]\s", name)
     if len(parts) >= 3:
