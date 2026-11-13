@@ -50,7 +50,7 @@ n=Math.floor((now-new Date(y,0,0))/864e5),r=Math.PI/180,d=-23.44*Math.cos(2*Math
 B=2*Math.PI*(n-81)/364,eot=9.87*Math.sin(2*B)-7.53*Math.cos(B)-1.5*Math.sin(B),
 h=Math.acos(Math.max(-1,Math.min(1,(Math.sin(-.833*r)-Math.sin(lat*r)*Math.sin(d))/(Math.cos(lat*r)*Math.cos(d)))))/r,noon=12-lon/15-eot/60,u=now.getUTCHours()+now.getUTCMinutes()/60;
 return u<noon-h/15||u>noon+h/15;};
-try{var t=localStorage.getItem("v60.theme");document.documentElement.setAttribute("data-theme",t==="light"||t==="dark"?t:(window.__autoDark()?"dark":"light"));}catch(e){}
+try{document.documentElement.setAttribute("data-theme",window.__autoDark()?"dark":"light");}catch(e){}
 </script>
 <style>
 /* Layout idea: Apple product page, warmed up. Cream paper canvas, warm-white rounded tiles, system type set
@@ -1005,11 +1005,6 @@ footer .bmc a:hover .sheen-text { text-decoration: underline; }
   .bv-now { grid-row: 2 / 5; } .bv-ctrls { grid-row: 3; align-self: end; } .bv-opts { grid-row: 4; }
 }
 .litext, .outro-end { max-width: none; width: 100%; text-wrap: pretty; }
-/* tracking: normal everywhere; only the big display sizes tighten, and only a little */
-* { letter-spacing: 0 !important; }
-.item .name, .r-title h2, .pours td.to, .sec-head .cap:first-child, .col .big, .spec b, .bv-big { letter-spacing: -.01em !important; }
-.litext, .outro-end, .scene, .hero h1 { letter-spacing: -.02em !important; }
-.wordmark, .wordmark * { letter-spacing: -.035em !important; }
 /* section titles one step up */
 .sec-head .cap:first-child { font-size: var(--fs-m); line-height: 1.1; }
 .sec-head .cap:first-child b { font-weight: 500; }
@@ -1025,19 +1020,36 @@ footer .bmc { justify-self: center; text-align: center; font-weight: 600 !import
 footer .bmc a, footer .bmc .sheen-text { font-weight: 600 !important; color: var(--ink); text-decoration: none; display: inline; }
 footer .bmc a:hover { text-decoration: underline; }
 footer .bmc a[href*="buymeacoffee"] { display: inline; }
-footer .bmc { white-space: nowrap; font-size: min(var(--fs), 3.6vw); }
+/* footer credit in the section-title size, centred; each half stays whole */
+footer .bmc { white-space: normal; font: 500 var(--fs-m)/1.15 var(--sans) !important; text-wrap: balance; max-width: 22ch; }
+footer .bmc a, footer .bmc .sheen-text { font-weight: 500 !important; }
+/* tracking: tight, Module-like, a little tighter as type gets bigger */
+* { letter-spacing: -.011em !important; }
+.item .name, .r-title h2, .pours td.to, .sec-head .cap:first-child, .col .big, .ask label, footer .bmc, footer .bmc * { letter-spacing: -.025em !important; }
+.litext, .litext *, .outro-end, .outro-end *, .scene, .scene *, .hero h1, .spec b, .bv-big, .bv-big span { letter-spacing: -.04em !important; }
+.bv-big small, .spec b small { letter-spacing: 0 !important; }
+.wordmark, .wordmark * { letter-spacing: -.055em !important; }
+/* the question, the size of a section title */
+.ask label { font-size: var(--fs-m); font-weight: 500; line-height: 1.1; }
+/* the missing-info questions now sit under the coffee box */
+#coffee .need { padding: 14px 0 0; border-top: 1px solid var(--rule); background: none; border-radius: 0; }
+/* no menu: the top bar is invisible until the small Bag to Cup slides in */
+.top { background: transparent; border-bottom-color: transparent; transition: background .25s ease, border-color .25s ease; }
+.mark-on .top { background: var(--bg); border-bottom-color: var(--rule); }
+/* You'll [heart] every cup: the heart draws itself in ink */
+.scene .hw { vertical-align: -.08em; }
+.heart { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linejoin: round; stroke-linecap: round; overflow: visible; display: block; }
+.heart path { stroke-dasharray: 1 1; stroke-dashoffset: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .scene.on .heart path { animation: heartdraw 1.1s .3s cubic-bezier(.6,0,.3,1) both; }
+  @keyframes heartdraw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+}
 </style>
 </head>
 <body>
 <header class="top">
   <div class="top-in">
     <div class="mark">Bag to Cup</div>
-    <nav class="nav" aria-label="Sections">
-      <button type="button" data-jump="shelves"><span class="nw">New c</span><span class="nc">C</span>offees</button>
-      <button type="button" data-jump="recipe">Recipe</button>
-      <button type="button" data-jump="journal">Journal</button>
-      <button type="button" class="theme-btn" id="themeBtn" aria-label="Appearance">Auto</button>
-    </nav>
   </div>
 </header>
 
@@ -1050,7 +1062,7 @@ footer .bmc { white-space: nowrap; font-size: min(var(--fs), 3.6vw); }
       <div class="hero-row">
       <div class="stage" id="stage">
         <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">Love</span> <span class="w" style="--i:1">coffee?</span></p>
-        <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">You’ll</span> <span class="w" style="--i:1">love</span> <span class="w" style="--i:2">every</span> <span class="w" style="--i:3">cup.</span></p>
+        <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">You’ll</span> <span class="w hw" style="--i:1"><svg class="heart" viewBox="0 0 24 24" role="img" aria-label="love"><path pathLength="1" d="M12 20.2S3.5 15 3.5 9.1A4.6 4.6 0 0 1 12 6.6a4.6 4.6 0 0 1 8.5 2.5c0 5.9-8.5 11.1-8.5 11.1z"/></svg></span> <span class="w" style="--i:2">every</span> <span class="w" style="--i:3">cup.</span></p>
         <div class="scene stat" aria-hidden="true" id="sceneStat"><span class="stat-n"><span id="statN">0</span> coffees.</span><span class="stat-s" id="statS">From near and far.</span></div>
         <div class="scene" aria-hidden="true" id="sceneIsland"><div class="isl-stack" id="islStack"></div></div>
         <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">Seven</span> <span class="w" style="--i:1">brewers.</span><br><span class="w muted-w" style="--i:2">One</span> <span class="w muted-w" style="--i:3">recipe.</span></p>
@@ -1102,6 +1114,7 @@ footer .bmc { white-space: nowrap; font-size: min(var(--fs), 3.6vw); }
         <button class="btn" id="go" type="button">Build recipe</button>
       </div>
       <div class="detected" id="detected" aria-live="polite"></div>
+      <div class="need" id="need" hidden></div>
       <div class="kit" id="kit">
         <div class="opts" id="opts-kit"></div>
         <div class="opt"><span>Grinder</span><div class="kit-mill">
@@ -1127,7 +1140,6 @@ footer .bmc { white-space: nowrap; font-size: min(var(--fs), 3.6vw); }
       <h2 id="rtitle"></h2>
       <p class="r-read" id="rread"></p>
     </div>
-    <div class="need" id="need" hidden></div>
     <div class="rbody" id="rbody">
     <div class="adjusted" id="adjusted" hidden></div>
     <div class="specs" id="specs"></div>
@@ -1741,7 +1753,7 @@ footer .bmc { white-space: nowrap; font-size: min(var(--fs), 3.6vw); }
     const empty = !state.text && !state.bag;
     const missing = empty ? [] : r.c.missing;
     const blocked = empty || missing.length > 0;
-    need.hidden = !blocked; body.hidden = blocked;
+    need.hidden = !blocked; body.hidden = blocked; $("recipe").hidden = blocked;
     $("startBrew").disabled = blocked; $("dockGo").disabled = blocked;
     $("dock").hidden = blocked;
     if (!blocked) return false;
@@ -2183,11 +2195,13 @@ footer .bmc { white-space: nowrap; font-size: min(var(--fs), 3.6vw); }
   }
   const renderAllOpts = () => { renderOpts("opts-kit", [{ key: "brewer", label: "Brewer", items: Object.entries(BREWERS).map(([k, x]) => [k, x.name]), on: setBrewer }]); renderOpts("opts-main", optsMain()); renderOpts("opts-more", OPTS_MORE); };
 
+  // the recipe section only exists once there's a full recipe; until then go to the questions
+  function goRecipe() { const t = !$("recipe").hidden ? $("recipe") : !$("need").hidden ? $("need") : $("coffee"); t.scrollIntoView({ behavior: "smooth", block: t.id === "need" ? "center" : "start" }); }
   function build() {
     const t = $("coffeeIn").value.trim();
     if (t !== state.text) { state.bag = null; state.process = "auto"; state.roast = "auto"; state.roastPhoto = null; state.listProc = null; renderAllOpts(); }   // new coffee: forget old answers
     state.text = t; saveState(); render();
-    $("recipe").scrollIntoView({ behavior: "smooth", block: "start" });
+    goRecipe();
   }
 
   // ---------- journal ----------
@@ -2323,7 +2337,7 @@ footer .bmc { white-space: nowrap; font-size: min(var(--fs), 3.6vw); }
       if ((e.brewer || "v60") !== brewerOf(state)) setBrewer(e.brewer || "v60");
       state.dose = e.dose || state.dose;
       $("coffeeIn").value = state.text; saveState(); renderAllOpts(); render();
-      $("recipe").scrollIntoView({ behavior: "smooth", block: "start" });
+      goRecipe();
     });
   }
 
@@ -2696,7 +2710,7 @@ footer .bmc { white-space: nowrap; font-size: min(var(--fs), 3.6vw); }
     state.listProc = state.process;   // came from the roaster's listing, not from you
     state.roast = r.roast_level === "dark" ? "dark" : r.roast_level === "medium-dark" ? "mdark" : "auto";
     $("coffeeIn").value = state.text; saveState(); renderAllOpts(); render();
-    $("recipe").scrollIntoView({ behavior: "smooth", block: "start" });
+    goRecipe();
   }
   $("shelfQ").addEventListener("input", () => renderShelf());
   $("shelfMore").onclick = () => { shelfAll = true; renderShelf(); };
@@ -2720,11 +2734,12 @@ footer .bmc { white-space: nowrap; font-size: min(var(--fs), 3.6vw); }
     const dark = t === "dark" || (t === "auto" && window.__autoDark());
     root.setAttribute("data-theme", dark ? "dark" : "light");
     document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute("content", dark ? "#14100d" : "#f6f1ea"));
-    $("themeBtn").textContent = THEME_LBL[t]; $("themeBtn").setAttribute("aria-label", t === "auto" ? `Appearance: Auto, light from sunrise to sunset. Tap to change.` : `Appearance: ${THEME_LBL[t]}. Tap to change.`);
+    if ($("themeBtn")) $("themeBtn").textContent = THEME_LBL[t]; if ($("themeBtn")) $("themeBtn").setAttribute("aria-label", t === "auto" ? `Appearance: Auto, light from sunrise to sunset. Tap to change.` : `Appearance: ${THEME_LBL[t]}. Tap to change.`);
   }
-  let theme = (() => { try { return localStorage.getItem("v60.theme") || "auto"; } catch (e) { return "auto"; } })();
+  let theme = "auto";   // no menu any more: follows daylight
+  try { localStorage.removeItem("v60.theme"); } catch (e) {}
   if (!THEMES.includes(theme)) theme = "auto";
-  $("themeBtn").onclick = () => { theme = THEMES[(THEMES.indexOf(theme) + 1) % 3]; try { theme === "auto" ? localStorage.removeItem("v60.theme") : localStorage.setItem("v60.theme", theme); } catch (e) {} applyTheme(theme); };
+  if ($("themeBtn")) $("themeBtn").onclick = () => { theme = THEMES[(THEMES.indexOf(theme) + 1) % 3]; try { theme === "auto" ? localStorage.removeItem("v60.theme") : localStorage.setItem("v60.theme", theme); } catch (e) {} applyTheme(theme); };
   setInterval(() => theme === "auto" && applyTheme(theme), 60000);   // turns at sunset and sunrise while the page is open
 
   // ---------- stay current: a tab left open for days picks up a new version when you come back to it ----------
@@ -2826,7 +2841,7 @@ footer .bmc { white-space: nowrap; font-size: min(var(--fs), 3.6vw); }
     timer = setTimeout(() => { i = -1; tick(); }, 3000);
     new IntersectionObserver((es) => { visible = es[0].isIntersecting; }).observe($("stage"));
   })();
-  document.querySelectorAll("[data-jump]").forEach((b) => b.onclick = () => $(b.dataset.jump).scrollIntoView({ behavior: "smooth", block: "start" }));
+  document.querySelectorAll("[data-jump]").forEach((b) => b.onclick = () => b.dataset.jump === "recipe" ? goRecipe() : $(b.dataset.jump).scrollIntoView({ behavior: "smooth", block: "start" }));
 
   $("coffeeIn").value = state.text;
   renderAllOpts(); renderTaste(); render(); renderJournal(); renderShelfR(); renderShelfF(); renderShelfV(); loadShelf();
