@@ -1414,8 +1414,9 @@ table.pours { padding: 10px 24px; }
       PROCESS[c.process].label, roastLabel(c.roast)].filter(Boolean);
     $("rread").textContent = bits.join(", ");
     const src = (f) => f === "you" ? " (you set this)" : " (from the bag)";
+    const psrc = c.processFrom === "you" && state.listProc && state.listProc === state.process ? " (from the roaster)" : src(c.processFrom);
     const rsrc = state.roastPhoto && state.roastPhoto.key === state.roast ? ` (from your photo <i class="bean-dot" style="--c:${state.roastPhoto.hex}"></i>)` : src(c.roastFrom);
-    $("detected").innerHTML = state.text ? `Reading this as <b>${esc(PROCESS[c.process].label)}</b>${src(c.processFrom)}, <b>${esc(roastLabel(c.roast))}</b>${rsrc}. Wrong? Change it under Bag details.` : "";
+    $("detected").innerHTML = state.text ? `Reading this as <b>${esc(PROCESS[c.process].label)}</b>${psrc}, <b>${esc(roastLabel(c.roast))}</b>${rsrc}. Wrong? Change it under Bag details.` : "";
 
     renderLearn(r);
     const sign = (n) => (n > 0 ? "+" : "−") + Math.abs(n);
@@ -1533,7 +1534,7 @@ table.pours { padding: 10px 24px; }
 
   function build() {
     const t = $("coffeeIn").value.trim();
-    if (t !== state.text) { state.bag = null; state.process = "auto"; state.roast = "auto"; state.roastPhoto = null; renderAllOpts(); }   // new coffee: forget old answers
+    if (t !== state.text) { state.bag = null; state.process = "auto"; state.roast = "auto"; state.roastPhoto = null; state.listProc = null; renderAllOpts(); }   // new coffee: forget old answers
     state.text = t; saveState(); render();
     $("recipe").scrollIntoView({ behavior: "smooth", block: "start" });
   }
@@ -1982,6 +1983,7 @@ table.pours { padding: 10px 24px; }
     state.roastPhoto = null;
     state.bag = { roaster: r.roaster, name: r.name, origin: r.origin, variety: r.variety, notes, url: r.url };
     state.process = r.process ? procKey(r.process) : "auto";
+    state.listProc = state.process;   // came from the roaster's listing, not from you
     state.roast = r.roast_level === "dark" ? "dark" : r.roast_level === "medium-dark" ? "mdark" : "auto";
     $("coffeeIn").value = state.text; saveState(); renderAllOpts(); render();
     $("recipe").scrollIntoView({ behavior: "smooth", block: "start" });
