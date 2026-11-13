@@ -1995,24 +1995,44 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
   };
 
 
-  // ---------- what to expect: flavour from origin, process, variety and roast; mouthfeel from the recipe itself ----------
-  const BODY = { chemex: 1, rao: 1, fourSix: 2, hoffmann: 2, origami: 2, hoffmannU: 3, kalita: 3, switch: 3, clever: 3, aero: 3, cold: 3, ten: 4, press: 5, moka: 5 };
-  const BODY_TXT = ["light and tea-like, silky on the tongue.", "light and juicy, clean on the tongue.", "medium and round, smooth on the tongue.",
-    "full and syrupy, it coats the tongue.", "heavy and coating, with oils on the surface."];
+  // ---------- what to expect: flavour from origin, process, variety and roast; the rest from how this brewer and recipe extract ----------
+  /* Per brewer: body and clarity on 1–5, acidity and sweetness as shifts, and how the brewer presents the coffee.
+     Drawn from how each filter, flow rate and contact time behaves: paper vs metal, cone vs flat bed, percolation vs immersion. */
+  const CUP = {
+    hoffmann:  { body: 2, clar: 5, acid: 1, sweet: 0, how: "A cone with one big hole drains fast and the pulsed pours keep the bed moving, so the cup separates: top notes first, acidity articulated, each flavour distinct.", tex: "slick and clean, the paper takes the oils and most fines", fin: "short to medium, clean and slightly dry" },
+    hoffmannU: { body: 3, clar: 4, acid: 0, sweet: 1, how: "A bigger dose and a deep bed extract higher and more evenly than the 1-Cup: the same clarity, with a fuller middle and more sweetness behind the acidity.", tex: "round and clean", fin: "medium and sweet" },
+    rao:       { body: 2, clar: 5, acid: 0, sweet: 1, how: "One continuous pour and a spin leave a flat, even bed with little channelling: a very even extraction, sweet for its clarity, nothing sticking out.", tex: "silky, tea-like", fin: "medium, clean and sweet" },
+    fourSix:   { body: 2, clar: 4, acid: 0, sweet: 0, how: "The first 40% of the water sets the balance of acidity and sweetness, the last 60% the strength. Coarse and gentle: aromatics first, a lighter middle.", tex: "soft and delicate", fin: "short and clean" },
+    ten:       { body: 4, clar: 3, acid: -1, sweet: 1, how: "Ten small pours through a very coarse grind keep contact long but gentle: sweetness and texture lead, acidity rounds off, top notes go quieter.", tex: "syrupy, still clean", fin: "long and sweet" },
+    kalita:    { body: 3, clar: 3.5, acid: -1, sweet: 1, how: "Against a V60, the flat bed and three small holes slow the flow and extract evenly across the bed. Flavours blend rather than separate: softer acidity, more sweetness in the middle, florals a step quieter.", tex: "round and soft, a little more weight than a V60 at the same ratio", fin: "medium, sweet and even" },
+    origami:   { body: 2, clar: 5, acid: 1, sweet: 0, how: "Ribbed walls hold the paper off the cone, so air moves and the drawdown runs even quicker than a V60. Five short pours: crisp, layered and very defined, florals up front.", tex: "juicy and crisp", fin: "short and clean, a little dry if the bed runs fast" },
+    chemex:    { body: 1, clar: 5, acid: 1, sweet: 0, how: "The thick bonded paper holds back oils and nearly all fines: the cleanest cup of any brewer here. Acidity reads sharper and the middle a little thinner.", tex: "tea-like, almost weightless", fin: "short and very clean. Rinse the paper well, or it tastes of cardboard" },
+    switch:    { body: 3, clar: 4, acid: -1, sweet: 1, how: "Percolation first, then a closed steep with 70°C water. The cool phase adds sweetness without bitterness: rounder than a V60, florals softer.", tex: "round and smooth", fin: "medium-long, sweet, almost no bitterness" },
+    clever:    { body: 3, clar: 3, acid: -1, sweet: 1, how: "Full immersion, then drained through paper: an even, forgiving extraction that depends less on grind. Acidity integrated rather than bright, top notes softer than a pour-over.", tex: "round, clean thanks to the paper", fin: "medium and sweet" },
+    aero:      { body: 3, clar: 3, acid: -1, sweet: 1, how: "A short steep, then a gentle press through thin paper: dense and sweet, acidity rounded, a little top-note detail lost against a V60.", tex: "dense, still clean", fin: "medium and sweet" },
+    press:     { body: 5, clar: 2, acid: -2, sweet: 0, how: "The metal mesh lets oils and fines through: rich, with less definition. Fruit reads as compote rather than fresh, acidity sits low.", tex: "oily, a little silt: leave the last sip", fin: "long, with some grip" },
+    cold:      { body: 3, clar: 3, acid: -3, sweet: 0, how: "Cold water barely extracts acids and many aromatics: chocolate, nuts and dried fruit lead, florals mostly fade.", tex: "smooth and round once diluted", fin: "medium, soft and sweet" },
+    moka:      { body: 5, clar: 2, acid: -2, sweet: -1, how: "Steam pushes near-boiling water through a fine bed at high strength: intense and bittersweet, close to espresso. Florals vanish, fruit turns jammy or dark.", tex: "thick and coating", fin: "long, cocoa-like, a gentle bitterness" },
+  };
+  const VARIETY_NOTES = [[/gesha|geisha/i, ["jasmine", "bergamot"]], [/sl ?28|sl ?34/i, ["blackcurrant"]], [/pink bourbon/i, ["red fruit", "florals"]],
+    [/sidra/i, ["florals", "tropical fruit"]], [/wush ?wush/i, ["spice", "florals"]], [/pacamara/i, ["citrus", "a savoury-sweet depth"]], [/laurina|bourbon pointu/i, ["florals", "a soft, low-caffeine sweetness"]]];
+  const BODY_W = ["very light", "light", "medium", "full", "heavy"];
+  const CLAR_W = ["muddy, flavours run together", "low, rich rather than defined", "medium: clear, with some blending", "high: flavours separate cleanly", "very high: each note distinct"];
   function expectCup(r) {
     const c = r.c, pr = c.process, ro = c.roast, out = [];
-    const fermented = ["natural", "anaerobic", "cofer"].includes(pr);
+    const P = CUP[r.m] || CUP.hoffmann, fermented = ["natural", "anaerobic", "cofer"].includes(pr), darkish = ro === "mdark" || ro === "dark";
+    const own = c.bagNotes && c.bagNotes.length;
     // flavour
     let notes = [];
-    if (c.bagNotes && c.bagNotes.length) notes = c.bagNotes.slice(0, 4);
+    if (own) notes = c.bagNotes.slice(0, 4);
     else {
       const o = ORIGIN_NOTES[c.origin];
       if (o) notes = (o[pr] || o._).slice();
       else notes = pr === "washed" ? ["citrus", "stone fruit", "cane sugar"] : pr === "natural" ? ["ripe berries", "red fruit", "cocoa"]
         : pr === "honey" ? ["apricot", "honey", "brown sugar"] : pr === "anaerobic" ? ["tropical fruit", "red wine", "cocoa"]
-        : pr === "cofer" ? ["the infusion leads", "candied fruit"] : pr === "decaf" ? ["brown sugar", "cocoa", "soft fruit"] : ["fruit", "caramel", "cocoa"];
-      if (/gesha|geisha/i.test(c.variety || "")) notes = ["jasmine", "bergamot", ...notes];
-      if (/sl ?28|sl ?34/i.test(c.variety || "")) notes = ["blackcurrant", ...notes];
+        : pr === "cofer" ? ["candied fruit", "cocoa"] : pr === "decaf" ? ["brown sugar", "cocoa", "soft fruit"] : ["fruit", "caramel", "cocoa"];
+      const v = VARIETY_NOTES.find(([re]) => re.test(c.variety || ""));
+      if (v) notes = [...v[1], ...notes];
       if (pr === "anaerobic") notes = [...notes.slice(0, 2), "a boozy, tropical edge"];
       if (pr === "cofer") notes = ["the infusion leads", ...notes.slice(0, 2)];
       if (ro === "medium") notes = [...notes.slice(0, 2), "caramel"];
@@ -2022,27 +2042,34 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
     }
     notes = [...new Set(notes)].slice(0, 4);
     const list = notes.length > 1 ? notes.slice(0, -1).join(", ") + " and " + notes[notes.length - 1] : notes[0];
-    const basis = c.bagNotes && c.bagNotes.length ? "from your notes" : [pr && pr !== "unsure" ? PROCESS[pr].label : "", c.origin || "", c.variety ? titleCase(c.variety) : ""].filter(Boolean).join(" ");
-    out.push(`Flavour: ${list}.${basis && !(c.bagNotes && c.bagNotes.length) ? ` What a ${basis} usually gives; every lot is a little different.` : !c.origin ? " Add the country to the coffee to narrow it down." : ""}`);
+    const basis = [pr && pr !== "unsure" ? PROCESS[pr].label : "", c.origin || "", c.variety ? titleCase(c.variety) : ""].filter(Boolean).join(" ");
+    out.push(`Flavour: ${list}.${own ? "" : basis ? ` Typical of a ${basis}; every lot differs.` : " Add the country to narrow it down."}`);
+    out.push(`Brewer: ${P.how}`);
     // acidity
     let acid = { vlight: 4, light: 3, medium: 2, mdark: 1, dark: 0, unsure: 2 }[ro] ?? 2;
     if (/Kenya|Ethiopia|Rwanda|Burundi|Tanzania/.test(c.origin || "") && pr === "washed") acid += 1;
-    if (fermented) acid -= 1;
-    if (r.goal === "light") acid += 0.5; if (r.goal === "syrupy") acid -= 0.5;
-    if (r.m === "cold") acid = 0; if (r.m === "moka" || r.m === "press") acid -= 1;
+    if (fermented || pr === "decaf") acid -= 1;
+    acid += P.acid + (r.goal === "light" ? 0.4 : r.goal === "syrupy" ? -0.4 : 0);
     acid = Math.max(0, Math.min(4, Math.round(acid)));
-    const acidKind = /Kenya|Tanzania/.test(c.origin || "") ? "blackcurrant-like" : pr === "washed" ? "citrus-like" : fermented ? "winey, fruity" : "malic, apple-like";
-    out.push(`Acidity: ${["very low, smooth", "low and soft", `medium, ${acidKind}`, `bright, ${acidKind}`, `sparkling, ${acidKind}`][acid]}.`);
+    const kind = /Kenya|Tanzania/.test(c.origin || "") ? "savoury-bright, blackcurrant and tomato" : pr === "washed" ? "citric, lemon to orange" : fermented ? "winey and fruity" : "malic, like red apple";
+    out.push(`Acidity: ${["very low, smooth", "low and soft", `medium, ${kind}`, `bright, ${kind}`, `vivid, ${kind}`][acid]}.`);
     // sweetness
-    out.push(`Sweetness: ${ro === "dark" || ro === "mdark" ? "bittersweet, like dark chocolate" : fermented ? "high and jammy" : pr === "honey" ? "high, like honey and brown sugar" : ro === "medium" ? "caramel-like" : "clean, like cane sugar"}${ro === "dark" || ro === "mdark" ? "" : r.goal === "light" ? ", lifted by the lighter ratio" : r.goal === "syrupy" ? ", held back a little by the stronger ratio" : ""}.`);
-    // mouthfeel
-    let b = BODY[r.m] ?? 3;
-    if (r.goal === "syrupy") b += 1; if (r.goal === "light") b -= 1;
-    if (ro === "mdark" || ro === "dark") b += 0.5; if (fermented) b += 0.5;
+    let sw = darkish ? "bittersweet, like dark chocolate" : fermented ? "high and jammy" : pr === "honey" ? "high, honey and brown sugar" : ro === "medium" ? "caramel-like" : "clean, like cane sugar";
+    if (!darkish && P.sweet > 0) sw += ", pushed up by this brewer";
+    if (!darkish && P.sweet < 0) sw += ", held back by the strength";
+    if (!darkish && r.goal === "light") sw += `. The lighter ratio (1:${r.ratio}) tastes sweeter: sweetness drops as strength rises`;
+    out.push(`Sweetness: ${sw}.`);
+    // body
+    let b = P.body + (r.goal === "syrupy" ? 1 : r.goal === "light" ? -1 : 0) + (darkish ? 0.5 : 0) + (fermented ? 0.5 : 0);
     b = Math.max(1, Math.min(5, Math.round(b)));
-    out.push(`Mouthfeel: ${BODY_TXT[b - 1]}${r.m === "press" ? " A little silt settles at the bottom: leave the last sip." : r.m === "chemex" ? " The thick paper keeps it very clean." : ""}`);
-    // finish
-    out.push(`Finish: ${ro === "dark" || ro === "mdark" ? "long and cocoa-like, with a gentle bitterness" : fermented ? "long and fruity" : r.m === "chemex" || r.m === "rao" ? "short and very clean" : "clean and medium-long"}.`);
+    const tds = r.tds && r.tds.length ? ` About ${r.tds[0].toFixed(2)}–${r.tds[1].toFixed(2)}% TDS at ${r.ey[0]}–${r.ey[1]}% extraction.` : "";
+    out.push(`Body: ${BODY_W[b - 1]}, ${P.tex}.${r.m === "cold" || r.m === "moka" ? "" : tds}`);
+    // clarity
+    let cl = P.clar - (fermented ? 0.5 : 0) - (darkish ? 1 : 0);
+    cl = Math.max(1, Math.min(5, Math.round(cl)));
+    out.push(`Clarity: ${CLAR_W[cl - 1]}.`);
+    out.push(`Finish: ${darkish ? "long and cocoa-like, a gentle bitterness" : fermented && P.clar >= 4 ? "long and fruity, clean at the end" : P.fin}.`);
+    if (r.m !== "cold") out.push(`As it cools: taste again around 50–60°C. Acidity and fruit come forward, bitterness drops${darkish ? " and the chocolate turns sweeter" : ""}.`);
     if (ro === "unsure" || pr === "unsure") out.push(`${ro === "unsure" && pr === "unsure" ? "Roast and process aren’t" : ro === "unsure" ? "Roast isn’t" : "Process isn’t"} stated, so this is a middle guess. Pick ${ro === "unsure" && pr === "unsure" ? "them" : "it"} above to sharpen it.`);
     return out;
   }
