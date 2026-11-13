@@ -938,6 +938,8 @@ def tidy_name(name, roaster):
     'Farm • Sagastume Geisha | doubleshot' -> 'Sagastume Geisha'; 'Limited Release | Franken Grind Blend' -> 'Franken Grind Blend';
     'EAST BLEND' -> 'East Blend'."""
     name = re.sub(r"\s*[\u3000-\u9fff\uac00-\ud7af\uff00-\uffef]+", "", name).strip()   # Big Sur: the Chinese name after the English one
+    name = re.sub(r"^\s*(?:\d{2,4}(?:/\d{2,4})?\s+)?new (?:season|crop)\b\s*[-–—:|]?\s*", "", name, flags=re.I)   # "25/26 New Season Ethiopia …"
+    name = re.sub(r"\s*\[[^\]]{2,40}\]\s*$", "", name)   # Mellow: "… [Syrina]", the variety in square brackets is a tag
     if re.search(r"\s[•·]\s", name):
         # "Honduras Finca El Puente • Geisha • Anaerobic Natural" -> "Honduras Finca El Puente, Geisha" (process shows as a tag)
         bits = [b.strip() for b in re.split(r"\s[•·]\s", name) if b.strip()]
@@ -976,12 +978,12 @@ def tidy_name(name, roaster):
     name = re.sub(r"\s*!+\s*", " ", name).strip()
     # "Alo Bore [Washed]" -> "Alo Bore": a bracketed process at the end is already a tag
     name = re.sub(r"\s*[\[(]([^\])]{3,30})[\])]\s*$", lambda m: "" if find_process(m.group(1)) or details_only(m.group(1)) else m.group(0), name)
-    return calm_caps(name).strip(" -–|,")
+    return calm_caps(name).strip(" -–—|,")
 
 
 DETAIL_WORDS = re.compile(r"\b(?:washed|natural|honey|anaerobic|aerobic|double|triple|ferment(?:ed|ation)?|co-?ferment(?:ed)?|culturing|cultured|"
                           r"carbonic|maceration|thermal|shock|decaf|semi|pulped|wet|hulled|dry|process(?:ed)?|\d+\s?h(?:rs?|ours?)?|yeast|lactic|"
-                          r"experimental|black|white|red|yellow|orange|pink)\b", re.I)
+                          r"experimental|black|white|red|yellow|orange|pink|20\d\d)\b", re.I)
 
 
 def details_only(seg):
