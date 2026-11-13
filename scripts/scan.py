@@ -82,6 +82,54 @@ NOTES_RE = re.compile(r"(?:tasting notes|flavour notes|flavor notes|flavour prof
                       r"note di degustazione|note aromatiche|note|geschmacksnoten|geschmack|aromen|notes de dégustation|"
                       r"smaksnoter|smagsnoter|smaksnotater|notas de cata|notas|notes)\s*[:\-–]\s*([^\n.]{3,120})", re.I)
 DARK = re.compile(r"dark roast|medium[- ]dark|french roast|italian roast", re.I)
+# Roast level, in the site's five steps. Read only from a labelled line ("Roast: Light", "Röstgrad: hell"),
+# a tag, or an "X roast" phrase in the coffee's own description; never from anywhere on a page.
+ROAST_WORDS = [
+    ("vlight", r"very[- ]light|ultra[- ]?light|extra[- ]light|super[- ]light|nordic|bardzo jasn|zeer licht|sehr hell|tr[eè]s clair|molto chiar|muy clar"),
+    ("mdark", r"medium[- ]dark|full[- ]city|mittel[- ]?dunkel|moyen[- ]fonc|medio[- ]scur|[sś]rednio[- ]ciemn|halvm[øö]rk"),
+    ("dark", r"\bdark|ciemn|donker|dunkel|fonc[ée]|\bscur[ao]|oscur[ao]|m[øö]rk"),
+    ("light", r"medium[- ]light|light[- ]medium|\blight|\blys\b|\bljus|vaalea|\bhell\b|\bclair|chiar[ao]|jasn|\bclaro|\blicht\b"),
+    ("medium", r"\bmedium|\bmittel|\bmoyen|\bmedi[oa]\b|[sś]redni|middels|mellan"),
+]
+ROAST_LINE = re.compile(r"\b(?:roast(?:ing)?(?: level| degree| profile| colou?r| style)?|röstgrad|röstung|rostning(?:sgrad)?|brenning(?:sgrad)?|"
+                        r"risteys(?:aste)?|tostado|tueste|nivel de tueste|torr[ée]faction|tostatura|grado di tostatura|"
+                        r"stopie[ńn] palenia|palenie|brandingsgraad|branding)\s*(?::|\n)", re.I)
+ROAST_PHRASE = re.compile(r"\b(very[- ]light|ultra[- ]?light|extra[- ]light|nordic(?:[- ]style)?|medium[- ]light|light[- ]medium|light|medium[- ]dark|medium|dark)"
+                          r"(?:ly)?[- ]roast(?:ed|s)?\b|\broasted (?:very |ultra[- ]?|extra[- ])?(light|medium|dark)(?:ly|er)?\b|\b(lightly) roasted\b", re.I)
+
+
+def roast_word(v):
+    for key, pat in ROAST_WORDS:
+        if re.search(pat, v or "", re.I):
+            return key
+    return None
+
+
+def roast_labelled(text):
+    """'Roast level: Light' / 'Röstgrad\nhell' -> 'light'."""
+    for m in ROAST_LINE.finditer(text or ""):
+        line = next((l.strip(" :-–\xa0\t") for l in text[m.end():m.end() + 60].split("\n") if l.strip(" :-–\xa0\t")), "")
+        if 0 < len(line) <= 30:
+            got = roast_word(line)
+            if got:
+                return got
+    return None
+
+
+def find_roast(*texts):
+    """Roast level from a labelled line, then an 'X roast' phrase. Two different phrases (a shop offering
+    'light or dark roast') give nothing rather than a guess."""
+    for t in texts:
+        got = roast_labelled(t)
+        if got:
+            return got
+    found = set()
+    for t in texts:
+        for m in ROAST_PHRASE.finditer(t or ""):
+            got = roast_word(next(g for g in m.groups() if g).replace("lightly", "light"))
+            if got:
+                found.add(got)
+    return found.pop() if len(found) == 1 else None
 ROAST_LABEL = re.compile(r"(?:roast(?: level| degree)?|tostado|tueste|röstgrad|torréfaction|tostatura)\s*[:\-–]\s*(medium[- ]dark|dark)\b", re.I)
 # sold like a bag of beans: a bag weight, a grind/bean option, a process or variety, or a coffee product type.
 # Gates the product-page origin look-up, so paper filters and gift cards never get a country from a
@@ -1021,6 +1069,8 @@ def classify(item, roaster):
     if m:
         lvl = (m.group(1) if m.re is ROAST_LABEL else m.group(0)).lower()
         roast_level = "medium-dark" if "medium" in lvl else "dark"
+    tags_txt = "\n".join(f"Roast: {t.split(':', 1)[-1].replace('roast', '')}" if re.search(r"roast", t, re.I) else "" for t in item["tags"])
+    roast = find_roast(tags_txt, f"{title}\n{item['type']}", item["body"])
     origin = find_origin(title, blob, item["body"])
     if not origin and (BAG.search(f"{title} {item['type']} {' '.join(item['tags'])} {item['variants']}")
                        or re.search(r"/coff?ees?/[^/?#]+/?$", item.get("url") or "", re.I)):
@@ -1055,6 +1105,8 @@ def classify(item, roaster):
         "roast_for": roast_for(item),
         "blend": True if blend else None,
         "roast_level": roast_level,
+        "roast": roast or ("mdark" if roast_level == "medium-dark" else "dark" if roast_level else None),
+        "roast_from": "feed" if (roast or roast_level) else None,
         "origin_from": item.get("_origin_from"),
     }
     rec["market"] = roaster.get("region", "UK")
@@ -1251,17 +1303,22 @@ def add_page_details(recs, roaster, old):
             rec["roast_for"] = "filter" if "filter" in prev["methods"] else "espresso"
         if prev.get("methods_none"):
             rec["methods_none"] = True
+        if not rec.get("roast") and prev.get("roast") and prev.get("roast_from") == "page":
+            rec["roast"], rec["roast_from"] = prev["roast"], "page"
+        if prev.get("roast_checked"):
+            rec["roast_checked"] = True
+        want_roast = not rec.get("roast") and not rec.get("roast_checked") and rec.get("roast_for") != "espresso"
         need = [k for k in ("process", "variety") if not rec.get(k)]
         # every coffee the shop doesn't label filter or espresso gets its page read once for the brewers it names
         want_methods = not rec.get("roast_for") and not rec.get("methods") and not rec.get("methods_none")
-        if not need and not want_methods:
+        if not need and not want_methods and not want_roast:
             continue
         for k in need:
             ok = prev.get(k) and (labelled(f"Variety:\n{prev[k]}\n", "variety") if k == "variety" else find_process(prev[k]))
             if ok and prev.get(k + "_from") == "page":
                 rec[k], rec[k + "_from"] = prev[k].strip(" \xa0"), "page"
         need = [k for k in need if not rec.get(k)]
-        if (not need and not want_methods) or fetched >= PAGE_FETCHES_PER_ROASTER:
+        if (not need and not want_methods and not want_roast) or fetched >= PAGE_FETCHES_PER_ROASTER:
             continue
         fetched += 1
         try:
@@ -1278,6 +1335,13 @@ def add_page_details(recs, roaster, old):
         else:
             rec["methods_none"] = True
         start = max(0, text.lower().find(rec["name"].lower()[:30]))
+        rec["roast_checked"] = True
+        if not rec.get("roast"):
+            r_ = roast_labelled(text[start:start + 6000])
+            if r_:
+                rec["roast"], rec["roast_from"] = r_, "page"
+                if r_ in ("mdark", "dark") and not rec.get("roast_level"):
+                    rec["roast_level"] = "medium-dark" if r_ == "mdark" else "dark"
         got = False
         for k in need:
             v = labelled(text, k, start) or (labelled(text, k) if start else None) or raw_labelled(raw, k) or from_json(raw, k)
@@ -1490,6 +1554,10 @@ def main():
                     rec["found"] = old.get(rec["url"], {}).get("found", today)
                     recs.append(rec)
             add_page_details(recs, r, old)
+        if r.get("roast"):   # a roaster that roasts every filter coffee the same way says so once in roasters.json
+            for rec in recs:
+                if not rec.get("roast") and rec.get("roast_for") != "espresso":
+                    rec["roast"], rec["roast_from"] = r["roast"], "roaster"
             add_page_prices(recs, r, old)
         return kind, err, recs
 
