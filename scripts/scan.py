@@ -939,7 +939,9 @@ def find_notes(item):
 
 def clean_name(title, roaster, origin):
     title = re.sub(r"\s*[•·]\s*$", "", title)
-    title = re.sub(r"^\s*(?:NEW|SOLD OUT|LIMITED)\s*[!:|\-–]?\s*(?=[A-Z])", "", title)   # "NEWPanama Lost Origin" -> "Panama Lost Origin"
+    # a shop tag on the front: "【NEW】Panama Lost Origin", "[NEW] …", "NEWPanama …" -> "Panama Lost Origin"
+    title = re.sub(r"^\s*[【\[(（]\s*(?:NEW|New|SOLD OUT|LIMITED|新作|新入荷|限定)\s*[】\])）]\s*", "", title)
+    title = re.sub(r"^\s*(?:NEW|SOLD OUT|LIMITED)\s*[!:|\-–]?\s*(?=[A-Z])", "", title)
     if "•" in title and title.split("•")[0].strip():
         title = title.split("•")[0].strip()
     # "Curve Coffee Roasters - FEATURE FILTER | El Silencio" -> drop the shop's own brand prefix first,
