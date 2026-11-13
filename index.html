@@ -1235,7 +1235,10 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
 /* phones: whatever width the grinder pill takes, the stepper stretches to the same right edge */
 @media (max-width: 640px) { .kit-mill .zr-ctl { width: 100%; } .kit-mill .step { flex: 1 1 auto; justify-content: space-between; } .kit-mill #zVal { flex: 1 1 auto; } }
 /* footer: a readable measure on wide screens, the rule above still runs full width */
-footer > * { max-width: 72ch; }
+footer .fcol { display: grid; gap: 6px; align-content: start; min-width: 0; }
+footer .fcol + .fcol > .refs-h:first-child { margin-top: 14px !important; }
+/* big screens: Disclaimer, Methods and Sources side by side */
+@media (min-width: 1000px) { footer { grid-template-columns: 1fr 1.3fr 2fr !important; column-gap: 40px; align-items: start; } footer .fcol + .fcol > .refs-h:first-child { margin-top: 0 !important; } footer .refs:not(.meth) { gap: .8em; } }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1406,8 +1409,11 @@ footer > * { max-width: 72ch; }
   </section>
 
   <footer>
+    <div class="fcol">
     <p class="foot-note refs-h">Disclaimer</p>
     <p class="foot-note">Coffees come from roasters’ own shop listings, checked every morning. Not affiliated with any roaster. Your journal never leaves this device.</p>
+    </div>
+    <div class="fcol">
     <p class="foot-note refs-h">Methods</p>
     <ul class="refs meth">
       <li><span class="rt">V60:</span> James Hoffmann’s Better 1-Cup and Ultimate V60, Tetsu Kasuya’s 4:6 and 10-Pour, Scott Rao’s bloom &amp; spin.</li>
@@ -1422,6 +1428,8 @@ footer > * { max-width: 72ch; }
       <li><span class="rt">Cold brew:</span> Ceremony Coffee’s guide.</li>
       <li><span class="rt">Grind:</span> Comandante C40 clicks, counted from zero. Other grinders converted from those clicks with Honest Coffee Guide’s grind charts.</li>
     </ul>
+    </div>
+    <div class="fcol">
     <p class="foot-note refs-h">Sources</p>
     <ol class="refs">
       <li>Batali, M. E., Ristenpart, W. D., &amp; Guinard, J.-X. (2020). <span class="rt">Brew temperature, at fixed brew strength and extraction, has little impact on the sensory profile of drip brew coffee</span>. <i>Scientific Reports</i>, 10. <a href="https://doi.org/10.1038/s41598-020-73341-4" target="_blank" rel="noopener">doi.org/10.1038/s41598-020-73341-4</a></li>
@@ -1445,6 +1453,7 @@ footer > * { max-width: 72ch; }
       <li>Medina, C. (2023). <span class="rt">World Brewers Cup champion recipe, Origami</span>. Slow Pour Supply. <a href="https://slowpoursupply.co/pages/recipe-recap-carlos-medina-s-representing-chile-world-brewers-cup-champion-recipe" target="_blank" rel="noopener">slowpoursupply.co</a></li>
       <li>Rao, S. <span class="rt">V60 recipe, interview with Hario</span>. <a href="https://www.hario.co.uk/blogs/hario-ambassadors/hario-v60-recipe-interview-with-hario-ambassador-scott-rao" target="_blank" rel="noopener">hario.co.uk</a></li>
     </ol>
+    </div>
   </footer>
 </main>
 
