@@ -116,6 +116,16 @@ def roast_labelled(text):
     return None
 
 
+def roast_from_agtron(text):
+    """A measured roast colour on the page ("Ground: 119AG", "Agtron 82"): ground readings, Agtron gourmet scale.
+    Higher is lighter. Nordic-light filter roasts read 95 and up ground; espresso roasts sit in the 50s and 60s."""
+    m = re.search(r"ground\W{0,4}(\d{2,3})\s?(?:AG|agtron)\b", text, re.I) or re.search(r"\bagtron\W{0,12}(\d{2,3})\b", text, re.I)
+    if not m:
+        return None
+    v = int(m.group(1))
+    return "vlight" if v >= 95 else "light" if v >= 80 else "medium" if v >= 65 else "mdark" if v >= 50 else "dark"
+
+
 def find_roast(*texts):
     """Roast level from a labelled line, then an 'X roast' phrase. Two different phrases (a shop offering
     'light or dark roast') give nothing rather than a guess."""
@@ -651,6 +661,27 @@ def og_product(page):
              "offers": {"price": price, "priceCurrency": ccy, "availability": "InStock" if re.search(r"in ?stock|available|preorder", avail, re.I) else "OutOfStock"}}]
 
 
+def microdata_product(page):
+    """schema.org microdata (itemprop="name" / "price" / "availability"), for shops with no JSON-LD: Module's
+    WordPress pages sell through Shopify (ShopWP) and only carry these. A bare code name (Module's "M24") gets the
+    producer from the page's spec table, so the shelf says which coffee it is."""
+    def prop(k):
+        m = re.search(r'<meta[^>]+itemprop=["\']' + k + r'["\'][^>]*content=["\']([^"\']*)', page, re.I)
+        return html.unescape(m.group(1)).strip() if m else ""
+    name = prop("name")
+    if not name or not prop("price"):
+        return []
+    specs = re.findall(r"<p>\s*([^<]{2,40}?)\s*</p>\s*<p[^>]*class=[\"'][^\"']*specs-detail[^\"']*[\"'][^>]*>(.*?)</p>", page, re.S | re.I)
+    specs = [(k.strip(), re.sub(r"\s+", " ", strip_html(v)).strip(" ,")) for k, v in specs]
+    if len(name) <= 4:
+        who = next((v for k, v in specs if re.match(r"producer|farm|estate", k, re.I)), "")
+        if who:
+            name = f"{name} {who.split('/')[0].strip()}"
+    body = prop("description") + "\n" + "\n".join(f"{k}: {v}" for k, v in specs)
+    return [{"@type": "Product", "name": name, "description": body,
+             "offers": {"price": prop("price"), "priceCurrency": prop("priceCurrency"), "availability": prop("availability") or "InStock"}}]
+
+
 def shopify_product_js(url, lastmod, extra=""):
     """Shopify serves every product as JSON at <product url>.js, even when /products.json is off."""
     try:
@@ -685,7 +716,7 @@ def fetch_generic(shop, max_pages=45, extra=""):
         except Exception:  # noqa: BLE001
             DIAG[shop]["pages_blocked"] += 1
             continue
-        prods = ld_products(page)[:1] or next_products(page) or og_product(page)
+        prods = ld_products(page)[:1] or next_products(page) or og_product(page) or microdata_product(page)
         for p in prods:
             it = ld_to_item(p, url, lm)
             it["title"] = heading_if_seo(it["title"], page)
@@ -1159,8 +1190,10 @@ PAGE_FETCHES_PER_ROASTER = 60
 
 
 JSON_PROCESS = [re.compile(r'"(?:process(?:ing)?(?:_method|Method)?)"\s*:\s*"([^"]{2,60})"', re.I),
+                re.compile(r'Process::\s*([^"\\]{2,60})'),
                 re.compile(r'"key"\s*:\s*"process[^"]*"[^{}]{0,300}?"value"\s*:\s*"([^"]{2,60})"', re.I)]
 JSON_VARIETY = [re.compile(r'"(?:variet(?:y|ies|al)|cultivars?)"\s*:\s*"([^"]{2,80})"', re.I),
+                re.compile(r'Variety::\s*([^"\\]{2,80})'),
                 re.compile(r'"key"\s*:\s*"variet[^"]*"[^{}]{0,300}?"value"\s*:\s*"([^"]{2,80})"', re.I)]
 
 
@@ -1369,7 +1402,7 @@ def add_page_details(recs, roaster, old):
         start = max(0, text.lower().find(rec["name"].lower()[:30]))
         rec["roast_checked"] = True
         if not rec.get("roast"):
-            r_ = roast_labelled(text[start:start + 6000])
+            r_ = roast_labelled(text[start:start + 6000]) or roast_from_agtron(text)
             if r_:
                 rec["roast"], rec["roast_from"] = r_, "page"
                 if r_ in ("mdark", "dark") and not rec.get("roast_level"):
@@ -1415,9 +1448,14 @@ def shop_currency(shop, kind, r, extra=""):
 def scan_roaster(r):
     shop = r["shop"].rstrip("/")
     errors = []
+    feed = (r.get("feed") or "").rstrip("/")   # a headless Shopify store's own myshopify.com address
     for kind, fn in (("shopify", fetch_shopify), ("woocommerce", fetch_woo), ("sitemap", fetch_generic)):
         try:
-            items = fn(shop)
+            if feed and kind != "shopify":
+                continue
+            items = fn(feed) if feed else fn(shop)
+            for i in items if feed else []:   # links still go to the shop people actually use
+                i["url"] = shop + i["url"][len(feed):]
             if items:
                 if kind == "sitemap":
                     home = home_currency(r)
