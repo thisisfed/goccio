@@ -12,14 +12,14 @@
 <meta property="og:site_name" content="Bag to Cup">
 <meta property="og:title" content="Bag to Cup: new coffees, the recipe for each bag">
 <meta property="og:description" content="Grind for your grinder, ratio, temperature and every step, for seven brewers. New coffees from 100+ roasters, checked every morning.">
-<meta property="og:image" content="https://v60.thisisfed.xyz/og/card-4.png">
+<meta property="og:image" content="https://v60.thisisfed.xyz/og/card-5.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Bag to Cup: an example recipe card with dose, water, temperature and the pour timeline">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Bag to Cup: new coffees, the recipe for each bag">
 <meta name="twitter:description" content="Grind for your grinder, ratio, temperature and every step, for seven brewers. New coffees from 100+ roasters, checked every morning.">
-<meta name="twitter:image" content="https://v60.thisisfed.xyz/og/card-4.png">
+<meta name="twitter:image" content="https://v60.thisisfed.xyz/og/card-5.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M4 6h24L16 27z' fill='%230b0b0b'/%3E%3C/svg%3E">
 <script>
 /* Auto appearance follows daylight where you are (light from sunrise to sunset), not the browser's own dark setting.
@@ -825,6 +825,118 @@ footer .bmc .sheen-text { background: linear-gradient(100deg, #8b4a22 0%, #c96f2
 .dock .btn { min-height: 48px; font-size: 15px; font-weight: 500; padding: 0 14px; }
 .bv-x, .bv-go, .bv-reset, .bv-drain, .bv-opt { border-radius: var(--r) !important; }
 .spec .sub2, .col h3, .cap, .pours th, .g-eg { text-transform: none; letter-spacing: 0; }
+
+/* ================= MODULE SKIN, PART 2 =================
+   Four type sizes only: 13 (labels), 15 (text), 24 (headings, pour targets), 48 (recipe numbers).
+   Plus the scene size and the wordmark. Never capitals for whole words. */
+:root { --fs-s: 13px; --fs: 15px; --fs-m: 24px; --fs-l: 48px; }
+*, *::before, *::after { text-transform: none !important; }
+body, .lede, .ask label, .need h3, .log h3, .sec-head .cap:first-child, .mark, .mark .serif, .w-fix, .item .name, .entry .what .serif, .go-big, .dock .btn, .r-read,
+.detected, .need p, .tech, .col p, .zr-math, .w-adv, .w-body, .clk-body, details.clk, .suggest, details.clk > summary, .w-head, .zr-lbl, .g-name, .field textarea, .pours td.m, .pours td.how, .pours tr.act td.to, .island { font-size: var(--fs); }
+.cap, .sec-head .cap, .hero-kick, .nav button, .nav .theme-btn, .chip, .need .chip, .w-body .chip, .taste .chip, .opt > span, .r-kick .method, .r-kick .cap, .spec .sub2, .item .who, .item .tn,
+.grp, .pill, .oc, .pours th, .col h3, .notes-list span, .entry button, .g-eg, footer, .pour-note, .spec .ret, .spec .badge, .ji-tag, .lrn-tag, .stat-k, .btn, .hero-pill { font-size: var(--fs-s); }
+.r-title h2, .pours td.to, .col .big, .g-specs b, .litext, .outro-end { font-size: var(--fs-m); }
+.spec b, .spec.key b { font-size: var(--fs-l); }
+.spec.time b { font-size: min(var(--fs-l), 15cqi); white-space: nowrap; }
+@media (max-width: 760px) { .spec b, .spec.key b { font-size: min(var(--fs-l), 11vw); } .spec.time b { font-size: min(var(--fs-l), 13cqi); } }
+.mark, .mark .serif { font-size: var(--fs); }
+@media (max-width: 560px) { .mark, .mark .serif { font-size: var(--fs); } }
+
+/* header: only the buttons until the big name has scrolled away */
+.mark { opacity: 0; transform: translateY(4px); transition: opacity .25s ease, transform .25s ease; }
+.mark-on .mark { opacity: 1; transform: none; }
+
+/* hero: words and intro on top, the big name sitting on the bottom of the first screen */
+.hero { min-height: calc(100svh - 64px); display: flex; flex-direction: column; justify-content: space-between; gap: 24px; }
+.wordmark { overflow: visible; line-height: .9; padding-bottom: .24em; margin-bottom: 0; }
+.wordmark span { padding-right: .02em; }
+.stat-k { color: var(--muted); font-weight: 500; letter-spacing: -.01em; display: block; margin-bottom: .6em; line-height: 1.2; }
+.scene.verbs { align-content: flex-start; }
+.scene.verbs .stat-k { flex-basis: 100%; }
+.stat-n, .stat-s { font-size: 1em; }
+/* just in: the three stacked, all on the left edge */
+.isl-stack { justify-items: start; transform: none; gap: 6px; }
+.isl-stack .island { grid-area: auto; transform: none; z-index: auto; }
+.isl-stack .island.k1, .isl-stack .island.k2 { background: var(--pill); color: var(--ink); }
+@media (prefers-reduced-motion: no-preference) {
+  .scene.on .island:not(.k0) { animation: wordin .5s calc(.6s + var(--k) * .12s) cubic-bezier(.2,.7,.2,1) both; }
+}
+
+/* your kit: brewer, grinder and water as one block */
+.kit { display: grid; gap: 12px; padding-bottom: 16px; margin-bottom: 4px; border-bottom: 1px solid var(--rule); }
+.kit-mill { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; min-width: 0; }
+.kit-mill select { flex: 1 1 220px; min-width: 0; font: 500 var(--fs)/1.2 var(--sans); color: var(--ink); background: var(--pill); border: 0; border-radius: var(--r); padding: 9px 10px; -webkit-appearance: none; appearance: none; }
+.zr-ctl { display: flex; align-items: center; gap: 10px; }
+.zr-lbl { color: var(--muted); font-size: var(--fs-s); }
+.step button, #zVal { font-size: var(--fs); }
+.kit details.water { border-top: 0; }
+.kit details.water > summary { padding: 0; gap: 2px; }
+.kit .w-head { justify-content: flex-start; gap: 6px; }
+.kit .w-head::after { margin-left: 4px; }
+.kit .w-body { padding: 10px 0 0; }
+.zero-row { border-top: 0; padding: 0; }
+.zero-row:empty, .zero-row:has(.zr-math:empty) { display: none; }
+@media (max-width: 640px) { .opt { grid-template-columns: minmax(0, 1fr); gap: 6px; } }
+
+/* recipe numbers: grind, coffee, water on the first row; temperature and time on the second */
+.specs { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0 16px; }
+.spec { grid-column: span 2; }
+.spec:nth-child(4), .spec:nth-child(5) { grid-column: span 3; }
+@media (max-width: 760px) { .spec.key { grid-column: 1 / -1; } .spec:nth-child(n+2) { grid-column: span 3; } }
+.spec b small { font-size: .42em; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+/* "How these clicks were set" and "Sources" on one line */
+details.clk > summary { flex-wrap: nowrap; white-space: nowrap; }
+details.clk > summary .muted { margin-left: auto; overflow: hidden; text-overflow: ellipsis; }
+
+/* country in a pill, with its colour as a dot */
+.oc, :root[data-theme="dark"] .oc { display: inline-flex; align-items: center; background: var(--pill); color: var(--ink); border-radius: var(--r); padding: 4px 7px; line-height: 1; font-weight: 500; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .oc { color: var(--ink); } }
+.oc::before { width: 6px; height: 6px; margin-right: 5px; vertical-align: 0; }
+
+/* buy me a coffee: plain, like everything else */
+footer .bmc .sheen-text { background: none; -webkit-background-clip: border-box; background-clip: border-box; color: var(--ink); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--ink) 30%, transparent); text-underline-offset: 2px; }
+
+/* ---------- brew mode, in the same black and white ---------- */
+.bv { background: var(--bg); color: var(--ink); font-family: var(--sans); }
+.bv-coffee { color: var(--muted); font-size: var(--fs-s); }
+.bv-x, .bv-reset, .bv-opts button { background: var(--pill); color: var(--ink); font: 500 var(--fs-s)/1 var(--sans); }
+.bv-x { padding: 9px 12px; }
+.bv-now { background: var(--wash); border-radius: var(--r); box-shadow: none; }
+.bv-now.pour { background: var(--ink); color: var(--bg); box-shadow: none; }
+.bv-now.drain { background: var(--wash); }
+.bv-now.over { background: var(--wash); box-shadow: inset 0 0 0 2px #ff3b30; }
+.bv-pill { background: var(--bg); color: var(--ink); border-radius: var(--r); font-size: var(--fs-s); font-weight: 500; letter-spacing: 0; padding: 6px 9px; }
+.pour .bv-pill { background: var(--bg); color: var(--ink); }
+.drain .bv-pill { background: #30d158; color: #000; }
+.over .bv-pill { background: #ff3b30; color: #fff; }
+.bv-clock { color: var(--muted); font-size: var(--fs-m); }
+.pour .bv-clock, .pour .bv-lbl, .pour .bv-sub, .pour .bv-big small { color: color-mix(in srgb, var(--bg) 60%, var(--ink)); }
+.bv-lbl { color: var(--muted); font-size: var(--fs); font-weight: 500; }
+.bv-big { font-weight: 500; }
+.bv-big small { color: var(--muted); font-weight: 500; }
+.pour .bv-big, .pour .bv-how { color: var(--bg); }
+.idle .bv-big { color: var(--muted); }
+.bv-how { font-size: var(--fs-m); font-weight: 500; }
+.bv-sub { color: var(--muted); font-size: var(--fs); }
+.bv-sub b { color: inherit; font-size: var(--fs); font-weight: 500; }
+.pour .bv-sub b { color: var(--bg); }
+.bv-bar { background: color-mix(in srgb, var(--ink) 10%, transparent); height: 6px; border-radius: 2px; }
+.bv-bar .seg { background: color-mix(in srgb, var(--ink) 30%, transparent); border-radius: 2px; }
+.bv-bar .seg.on { background: #ff9f0a; } .bv-bar .seg.done { background: var(--ink); }
+.pour .bv-bar { background: color-mix(in srgb, var(--bg) 18%, transparent); }
+.pour .bv-bar .seg { background: color-mix(in srgb, var(--bg) 35%, transparent); } .pour .bv-bar .seg.done { background: var(--bg); }
+.bv-bar .win { background: rgba(48, 209, 88, .45); border-radius: 2px; }
+.bv-bar .head { background: var(--ink); box-shadow: none; } .pour .bv-bar .head { background: var(--bg); }
+.bv-now.pour::after { display: none; }
+.bv-next { background: var(--wash); border-radius: var(--r); }
+.bv-nextlbl { color: var(--muted); font-size: var(--fs-s); font-weight: 500; letter-spacing: 0; }
+.bv-next strong, .bv-next .cd { font-size: var(--fs); font-weight: 500; }
+.bv-ctrls button { height: 64px; border-radius: var(--r); font: 500 var(--fs)/1 var(--sans); }
+.bv-go, .bv-drain { background: var(--ink); color: var(--bg); }
+.bv-go.running { background: var(--pill); color: var(--ink); }
+.bv-opts button[aria-pressed="true"] { color: var(--ink); }
+.bv-opts button::before { color: var(--muted); }
+.spec.key { padding-left: 0; padding-right: 0; background: none; box-shadow: none; border-radius: 0; }
 </style>
 </head>
 <body>
@@ -843,17 +955,22 @@ footer .bmc .sheen-text { background: linear-gradient(100deg, #8b4a22 0%, #c96f2
 <main class="page">
   <section class="sec hero-sec" aria-labelledby="h1">
     <div class="hero">
-      <p class="wordmark" aria-hidden="true"><span id="wm">Bag to Cup</span></p>
       <div class="hero-row">
       <div class="stage" id="stage">
         <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">Love</span> <span class="w" style="--i:1">coffee?</span></p>
         <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">You’ll</span> <span class="w" style="--i:1">love</span> <span class="w" style="--i:2">every</span> <span class="w" style="--i:3">cup.</span></p>
         <div class="scene stat" aria-hidden="true" id="sceneStat"><span class="stat-n"><span id="statN">0</span> coffees.</span><span class="stat-s" id="statS">From near and far.</span></div>
         <div class="scene" aria-hidden="true" id="sceneIsland"><div class="isl-stack" id="islStack"></div></div>
-        <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">Seven</span> <span class="w" style="--i:1">brewers.</span> <span class="w muted-w" style="--i:2">One</span> <span class="w muted-w" style="--i:3">recipe</span> <span class="w muted-w" style="--i:4">each.</span></p>
-        <div class="scene stat" aria-hidden="true" id="sceneGrind"><span class="stat-n">Got <span id="gT">3:15</span>?</span><span class="stat-s">It’s all it takes.</span></div>
-        <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">Steep.</span> <span class="w" style="--i:1">Press.</span> <span class="w" style="--i:2">Rest.</span></p>
-        <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">Pour.</span> <span class="w" style="--i:1">Taste.</span> <span class="w" style="--i:2">Tweak.</span> <span class="w" style="--i:3">Nail it.</span></p>
+        <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">Seven</span> <span class="w" style="--i:1">brewers.</span><br><span class="w muted-w" style="--i:2">One</span> <span class="w muted-w" style="--i:3">recipe</span> <span class="w muted-w" style="--i:4">each.</span></p>
+        <div class="scene stat" aria-hidden="true" id="sceneGrind"><span class="stat-k" id="gB">V60</span><span class="stat-n">Got <span id="gT">3:15</span>?</span><span class="stat-s">It’s all it takes.</span></div>
+        <p class="scene words verbs" aria-hidden="true"><span class="stat-k">V60</span><span class="w" style="--i:0">Bloom.</span> <span class="w" style="--i:1">Pour.</span> <span class="w" style="--i:2">Swirl.</span></p>
+        <p class="scene words verbs" aria-hidden="true"><span class="stat-k">Kalita Wave</span><span class="w" style="--i:0">Bloom.</span> <span class="w" style="--i:1">Pulse.</span> <span class="w" style="--i:2">Drain.</span></p>
+        <p class="scene words verbs" aria-hidden="true"><span class="stat-k">Chemex</span><span class="w" style="--i:0">Rinse.</span> <span class="w" style="--i:1">Bloom.</span> <span class="w" style="--i:2">Pour.</span></p>
+        <p class="scene words verbs" aria-hidden="true"><span class="stat-k">AeroPress</span><span class="w" style="--i:0">Pour.</span> <span class="w" style="--i:1">Swirl.</span> <span class="w" style="--i:2">Press.</span></p>
+        <p class="scene words verbs" aria-hidden="true"><span class="stat-k">Cafetière</span><span class="w" style="--i:0">Steep.</span> <span class="w" style="--i:1">Skim.</span> <span class="w" style="--i:2">Rest.</span></p>
+        <p class="scene words verbs" aria-hidden="true"><span class="stat-k">Cold brew</span><span class="w" style="--i:0">Stir.</span> <span class="w" style="--i:1">Chill.</span> <span class="w" style="--i:2">Filter.</span></p>
+        <p class="scene words verbs" aria-hidden="true"><span class="stat-k">Moka pot</span><span class="w" style="--i:0">Fill.</span> <span class="w" style="--i:1">Heat.</span> <span class="w" style="--i:2">Stop.</span></p>
+        <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">Pour.</span> <span class="w" style="--i:1">Taste.</span> <span class="w" style="--i:2">Tweak.</span> <span class="w" style="--i:3">Nail</span> <span class="w" style="--i:4">it.</span></p>
         <div class="scene final on"><h1 id="h1">New coffees. <span class="serif">The recipe for each bag.</span></h1></div>
       </div>
       <div class="hero-side">
@@ -869,6 +986,7 @@ footer .bmc .sheen-text { background: linear-gradient(100deg, #8b4a22 0%, #c96f2
       <button type="button" class="hero-pill" data-jump="shelves">See today’s coffees</button>
       </div>
       </div>
+      <p class="wordmark" aria-hidden="true"><span id="wm">Bag to Cup</span></p>
     </div>
   </section>
 
@@ -887,6 +1005,15 @@ footer .bmc .sheen-text { background: linear-gradient(100deg, #8b4a22 0%, #c96f2
 
   <section class="sec" id="coffee" aria-labelledby="askLbl">
     <div class="ask">
+      <div class="kit" id="kit">
+        <div class="opts" id="opts-kit"></div>
+        <div class="opt"><span>Grinder</span><div class="kit-mill">
+          <select id="millSel" aria-label="Your grinder"></select>
+          <div class="zr-ctl" id="zrCtl"><span class="zr-lbl" id="zrLbl">My C40 zero</span>
+            <div class="step" role="group" aria-labelledby="zrLbl"><button type="button" id="zMinus" aria-label="Zero offset one click lower">−</button><span id="zVal">0</span><button type="button" id="zPlus" aria-label="Zero offset one click higher">+</button></div></div>
+        </div></div>
+        <div class="opt"><span>Water</span><details class="water" id="waterCard"><summary><span class="w-head"><span id="wKind"></span></span><span class="w-adv" id="wAdv"></span></summary><div class="w-body" id="wBody"></div></details></div>
+      </div>
       <label for="coffeeIn" id="askLbl">What are you brewing?</label>
       <div class="field">
         <textarea id="coffeeIn" rows="2" placeholder="Roaster, coffee, origin, process, notes…"></textarea>
@@ -913,14 +1040,7 @@ footer .bmc .sheen-text { background: linear-gradient(100deg, #8b4a22 0%, #c96f2
     <div class="rbody" id="rbody">
     <div class="adjusted" id="adjusted" hidden></div>
     <div class="specs" id="specs"></div>
-    <details class="clk why-ratio" id="ratioWhy"><summary><span id="ratioQ">Why this ratio?</span></summary><p class="clk-body" id="ratioWhyT" style="margin:0"></p></details>
-    <details class="water" id="waterCard"><summary><span class="w-head">Water <span class="muted" id="wKind" style="font-weight:400;font-size:15px;margin-left:auto"></span></span><span class="w-adv" id="wAdv"></span></summary><div class="w-body" id="wBody"></div></details>
-    <div class="zero-row" id="zeroRow">
-      <label class="zr-mill"><span class="zr-lbl">Grinder</span><select id="millSel" aria-label="Your grinder"></select></label>
-      <div class="zr-ctl" id="zrCtl"><span class="zr-lbl" id="zrLbl">My C40 zero</span>
-        <div class="step" role="group" aria-labelledby="zrLbl"><button type="button" id="zMinus" aria-label="Zero offset one click lower">−</button><span id="zVal">0</span><button type="button" id="zPlus" aria-label="Zero offset one click higher">+</button></div></div>
-      <div class="zr-math num" id="zrMath" aria-label="How the clicks add up"></div>
-    </div>
+    <div class="zero-row" id="zeroRow"><div class="zr-math num" id="zrMath" aria-label="How the clicks add up"></div></div>
     <details class="clk" id="clkHow"><summary>How these clicks were set <span class="muted" id="clkSumm"></span></summary><div class="clk-body" id="clkBody"></div></details>
     <div class="tech" id="tech"></div>
     <button class="btn go-big" id="startBrew" type="button"><span>Start brewing</span><span class="num" id="startSum"></span></button>
@@ -1789,22 +1909,20 @@ footer .bmc .sheen-text { background: linear-gradient(100deg, #8b4a22 0%, #c96f2
     const ratioSpec = r.brewer === "moka" ? ["ratio", parseInt(doseName(r)), "-cup", "pot size, Bialetti Moka Express", ""]
       : ["ratio", "1:" + r.ratio, "", r.brewer === "cold" ? "a concentrate: dilute to taste" : `≈${r.yieldG} g in the cup`, r.pc.ratio && r.goal ? `${sign(r.pc.ratio)} ${lw}` : ""];
     const tempSpec = r.temp != null ? ["", r.temp, "°C", "kettle", tBadge] : r.brewer === "cold" ? ["", "Cold", "", "fridge-cold water", ""] : ["", "Boiled", "", "water into the base", ""];
-    const timeSpec = K === "pour" ? ["", fmt(r.lo), "", `to ${fmt(r.hi)} total`, ""]
-      : r.brewer === "aero" ? ["", fmt(r.hi), "", "total, pressed", ""]
-      : r.brewer === "press" ? ["", `${r.lo / 60}–${r.hi / 60}`, "min", "total, mostly waiting", ""]
-      : r.brewer === "cold" ? ["", "12–18", "h", readyAt(), ""]
-      : ["", "4–5", "min", "medium heat, lid open", ""];
+    const timeSpec = K === "pour" ? ["time", `${fmt(r.lo)} – ${fmt(r.hi)}`, "", "total time", ""]
+      : r.brewer === "aero" ? ["time", fmt(r.hi), "", "total, pressed", ""]
+      : r.brewer === "press" ? ["time", `${r.lo / 60} – ${r.hi / 60}`, "min", "total, mostly waiting", ""]
+      : r.brewer === "cold" ? ["time", "12 – 18", "h", readyAt(), ""]
+      : ["time", "4 – 5", "min", "medium heat, lid open", ""];
     const S = [
       ["key", onMill(r.clicks).txt, "", mill().lbl, cBadges.join(", ")],
-      ["", r.dose, "g", r.brewer === "moka" ? "basket, full and level" : "coffee", ""],
-      ["", r.water, "g", r.brewer === "moka" ? "hot, to just under the valve" : r.brewer === "cold" ? "cold water" : "water", ""],
-      ratioSpec, tempSpec, timeSpec,
+      ["", r.dose, "g", r.brewer === "moka" ? `basket, full and level (${doseName(r)} pot)` : "coffee", ""],
+      ["", r.water, "g", r.brewer === "moka" ? "hot, to just under the valve" : r.brewer === "cold" ? "cold water, then dilute to taste" : "water", ""],
+      tempSpec, timeSpec,
     ];
     renderClicks(r);
-    $("ratioWhy").hidden = r.brewer === "moka";
-    $("ratioQ").textContent = `Why 1:${r.ratio}?`; $("ratioWhyT").textContent = ratioWhy(r);
     const showRet = r.tds != null;
-    $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}"><b>${v}<small>${u}</small></b><span class="sub2">${l}</span>${k === "key" && isC40() && prefs.zero ? `<span class="zo">${sign(prefs.zero)} zero offset</span>` : ""}${k === "key" && !isC40() ? `<span class="sub2">from ${r.clicks} C40 clicks${onMill(r.clicks).atMax ? ", coarsest setting, may still run fast" : onMill(r.clicks).atMin ? ", finest setting" : ""}</span>` : ""}${k === "ratio" && showRet ? `<span class="ret">(${r.water} g water − 2.1 × ${r.dose} g retained). Estimate only.</span>` : ""}${badge ? `<span class="badge">${esc(badge)}</span>` : ""}</div>`).join("");
+    $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}"><b>${v}${u ? `<small>${u === "-cup" ? u : " " + u}</small>` : ""}</b><span class="sub2">${l}</span>${k === "key" && isC40() && prefs.zero ? `<span class="zo">${sign(prefs.zero)} zero offset</span>` : ""}${k === "key" && !isC40() ? `<span class="sub2">from ${r.clicks} C40 clicks${onMill(r.clicks).atMax ? ", coarsest setting, may still run fast" : onMill(r.clicks).atMin ? ", finest setting" : ""}</span>` : ""}${k === "ratio" && showRet && false ? `<span class="ret">(${r.water} g water − 2.1 × ${r.dose} g retained). Estimate only.</span>` : ""}${badge ? `<span class="badge">${esc(badge)}</span>` : ""}</div>`).join("");
     const agitTxt = r.agit >= 3 ? "Stir or swirl the bloom, pour with energy, one swirl at the end." :
       r.agit === 2 ? "Swirl the bloom gently, steady pours, one soft swirl at the end." :
       r.agit === 1 ? "No stirring. Pour low and gentle so the fruit stays clean." :
@@ -1938,7 +2056,6 @@ footer .bmc .sheen-text { background: linear-gradient(100deg, #8b4a22 0%, #c96f2
   const optsMain = () => {
     const b = brewerOf(state), B = BREWERS[b];
     return [
-      { key: "brewer", label: "Brewer", items: Object.entries(BREWERS).map(([k, x]) => [k, x.name]), on: setBrewer },
       B.kind !== "steps" && { key: "goal", label: "Cup", items: [["light", "Light & sweet"], ["balanced", "Balanced"], ["syrupy", "Rich & syrupy"]] },
       { key: "dose", label: b === "moka" ? "Pot" : "Coffee", items: B.doses },
       b === "v60" && { key: "method", label: "Method", items: [["best", "Best for this coffee"], ["hoffmann", "Hoffmann"], ["fourSix", "Kasuya 4:6"], ["ten", "Kasuya 10-Pour"], ["rao", "Rao"]] },
@@ -1966,7 +2083,7 @@ footer .bmc .sheen-text { background: linear-gradient(100deg, #8b4a22 0%, #c96f2
       if (o.key === "roast") { const m = document.createElement("div"); m.id = "rpMsgOpts"; m.className = "rp-msg"; box.appendChild(m); paintPhoto(m); }
     });
   }
-  const renderAllOpts = () => { renderOpts("opts-main", optsMain()); renderOpts("opts-more", OPTS_MORE); };
+  const renderAllOpts = () => { renderOpts("opts-kit", [{ key: "brewer", label: "Brewer", items: Object.entries(BREWERS).map(([k, x]) => [k, x.name]), on: setBrewer }]); renderOpts("opts-main", optsMain()); renderOpts("opts-more", OPTS_MORE); };
 
   function build() {
     const t = $("coffeeIn").value.trim();
@@ -2286,7 +2403,7 @@ footer .bmc .sheen-text { background: linear-gradient(100deg, #8b4a22 0%, #c96f2
 
   // ---------- share ----------
   // plain text, aligned for a monospace notes app but still readable in a chat bubble
-  const SITE = () => /thisisfed\.xyz$/.test(location.hostname) ? location.hostname : "coffee.thisisfed.xyz";
+  const SITE = () => /thisisfed\.xyz$/.test(location.hostname) ? location.hostname : "bagtocup.thisisfed.xyz";
   function recipeText() {
     const r = recipe, c = r.c, K = r.kind;
     const who = [c.roaster ? titleCase(c.roaster) : (state.bag && state.bag.roaster) || "", c.origin, PROCESS[c.process].label, roastLabel(c.roast)].filter(Boolean).join(", ");
@@ -2440,7 +2557,7 @@ footer .bmc .sheen-text { background: linear-gradient(100deg, #8b4a22 0%, #c96f2
     if (q) list = list.filter((r) => [r.roaster, r.roaster_city, r.name, r.origin, r.region, r.process, r.variety, ...(r.notes || [])].join(" ").toLowerCase().includes(q));
     if (shelfV === "v60") list = list.filter(shelfFit());
     list = interleave(list);
-    const LIMIT = 12;
+    const LIMIT = 5;   // the five newest, then a button for the rest
     const shown = shelfAll || q ? list : list.slice(0, LIMIT);
     let lastGroup = null;
     $("shelf").innerHTML = shown.length ? shown.map((r) => {
@@ -2561,14 +2678,19 @@ footer .bmc .sheen-text { background: linear-gradient(100deg, #8b4a22 0%, #c96f2
   // hero: play the scenes in turn like an Apple store attract loop, resting on the headline.
   // Pauses when the hero is off screen or the tab is hidden; reduced motion shows the headline only.
   // the wordmark is set exactly as wide as the page, whatever the font and the screen
+  (function markSwap() {
+    const w = $("wm"); if (!w || !("IntersectionObserver" in window)) { document.body.classList.add("mark-on"); return; }
+    new IntersectionObserver((es) => document.body.classList.toggle("mark-on", !es[0].isIntersecting), { rootMargin: "-48px 0px 0px 0px" }).observe(w);
+  })();
   (function fitMark() {
     const w = $("wm"), p = w && w.parentElement; if (!p) return;
-    const fit = () => { p.style.fontSize = "100px"; const k = p.clientWidth / w.getBoundingClientRect().width; p.style.fontSize = (100 * k).toFixed(2) + "px"; };
+    // measured with the last letter's spacing put back, so the "p" never runs past the edge
+    const fit = () => { p.style.fontSize = "100px"; const k = p.clientWidth / (w.getBoundingClientRect().width + 6); p.style.fontSize = (100 * k * .995).toFixed(2) + "px"; };
     fit(); addEventListener("resize", fit); if (document.fonts) document.fonts.ready.then(fit);
   })();
   (function heroLoop() {
     const scenes = [...document.querySelectorAll("#stage .scene")];
-    const HOLD = [1800, 2100, 2700, 3300, 2600, 3400, 2400, 3200, 5200];
+    const HOLD = [1800, 2100, 2700, 3300, 2600, 4600, 1900, 1900, 1900, 1900, 1900, 1900, 1900, 3200, 5200];
     if (!scenes.length || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let i = scenes.length - 1, timer = null, visible = true;
     const prep = (el) => {
@@ -2580,11 +2702,16 @@ footer .bmc .sheen-text { background: linear-gradient(100deg, #8b4a22 0%, #c96f2
           $("statN").textContent = Math.round(to * e).toLocaleString("en-GB"); if (k < 1) requestAnimationFrame(step); };
         requestAnimationFrame(step);
       }
-      if (el.id === "sceneGrind") {   // the brew clock runs from 0:00 to the finish
-        const T = 195, t0 = performance.now();
-        const step = (t) => { const b = Math.min(1, Math.max(0, (t - t0 - 250) / 1600)), e = 1 - Math.pow(1 - b, 3), sec = Math.round(T * e);
-          $("gT").textContent = `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`; if (b < 1) requestAnimationFrame(step); };
-        $("gT").textContent = "0:00"; requestAnimationFrame(step);
+      if (el.id === "sceneGrind") {   // the clock runs up to a V60's 3:15, then flips through the other brewers' times
+        const T = 195, t0 = performance.now(), mm = (x) => `${Math.floor(x / 60)}:${String(x % 60).padStart(2, "0")}`;
+        const LAP = [["AeroPress", "3:00"], ["Kalita Wave", "3:30"], ["Chemex", "4:30"], ["Moka pot", "5:00"], ["Cafetière", "12:00"], ["Cold brew", "18 h"]];
+        const step = (t) => { const b = Math.min(1, Math.max(0, (t - t0 - 250) / 1300)), e = 1 - Math.pow(1 - b, 3);
+          if (!el.classList.contains("on")) return;
+          if (b < 1) { $("gT").textContent = mm(Math.round(T * e)); requestAnimationFrame(step); return; }
+          const k = Math.floor((t - t0 - 1850) / 450);
+          if (k >= 0 && k < LAP.length) { $("gB").textContent = LAP[k][0]; $("gT").textContent = LAP[k][1]; }
+          if (k < LAP.length) requestAnimationFrame(step); };
+        $("gB").textContent = "V60"; $("gT").textContent = "0:00"; requestAnimationFrame(step);
       }
       if (el.id === "sceneIsland") {
         // the three newest, one per roaster so the stack shows three different shops
