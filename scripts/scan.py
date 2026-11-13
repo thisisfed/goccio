@@ -54,7 +54,7 @@ COUNTRY_ALIASES = {
 SYMBOL = {"GBP": "£", "EUR": "€", "USD": "$", "CAD": "CA$", "AUD": "A$", "NZD": "NZ$", "JPY": "¥", "DKK": " kr", "SEK": " kr", "NOK": " kr",
           "PLN": " zł", "CZK": " Kč", "CHF": "CHF "}
 COUNTRY_CCY = {"GB": "GBP", "US": "USD", "CA": "CAD", "AU": "AUD", "NZ": "NZD", "JP": "JPY", "DK": "DKK", "SE": "SEK", "NO": "NOK",
-               "PL": "PLN", "CZ": "CZK", "CH": "CHF"}
+               "PL": "PLN", "CZ": "CZK", "CH": "CHF", "CN": "CNY", "HK": "HKD", "TW": "TWD", "KR": "KRW", "SG": "SGD"}
 
 VARIETIES = ["Gesha", "Geisha", "Sidra", "Pink Bourbon", "Wush Wush", "Eugenioides", "Laurina",
              "Sudan Rume", "SL28", "SL34", "Ruiru 11", "Batian", "Red Bourbon", "Yellow Bourbon",
@@ -62,7 +62,7 @@ VARIETIES = ["Gesha", "Geisha", "Sidra", "Pink Bourbon", "Wush Wush", "Eugenioid
              "74110", "74112", "74158", "Heirloom", "Landrace", "Java", "Mokka", "Chiroso",
              "Tabi", "Villa Sarchi", "Parainema", "Marsellesa", "Catimor"]
 EXCLUDE = re.compile(r"subscri|abonnement|abbonamento|\babo\b|suscripci|prenumeration|geschenk|regalo|cadeau|gutschein|"
-                     r"\btasse\b|tazza|latte art|\bpen\b|\btool\b|accessor|machine|maker|moccamaster|ticket|party|event|festival|origami|glass|server|carafe|porcelain|ceramic|brewer|filter holder|gift|voucher|capsule|\bpods?\b|nespresso|coffee bags?|drip bags?|brew bags?|caf[ée] de poche|"
+                     r"\btasse\b|tazza|latte art|\bpen\b|\btool\b|accessor|machine|maker|moccamaster|ticket|party|event|festival|origami|glass|server|carafe|porcelain|ceramic|brewer|filter holder|gift|voucher|capsule|\bpods?\b|nespresso|coffee bags?|drip bags?|brew bags?|immersion bags?|caf[ée] de poche|"
                      r"steep|equipment|grinder|\bmug\b|kettle|dripper|filter papers?|papers\b|\bcups?\b(?! of excellence)|"
                      r"sampler|tasting pack|taster|bundle|merch|t-?shirt|hoodie|tote|cap\b|"
                      r"cold brew|concentrate|instant|\btea\b|chocolate bar|chocolate\b|cascara|"
@@ -921,7 +921,7 @@ def clean_name(title, roaster, origin):
 
 
 # title segments that are labels or shop/SEO text, not the coffee's name
-GENERIC_SEG = re.compile(r"^(?:farm|fun|classic|daily|exclusive|rare|special|limited(?: release| edition)?|new|new release|feature(?:d)?|guest|seasonal|single origin|"
+GENERIC_SEG = re.compile(r"^(?:\d{2}(?:/\d{2})?\s+new season|new season|new crop|release\s*#?\d+|\d+(?:[.,]\d+)?\s?(?:g|gr|kg)|farm|fun|classic|daily|exclusive|rare|special|limited(?: release| edition)?|new|new release|feature(?:d)?|guest|seasonal|single origin|"
                          r"filter|omni|coffee|whole ?beans?|shop|store|"
                          r"(?:buy\b.*|.*\bonline\b.*|.*\bspecialty coffee beans?\b.*))$", re.I)
 BRAND_FILLER = re.compile(r"\b(?:the|coffee|co|company|roasters?|roastery|roasting|ltd|&|and|espresso)\b|[^\w\s]", re.I)
@@ -937,6 +937,7 @@ def tidy_name(name, roaster):
     """'Buy Specialty Coffee Beans Online UK | Nude Coffee Roasters' -> '' (caller falls back);
     'Farm • Sagastume Geisha | doubleshot' -> 'Sagastume Geisha'; 'Limited Release | Franken Grind Blend' -> 'Franken Grind Blend';
     'EAST BLEND' -> 'East Blend'."""
+    name = re.sub(r"\s*[\u3000-\u9fff\uac00-\ud7af\uff00-\uffef]+", "", name).strip()   # Big Sur: the Chinese name after the English one
     if re.search(r"\s[•·]\s", name):
         # "Honduras Finca El Puente • Geisha • Anaerobic Natural" -> "Honduras Finca El Puente, Geisha" (process shows as a tag)
         bits = [b.strip() for b in re.split(r"\s[•·]\s", name) if b.strip()]
@@ -953,15 +954,43 @@ def tidy_name(name, roaster):
     keep = [p for p in parts if not is_brand(p, roaster) and not GENERIC_SEG.match(p)]
     if len(parts) > 1:
         name = " ".join(keep[:1]) if len(keep) != len(parts) else name
+        # "Gem Forest Coffee - Double Ferment Washed [Syrina]", "Black Moon Chiroso — Natural": the tail is tags
+        if len(keep) == 2 and details_only(keep[1]):
+            name = keep[0]
     elif not keep:
         name = ""
+    if ", " in name:
+        # "Colombia, Amigos de Buesaco, Nariño, natural" -> "Amigos de Buesaco, Nariño"; "Don Benjie, SL28 Natural" -> "Don Benjie"
+        bits = [b.strip() for b in name.split(", ") if b.strip()]
+        if len(bits) > 1 and find_origin(bits[0]) and len(bits[0]) <= len(find_origin(bits[0])) + 1:
+            bits = bits[1:]
+        while len(bits) > 1 and details_only(bits[-1]) and not details_only(bits[0]):
+            bits.pop()
+        name = ", ".join(bits)
+    head, sep, tail = name.rpartition(": ")
+    if sep and head and details_only(tail):   # "Finca Sunderland: Washed" -> "Finca Sunderland"
+        name = head
     name = re.sub(r"^\s*\[[^\]]{3,40}\]\s*", "", name)   # "[Kawa bezkofeinowa] Kolumbia El Vergel Decaf": a shop category in brackets
     # "El Diviso Ombligon ! DÉCAFÉINÉ !! Filtre & Espresso" -> "El Diviso Ombligon Décaféiné"
     name = re.sub(r"\s*\b(?:filt(?:er|re|ro)\s*(?:&|and|et|/|\+)\s*espresso|espresso\s*(?:&|and|et|/|\+)\s*filt(?:er|re|ro))\s*$", "", name, flags=re.I)
     name = re.sub(r"\s*!+\s*", " ", name).strip()
     # "Alo Bore [Washed]" -> "Alo Bore": a bracketed process at the end is already a tag
-    name = re.sub(r"\s*[\[(]([^\])]{3,30})[\])]\s*$", lambda m: "" if find_process(m.group(1)) else m.group(0), name)
+    name = re.sub(r"\s*[\[(]([^\])]{3,30})[\])]\s*$", lambda m: "" if find_process(m.group(1)) or details_only(m.group(1)) else m.group(0), name)
     return calm_caps(name).strip(" -–|,")
+
+
+DETAIL_WORDS = re.compile(r"\b(?:washed|natural|honey|anaerobic|aerobic|double|triple|ferment(?:ed|ation)?|co-?ferment(?:ed)?|culturing|cultured|"
+                          r"carbonic|maceration|thermal|shock|decaf|semi|pulped|wet|hulled|dry|process(?:ed)?|\d+\s?h(?:rs?|ours?)?|yeast|lactic|"
+                          r"experimental|black|white|red|yellow|orange|pink)\b", re.I)
+
+
+def details_only(seg):
+    """True when a name part is nothing but process and variety words ('SL28 Natural', 'Double Ferment Washed', 'Syrina')."""
+    rest = DETAIL_WORDS.sub(" ", seg)
+    for v in sorted(VARIETIES, key=len, reverse=True):
+        rest = re.sub(r"\b" + re.escape(v) + r"\b", " ", rest, flags=re.I)
+    rest = re.sub(r"\b(?:sl\s?\d+|ruiru\s?\d+|batian|typica|bourbon|caturra|catuai|castillo|heirloom|landrace|74\d{3})\b|[^\w]+|\s+", " ", rest, flags=re.I).strip()
+    return bool(seg.strip()) and not rest
 
 
 GRADE = {"EA", "AA", "AB", "AAA", "PB", "SL", "EP", "SHB", "SHG", "FW", "HB", "DR", "PNG", "UK", "USA"}
@@ -1609,7 +1638,7 @@ def main():
     # one listing per coffee: drop size/variant duplicates and stores that share a catalogue
     seen, per_roaster, deduped = set(), {}, []
     for x in found:
-        key_same = (x["roaster"], x["name"].lower(), (x.get("process") or "").lower())
+        key_same = (x["roaster"], x["name"].lower(), (x.get("process") or "").lower(), (x.get("variety") or "").lower())
         key_shared = (x["name"].lower(), x.get("price"), x.get("origin"))
         if key_same in seen or key_shared in seen:
             continue
