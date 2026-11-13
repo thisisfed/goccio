@@ -994,6 +994,17 @@ footer .bmc, footer .bmc a, footer .bmc .sheen-text { font-weight: 400; text-dec
 footer .bmc a:hover .sheen-text { text-decoration: underline; }
 .field .btn, #go { height: var(--btn-h) !important; min-height: var(--btn-h) !important; align-self: end; }
 .step button, #zVal { display: inline-flex; align-items: center; justify-content: center; }
+/* brew mode: no "Then" row; the panel takes the room. Big numbers use proportional digits so 1s don't leave gaps */
+.bv-next { display: none !important; }
+.bv { grid-template-rows: auto minmax(0, 1fr) auto auto; }
+.bv-big, .spec b, .col .big, .bv-sub b { font-variant-numeric: proportional-nums; letter-spacing: -.04em; }
+.bv-big small { margin-left: .12em; letter-spacing: 0; }
+.bv-how { height: auto; min-height: 2lh; -webkit-line-clamp: 3; }
+@media (orientation: landscape) and (max-height: 560px) {
+  .bv { grid-template-rows: auto minmax(0, 1fr) auto auto; }
+  .bv-now { grid-row: 2 / 5; } .bv-ctrls { grid-row: 3; align-self: end; } .bv-opts { grid-row: 4; }
+}
+.litext, .outro-end { max-width: none; width: 100%; text-wrap: pretty; }
 </style>
 </head>
 <body>
@@ -1690,7 +1701,7 @@ footer .bmc a:hover .sheen-text { text-decoration: underline; }
 
   // ---------- rendering the recipe ----------
   let recipe = null;
-  const g1 = (v) => v.toFixed(1);                                                     // grams to 0.1
+  const g1 = (v) => (Math.round(v * 10) % 10 ? v.toFixed(1) : String(Math.round(v)));                                                     // grams to 0.1
   const pourAdd = (r, i) => Math.round((r.pours[i].x - (i ? r.pours[i - 1].x : 0)) * 10) / 10;
   const roastLabel = (k) => k === "unsure" ? ROAST.unsure.label : ROAST[k].label + " roast";
   function coffeeTitle(st, r) {
@@ -1833,6 +1844,10 @@ footer .bmc a:hover .sheen-text { text-decoration: underline; }
     const g = onMill(r.clicks);
     $("zrMath").innerHTML = [`${p.base} base (${METHOD_REF[r.m]})`, ...terms].map(esc).join(" ")
       + (isC40() ? ` = <b>${r.clicks} clicks</b>` : ` = ${r.clicks} C40 clicks → <b>${esc(g.txt)} on the ${esc(mill().short)}</b>`);
+    kitState();
+  }
+  // grinder and zero controls sit above the questions, so they update even before there's a full recipe
+  function kitState() {
     $("zrCtl").hidden = !isC40();
     $("millSel").value = GRINDERS[prefs.mill] ? prefs.mill : "c40";
     $("zVal").textContent = prefs.zero ? signed(prefs.zero) : "0";
@@ -1903,7 +1918,7 @@ footer .bmc a:hover .sheen-text { text-decoration: underline; }
     const lv = waterLevel(), w = prefs.water || {};
     const name = (WATER.find((x) => x[0] === w.kind) || [0, "Not set"])[1];
     const adv = $("wAdv"); adv.className = "w-adv" + (lv === "hard" ? " hard" : "");
-    adv.innerHTML = lv === "hard" ? `<b class="w-fix">Hard tap first fix: try ${clRange(1, 2)} coarser or −2 °C before changing grind for bitterness or flatness.</b><span class="w-fixn">Here that’s ${isC40() ? `${r.clicks + 1}–${r.clicks + 2} clicks` : `${esc(onMill(r.clicks + 1).txt)}–${esc(onMill(r.clicks + 2).txt)} on the ${esc(mill().short)}`}${r.temp != null ? ` or ${r.temp - 2}°C` : ""}.</span>`
+    adv.innerHTML = lv === "hard" ? `<b class="w-fix">Hard tap first fix: try ${clRange(1, 2)} coarser or −2 °C before changing grind for bitterness or flatness.</b>${r.clicks == null ? "" : `<span class="w-fixn">Here that’s ${isC40() ? `${r.clicks + 1}–${r.clicks + 2} clicks` : `${esc(onMill(r.clicks + 1).txt)}–${esc(onMill(r.clicks + 2).txt)} on the ${esc(mill().short)}`}${r.temp != null ? ` or ${r.temp - 2}°C` : ""}.</span>`}`
       : lv === "vsoft" ? "Very soft water can taste flat and thin. If it does, try 1–2°C hotter before changing the grind."
       : lv === "soft" ? "Good for filter. Dial in with grind and temperature as usual."
       : lv === "unknown" ? "Add your hardness or alkalinity to get advice."
@@ -1942,7 +1957,9 @@ footer .bmc a:hover .sheen-text { text-decoration: underline; }
   function render() {
     const r = recipe = engine(state);
     const c = r.c, K = r.kind;
+    kitState();
     if (renderNeed(r)) {
+      renderWater({});
       $("detected").innerHTML = state.text && c.missing.length ? `Couldn’t find the ${c.missing.join(" or ")} in that. Answer below.` : "";
       if (state.text || state.bag) { $("rtitle").textContent = coffeeTitle(state, r); $("rmethod").textContent = ""; $("rgoal").textContent = ""; $("rread").textContent = ""; }
       return;
