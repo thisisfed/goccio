@@ -1113,6 +1113,10 @@ footer .bmc a, footer .bmc .sheen-text { font-weight: 500 !important; }
 .scene.one-line { flex-wrap: nowrap; white-space: nowrap; font-size: min(var(--hs), 7.4cqi); align-items: flex-start; }
 /* the taste pills sit right under the question */
 #logBox #tasteChips { margin-top: -6px; }
+/* the roasters scene: names in ink, country codes in grey */
+.scene.roasters { font-size: min(var(--hs), 8.6cqi); gap: .05em .5em; line-height: 1.05; }
+.scene.roasters .rs { white-space: nowrap; }
+.scene.roasters .cc { color: var(--muted); }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1159,6 +1163,7 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
         <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">Love</span> <span class="w" style="--i:1">coffee?</span></p>
         <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">You</span> <span class="w" style="--i:1">will</span> <span class="w hw" style="--i:2"><svg class="heart" viewBox="0 0 24 24" role="img" aria-label="love"><path pathLength="1" d="M12 20.2S3.5 15 3.5 9.1A4.6 4.6 0 0 1 12 6.6a4.6 4.6 0 0 1 8.5 2.5c0 5.9-8.5 11.1-8.5 11.1z"/></svg></span> <span class="w" style="--i:3">every</span> <span class="w" style="--i:4">cup.</span></p>
         <div class="scene stat" aria-hidden="true" id="sceneStat"><span class="stat-n"><span id="statN">0</span> coffees.</span><span class="stat-s" id="statS">From near and far.</span></div>
+        <p class="scene words roasters" aria-hidden="true"><span class="w rs" style="--i:0">Square Mile&nbsp;<span class="cc">UK</span></span> <span class="w rs" style="--i:1">Tim Wendelboe&nbsp;<span class="cc">NO</span></span> <span class="w rs" style="--i:2">La Cabra&nbsp;<span class="cc">DK</span></span> <span class="w rs" style="--i:3">Sey&nbsp;<span class="cc">US</span></span> <span class="w rs" style="--i:4">Onyx&nbsp;<span class="cc">US</span></span> <span class="w rs" style="--i:5">Glitch&nbsp;<span class="cc">JP</span></span></p>
         <p class="scene words two" aria-hidden="true"><span class="ln"><span class="w" style="--i:0">Seven</span> <span class="w" style="--i:1">brewers.</span> <span class="w hw" style="--i:2"><svg class="heart doodle" viewBox="0 0 24 24" role="img" aria-label="dripper"><path pathLength="1" style="--p:0" d="M3 4.5h18L14.5 14h-5z"/><path pathLength="1" style="--p:1" d="M6.5 14h11"/><path pathLength="1" style="--p:2" d="M12 16.5v1.2"/><path pathLength="1" style="--p:3" d="M12 20.5v.4"/></svg></span></span><span class="ln"><span class="w" style="--i:3">One</span> <span class="w" style="--i:4">recipe.</span></span></p>
         <div class="scene stat" aria-hidden="true" id="sceneGrind"><span class="stat-k" id="gB">V60</span><span class="stat-n">Got <span class="hw"><svg class="heart doodle" viewBox="0 0 24 24" role="img" aria-label="timer"><path pathLength="1" style="--p:0" d="M12 21.5a8 8 0 1 0 0-16 8 8 0 0 0 0 16z"/><path pathLength="1" style="--p:1" d="M12 9.5v4l2.6 1.6"/><path pathLength="1" style="--p:2" d="M10 2.5h4"/><path pathLength="1" style="--p:3" d="M12 2.5v3"/></svg></span> <span id="gT">3:15</span>?</span><span class="stat-s">It’s all it takes.</span></div>
         <p class="scene words one-line" aria-hidden="true"><span class="w" style="--i:0">Pour.</span> <span class="w" style="--i:1">Taste.</span> <span class="w" style="--i:2">Tweak.</span> <span class="w" style="--i:3">Nail</span> <span class="w hw" style="--i:4">it.&nbsp;<svg class="heart doodle" viewBox="0 0 24 24" role="img" aria-label="done"><path pathLength="1" style="--p:0" d="M4 12.5l5 5L20 6.5"/></svg></span></p>
@@ -3070,7 +3075,7 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
   })();
   (function heroLoop() {
     const scenes = [...document.querySelectorAll("#stage .scene")];
-    const HOLD = [2200, 2400, 2900, 2900, 4800, 3400, 5200];
+    const HOLD = [2200, 2400, 2900, 3400, 2900, 4800, 3400, 5200];
     if (!scenes.length || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let i = scenes.length - 1, timer = null, visible = true;
     const prep = (el) => {
