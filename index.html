@@ -1220,6 +1220,11 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
 .scene.just #justLn { display: contents; }
 .scene.just .ln { white-space: normal !important; max-width: 100%; }
 .scene.just { font-size: min(var(--hs), calc(max(var(--hs) * 4.4, 196px) / 6.5), 8.6cqi) !important; }
+/* the sponsored coffee: a warm tinted card, labelled, first in the list */
+.item.sponsored { background: #f6efe4; border-radius: var(--r); padding-left: 12px !important; padding-right: 12px !important; border-top-color: transparent !important; }
+:root[data-theme="dark"] .item.sponsored { background: #2a2118; }
+.item.sponsored + .grp, .item.sponsored + .item { border-top-color: transparent; }
+.item .who .sp-tag { display: inline-flex; align-items: center; height: 18px; padding: 0 6px; margin-right: .7em; border-radius: var(--r); background: #8a5a2b; color: #fff; font-weight: 500; font-size: 11px; }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -3075,6 +3080,9 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
   };
 
+  // ---------- sponsored coffee ----------
+  const SPONSOR = { roaster: "Climpson & Sons", name: "Uraga", live: false };
+  const sponsorOn = () => SPONSOR.live || /[?&]sponsor=preview\b/.test(location.search);
   // ---------- shelves ----------
   let shelf = [], shelfF = "all", shelfR = "all", shelfAll = false, shelfV = "all";   // one list: every coffee
   // "Made for V60": single origins roasted for filter or omni. Blends, espresso roasts (the roaster shelves or
@@ -3129,11 +3137,16 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
     if (shelfV === "v60") list = list.filter(shelfFit());
     list = interleave(list);
     const LIMIT = 5;   // the five newest, then a button for the rest
-    const shown = shelfAll || q ? list : list.slice(0, LIMIT);
+    let shown = shelfAll || q ? list : list.slice(0, LIMIT);
+    // sponsored slot: one coffee pinned first, clearly labelled. Shown to everyone only when SPONSOR.live is true;
+    // until then it's a preview, visible with ?sponsor=preview in the address
+    const sp = sponsorOn() && !q ? shelf.find((r) => r.roaster === SPONSOR.roaster && r.name === SPONSOR.name) : null;
+    if (sp) shown = [sp, ...shown.filter((r) => r !== sp)];
     let lastGroup = null;
     $("shelf").innerHTML = shown.length ? shown.map((r) => {
       const i = shelf.indexOf(r);
-      const group = r.just_in ? justInLabel() : r.new ? "New in the last 3 weeks" : "Still on the shelves";
+      const isSp = r === sp;
+      const group = isSp ? "Sponsored" : r.just_in ? justInLabel() : r.new ? "New in the last 3 weeks" : "Still on the shelves";
       const head = group !== lastGroup && shelfF !== "new" ? `<div class="grp">${group}</div>` : ""; lastGroup = group;
       const pills = [
         r.blend ? '<span class="pill">Blend</span>' : "",
@@ -3143,9 +3156,9 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
       ].join("");
       const origins = (r.origin || "").split(" / ").filter(Boolean).map((o) => `<span class="oc" data-o="${esc(o)}">${esc(o)}</span>`).join(" / ");
       const place = [origins, r.region ? esc(r.region) : ""].filter(Boolean).join(", ");
-      return `${head}<article class="item${r.just_in ? " ji" : ""}">
+      return `${head}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
         <div class="l">
-          <span class="who">${r.just_in ? '<span class="ji">Just in</span>' : ""}${esc(r.roaster)}${r.roaster_city ? `, ${esc(r.roaster_city)}` : ""}</span>
+          <span class="who">${isSp ? '<span class="sp-tag">Sponsored</span>' : r.just_in ? '<span class="ji">Just in</span>' : ""}${esc(r.roaster)}${r.roaster_city ? `, ${esc(r.roaster_city)}` : ""}</span>
           <span class="name">${esc(calm(r.name))}</span>
           <div class="pills">${place ? `<span class="place">${place}</span>` : ""}${pills}</div>
         </div>
