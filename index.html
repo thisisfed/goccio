@@ -1121,6 +1121,9 @@ footer .bmc a, footer .bmc .sheen-text { font-weight: 500 !important; }
 #opts-main, #moreOpts { margin-top: -4px; }
 /* no rule between the Journal title and the question */
 #logBox { border-top: 0 !important; }
+/* Brewer sits right under the input: no rule, no padding, and the reading line takes no room when it's empty */
+#kit { border-top: 0 !important; padding-top: 0 !important; margin-top: 0 !important; }
+#detected:empty { display: none; }
 /* the location pill sits 5 px from the next one, like every other pill */
 .item .pills .place { margin: 0 !important; display: inline-flex; }
 /* two-line scenes: each line its own row */
@@ -1845,8 +1848,8 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
   function renderNeed(r) {
     const need = $("need"), body = $("rbody");
     const empty = !state.text && !state.bag;
-    const missing = empty ? [] : r.c.missing;
-    const blocked = empty || missing.length > 0;
+    const missing = [];   // a missing roast or process no longer blocks: the recipe uses the safe middle until you pick one below
+    const blocked = empty;
     need.hidden = !blocked; body.hidden = blocked; $("recipe").hidden = blocked;
     $("startBrew").disabled = blocked; $("dockGo").disabled = blocked;
     $("dock").hidden = blocked;
@@ -2103,7 +2106,10 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
     const src = (f) => f === "you" ? " (you set this)" : " (from the bag)";
     const psrc = c.processFrom === "you" && state.listProc && state.listProc === state.process ? " (from the roaster)" : src(c.processFrom);
     const rsrc = state.roastPhoto && state.roastPhoto.key === state.roast ? ` (from your photo <i class="bean-dot" style="--c:${state.roastPhoto.hex}"></i>)` : src(c.roastFrom);
-    $("detected").innerHTML = state.text ? `Reading this as <b>${esc(PROCESS[c.process].label)}</b>${psrc}, <b>${esc(roastLabel(c.roast))}</b>${rsrc}. Wrong? Change it under Bag details.` : "";
+    const miss = c.missing || [];
+    const pTxt = miss.includes("process") ? "<b>process not stated</b>, so gentle" : `<b>${esc(PROCESS[c.process].label)}</b>${psrc}`;
+    const rTxt = miss.includes("roast") ? "<b>roast not stated</b>, so a safe middle" : `<b>${esc(roastLabel(c.roast))}</b>${rsrc}`;
+    $("detected").innerHTML = state.text ? `Reading this as ${pTxt}, ${rTxt}. ${miss.length ? "Pick it under " + (miss.length === 2 ? "Process and Roast" : miss[0] === "roast" ? "Roast" : "Process") + " to sharpen the recipe." : "Wrong? Change it under Process or Roast."}` : "";
 
     renderLearn(r);
     const sign = (n) => (n > 0 ? "+" : "−") + Math.abs(n);
@@ -2311,7 +2317,7 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
   const clicksFor = (v) => { const G = mill(); if (isC40()) return v; return v <= G.b || G.fp == null ? 15 + (v - G.a) * 10 / (G.b - G.a) : 25 + (v - G.b) * 15 / (G.fp - G.b); };
   function withMine(r) {
     const k = mineKey(r), M = k && prefs.mine[k];
-    if (!M || r.c.missing.length) return r;
+    if (!M) return r;
     const x = { ...r, mine: true, auto: { clicks: r.clicks, temp: r.temp, water: r.water, lo: r.lo, hi: r.hi }, pc: { clicks: 0, temp: 0, ratio: 0 }, learn: null };
     if (M.clicks != null) x.clicks = isC40() ? Math.round(M.clicks) : M.clicks;
     if (M.temp != null && r.temp != null) x.temp = M.temp;
