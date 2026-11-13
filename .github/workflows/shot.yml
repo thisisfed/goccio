@@ -6,6 +6,8 @@ on:
       urls:
         description: "Comma-separated URLs"
         required: true
+permissions:
+  contents: write
 jobs:
   shot:
     runs-on: ubuntu-latest
@@ -26,7 +28,7 @@ jobs:
                           pg = await b.new_page(viewport={"width": w, "height": h})
                           try:
                               await pg.goto(u, wait_until="networkidle", timeout=45000); await pg.wait_for_timeout(2500)
-                              await pg.screenshot(path=f"shots/{i}-{tag}.png", full_page=True)
+                              await pg.screenshot(path=f"shots/{i}-{tag}.jpg", full_page=True, type="jpeg", quality=70)
                               css = await pg.evaluate("""() => { const o = {}; for (const s of ['body','h1','h2','a','button','p','nav a','header']) { const e = document.querySelector(s); if (e) { const c = getComputedStyle(e); o[s] = [c.fontFamily, c.fontSize, c.fontWeight, c.letterSpacing, c.textTransform, c.color, c.backgroundColor, c.lineHeight].join(' | ') } } return o }""")
                               print(u, tag, css)
                           except Exception as e:
@@ -35,7 +37,7 @@ jobs:
                   await b.close()
           asyncio.run(main())
           PY
-      - uses: actions/upload-artifact@v4
-        with:
-          name: shots
-          path: shots
+      # kept on a throwaway branch (never merged) so they can be pulled with git
+      - run: |
+          cd shots && git init -q -b design-shots && git add . && git -c user.name=v60-scan-bot -c user.email=v60-scan-bot@users.noreply.github.com commit -qm "Screenshots $(date -u +%d/%m/%Y)"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" design-shots
