@@ -1,8 +1,13 @@
-# V60 Brew Card
+# Bag to Cup
 
-**Live at [v60.thisisfed.xyz](https://v60.thisisfed.xyz)**
+**Live at [v60.thisisfed.xyz](https://v60.thisisfed.xyz)**, moving to coffee.thisisfed.xyz.
 
-Type the coffee you're brewing and get a dialled-in Hario V60 recipe: Comandante C40 clicks, dose, water, temperature and every pour, with a brew-along timer. The method is matched to the coffee: James Hoffmann's Better 1-Cup and Ultimate V60, Tetsu Kasuya's 4:6 and 10-Pour, or Scott Rao's bloom & spin.
+Type the coffee you're brewing, pick your brewer, and get a dialled-in recipe: grind for your grinder (Comandante C40 clicks or converted), dose, water, temperature and every step, with a brew-along timer.
+
+- **V60:** matched to the coffee: James Hoffmann's Better 1-Cup and Ultimate V60, Tetsu Kasuya's 4:6 and 10-Pour, or Scott Rao's bloom & spin.
+- **Kalita Wave** (George Howell), **Chemex** (Blue Bottle), **AeroPress**, **cafetière** and **moka pot** (James Hoffmann's Ultimate techniques), **cold brew** (Ceremony Coffee).
+
+Every brewer takes the same process and roast adjustments, and the journal learns per coffee and per brewer.
 
 Below the recipe is **New on UK shelves**: filter coffees (single origins and blends) from UK, European and worldwide roasters, refreshed every morning.
 
