@@ -2724,8 +2724,9 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
     if (!k) { bar.innerHTML = ""; ed.hidden = true; return; }
     bar.innerHTML = editing ? "" : r.mine
       ? `<span class="mine-tag">Custom numbers</span><button type="button" class="chip" id="mEdit">Edit</button><button type="button" class="chip" id="mReset">Use the suggested recipe</button>`
-      : `<button type="button" class="chip" id="mEdit">Edit the numbers</button>`;
-    if ($("mEdit")) $("mEdit").onclick = () => { editing = true; render(); $("mineEd").scrollIntoView({ behavior: "smooth", block: "start" }); };
+      : `<button type="button" class="chip" id="mEdit">Use your own recipe</button>`;
+    if ($("mEdit")) $("mEdit").onclick = () => { editing = true; render(); requestAnimationFrame(() => { const top = document.querySelector(".top"), h = top ? top.getBoundingClientRect().height : 0;
+      window.scrollTo({ top: $("mineEd").getBoundingClientRect().top + scrollY - h - 12, behavior: "smooth" }); }); };
     if ($("mReset")) $("mReset").onclick = () => { delete prefs.mine[k]; savePrefs(); render(); };
     ["specs", "tech", "startBrew"].forEach((id) => $(id).hidden = editing || (id === "startBrew" && r.kind === "steps"));
     $("pourRows").closest("table").hidden = editing; $("pourNote").hidden = editing || r.kind === "steps";
