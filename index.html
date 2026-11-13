@@ -1178,6 +1178,11 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
 /* less space at the very bottom: the brew bar hides there instead */
 .page { padding-bottom: 28px !important; }
 .dock.end { transform: translateY(110%); opacity: 0; pointer-events: none; }
+/* a magnifying glass in the coffee search */
+.shelf-tools input[type=search] { padding-left: 38px !important; background-repeat: no-repeat !important; background-position: 13px 50% !important; background-size: 16px 16px !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5 21 21'/%3E%3C/svg%3E") !important; }
+:root[data-theme="dark"] .shelf-tools input[type=search] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5 21 21'/%3E%3C/svg%3E") !important; }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1235,7 +1240,7 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
       </div>
       <div class="hero-side">
       <p class="hero-kick">Updated every morning</p>
-      <p class="lede">New coffees from roasters in the UK, Europe and beyond, updated every morning. Pick one or type your own, choose your brewer, and get the grind for your grinder, the ratio, the temperature and every step. Brew full screen, log how it tasted, and it adjusts next time.</p>
+      <p class="lede">New coffees from roasters in the UK, Europe and beyond, updated every morning. Pick one or type your own, choose your brewer, and get the grind for your grinder, the temperature and every step. Or brew it your way: change any number or step, write how you pour, and share your recipe with a link. Brew full screen, log how it tasted, and it adjusts next time.</p>
       <figure class="glimpse" aria-label="Example recipe: washed Ethiopia, light roast. 15 g coffee to 255 g water, 99°C, about 3:15. Pours at 0:00 to 51 g, 0:45 to 102 g, 1:10 to 153 g, 1:30 to 204 g, 1:50 to 255 g.">
         <figcaption><span class="g-name">Washed Ethiopia, light roast</span><span class="g-eg">For example</span></figcaption>
         <div class="g-specs num" aria-hidden="true"><span><b>15</b> → <b>255</b> g</span><span><b>99</b>°C</span></div>
@@ -1250,10 +1255,10 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
   </section>
 
   <section class="sec" id="shelves" aria-labelledby="sh">
-    <div class="sec-head"><span class="cap" id="sh"><b>01</b>New releases.</span></div>
+    <div class="sec-head"><span class="cap" id="sh"><b>01</b>The coffees.</span></div>
     <p class="shelf-meta" id="shelfMeta" hidden></p>
     <div class="shelf-tools">
-      <input type="search" id="shelfQ" placeholder="Search roaster, origin, note…" aria-label="Search coffees">
+      <input type="search" id="shelfQ" placeholder="Search roaster, coffee, origin, process…" aria-label="Search coffees">
       <div class="chips" id="shelfR" role="group" aria-label="Where the roaster is"></div>
       <div class="chips" id="shelfF" role="group" aria-label="Process"></div>
       <div class="chips" id="shelfV" role="group" aria-label="Which coffees" hidden></div>
@@ -3033,7 +3038,7 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
   function renderShelf() {
     const q = $("shelfQ").value.trim().toLowerCase();
     let list = shelf.filter((r) => (shelfR === "all" || market(r) === shelfR) && (shelfF === "all" || (shelfF === "new" ? r.new : bucket(r.process) === shelfF)));
-    if (q) list = list.filter((r) => [r.roaster, r.roaster_city, r.name, r.origin, r.region, r.process, r.variety, ...(r.notes || [])].join(" ").toLowerCase().includes(q));
+    if (q) list = list.filter((r) => [r.roaster, r.roaster_city, r.name, r.origin, r.region, r.process, r.variety].join(" ").toLowerCase().includes(q));
     if (shelfV === "v60") list = list.filter(shelfFit());
     list = interleave(list);
     const LIMIT = 5;   // the five newest, then a button for the rest
@@ -3056,7 +3061,6 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
           <span class="who">${r.just_in ? '<span class="ji">Just in</span>' : ""}${esc(r.roaster)}${r.roaster_city ? `, ${esc(r.roaster_city)}` : ""}</span>
           <span class="name">${esc(calm(r.name))}</span>
           <div class="pills">${place ? `<span class="place">${place}</span>` : ""}${pills}</div>
-          ${r.notes && r.notes.length ? `<span class="tn">${esc(r.notes.join(", "))}</span>` : ""}
         </div>
         <div class="r">
           ${r.price ? `<span class="price">${esc(r.price)}</span>` : '<span class="date">Price on site</span>'}
@@ -3068,7 +3072,7 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
     $("shelf").querySelectorAll("button[data-i]").forEach((b) => b.onclick = () => brewThis(shelf[+b.dataset.i]));
   }
   function brewThis(r) {
-    const notes = r.notes || [];
+    const notes = [];   // tasting notes are never picked from the listing
     const roastWords = r.roast && ROAST[r.roast] ? ROAST[r.roast].label + " roast" : null;   // the scan read it from the roaster: it counts as "from the bag"
     state.text = [r.roaster, r.name, r.origin, r.region, r.variety, r.process, roastWords].filter(Boolean).join(", ") + (notes.length ? ". Notes: " + notes.join(", ") : "");
     state.roastPhoto = null;
