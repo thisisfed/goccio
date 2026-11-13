@@ -1145,10 +1145,11 @@ footer .smile { width: .95em; height: .95em; vertical-align: -.14em; fill: none;
 #logBox .dd-in { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 #ddIn { width: 64px !important; height: var(--pill-h) !important; padding: 0 10px !important; font: 500 var(--fs-s)/1 var(--sans) !important; box-sizing: border-box; }
 /* custom water labels in the small label size (the question's 24 px label rule was catching them) */
-#coffee .w-custom label { font: 400 var(--fs-s)/1.2 var(--sans) !important; color: var(--muted) !important; }
+#coffee .w-custom label { font: 500 var(--fs-s)/1.35 var(--sans) !important; color: var(--muted) !important; }
 .w-adv:empty { display: none; }
 /* journal rows: Drained at is a grid row like Taste?, so their pills line up */
 #ddRow { display: grid !important; }
+#ddRow { margin-top: -4px; }   /* 12 px under Taste?, like the option rows */
 @media (min-width: 641px) { #logBox .opt { gap: 12px !important; } }
 /* phones: the grinder pill runs as wide as the Adjust clicks row under it */
 @media (max-width: 640px) { .kit-mill { display: inline-grid !important; grid-template-columns: max-content; justify-items: stretch; } #millSel { width: 100% !important; max-width: none !important; } }
@@ -2077,7 +2078,7 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
       : "Pick yours: it changes the first fix for a bitter or flat cup.";
     const custom = w.kind === "custom";
     $("wBody").innerHTML = `<div class="chips" role="group" aria-label="Your water">${WATER.map(([k, t]) => `<button type="button" class="chip" data-w="${k}" aria-pressed="${w.kind === k}">${t}</button>`).join("")}</div>
-      ${custom ? `<div class="w-custom"><label>Hardness (ppm CaCO₃)<input id="wHard" inputmode="numeric" value="${esc(w.hard ?? "")}" placeholder="e.g. 80"></label><label>Alkalinity (ppm CaCO₃)<input id="wAlk" inputmode="numeric" value="${esc(w.alk ?? "")}" placeholder="e.g. 40"></label></div>
+      ${custom ? `<div class="w-custom"><label>Hardness<input id="wHard" inputmode="numeric" value="${esc(w.hard ?? "")}" placeholder="e.g. 80"></label><label>Alkalinity<input id="wAlk" inputmode="numeric" value="${esc(w.alk ?? "")}" placeholder="e.g. 40"></label></div>
         <p class="muted" style="font-size:13px">Your water company lists both by postcode. Bottled water labels give bicarbonate in mg/L: divide by 1.22 for ppm CaCO₃.</p>` : ""}
       ${custom ? `<div class="w-sca"><b>Hardness</b><span>50–175 ppm (calcium 17–85, aim ~68)</span><b>Alkalinity</b><span>40–75 ppm, aim ~40 (bicarbonate buffer)</span><b>TDS</b><span>75–250 ppm, aim ~150</span>
         <b>London tap</b><span>~250–350 hardness, ~200+ alkalinity</span></div>
