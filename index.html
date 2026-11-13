@@ -1075,6 +1075,14 @@ footer .bmc a, footer .bmc .sheen-text { font-weight: 500 !important; }
 .pours td.m, .pours td.how, .clk-sum .tot, .g-pours i, #tdsNote, #cupNote, #ddHint, #ddHint *, #journalList > p.muted, .g-name, .need p, .need p *, .suggest span, .suggest span b {
   color: var(--ink) !important; font-weight: 500 !important; line-height: 1.35 !important; font-size: var(--fs) !important; }
 .clk-body p a { text-decoration: underline; }
+/* brew mode: no top line; Done sits with Start and Reset */
+.bv { grid-template-rows: minmax(0, 1fr) auto auto !important; padding-top: calc(16px + env(safe-area-inset-top)); }
+.bv-ctrls { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.bv-ctrls .bv-x { height: 64px; padding: 0; font: 500 var(--fs)/1 var(--sans); }
+@media (orientation: landscape) and (max-height: 560px) {
+  .bv { grid-template-rows: minmax(0, 1fr) auto auto !important; }
+  .bv-now { grid-row: 1 / 4 !important; } .bv-ctrls { grid-row: 2 !important; align-self: end; } .bv-opts { grid-row: 3 !important; }
+}
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1259,10 +1267,7 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
 
 <!-- Brew mode -->
 <div class="bv" id="bv" hidden role="dialog" aria-modal="true" aria-label="Brew mode">
-  <div class="bv-top">
-    <div class="bv-coffee" id="bvCoffee"></div>
-    <button class="bv-x" id="bvClose" type="button" aria-label="Close brew mode">Done</button>
-  </div>
+  <div class="bv-coffee" id="bvCoffee" hidden></div>
   <div class="bv-now" id="bvNow">
     <div class="bv-nowhead"><span class="bv-pill" id="bvState">Ready</span><span class="bv-clock" id="bvClock">0:00</span></div>
     <div class="bv-lbl" id="bvLbl">First pour to</div>
@@ -1276,6 +1281,7 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
     <button class="bv-go" id="bvGo" type="button">Start</button>
     <button class="bv-reset" id="bvReset" type="button">Reset</button>
     <button class="bv-drain" id="bvDrain" type="button" hidden>Drained</button>
+    <button class="bv-x" id="bvClose" type="button" aria-label="Close brew mode">Done</button>
   </div>
   <div class="bv-opts" id="bvOpts">
     <button type="button" id="optWake" aria-pressed="true">Keep screen on</button>
