@@ -1192,9 +1192,14 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
 .bv-opts { gap: 4px !important; height: auto !important; flex-wrap: wrap; }
 .bv-opts button { display: inline-flex !important; align-items: center; height: var(--pill-h) !important; padding: 0 10px !important; border-radius: var(--r) !important;
   font: 500 var(--fs-s)/1 var(--sans) !important; background: var(--pill) !important; color: var(--ink) !important; border: 0 !important; }
-.bv-opts button[aria-pressed="true"] { background: var(--ink) !important; color: var(--bg) !important; }
-.bv-opts button::before { content: none !important; display: none !important; }
-.bv-opts button.warn { background: var(--pill) !important; color: #e8590c !important; }
+.bv-opts button { gap: 6px; }
+/* the dot says on or off: green on, grey off, orange when the screen can't be kept awake */
+.bv-opts button::before { content: "" !important; display: inline-block !important; width: 7px; height: 7px; border-radius: 50%; background: color-mix(in srgb, var(--ink) 30%, transparent); flex: none; }
+.bv-opts button[aria-pressed="true"]::before { background: #30d158; }
+.bv-opts button.warn::before { background: #e8590c; }
+.bv-opts button.warn { color: var(--ink) !important; }
+/* Start, Reset and Done sit 4 px apart, like the pills */
+.bv-ctrls { gap: 4px !important; }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
