@@ -1033,6 +1033,27 @@ footer .bmc a, footer .bmc .sheen-text { font-weight: 500 !important; }
 .ask label { font-size: var(--fs-m); font-weight: 500; line-height: 1.1; }
 /* the missing-info questions now sit under the coffee box */
 #coffee .need { padding: 14px 0 0; border-top: 1px solid var(--rule); background: none; border-radius: 0; }
+/* custom numbers: a row of pills under the title, and an editor in the same type as the rest */
+.mine-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.mine-bar:empty { display: none; }
+.mine-tag { display: inline-flex; align-items: center; height: var(--pill-h); padding: 0 10px; border-radius: var(--r); background: var(--ink) !important; color: var(--bg) !important; font: 500 var(--fs-s)/1 var(--sans); }
+.mine-ed { display: grid; gap: 14px; }
+.ed-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.ed-f { display: grid; gap: 6px; align-content: start; font-size: var(--fs-s); color: var(--muted); }
+.ed-f > span i { font-style: normal; margin-left: 4px; }
+.ed-two { display: flex; gap: 6px; }
+.ed-in { height: var(--pill-h); width: 100%; min-width: 0; box-sizing: border-box; border: 0; border-radius: var(--r); background: var(--wash); color: var(--ink); padding: 0 10px; font: 500 var(--fs-s)/1 var(--sans); font-variant-numeric: tabular-nums; }
+.ed-in[readonly] { color: var(--muted); }
+.ed-f .step { width: max-content; }
+#eGv { min-width: 56px; display: inline-flex; align-items: center; justify-content: center; font: 500 var(--fs-s)/1 var(--sans); }
+.ed-pours { width: 100%; border-collapse: collapse; font-size: var(--fs-s); }
+.ed-pours th { text-align: left; font-weight: 400; color: var(--muted); padding: 0 8px 6px 0; }
+.ed-pours td { padding: 4px 8px 4px 0; border-top: 1px solid var(--rule); vertical-align: middle; white-space: nowrap; }
+.ed-pours td:first-child .ed-in { width: 64px; }
+.ed-pours td:nth-child(2) .ed-in { width: 72px; margin-right: 4px; }
+.ed-pours td.how { white-space: normal; color: var(--muted); width: 100%; }
+.ed-err { margin: 0; color: var(--ink); font-weight: 500; font-size: var(--fs-s); }
+.ed-note { margin: 0; font-size: var(--fs-s); }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1149,6 +1170,8 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
       <h2 id="rtitle"></h2>
       <p class="r-read" id="rread"></p>
     </div>
+    <div class="mine-bar" id="mineBar"></div>
+    <div class="mine-ed" id="mineEd" hidden></div>
     <div class="rbody" id="rbody">
     <div class="adjusted" id="adjusted" hidden></div>
     <div class="specs" id="specs"></div>
@@ -1170,6 +1193,7 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
     <div class="share">
       <button class="btn ghost" id="copyBtn" type="button">Copy recipe</button>
       <button class="btn ghost" id="cardBtn" type="button">Save recipe card</button>
+      <button class="btn ghost" id="linkBtn" type="button">Share link</button>
     </div>
     </div>
   </section>
@@ -1997,7 +2021,7 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
     moka: "Hoffmann’s moka pot technique: boiled water in the base, a full level basket, lid open so you can stop it the moment it turns pale.",
   };
   function render() {
-    const r = recipe = engine(state);
+    const r = recipe = withMine(engine(state));
     const c = r.c, K = r.kind;
     kitState();
     if (renderNeed(r)) {
@@ -2023,12 +2047,13 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
     renderLearn(r);
     const sign = (n) => (n > 0 ? "+" : "−") + Math.abs(n);
     const lw = r.learn ? (r.learn.source === "coffee" ? "your log" : "your style") : "";
-    const cBadges = [r.pc.clicks ? `${sign(r.pc.clicks)} ${lw}` : ""].filter(Boolean);
-    const tBadge = r.pc.temp && r.temp != null ? `${sign(r.pc.temp)}° ${lw}` : "";
+    const yours = (k) => r.mine && r[k] !== r.auto[k] ? "yours" : "";
+    const cBadges = [r.pc.clicks ? `${sign(r.pc.clicks)} ${lw}` : yours("clicks")].filter(Boolean);
+    const tBadge = r.pc.temp && r.temp != null ? `${sign(r.pc.temp)}° ${lw}` : r.temp != null ? yours("temp") : "";
     const ratioSpec = r.brewer === "moka" ? ["ratio", parseInt(doseName(r)), "-cup", "pot size, Bialetti Moka Express", ""]
       : ["ratio", "1:" + r.ratio, "", r.brewer === "cold" ? "a concentrate: dilute to taste" : `≈${r.yieldG} g in the cup`, r.pc.ratio && r.goal ? `${sign(r.pc.ratio)} ${lw}` : ""];
     const tempSpec = r.temp != null ? ["", r.temp, "°C", "kettle", tBadge] : r.brewer === "cold" ? ["", "Cold", "", "fridge-cold water", ""] : ["", "Boiled", "", "water into the base", ""];
-    const timeSpec = K === "pour" ? ["time", `${fmt(r.lo)} – ${fmt(r.hi)}`, "", "total time", ""]
+    const timeSpec = K === "pour" ? ["time", `${fmt(r.lo)} – ${fmt(r.hi)}`, "", "total time", r.mine && (r.lo !== r.auto.lo || r.hi !== r.auto.hi) ? "yours" : ""]
       : r.brewer === "aero" ? ["time", fmt(r.hi), "", "total, pressed", ""]
       : r.brewer === "press" ? ["time", `${r.lo / 60} – ${r.hi / 60}`, "min", "total, mostly waiting", ""]
       : r.brewer === "cold" ? ["time", "12 – 18", "h", readyAt(), ""]
@@ -2036,10 +2061,12 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
     const S = [
       ["key", onMill(r.clicks).txt, "", mill().lbl, cBadges.join(", ")],
       ["", r.dose, "g", r.brewer === "moka" ? `basket, full and level (${doseName(r)} pot)` : "coffee", ""],
-      ["", r.water, "g", r.brewer === "moka" ? "hot, to just under the valve" : r.brewer === "cold" ? "cold water, then dilute to taste" : "water", ""],
+      ["", r.water, "g", r.brewer === "moka" ? "hot, to just under the valve" : r.brewer === "cold" ? "cold water, then dilute to taste" : "water", yours("water")],
       tempSpec, timeSpec,
     ];
     renderClicks(r);
+    $("zeroRow").hidden = !!r.mine; $("clkHow").hidden = !!r.mine;
+    renderMine(r);
     const showRet = r.tds != null;
     $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}"><b>${v}${u ? `<small>${u === "-cup" ? u : " " + u}</small>` : ""}</b><span class="sub2">${l}</span>${k === "key" && isC40() && prefs.zero ? `<span class="zo">${sign(prefs.zero)} zero offset</span>` : ""}${k === "key" && !isC40() ? `<span class="sub2">from ${r.clicks} C40 clicks${onMill(r.clicks).atMax ? ", coarsest setting, may still run fast" : onMill(r.clicks).atMin ? ", finest setting" : ""}</span>` : ""}${k === "ratio" && showRet && false ? `<span class="ret">(${r.water} g water − 2.1 × ${r.dose} g retained). Estimate only.</span>` : ""}${badge ? `<span class="badge">${esc(badge)}</span>` : ""}</div>`).join("");
     const agitTxt = r.agit >= 3 ? "Stir or swirl the bloom, pour with energy, one swirl at the end." :
@@ -2213,6 +2240,145 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
     goRecipe();
   }
 
+  // ---------- your own numbers ("custom"): change any number, kept on this device for this coffee, brewer and method ----------
+  // Stored absolute (clicks in C40 clicks, °C, water as a ratio to the dose, pours as time + share of the water) so the
+  // dose pills still scale it. The site's roast, process and journal tweaks don't touch it; the journal only suggests.
+  prefs.mine = prefs.mine && typeof prefs.mine === "object" ? prefs.mine : {};
+  let editing = false;
+  // keyed by the method you picked ("Best for this coffee" can switch method with the dose); pours only carry over on the same method
+  const mineKey = (r) => r && r.key ? r.key + "|" + (r.brewer === "v60" ? (state.method || "best") : r.m) : null;
+  const clicksFor = (v) => { const G = mill(); if (isC40()) return v; return v <= G.b || G.fp == null ? 15 + (v - G.a) * 10 / (G.b - G.a) : 25 + (v - G.b) * 15 / (G.fp - G.b); };
+  function withMine(r) {
+    const k = mineKey(r), M = k && prefs.mine[k];
+    if (!M || r.c.missing.length) return r;
+    const x = { ...r, mine: true, auto: { clicks: r.clicks, temp: r.temp, water: r.water, lo: r.lo, hi: r.hi }, pc: { clicks: 0, temp: 0, ratio: 0 }, learn: null };
+    if (M.clicks != null) x.clicks = isC40() ? Math.round(M.clicks) : M.clicks;
+    if (M.temp != null && r.temp != null) x.temp = M.temp;
+    if (M.ratio != null && r.brewer !== "moka") { x.water = Math.round(r.dose * M.ratio); x.ratio = Math.round(M.ratio * 10) / 10; }
+    const f = x.water / r.water, r10 = (v) => Math.round(v * 10) / 10;
+    const P = !M.m || M.m === r.m ? M.pours || [] : [];
+    x.pours = r.pours.map((p, i) => { const q = P[i] || {}, n = { ...p };
+      if (q.t != null && r.kind !== "steps") n.t = q.t;
+      if (!p.act) { n.x = r10(q.f != null ? q.f * x.water : p.x * f); n.to = Math.round(n.x); }
+      return n; });
+    const last = [...x.pours].reverse().find((p) => !p.act); if (last) { last.x = x.water; last.to = x.water; }
+    x.pours.forEach((p, i) => { const nx = x.pours[i + 1]; if (nx && nx.t > p.t) p.dur = Math.max(3, Math.min(p.dur, nx.t - p.t)); });
+    if (M.lo != null && M.hi != null && r.kind === "pour") { x.lo = M.lo; x.hi = M.hi; }
+    if (r.bev != null) { x.bev = x.water - x.dose * 2.1; x.yieldG = Math.round(x.bev); if (r.ey) x.tds = r.ey.map((e) => (e / 100) * x.dose / x.bev * 100); }
+    return x;
+  }
+  function applyToMine(r, d) {
+    const k = mineKey(r), M = k && prefs.mine[k]; if (!M) return;
+    if (d.clicks) M.clicks = (M.clicks ?? r.clicks) + d.clicks;
+    if (d.temp && r.temp != null) M.temp = clamp((M.temp ?? r.temp) + d.temp, 60, 100);
+    if (d.ratio && r.brewer !== "moka") M.ratio = clamp((M.ratio ?? r.water / r.dose) + d.ratio, 2, 25);
+    savePrefs(); render();
+  }
+  function renderMine(r) {
+    const bar = $("mineBar"), ed = $("mineEd"), k = mineKey(r);
+    if (!k) { bar.innerHTML = ""; ed.hidden = true; return; }
+    bar.innerHTML = editing ? "" : r.mine
+      ? `<span class="mine-tag">Custom numbers</span><button type="button" class="chip" id="mEdit">Edit</button><button type="button" class="chip" id="mReset">Use the suggested recipe</button>`
+      : `<button type="button" class="chip" id="mEdit">Edit the numbers</button>`;
+    if ($("mEdit")) $("mEdit").onclick = () => { editing = true; render(); $("mineEd").scrollIntoView({ behavior: "smooth", block: "start" }); };
+    if ($("mReset")) $("mReset").onclick = () => { delete prefs.mine[k]; savePrefs(); render(); };
+    ["specs", "tech", "startBrew"].forEach((id) => $(id).hidden = editing || (id === "startBrew" && r.kind === "steps"));
+    $("pourRows").closest("table").hidden = editing; $("pourNote").hidden = editing || r.kind === "steps";
+    if (editing) { $("zeroRow").hidden = true; $("clkHow").hidden = true; }
+    ed.hidden = !editing; if (!editing) { ed.innerHTML = ""; return; }
+
+    const G = mill(), c40 = isC40();
+    let gv = c40 ? r.clicks : onMill(r.clicks).v;
+    const gq = c40 ? 1 : G.q, gmin = c40 ? 5 : G.min, gmax = c40 ? 60 : G.max;
+    const showG = (v) => c40 ? String(v) : G.show(v);
+    const timed = r.kind !== "steps", moka = r.brewer === "moka";
+    const row = (p, i) => `<tr${p.act ? ' class="act"' : ""}><td>${timed ? `<input class="ed-in" data-t="${i}" value="${fmt(p.t)}" inputmode="numeric" aria-label="Time ${i + 1}">` : i + 1}</td>
+      <td>${p.act ? esc(p.lbl) : `<input class="ed-in" data-g="${i}" value="${p.to}" inputmode="decimal" aria-label="Scale to, pour ${i + 1}"${p === r.pours.filter((q) => !q.act).pop() ? " readonly" : ""}> g`}</td><td class="how">${esc(p.note)}</td></tr>`;
+    ed.innerHTML = `<div class="ed-grid">
+        <div class="ed-f"><span>Grind, ${esc(G.lbl)}</span><div class="step"><button type="button" id="eG-">−</button><span id="eGv">${esc(showG(gv))}</span><button type="button" id="eG+">+</button></div></div>
+        ${r.temp != null ? `<label class="ed-f"><span>Kettle, °C</span><input class="ed-in" id="eT" inputmode="numeric" value="${r.temp}"></label>` : ""}
+        ${moka ? "" : `<label class="ed-f"><span>Water, g <i class="muted" id="eR">1:${r.ratio}</i></span><input class="ed-in" id="eW" inputmode="numeric" value="${r.water}"></label>`}
+        ${r.kind === "pour" ? `<div class="ed-f"><span>Done between</span><div class="ed-two"><input class="ed-in" id="eLo" inputmode="numeric" value="${fmt(r.lo)}" aria-label="Drawdown from"><input class="ed-in" id="eHi" inputmode="numeric" value="${fmt(r.hi)}" aria-label="Drawdown to"></div></div>` : ""}
+      </div>
+      <table class="ed-pours"><thead><tr><th>${timed ? "At" : "Step"}</th><th>${r.kind === "pour" ? "Scale to" : "Do"}</th><th>How</th></tr></thead><tbody>${r.pours.map(row).join("")}</tbody></table>
+      <p class="ed-err" id="eErr" hidden></p>
+      <div class="share"><button class="btn" id="eSave" type="button">Save my numbers</button><button class="btn ghost" id="eCancel" type="button">Cancel</button></div>
+      <p class="muted ed-note">Kept on this device for this coffee, brewer and method, and they follow the dose you pick. The site won’t change them; after a brew the journal suggests a change you can apply. Share link sends them to a friend.</p>`;
+    const step = (d) => { gv = clamp(Math.round((gv + d * gq) / gq) * gq, gmin, gmax); $("eGv").textContent = showG(gv); };
+    $("eG-").onclick = () => step(-1); $("eG+").onclick = () => step(1);
+    const gIns = [...ed.querySelectorAll("[data-g]")], lastG = gIns[gIns.length - 1];
+    if ($("eW")) { let prevW = r.water; $("eW").oninput = () => { const w = Number($("eW").value); if (!(w > 0)) return;
+      gIns.forEach((el) => { if (el === lastG) el.value = Math.round(w); else { const v = Number(el.value); if (v > 0) el.value = Math.round(v * w / prevW); } });
+      prevW = w; $("eR").textContent = "1:" + Math.round((w / r.dose) * 10) / 10; }; }
+    $("eCancel").onclick = () => { editing = false; render(); };
+    $("eSave").onclick = () => {
+      const err = (t) => { $("eErr").hidden = false; $("eErr").textContent = t; };
+      const temp = $("eT") ? Number($("eT").value) : null;
+      if ($("eT") && !(temp >= 60 && temp <= 100)) return err("Kettle between 60 and 100°C.");
+      const water = $("eW") ? Number($("eW").value) : r.water;
+      if (!(water >= r.dose * 2 && water <= r.dose * 25)) return err(`Water between ${r.dose * 2} and ${r.dose * 25} g for ${r.dose} g of coffee.`);
+      const pours = r.pours.map((p, i) => {
+        const tin = ed.querySelector(`[data-t="${i}"]`), gin = ed.querySelector(`[data-g="${i}"]`);
+        const t = tin ? parseMS(tin.value.includes(":") ? tin.value : tin.value.length <= 2 ? "0:" + tin.value : tin.value) : null;
+        return { t: t == null ? undefined : t, f: gin ? Number(gin.value) / water : undefined, bad: (tin && t == null) || (gin && !(Number(gin.value) > 0)) };
+      });
+      if (pours.some((p) => p.bad)) return err("Times as m:ss (0:45), grams as numbers.");
+      for (let i = 1; i < pours.length; i++) if (pours[i].t != null && pours[i - 1].t != null && pours[i].t < pours[i - 1].t) return err("Each step needs to start at or after the one before.");
+      const fs = pours.filter((p) => p.f != null).map((p) => p.f);
+      for (let i = 1; i < fs.length; i++) if (fs[i] <= fs[i - 1]) return err("Each pour needs to reach a higher number on the scale than the last.");
+      if (fs.length && fs[fs.length - 1] > 1.001) return err("A pour goes past the total water.");
+      let lo = null, hi = null;
+      if ($("eLo")) { lo = parseMS($("eLo").value); hi = parseMS($("eHi").value); if (lo == null || hi == null || hi < lo) return err("Done between: two times, like 2:45 and 3:15."); }
+      prefs.mine[mineKey(r)] = { clicks: clicksFor(gv), temp: temp, ratio: $("eW") ? water / r.dose : null,
+        pours: pours.map(({ t, f }) => ({ t, f })), lo, hi, m: r.m, at: new Date().toISOString() };
+      savePrefs(); editing = false; render(); $("recipe").scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+  }
+
+  // ---------- share link: the coffee, the choices and any custom numbers, packed into the URL (nothing stored anywhere) ----------
+  const b64e = (o) => btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  const b64d = (t) => JSON.parse(decodeURIComponent(escape(atob(t.replace(/-/g, "+").replace(/_/g, "/")))));
+  function shareURL() {
+    const r = recipe, b = state.bag, M = r && r.mine ? prefs.mine[mineKey(r)] : null;
+    const o = { v: 1, t: state.text, b: brewerOf(state), d: state.dose, g: state.goal, me: state.method, p: state.process, ro: state.roast,
+      bag: b ? { roaster: b.roaster, name: b.name, origin: b.origin, variety: b.variety, url: b.url } : null, mine: M ? { ...M, at: undefined } : null };
+    return location.origin + "/#r=" + b64e(o);
+  }
+  function readShared() {
+    if (!location.hash.startsWith("#r=")) return false;
+    let o; try { o = b64d(location.hash.slice(3)); } catch (e) { return false; }
+    history.replaceState(null, "", location.pathname + location.search);
+    if (!o || typeof o !== "object") return false;
+    const str = (v, n) => typeof v === "string" ? v.slice(0, n) : "";
+    const num = (v, a, b) => { const x = Number(v); return Number.isFinite(x) ? clamp(x, a, b) : null; };
+    state.text = str(o.t, 400);
+    if (BREWERS[o.b] && o.b !== brewerOf(state)) setBrewer(o.b);
+    const B = BREWERS[brewerOf(state)];
+    if (B.doses.some(([v]) => v === Number(o.d))) state.dose = Number(o.d);
+    if (GOAL[o.g]) state.goal = o.g;
+    if (["best", "hoffmann", "fourSix", "ten", "rao"].includes(o.me)) state.method = o.me;
+    state.process = PROCESS[o.p] || o.p === "auto" ? o.p : "auto";
+    state.roast = ROAST[o.ro] || o.ro === "auto" ? o.ro : "auto";
+    state.roastPhoto = null; state.listProc = null;
+    const bag = o.bag && typeof o.bag === "object" ? o.bag : null;
+    state.bag = bag ? { roaster: str(bag.roaster, 80), name: str(bag.name, 120), origin: str(bag.origin, 80), variety: str(bag.variety, 120),
+      url: /^https:\/\/[^\s"'<>]+$/.test(bag.url || "") ? bag.url.slice(0, 300) : "" } : null;
+    saveState();
+    const M = o.mine && typeof o.mine === "object" ? o.mine : null, k = mineKey(engine(state));
+    if (M && k) {
+      prefs.mine[k] = { clicks: num(M.clicks, 0, 60), temp: num(M.temp, 60, 100), ratio: num(M.ratio, 2, 25),
+        pours: Array.isArray(M.pours) ? M.pours.slice(0, 20).map((p) => ({ t: p && p.t != null ? num(p.t, 0, 172800) : undefined, f: p && p.f != null ? num(p.f, 0, 1) : undefined })) : [],
+        lo: num(M.lo, 0, 7200), hi: num(M.hi, 0, 7200), m: typeof M.m === "string" ? M.m.slice(0, 12) : undefined, at: new Date().toISOString(), shared: true };
+      savePrefs();
+    }
+    return true;
+  }
+  $("linkBtn").onclick = async () => {
+    const url = shareURL(), lbl = (t) => { $("linkBtn").textContent = t; setTimeout(() => ($("linkBtn").textContent = "Share link"), 1600); };
+    if (navigator.share && matchMedia("(pointer: coarse)").matches) { try { await navigator.share({ title: coffeeTitle(state, recipe) + ", Bag to Cup", url }); return; } catch (e) { if (e && e.name === "AbortError") return; } }
+    try { await navigator.clipboard.writeText(url); lbl("Link copied"); } catch (e) { prompt("Copy this link", url); }
+  };
+
   // ---------- journal ----------
   const TASTES = [["balanced", "Nailed it"], ["sweet", "Sweet"], ["sour", "Sour"], ["bitter", "Bitter"], ["flat", "Flat"], ["harsh", "Harsh / drying"], ["thin", "Thin / watery"], ["heavy", "Heavy / muddy"]];
   let picked = new Set();
@@ -2261,7 +2427,7 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
     if (!s) { box.hidden = true; return; }
     box.hidden = false;
     const hasChange = Object.keys(s.d).length > 0;
-    box.innerHTML = `<span><b>Next time:</b> ${esc(s.text)}</span>${hasChange && recipe.key ? '<span class="muted">Saving applies this to this coffee’s recipe.</span>' : ""}`;
+    box.innerHTML = `<span><b>Next time:</b> ${esc(s.text)}</span>${hasChange && recipe.key ? (recipe.mine ? '<span class="muted">Your numbers stay as you set them. After saving you can apply this with one tap.</span>' : '<span class="muted">Saving applies this to this coffee’s recipe.</span>') : ""}`;
   }
   // delete a brew: its fix comes off this coffee's numbers and its "nailed it" leaves the style memory
   function deleteEntry(i) {
@@ -2284,8 +2450,8 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
     const r = recipe;
     const before = { clicks: r.clicks, temp: r.temp, ratio: r.ratio };
     const nailed = (picked.has("balanced") || picked.has("sweet")) && !["sour", "bitter", "flat", "harsh", "thin", "heavy"].some((k) => picked.has(k));
-    const at = new Date().toISOString(), undo = { key: r.key, d: {}, style: null };
-    if (r.key) {
+    const at = new Date().toISOString(), undo = { key: r.mine ? null : r.key, d: {}, style: null };
+    if (r.key && !r.mine) {
       // start from whatever this brew actually used (incl. a style head-start), then apply the one fix
       const pc = { clicks: r.pc.clicks || 0, temp: r.pc.temp || 0, ratio: r.pc.ratio || 0, n: 0, history: [], ...(prefs.coffees[r.key] || {}) };
       if (!prefs.coffees[r.key] || prefs.coffees[r.key].optOut) { pc.clicks = r.pc.clicks || 0; pc.temp = r.pc.temp || 0; pc.ratio = r.pc.ratio || 0; }
@@ -2315,6 +2481,13 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
     saveJournal();
     picked = new Set(); $("ddIn").value = ""; $("logNote").value = "";
     renderTaste(); render(); renderJournal();
+    if (r.mine) {
+      const d = (s && s.d) || {}, has = Object.keys(d).length > 0, box = $("suggest"); box.hidden = false;
+      box.innerHTML = `<span><b>Saved.</b> ${has ? `Next time: ${esc(s.text)}` : nailed ? "Your numbers worked. Keep them." : "Your numbers stay as they are."}</span>${has ? '<span><button type="button" class="chip" id="applyFix">Apply to my numbers</button></span>' : ""}`;
+      const ab = $("applyFix"); if (ab) ab.onclick = () => { applyToMine(r, d); box.innerHTML = "<span><b>Applied.</b> Your numbers are updated for next time.</span>"; };
+      $("saveLog").textContent = "Saved"; setTimeout(() => ($("saveLog").textContent = "Save to journal"), 1400);
+      return;
+    }
     const a = recipe, diff = [];
     if (a.clicks !== before.clicks) diff.push(isC40() ? `${before.clicks} → <b>${a.clicks} clicks</b>` : `${esc(onMill(before.clicks).txt)} → <b>${esc(onMill(a.clicks).txt)} ${esc(mill().short)}</b>`);
     if (a.temp !== before.temp && a.temp != null) diff.push(`${before.temp} → <b>${a.temp}°C</b>`);
@@ -2851,8 +3024,10 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
   })();
   document.querySelectorAll("[data-jump]").forEach((b) => b.onclick = () => b.dataset.jump === "recipe" ? goRecipe() : $(b.dataset.jump).scrollIntoView({ behavior: "smooth", block: "start" }));
 
+  const shared = readShared();
   $("coffeeIn").value = state.text;
-  renderAllOpts(); renderTaste(); render(); renderJournal(); renderShelfR(); renderShelfF(); renderShelfV(); loadShelf();
+  renderAllOpts(); renderTaste(); render();
+  if (shared) setTimeout(goRecipe, 400); renderJournal(); renderShelfR(); renderShelfF(); renderShelfV(); loadShelf();
 
   window.__v60 = { parseCoffee, engine, suggest, cupNotes, cardImage, risks, recipeText, BASE, get recipe() { return recipe; } };
 })();
