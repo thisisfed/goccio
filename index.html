@@ -1213,6 +1213,11 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
 .item { align-items: stretch !important; }
 .item .l { display: flex !important; flex-direction: column; align-self: stretch; }
 .item .l .name { margin-top: auto; }
+/* Just in: four lines (the title, then three coffees), sized to fit the stage like the roasters scene */
+.scene.just { font-size: min(var(--hs), calc(max(var(--hs) * 4.4, 196px) / 6.5)); line-height: 1.05; }
+.scene.just #justLn { display: contents; }
+.scene.just .ln { white-space: normal !important; max-width: 100%; }
+.scene.just { font-size: min(var(--hs), calc(max(var(--hs) * 4.4, 196px) / 6.5), 8.6cqi) !important; }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1262,7 +1267,7 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
         <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">Love</span> <span class="w" style="--i:1">coffee?</span></p>
         <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">You</span> <span class="w" style="--i:1">will</span> <span class="w hw" style="--i:2"><svg class="heart" viewBox="0 0 24 24" role="img" aria-label="love"><path pathLength="1" d="M12 20.2S3.5 15 3.5 9.1A4.6 4.6 0 0 1 12 6.6a4.6 4.6 0 0 1 8.5 2.5c0 5.9-8.5 11.1-8.5 11.1z"/></svg></span> <span class="w" style="--i:3">every</span> <span class="w" style="--i:4">cup.</span></p>
         <div class="scene stat" aria-hidden="true" id="sceneStat"><span class="stat-n"><span id="statN">0</span> coffees.</span><span class="stat-s" id="statS">From near and far.</span></div>
-        <p class="scene words two" aria-hidden="true" id="sceneJust"><span class="ln"><span class="w" style="--i:0">Just</span> <span class="w" style="--i:1">in.</span></span><span class="ln" id="justLn"></span></p>
+        <p class="scene words two just" aria-hidden="true" id="sceneJust"><span class="ln"><span class="w" style="--i:0">Just</span> <span class="w" style="--i:1">in.</span></span><span id="justLn"></span></p>
         <p class="scene words roasters" aria-hidden="true"><span class="w rs" style="--i:0">Square Mile&nbsp;<span class="cc">UK</span></span> <span class="w rs" style="--i:1">Tim Wendelboe&nbsp;<span class="cc">NO</span></span> <span class="w rs" style="--i:2">La Cabra&nbsp;<span class="cc">DK</span></span> <span class="w rs" style="--i:3">Sey&nbsp;<span class="cc">US</span></span> <span class="w rs" style="--i:4">Onyx&nbsp;<span class="cc">US</span></span> <span class="w rs" style="--i:5">Glitch&nbsp;<span class="cc">JP</span></span></p>
         <p class="scene words two" aria-hidden="true"><span class="ln"><span class="w" style="--i:0">Nine</span> <span class="w" style="--i:1">brewers.</span></span><span class="ln"><span class="w" style="--i:2">One</span> <span class="w" style="--i:3">recipe.</span></span></p>
         <div class="scene stat" aria-hidden="true" id="sceneGrind"><span class="stat-k" id="gB">V60</span><span class="stat-n">Got <span class="hw"><svg class="heart doodle" viewBox="0 0 24 24" role="img" aria-label="timer"><path pathLength="1" style="--p:0" d="M12 21.5a8 8 0 1 0 0-16 8 8 0 0 0 0 16z"/><path pathLength="1" style="--p:1" d="M12 9.5v4l2.6 1.6"/><path pathLength="1" style="--p:2" d="M10 2.5h4"/><path pathLength="1" style="--p:3" d="M12 2.5v3"/></svg></span> <span id="gT">3:15</span>?</span><span class="stat-s">It’s all it takes.</span></div>
@@ -3237,7 +3242,7 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
   })();
   (function heroLoop() {
     const scenes = [...document.querySelectorAll("#stage .scene")];
-    const HOLD = [2200, 2400, 2900, 2800, 3400, 2900, 4800, 3400, 5200];
+    const HOLD = [2200, 2400, 2900, 4600, 3400, 2900, 4800, 3400, 5200];
     if (!scenes.length || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let i = scenes.length - 1, timer = null, visible = true;
     const prep = (el) => {
@@ -3261,9 +3266,11 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
         $("gB").textContent = "V60"; $("gT").textContent = "0:00"; requestAnimationFrame(step);
       }
       if (el.id === "sceneJust") {   // only the newest coffee on the list, word by word like the other lines
-        const c = [...shelf].sort((a, b) => (b.published || b.found || "").localeCompare(a.published || a.found || ""))[0];
-        const words = c ? `${calm(c.name)}, ${c.roaster}.`.split(/\s+/) : ["Fresh", "every", "morning."];
-        $("justLn").innerHTML = words.map((w, k) => `<span class="w" style="--i:${k + 2}">${esc(w)}</span>`).join(" ");
+        // the three newest, one roaster each, each line coming in after the one before
+        const seen = new Set(), three = [...shelf].sort((a, b) => (b.published || b.found || "").localeCompare(a.published || a.found || ""))
+          .filter((c) => !seen.has(c.roaster) && seen.add(c.roaster)).slice(0, 3);
+        $("justLn").innerHTML = (three.length ? three : [{ name: "Fresh every morning", roaster: "" }]).map((c, k) =>
+          `<span class="ln">${`${calm(c.name)}${c.roaster ? ", " + c.roaster : ""}.`.split(/\s+/).map((w, j) => `<span class="w" style="--i:${4 + k * 6 + j * 0.4}">${esc(w)}</span>`).join(" ")}</span>`).join("");
       }
       if (el.id === "sceneIsland") {
         // the five newest, one per roaster so the stack shows five different shops
