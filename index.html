@@ -1143,6 +1143,7 @@ details.clk > summary .muted { margin-left: auto; overflow: hidden; text-overflo
 #logBox .opt > span, #logBox .opt > label { font: 500 var(--fs-s)/1.2 var(--sans); color: var(--muted); margin: 0; }
 #logBox #tasteChips { margin-top: 0; }
 #logBox .dd-in { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+#ddHint, #ddHint * { font: 500 var(--fs-s)/1.2 var(--sans) !important; color: var(--muted) !important; }
 #ddIn { width: 64px !important; height: var(--pill-h) !important; padding: 0 10px !important; font: 500 var(--fs-s)/1 var(--sans) !important; box-sizing: border-box; }
 /* custom water labels in the small label size (the question's 24 px label rule was catching them) */
 #coffee .w-custom label { font: 500 var(--fs-s)/1.35 var(--sans) !important; color: var(--muted) !important; }
@@ -2354,7 +2355,7 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
 
     $("logTitle").textContent = "Taste?";
     $("ddRow").hidden = K !== "pour";
-    $("ddHint").textContent = `target ${fmt(r.lo)}–${fmt(r.hi)}`;
+    $("ddHint").textContent = r.lo === r.hi ? `Target ${fmt(r.lo)}` : `Target ${fmt(r.lo)} – ${fmt(r.hi)}`;
     if (picked.size || $("ddIn").value) updateSuggest();
   }
   // cold brew: when it's ready if you start now
