@@ -1171,6 +1171,8 @@ details.clk > summary .muted { margin-left: auto; overflow: hidden; text-overflo
 :root[data-theme="dark"] .item .who .ji { color: #ff8a3d; }
 /* How these clicks were set: the next rule sits as far below the text as the top rule is above; a clean chevron */
 #clkHow + .tech { margin-top: -14px; }
+details.clk + details.clk { margin-top: -14px; }   /* Why this recipe sits midway between its two rules too */
+#rgoal { display: inline-flex; gap: 10px; }
 details.clk > summary::after { content: "" !important; width: 6px; height: 6px; flex: none; border-right: 1.5px solid var(--muted); border-bottom: 1.5px solid var(--muted);
   transform: rotate(-45deg); margin: 0 4px 0 2px; font-size: 0 !important; line-height: 0 !important; }
 details.clk[open] > summary::after { transform: rotate(45deg); }
@@ -2202,7 +2204,7 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
     const timed = K !== "steps";
     $("startBrew").hidden = !timed; $("dock").hidden = !timed;
     $("rmethod").textContent = r.method;
-    $("rgoal").textContent = (r.goal ? GOAL[r.goal] + ", " : "") + doseName(r);
+    $("rgoal").innerHTML = [r.goal ? GOAL[r.goal] : "", doseName(r)].filter(Boolean).map((t) => `<span>${esc(t)}</span>`).join("");
     $("rzero").hidden = !prefs.zero; $("rzero").textContent = prefs.zero ? `${prefs.zero > 0 ? "+" : "−"}${Math.abs(prefs.zero)} zero offset` : "";
     $("rtitle").textContent = coffeeTitle(state, r);
     const bits = [c.roaster ? titleCase(c.roaster) : (state.bag && state.bag.roaster) || null, c.origin, c.variety ? titleCase(c.variety) : null,
