@@ -1158,6 +1158,11 @@ details.clk > summary .muted { margin-left: auto; overflow: hidden; text-overflo
 /* coffee filters: the same 8 px between the search, the rows and wrapped pills */
 .shelf-tools { gap: 12px !important; }
 .shelf-tools .chips { gap: 4px !important; }
+/* labels on the left, like Brewer…Roast below */
+.shelf-tools .opt > label, .shelf-tools .opt > span { font: 500 var(--fs-s)/1.2 var(--sans); color: var(--muted); margin: 0; }
+.shelf-tools .opt { align-items: center; }
+@media (max-width: 640px) { .shelf-tools .opt > label, .shelf-tools .opt > span { padding-top: 0 !important; } .shelf-tools .opt:has(.chips) { align-items: start; } .shelf-tools .opt:has(.chips) > span { padding-top: 8px !important; } }
+.shelf-tools .opt input[type=search] { width: 100%; }
 /* the search is a pill too: same height and type as the filters under it */
 .shelf-tools input[type=search] { height: var(--pill-h) !important; min-height: 0 !important; padding-top: 0 !important; padding-bottom: 0 !important; padding-left: 30px !important;
   font: 500 var(--fs-s)/1 var(--sans) !important; border-radius: var(--r) !important; background-position: 10px 50% !important; background-size: 13px 13px !important; box-sizing: border-box; }
@@ -1276,9 +1281,9 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
     <div class="sec-head"><span class="cap" id="sh"><b>01</b>The coffees.</span></div>
     <p class="shelf-meta" id="shelfMeta" hidden></p>
     <div class="shelf-tools">
-      <input type="search" id="shelfQ" placeholder="Search roaster, coffee, origin, process…" aria-label="Search coffees">
-      <div class="chips" id="shelfR" role="group" aria-label="Where the roaster is"></div>
-      <div class="chips" id="shelfF" role="group" aria-label="Process"></div>
+      <div class="opt"><label for="shelfQ">Search</label><input type="search" id="shelfQ" placeholder="Roaster, coffee, origin, process…"></div>
+      <div class="opt"><span id="labR">Region</span><div class="chips" id="shelfR" role="group" aria-labelledby="labR"></div></div>
+      <div class="opt"><span id="labF">Process</span><div class="chips" id="shelfF" role="group" aria-labelledby="labF"></div></div>
       <div class="chips" id="shelfV" role="group" aria-label="Which coffees" hidden></div>
     </div>
     <div class="shelf loading" id="shelf" aria-busy="true"></div>
