@@ -1302,6 +1302,8 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 @media (max-width: 360px) { .top-in .mark { display: none !important; } .top-in { justify-content: flex-end !important; } }
 /* the recipe starts at the numbers: no method, coffee name or bag line above them */
 .r-title { display: none !important; }
+/* the arrow in Start brewing: the drawn one from the example, sized to the text */
+.go-big .num .arr, .dock .num .arr { display: inline-block; width: 1.1em; height: .62em; margin: 0 .35em; vertical-align: .12em; }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -2524,7 +2526,10 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
       <span class="muted">Bloom ${bloomTimes}× the dose. ${prepFor(r)}</span>`;
     } else $("tech").innerHTML = `<span>${esc(prepFor(r))}</span>`;
     const sum = `${isC40() ? r.clicks + " clk" : onMill(r.clicks).txt + " " + mill().short} / ${r.dose} → ${r.water} g${r.temp != null ? ` / ${r.temp}°` : ""}`;
-    $("startSum").textContent = sum; $("dockSum").textContent = sum;
+    const ARR = '<svg class="arr" viewBox="0 0 18 10" aria-hidden="true"><path d="M1 5h15M12 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    const sumHtml = esc(sum).replace(" → ", ARR);
+    $("startSum").innerHTML = sumHtml; $("dockSum").innerHTML = sumHtml;
+    $("startSum").setAttribute("aria-label", sum); $("dockSum").setAttribute("aria-label", sum);
 
     const tbl = $("pourRows").closest("table");
     tbl.classList.toggle("steps", K === "steps");
