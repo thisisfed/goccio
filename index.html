@@ -1253,15 +1253,20 @@ footer .refs:not(.meth) { list-style: none; padding-left: 0 !important; gap: 0 !
 footer .refs:not(.meth) li { position: relative; padding-left: 1.9em; counter-increment: src; }
 footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolute; left: 0; color: var(--muted); }
 /* scan the bag, and water by postcode */
-.scan-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
+.scan-opt { margin-top: 12px; }
+.scan-row { display: flex; align-items: center; gap: 4px 8px; flex-wrap: wrap; }
+.scan-msg { flex-basis: 100%; }
+.scan-msg:empty { display: none; }
+.beta { font-size: var(--fs-s); font-weight: 500; color: #e8590c; }
+:root[data-theme="dark"] .beta { color: #ff8a3d; }
 .scan-row .chip { display: inline-flex; align-items: center; gap: 6px; }
 .scan-row .chip svg { width: 16px; height: 16px; }
 .scan-msg { font-size: var(--fs-s); color: var(--muted); }
-.w-pc { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 4px; }
+.w-pc { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; }
 .w-pc .chip { flex: none; }
 .w-pc input { height: var(--pill-h); width: 140px; flex: none; border: 0; border-radius: var(--r); background: var(--pill); color: var(--ink); padding: 0 10px; font: 500 var(--fs-s)/1 var(--sans); text-transform: uppercase; }
 .w-pc input::placeholder { text-transform: none; color: var(--muted); }
-.w-pcn { font-size: var(--fs-s); color: var(--muted); margin: 0 0 8px; }
+.w-pcn { font-size: var(--fs-s); color: var(--muted); margin: 0 !important; }
 /* live scan */
 .cam { position: fixed; inset: 0; z-index: 60; background: #000; color: #fff; }
 .cam video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
@@ -1368,8 +1373,8 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
         <textarea id="coffeeIn" rows="2" placeholder="Roaster, coffee, origin, process, notes…"></textarea>
         <button class="btn" id="go" type="button">Build recipe</button>
       </div>
-      <div class="scan-row"><button type="button" class="chip" id="scanBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>Scan the bag</button><span class="scan-msg" id="scanMsg" aria-live="polite"></span>
-        <input type="file" accept="image/*" capture="environment" id="scanIn" hidden></div>
+      <div class="opt scan-opt"><span>Bag</span><div class="scan-row"><button type="button" class="chip" id="scanBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>Scan the bag</button><span class="beta">Beta</span><span class="scan-msg" id="scanMsg" aria-live="polite"></span>
+        <input type="file" accept="image/*" capture="environment" id="scanIn" hidden></div></div>
       <div class="detected" id="detected" aria-live="polite"></div>
       <div class="need" id="need" hidden></div>
       <div class="kit" id="kit">
