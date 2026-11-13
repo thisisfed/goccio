@@ -50,7 +50,7 @@ n=Math.floor((now-new Date(y,0,0))/864e5),r=Math.PI/180,d=-23.44*Math.cos(2*Math
 B=2*Math.PI*(n-81)/364,eot=9.87*Math.sin(2*B)-7.53*Math.cos(B)-1.5*Math.sin(B),
 h=Math.acos(Math.max(-1,Math.min(1,(Math.sin(-.833*r)-Math.sin(lat*r)*Math.sin(d))/(Math.cos(lat*r)*Math.cos(d)))))/r,noon=12-lon/15-eot/60,u=now.getUTCHours()+now.getUTCMinutes()/60;
 return u<noon-h/15||u>noon+h/15;};
-try{document.documentElement.setAttribute("data-theme",window.__autoDark()?"dark":"light");}catch(e){}
+try{var t=localStorage.getItem("v60.theme");document.documentElement.setAttribute("data-theme",t==="light"||t==="dark"?t:(window.__autoDark()?"dark":"light"));}catch(e){}
 </script>
 <style>
 /* Layout idea: Apple product page, warmed up. Cream paper canvas, warm-white rounded tiles, system type set
@@ -1033,9 +1033,12 @@ footer .bmc a, footer .bmc .sheen-text { font-weight: 500 !important; }
 .ask label { font-size: var(--fs-m); font-weight: 500; line-height: 1.1; }
 /* the missing-info questions now sit under the coffee box */
 #coffee .need { padding: 14px 0 0; border-top: 1px solid var(--rule); background: none; border-radius: 0; }
-/* no menu: the top bar is invisible until the small Bag to Cup slides in */
-.top { background: transparent; border-bottom-color: transparent; transition: background .25s ease, border-color .25s ease; }
-.mark-on .top { background: var(--bg); border-bottom-color: var(--rule); }
+/* two-line scenes: each line its own row */
+.scene.two { flex-direction: column; align-items: flex-start; }
+.scene.two .ln { display: block; width: 100%; }
+/* footer: credit on one line, then Enjoying it? / Buy me a coffee. */
+footer .bmc { max-width: none; }
+footer .bmc .l1 { display: block; white-space: nowrap; }
 /* You'll [heart] every cup: the heart draws itself in ink */
 .scene .hw { vertical-align: -.08em; }
 .heart { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linejoin: round; stroke-linecap: round; overflow: visible; display: block; }
@@ -1050,6 +1053,12 @@ footer .bmc a, footer .bmc .sheen-text { font-weight: 500 !important; }
 <header class="top">
   <div class="top-in">
     <div class="mark">Bag to Cup</div>
+    <nav class="nav" aria-label="Sections">
+      <button type="button" data-jump="shelves"><span class="nw">New c</span><span class="nc">C</span>offees</button>
+      <button type="button" data-jump="recipe">Recipe</button>
+      <button type="button" data-jump="journal">Journal</button>
+      <button type="button" class="theme-btn" id="themeBtn" aria-label="Appearance">Auto</button>
+    </nav>
   </div>
 </header>
 
@@ -1065,7 +1074,7 @@ footer .bmc a, footer .bmc .sheen-text { font-weight: 500 !important; }
         <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">You’ll</span> <span class="w hw" style="--i:1"><svg class="heart" viewBox="0 0 24 24" role="img" aria-label="love"><path pathLength="1" d="M12 20.2S3.5 15 3.5 9.1A4.6 4.6 0 0 1 12 6.6a4.6 4.6 0 0 1 8.5 2.5c0 5.9-8.5 11.1-8.5 11.1z"/></svg></span> <span class="w" style="--i:2">every</span> <span class="w" style="--i:3">cup.</span></p>
         <div class="scene stat" aria-hidden="true" id="sceneStat"><span class="stat-n"><span id="statN">0</span> coffees.</span><span class="stat-s" id="statS">From near and far.</span></div>
         <div class="scene" aria-hidden="true" id="sceneIsland"><div class="isl-stack" id="islStack"></div></div>
-        <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">Seven</span> <span class="w" style="--i:1">brewers.</span><br><span class="w muted-w" style="--i:2">One</span> <span class="w muted-w" style="--i:3">recipe.</span></p>
+        <p class="scene words two" aria-hidden="true"><span class="ln"><span class="w" style="--i:0">Seven</span> <span class="w" style="--i:1">brewers.</span></span><span class="ln"><span class="w" style="--i:2">One</span> <span class="w" style="--i:3">recipe.</span></span></p>
         <div class="scene stat" aria-hidden="true" id="sceneGrind"><span class="stat-k" id="gB">V60</span><span class="stat-n">Got <span id="gT">3:15</span>?</span><span class="stat-s">It’s all it takes.</span></div>
         <p class="scene words verbs" aria-hidden="true"><span class="stat-k">V60</span><span class="w" style="--i:0">Bloom.</span> <span class="w" style="--i:1">Pour.</span> <span class="w" style="--i:2">Swirl.</span></p>
         <p class="scene words verbs" aria-hidden="true"><span class="stat-k">Kalita Wave</span><span class="w" style="--i:0">Bloom.</span> <span class="w" style="--i:1">Pulse.</span> <span class="w" style="--i:2">Drain.</span></p>
@@ -1197,7 +1206,7 @@ footer .bmc a, footer .bmc .sheen-text { font-weight: 500 !important; }
     <span>Methods: V60 from James Hoffmann’s Better 1-Cup and Ultimate V60, Tetsu Kasuya’s 4:6 and 10-Pour, and Scott Rao’s bloom &amp; spin. Kalita Wave from George Howell; Chemex from Blue Bottle; AeroPress, cafetière and moka pot from James Hoffmann’s Ultimate techniques; cold brew from Ceremony Coffee. Grind in clicks on a standard Comandante C40, counted from zero; other grinders converted from those clicks with Honest Coffee Guide’s grind charts. Strength figures are estimates for a typical extraction, not a refractometer reading.</span>
     <span class="sources">Sources: <a href="https://www.youtube.com/watch?v=1oB1oDrDkHM" target="_blank" rel="noopener">Hoffmann, A Better 1 Cup V60</a>; <a href="https://www.youtube.com/watch?v=AI4ynXzkSQo" target="_blank" rel="noopener">Hoffmann, The Ultimate V60</a>; <a href="https://en.philocoffea.com/blogs/blog/coffee-brewing-method" target="_blank" rel="noopener">Kasuya, 4:6 (Philocoffea)</a>; <a href="https://www.hario.co.uk/blogs/hario-ambassadors/hario-v60-recipe-interview-with-hario-ambassador-scott-rao" target="_blank" rel="noopener">Rao, bloom &amp; spin (Hario)</a>; <a href="https://georgehowellcoffee.com/pages/brew-guide-kalita-155" target="_blank" rel="noopener">George Howell, Kalita 155</a>; <a href="https://bluebottlecoffee.com/brew-guides/chemex" target="_blank" rel="noopener">Blue Bottle, Chemex</a>; <a href="https://www.youtube.com/watch?v=j6VlT_jUVPc" target="_blank" rel="noopener">Hoffmann, The Ultimate AeroPress Technique</a>; <a href="https://www.youtube.com/results?search_query=James+Hoffmann+The+Ultimate+French+Press+Technique" target="_blank" rel="noopener">Hoffmann, The Ultimate French Press Technique</a>; <a href="https://www.youtube.com/results?search_query=James+Hoffmann+The+Ultimate+Moka+Pot+Technique" target="_blank" rel="noopener">Hoffmann, The Ultimate Moka Pot Technique</a>; <a href="https://ceremonycoffee.com/pages/cold-brew-guide" target="_blank" rel="noopener">Ceremony Coffee, cold brew</a></span>
     <span>Coffees come from roasters’ own shop listings, checked every morning. Not affiliated with any roaster. Your journal never leaves this device.</span>
-    <span class="bmc">Made by <a href="https://thisisfed.xyz/" target="_blank" rel="noopener">Federico Ferrari</a>. Enjoying it? <a href="https://buymeacoffee.com/thisisfed" target="_blank" rel="noopener"><span class="sheen-text">Buy me a coffee</span></a></span>
+    <span class="bmc"><span class="l1">Made by <a href="https://thisisfed.xyz/" target="_blank" rel="noopener">Federico Ferrari</a>.</span><span class="l1">Enjoying it?</span><span class="l1"><a href="https://buymeacoffee.com/thisisfed" target="_blank" rel="noopener"><span class="sheen-text">Buy me a coffee</span></a>.</span></span>
   </footer>
 </main>
 
@@ -2736,8 +2745,7 @@ footer .bmc a, footer .bmc .sheen-text { font-weight: 500 !important; }
     document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute("content", dark ? "#14100d" : "#f6f1ea"));
     if ($("themeBtn")) $("themeBtn").textContent = THEME_LBL[t]; if ($("themeBtn")) $("themeBtn").setAttribute("aria-label", t === "auto" ? `Appearance: Auto, light from sunrise to sunset. Tap to change.` : `Appearance: ${THEME_LBL[t]}. Tap to change.`);
   }
-  let theme = "auto";   // no menu any more: follows daylight
-  try { localStorage.removeItem("v60.theme"); } catch (e) {}
+  let theme = (() => { try { return localStorage.getItem("v60.theme") || "auto"; } catch (e) { return "auto"; } })();
   if (!THEMES.includes(theme)) theme = "auto";
   if ($("themeBtn")) $("themeBtn").onclick = () => { theme = THEMES[(THEMES.indexOf(theme) + 1) % 3]; try { theme === "auto" ? localStorage.removeItem("v60.theme") : localStorage.setItem("v60.theme", theme); } catch (e) {} applyTheme(theme); };
   setInterval(() => theme === "auto" && applyTheme(theme), 60000);   // turns at sunset and sunrise while the page is open
