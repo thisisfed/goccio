@@ -1054,6 +1054,22 @@ footer .bmc a, footer .bmc .sheen-text { font-weight: 500 !important; }
 .ed-pours td.how { white-space: normal; color: var(--muted); width: 100%; }
 .ed-err { margin: 0; color: var(--ink); font-weight: 500; font-size: var(--fs-s); }
 .ed-note { margin: 0; font-size: var(--fs-s); }
+.ed-steps { display: grid; gap: 0; }
+.ed-step { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; gap: 6px 8px; align-items: center; padding: 8px 0; border-top: 1px solid var(--rule); }
+.ed-step .ed-how { grid-column: 1 / -1; }
+.ed-step .ed-g { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-s); }
+.ed-step .ed-g .ed-in { width: 80px; }
+.ed-step.act [data-k="lbl"] { max-width: 160px; }
+.ed-n { font-size: var(--fs-s); color: var(--muted); }
+.ed-x { color: var(--muted) !important; }
+.ed-add { display: flex; gap: 6px; flex-wrap: wrap; }
+/* one type scale: 13 small labels, 15 text, 24 titles, 48 numbers */
+.r-kick .method, .r-kick .cap, .r-read { font-size: var(--fs) !important; }
+.g-specs span, .g-pours span, .item .date, .item .date *, .item .r .btn, #clkSumm, .pours .scale { font-size: var(--fs-s) !important; }
+.clk-sum span, .clk-sum .tot, #journalList > p.muted { font-size: var(--fs) !important; }
+.spec b { font-size: var(--fs-l) !important; }
+.spec b small { font-size: var(--fs-m) !important; }
+@media (max-width: 560px) { .spec.time b { font-size: var(--fs-m) !important; } }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1768,7 +1784,7 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
   // ---------- rendering the recipe ----------
   let recipe = null;
   const g1 = (v) => (Math.round(v * 10) % 10 ? v.toFixed(1) : String(Math.round(v)));                                                     // grams to 0.1
-  const pourAdd = (r, i) => Math.round((r.pours[i].x - (i ? r.pours[i - 1].x : 0)) * 10) / 10;
+  const pourAdd = (r, i) => { let prev = 0; for (let j = i - 1; j >= 0; j--) if (!r.pours[j].act) { prev = r.pours[j].x; break; } return Math.round((r.pours[i].x - prev) * 10) / 10; };
   const roastLabel = (k) => k === "unsure" ? ROAST.unsure.label : ROAST[k].label + " roast";
   function coffeeTitle(st, r) {
     if (st.bag && st.bag.name) return st.bag.name;
@@ -2026,7 +2042,7 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
     kitState();
     if (renderNeed(r)) {
       renderWater({});
-      $("detected").innerHTML = state.text && c.missing.length ? `Couldn’t find the ${c.missing.join(" or ")} in that. Answer below.` : "";
+      $("detected").innerHTML = "";
       if (state.text || state.bag) { $("rtitle").textContent = coffeeTitle(state, r); $("rmethod").textContent = ""; $("rgoal").textContent = ""; $("rread").textContent = ""; }
       return;
     }
@@ -2256,11 +2272,17 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
     if (M.temp != null && r.temp != null) x.temp = M.temp;
     if (M.ratio != null && r.brewer !== "moka") { x.water = Math.round(r.dose * M.ratio); x.ratio = Math.round(M.ratio * 10) / 10; }
     const f = x.water / r.water, r10 = (v) => Math.round(v * 10) / 10;
-    const P = !M.m || M.m === r.m ? M.pours || [] : [];
-    x.pours = r.pours.map((p, i) => { const q = P[i] || {}, n = { ...p };
-      if (q.t != null && r.kind !== "steps") n.t = q.t;
-      if (!p.act) { n.x = r10(q.f != null ? q.f * x.water : p.x * f); n.to = Math.round(n.x); }
-      return n; });
+    const same = !M.m || M.m === r.m;
+    if (same && Array.isArray(M.steps) && M.steps.length) {   // your own list of steps: added, removed, your words
+      x.pours = M.steps.map((q, i) => q.act ? { t: r.kind === "steps" ? i : q.t || 0, act: true, lbl: q.lbl || "Step", note: q.note || "", dur: q.dur || 10 }
+        : { t: q.t || 0, x: r10((q.f || 0) * x.water), to: Math.round((q.f || 0) * x.water), note: q.note || "", dur: q.dur || 10 });
+    } else {
+      const P = same ? M.pours || [] : [];
+      x.pours = r.pours.map((p, i) => { const q = P[i] || {}, n = { ...p };
+        if (q.t != null && r.kind !== "steps") n.t = q.t;
+        if (!p.act) { n.x = r10(q.f != null ? q.f * x.water : p.x * f); n.to = Math.round(n.x); }
+        return n; });
+    }
     const last = [...x.pours].reverse().find((p) => !p.act); if (last) { last.x = x.water; last.to = x.water; }
     x.pours.forEach((p, i) => { const nx = x.pours[i + 1]; if (nx && nx.t > p.t) p.dur = Math.max(3, Math.min(p.dur, nx.t - p.t)); });
     if (M.lo != null && M.hi != null && r.kind === "pour") { x.lo = M.lo; x.hi = M.hi; }
@@ -2292,24 +2314,48 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
     const gq = c40 ? 1 : G.q, gmin = c40 ? 5 : G.min, gmax = c40 ? 60 : G.max;
     const showG = (v) => c40 ? String(v) : G.show(v);
     const timed = r.kind !== "steps", moka = r.brewer === "moka";
-    const row = (p, i) => `<tr${p.act ? ' class="act"' : ""}><td>${timed ? `<input class="ed-in" data-t="${i}" value="${fmt(p.t)}" inputmode="numeric" aria-label="Time ${i + 1}">` : i + 1}</td>
-      <td>${p.act ? esc(p.lbl) : `<input class="ed-in" data-g="${i}" value="${p.to}" inputmode="decimal" aria-label="Scale to, pour ${i + 1}"${p === r.pours.filter((q) => !q.act).pop() ? " readonly" : ""}> g`}</td><td class="how">${esc(p.note)}</td></tr>`;
+    // the steps you edit: pours have a scale target, steps (Swirl, Stir, Press…) have a name; every one has your own words
+    let rows = r.pours.map((p) => ({ t: p.t, g: p.act ? null : p.to, act: !!p.act, lbl: p.lbl || "", note: p.note || "", dur: p.dur }));
+    const hasPours = r.kind !== "steps";
     ed.innerHTML = `<div class="ed-grid">
         <div class="ed-f"><span>Grind, ${esc(G.lbl)}</span><div class="step"><button type="button" id="eG-">−</button><span id="eGv">${esc(showG(gv))}</span><button type="button" id="eG+">+</button></div></div>
         ${r.temp != null ? `<label class="ed-f"><span>Kettle, °C</span><input class="ed-in" id="eT" inputmode="numeric" value="${r.temp}"></label>` : ""}
         ${moka ? "" : `<label class="ed-f"><span>Water, g <i class="muted" id="eR">1:${r.ratio}</i></span><input class="ed-in" id="eW" inputmode="numeric" value="${r.water}"></label>`}
         ${r.kind === "pour" ? `<div class="ed-f"><span>Done between</span><div class="ed-two"><input class="ed-in" id="eLo" inputmode="numeric" value="${fmt(r.lo)}" aria-label="Drawdown from"><input class="ed-in" id="eHi" inputmode="numeric" value="${fmt(r.hi)}" aria-label="Drawdown to"></div></div>` : ""}
       </div>
-      <table class="ed-pours"><thead><tr><th>${timed ? "At" : "Step"}</th><th>${r.kind === "pour" ? "Scale to" : "Do"}</th><th>How</th></tr></thead><tbody>${r.pours.map(row).join("")}</tbody></table>
+      <div class="ed-steps" id="eSteps"></div>
+      <div class="ed-add">${hasPours ? '<button type="button" class="chip" id="eAddP">Add a pour</button>' : ""}<button type="button" class="chip" id="eAddS">Add a step</button></div>
       <p class="ed-err" id="eErr" hidden></p>
       <div class="share"><button class="btn" id="eSave" type="button">Save my numbers</button><button class="btn ghost" id="eCancel" type="button">Cancel</button></div>
-      <p class="muted ed-note">Kept on this device for this coffee, brewer and method, and they follow the dose you pick. The site won’t change them; after a brew the journal suggests a change you can apply. Share link sends them to a friend.</p>`;
+      <p class="muted ed-note">Write each step your way: swirl or no swirl, stir, spin, where to pour. Kept on this device for this coffee, brewer and method, and they follow the dose you pick. The site won’t change them; after a brew the journal suggests a change you can apply. Share link sends them to a friend.</p>`;
     const step = (d) => { gv = clamp(Math.round((gv + d * gq) / gq) * gq, gmin, gmax); $("eGv").textContent = showG(gv); };
     $("eG-").onclick = () => step(-1); $("eG+").onclick = () => step(1);
-    const gIns = [...ed.querySelectorAll("[data-g]")], lastG = gIns[gIns.length - 1];
-    if ($("eW")) { let prevW = r.water; $("eW").oninput = () => { const w = Number($("eW").value); if (!(w > 0)) return;
-      gIns.forEach((el) => { if (el === lastG) el.value = Math.round(w); else { const v = Number(el.value); if (v > 0) el.value = Math.round(v * w / prevW); } });
-      prevW = w; $("eR").textContent = "1:" + Math.round((w / r.dose) * 10) / 10; }; }
+    const water0 = () => $("eW") ? Number($("eW").value) || r.water : r.water;
+    const lastPourIdx = () => { for (let i = rows.length - 1; i >= 0; i--) if (!rows[i].act) return i; return -1; };
+    const sync = () => $("eSteps").querySelectorAll(".ed-step").forEach((el, i) => { const R = rows[i]; if (!R) return;
+      const q = (k) => el.querySelector(`[data-k="${k}"]`);
+      if (q("t")) R.tTxt = q("t").value; if (q("g")) R.g = q("g").value; if (q("lbl")) R.lbl = q("lbl").value; R.note = q("note").value; });
+    const paint = () => {
+      const li = lastPourIdx();
+      $("eSteps").innerHTML = rows.map((R, i) => `<div class="ed-step${R.act ? " act" : ""}">
+        ${timed ? `<input class="ed-in" data-k="t" value="${esc(R.tTxt ?? fmt(R.t))}" inputmode="numeric" aria-label="Step ${i + 1} starts at">` : `<span class="ed-n">${i + 1}</span>`}
+        ${R.act ? `<input class="ed-in" data-k="lbl" value="${esc(R.lbl)}" maxlength="24" placeholder="Swirl" aria-label="Step ${i + 1} name">`
+          : `<span class="ed-g"><input class="ed-in" data-k="g" value="${i === li ? Math.round(water0()) : esc(String(R.g))}" inputmode="decimal" aria-label="Pour ${i + 1}, scale to"${i === li ? " readonly" : ""}> g</span>`}
+        <button type="button" class="chip ed-x" data-x="${i}" aria-label="Remove step ${i + 1}">Remove</button>
+        <input class="ed-in ed-how" data-k="note" value="${esc(R.note)}" maxlength="140" placeholder="${R.act ? "e.g. one gentle swirl" : "e.g. centre out, no swirl"}" aria-label="Step ${i + 1}, how"></div>`).join("");
+      $("eSteps").querySelectorAll("[data-x]").forEach((bt) => bt.onclick = () => { sync(); const i = +bt.dataset.x;
+        if (rows.length <= 1 || (hasPours && !rows[i].act && rows.filter((x) => !x.act).length <= 1)) { $("eErr").hidden = false; $("eErr").textContent = hasPours ? "Keep at least one pour." : "Keep at least one step."; return; }
+        rows.splice(i, 1); paint(); });
+    };
+    const lastT = () => { for (let i = rows.length - 1; i >= 0; i--) { const t = parseMS(rows[i].tTxt ?? fmt(rows[i].t)); if (t != null) return t; } return 0; };
+    if ($("eAddP")) $("eAddP").onclick = () => { sync(); const li = lastPourIdx(), w = water0();
+      if (li >= 0) { let prev = 0; for (let i = li - 1; i >= 0; i--) if (!rows[i].act) { prev = Number(rows[i].g) || 0; break; } rows[li].g = Math.round((prev + w) / 2); }
+      rows.push({ t: lastT() + 20, g: Math.round(w), act: false, note: "", dur: 10 }); paint(); };
+    $("eAddS").onclick = () => { sync(); rows.push({ t: lastT() + 10, g: null, act: true, lbl: "Swirl", note: "", dur: 5 }); paint(); };
+    paint();
+    if ($("eW")) { let prevW = r.water; $("eW").oninput = () => { const w = Number($("eW").value); if (!(w > 0)) return; sync();
+      const li = lastPourIdx(); rows.forEach((R, i) => { if (R.act) return; R.g = i === li ? Math.round(w) : Math.round((Number(R.g) || 0) * w / prevW); });
+      prevW = w; $("eR").textContent = "1:" + Math.round((w / r.dose) * 10) / 10; paint(); }; }
     $("eCancel").onclick = () => { editing = false; render(); };
     $("eSave").onclick = () => {
       const err = (t) => { $("eErr").hidden = false; $("eErr").textContent = t; };
@@ -2317,20 +2363,23 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
       if ($("eT") && !(temp >= 60 && temp <= 100)) return err("Kettle between 60 and 100°C.");
       const water = $("eW") ? Number($("eW").value) : r.water;
       if (!(water >= r.dose * 2 && water <= r.dose * 25)) return err(`Water between ${r.dose * 2} and ${r.dose * 25} g for ${r.dose} g of coffee.`);
-      const pours = r.pours.map((p, i) => {
-        const tin = ed.querySelector(`[data-t="${i}"]`), gin = ed.querySelector(`[data-g="${i}"]`);
-        const t = tin ? parseMS(tin.value.includes(":") ? tin.value : tin.value.length <= 2 ? "0:" + tin.value : tin.value) : null;
-        return { t: t == null ? undefined : t, f: gin ? Number(gin.value) / water : undefined, bad: (tin && t == null) || (gin && !(Number(gin.value) > 0)) };
-      });
-      if (pours.some((p) => p.bad)) return err("Times as m:ss (0:45), grams as numbers.");
-      for (let i = 1; i < pours.length; i++) if (pours[i].t != null && pours[i - 1].t != null && pours[i].t < pours[i - 1].t) return err("Each step needs to start at or after the one before.");
-      const fs = pours.filter((p) => p.f != null).map((p) => p.f);
+      sync();
+      const li = lastPourIdx(), steps = [];
+      for (let i = 0; i < rows.length; i++) {
+        const R = rows[i], tx = (R.tTxt ?? fmt(R.t)).trim();
+        const t = timed ? parseMS(tx.includes(":") ? tx : tx.length <= 2 ? "0:" + tx : tx) : i;
+        if (t == null) return err(`Step ${i + 1}: time as m:ss, like 0:45.`);
+        if (R.act) { if (!(R.lbl || "").trim()) return err(`Step ${i + 1} needs a name, like Swirl or Stir.`); steps.push({ t, act: true, lbl: R.lbl.trim().slice(0, 24), note: R.note.trim().slice(0, 140), dur: R.dur || 5 }); }
+        else { const g = i === li ? water : Number(R.g); if (!(g > 0)) return err(`Pour ${i + 1}: grams as a number.`); steps.push({ t, f: g / water, note: R.note.trim().slice(0, 140), dur: R.dur || 10 }); }
+      }
+      for (let i = 1; i < steps.length; i++) if (timed && steps[i].t < steps[i - 1].t) return err("Each step needs to start at or after the one before.");
+      const fs = steps.filter((p) => !p.act).map((p) => p.f);
       for (let i = 1; i < fs.length; i++) if (fs[i] <= fs[i - 1]) return err("Each pour needs to reach a higher number on the scale than the last.");
-      if (fs.length && fs[fs.length - 1] > 1.001) return err("A pour goes past the total water.");
+      if (fs.some((f) => f > 1.001)) return err("A pour goes past the total water.");
       let lo = null, hi = null;
       if ($("eLo")) { lo = parseMS($("eLo").value); hi = parseMS($("eHi").value); if (lo == null || hi == null || hi < lo) return err("Done between: two times, like 2:45 and 3:15."); }
       prefs.mine[mineKey(r)] = { clicks: clicksFor(gv), temp: temp, ratio: $("eW") ? water / r.dose : null,
-        pours: pours.map(({ t, f }) => ({ t, f })), lo, hi, m: r.m, at: new Date().toISOString() };
+        steps, lo, hi, m: r.m, at: new Date().toISOString() };
       savePrefs(); editing = false; render(); $("recipe").scrollIntoView({ behavior: "smooth", block: "start" });
     };
   }
@@ -2368,6 +2417,9 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
     if (M && k) {
       prefs.mine[k] = { clicks: num(M.clicks, 0, 60), temp: num(M.temp, 60, 100), ratio: num(M.ratio, 2, 25),
         pours: Array.isArray(M.pours) ? M.pours.slice(0, 20).map((p) => ({ t: p && p.t != null ? num(p.t, 0, 172800) : undefined, f: p && p.f != null ? num(p.f, 0, 1) : undefined })) : [],
+        steps: Array.isArray(M.steps) ? M.steps.slice(0, 20).filter((p) => p && typeof p === "object").map((p) => p.act
+          ? { t: num(p.t, 0, 172800) || 0, act: true, lbl: str(p.lbl, 24) || "Step", note: str(p.note, 140), dur: num(p.dur, 1, 600) || 5 }
+          : { t: num(p.t, 0, 172800) || 0, f: num(p.f, 0, 1) || 0, note: str(p.note, 140), dur: num(p.dur, 1, 600) || 10 }) : undefined,
         lo: num(M.lo, 0, 7200), hi: num(M.hi, 0, 7200), m: typeof M.m === "string" ? M.m.slice(0, 12) : undefined, at: new Date().toISOString(), shared: true };
       savePrefs();
     }
