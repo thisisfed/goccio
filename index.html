@@ -847,7 +847,10 @@ body, .lede, .ask label, .need h3, .log h3, .sec-head .cap:first-child, .mark, .
 .mark-on .mark { opacity: 1; transform: none; }
 
 /* hero: words and intro on top, the big name sitting on the bottom of the first screen */
-.hero { min-height: calc(100svh - 64px); display: flex; flex-direction: column; justify-content: space-between; gap: 24px; }
+/* the first screen is empty white with the big name resting on its bottom edge; the rest follows below */
+.hero { min-height: 0; display: grid; gap: 24px; }
+.wm-screen { min-height: calc(100svh - 60px); display: flex; align-items: flex-end; min-width: 0; }
+.wm-screen .wordmark { width: 100%; }
 .wordmark { overflow: visible; line-height: .9; padding-bottom: .24em; margin-bottom: 0; }
 .wordmark span { padding-right: .02em; }
 .stat-k { color: var(--muted); font-weight: 500; letter-spacing: -.01em; display: block; margin-bottom: .6em; line-height: 1.2; }
@@ -955,6 +958,9 @@ footer .bmc .sheen-text { background: none; -webkit-background-clip: border-box;
 <main class="page">
   <section class="sec hero-sec" aria-labelledby="h1">
     <div class="hero">
+      <div class="wm-screen">
+        <p class="wordmark" aria-hidden="true"><span id="wm">Bag to Cup</span></p>
+      </div>
       <div class="hero-row">
       <div class="stage" id="stage">
         <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">Love</span> <span class="w" style="--i:1">coffee?</span></p>
@@ -986,7 +992,6 @@ footer .bmc .sheen-text { background: none; -webkit-background-clip: border-box;
       <button type="button" class="hero-pill" data-jump="shelves">See today’s coffees</button>
       </div>
       </div>
-      <p class="wordmark" aria-hidden="true"><span id="wm">Bag to Cup</span></p>
     </div>
   </section>
 

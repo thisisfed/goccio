@@ -683,6 +683,27 @@ def microdata_product(page):
              "offers": {"price": prop("price"), "priceCurrency": prop("priceCurrency"), "availability": prop("availability") or "InStock"}}]
 
 
+SPEC_LABELS = r"Country|Origin|Region|Varietals?|Variet(?:y|ies)|Process(?:ing)?|Altitude|Producers?|Farm|Tasting notes|Notes"
+
+
+def spec_grid_product(page):
+    """Next.js shops that render the product as plain HTML with a spec grid and no product data (Newground):
+    <h1>Name</h1>, "One Time Purchase £11.00", then label/value pairs like Country / Colombia, Process / Washed."""
+    h1 = re.search(r"<h1[^>]*>(.*?)</h1>", page, re.S | re.I)
+    specs = re.findall(r">\s*(" + SPEC_LABELS + r")\s*</div>\s*<div[^>]*>([^<]{1,120})</div>", page, re.I)
+    if not h1 or not specs:
+        return []
+    price = re.search(r"(?:buyingOptPrice|[Pp]rice)[^>]*>\s*([£€$])\s?(\d+(?:[.,]\d{2})?)", page)
+    cur = {"£": "GBP", "€": "EUR", "$": "USD"}.get(price.group(1)) if price else ""
+    body = "\n".join(f"{k}: {html.unescape(v).strip()}" for k, v in specs)
+    m = re.search(r'<meta[^>]+name=["\']description["\'][^>]+content=["\']([^"\']+)', page, re.I)
+    if m:
+        body += "\n" + html.unescape(m.group(1))
+    sold = re.search(r">\s*(?:sold out|out of stock)\s*<", page, re.I) and not re.search(r"add to (?:bag|basket|cart)", page, re.I)
+    return [{"@type": "Product", "name": strip_html(h1.group(1)).strip(), "description": body,
+             "offers": {"price": price.group(2).replace(",", ".") if price else "", "priceCurrency": cur, "availability": "OutOfStock" if sold else "InStock"}}]
+
+
 def shopify_product_js(url, lastmod, extra=""):
     """Shopify serves every product as JSON at <product url>.js, even when /products.json is off."""
     try:
@@ -717,7 +738,7 @@ def fetch_generic(shop, max_pages=45, extra=""):
         except Exception:  # noqa: BLE001
             DIAG[shop]["pages_blocked"] += 1
             continue
-        prods = ld_products(page)[:1] or next_products(page) or og_product(page) or microdata_product(page)
+        prods = ld_products(page)[:1] or next_products(page) or og_product(page) or microdata_product(page) or spec_grid_product(page)
         for p in prods:
             it = ld_to_item(p, url, lm)
             it["title"] = heading_if_seo(it["title"], page)
@@ -1466,7 +1487,7 @@ def scan_roaster(r):
         try:
             if feed and kind != "shopify":
                 continue
-            items = fn(feed) if feed else fn(shop)
+            items = fn(feed) if feed else fn(shop, max_pages=r["pages"]) if kind == "sitemap" and r.get("pages") else fn(shop)
             for i in items if feed else []:   # links still go to the shop people actually use
                 i["url"] = shop + i["url"][len(feed):]
             if items:
