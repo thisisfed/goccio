@@ -1069,7 +1069,13 @@ footer .bmc a, footer .bmc .sheen-text { font-weight: 500 !important; }
 .clk-sum span, .clk-sum .tot, #journalList > p.muted { font-size: var(--fs) !important; }
 .spec b { font-size: var(--fs-l) !important; }
 .spec b small { font-size: var(--fs-m) !important; }
-@media (max-width: 560px) { .spec.time b { font-size: var(--fs-m) !important; } }
+/* every recipe number the same 48 px. On narrower screens: clicks | kettle, coffee | water, then the time range on its own row */
+.spec b, .spec.key b, .spec.time b { font-size: var(--fs-l) !important; }
+@media (max-width: 760px) {
+  .spec.key, .spec.temp, .spec.dose, .spec.water { grid-column: span 3 !important; }
+  .spec.time { grid-column: 1 / -1 !important; }
+  .spec.key { order: 1; padding: 10px 0 18px !important; } .spec.temp { order: 2; } .spec.dose { order: 3; } .spec.water { order: 4; } .spec.time { order: 5; }
+}
 /* every 15 px text reads like the intro: black, regular weight, the same line height. No grey, no bold at this size */
 #detected, #detected *, #rgoal, #rread, #zrMath, #zrMath *, .clk-sum span, .clk-body p, .clk-body p *, .tech span, .tech b,
 .pours td.m, .pours td.how, .clk-sum .tot, .g-pours i, #tdsNote, #cupNote, #ddHint, #ddHint *, #journalList > p.muted, .g-name, .need p, .need p *, .suggest span, .suggest span b {
@@ -2079,7 +2085,7 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
     const tBadge = r.pc.temp && r.temp != null ? `${sign(r.pc.temp)}° ${lw}` : r.temp != null ? yours("temp") : "";
     const ratioSpec = r.brewer === "moka" ? ["ratio", parseInt(doseName(r)), "-cup", "pot size, Bialetti Moka Express", ""]
       : ["ratio", "1:" + r.ratio, "", r.brewer === "cold" ? "a concentrate: dilute to taste" : `≈${r.yieldG} g in the cup`, r.pc.ratio && r.goal ? `${sign(r.pc.ratio)} ${lw}` : ""];
-    const tempSpec = r.temp != null ? ["", r.temp, "°C", "kettle", tBadge] : r.brewer === "cold" ? ["", "Cold", "", "fridge-cold water", ""] : ["", "Boiled", "", "water into the base", ""];
+    const tempSpec = r.temp != null ? ["temp", r.temp, "°C", "kettle", tBadge] : r.brewer === "cold" ? ["temp", "Cold", "", "fridge-cold water", ""] : ["temp", "Boiled", "", "water into the base", ""];
     const timeSpec = K === "pour" ? ["time", `${fmt(r.lo)} – ${fmt(r.hi)}`, "", "total time", r.mine && (r.lo !== r.auto.lo || r.hi !== r.auto.hi) ? "yours" : ""]
       : r.brewer === "aero" ? ["time", fmt(r.hi), "", "total, pressed", ""]
       : r.brewer === "press" ? ["time", `${r.lo / 60} – ${r.hi / 60}`, "min", "total, mostly waiting", ""]
@@ -2087,8 +2093,8 @@ footer .bmc .l1 { display: block; white-space: nowrap; }
       : ["time", "4 – 5", "min", "medium heat, lid open", ""];
     const S = [
       ["key", onMill(r.clicks).txt, "", mill().lbl, cBadges.join(", ")],
-      ["", r.dose, "g", r.brewer === "moka" ? `basket, full and level (${doseName(r)} pot)` : "coffee", ""],
-      ["", r.water, "g", r.brewer === "moka" ? "hot, to just under the valve" : r.brewer === "cold" ? "cold water, then dilute to taste" : "water", yours("water")],
+      ["dose", r.dose, "g", r.brewer === "moka" ? `basket, full and level (${doseName(r)} pot)` : "coffee", ""],
+      ["water", r.water, "g", r.brewer === "moka" ? "hot, to just under the valve" : r.brewer === "cold" ? "cold water, then dilute to taste" : "water", yours("water")],
       tempSpec, timeSpec,
     ];
     renderClicks(r);
