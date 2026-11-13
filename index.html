@@ -1136,6 +1136,8 @@ footer .bmc .sheen-text { background: none; -webkit-background-clip: border-box;
   const parseMS = (v) => { const m = /^\s*(\d{1,2})[:.](\d{1,2})\s*$/.exec(v || ""); return m ? (+m[1]) * 60 + (+m[2]) : (/^\s*\d{2,3}\s*$/.test(v || "") ? +v : null); };
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const cap1 = (s) => s ? s[0].toUpperCase() + s.slice(1) : s;
+  // no shouting: a whole word in capitals becomes "Word"; short codes without two vowels (AA, SL28, CGLE) stay
+  const calm = (s) => String(s || "").replace(/\b[A-ZÀ-Ý]{4,}\b/g, (w) => (w.match(/[AEIOUYÀ-Ý]/g) || []).length >= 2 ? w[0] + w.slice(1).toLowerCase() : w);
   const titleCase = (s) => s ? String(s).replace(/\b\w/g, (m) => m.toUpperCase()).replace(/\bSl(\d)/g, "SL$1") : s;
   const dmy = (d) => { const x = d instanceof Date ? d : new Date(d); if (isNaN(x)) return ""; return `${String(x.getDate()).padStart(2, "0")}/${String(x.getMonth() + 1).padStart(2, "0")}/${x.getFullYear()}`; };
   const isoDmy = (iso) => { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || ""); return m ? `${m[3]}/${m[2]}/${m[1]}` : ""; };
@@ -2575,7 +2577,7 @@ footer .bmc .sheen-text { background: none; -webkit-background-clip: border-box;
       return `${head}<article class="item${r.just_in ? " ji" : ""}">
         <div class="l">
           <span class="who">${r.just_in ? '<span class="ji-tag">Just in</span>' : ""}${esc(r.roaster)}${r.roaster_city ? `, ${esc(r.roaster_city)}` : ""}</span>
-          <span class="name">${esc(r.name)}</span>
+          <span class="name">${esc(calm(r.name))}</span>
           <div class="pills">${place ? `<span class="place">${place}</span>` : ""}${pills}</div>
           ${r.notes && r.notes.length ? `<span class="tn">${esc(r.notes.join(", "))}</span>` : ""}
         </div>

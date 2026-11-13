@@ -592,6 +592,7 @@ def next_products(page):
                 data = json.loads(chunk)
             except Exception:  # noqa: BLE001
                 # app-router chunks look like "1a:{...}"; try every JSON object start
+                data = None
                 for mm in re.finditer(r'\{"', chunk):
                     try:
                         data, _ = json.JSONDecoder().raw_decode(chunk[mm.start():]); break
@@ -916,6 +917,9 @@ def find_notes(item):
 
 
 def clean_name(title, roaster, origin):
+    title = re.sub(r"\s*[•·]\s*$", "", title)
+    if "•" in title and title.split("•")[0].strip():
+        title = title.split("•")[0].strip()
     # "Curve Coffee Roasters - FEATURE FILTER | El Silencio" -> drop the shop's own brand prefix first,
     # otherwise every Curve coffee is named "Curve Coffee Roasters" and de-duplicates down to one
     name = re.sub(r"^" + re.escape(roaster) + r"[\w\s&']*?\s[-–|:]\s*", "", title, flags=re.I)
@@ -948,6 +952,15 @@ def clean_name(title, roaster, origin):
     if origin:
         name = re.sub(r"[,\s\-–|]+" + re.escape(origin) + r"\s*$", "", name, flags=re.I)
     name = re.sub(r"\(?\b\d{2,4}\s?g\b\)?", "", name, flags=re.I).strip(" -–|,")
+    # "Kamwangi AA, Fully Washed, Batian, SL-28" -> "Kamwangi AA": stop at the first comma part that's only process or variety
+    segs = [p.strip() for p in name.split(",")]
+    if len(segs) >= 2:
+        keep = [segs[0]]
+        for p in segs[1:]:
+            if details_only(p) or (find_process(p) and len(p) < 30) or any(p.lower() == v.lower() for v in VARIETIES):
+                break
+            keep.append(p)
+        name = ", ".join(keep)
     name = tidy_name(name, roaster)
     return name or title
 
@@ -1042,7 +1055,7 @@ def calm_caps(name):
             run = m.group(0)
             if re.fullmatch(r"D[EÉ]CAF[EÉ]?(?:IN[EÉ])?", run) or (find_origin(run) and len(run) <= len(find_origin(run)) + 1):
                 return " ".join(w.capitalize() for w in run.split())
-            return run
+            return " ".join(w.capitalize() if len(w) >= 4 and len(re.findall(r"[AEIOUYÀ-Ý]", w)) >= 2 else w for w in run.split())
         return re.sub(r"\b[A-ZÀ-Ý]{2,}(?:\s+[A-ZÀ-Ý]{2,})*\b", calm, name)
     out = []
     for i, w in enumerate(words):
