@@ -969,6 +969,10 @@ def clean_name(title, roaster, origin):
         # "Impact Espresso | Well Grounded" -> "Impact Espresso"; "Kenya | Gichathaini" -> "Gichathaini"
         a, b = parts
         name = b if find_origin(a) and len(a) <= len(find_origin(a)) + 1 else a
+    # "Colombia / Divino Nino" -> "Divino Nino" (the country is already a tag)
+    m = re.match(r"^\s*([^/]{3,30}?)\s+/\s+(\S.*)$", name)
+    if m and find_origin(m.group(1)) and len(m.group(1)) <= len(find_origin(m.group(1))) + 1 and not find_origin(m.group(2).split()[0]):
+        name = m.group(2)
     name = re.sub(r"\s+by\s+" + re.escape(roaster) + r".*$", "", name, flags=re.I)
     if origin:
         name = re.sub(r"[,\s\-–|]+" + re.escape(origin) + r"\s*$", "", name, flags=re.I)
