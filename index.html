@@ -1435,7 +1435,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 .item .tags .miss{color:var(--muted)}
 .item .tags + .pills{margin-top:4px}
 /* every pill-shaped button is one height, the pill height */
-.hero-pill, #shelfMore, #copyBtn, #cardBtn, #linkBtn, #bagBtn, #saveLog { height: var(--pill-h) !important; min-height: 0 !important; padding-top: 0 !important; padding-bottom: 0 !important; display: inline-flex !important; align-items: center; }
+.hero-pill, #shelfMore, #copyBtn, #cardBtn, #pdfBtn, #linkBtn, #bagBtn, #saveLog { height: var(--pill-h) !important; min-height: 0 !important; padding-top: 0 !important; padding-bottom: 0 !important; display: inline-flex !important; align-items: center; }
 /* coffee details: plain words with their colour dots, a space apart; on the list they share a row with Buy and the date */
 .item .tags{display:flex;flex-wrap:wrap;gap:2px 14px;align-items:baseline}
 .item .tags .tg{white-space:nowrap}
@@ -1493,10 +1493,12 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 #printSheet{display:none}
 @page{size:A4;margin:0}
 @media print{
-  html,body{background:#fff!important}
+  html,body{background:#fff!important;margin:0!important;padding:0!important;height:auto!important;overflow:visible!important}
   body.printing > *:not(#printSheet){display:none!important}
   body.printing #printSheet{display:block!important}
-  .ps{box-sizing:border-box;width:210mm;height:296mm;padding:14mm 14mm 12mm;display:flex;flex-direction:column;color:#000;font-family:var(--sans);-webkit-print-color-adjust:exact;print-color-adjust:exact;overflow:hidden}
+  /* always one page: the sheet is shorter than A4 even inside Safari's own print margins, never breaks, and tightens the schedule when there are many steps */
+  #printSheet{break-inside:avoid;page-break-inside:avoid}
+  .ps{box-sizing:border-box;width:100%;max-width:210mm;height:262mm;padding:8mm 10mm;break-inside:avoid;page-break-inside:avoid;page-break-after:avoid;display:flex;flex-direction:column;color:#000;font-family:var(--sans);-webkit-print-color-adjust:exact;print-color-adjust:exact;overflow:hidden}
   .ps-top,.ps-foot{display:flex;justify-content:space-between;font-size:11pt;line-height:1.35}
   .ps-top{border-bottom:.5pt solid #000;padding-bottom:3mm}
   .ps-kick{margin:10mm 0 0;font-size:11pt;line-height:1.35;color:#666;display:flex;gap:4mm;align-items:baseline}
@@ -1524,6 +1526,10 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 .g-ex{width:100%;max-width:520px}
 .g-ex > .glimpse{margin-top:10px;border-top:0;padding-top:0}
 .g-clock{font-variant-numeric:tabular-nums;min-width:2.6em;display:inline-block}
+@media print{
+  .ps.dense .ps-pours{font-size:10pt} .ps.dense .ps-pours td{padding:1.4mm 0} .ps.dense .ps-title{font-size:44pt} .ps.dense .ps-nums b{font-size:32pt} .ps.dense .ps-nums > div{padding-bottom:4mm}
+  .ps.xdense .ps-pours{font-size:9pt} .ps.xdense .ps-pours td{padding:.9mm 0} .ps.xdense .ps-kick{margin-top:6mm} .ps.xdense .ps-nums{margin-top:7mm}
+}
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -3730,7 +3736,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
       d.ice ? [d.ice + " g", "Ice in the jug"] : null, d.temp != null ? [d.temp + "°C", "Kettle"] : null,
       d.lo ? [d.hi && d.hi !== d.lo ? `${fmt(d.lo)} – ${fmt(d.hi)}` : fmt(d.lo), "Total time"] : null].filter(Boolean);
     const pours = (d.pours || []).filter((q) => q.t != null);
-    $("printSheet").innerHTML = `<div class="ps">
+    $("printSheet").innerHTML = `<div class="ps${pours.length > 7 ? " dense" : ""}${pours.length > 11 ? " xdense" : ""}">
       <header class="ps-top"><span>Bag to Cup</span><span>${esc(when)}</span></header>
       <p class="ps-kick">${esc([d.brewer, d.method && d.method !== d.brewer ? d.method : "", d.ice ? "Iced" : "", d.ratio ? "1:" + d.ratio : ""].filter(Boolean).join(", "))}${d.nailed ? '<span class="ps-nail">Nailed it</span>' : ""}</p>
       <h1 class="ps-title">${esc(d.title || "Your recipe")}</h1>
