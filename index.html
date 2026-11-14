@@ -1536,6 +1536,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 /* My bags running low: red grams, Buy again pill beside them */
 .bag-gw{display:inline-flex;align-items:center;gap:5px}
 .bag-f .bag-g.low{color:#ff3b30}
+.bag-buy,.bag-buy:hover,.bag-buy:active,.bag-buy:focus,.bag-buy:visited,.buy-pill,.buy-pill:hover,.buy-pill:active,.buy-pill:visited{text-decoration:none!important}
 .bag-buy{display:inline-flex;align-items:center;height:var(--pill-h);padding:0 12px;border-radius:var(--r);background:var(--pill);color:var(--ink);text-decoration:none;font:500 var(--fs-s)/1 var(--sans)}
 /* grinder pill: room for descenders (g, y) */
 #millSel{line-height:1.3!important;padding-top:0!important;padding-bottom:0!important}
@@ -1575,6 +1576,10 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 .bc-pick{display:contents}
 .bc .pill{height:var(--pill-h);padding:0 12px;border:0;border-radius:var(--r);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
 .bc .pill.on{background:var(--ink)!important;color:var(--bg)!important}
+/* bean scan: the how-to sits inside the frame, the live reason above it; the button says when the setup isn't good enough */
+.cam-howto{display:none}
+.cam.beans .cam-howto{display:block;position:absolute;left:12px;right:12px;bottom:12px;margin:0;text-align:center;font-size:var(--fs-s);line-height:1.35;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7)}
+#camDone:disabled{opacity:.45}
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1808,7 +1813,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 
 <div class="cam" id="camView" hidden role="dialog" aria-modal="true" aria-label="Scan the bag">
   <video id="camVideo" playsinline muted autoplay></video>
-  <div class="cam-guide" id="camGuide" aria-hidden="true"></div>
+  <div class="cam-guide" id="camGuide" aria-hidden="true"><p class="cam-howto">Spread a small handful on white paper, fill the frame, even daylight.</p></div>
   <div class="cam-top"><p class="cam-status" id="camStatus"></p><div class="cam-found" id="camFound"></div></div>
   <div class="cam-ctrls"><button type="button" class="chip" id="camClose">Cancel</button><button type="button" class="chip" id="camPhoto">Take a photo instead</button><button type="button" class="chip on" id="camDone">Use what it read</button></div>
 </div>
@@ -2621,7 +2626,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
       if (beans.length >= 2) { const one = beans.map((c) => c.n).sort((a, b) => a - b)[beans.length >> 1];
         comps.forEach((c) => { if (!beans.includes(c) && c.brown >= 0.6 && c.n >= one * 1.6 && c.n <= one * 12 && c.fill >= 0.45) {
           const k = Math.round(c.n / one), inside = creases.filter((s) => Math.hypot(s.mx - c.mx, s.my - c.my) <= Math.sqrt(c.l1) * 2).length;
-          if (inside >= Math.ceil(k * 0.5)) { count += k; beans.push(c); } } }); }
+          if (inside >= Math.ceil(k * 0.5)) { count += k; c.multi = true; beans.push(c); } } }); }
       // a heap: one compact shape clearly darker than around it, with several creases inside pointing different ways
       if (count < 4 && dark) comps.forEach((c) => { if (c.n < N * 0.03 || c.n > N * 0.3 || c.fill < 0.45 || c.elong > 2.2 || c.brown < 0.8) return;
         if (c.px.filter((j) => { const x = j % w, y = (j / w) | 0; return x === 0 || y === 0 || x === w - 1 || y === h - 1; }).length > 3) return;   // a heap sits inside the frame; floors and tables run off its edges
@@ -2632,17 +2637,37 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
         let lin = 0, lout = 0; const inC = new Uint8Array(N); c.px.forEach((j) => { inC[j] = 1; lin += Lb[j]; });
         for (let j = 0; j < N; j++) if (!inC[j]) lout += Lb[j];
         const darker = lin / c.n < 0.5 * (lout / Math.max(1, N - c.n));
-        if (R <= 0.6 && darker && inside.length > count) { count = inside.length; beans.length = 0; beans.push(c); } });
+        if (R <= 0.6 && darker && inside.length > count) { count = inside.length; c.multi = true; beans.length = 0; beans.push(c); } });
       return { beans, count, plain };
     };
-    let P = { count: 0, beans: [] };
+    let P = { count: 0, beans: [], plain: false };
     // shadows join beans to each other, so also try darker cut-offs that keep only the beans themselves
     const sorted = Array.from(Lb).sort((a, b) => a - b), pct = (q) => sorted[Math.floor(q * (N - 1))];
     const cuts = [...new Set([thr, Math.round(thr * 0.8), Math.round(thr * 0.65), pct(0.06), pct(0.1), pct(0.15), pct(0.22)])].filter((t) => t > 0 && t < 255);
     for (const t of cuts) for (const er of [0, 1, 2, 4]) { const r = tryPolarity(true, er, t); if (r.count > P.count) P = r; }
     for (const er of [1, 2, 4, 6, 9]) { const r = tryPolarity(false, er); if (r.count > P.count) P = r; }
     // no heap mode: wood grain and fabric look too much like a heap of creases. Beans have to be spread out, each its own oval
-    if (P.count < 4) return { state: nBrown / N >= 0.2 ? "brownish" : "none" };
+    /* Presence, strictly. Only separate bean-shaped ovals count as proof: 6 or more, of a consistent size, each big enough to
+       see properly and together covering a fair part of the frame. Heaps and touching clumps never prove beans on their own:
+       a dark chair, a cork table or a book spine can look like one. */
+    const indiv = P.beans.filter((c) => !c.multi);
+    const fracs = indiv.map((c) => c.n / N).sort((a2, b2) => a2 - b2), medFrac = fracs[fracs.length >> 1] || 0, cover = fracs.reduce((a2, b2) => a2 + b2, 0);
+    const sizeCv = fracs.length ? Math.sqrt(fracs.reduce((a2, f) => a2 + (f - medFrac) ** 2, 0) / fracs.length) / (medFrac || 1) : 9;
+    const meanLb = Lb.reduce((a2, b2) => a2 + b2, 0) / N;
+    if (indiv.length < 6 || sizeCv > 0.5) {
+      if (P.count >= 6 && indiv.length >= 2) return { state: "blocked", n: P.count, reason: "Beans are touching. Spread them apart so each one sits on its own." };
+      if (indiv.length >= 3 && sizeCv <= 0.5) return { state: "blocked", n: indiv.length, reason: `Only ${indiv.length} bean${indiv.length > 1 ? "s" : ""} in view. Spread a small handful apart, 8 or more.` };
+      // nothing found, and even the brightest part of the frame is dark (L* under ~40): say it's the light, not the beans
+      if (pct(0.99) < 100) return { state: "blocked", n: 0, reason: "Too dark to see the beans. Move to brighter, even daylight." };
+      return { state: "none", reason: meanLb < 90 ? "No beans found. It’s dark here: white paper in daylight works best." : "No beans in frame." };
+    }
+    // a bean under about 1/800 of the frame (roughly 3% of its width) is too small to read its colour cleanly
+    if (medFrac < 0.0012 || cover < 0.012) return { state: "blocked", n: indiv.length, reason: "Beans too far away. Move closer so they fill the frame." };
+    const gate = beanGate(d, w, h, Y, lin, indiv);
+    // shape alone (no creases seen) only counts on a plain light surface: anywhere else it's too easy to fool
+    if (P.plain && !gate.ok && gate.why === "clutter") return { state: "none", reason: "No beans in frame." };   // ovals among clutter: not proof
+    if (!gate.ok) return { state: "blocked", n: indiv.length, reason: gate.reason };
+    P = { ...P, beans: indiv, count: indiv.length };
     return beanReport(P, d, w, h, Y, lin);   // P.plain: found by shape alone (no creases seen)
   }
   /* What a phone photo of beans can tell, and what it can't.
@@ -2650,6 +2675,41 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
      everything else), whether the beans are one roast or mixed, and visible oddities (pale beans, broken pieces).
      Can't: origin, variety, process or an Agtron number. So none of those are guessed, and the roast comes back as
      "not sure" whenever the photo doesn't support a level. */
+  /* Background and lighting gate. A roast reading needs a known white behind the beans and light that treats every bean the same.
+     Thresholds, all on the background (everything that isn't a bean):
+     - bright: median sRGB lightness 0.55+. A phone exposes white paper well above that; grey tables, wood and dim rooms fall below
+     - neutral: the background's colour cast under 0.2 (cream paper about 0.13, white paper under warm bulbs about 0.3)
+     - plain: within each patch, the paper itself (its bright body) varies under 5 L*. Paper is smooth; fabric, grain and clutter aren't
+     - even: across a 3 × 4 grid the darkest patch at least 65% of the brightest. More is a shadow or a lamp to one side
+     - shadows: under 7% of the background is grey and clearly darker (below 72%) than its patch. Brown pixels are beans the
+       shape test missed, not shadow, so they don't count
+     - glare: under 2% of bean pixels blown out to white */
+  function beanGate(d, w, h, Y, lin, beans) {
+    const N = w * h, isB = new Uint8Array(N); beans.forEach((c) => c.px.forEach((j) => isB[j] = 1));
+    const enc = (v) => (v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055);
+    const Lst = (y) => y > 0.008856 ? 116 * Math.cbrt(y) - 16 : 903.3 * y;
+    const bgY = [], cells = Array.from({ length: 12 }, () => []); let rS = 0, gS = 0, bS = 0, nb = 0;
+    const grey = new Uint8Array(N); for (let j = 0; j < N; j++) { const r = d[j * 4], g = d[j * 4 + 1], b = d[j * 4 + 2], mx = Math.max(r, g, b); grey[j] = mx - Math.min(r, g, b) < 0.16 * mx + 6 ? 1 : 0; }
+    for (let j = 0; j < N; j += 2) { if (isB[j]) continue; const x = j % w, y = (j / w) | 0; bgY.push(Y[j]); cells[Math.min(3, (y * 4 / h) | 0) * 3 + Math.min(2, (x * 3 / w) | 0)].push(Lst(Y[j]) * (grey[j] ? 1 : -1));
+      if (Y[j] > 0.05) { rS += d[j * 4]; gS += d[j * 4 + 1]; bS += d[j * 4 + 2]; nb++; } }
+    bgY.sort((a, b) => a - b); const medS = enc(bgY[bgY.length >> 1] || 0);
+    // dim white paper and a grey or dark surface look alike to a camera: name both, from how dark it is
+    if (medS < 0.55) return { ok: false, why: "dark", reason: medS > 0.3 ? "Too dim, or the background isn’t white. Use white paper in brighter, even light." : "Needs a plain light background. Put the beans on white paper, in good light." };
+    const m = [rS, gS, bS].map((v) => v / Math.max(1, nb)), tint = (Math.max(...m) - Math.min(...m)) / Math.max(1, Math.max(...m));
+    if (tint >= 0.2) return { ok: false, reason: "Background or light too coloured. Use white paper, in daylight." };
+    // each patch: its paper level (median of the neutral pixels), how smooth the paper is, and how much grey shadow it holds
+    const stats = cells.filter((c) => c.length >= 40).map((c) => { const gr = c.filter((v) => v >= 0).sort((a, b) => a - b); if (gr.length < 20) return null;
+      const md = gr[gr.length >> 1], body = gr.filter((v) => v >= md * 0.85), bm = body.reduce((a, v) => a + v, 0) / body.length, sd = Math.sqrt(body.reduce((a, v) => a + (v - bm) ** 2, 0) / body.length);
+      return { md, sd, dark: gr.filter((v) => v < md * 0.72).length, n: c.length }; }).filter(Boolean);
+    if (stats.length < 4) return { ok: false, why: "clutter", reason: "Beans cover the whole view. Leave white paper showing around them." };
+    const sdMed = stats.map((c) => c.sd).sort((a, b) => a - b)[stats.length >> 1];
+    if (sdMed > 5) return { ok: false, why: "clutter", reason: "Background isn’t plain. Use a sheet of white paper." };
+    const mds = stats.map((c) => c.md); if (Math.min(...mds) < Math.max(...mds) * 0.65) return { ok: false, reason: "Lighting too uneven. Avoid a shadow or a lamp across the paper." };
+    if (stats.reduce((a, c) => a + c.dark, 0) / stats.reduce((a, c) => a + c.n, 0) > 0.07) return { ok: false, reason: "Strong shadows. Use soft, even light from above." };
+    let blown = 0, nB = 0; beans.forEach((c) => c.px.forEach((j) => { nB++; if (d[j * 4] > 245 && d[j * 4 + 1] > 245 && d[j * 4 + 2] > 245) blown++; }));
+    if (blown / Math.max(1, nB) > 0.02) return { ok: false, reason: "Glare on the beans. Move out of direct light." };
+    return { ok: true, tint };
+  }
   const ROAST_MID = { vlight: 41, light: 35, medium: 29.5, mdark: 24.5, dark: 19 };   // middle L* of each band, for calibration
   const BEAN_CAL = "v60.beancal";
   const beanCal = () => { try { const a = JSON.parse(localStorage.getItem(BEAN_CAL) || "[]"); return Array.isArray(a) ? a : []; } catch (e) { return []; } };
@@ -2763,37 +2823,42 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     const say = (t) => { const m = $(msgId); if (m) { m.hidden = false; m.textContent = t; } };
     const end = () => { view.classList.remove("beans"); $("camDone").disabled = false; $("camDone").textContent = "Use what it read"; stopLive(); };
     // the live view watches small frames for speed; the answer comes from one full-size frame, read like a photo
-    const sharp = (fallback) => { try { const c = grabFrame(v, $("camGuide")); if (!c) return fallback; const k = Math.min(1, 360 / Math.max(c.width, c.height)), o = document.createElement("canvas");
-      o.width = Math.round(c.width * k); o.height = Math.round(c.height * k); o.getContext("2d", { willReadFrequently: true }).drawImage(c, 0, 0, o.width, o.height);
-      const g = analyseBeans(o); return g.state === "beans" ? g : fallback; } catch (e) { return fallback; } };
-    const use = (got0) => { const got = sharp(got0); end(); beanCard = { ...got, where: msgId }; renderAllOpts(); if ($("moreOpts")) $("moreOpts").open = true; const m = $(msgId); if (m) m.scrollIntoView({ behavior: "smooth", block: "nearest" }); };
+    // the bean finder sees a slightly different set at each size, so try 360 px, then 300; failing both, the small frame's reading
+    // stands (it already passed every check)
+    const sharp = (fallback) => { try { const c = grabFrame(v, $("camGuide")); if (!c) return fallback;
+      for (const L of [360, 300]) { const k = Math.min(1, L / Math.max(c.width, c.height)), o = document.createElement("canvas");
+        o.width = Math.round(c.width * k); o.height = Math.round(c.height * k); o.getContext("2d", { willReadFrequently: true }).drawImage(c, 0, 0, o.width, o.height);
+        const g = analyseBeans(o); if (g.state === "beans") return g; me.why = g.reason; }
+      return fallback; } catch (e) { return fallback; } };
+    const use = (got) => { end(); beanCard = { ...got, where: msgId }; renderAllOpts(); if ($("moreOpts")) $("moreOpts").open = true; const m = $(msgId); if (m) m.scrollIntoView({ behavior: "smooth", block: "nearest" }); };
     $("camClose").onclick = () => end();
     $("camPhoto").onclick = () => { end(); askPhoto(msgId); };
-    $("camDone").onclick = () => { if (me.last) use(me.last); };
+    $("camDone").onclick = () => { if (!me.last || $("camDone").disabled) return; const big = sharp(me.last);
+      if (big) use(big); else { st.textContent = "Not quite: hold still a moment and try again."; st.classList.add("warn"); } };
     try { me.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false }); }
     catch (e) { end(); askPhoto(msgId); return; }
     if (!me.on) { me.stream.getTracks().forEach((t) => t.stop()); return; }
     v.srcObject = me.stream; try { await v.play(); } catch (e) {}
-    const TIP = "Spread a small handful apart on white paper, in daylight. Fill the frame, no strong shadows.";
-    st.textContent = TIP;
+    st.textContent = "No beans in frame."; $("camDone").textContent = "Better setup needed";
     const tick = () => {
       if (!me.on) return;
       const c = grabSmall(v, $("camGuide"));
       if (c) {
-        const got = analyseBeans(c);
-        if (got.state === "beans") {
-          me.streak = me.last && me.last.key === got.key && me.last.ref === got.ref ? me.streak + 1 : 1; me.last = got; $("camDone").disabled = false;
-          const tip = got.ref === "none" ? "Beans found, but no white paper behind them: the colour won’t be reliable." : "Coffee beans found. Hold still…";
-          st.textContent = tip; st.classList.toggle("warn", got.ref === "none");
-          found.innerHTML = got.key ? `<span class="cam-tick"><i class="bean-dot" style="--c:${got.hex}"></i>${esc(cap1(ROAST[got.key].label))}</span>` : `<span class="cam-tick">Not sure yet</span>`;
-          if (me.streak >= 6) return use(got);   // about two seconds of steady beans
+        const got = analyseBeans(c), ok = got.state === "beans";
+        // the button only works on a usable frame: beans clearly there, on white paper, in even light
+        $("camDone").disabled = !ok; $("camDone").textContent = ok ? "Read these beans" : "Better setup needed";
+        if (ok) {
+          me.streak = me.last && me.last.key === got.key ? me.streak + 1 : 1; me.last = got;
+          st.textContent = "Beans found. Hold still…"; st.classList.remove("warn");
+          found.innerHTML = got.key ? `<span class="cam-tick"><i class="bean-dot" style="--c:${got.hex}"></i>${esc(cap1(ROAST[got.key].label))}</span>` : `<span class="cam-tick">${got.roast && got.roast.mixed ? "Mixed roasts" : "Not sure yet"}</span>`;
+          // about two seconds of the same reading, then one full-size frame decides. If that one fails the checks, keep looking
+          if (me.streak >= 6) { const big = sharp(got); if (big) return use(big); me.streak = 0; if (me.why) { st.textContent = me.why; st.classList.add("warn"); } }
         } else {
-          me.streak = 0;
-          if (got.state === "brownish") { st.textContent = "Coffee beans not recognised. Spread 5 or more beans apart on a plain surface."; st.classList.add("warn"); }
-          else { st.textContent = TIP; st.classList.remove("warn"); }
+          me.streak = 0; me.last = null; found.innerHTML = "";
+          st.textContent = got.reason || "No beans in frame."; st.classList.toggle("warn", got.state === "blocked");
         }
       }
-      if (Date.now() - me.start > 30000) { end(); say("Couldn’t find coffee beans. Try daylight and a few beans on white paper, or pick the roast yourself."); return; }
+      if (Date.now() - me.start > 60000) { end(); say("No usable beans after a minute. Spread a small handful on white paper in daylight, or pick the roast yourself."); return; }
       me.timer = setTimeout(tick, 300);
     };
     tick();
@@ -2808,7 +2873,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
       cv.width = Math.max(1, Math.round(img.naturalWidth * k)); cv.height = Math.max(1, Math.round(img.naturalHeight * k));
       cv.getContext("2d", { willReadFrequently: true }).drawImage(img, 0, 0, cv.width, cv.height);
       const got = analyseBeans(cv);
-      if (got.state !== "beans") return { err: got.state === "brownish" ? "Couldn’t pick out separate beans. Spread a small handful apart on white paper and fill the frame." : "No coffee beans found in that photo. Spread a small handful on white paper, in even light." };
+      if (got.state !== "beans") return { err: (got.reason || "No beans in that photo.") + (got.state === "none" ? " Spread a small handful on white paper, in even daylight." : "") };
       return got;
     } catch (e) { return { err: "Couldn’t read that photo. Try another one." }; }
     finally { URL.revokeObjectURL(url); }
