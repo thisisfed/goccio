@@ -3720,7 +3720,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
   // and the water figure counts up to what's in by then. Then a short pause and again. Still for reduced motion.
   let exRaf = 0, exVisible = true;
   function playExample(fig, r, P, T) {
-    cancelAnimationFrame(exRaf);
+    clearInterval(exRaf);
     const head = fig.querySelector(".g-bar .head"), segs = [...fig.querySelectorAll(".g-bar .seg")], wEl = fig.querySelectorAll(".g-specs b")[2], win = fig.querySelector(".g-bar .win"), endLi = fig.querySelector(".g-pours li.end");
     if (!head || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const RUN = 8000, PAUSE = 1600, pours = P.filter((p) => !p.act);
@@ -3728,11 +3728,10 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
     // starts again from 0:00 each time the card comes back into view
     if (playExample.io) playExample.io.disconnect();
     if ("IntersectionObserver" in window) { playExample.io = new IntersectionObserver((es) => { const v = es.some((e) => e.isIntersecting); if (v && !exVisible) t0 = performance.now(); exVisible = v; }); playExample.io.observe(fig); }
-    const step = (now) => {
-      exRaf = requestAnimationFrame(step);
-      if (!exVisible || document.hidden) { last = now; return; }
-      if (now - last > 1000) t0 += now - last;   // after a stall (tab away, low power), carry on rather than jump
-      last = now;
+    // a plain timer, not animation frames: iPhone Safari can stop sending frames and leave it parked at the tick
+    const step = () => {
+      const now = performance.now();
+      if (document.hidden) { last = now; return; }
       const el = (now - t0) % (RUN + PAUSE);   // loop forever: the clock wraps, so nothing can leave it parked at the end
       const k = el / RUN, t = Math.min(1, k) * T;
       if (win) win.classList.toggle("lit", t >= r.lo);
@@ -3744,7 +3743,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
         for (const p of pours) { const prev = poured, end = p.t + (p.dur || 6); if (t >= end) poured = p.to; else if (t > p.t) poured = prev + (p.to - prev) * ((t - p.t) / (end - p.t)); }
         wEl.textContent = k >= 1 ? r.water : Math.round(poured); }
     };
-    exRaf = requestAnimationFrame(step);
+    exRaf = setInterval(step, 40); step();
   }
 
   // ---------- my bags: coffees you own, kept on this device ----------
