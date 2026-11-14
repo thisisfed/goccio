@@ -1391,27 +1391,9 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 .glimpse .g-pours li.end.hit i em{opacity:0}
 .glimpse .g-pours li.end.hit .ex-tick{opacity:1}
 .glimpse .g-pours li.end.hit .ex-tick path{stroke-dashoffset:0;transition:stroke-dashoffset .45s cubic-bezier(.2,.7,.2,1)}
-/* closing line: "good." melts into a winking face for a moment, then comes back */
-.og{display:inline-grid;justify-items:start;align-items:center;vertical-align:baseline}
-.og>*{grid-area:1/1}
-.litext .outro-end span{color:inherit;transition:none}
-.og-w{display:inline-block;transform-origin:30% 60%}
-.og-f{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:0;transform:translateY(.05em)}
-.og-e,.og-wk{transform-box:fill-box;transform-origin:center}
-.og-wk{opacity:0}
 .bag-rm{border:0;cursor:pointer;font:inherit;background:transparent!important;box-shadow:inset 0 0 0 1px var(--rule);color:var(--muted);justify-self:end;height:var(--pill-h);padding:0 10px;display:inline-flex;align-items:center;border-radius:var(--r);font-size:var(--fs-s)}
 .bag-rm.armed{background:#ff3b30!important;color:#fff!important;box-shadow:none}
-@media (prefers-reduced-motion: no-preference){
-  .outro-end.on .og-w{animation:ogword 3s .5s cubic-bezier(.5,0,.2,1) both}
-  .outro-end.on .og-f{animation:ogface 3s .5s cubic-bezier(.3,1.4,.5,1) both}
-  .outro-end.on .og-e{animation:ogshut 3s .5s both}
-  .outro-end.on .og-wk{animation:ogwink 3s .5s both}
 }
-/* the word squeezes, blurs and drops away; the face pops up through it with a little spin, winks, then hands back */
-@keyframes ogword{0%,6%{opacity:1;transform:none;filter:none}16%,82%{opacity:0;transform:scale(.4,.2) translateY(.3em);filter:blur(4px)}94%,100%{opacity:1;transform:none;filter:none}}
-@keyframes ogface{0%,10%{opacity:0;transform:translateY(.4em) scale(.2) rotate(-90deg)}22%,78%{opacity:1;transform:translateY(.05em) scale(1) rotate(0)}88%,100%{opacity:0;transform:translateY(-.3em) scale(.3) rotate(40deg)}}
-@keyframes ogshut{0%,40%{opacity:1}42%,58%{opacity:0}60%,100%{opacity:1}}
-@keyframes ogwink{0%,40%{opacity:0}42%,58%{opacity:1}60%,100%{opacity:0}}
 /* My bags: running low line, in ink with the shop link */
 .bag-low{margin:4px 0 0;font-size:var(--fs-s);color:var(--ink)}
 .bag-low a{color:var(--ink)}
@@ -1431,6 +1413,9 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 .bag-d input::-webkit-calendar-picker-indicator{opacity:0;position:absolute;inset:0;width:auto;height:auto;cursor:pointer}
 /* My bags: the rest note runs the full width under the Brew column, so it stays on one line */
 .item.bag .bag-rest{grid-column:1/-1;margin-top:8px!important}
+/* My bags: freezer toggle, a pill that goes ink when the bag is in the freezer */
+.bag-fz{border:0;cursor:pointer;font:500 var(--fs-s)/1 var(--sans);height:var(--pill-h);padding:0 10px;border-radius:var(--r);background:var(--pill)!important;color:var(--ink)}
+.bag-fz.in{background:var(--ink)!important;color:var(--bg)!important}
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1603,7 +1588,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 
 
   <section class="sec outro" aria-label="How it learns">
-    <p class="litext" id="litext"><span>Every</span> <span>bag</span> <span>is</span> <span>different.</span> <span>So</span> <span>is</span> <span>every</span> <span>morning.</span> <span>The</span> <span>roast,</span> <span>the</span> <span>grind,</span> <span>the</span> <span>water,</span> <span>the</span> <span>pour.</span> <span>How</span> <span>you</span> <span>slept,</span> <span>what</span> <span>you</span> <span>ate,</span> <span>your</span> <span>tastebuds,</span> <span>your</span> <span>nose,</span> <span>your</span> <span>mood.</span> <span>None</span> <span>of</span> <span>it</span> <span>sits</span> <span>still,</span> <span>and</span> <span>that’s</span> <span>the</span> <span>fun</span> <span>of</span> <span>it.</span> <span>Brew</span> <span>it,</span> <span>taste</span> <span>it,</span> <span>write</span> <span>down</span> <span>what</span> <span>you</span> <span>got,</span> <span>and</span> <span>the</span> <span>next</span> <span>cup</span> <span>lands</span> <span>a</span> <span>little</span> <span>closer</span> <span>to</span> <span>the</span> <span>one</span> <span>you</span> <span>wanted.</span> <span class="outro-end">Brew something <span class="og"><span class="og-w">good.</span><svg class="og-f" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.2"/><path d="M8.8 9.2v1.8"/><path class="og-e" d="M15.2 9.2v1.8"/><path class="og-wk" d="M13.6 10.3q1.6 -1.2 3.2 0"/><path d="M8 14.6q4 3.6 8 0"/></svg></span></span></p>
+    <p class="litext" id="litext"><span>Every</span> <span>bag</span> <span>is</span> <span>different.</span> <span>So</span> <span>is</span> <span>every</span> <span>morning.</span> <span>The</span> <span>roast,</span> <span>the</span> <span>grind,</span> <span>the</span> <span>water,</span> <span>the</span> <span>pour.</span> <span>How</span> <span>you</span> <span>slept,</span> <span>what</span> <span>you</span> <span>ate,</span> <span>your</span> <span>tastebuds,</span> <span>your</span> <span>nose,</span> <span>your</span> <span>mood.</span> <span>None</span> <span>of</span> <span>it</span> <span>sits</span> <span>still,</span> <span>and</span> <span>that’s</span> <span>the</span> <span>fun</span> <span>of</span> <span>it.</span> <span>Brew</span> <span>it,</span> <span>taste</span> <span>it,</span> <span>write</span> <span>down</span> <span>what</span> <span>you</span> <span>got,</span> <span>and</span> <span>the</span> <span>next</span> <span>cup</span> <span>lands</span> <span>a</span> <span>little</span> <span>closer</span> <span>to</span> <span>the</span> <span>one</span> <span>you</span> <span>wanted.</span> <span class="outro-end">Brew something good.</span></p>
     <button type="button" class="hero-pill" data-jump="recipe">Back to the recipe</button>
     <div class="credit" id="credit"><span class="bmc"><span class="l1">Made by <a href="https://thisisfed.xyz/" target="_blank" rel="noopener">Federico Ferrari</a>.</span><span class="l1">Enjoying it? <a href="https://buymeacoffee.com/thisisfed" target="_blank" rel="noopener"><span class="sheen-text">Buy me a coffee</span></a>.</span><span class="l1"><svg class="smile" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/><path d="M8 14.2c1 1.6 2.4 2.4 4 2.4s3-.8 4-2.4"/><path d="M9 9.6v.6M15 9.6v.6"/></svg></span></span></div>
   </section>
@@ -3799,10 +3784,14 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
     saveBags(); renderBags();
   }
   const addDays = (iso, n) => { const d = new Date(iso + "T12:00:00"); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
+  const daysBetween = (a, z) => Math.max(0, Math.round((new Date(z + "T12:00:00") - new Date(a + "T12:00:00")) / 864e5));
+  // days spent in the freezer don't count: sealed and frozen, beans barely stale
+  const frozenFor = (b) => (b.frozenDays || 0) + (b.frozen ? daysBetween(b.frozen, todayIso()) : 0);
   function restLine(b) {   // filter coffee: rest a week or two after roasting, best within about six weeks
-    if (!b.roasted) return "Add the roast date to see when it’s at its best.";
+    if (!b.roasted) return b.frozen ? "Frozen. Add the roast date to see when it’s at its best." : "Add the roast date to see when it’s at its best.";
+    if (b.frozen) { const left = 42 - daysBetween(b.roasted, b.frozen) + (b.frozenDays || 0); return left > 0 ? `Frozen, clock paused. ${left} days of its best left.` : "Frozen, clock paused."; }
     const light = /very light/i.test(b.text || "") || b.roast === "vlight" ? 14 : /light/i.test((b.text || "") + " " + (b.roast_level || "")) || b.roast === "light" ? 10 : 7;
-    const today = new Date().toISOString().slice(0, 10), from = addDays(b.roasted, light), until = addDays(b.roasted, 42);
+    const today = todayIso(), fz = frozenFor(b), from = addDays(b.roasted, light + fz), until = addDays(b.roasted, 42 + fz);
     if (today < from) return `Resting. At its best from ${isoDmy(from)}.`;
     if (today <= until) return `Ready. At its best until ${isoDmy(until)}.`;
     return `Past its best since ${isoDmy(until)}. Still fine to brew, a little flatter.`;
@@ -3819,6 +3808,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
           <span class="name">${esc(calm(b.name || b.text || "Coffee"))}</span>
           ${pills ? `<div class="pills">${pills}</div>` : ""}
           <div class="bag-f"><label>Roasted<span class="bag-d${b.roasted ? "" : " empty"}"><input type="date" data-k="roasted" data-i="${i}" value="${esc(b.roasted || "")}"></span></label>
+            <label>Freezer<span><button type="button" class="pill bag-fz${b.frozen ? " in" : ""}" data-fz="${i}" aria-pressed="${!!b.frozen}">${b.frozen ? "In the freezer" : "Not frozen"}</button></span></label>
             <label>Left<span class="bag-g"><input type="number" inputmode="numeric" min="0" max="5000" step="1" data-k="left" data-i="${i}" value="${b.left ?? ""}">g</span></label></div>
         </div>
         <div class="r">
@@ -3829,6 +3819,9 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
       if (b.text && !b.roaster) { state.text = b.text; state.bag = null; state.roastPhoto = null; $("coffeeIn").value = b.text; saveState(); renderAllOpts(); render(); $("coffee").scrollIntoView({ behavior: "smooth", block: "start" }); }
       else brewThis(b); });
     // iPhone's date wheel fires "change" while it spins: save quietly and only refresh the line under it, never rebuild the picker you're using
+    $("bagList").querySelectorAll("[data-fz]").forEach((x) => x.onclick = (e) => { e.preventDefault(); const b = bags[+x.dataset.fz]; if (!b) return;
+      if (b.frozen) { b.frozenDays = (b.frozenDays || 0) + daysBetween(b.frozen, todayIso()); b.frozen = ""; } else b.frozen = todayIso();
+      saveBags(); renderBags(); });
     $("bagList").querySelectorAll("input[data-k]").forEach((x) => { const id = (bags[+x.dataset.i] || {}).id, save = () => { const b = bags.find((y) => y.id === id); if (!b) return;
         b[x.dataset.k] = x.dataset.k === "left" ? Math.max(0, Math.round(Number(x.value) || 0)) : x.value; saveBags();
         if (x.dataset.k === "left" && x.value !== "" && b.left === 0) { bags.splice(bags.indexOf(b), 1); saveBags(); renderBags(); renderShelf(); return; }   // 0 g left: the bag is finished, it goes
