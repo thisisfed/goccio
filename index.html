@@ -1581,9 +1581,15 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 .cam.beans .cam-howto{display:block;position:absolute;left:12px;right:12px;bottom:12px;margin:0;text-align:center;font-size:var(--fs-s);line-height:1.35;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7)}
 #camDone:disabled{opacity:.45}
 /* Buy pill: "Buy" and the price take turns, a soft crossfade every few seconds, same width */
-/* Buy pill: shows the price; one tap turns it into a black Buy, a second tap opens the shop. Back to the price after 3 s */
+/* Buy pill: shows the price; one tap turns it into a green Buy?, a second tap opens the shop. Back to the price after 3 s */
 .buy-pill{overflow:hidden;white-space:nowrap}
-.shelf .item > .r > .buy-pill.armed{background:var(--ink)!important;color:var(--bg)!important}
+.shelf .item > .r > .buy-pill.armed{background:#1e8a3c!important;color:#fff!important}
+/* Water: the label sits level with the first row of pills, and the advice box is exactly as wide as the pills above it
+   (width 0 + min-width 100% keeps the advice text from widening the column) */
+.opt:has(> #waterCard){align-items:start}
+.opt:has(> #waterCard) > span{padding-top:8px}
+#waterCard{justify-self:start;width:fit-content;max-width:100%}
+#waterCard .w-adv{width:0;min-width:100%;box-sizing:border-box}
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -4732,10 +4738,10 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
   const keepShelfTop = () => { const t = document.querySelector(".shelf-tools"), top = document.querySelector(".top");
     const h = top ? top.getBoundingClientRect().height : 0; if (t.getBoundingClientRect().top <= h + 1) {
       const y = $("shelf").getBoundingClientRect().top + scrollY - h - t.getBoundingClientRect().height - 8; if (scrollY > y) scrollTo({ top: y }); } };
-  // the price first; a tap shows Buy, a second tap goes to the shop
+  // the price first; a tap shows Buy?, a second tap goes to the shop
   document.addEventListener("click", (e) => { const a = e.target.closest && e.target.closest(".buy-pill[data-price]"); if (!a || a.classList.contains("armed")) return;
     e.preventDefault(); document.querySelectorAll(".buy-pill.armed").forEach((o) => { o.classList.remove("armed"); o.textContent = o.dataset.price; });
-    a.classList.add("armed"); a.textContent = "Buy"; clearTimeout(a._t);
+    a.classList.add("armed"); a.textContent = "Buy?"; clearTimeout(a._t);
     a._t = setTimeout(() => { if (a.isConnected) { a.classList.remove("armed"); a.textContent = a.dataset.price; } }, 3000); });
   ["shelfR", "shelfF"].forEach((id) => $(id).addEventListener("click", () => requestAnimationFrame(keepShelfTop)));
   async function loadShelf() {
