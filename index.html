@@ -2781,7 +2781,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     // and bright: a phone exposes a frame of white paper well up. A mid-grey table or a dim room can't stand in for white,
     // because then nothing says how bright "white" would have been
     const heap = P.beans.some((c) => c.n >= N * 0.03);   // a pile, or beans in a hand: what's around it is skin or a bag, never a reference
-    const ref = heap && !P.onPaper ? "none" : wY > 0.35 && tint < 0.12 ? "paper" : wY > 0.35 && tint < 0.38 ? "tinted" : "none";
+    const ref = heap && !P.onPaper ? "none" : wY > 0.35 && tint < 0.2 ? "paper" : wY > 0.35 && tint < 0.38 ? "tinted" : "none";   // white paper under warm bulbs casts up to about 0.2; the cast is corrected either way
     // white balance: scale each channel so the reference reads neutral. On a tinted surface keep its hue's lightness, correct only the cast
     const refRGB = ref === "none" ? [0.8, 0.8, 0.8] : white;
     const Lof = (r, g, b) => { const yy = 0.2126 * r + 0.7152 * g + 0.0722 * b; return yy > 0.008856 ? 116 * Math.cbrt(yy) - 16 : 903.3 * yy; };
@@ -2797,7 +2797,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     const centre = (c) => { if (c.heap || !c.l1) return c.px; const co = Math.cos(c.ang), si = Math.sin(c.ang), A = Math.sqrt(c.l1) * 2, B = Math.sqrt(c.l2) * 2;
       const k = c.px.filter((j) => { const dx = (j % w) - c.mx, dy = ((j / w) | 0) - c.my, u = (dx * co + dy * si) / A, v = (-dx * si + dy * co) / B; return u * u + v * v <= 0.45; });
       return k.length >= 8 ? k : c.px; };   // the middle of the bean: a blurred edge mixes in the paper and reads too light
-    const per = parts.filter((c) => c.n >= 12).map((c) => { const px = centre(c).slice().sort((a2, b2) => Y[a2] - Y[b2]), body = px.slice(Math.floor(px.length * 0.25), Math.ceil(px.length * 0.9));
+    const per = parts.filter((c) => c.n >= 12).map((c) => { const px = centre(c).slice().sort((a2, b2) => Y[a2] - Y[b2]), body = c.heap && P.onPaper ? px.slice(Math.floor(px.length * 0.38), Math.ceil(px.length * 0.92)) : px.slice(Math.floor(px.length * 0.25), Math.ceil(px.length * 0.9));   // a clump tile holds the gaps and shadows between beans: read its lighter half
       const m = [0, 1, 2].map((k) => Math.min(1, body.reduce((s2, j) => s2 + ch(j, k), 0) / body.length / refRGB[k]));
       const hi = px.slice(Math.floor(px.length * 0.97)), med = Y[px[px.length >> 1]] || 1e-6;
       const shine = hi.filter((j) => Y[j] > med * 2.4).length / Math.max(1, px.length);
@@ -2848,7 +2848,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     else if (conf === "low") roast = { key, c: "low", why: ref === "none" ? "Read without a white background. Put the beans on white paper, in daylight, for a sharper read."
       : heap && P.onPaper ? "Read from touching beans. Spread them a little apart on white paper, in daylight, for a sharper read."
       : "Read in poor light. White paper and daylight give a sharper read." };
-    else roast = { key, c: conf, why: ref === "paper" ? "Measured against the white paper." : "Read without white paper. Use white paper for a sharper read." };
+    else roast = { key, c: conf, why: ref === "paper" ? "Measured against the white paper." : "Read in coloured light. Daylight gives a sharper read." };
     // 6. plain notes: the colour in words, shine, evenness, defects. Nothing about origin, variety or process
     const WORDS = { vlight: "pale cinnamon", light: "light brown", medium: "milk-chocolate brown", mdark: "dark chocolate brown", dark: "very dark, near black" };
     const shineShare = per.filter((b2) => b2.shine > 0.012).length / per.length;
