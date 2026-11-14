@@ -1470,6 +1470,16 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 /* coffee list: Brew, + My bags and Buy are three pills of the same grey */
 .shelf .item > .r > .btn, .shelf .item > .r > .bag-add, .shelf .item > .r > .buy-pill{background:var(--pill)!important;color:var(--ink)!important;border:0!important;box-shadow:none!important}
 .shelf .item > .r > .bag-add.in{background:var(--ink)!important;color:var(--bg)!important}
+/* My bags: Grams left looks like the grams pills, the g sits inside the pill next to the number */
+.bag-f .bag-g{display:inline-flex;align-items:center;gap:4px;height:var(--pill-h);padding:0 10px;border-radius:var(--r);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);cursor:text}
+.bag-f .bag-g input{-webkit-appearance:none;appearance:none;-moz-appearance:textfield;width:calc(var(--w,3ch) + 2px)!important;min-width:1ch;height:auto!important;max-height:none!important;line-height:1!important;padding:0!important;margin:0;border:0;background:none!important;color:inherit;font:inherit;font-size:16px;text-align:right}
+.bag-f .bag-g input::-webkit-inner-spin-button,.bag-f .bag-g input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+@media (min-width: 761px){ .bag-f .bag-g input{font-size:var(--fs-s)} }
+/* My bags labels: room for Grams left on one line */
+.bag-f label{grid-template-columns:max-content auto!important;white-space:nowrap}
+.bag-f label > :first-child{min-width:0}
+.bag-f{grid-template-columns:auto}
+.bag-f label{grid-template-columns:86px auto!important}
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -3293,7 +3303,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
   function saveLog() {
     if (!recipe) return;
     if (!picked.size && !$("ddIn").value.trim()) { $("saveLog").textContent = "Pick a taste first"; setTimeout(() => ($("saveLog").textContent = "Save to journal"), 1600); return; }
-    bagUsed(recipe.dose);
+    if (!recipe.bagTaken) { recipe.bagTaken = true; bagUsed(recipe.dose); }   // moka and cold brew have no timer: their grams come off here
     const dd = parseMS($("ddIn").value);
     const s = lastSuggestion;
     const r = recipe;
@@ -3425,6 +3435,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     if (!recipe) render();
     const r = recipe;
     if ($("rbody").hidden || r.kind === "steps") return;
+    if (!r.bagTaken) { r.bagTaken = true; bagUsed(r.dose); }   // starting the brew takes the grams off the bag, once per recipe
     $("bvCoffee").textContent = `${BREWERS[r.brewer].name} / ${coffeeTitle(state, r)} / ${grindLine(r.clicks)}${isC40() && prefs.zero ? ` (${prefs.zero > 0 ? "+" : "−"}${Math.abs(prefs.zero)} zero offset)` : ""} / ${r.temp}°C / ${r.dose}→${r.water} g`;
     $("bvDrain").textContent = r.kind === "pour" ? "Drained" : "Done";
     const T = r.hi + 20;
@@ -3747,7 +3758,6 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
           <button class="btn" type="button" data-i="${i}">Brew</button>
           <button type="button" class="pill bag-add${hasBag(r) ? " in" : ""}" data-b="${i}" aria-pressed="${hasBag(r)}">${hasBag(r) ? "In my bags" : "+ My bags"}</button>
           ${r.url ? `<a class="pill buy-pill" href="${esc(r.url)}" target="_blank" rel="noopener" aria-label="Buy ${esc(r.name)} from ${esc(r.roaster)}">Buy</a>` : ""}
-          ${r.price ? `<span class="price">${esc(r.price)}</span>` : '<span class="price muted">Price on site</span>'}
         </div></article>`; }).join("") : `<p class="muted" style="padding:16px 0;margin:0">Nothing matches${shelfV === "v60" && shelf.some((r) => !shelfFit()(r)) ? ` in ${shelfFitName()}. Try Everything, or` : "."} <a href="#" class="mail-me" data-s="Missing coffee">${shelfV === "v60" ? "email me" : "Email me"}</a> and I’ll add the roaster.</p>`;
     const left = list.length - Math.min(shelfN, list.length);
     $("shelfMore").hidden = left <= 0; $("shelfMore").removeAttribute("aria-hidden");
@@ -3889,7 +3899,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
           ${tags ? `<p class="tags">${tags}</p>` : ""}
           <div class="bag-f"><label>Roasted<span class="bag-d${b.roasted ? "" : " empty"}"><input type="date" data-k="roasted" data-i="${i}" value="${esc(b.roasted || "")}"></span></label>
             <label>Freezer<span><button type="button" class="pill bag-fz${b.frozen ? " in" : ""}" data-fz="${i}" aria-pressed="${!!b.frozen}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span class="sr">${b.frozen ? "In the freezer" : "Not frozen"}</span></button></span></label>
-            <label>Left<span class="bag-g"><input type="number" inputmode="numeric" min="0" max="5000" step="1" data-k="left" data-i="${i}" value="${b.left ?? ""}">g</span></label></div>
+            <label>Grams left<span class="bag-g"><input type="number" inputmode="numeric" min="0" max="5000" step="1" data-k="left" data-i="${i}" value="${b.left ?? ""}" style="--w:${String(b.left ?? "").length || 1}ch"><span>g</span></span></label></div>
         </div>
         <div class="r">
           <button class="btn" type="button" data-brew="${i}">Brew</button>
@@ -3902,6 +3912,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     $("bagList").querySelectorAll("[data-fz]").forEach((x) => x.onclick = (e) => { e.preventDefault(); const b = bags[+x.dataset.fz]; if (!b) return;
       if (b.frozen) { b.frozenDays = (b.frozenDays || 0) + daysBetween(b.frozen, todayIso()); b.frozen = ""; } else b.frozen = todayIso();
       saveBags(); renderBags(); });
+    $("bagList").querySelectorAll('input[data-k="left"]').forEach((x) => x.addEventListener("input", () => x.style.setProperty("--w", (x.value.length || 1) + "ch")));   // the pill grows with the number, g stays beside it
     $("bagList").querySelectorAll("input[data-k]").forEach((x) => { const id = (bags[+x.dataset.i] || {}).id, save = () => { const b = bags.find((y) => y.id === id); if (!b) return;
         b[x.dataset.k] = x.dataset.k === "left" ? Math.max(0, Math.round(Number(x.value) || 0)) : x.value; saveBags();
         if (x.dataset.k === "left" && x.value !== "" && b.left === 0) { bags.splice(bags.indexOf(b), 1); saveBags(); renderBags(); renderShelf(); return; }   // 0 g left: the bag is finished, it goes
