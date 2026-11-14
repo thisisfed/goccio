@@ -1354,6 +1354,12 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 .chip .beta { margin-left: 6px; }
 /* phones: no animated headline, the page opens on the intro and the example */
 @media (max-width: 760px) { .hero .stage { display: none !important; } .hero-side { margin-top: 0 !important; padding-top: 0 !important; } }
+/* the filters, once stuck under the top bar: a slightly different background fades in, edge to edge, so it's clear they've pinned */
+.shelf-tools { --stuck-bg: #f7f7f7; transition: background-color .3s ease, box-shadow .3s ease, border-color .3s ease; box-shadow: 0 0 0 100vmax transparent; clip-path: inset(0 -100vmax); }
+:root[data-theme="dark"] .shelf-tools { --stuck-bg: #0e0e0e; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .shelf-tools { --stuck-bg: #0e0e0e; } }
+.shelf-tools.stuck { background: var(--stuck-bg) !important; box-shadow: 0 0 0 100vmax var(--stuck-bg); }
+@media (prefers-reduced-motion: reduce) { .shelf-tools { transition: none; } }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
