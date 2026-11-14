@@ -1170,8 +1170,9 @@ details.clk > summary .muted { margin-left: auto; overflow: hidden; text-overflo
 .shelf-tools input[type=search] { height: var(--pill-h) !important; min-height: 0 !important; padding-top: 0 !important; padding-bottom: 0 !important; padding-left: 10px !important;
   font: 500 var(--fs-s)/1 var(--sans) !important; border-radius: var(--r) !important; background-image: none !important; box-sizing: border-box; }
 /* Just in: coloured words, a little space before the roaster */
-.item .who .ji { color: #e8590c; font-weight: 500; margin-right: .7em; }
-:root[data-theme="dark"] .item .who .ji { color: #ff8a3d; }
+.item .who .ji { color: #1e8a3c; font-weight: 500; margin-right: .7em; }
+:root[data-theme="dark"] .item .who .ji { color: #4cd471; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .item .who .ji { color: #4cd471; } }
 /* How these clicks were set: the next rule sits as far below the text as the top rule is above; a clean chevron */
 #clkHow + .tech { margin-top: -14px; }
 details.clk + details.clk { margin-top: -14px; }   /* Why this recipe sits midway between its two rules too */
@@ -1447,6 +1448,8 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 /* coffee list: the name sits midway between the roaster line and the details row */
 .shelf .item > .l{align-self:stretch;grid-template-rows:auto 1fr}
 .shelf .item > .l .name{align-self:center}
+/* decaf gets its own dot: a warm brown */
+.item .tags .tg.p-decaf::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:.12em;background:#a0703c}
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -3658,6 +3661,10 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
     $("shelfF").innerHTML = SHELF_F.map(([v, t]) => `<button type="button" class="chip" data-v="${v}" aria-pressed="${shelfF === v}">${t}</button>`).join("");
     $("shelfF").querySelectorAll("button").forEach((b) => b.onclick = () => { shelfF = b.dataset.v; shelfAll = false; renderShelfF(); renderShelf(); });
   }
+  // one dot for the origin: a blend keeps its countries together, Ethiopia / Colombia, under the first one's colour
+  const originTag = (origin, region) => { const os = (origin || "").split(" / ").filter(Boolean); if (!os.length) return "";
+    return `<span class="tg oc" data-o="${esc(os[0])}">${os.map(esc).join(" / ")}${region && os.length === 1 ? ", " + esc(region) : ""}</span>`; };
+  const procTone = (p) => /decaf/i.test(p || "") ? "p-decaf" : PROC_TONE[bucket(p)];
   const PROC_TONE = { natural: "p-nat", washed: "p-wash", honey: "p-honey", exp: "p-exp", other: "p-other" };
   let scanDay = "";
   const todayIso = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
@@ -3685,11 +3692,10 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
       const tg = (t, c = "") => `<span class="tg${c ? " " + c : ""}">${t}</span>`;
       const tagBits = [
         r.blend ? tg("Blend") : "",
-        r.roast && ROAST[r.roast] ? tg(esc(cap1(ROAST[r.roast].label)) + " roast") : r.roast_level ? tg(r.roast_level === "dark" ? "Dark roast" : "Medium-dark") : "",
-        r.process ? tg(esc(r.process), PROC_TONE[bucket(r.process)]) : tg("Process not listed", "miss"),
+        r.process ? tg(esc(r.process), procTone(r.process)) : tg("Process not listed", "miss"),
         r.variety ? tg(esc(titleCase(r.variety))) : "",
       ];
-      const origins = (r.origin || "").split(" / ").filter(Boolean).map((o) => `<span class="tg oc" data-o="${esc(o)}">${esc(o)}${r.region && o === r.origin ? ", " + esc(r.region) : ""}</span>`).join("");
+      const origins = originTag(r.origin, r.region);
       const place = origins;
       return `${head}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
         <div class="l">
@@ -3835,7 +3841,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
   function renderBags() {
     $("bags").hidden = !bags.length;
     $("bagList").innerHTML = bags.map((b, i) => {
-      const tags = [b.origin ? b.origin.split(" / ").map((o) => `<span class="tg oc" data-o="${esc(o)}">${esc(o)}</span>`).join("") : "", b.process ? `<span class="tg ${PROC_TONE[bucket(b.process)]}">${esc(titleCase(b.process))}</span>` : "", b.variety ? `<span class="tg">${esc(titleCase(b.variety))}</span>` : ""].join("");
+      const tags = [originTag(b.origin), b.process ? `<span class="tg ${procTone(b.process)}">${esc(titleCase(b.process))}</span>` : "", b.variety ? `<span class="tg">${esc(titleCase(b.variety))}</span>` : ""].join("");
       return `<article class="item bag">
         <div class="l">
           <span class="who">${esc(b.roaster || "Your coffee")}</span>
