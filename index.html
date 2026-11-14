@@ -2841,18 +2841,18 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     // touching beans are measured as one clump, so never more than "check it"
     const conf = !plausible || sd > 4.5 ? "low" : score >= 0.8 && !heap ? "high" : score >= 0.58 ? "medium" : "low";
     const LBL = (k) => ROAST[k].label;
+    // it always names a level. When the photo is weak it still makes the call, and the line under it says what would sharpen it
     let roast;
     if (mixed) { const lo = bandOf(core[0] + 0.01), hi2 = bandOf(core[core.length - 1]);
-      roast = { key: null, c: "medium", mixed: true, why: `Two roasts in one photo: some look ${LBL(hi2)}, some ${LBL(lo)}. Photograph one bag at a time.` }; }
-    else if (conf === "low") roast = { key: null, c: "low", guess: key, why: ref === "none" ? "No white reference, so the colour can’t be trusted. Put the beans on white paper, in daylight."
-      : !plausible ? "The colour doesn’t look like roasted coffee against this background. Try white paper, in daylight."
-      : sd > 4.5 ? "The beans look uneven, maybe two roasts mixed. Photograph one bag at a time." : heap && P.onPaper ? "Hard to read while the beans touch in this light. Spread them a little apart on white paper, in daylight."
-      : "The photo doesn’t support a confident level. Try more beans on white paper." };
-    else roast = { key, c: conf, near: near && near !== key ? near : null, why: ref === "paper" ? "measured against the white paper" : "no white paper, so roughly: check it against the bag" };
+      roast = { key, c: "low", mixed: true, why: `Two roasts in this photo, ${LBL(hi2)} and ${LBL(lo)}. This is the middle of them. Scan one bag at a time.` }; }
+    else if (conf === "low") roast = { key, c: "low", why: ref === "none" ? "Read without a white background. Put the beans on white paper, in daylight, for a sharper read."
+      : heap && P.onPaper ? "Read from touching beans. Spread them a little apart on white paper, in daylight, for a sharper read."
+      : "Read in poor light. White paper and daylight give a sharper read." };
+    else roast = { key, c: conf, why: ref === "paper" ? "Measured against the white paper." : "Read without white paper. Use white paper for a sharper read." };
     // 6. plain notes: the colour in words, shine, evenness, defects. Nothing about origin, variety or process
     const WORDS = { vlight: "pale cinnamon", light: "light brown", medium: "milk-chocolate brown", mdark: "dark chocolate brown", dark: "very dark, near black" };
     const shineShare = per.filter((b2) => b2.shine > 0.012).length / per.length;
-    const notes = conf === "low" || mixed ? [] : [cap1(WORDS[key]) + (near && near !== key ? `, close to ${LBL(near)}` : "")];   // no colour words for a guess
+    const notes = mixed ? [] : [cap1(WORDS[key])];
     if (shineShare > 0.4 && (key === "mdark" || key === "dark")) notes.push("Oily sheen: usual for dark roasts, or beans a few weeks off roast");
     else if (shineShare > 0.4) notes.push("Some shine on the beans: they may be a few weeks off roast");
     if (sizeCV > 0.35 && !heap) notes.push("Bean sizes vary a lot");
@@ -2908,7 +2908,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
         if (ok) {
           me.streak = me.last && me.last.key === got.key ? me.streak + 1 : 1; me.last = got;
           st.textContent = "Beans found. Hold still…"; st.classList.remove("warn");
-          found.innerHTML = got.key ? `<span class="cam-tick"><i class="bean-dot" style="--c:${got.hex}"></i>${esc(cap1(ROAST[got.key].label))}</span>` : `<span class="cam-tick">${got.roast && got.roast.mixed ? "Mixed roasts" : "Not sure yet"}</span>`;
+          found.innerHTML = got.key ? `<span class="cam-tick"><i class="bean-dot" style="--c:${got.hex}"></i>${esc(cap1(ROAST[got.key].label))}</span>` : "";
           // about two seconds of the same reading, then one full-size frame decides. If that one fails the checks, keep looking
           if (me.streak >= 6) { const big = sharp(got); if (big) return use(big); me.streak = 0; if (me.why) { st.textContent = me.why; st.classList.add("warn"); } }
         } else {
@@ -2943,11 +2943,11 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     if (!el) return; const G = beanCard;
     if (!G || (G.where && G.where !== el.id)) { if (!el.textContent.trim() || el.querySelector(".bc")) { el.hidden = true; el.innerHTML = ""; } return; }
     const ro = G.roast || {}, LBL = (k) => cap1(ROAST[k].label), dot = (c) => `<i class="sc-dot ${c || "none"}"></i>`;
-    const head = ro.key ? `Looks <b>${esc(ROAST[ro.key].label)}</b>${ro.near ? `, close to ${esc(ROAST[ro.near].label)}` : ""}.`
-      : ro.mixed ? "<b>Mixed roasts.</b>" : `<b>Not sure.</b>${ro.guess ? ` Roughly ${esc(ROAST[ro.guess].label)}, but don’t trust it.` : ""}`;
+    const head = ro.key ? `This is a <b>${esc(ROAST[ro.key].label)}</b> roast.`
+      : "<b>Too few beans.</b>";
     el.hidden = false;
     el.innerHTML = `<div class="bc">
-      <p class="bc-head"><i class="bean-dot big" style="--c:${G.hex}"></i><span>${head}</span>${ro.c ? `<span class="bc-conf">${dot(ro.c)}${ro.c === "high" ? "Sure" : ro.c === "medium" ? "Check it" : "A guess"}</span>` : ""}</p>
+      <p class="bc-head"><i class="bean-dot big" style="--c:${G.hex}"></i><span>${head}</span></p>
       <p class="bc-why">${esc(ro.why || "")}</p>
       ${G.notes && G.notes.length ? `<dl class="bc-dl"><dt>Notes</dt><dd>${G.notes.map(esc).join(". ")}.</dd></dl>` : ""}
       <div class="bc-btns">${ro.key ? `<button type="button" class="pill on" data-bc="${ro.key}">Use ${esc(LBL(ro.key))}</button>` : ""}
