@@ -1540,6 +1540,28 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 /* grinder pill: room for descenders (g, y) */
 #millSel{line-height:1.3!important;padding-top:0!important;padding-bottom:0!important}
 @media (max-width: 640px){ #millSel{width:auto!important;min-width:0!important;max-width:100%!important} }
+/* scan review: one row per field, label | editable pill | how sure; the why underneath in small grey */
+.scan-review{grid-column:1/-1;margin:4px 0 8px;display:grid;gap:12px}
+.scan-review .sc-match{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;font-size:var(--fs-s);line-height:1.35}
+.scan-review .sc-rows{display:grid;gap:8px}
+.scan-review .sc-row{display:grid;grid-template-columns:86px minmax(0,1fr);column-gap:12px;align-items:center}
+.scan-review .sc-l{font-size:var(--fs-s);color:var(--muted)}
+.scan-review .sc-in{display:flex;align-items:center;gap:8px;min-width:0}
+.scan-review .sc-in input,.scan-review .sc-in select{flex:1;min-width:0;height:var(--pill-h);border:0;border-radius:var(--r);background:var(--pill);color:var(--ink);padding:0 10px;font:500 16px/1.3 var(--sans);-webkit-appearance:none;appearance:none}
+@media (min-width: 761px){ .scan-review .sc-in input,.scan-review .sc-in select{font-size:var(--fs-s)} }
+.scan-review .sc-in input::placeholder{color:var(--muted)}
+.scan-review .sc-why{grid-column:2;font-size:12px;line-height:1.3;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.scan-review .sc-why:empty{display:none}
+.sc-dot{flex:none;width:9px;height:9px;border-radius:50%;display:inline-block;background:transparent;box-shadow:inset 0 0 0 1.5px var(--rule)}
+.sc-dot.high{background:#30d158;box-shadow:none}.sc-dot.medium{background:#ff9f0a;box-shadow:none}.sc-dot.low{background:#ff3b30;box-shadow:none}
+.scan-review .sc-key{margin:0;font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px}
+.scan-review .sc-key .sc-dot{margin-left:6px}.scan-review .sc-key .sc-dot:first-child{margin-left:0}
+.scan-review .sc-btns{display:flex;flex-wrap:wrap;gap:5px}
+.scan-review .pill{height:var(--pill-h);padding:0 12px;border:0;border-radius:var(--r);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);cursor:pointer;display:inline-flex;align-items:center}
+.scan-review .pill.on{background:var(--ink)!important;color:var(--bg)!important}
+@media (max-width: 640px){ .scan-review .sc-row{grid-template-columns:72px minmax(0,1fr);column-gap:10px} }
+/* camera: the tip turns amber when the frame has glare, too little light or blur */
+.cam-status.warn{color:#ffb340}
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1645,6 +1667,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
       <div class="kit" id="kit">
   <div class="opt scan-opt"><span>Coffee</span><div class="scan-row"><button type="button" class="chip" id="scanBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>Scan the bag<span class="beta">Beta</span></button><span class="scan-msg" id="scanMsg" aria-live="polite"></span>
         <input type="file" accept="image/*" capture="environment" id="scanIn" hidden></div></div>
+        <div class="scan-review" id="scanReview" hidden></div>
         <div class="opts" id="opts-kit"></div>
         <div class="opt"><span>Grinder</span><div class="kit-mill">
           <select id="millSel" aria-label="Your grinder"></select>
@@ -3779,6 +3802,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
   const SPONSOR = { roaster: "Climpson & Sons", name: "Uraga", live: false };
   const sponsorOn = () => SPONSOR.live || /[?&]sponsor=preview\b/.test(location.search);
   // ---------- shelves ----------
+  let knownRoasters = [];   // every roaster we follow, for reading their names off a bag
   let shelf = [], shelfF = "all", shelfR = "all", shelfAll = false, shelfV = "all", shelfN = 10;   // one list: every coffee
   // "Made for V60": single origins roasted for filter or omni. Blends, espresso roasts (the roaster shelves or
   // describes them as espresso, even when sold ground for filter), coffees named espresso and darker
@@ -4050,7 +4074,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     : { text: state.text, name: (state.text || "").split(/[,.]/)[0], roast: state.roast !== "auto" ? state.roast : null };
   function syncBagBtn() { const b = $("bagBtn"); if (!b) return; const r = currentBag(), inIt = !!(r.name || r.text) && hasBag(r);
     b.textContent = "Add to my bags"; b.hidden = inIt || !(state.text || "").trim(); }   // once it's in your bags the button goes
-  $("bagBtn").onclick = () => { const r = currentBag(); if (!hasBag(r)) { toggleBag(r); renderShelf(); } syncBagBtn(); $("bags").scrollIntoView({ behavior: "smooth", block: "start" }); };
+  $("bagBtn").onclick = () => { const r = currentBag(); if (!hasBag(r)) { toggleBag(r); if (state.scanRoasted && bags[0] && !bags[0].roasted) { bags[0].roasted = state.scanRoasted; saveBags(); renderBags(); } renderShelf(); } syncBagBtn(); $("bags").scrollIntoView({ behavior: "smooth", block: "start" }); };
   // a brew logged from one of your bags takes its grams off what's left
   function bagUsed(dose) { const r = currentBag(), b = bags.find((x) => x.id === bagId(r)); if (b && b.left != null) { b.left = Math.max(0, b.left - dose); if (b.left === 0) bags.splice(bags.indexOf(b), 1); saveBags(); renderBags(); renderShelf(); } }
 
@@ -4068,71 +4092,313 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
   }
 
   // ---------- scan the bag: read the label on this device (Tesseract OCR, loaded only when used) ----------
+  // Pipeline: photo → clean-up (flatten light, fix polarity, straighten, binarise) → OCR in two passes →
+  // parse each field against coffee vocabulary (fuzzy, several languages) → a review sheet you can edit.
+  // Nothing leaves the phone except the one-off download of the reader itself.
   let ocrLib = null;
+  const OCR = window.__ocrBase ? { src: window.__ocrBase + "tesseract.js/dist/tesseract.min.js", opts: { workerPath: window.__ocrBase + "tesseract.js/dist/worker.min.js",
+      corePath: window.__ocrBase + "tesseract.js-core", langPath: window.__ocrBase + "@tesseract.js-data/eng/4.0.0_best_int" } }
+    : { src: "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js", opts: {} };
   const loadOcr = () => ocrLib || (ocrLib = new Promise((ok, no) => { const sc = document.createElement("script");
-    sc.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"; sc.onload = () => ok(window.Tesseract); sc.onerror = () => { ocrLib = null; no(new Error("load")); }; document.head.appendChild(sc); }));
-  function shrink(file) {   // a phone photo is 12 MP: 1800 px on the long side reads as well and much faster, in greyscale
-    return new Promise((ok, no) => { const img = new Image(); img.onload = () => {
-      const k = Math.min(1, 1800 / Math.max(img.width, img.height)), c = document.createElement("canvas");
-      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
-      const x = c.getContext("2d"); x.filter = "grayscale(1) contrast(1.25)"; x.drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(img.src); ok(c); };
-      img.onerror = no; img.src = URL.createObjectURL(file); });
-  }
-  const norm = (t) => String(t || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+    sc.src = OCR.src; sc.onload = () => ok(window.Tesseract); sc.onerror = () => { ocrLib = null; no(new Error("load")); }; document.head.appendChild(sc); }));
+  const newWorker = async (T, logger) => { const w = await T.createWorker("eng", 1, { ...OCR.opts, ...(logger ? { logger } : {}) });
+    await w.setParameters({ tessedit_pageseg_mode: "11", preserve_interword_spaces: "1" }); return w; };   // 11 = sparse text: labels are blocks, not paragraphs
+  const norm = (t) => String(t || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ß/g, "ss").replace(/[^a-z0-9]+/g, " ").trim();
 
-  // growing regions that name their country, for labels that print only the region (Cerrado Mineiro, Yirgacheffe...)
-  const REGIONS = [[/cerrado|mineir|minas gerais|mogiana|sul de minas|chapada/, "Brazil"], [/yirga|sidam|guji|gedeo|limu|jimma|harrar|hambela|bensa|shakiso|kaffa|bench maji|west arsi|uraga/, "Ethiopia"],
-    [/nyeri|kirinyaga|kiambu|murang|embu|meru|othaya/, "Kenya"], [/huila|narino|cauca|tolima|antioquia|quindio|santander|risaralda/, "Colombia"], [/boquete|chiriqui|volcan/, "Panama"],
+  // ---- 1. image clean-up. Each step targets one failure: uneven light and glare, light-on-dark foil, tilt, faint print ----
+  function loadImg(file) { return new Promise((ok, no) => { const img = new Image(); img.onload = () => ok(img); img.onerror = no; img.src = URL.createObjectURL(file); }); }
+  function toCanvas(src, long = 1700) {   // 12 MP photos read as well at ~1700 px and several times faster
+    const w0 = src.videoWidth || src.naturalWidth || src.width, h0 = src.videoHeight || src.naturalHeight || src.height;
+    const k = Math.min(1.6, long / Math.max(w0, h0)), c = document.createElement("canvas");
+    c.width = Math.round(w0 * k); c.height = Math.round(h0 * k); c.getContext("2d").drawImage(src, 0, 0, c.width, c.height); return c;
+  }
+  const lum = (c) => { const d = c.getContext("2d").getImageData(0, 0, c.width, c.height).data, g = new Float32Array(c.width * c.height);
+    for (let i = 0, j = 0; j < g.length; i += 4, j++) g[j] = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]; return g; };
+  function boxBlur(g, w, h, r) {   // mean over a (2r+1)² window with an integral image: O(n) whatever the radius
+    const I = new Float64Array((w + 1) * (h + 1));
+    for (let y = 0; y < h; y++) { let row = 0; for (let x = 0; x < w; x++) { row += g[y * w + x]; I[(y + 1) * (w + 1) + x + 1] = I[y * (w + 1) + x + 1] + row; } }
+    const o = new Float32Array(w * h);
+    for (let y = 0; y < h; y++) { const y0 = Math.max(0, y - r), y1 = Math.min(h, y + r + 1);
+      for (let x = 0; x < w; x++) { const x0 = Math.max(0, x - r), x1 = Math.min(w, x + r + 1);
+        o[y * w + x] = (I[y1 * (w + 1) + x1] - I[y0 * (w + 1) + x1] - I[y1 * (w + 1) + x0] + I[y0 * (w + 1) + x0]) / ((x1 - x0) * (y1 - y0)); } }
+    return o;
+  }
+  const fromGray = (g, w, h) => { const c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d"), im = x.createImageData(w, h);
+    for (let j = 0, i = 0; j < g.length; j++, i += 4) { const v = g[j] < 0 ? 0 : g[j] > 255 ? 255 : g[j]; im.data[i] = im.data[i + 1] = im.data[i + 2] = v; im.data[i + 3] = 255; }
+    x.putImageData(im, 0, 0); return c; };
+  function skewAngle(bin, w, h) {   // straighten: the angle where text rows line up gives the spikiest row histogram
+    const pts = []; const step = Math.max(1, Math.round(Math.sqrt((w * h) / 60000)));
+    for (let y = 0; y < h; y += step) for (let x = 0; x < w; x += step) if (bin[y * w + x] < 128) pts.push(x, y);
+    if (pts.length < 400) return 0;
+    // rows are counted in sample-grid units: at 1-px resolution the sampling grid itself makes fake "lines" at 0°
+    const nb = Math.ceil((h * 2 + 2) / step) + 2;
+    const score = (deg) => { const a = (deg * Math.PI) / 180, s = Math.sin(a), co = Math.cos(a), hist = new Float32Array(nb);
+      for (let i = 0; i < pts.length; i += 2) { const r = Math.round((pts[i + 1] * co - pts[i] * s + h * 0.5) / step); if (r >= 0 && r < nb) hist[r]++; }
+      let v = 0; for (let i = 1; i < hist.length; i++) { const d = hist[i] - hist[i - 1]; v += d * d; } return v; };
+    let best = 0, bs = score(0);
+    for (let d = -12; d <= 12; d += 1.5) { const sc = score(d); if (sc > bs) { bs = sc; best = d; } }
+    for (let d = best - 1.25; d <= best + 1.25; d += 0.25) { const sc = score(d); if (sc > bs) { bs = sc; best = d; } }
+    return Math.abs(best) < 0.75 ? 0 : best;
+  }
+  function rotate(c, deg) { if (!deg) return c; const a = (deg * Math.PI) / 180, o = document.createElement("canvas"); o.width = c.width; o.height = c.height;
+    const x = o.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, o.width, o.height); x.translate(o.width / 2, o.height / 2); x.rotate(-a); x.drawImage(c, -c.width / 2, -c.height / 2); return o; }
+  function prepare(src) {
+    const c0 = toCanvas(src), w = c0.width, h = c0.height; let g = lum(c0);
+    // polarity: dark foil with light print reads far better inverted. Judge from the middle of the frame, where the label is
+    const mid = []; for (let y = Math.floor(h * 0.2); y < h * 0.8; y += 7) for (let x = Math.floor(w * 0.2); x < w * 0.8; x += 7) mid.push(g[y * w + x]);
+    // Otsu split on the middle of the frame: the smaller side is the print. A dim photo of a pale label stays upright; dark foil flips
+    const hist = new Array(256).fill(0); mid.forEach((v) => hist[v | 0]++); let sumAll = 0; for (let i = 0; i < 256; i++) sumAll += i * hist[i];
+    let wB = 0, sB = 0, best = 0, th = 128; for (let i = 0; i < 256; i++) { wB += hist[i]; if (!wB) continue; const wF = mid.length - wB; if (!wF) break; sB += i * hist[i];
+      const mB = sB / wB, mF = (sumAll - sB) / wF, between = wB * wF * (mB - mF) * (mB - mF); if (between > best) { best = between; th = i; } }
+    const darkShare = mid.filter((v) => v <= th).length / Math.max(1, mid.length), inverted = darkShare > 0.6;
+    if (inverted) for (let i = 0; i < g.length; i++) g[i] = 255 - g[i];
+    // flatten the light: divide by a heavily blurred copy, so shadows, low light and the soft halo of glare all become even paper
+    const bg = boxBlur(g, w, h, Math.max(12, Math.round(Math.max(w, h) / 28)));
+    const flat = new Float32Array(g.length); for (let i = 0; i < g.length; i++) flat[i] = Math.min(255, (g[i] / Math.max(8, bg[i])) * 235);
+    // stretch contrast between the 1st and 99th percentile: faint print gets darker, paper stays white
+    const s = Float32Array.from(flat.filter((_, i) => i % 13 === 0)).sort(), lo = s[Math.floor(s.length * 0.01)], hi = s[Math.floor(s.length * 0.99)] || 255;
+    for (let i = 0; i < flat.length; i++) flat[i] = ((flat[i] - lo) / Math.max(20, hi - lo)) * 255;
+    // binarise (Sauvola): a threshold that follows the local mean and spread, so text under glare or in shadow still separates
+    const r = Math.max(8, Math.round(Math.max(w, h) / 60)), m = boxBlur(flat, w, h, r), sq = boxBlur(flat.map((v) => v * v), w, h, r), bin = new Float32Array(flat.length);
+    for (let i = 0; i < flat.length; i++) { const sd = Math.sqrt(Math.max(0, sq[i] - m[i] * m[i])); bin[i] = flat[i] > m[i] * (1 + 0.3 * (sd / 128 - 1)) ? 255 : 0; }
+    // despeckle: noise and grain turn into thousands of lone dots after binarising, and Tesseract slows to a crawl trying to read them
+    for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) { const i = y * w + x; if (bin[i]) continue;
+      const n = (bin[i - 1] ? 0 : 1) + (bin[i + 1] ? 0 : 1) + (bin[i - w] ? 0 : 1) + (bin[i + w] ? 0 : 1) + (bin[i - w - 1] ? 0 : 1) + (bin[i - w + 1] ? 0 : 1) + (bin[i + w - 1] ? 0 : 1) + (bin[i + w + 1] ? 0 : 1);
+      if (n <= 1) bin[i] = 255; }
+    const ang = skewAngle(bin, w, h);
+    return { gray: rotate(fromGray(flat, w, h), ang), bin: rotate(fromGray(bin, w, h), ang), angle: ang, inverted };
+  }
+  // live camera: say what's wrong with the frame (glare, dark, blur) before the reader struggles with it
+  function frameAdvice(c) {
+    const s = toCanvas(c, 240), g = lum(s), w = s.width, h = s.height; let hot = 0, sum = 0, lap = 0;
+    for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) { const i = y * w + x, v = g[i]; sum += v; if (v > 248) hot++;
+      const L = 4 * v - g[i - 1] - g[i + 1] - g[i - w] - g[i + w]; lap += L * L; }
+    const n = (w - 2) * (h - 2), mean = sum / n;
+    if (hot / n > 0.06) return "Glare on the label: tilt the bag a little.";
+    if (mean < 55) return "Too dark: move to the light.";
+    if (lap / n < 60) return "A little blurry: hold still, a hand’s length away.";
+    return "";
+  }
+
+  // ---- 2. OCR: two passes (cleaned grey, then binarised), merged line by line keeping the more confident reading ----
+  function mergeReads(reads) {
+    const lines = new Map(), words = [];
+    reads.forEach((d) => { (d.lines || []).forEach((l) => { const t = (l.text || "").replace(/\s+/g, " ").trim(), k = norm(t); if (!k || k.length < 2) return;
+        const item = { text: t, conf: l.confidence || 0, h: l.bbox ? l.bbox.y1 - l.bbox.y0 : 0, y: l.bbox ? l.bbox.y0 : 0, x: l.bbox ? l.bbox.x0 : 0 };
+        let key = k; for (const [k2, p] of lines) { if (Math.abs(p.y - item.y) < Math.max(p.h, item.h) * 0.6 && Math.abs(p.x - item.x) < Math.max(p.h, item.h) * 2 && lev(k2, k) <= Math.max(1, Math.round(k.length * 0.3))) { key = k2; break; } }
+        const prev = lines.get(key); if (!prev || item.conf > prev.conf) { if (prev) lines.delete(key); lines.set(k, item); } });
+      (d.words || []).forEach((w) => words.push({ text: w.text, conf: w.confidence || 0, h: w.bbox ? w.bbox.y1 - w.bbox.y0 : 0 })); });
+    return { lines: [...lines.values()].sort((a, b) => a.y - b.y), words };
+  }
+  const strongN = (d) => (d.words || []).filter((x) => x.confidence >= 75 && x.text.length > 2).length;
+  async function readPhoto(file, onStep) {
+    const T = await loadOcr(); onStep && onStep("Cleaning up the photo…");
+    const img = await loadImg(file), pre = prepare(img); URL.revokeObjectURL(img.src);
+    const w = await newWorker(T, (m) => { if (m.status === "recognizing text" && onStep) onStep(`Reading the label… ${Math.round(m.progress * 100)}%`); });
+    // each pass has a time cap, so one awkward photo can't keep a phone busy for a minute
+    const timed = (c, ms) => Promise.race([w.recognize(c).then((r) => r.data), new Promise((ok) => setTimeout(() => ok(null), ms))]);
+    const a = await timed(pre.gray, 20000), b = a && strongN(a) >= 25 ? null : await timed(pre.bin, 15000);   // a clear first read doesn't need the second
+    let reads = [a, b].filter(Boolean);
+    // a weak read (few confident words) gets a third look at the untouched photo, for labels the clean-up didn't suit
+    if (reads.reduce((n, d) => n + strongN(d), 0) < 12) { const c = await timed(toCanvas(img), 15000); if (c) reads.push(c); }
+    await w.terminate();
+    if (!reads.length) throw new Error("slow");
+    return { ...mergeReads(reads), angle: pre.angle, inverted: pre.inverted };
+  }
+
+  // ---- 3. parsing: vocabulary first, layout second, nothing guessed. Every field comes back as { v, c: "high"|"medium"|"low", why } ----
+  const lev = (a, b) => { if (a === b) return 0; const m = a.length, n = b.length; if (!m || !n) return m || n; let p = Array.from({ length: n + 1 }, (_, j) => j);
+    for (let i = 1; i <= m; i++) { const q = [i]; for (let j = 1; j <= n; j++) q[j] = Math.min(p[j] + 1, q[j - 1] + 1, p[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); p = q; } return p[n]; };
+  // fuzzy phrase match inside a normalised line: tolerates the OCR swapping a letter or two ("Etiopia", "wasbed"), never on short words
+  function findTerm(line, term) {
+    const lw = line.split(" "), tw = term.split(" "), n = tw.length; let best = 0;
+    for (let i = 0; i + n <= lw.length; i++) { const cand = lw.slice(i, i + n).join(" ");
+      if (cand === term) return 1;
+      const L = term.length; if (L < 5) continue;
+      const d = lev(cand, term), allow = L >= 9 ? 2 : 1; if (d <= allow) best = Math.max(best, 1 - d / L); }
+    return best;
+  }
+  const V = {
+    country: { Ethiopia: ["ethiopia", "etiopia", "ethiopie", "athiopien", "aethiopien", "ethiopian"], Kenya: ["kenya", "kenia", "kenyan"], Colombia: ["colombia", "kolumbien", "colombie", "colombian"],
+      Brazil: ["brazil", "brasil", "bresil", "brasilien", "brazilian"], Peru: ["peru", "perou"], Guatemala: ["guatemala"], Honduras: ["honduras"], "El Salvador": ["el salvador", "salvador"],
+      "Costa Rica": ["costa rica"], Panama: ["panama"], Nicaragua: ["nicaragua"], Mexico: ["mexico", "mexique", "mexiko"], Rwanda: ["rwanda", "ruanda"], Burundi: ["burundi"], Uganda: ["uganda", "ouganda"],
+      Tanzania: ["tanzania", "tansania", "tanzanie"], Yemen: ["yemen", "jemen"], Indonesia: ["indonesia", "indonesien", "indonesie", "sumatra", "sulawesi"], Ecuador: ["ecuador", "equateur"],
+      Bolivia: ["bolivia", "bolivie", "bolivien"], "DR Congo": ["congo", "kongo", "drc"], "Papua New Guinea": ["papua new guinea", "png"], China: ["china", "chine", "yunnan"], India: ["india", "inde", "indien"],
+      Myanmar: ["myanmar", "burma"], Thailand: ["thailand", "thailande"], Vietnam: ["vietnam", "viet nam"], Taiwan: ["taiwan"], Malawi: ["malawi"], Zambia: ["zambia"], Jamaica: ["jamaica", "jamaique"],
+      Hawaii: ["hawaii", "kona"], "Dominican Republic": ["dominican republic", "republica dominicana"], "Timor-Leste": ["timor", "timor leste", "east timor"], Laos: ["laos"], Nepal: ["nepal"], Philippines: ["philippines"] },
+    process: [   // most specific first: "anaerobic natural" is anaerobic, "lactic co-fermented" is a co-ferment
+      ["decaf", ["decaf", "decaffeinated", "swiss water", "mountain water", "sugar cane decaf", "sugarcane", "ethyl acetate", "ea process", "entkoffeiniert", "descafeinado", "decafeine", "decaffeinato"]],
+      ["cofer", ["co ferment", "co fermented", "cofermented", "co fermentation", "coferment", "infused", "infusion", "thermal shock", "yeast", "koji", "inoculated", "fruit fermented", "barrel aged", "cofermentado"]],
+      ["anaerobic", ["anaerobic", "anaerobe", "anaerob", "anaerobico", "anaerobie", "carbonic maceration", "double fermentation", "extended fermentation", "lactic", "anoxic"]],
+      ["honey", ["honey", "miel", "pulped natural", "semi washed", "black honey", "red honey", "yellow honey", "white honey", "honig"]],
+      ["natural", ["natural", "naturals", "dry processed", "dry process", "sun dried", "sundried", "naturel", "nature", "natur", "naturale", "secado al sol", "natural process"]],
+      ["washed", ["washed", "fully washed", "wet processed", "wet process", "lavado", "lave", "lavee", "gewaschen", "vaskede", "vasket", "tvattad", "lavato", "wet hulled"]] ],
+    roast: [ ["vlight", ["very light", "ultra light", "extra light", "nordic", "sehr hell", "tres claire", "muy claro"]],
+      ["mdark", ["medium dark", "full city", "mittel dunkel", "medio oscuro"]],
+      ["dark", ["dark roast", "espresso roast", "french roast", "italian roast", "vienna roast", "dunkel", "oscuro", "foncee", "fonce"]],
+      ["medium", ["medium roast", "medium", "medio", "mittel", "moyenne", "city roast"]],
+      ["light", ["light roast", "filter roast", "lightly roasted", "light", "hell", "claro", "claire", "clair", "chiaro", "lys", "ljus", "filter"]] ],
+    variety: ["gesha", "geisha", "sl28", "sl 28", "sl34", "sl 34", "sl14", "ruiru 11", "ruiru", "batian", "pink bourbon", "red bourbon", "yellow bourbon", "orange bourbon", "bourbon", "typica", "caturra", "catuai", "castillo",
+      "pacamara", "maragogype", "mundo novo", "catimor", "sarchimor", "sidra", "wush wush", "laurina", "eugenioides", "heirloom", "landrace", "74110", "74112", "74158", "kurume", "dega", "wolisho", "chiroso",
+      "tabi", "parainema", "marsellesa", "obata", "villa sarchi", "mokka", "jarc", "k7", "java", "pacas", "tekisic", "acaia", "ombligon", "bourbon sidra", "red catuai", "yellow catuai"],
+  };
+  const REGION_OF = [[/cerrado|mineir|minas gerais|mogiana|sul de minas|chapada/, "Brazil"], [/yirga|sidam|guji|gedeo|limu|jimma|harrar|hambela|bensa|shakiso|kaffa|bench maji|west arsi|uraga|chelbesa|gera\b/, "Ethiopia"],
+    [/nyeri|kirinyaga|kiambu|murang|embu|meru|othaya|kieni/, "Kenya"], [/huila|narino|cauca|tolima|antioquia|quindio|santander|risaralda/, "Colombia"], [/boquete|chiriqui|volcan/, "Panama"],
     [/tarrazu|west valley|central valley|naranjo|brunca/, "Costa Rica"], [/huehuetenango|antigua|atitlan|acatenango|coban/, "Guatemala"], [/santa barbara|marcala|copan|ocotepeque/, "Honduras"],
     [/cajamarca|cusco|amazonas|jaen|san ignacio/, "Peru"], [/caranavi|yungas/, "Bolivia"], [/nyamasheke|rusizi|huye|nyaruguru/, "Rwanda"], [/kayanza|ngozi|kirundo/, "Burundi"],
-    [/aceh|gayo|sumatra|java|bali|flores|toraja/, "Indonesia"], [/yunnan|pu.?er|baoshan/, "China"], [/chiapas|veracruz|oaxaca/, "Mexico"]];
-  const regionCountry = (flat) => { const hit = REGIONS.find(([re]) => re.test(flat)); return hit ? hit[1] : ""; };
-  function readBag(data) {
-    const text = data.text || "", flat = norm(text);
-    // 1. one of today's coffees: same roaster on the label and every word of the coffee's name
-    // a roaster counts when its whole name is on the label; names that are also label words (Origin, Notes...) need "coffee" or "roast" after them
-    const GENERIC = /^(origin|notes|grind|extract|union|plot|standout|volcano|heart|nomad|module|calico|kaffa|scenery|catalyst|aether|mellow|subtext|alchemy|passenger|ritual|leaves|morgon|april|terraform|rave|curve|ozone|assembly|colonna|workshop)$/;
-    const has = (n) => { const k = norm(n).replace(/\b(coffee|roasters?|roastery)\b/g, "").trim(); if (!k) return false;
-      const re = new RegExp("(^| )" + k.replace(/ /g, " ") + (GENERIC.test(k) ? " (coffee|roast)" : "( |$)")); return re.test(flat); };
-    const roasters = [...new Set(shelf.map((r) => r.roaster))].filter(has).sort((a, b) => b.length - a.length);
-    const hit = shelf.filter((r) => roasters.includes(r.roaster)).map((r) => ({ r, words: norm(calm(r.name)).split(" ").filter((w) => w.length > 2) }))
-      .filter((x) => x.words.length && x.words.every((w) => flat.includes(w))).sort((a, b) => b.words.length - a.words.length)[0];
-    if (hit) return { coffee: hit.r };
-    // the label's tasting notes: the line after "Tastes like" / "Notes". Kept aside, so the rest reads as origin, process and roast
-    const NOTE_RE = /(?:tasting notes|notes|tastes? (?:like|of)|flavou?rs?|cup profile)\s*[:\-–]?\s*\n?\s*([^\n]{3,80})/i;
-    const notesLine = (text.match(NOTE_RE) || [])[1];
-    const body = text.replace(NOTE_RE, "\n");
-    const p0 = parseCoffee(body + " " + regionCountry(flat));
-    // no roaster on the label (many print only the coffee): match on most of the name's words, plus the same origin or process
-    const NAME_STOP = /^(coffee|blend|espresso|filter|decaf|pick|edition|single|origin|natural|washed|honey|anaerobic|fazenda|finca|estate|farm|hacienda|station|washing|lot|micro|microlot|yellow|white|black|light|dark|medium|roast)$/;
-    const onLabel = (w) => new RegExp("(^| )" + w + "( |$)").test(flat);
-    const scored = !roasters.length ? shelf.map((r) => { const ws = [...new Set(norm(calm(r.name)).split(" ").filter((w) => w.length > 3 && !NAME_STOP.test(w) && !COUNTRIES.some((c) => norm(c) === w) && !VARIETY_RE.test(w)))];
-        const n = ws.filter(onLabel).length; return { r, n, of: ws.length }; })
-      .filter((x) => x.of && x.n >= Math.min(2, x.of) && x.n / x.of >= 0.6 && ((x.r.origin && p0.origin && x.r.origin === p0.origin) || (x.r.process && p0.process && procKey(x.r.process) === p0.process)))
-      .sort((a, b) => b.n - a.n) : [];
-    if (scored.length && (scored.length === 1 || scored[0].n > scored[1].n)) return { coffee: scored[0].r };
-    // 2. otherwise build the line from what the label says
-    const p = p0;
-    const lines = (data.lines || []).map((l) => ({ t: (l.text || "").trim(), h: l.bbox ? l.bbox.y1 - l.bbox.y0 : 0 })).filter((l) => /[a-z]{3}/i.test(l.t));
-    const rl = !roasters[0] && !p.roaster && lines.find((l) => /\b(roasters?|roastery|coffee roasters|coffee co)\b/i.test(l.t) && l.t.split(/\s+/).length <= 5);
-    const roasterName = roasters[0] || (p.roaster ? titleCase(p.roaster) : rl ? titleCase(rl.t.toLowerCase().replace(/[^\p{L}\p{N} '&.-]/gu, "").trim()) : null);
-    const skip = (t) => { const n = norm(t); return !n || (roasterName && n.includes(norm(roasterName))) || /\b(roast(ed|ery|ers)?|coffee|notes?|process|origin|variety|altitude|producer|farm|region|weight|net|whole bean|\d+ ?g)\b/.test(n) || COUNTRIES.some((c) => n === c.toLowerCase()); };
-    const words = (data.words || []).map((w) => ({ t: (w.text || "").replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, ""), h: w.bbox ? w.bbox.y1 - w.bbox.y0 : 0, c: w.confidence || 0 }))
-      .filter((w) => w.c >= 80 && w.t.length > 1 && /^[\p{L}][\p{L}'’.-]*$/u.test(w.t) && !skip(w.t) && !(notesLine && norm(notesLine).split(" ").includes(norm(w.t))));
-    const maxH = Math.max(0, ...words.map((w) => w.h));
-    const bigWords = [...new Map(words.filter((w) => w.h >= maxH * 0.7).map((w) => [w.t.toLowerCase(), w.t])).values()];   // the same word from several camera frames counts once
-    const big = bigWords.length && bigWords.length <= 6 ? { t: titleCase(bigWords.join(" ").toLowerCase()) }
-      : lines.filter((l) => !skip(l.t) && l.t.length <= 40).sort((a, b) => b.h - a.h)[0];
-    const PL = { washed: "washed", natural: "natural", honey: "honey", anaerobic: "anaerobic", cofer: "co-fermented", decaf: "decaf" };
-    const parts = [roasterName, big ? big.t.replace(/[^\p{L}\p{N} '&.-]/gu, "").trim() : null, p.origin, p.variety ? titleCase(p.variety) : null, p.process ? PL[p.process] : null, p.roast ? ROAST[p.roast].label + " roast" : null].filter(Boolean);
-    const found = parts.length - (roasterName ? 1 : 0) - (big ? 1 : 0);
-    if (!parts.length || (found === 0 && !roasterName)) return null;
-    return { line: parts.join(", ") + (notesLine ? ". Notes: " + notesLine.replace(/\s+/g, " ").trim() : ""), p, name: big ? big.t : null, roaster: roasterName, notes: notesLine || null };
+    [/aceh|gayo|toraja/, "Indonesia"], [/chiapas|veracruz|oaxaca/, "Mexico"]];
+  const FLAVOUR = /\b(berr|straw|rasp|blue|black ?curr|currant|cherr|plum|peach|apricot|nectar|mango|lychee|passion|pineapple|citrus|lemon|lime|orange|grapefruit|mandarin|bergamot|apple|pear|grape|fig|date|raisin|jasmine|rose|floral|hibiscus|lavender|tea|earl|chocolate|cacao|cocoa|caramel|toffee|honey|molasses|sugar|vanilla|nut|almond|hazelnut|walnut|spice|cinnamon|clove|cardamom|wine|rum|whisk|cream|milk|butter|syrup|tamarind|rhubarb|kiwi|melon|watermelon|cola|mint|ginger|stone fruit|tropical|myrtille|cassis|framboise|fraise|jazmin|albaricoque|johannisbeere|zitrus|solbaer|grapefrugt)/;
+  const NOTES_KEY = /^(?:tasting notes?|notes?|notas?(?: de cata)?|notes de degustation|geschmack|aromen|aroma|smaksnoter|smagsnoter|flavou?r(?: notes)?|cup(?: profile| notes)?|tastes?(?: like| of)?|we taste|in the cup|profile)\b\s*[:\-–]?\s*/i;
+  const BOILER = /\b(whole ?bean|ground|net ?(wt|weight)?|\d+\s?(g|gr|kg|oz)\b|altitude|masl|m a s l|elevation|producer|harvest|importer|recyclable|compostable|roasted (in|on)|roast date|best before|bbe|www|http|instagram)\b|\d{1,2}[.\/-]\d{1,2}[.\/-]\d{2,4}|@|\.com/;
+  function readFields(ocr, mem) {
+    const L = ocr.lines.filter((l) => /[a-z]{2}/i.test(l.text) || /\d{5}/.test(l.text)).map((l) => ({ ...l, n: norm(l.text) }));
+    const out = {}, used = new Set(), cf = (sim, conf, bonus = 0) => { const s = sim * Math.min(1, (conf || 60) / 90) + bonus; return s >= 0.85 ? "high" : s >= 0.62 ? "medium" : "low"; };
+    // tasting notes first, so their fruit and flowers never read as process, origin or name
+    let notes = null, nIdx = -1;
+    L.forEach((l, i) => { if (notes) return; const m = l.text.match(NOTES_KEY); if (m && m[0].trim().length > 3) {
+      let t = l.text.slice(m[0].length).trim(); if (t.length < 3 && L[i + 1]) { t = L[i + 1].text; used.add(i + 1); }
+      if (t.length >= 3) { notes = { v: t, c: cf(1, l.conf, 0.1), why: "after “" + m[0].replace(/[:\-–\s]+$/, "") + "”" }; nIdx = i; used.add(i); } } });
+    if (!notes) { const fl = L.map((l, i) => ({ l, i, k: (l.n.match(new RegExp(FLAVOUR.source, "g")) || []).length })).filter((x) => x.k >= 2 && x.l.n.split(" ").length <= 9).sort((a, b) => b.k - a.k)[0];
+      if (fl) { notes = { v: fl.l.text, c: cf(0.8, fl.l.conf), why: "a line of flavour words" }; used.add(fl.i); nIdx = fl.i; } }
+    out.notes = notes ? { ...notes, v: notes.v.replace(/\s*[\/·•|-]\s*|\s{2,}/g, ", ").replace(/,\s*,/g, ",").replace(/^,|,$/g, "").trim() } : { v: null, why: "No tasting notes on this side" };
+    const scan = (pick) => { let best = null; L.forEach((l, i) => { if (used.has(i) && i === nIdx) return; const r = pick(l, i); if (r && (!best || r.s > best.s)) best = { ...r, i, l }; }); return best; };
+    // process: labelled lines ("Process: …", "Proceso:") are trusted more; the most specific family wins
+    let proc = null;
+    for (const [key, terms] of V.process) { const hit = scan((l) => { let s = 0; terms.forEach((t) => { s = Math.max(s, findTerm(l.n, t)); }); return s ? { s, lab: /process|proceso|procede|aufbereitung|processing|metodo/.test(l.n) } : null; });
+      if (hit && (!proc || (hit.s >= 0.85 && proc.s < 0.85))) { proc = { key, ...hit }; if (hit.s >= 0.85) break; } }
+    out.process = proc ? { v: proc.key, c: cf(proc.s, proc.l.conf, proc.lab ? 0.1 : 0), why: (proc.s < 1 ? "close match: " : "") + "“" + proc.l.text + "”" } : { v: null, why: "Process not printed on this side" };
+    // roast: "light" alone is common in notes ("light body"), so a bare word only counts on a short line or next to "roast"
+    let roast = null;
+    for (const [key, terms] of V.roast) { const hit = scan((l) => { let s = 0; const short = l.n.split(" ").length <= 4, lab = /roast|tueste|rostung|roestung|torrefaction|tostado|brennt/.test(l.n);
+        terms.forEach((t) => { const f = findTerm(l.n, t); if (f && (t.includes(" ") || short || lab)) s = Math.max(s, f * (t.includes(" ") || lab ? 1 : 0.85)); }); return s ? { s, lab } : null; });
+      if (hit && (!roast || hit.s > roast.s)) roast = { key, ...hit }; }
+    if (roast && /omni/.test(roast.l.n)) roast = null;
+    out.roast = roast ? { v: roast.key, c: cf(roast.s, roast.l.conf, roast.lab ? 0.1 : 0), why: "“" + roast.l.text + "”" } : { v: null, why: "Roast level not stated" };
+    // origin: every country named, in order (a blend reads Colombia / Ethiopia); a region alone gives its country, at lower confidence
+    const found = [];
+    L.forEach((l, i) => { if (i === nIdx) return; Object.entries(V.country).forEach(([name, syn]) => { let s = 0; syn.forEach((t) => { s = Math.max(s, findTerm(l.n, t)); });
+      if (s && !found.some((f) => f.name === name)) { const at = Math.min(...syn.map((t) => { const j = l.n.indexOf(t.split(" ")[0].slice(0, 4)); return j < 0 ? 999 : j; })); found.push({ name, s, l, y: l.y * 1000 + at }); } }); });
+    if (found.length) { found.sort((a, b) => b.s - a.s || a.y - b.y); const top = found.filter((f) => f.s >= 0.8).sort((a, b) => a.y - b.y);
+      const list = top.length ? top : [found[0]], s = Math.min(...list.map((f) => f.s));
+      out.origin = { v: list.map((f) => f.name).join(" / "), c: cf(s, Math.min(...list.map((f) => f.l.conf))), why: list.length > 1 ? "several countries: a blend" : "“" + list[0].l.text + "”" };
+    } else { const all = L.map((l) => l.n).join(" "), hit = REGION_OF.find(([re]) => re.test(all));
+      out.origin = hit ? { v: hit[1], c: "medium", why: "from the region named on the label" } : { v: null, why: "No country on this side" }; }
+    const regLine = L.find((l, i) => i !== nIdx && /(region|region|area|zone)\s*[:\-]/i.test(l.text));
+    // variety: all the cultivars named, outside the notes and outside the big name (a farm called Arara is not the variety)
+    const maxH = Math.max(1, ...L.map((l) => l.h)), isBig = (l) => l.h >= maxH * 0.72;
+    const vs = []; L.forEach((l, i) => { if (i === nIdx || isBig(l)) return; V.variety.forEach((t) => { const s = findTerm(l.n, t); if (s >= 0.8) { const name = t === "geisha" ? "Gesha" : t === "sl 28" ? "SL28" : t === "sl 34" ? "SL34" : titleCase(t);
+      if (!vs.some((v) => v.name === name || v.name.includes(name) || name.includes(v.name))) vs.push({ name, s, l }); } }); });
+    const vClean = vs.filter((v) => !vs.some((o) => o !== v && o.name.length > v.name.length && o.name.toLowerCase().includes(v.name.toLowerCase())));
+    out.variety = vClean.length ? { v: vClean.map((v) => v.name).join(", "), c: cf(Math.min(...vClean.map((v) => v.s)), Math.min(...vClean.map((v) => v.l.conf)), /variet|cultivar|varietal|variedad|sorte/.test(vClean[0].l.n) ? 0.1 : 0), why: "“" + vClean[0].l.text + "”" }
+      : { v: null, why: "Variety not printed on this side" };
+    // dates: roasted on, or best before. Day first, the European way; two-digit years read as 20xx
+    const DT = /(\d{1,2})[.\/\- ](\d{1,2}|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[.\/\- ](\d{2,4})/i, MON = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
+    out.date = { v: null, why: "No date on this side" };
+    for (const l of ocr.lines) { const m = l.text.match(DT); if (!m) continue; const d = +m[1], mo = isNaN(+m[2]) ? MON[m[2].slice(0, 3).toLowerCase()] : +m[2], y = +m[3] < 100 ? 2000 + +m[3] : +m[3];
+      if (!(d >= 1 && d <= 31 && mo >= 1 && mo <= 12 && y >= 2020 && y <= 2035)) continue;
+      const kind = /best|bbe|bb\b|use by|mhd|consumir|a consommer|da consumarsi|exp/i.test(l.text) ? "best" : "roasted";
+      out.date = { v: `${String(d).padStart(2, "0")}/${String(mo).padStart(2, "0")}/${y}`, kind, c: cf(1, l.conf, /roast|best|bbe|geroestet|tostado/i.test(l.text) ? 0.1 : 0), why: kind === "best" ? "best before" : "roast date" }; break; }
+    // roaster: a known roaster (today's list, plus the roasters we follow) anywhere on the label; else a "… Coffee Roasters" line
+    const known = [...new Set([...knownRoasters, ...shelf.map((r) => r.roaster), ...ROASTERS.map(titleCase)])].map((n) => ({ name: n, k: norm(n).replace(/\b(coffee|roasters?|roastery|roasting|co)\b/g, " ").replace(/\s+/g, " ").trim() })).filter((r) => r.k.length >= 3);
+    let roaster = null;
+    L.forEach((l, i) => { if (i === nIdx) return; known.forEach((r) => { const s = findTerm(l.n, r.k); if (!s) return;
+      const generic = /^(origin|notes|april|curve|rave|ozone|assembly|workshop|nomad|kaffa|heart|module|catalyst|alchemy|ritual|subtext|mellow|leaves|scenery|passenger|volcano|union|plot|standout|extract|grind)$/.test(r.k);
+      const own = l.n.replace(/\b(coffee|roasters?|roastery|roasting|co|lab|company)\b/g, " ").replace(/\s+/g, " ").trim() === r.k;   // the roaster's name is the whole line
+      if (r.k.length <= 4 && !own) return;   // Sey, Dak, Cult: three or four letters turn up in noise, so only a line of their own counts
+      const sc = s * (generic && !own ? 0.5 : 1) + (own ? 0.1 : 0);
+      if (!roaster || sc > roaster.s) roaster = { name: r.name, s: sc, l, i, own }; }); });
+    if (roaster && roaster.s < 0.8) roaster = null;
+    if (!roaster) { const i = L.findIndex((l) => /\b(coffee roasters?|roastery|roasting co|coffee co|kaffeerosterei|rosterei|torrefaction|tostadores|torrefazione)\b/.test(l.n) && l.n.split(" ").length <= 6);
+      if (i >= 0) roaster = { name: titleCase(L[i].n.replace(/\b(coffee roasters?|roastery|roasting co|coffee co|kaffeerosterei|rosterei|torrefaction|tostadores|torrefazione)\b/g, "").trim()) || null, s: 0.7, l: L[i], i }; }
+    out.roaster = roaster && roaster.name ? { v: roaster.name, c: cf(Math.min(1, roaster.s), roaster.l.conf), why: "“" + roaster.l.text + "”" } : { v: null, why: "No roaster name found: it’s often a logo, or on the back" };
+    // coffee name: the biggest print that isn't the roaster, a field above, boilerplate or the notes. Two big lines read as one name
+    const taken = new Set([nIdx, roaster ? roaster.i : -1]);
+    const fieldLine = (l) => (proc && proc.l === l && l.n.split(" ").length <= 3) || (roast && roast.l === l && l.n.split(" ").length <= 3) || BOILER.test(l.n) || NOTES_KEY.test(l.text) || /^(process|variety|region|origin|roast|notes?|altitude)\b/.test(l.n);
+    const geoOnly = (l) => { const ws = l.n.split(" "); const country = Object.values(V.country).flat().some((t) => findTerm(l.n, t) >= 0.8);
+      return country && ws.length <= 3 && ws.every((w) => w.length <= 2 || Object.values(V.country).flat().some((t) => t.split(" ").includes(w) || lev(t, w) <= 1) || REGION_OF.some(([re]) => re.test(w))); };
+    const varLines = new Set(vClean.map((v) => v.l));
+    const isRoaster = (l) => known.some((r) => r.k.length > 4 && findTerm(l.n.replace(/\b(coffee|roasters?|roastery|roasting|co|lab)\b/g, " ").replace(/\s+/g, " ").trim(), r.k) >= 0.85);   // a roaster's name is never the coffee
+    const cands = L.map((l, i) => ({ l, i })).filter(({ l, i }) => !taken.has(i) && !fieldLine(l) && !geoOnly(l) && !(varLines.has(l) && l.n.split(" ").length <= 4) && !isRoaster(l) && l.n.length >= 3 && l.conf >= 45 && /[a-z]{3}/.test(l.n));
+    const hMax = Math.max(1, ...cands.map(({ l }) => l.h));
+    const big = cands.filter(({ l }) => l.h >= hMax * 0.8).sort((a, b) => a.l.y - b.l.y).slice(0, 2);
+    if (big.length) { const text = big.map(({ l }) => l.text.replace(/[^\p{L}\p{N} '’&.\-]/gu, "").trim()).join(" ").replace(/\s+/g, " ");
+      const next = Math.max(0, ...cands.filter((c) => !big.includes(c)).map(({ l }) => l.h)), clear = hMax >= next * 1.35;
+      const conf = Math.min(...big.map(({ l }) => l.conf));
+      const nice = /[a-z]/.test(text) && text.split(" ").some((w) => /[a-z]/.test(w)) ? text.replace(/\b([A-Z])([A-Z]+)\b/g, (m, a, b) => a + b.toLowerCase()) : titleCase(text.toLowerCase());   // THE BARON → The Baron
+      out.name = { v: calm(nice), c: conf >= 80 && clear ? "high" : conf >= 60 ? "medium" : "low", why: clear ? "the biggest print on the label" : "large print, but not clearly the title" };
+    } else out.name = { v: null, why: "Couldn’t pick out the coffee’s name" };
+    if (regLine) out.region = { v: regLine.text.replace(/^[^:\-]*[:\-]\s*/, "").trim(), c: "medium" };
+    // your earlier scans of this bag fill what this photo is missing
+    if (mem && out.roaster.v && out.name.v) { const k = norm(out.roaster.v) + "|" + norm(out.name.v), hit = Object.entries(mem).find(([mk]) => mk === k || lev(mk, k) <= 2);
+      if (hit) Object.entries(hit[1]).forEach(([f, v]) => { if (v && out[f] && (!out[f].v || out[f].c === "low")) out[f] = { v, c: "high", why: "from your last scan of this bag" }; }); }
+    return out;
   }
-  const pickPhoto = () => { const i = $("scanIn"); i.value = ""; i.click(); };
-  $("scanBtn").onclick = () => (navigator.mediaDevices && navigator.mediaDevices.getUserMedia ? liveScan() : pickPhoto());
+    const RANK = { high: 3, medium: 2, low: 1 };
+  // conservative: the back only fills gaps and replaces guesses (low); a medium or high reading from the front stays
+  const mergeFields = (a, b) => { const o = { ...a }; Object.keys(b).forEach((k) => { if (b[k] && b[k].v && (!o[k] || !o[k].v || (o[k].c === "low" && (RANK[b[k].c] || 0) > 1))) o[k] = { ...b[k], why: (b[k].why || "") + " (back of the bag)" }; }); return o; };
+  // today's list: the label is one of the coffees on the shelf when roaster and name both match closely
+  function shelfMatch(f) {
+    if (!f.name.v) return null; const nk = norm(f.name.v), rk = f.roaster.v ? norm(f.roaster.v) : "";
+    let best = null;
+    shelf.forEach((r) => { const rn = norm(calm(r.name)); const ws = rn.split(" ").filter((w) => w.length > 2); if (!ws.length) return;
+      const hit = ws.filter((w) => nk.split(" ").some((x) => x === w || (w.length >= 5 && lev(x, w) <= 1))).length / ws.length;
+      const sameR = rk && (norm(r.roaster) === rk || norm(r.roaster).includes(rk) || rk.includes(norm(r.roaster)));
+      const sameO = f.origin.v && r.origin && f.origin.v.split(" / ")[0] === r.origin.split(" / ")[0];
+      const s = hit + (sameR ? 0.6 : 0) + (sameO ? 0.2 : 0);
+      if (hit >= 0.6 && (sameR || (sameO && hit >= 0.99)) && (!best || s > best.s)) best = { r, s }; });
+    return best ? best.r : null;
+  }
+  const SCAN_MEM = "v60.scanmem";
+  const scanMem = () => { try { return JSON.parse(localStorage.getItem(SCAN_MEM) || "{}") || {}; } catch (e) { return {}; } };
 
-  // ---------- live scan: the camera stays on and reads the label about once a second, adding up what each frame finds ----------
+  // ---- 4. review sheet: every field editable, with how sure the reader is; nothing is applied until you say so ----
+  const PROC_OPTS = [["", "Not stated"], ["washed", "Washed"], ["natural", "Natural"], ["honey", "Honey"], ["anaerobic", "Anaerobic"], ["cofer", "Co-ferment / Infused"], ["decaf", "Decaf"]];
+  const ROAST_OPTS = [["", "Not stated"], ["vlight", "Very light"], ["light", "Light"], ["medium", "Medium"], ["mdark", "Medium-dark"], ["dark", "Dark"]];
+  const FIELD_ROWS = [["name", "Coffee"], ["roaster", "Roaster"], ["origin", "Origin"], ["process", "Process"], ["variety", "Variety"], ["roast", "Roast"], ["notes", "Notes"], ["date", "Date"]];
+  let review = null;
+  function showReview(fields, raw) {
+    review = { fields, raw, match: shelfMatch(fields) };
+    const box = $("scanReview"), dot = (c) => `<i class="sc-dot ${c || "none"}" title="${c ? c + " confidence" : "not found"}"></i>`;
+    const input = (k, f) => k === "process" || k === "roast"
+      ? `<select data-f="${k}">${(k === "process" ? PROC_OPTS : ROAST_OPTS).map(([v, t]) => `<option value="${v}"${(f.v || "") === v ? " selected" : ""}>${t}</option>`).join("")}</select>`
+      : `<input data-f="${k}" value="${esc(f.v || "")}" placeholder="${k === "date" ? "DD/MM/YYYY" : "Not found"}"${k === "notes" ? "" : ' autocapitalize="words"'}>`;
+    const m = review.match;
+    box.innerHTML = `${m ? `<div class="sc-match"><span>Looks like <b>${esc(m.roaster)}, ${esc(calm(m.name))}</b> from today’s coffees.</span><button type="button" class="pill" id="scUseListing">Use the listing</button></div>` : ""}
+      <div class="sc-rows">${FIELD_ROWS.map(([k, lbl]) => { const f = fields[k] || { v: null }; return `<label class="sc-row"><span class="sc-l">${lbl}${k === "date" && f.kind === "best" ? " (best before)" : ""}</span>
+        <span class="sc-in">${input(k, f)}${dot(f.v ? f.c : null)}</span><span class="sc-why">${esc(f.v ? f.why || "" : f.why || "")}</span></label>`; }).join("")}</div>
+      <p class="sc-key">${dot("high")}Sure ${dot("medium")}Check it ${dot("low")}A guess. Fix anything it misread.</p>
+      <div class="sc-btns"><button type="button" class="pill on" id="scUse">Use these</button><button type="button" class="pill" id="scMore">Add the back of the bag</button><button type="button" class="pill" id="scAgain">Scan again</button><button type="button" class="pill" id="scCancel">Cancel</button></div>`;
+    box.hidden = false;
+    box.querySelectorAll("[data-f]").forEach((x) => x.addEventListener("input", () => { const f = review.fields[x.dataset.f] = { ...(review.fields[x.dataset.f] || {}), v: x.value.trim() || null, c: "high", why: "edited by you" };
+      const d = x.parentNode.querySelector(".sc-dot"); d.className = "sc-dot " + (f.v ? "high" : "none"); }));
+    $("scUse").onclick = applyReview; $("scCancel").onclick = closeReview;
+    $("scAgain").onclick = () => { closeReview(); startScan(); };
+    $("scMore").onclick = () => { review.adding = true; pickPhoto(); };
+    if (m) $("scUseListing").onclick = () => { closeReview(); $("scanMsg").textContent = `Found it: ${m.roaster}, ${calm(m.name)}.`; brewThis(m); };
+    $("scanMsg").textContent = "Here’s what the label says. Check it, then Use these.";
+    box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+  function closeReview() { const b = $("scanReview"); b.hidden = true; b.innerHTML = ""; review = null; }
+  function applyReview() {
+    const f = review.fields, v = (k) => (f[k] && f[k].v) || null, PL = { washed: "washed", natural: "natural", honey: "honey", anaerobic: "anaerobic", cofer: "co-fermented", decaf: "decaf" };
+    const line = [v("roaster"), v("name"), v("origin"), v("variety"), v("process") ? PL[v("process")] : null, v("roast") ? ROAST[v("roast")].label + " roast" : null].filter(Boolean).join(", ") + (v("notes") ? ". Notes: " + v("notes") : "");
+    if (!line.trim()) { $("scanMsg").textContent = "Nothing to use yet. Type the coffee, or scan again."; return; }
+    // remember what you confirmed, so this bag reads better next time
+    if (v("roaster") && v("name")) { const mem = scanMem(), k = norm(v("roaster")) + "|" + norm(v("name"));
+      mem[k] = { origin: v("origin"), process: v("process"), variety: v("variety"), roast: v("roast"), notes: v("notes") };
+      try { const keys = Object.keys(mem); if (keys.length > 60) delete mem[keys[0]]; localStorage.setItem(SCAN_MEM, JSON.stringify(mem)); } catch (e) {} }
+    state.text = line; state.bag = null; state.roastPhoto = null;
+    state.process = v("process") || "auto"; state.listProc = null; state.roast = v("roast") || "auto";
+    const d = v("date"), dm = d && d.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    state.scanRoasted = dm && f.date.kind !== "best" ? `${dm[3]}-${dm[2]}-${dm[1]}` : null;   // a roast date goes straight into My bags if you add it
+    $("coffeeIn").value = line; saveState(); renderAllOpts(); closeReview();
+    $("scanMsg").textContent = ""; build();
+  }
+
+  // ---- 5. getting the picture: live camera when there is one, a photo otherwise ----
+  const pickPhoto = () => { const i = $("scanIn"); i.value = ""; i.click(); };
+  const startScan = () => (navigator.mediaDevices && navigator.mediaDevices.getUserMedia ? liveScan() : pickPhoto());
+  $("scanBtn").onclick = () => { closeReview(); startScan(); };
   let live = null;
   function stopLive() {
     if (!live) return;
@@ -4142,9 +4408,9 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     if (live.worker) live.worker.terminate();
     $("camView").hidden = true; document.body.style.overflow = ""; live = null;
   }
-  function liveTicks(got) {
-    const c = got || {}, p = c.p || {}, PL = { washed: "Washed", natural: "Natural", honey: "Honey", anaerobic: "Anaerobic", cofer: "Co-ferment", decaf: "Decaf" };
-    const items = [c.roaster, c.name, p.origin, p.variety ? titleCase(p.variety) : null, p.process ? PL[p.process] : null, p.roast ? titleCase(ROAST[p.roast].label) : null, c.notes ? "Notes" : null].filter(Boolean);
+  function liveTicks(f) {
+    const PL = { washed: "Washed", natural: "Natural", honey: "Honey", anaerobic: "Anaerobic", cofer: "Co-ferment", decaf: "Decaf" };
+    const items = !f ? [] : [f.roaster.v, f.name.v, f.origin.v, f.variety.v, f.process.v ? PL[f.process.v] : null, f.roast.v ? titleCase(ROAST[f.roast.v].label) : null, f.notes.v ? "Notes" : null].filter(Boolean);
     $("camFound").innerHTML = items.map((t) => `<span class="cam-tick">${esc(t)}</span>`).join("");
   }
   function grabFrame(v, guide) {   // the part of the picture inside the frame on screen, as the reader sees it
@@ -4164,7 +4430,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     $("camDone").textContent = "Use what it read"; $("camDone").disabled = false; view.classList.remove("beans"); st.classList.remove("warn");
     $("camClose").onclick = () => { stopLive(); $("scanMsg").textContent = ""; };
     $("camPhoto").onclick = () => { stopLive(); pickPhoto(); };
-    live = { on: true, frames: 0, lines: new Map(), words: [], last: "", same: 0, start: Date.now() };
+    live = { on: true, frames: 0, reads: [], last: "", same: 0, start: Date.now() };
     const me = live;
     view.hidden = false; document.body.style.overflow = "hidden"; st.textContent = "Starting the camera…"; liveTicks(null);
     try {
@@ -4173,64 +4439,54 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     if (!me.on) { me.stream.getTracks().forEach((t) => t.stop()); return; }
     v.srcObject = me.stream; try { await v.play(); } catch (e) {}
     st.textContent = "Getting the reader ready…";
-    try {
-      const T = await loadOcr(); if (!me.on) return;
-      me.worker = await T.createWorker("eng", 1); if (!me.on) { me.worker.terminate(); return; }
-      await me.worker.setParameters({ tessedit_pageseg_mode: "11" });
-    } catch (e) { stopLive(); msg.textContent = "Couldn’t load the reader. Check your connection and try again."; return; }
-    st.textContent = "Hold the label inside the frame. Move slowly across it.";
-    const finish = (got) => {
-      stopLive();
-      if (got && got.coffee) { msg.textContent = `Found it: ${got.coffee.roaster}, ${calm(got.coffee.name)}.`; brewThis(got.coffee); return; }
-      if (got && got.line) { $("coffeeIn").value = got.line; msg.textContent = "Here’s what the label says. Fix anything it misread."; build(); $("coffeeIn").focus(); return; }
-      msg.textContent = "Couldn’t make out the label. Try more light, or take a photo instead.";
-    };
+    try { const T = await loadOcr(); if (!me.on) return; me.worker = await newWorker(T); if (!me.on) { me.worker.terminate(); return; } }
+    catch (e) { stopLive(); msg.textContent = "Couldn’t load the reader. Check your connection and try again."; return; }
+    const TIP = "Fill the frame with the label, straight on. Move slowly across it.";
+    st.textContent = TIP;
+    const now = () => readFields(mergeReads(me.reads), scanMem());
+    const finish = (f) => { stopLive(); if (f && Object.values(f).some((x) => x && x.v)) showReview(f, me.reads); else msg.textContent = "Couldn’t make out the label. Try more light, or take a photo instead."; };
     const tick = async () => {
       if (!me.on) return;
       const c = grabFrame(v, $("camGuide"));
       if (c) {
+        const tip = frameAdvice(c); st.textContent = tip || TIP; st.classList.toggle("warn", !!tip);
         try {
-          const r = await me.worker.recognize(c); if (!me.on) return;
-          const d = r.data || {}; me.frames++;
-          (d.lines || []).forEach((l) => { const k = norm(l.text); if (k && !me.lines.has(k) && (l.confidence || 0) >= 55) me.lines.set(k, l); });
-          me.words.push(...(d.words || []).filter((w) => (w.confidence || 0) >= 70));
-          const all = [...me.lines.values()];
-          const got = readBag({ text: all.map((l) => l.text.trim()).join("\n"), lines: all, words: me.words });
-          if (got && got.coffee) return finish(got);
-          liveTicks(got);
+          // alternate the cleaned grey and the binarised frame: over a few seconds the live view gets both passes for free
+          const pre = prepare(c), r = await me.worker.recognize(me.frames % 2 ? pre.bin : pre.gray); if (!me.on) return;
+          me.frames++; me.reads.push(r.data); if (me.reads.length > 8) me.reads.shift();
+          const f = now(); liveTicks(f);
           // done when the read stops changing for two frames and it has the name plus two more things
-          const key = got ? got.line : ""; me.same = key && key === me.last ? me.same + 1 : 0; me.last = key;
-          const p = (got && got.p) || {}, n = [p.origin, p.process, p.roast, p.variety, got && got.notes].filter(Boolean).length;
-          if (got && got.name && n >= 2 && me.same >= 2) return finish(got);
-          if (Date.now() - me.start > 20000) return finish(got);
+          const key = JSON.stringify(Object.values(f).map((x) => x && x.v)); me.same = key === me.last ? me.same + 1 : 0; me.last = key;
+          const n = ["origin", "process", "roast", "variety", "notes"].filter((k) => f[k].v).length;
+          if (f.name.v && n >= 2 && me.same >= 2) return finish(f);
+          if (Date.now() - me.start > 25000) return finish(f);
         } catch (e) { /* a bad frame: try the next one */ }
       }
       me.timer = setTimeout(tick, 250);
     };
     tick();
-    $("camDone").onclick = () => { const all = [...me.lines.values()]; finish(all.length ? readBag({ text: all.map((l) => l.text.trim()).join("\n"), lines: all, words: me.words }) : null); };
+    $("camDone").onclick = () => finish(me.reads.length ? now() : null);
   }
   $("camClose").onclick = () => { stopLive(); $("scanMsg").textContent = ""; };
   $("camPhoto").onclick = () => { stopLive(); pickPhoto(); };
   document.addEventListener("visibilitychange", () => { if (document.hidden && live) stopLive(); });
   $("scanIn").addEventListener("change", async (e) => {
-    const f = e.target.files && e.target.files[0]; if (!f) return;
+    const file = e.target.files && e.target.files[0]; if (!file) return;
     const msg = $("scanMsg"), btn = $("scanBtn"); btn.disabled = true; msg.textContent = "Reading the bag…";
     try {
-      const [T, canvas] = await Promise.all([loadOcr(), shrink(f)]);
-      const worker = await T.createWorker("eng", 1, { logger: (m) => { if (m.status === "recognizing text") msg.textContent = `Reading the bag… ${Math.round(m.progress * 100)}%`; } });
-      await worker.setParameters({ tessedit_pageseg_mode: "11" });   // sparse text: labels are columns and blocks, not paragraphs
-      const res = await worker.recognize(canvas); worker.terminate();
-      const got = readBag(res.data);
-      if (!got) { msg.textContent = "Couldn’t make out the label. Try flat, close and in good light, or type it."; return; }
-      if (got.coffee) { msg.textContent = `Found it: ${got.coffee.roaster}, ${calm(got.coffee.name)}.`; brewThis(got.coffee); return; }
-      $("coffeeIn").value = got.line;
-      msg.textContent = "Here’s what the label says. Fix anything it misread."; build();
-      $("coffeeIn").focus();
+      const ocr = await readPhoto(file, (t) => (msg.textContent = t));
+      let f = readFields(ocr, scanMem());
+      if (review && review.adding && review.fields) f = mergeFields(review.fields, f);   // the back of the bag adds to the front
+      if (!Object.values(f).some((x) => x && x.v)) { msg.textContent = "Couldn’t make out the label. Try flat, close and in good light, or type it."; return; }
+      showReview(f, ocr);
     } catch (err) {
       msg.textContent = err && err.message === "load" ? "Couldn’t load the reader. Check your connection and try again." : "Couldn’t read that photo. Try another, or type it.";
     } finally { btn.disabled = false; }
   });
+  // test hook (only with ?scantest): run the whole photo pipeline on a file and return the fields
+  if (/[?&]scantest\b/.test(location.search)) { window.__prep = async (blob) => { const img = await loadImg(blob), c0 = toCanvas(img); const pre = prepare(img);
+      return { angle: pre.angle, inv: pre.inverted, gray: pre.gray.toDataURL("image/jpeg", 0.7), bin: pre.bin.toDataURL("image/png") }; }; }
+  if (/[?&]scantest\b/.test(location.search)) window.__scan = async (blob) => { const ocr = await readPhoto(blob); return { fields: readFields(ocr, null), lines: ocr.lines.map((l) => [l.text, Math.round(l.conf), l.h]), angle: ocr.angle, inverted: ocr.inverted, match: (shelfMatch(readFields(ocr, null)) || {}).name || null }; };
 
   $("shelfQ").addEventListener("input", () => { shelfAll = false; renderShelf(); });
   renderBags(); syncBagBtn();
@@ -4255,6 +4511,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
       if (!res.ok) throw new Error(res.status);
       const d = await res.json();
       shelf = (d.releases || []).filter((r) => r.name && r.roaster);
+      knownRoasters = (d.roasters || []).map((r) => r && r.name).filter(Boolean);
       scanDay = (d.updated || "").slice(0, 10);
       renderShelfV();
       renderShelf();
