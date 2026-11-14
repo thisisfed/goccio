@@ -1355,11 +1355,15 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 /* phones: no animated headline, the page opens on the intro and the example */
 @media (max-width: 760px) { .hero .stage { display: none !important; } .hero-side { margin-top: 0 !important; padding-top: 0 !important; } }
 /* the filters, once stuck under the top bar: a slightly different background fades in, edge to edge, so it's clear they've pinned */
-.shelf-tools { --stuck-bg: #f7f7f7; transition: background-color .3s ease, box-shadow .3s ease, border-color .3s ease; box-shadow: 0 0 0 100vmax transparent; clip-path: inset(0 -100vmax); }
-:root[data-theme="dark"] .shelf-tools { --stuck-bg: #0e0e0e; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .shelf-tools { --stuck-bg: #0e0e0e; } }
+.shelf-tools { --stuck-bg: #efefef; transition: background-color .3s ease, box-shadow .3s ease, border-color .3s ease; box-shadow: 0 0 0 100vmax transparent; clip-path: inset(0 -100vmax); }
+:root[data-theme="dark"] .shelf-tools { --stuck-bg: #161616; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .shelf-tools { --stuck-bg: #161616; } }
 .shelf-tools.stuck { background: var(--stuck-bg) !important; box-shadow: 0 0 0 100vmax var(--stuck-bg); }
 @media (prefers-reduced-motion: reduce) { .shelf-tools { transition: none; } }
+/* brew mode: Keep screen on and Sound share the full width, 4 px apart like Start / Reset / Done; no Haptics */
+#bvOpts { display: grid !important; grid-template-columns: 1fr 1fr; gap: 4px !important; width: 100%; }
+#bvOpts button { justify-content: center; width: 100%; }
+#bvOpts #optBuzz { display: none !important; }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1615,7 +1619,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
   <div class="bv-opts" id="bvOpts">
     <button type="button" id="optWake" aria-pressed="true">Keep screen on</button>
     <button type="button" id="optSound" aria-pressed="true">Sound</button>
-    <button type="button" id="optBuzz" aria-pressed="true">Haptics</button>
+    <button type="button" id="optBuzz" aria-pressed="true" hidden>Haptics</button>
   </div>
 </div>
 
@@ -2330,15 +2334,17 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
       return comps; };
 
     // the creases: thin strokes clearly darker than the area around them, inside brown
-    const I = new Float64Array((w + 1) * (h + 1)), B2 = new Float64Array((w + 1) * (h + 1));
-    for (let y = 0; y < h; y++) { let r1 = 0, r2 = 0; for (let x = 0; x < w; x++) { r1 += Lb[y * w + x]; r2 += brown[y * w + x];
+    const I = new Float64Array((w + 1) * (h + 1)), B2 = new Float64Array((w + 1) * (h + 1));   // I: lightness of brown pixels only, so paper around a bean doesn't count
+    for (let y = 0; y < h; y++) { let r1 = 0, r2 = 0; for (let x = 0; x < w; x++) { r1 += brown[y * w + x] ? Lb[y * w + x] : 0; r2 += brown[y * w + x];
       I[(y + 1) * (w + 1) + x + 1] = I[y * (w + 1) + x + 1] + r1; B2[(y + 1) * (w + 1) + x + 1] = B2[y * (w + 1) + x + 1] + r2; } }
     const box = (T, x0, y0, x1, y1) => T[y1 * (w + 1) + x1] - T[y0 * (w + 1) + x1] - T[y1 * (w + 1) + x0] + T[y0 * (w + 1) + x0];
     const r = Math.max(3, Math.round(Math.min(w, h) / 40)), cm = new Uint8Array(N), area = (2 * r + 1) * (2 * r + 1);
     for (let y = r; y < h - r; y++) for (let x = r; x < w - r; x++) { const j = y * w + x;
-      if (Lb[j] < box(I, x - r, y - r, x + r + 1, y + r + 1) / area - 22 && box(B2, x - r, y - r, x + r + 1, y + r + 1) / area > 0.55) cm[j] = 1; }
+      const nb = box(B2, x - r, y - r, x + r + 1, y + r + 1); if (!brown[j] || nb / area <= 0.5) continue;
+      const mean = box(I, x - r, y - r, x + r + 1, y + r + 1) / nb;   // the bean around it; darker beans have fainter creases, so the bar scales
+      if (Lb[j] < mean - Math.max(8, mean * 0.2)) cm[j] = 1; }
     const creases = label((j) => cm[j] === 1, true).map(moments)
-      .filter((m) => m.n >= Math.max(4, N * 0.0003) && m.n <= N * 0.02 && m.elong >= 2.8 && m.elong <= 9 && Math.sqrt(m.l1) * 4 >= Math.min(w, h) / 22);   // a bean's crease is short; long straight lines are something else
+      .filter((m) => m.n >= Math.max(4, N * 0.0003) && m.n <= N * 0.02 && m.elong >= 2.8 && Math.sqrt(m.l1) * 4 >= Math.min(w, h) / 22 && Math.sqrt(m.l1) * 4 <= Math.min(w, h) / 3);   // a bean's crease is short; long lines are something else
 
     // Otsu: the lightness that best splits beans from what's around them
     let sum = 0; for (let t = 0; t < 256; t++) sum += t * hist[t];
@@ -2367,14 +2373,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
     };
     let P = { count: 0, beans: [] };
     for (const dark of [true, false]) for (const er of [1, 2, 4, 6, 9]) { const t = tryPolarity(dark, er); if (t.count > P.count) P = t; }
-    // beans packed edge to edge: many creases, spread across the brown, pointing every which way (a hand's lines run parallel)
-    if (P.count < 4 && creases.length >= 8 && nBrown / N >= 0.35) {
-      const cells = new Set(creases.map((c) => Math.min(2, (c.mx / w * 3) | 0) + 3 * Math.min(2, (c.my / h * 3) | 0))).size;
-      const lens = creases.map((c) => Math.sqrt(c.l1)), mean = lens.reduce((a, b) => a + b, 0) / lens.length;
-      const cv = Math.sqrt(lens.reduce((a, b) => a + (b - mean) * (b - mean), 0) / lens.length) / mean;
-      const R = Math.hypot(creases.reduce((a, c) => a + Math.cos(2 * c.ang), 0), creases.reduce((a, c) => a + Math.sin(2 * c.ang), 0)) / creases.length;
-      if (cells >= 4 && cv <= 0.9 && R <= 0.35) { const all = []; for (let j = 0; j < N; j++) if (brown[j]) all.push(j); P = { count: creases.length, beans: [{ px: all.slice(0, 20000) }] }; }
-    }
+    // no heap mode: wood grain and fabric look too much like a heap of creases. Beans have to be spread out, each its own oval
     if (P.count < 4) return { state: nBrown / N >= 0.2 ? "brownish" : "none" };
     // colour: the middle of the beans (no creases, shadows or shine), white-balanced on the paper around them when it's light and neutral
     const inBean = new Uint8Array(N); P.beans.forEach((c) => c.px.forEach((j) => inBean[j] = 1));
@@ -2393,7 +2392,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
     const enc = (v) => Math.round(255 * (v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055));
     return { state: "beans", n: P.count, paper, key: ROAST_L.find(([, min]) => L >= min)[0], L: Math.round(L), hex: "#" + [R, G, Bc].map((v) => enc(v).toString(16).padStart(2, "0")).join("") };
   }
-  function grabSmall(v, guide) { const c = grabFrame(v, guide); if (!c) return null; const k = Math.min(1, 180 / Math.max(c.width, c.height));
+  function grabSmall(v, guide) { const c = grabFrame(v, guide); if (!c) return null; const k = Math.min(1, 240 / Math.max(c.width, c.height));
     const o = document.createElement("canvas"); o.width = Math.round(c.width * k); o.height = Math.round(c.height * k); o.getContext("2d").drawImage(c, 0, 0, o.width, o.height); return o; }
   async function beanScan(msgId) {
     photoMsgId = msgId;
@@ -2414,7 +2413,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
     catch (e) { end(); askPhoto(msgId); return; }
     if (!me.on) { me.stream.getTracks().forEach((t) => t.stop()); return; }
     v.srcObject = me.stream; try { await v.play(); } catch (e) {}
-    st.textContent = "Point at a few whole beans, ideally on white paper.";
+    st.textContent = "Spread 5 or more beans apart on white paper and fill the frame.";
     const tick = () => {
       if (!me.on) return;
       const c = grabSmall(v, $("camGuide"));
@@ -2427,8 +2426,8 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
           if (me.streak >= 6) return use(got);   // about two seconds of steady beans
         } else {
           me.streak = 0;
-          if (got.state === "brownish") { st.textContent = "Coffee beans not recognised. Point at whole beans, a few of them, on a plain background."; st.classList.add("warn"); }
-          else { st.textContent = "Point at a few whole beans, ideally on white paper."; st.classList.remove("warn"); }
+          if (got.state === "brownish") { st.textContent = "Coffee beans not recognised. Spread 5 or more beans apart on a plain surface."; st.classList.add("warn"); }
+          else { st.textContent = "Spread 5 or more beans apart on white paper and fill the frame."; st.classList.remove("warn"); }
         }
       }
       if (Date.now() - me.start > 30000) { end(); say("Couldn’t find coffee beans. Try daylight and a few beans on white paper, or pick the roast yourself."); return; }
@@ -3278,7 +3277,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
   function renderBvOpts() {
     $("optWake").setAttribute("aria-pressed", String(!!prefs.keepAwake));
     $("optSound").setAttribute("aria-pressed", String(!!prefs.sound));
-    $("optBuzz").setAttribute("aria-pressed", String(!!prefs.buzz)); $("optBuzz").hidden = !canBuzz;   // iPhone Safari has no vibration API
+    $("optBuzz").setAttribute("aria-pressed", String(!!prefs.buzz)); $("optBuzz").hidden = true;   // iPhone Safari has no vibration API
   }
   $("optWake").onclick = () => { prefs.keepAwake = !prefs.keepAwake; savePrefs(); renderBvOpts(); prefs.keepAwake ? wakeOn() : wakeOff(); };
   $("optSound").onclick = () => { prefs.sound = !prefs.sound; savePrefs(); renderBvOpts(); if (prefs.sound) tone(880, .15, .12); };
