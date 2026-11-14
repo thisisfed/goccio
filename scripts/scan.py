@@ -724,8 +724,31 @@ def shopify_product_js(url, lastmod, extra=""):
 DIAG = {}
 
 
-def fetch_generic(shop, max_pages=45, extra=""):
+def listing_urls(shop, lists):
+    """Product links read off a shop's own category pages, for shops with no sitemap (Gardelli, on PrestaShop):
+    roasters.json names the pages in "list". A product link sits one level under the shop and starts with its id."""
+    host = re.escape(shop.split("//", 1)[-1])
+    out = []
+    for u in lists or []:
+        try:
+            page = get_text(u, tries=1)
+        except Exception:  # noqa: BLE001
+            continue
+        for m in re.finditer(r'href=["\'](https?://' + host + r'/[a-z0-9-]+/\d+-[a-z][a-z0-9-]+)(?:\.html)?["\'#?]', page, re.I):
+            if m.group(1) not in out:
+                out.append(m.group(1))
+        time.sleep(0.8)
+    return [(u, "") for u in out]
+
+
+SPEC_LABELS = re.compile(r"\b(Variet(?:y|al|ies)|Cultivar|Process(?:ing)?|Terroir|Region|Altitude|Producer|Farm)\b\s*:?\s*([^\n]{2,70})", re.I)
+
+
+def fetch_generic(shop, max_pages=45, extra="", lists=None):
     items, pages = [], sitemap_urls(shop)
+    listed = not pages and bool(lists)
+    if listed:
+        pages = listing_urls(shop, lists)
     DIAG[shop] = {"sitemap_urls": len(pages), "pages_ok": 0, "pages_blocked": 0, "sample": pages[0][0] if pages else None}
     for url, lm in pages[:max_pages]:
         if "/products/" in url:
@@ -747,6 +770,11 @@ def fetch_generic(shop, max_pages=45, extra=""):
                     m = re.search(r'<meta[^>]+(?:name|property)=["\'](?:og:)?description["\'][^>]+content=["\']([^"\']+)', page, re.I)
                     if m:
                         it["body"] = (it["body"] + "\n" + html.unescape(m.group(1))).strip()
+                if listed:   # OpenGraph tags carry no origin details: add the page's own spec lines (Process: …, Variety: …)
+                    seen_l = set()
+                    for lm2 in SPEC_LABELS.finditer(strip_html(page)):
+                        if lm2.group(1).lower() not in seen_l:
+                            seen_l.add(lm2.group(1).lower()); it["body"] += f"\n{lm2.group(1)}: {lm2.group(2).strip()}"
                 items.append(it)
         time.sleep(0.8)
     return items
@@ -1520,7 +1548,7 @@ def scan_roaster(r):
         try:
             if feed and kind != "shopify":
                 continue
-            items = fn(feed) if feed else fn(shop, max_pages=r["pages"]) if kind == "sitemap" and r.get("pages") else fn(shop)
+            items = fn(feed) if feed else fn(shop, max_pages=r.get("pages") or 45, lists=r.get("list")) if kind == "sitemap" and (r.get("pages") or r.get("list")) else fn(shop)
             for i in items if feed else []:   # links still go to the shop people actually use
                 i["url"] = shop + i["url"][len(feed):]
             if items:
