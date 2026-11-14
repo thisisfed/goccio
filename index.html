@@ -1422,6 +1422,13 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 .bag-f input::-webkit-date-and-time-value{text-align:left;margin:0}
 .bag-f input::-webkit-datetime-edit{padding:0}
 .bag-low{display:block;margin:0!important}
+/* My bags: the roast date is a pill with a drawn calendar on the right, the same on every phone; Add date when empty */
+.bag-d{position:relative;display:inline-flex}
+.bag-f .bag-d input{width:150px;padding:0 36px 0 10px!important;text-align:left;color:var(--ink)}
+.bag-d::after{content:"";position:absolute;right:10px;top:50%;width:18px;height:18px;margin-top:-9px;pointer-events:none;background:currentColor;color:var(--ink);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='5' width='17' height='15.5' rx='2.5'/%3E%3Cpath d='M3.5 10h17M8 3v4M16 3v4'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='5' width='17' height='15.5' rx='2.5'/%3E%3Cpath d='M3.5 10h17M8 3v4M16 3v4'/%3E%3C/svg%3E") center/contain no-repeat}
+.bag-d.empty::before{content:"Add date";position:absolute;left:10px;top:0;bottom:0;display:flex;align-items:center;font-size:var(--fs-s);font-weight:500;color:var(--muted);pointer-events:none}
+.bag-d.empty input{color:transparent}
+.bag-d input::-webkit-calendar-picker-indicator{opacity:0;position:absolute;inset:0;width:auto;height:auto;cursor:pointer}
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -3809,7 +3816,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
           <span class="who">${esc(b.roaster || "Your coffee")}</span>
           <span class="name">${esc(calm(b.name || b.text || "Coffee"))}</span>
           ${pills ? `<div class="pills">${pills}</div>` : ""}
-          <div class="bag-f"><label>Roasted<input type="date" data-k="roasted" data-i="${i}" value="${esc(b.roasted || "")}"></label>
+          <div class="bag-f"><label>Roasted<span class="bag-d${b.roasted ? "" : " empty"}"><input type="date" data-k="roasted" data-i="${i}" value="${esc(b.roasted || "")}"></span></label>
             <label>Left<span class="bag-g"><input type="number" inputmode="numeric" min="0" max="5000" step="1" data-k="left" data-i="${i}" value="${b.left ?? ""}">g</span></label></div>
           <p class="bag-rest"><span class="bag-r1">${esc(restLine(b))}</span>${lowLine(b)}</p>
         </div>
@@ -3823,6 +3830,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
     $("bagList").querySelectorAll("input[data-k]").forEach((x) => { const id = (bags[+x.dataset.i] || {}).id, save = () => { const b = bags.find((y) => y.id === id); if (!b) return;
         b[x.dataset.k] = x.dataset.k === "left" ? Math.max(0, Math.round(Number(x.value) || 0)) : x.value; saveBags();
         if (x.dataset.k === "left" && x.value !== "" && b.left === 0) { bags.splice(bags.indexOf(b), 1); saveBags(); renderBags(); renderShelf(); return; }   // 0 g left: the bag is finished, it goes
+        if (x.dataset.k === "roasted") x.parentNode.classList.toggle("empty", !x.value);
         const rest = x.closest(".item").querySelector(".bag-rest"); if (rest) rest.innerHTML = `<span class="bag-r1">${esc(restLine(b))}</span>${lowLine(b)}`; };
       x.addEventListener("change", save); x.addEventListener("blur", save); });
   }
