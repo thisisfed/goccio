@@ -1594,6 +1594,8 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 .item .tags .oc::before,.item .tags .tg.p-nat::before,.item .tags .tg.p-wash::before,.item .tags .tg.p-honey::before,.item .tags .tg.p-exp::before,.item .tags .tg.p-decaf::before,.item .tags .tg.vdot::before{content:"";display:inline-block;box-sizing:border-box;flex:none;width:12px;height:12px;min-width:12px;aspect-ratio:1/1;padding:0;border:0;border-radius:50%;margin-right:5px;vertical-align:-1px;transform:none}
 #journal[hidden],[data-jump="journal"][hidden]{display:none!important}
 [data-jump="recipe"][hidden]{display:none!important}
+/* nothing to brew yet: only "What are you brewing?" and Scan the bag. Brewer, grinder, water and the rest appear once it's filled */
+#coffee.empty .kit > :not(.scan-opt):not(#scanReview), #coffee.empty #opts-main, #coffee.empty #moreOpts{display:none!important}
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -2528,6 +2530,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     need.hidden = !blocked; body.hidden = blocked; $("recipe").hidden = blocked;
     $("startBrew").disabled = blocked; $("dockGo").disabled = blocked;
     $("dock").hidden = blocked;
+    $("coffee").classList.toggle("empty", blocked);   // before a coffee is named: only the question and Scan the bag
     // no coffee yet, no recipe: its menu link goes too, and the button at the bottom points at the first step instead
     document.querySelectorAll('.nav [data-jump="recipe"]').forEach((b) => b.hidden = blocked);
     document.querySelectorAll('.hero-pill[data-jump="recipe"]').forEach((b) => b.textContent = blocked ? "Pick a coffee" : "Back to the recipe");
@@ -4822,7 +4825,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
   // no button: the recipe builds itself a moment after you stop typing, on Enter, or when you leave the box
   let buildT = null;
   $("coffeeIn").addEventListener("input", () => { $("detected").textContent = ""; clearTimeout(buildT);
-    buildT = setTimeout(() => { if ($("coffeeIn").value.trim().length >= 3) build(false); }, 900); });
+    buildT = setTimeout(() => { const n = $("coffeeIn").value.trim().length; if (n >= 3 || (!n && state.text)) build(false); }, 900); });   // emptied: back to just the question
   $("coffeeIn").addEventListener("blur", () => { clearTimeout(buildT); if ($("coffeeIn").value.trim().length >= 3 && $("coffeeIn").value.trim() !== (state.text || "").trim()) build(false); });
   $("ddIn").addEventListener("input", updateSuggest);
   $("saveLog").onclick = saveLog;
