@@ -1374,6 +1374,8 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 /* the appearance switch: an icon in a pill the same height as the menu */
 .nav .theme-ic { background: var(--pill) !important; color: var(--ink) !important; display: inline-flex; align-items: center; justify-content: center; padding: 0 !important; width: var(--pill-h); height: var(--pill-h); }
 .nav .theme-ic svg { width: 18px; height: 18px; }
+.glimpse .g-bar .seg.on { background: #ff9f0a !important; }
+.glimpse .g-bar .seg.done { background: var(--ink) !important; }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -3694,7 +3696,33 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
     let bar = fig.querySelector(".g-bar"); if (!bar) { bar = document.createElement("div"); bar.className = "bv-bar g-bar"; bar.setAttribute("aria-hidden", "true"); fig.querySelector(".g-pours").before(bar); }
     bar.innerHTML = (r.lo != null && r.hi != null ? `<div class="win" style="left:${(r.lo / T) * 100}%;width:${((r.hi - r.lo) / T) * 100}%"></div>` : "") +
       P.map((p) => `<div class="seg${p.act ? " act" : ""}" style="left:${(p.t / T) * 100}%;width:${Math.max(1.2, ((p.dur || 6) / T) * 100)}%"></div>`).join("") + '<div class="head" style="left:0"></div>';
+    playExample(fig, r, P, T);
     fig.setAttribute("aria-label", `Example recipe: ${ex.text} on the ${brewer}. ${r.clicks} C40 clicks, ${r.dose} g coffee to ${r.water} g water${r.temp != null ? ", " + r.temp + "°C" : ""}, done by about ${mmss(end)}.`);
+  }
+
+
+  // the example plays itself, fast: the playhead runs the whole brew in about 8 s, each pour lights up as it passes,
+  // and the water figure counts up to what's in by then. Then a short pause and again. Still for reduced motion.
+  let exRaf = 0, exVisible = true;
+  function playExample(fig, r, P, T) {
+    cancelAnimationFrame(exRaf);
+    const head = fig.querySelector(".g-bar .head"), segs = [...fig.querySelectorAll(".g-bar .seg")], wEl = fig.querySelectorAll(".g-specs b")[2];
+    if (!head || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!playExample.io && "IntersectionObserver" in window) { playExample.io = new IntersectionObserver((es) => { exVisible = es.some((e) => e.isIntersecting); }); playExample.io.observe(fig); }
+    const RUN = 8000, PAUSE = 1600, pours = P.filter((p) => !p.act);
+    let t0 = performance.now();
+    const step = (now) => {
+      exRaf = requestAnimationFrame(step);
+      if (!exVisible || document.hidden) { t0 = now - ((now - t0) % (RUN + PAUSE)); return; }
+      const k = ((now - t0) % (RUN + PAUSE)) / RUN, t = Math.min(1, k) * T;
+      head.style.left = (t / T) * 100 + "%";
+      P.forEach((p, i) => { const sg = segs[i]; if (!sg) return; const end = p.t + (p.dur || 6);
+        sg.classList.toggle("on", t >= p.t && t < end); sg.classList.toggle("done", t >= end); });
+      if (wEl) { let poured = 0;   // water in so far: the pour under way fills as the head crosses it
+        for (const p of pours) { const prev = poured, end = p.t + (p.dur || 6); if (t >= end) poured = p.to; else if (t > p.t) poured = prev + (p.to - prev) * ((t - p.t) / (end - p.t)); }
+        wEl.textContent = k >= 1 ? r.water : Math.round(poured); }
+    };
+    exRaf = requestAnimationFrame(step);
   }
 
   // ---------- my bags: coffees you own, kept on this device ----------
