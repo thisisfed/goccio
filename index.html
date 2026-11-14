@@ -27,7 +27,7 @@ if (/iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIn
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <title>Bag to Cup</title>
-<meta name="description" content="A recipe for the coffee in front of you, on V60, Kalita Wave, Chemex, AeroPress, cafetière, cold brew or moka pot: the grind for your grinder, ratio, temperature, every step, a full-screen brew timer and a private brew journal. Plus new filter coffees from roasters in the UK, Europe and beyond, updated every morning.">
+<meta name="description" content="A recipe for the coffee in front of you, on V60, Kalita Wave, Melitta, Chemex, AeroPress, French press, cold brew or moka pot: the grind for your grinder, ratio, temperature, every step, a full-screen brew timer and a private brew journal. Plus new filter coffees from roasters in the UK, Europe and beyond, updated every morning.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://bagtocup.thisisfed.xyz/">
 <meta property="og:site_name" content="Bag to Cup">
@@ -1480,6 +1480,15 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 .bag-f label > :first-child{min-width:0}
 .bag-f{grid-template-columns:auto}
 .bag-f label{grid-template-columns:86px auto!important}
+/* freezer: the pill stays light, only the tick goes dark */
+.bag-fz.in{background:var(--pill)!important;color:var(--ink)!important}
+/* iced: Ice sits next to Hot water's row, before the time */
+@media (max-width: 760px) { .spec.ice { grid-column: span 3 !important; order: 5; } .spec.time { order: 6 !important; } }
+@media (min-width: 761px) { .spec.ice, .spec.ice ~ .spec { grid-column: span 2 !important; } }
+/* My bags: Brew with Remove under it, same pill size; Remove turns red Sure? on the first tap */
+#bagList .item > .r{display:flex;flex-direction:column;align-items:stretch;gap:5px}
+#bagList .item > .r > .btn, #bagList .item .bag-rm{height:var(--pill-h)!important;padding:0 12px!important;display:inline-flex!important;align-items:center;justify-content:center;margin:0!important;border:0!important;box-shadow:none!important;border-radius:var(--r)!important;font:500 var(--fs-s)/1 var(--sans)!important;background:var(--pill)!important;color:var(--ink)!important;cursor:pointer}
+#bagList .item .bag-rm.armed{background:#ff3b30!important;color:#fff!important}
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1761,7 +1770,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     get(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch (e) { return d; } },
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
   };
-  const DEFAULTS = { text: "", brewer: "v60", goal: "light", dose: 15, doses: {}, method: "best", aeroWay: "standard", roast: "auto", process: "auto", bag: null };
+  const DEFAULTS = { text: "", brewer: "v60", goal: "light", serve: "hot", dose: 15, doses: {}, method: "best", aeroWay: "standard", roast: "auto", process: "auto", bag: null };
   // a refresh starts with no coffee picked (goal, dose and method are kept); the journal and settings stay
   let state = { ...DEFAULTS, ...store.get("v60.state", {}), text: "", bag: null, process: "auto", roast: "auto" };
   // zero: permanent C40 zero offset in clicks (default 0). The old "grinder" key is ignored on purpose.
@@ -2013,7 +2022,21 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     return k ? "t:" + k + t : null;
   };
 
+  // Iced (Japanese style, after Hoffmann): brew with two thirds of the water hot, onto the last third as ice in the jug.
+  // Same total liquid, so the same strength once the ice melts; two clicks finer because less hot water does the extracting.
+  const ICED_OK = new Set(["v60", "kalita", "melitta", "chemex", "origami", "switch", "clever", "aero"]);
   function engine(st, opts = {}) {
+    const r = engineHot(st, opts);
+    if (st.serve !== "iced" || !ICED_OK.has(r.brewer) || !r.pours) return r;
+    const total = r.water, hot = Math.round(total * 2 / 3), ice = total - hot;
+    const xs = r.pours.filter((p) => p.x != null), b = xs.length > 1 && xs[0].x < total / 2 ? xs[0].x : 0;
+    xs.forEach((p) => { const x = b ? (p.x <= b ? p.x : b + (p.x - b) * (hot - b) / (total - b)) : p.x * hot / total; p.x = Math.round(x * 10) / 10; p.to = Math.round(p.x); });
+    if (xs.length) { xs[xs.length - 1].x = hot; xs[xs.length - 1].to = hot; }
+    const fin = Math.max(12, r.clicks - 2);
+    r.clickParts = { ...r.clickParts, iced: fin - r.clicks };
+    return { ...r, iced: true, total, ice, water: hot, clicks: fin, lo: r.kind === "pour" ? Math.max(90, r.lo - 20) : r.lo, hi: r.kind === "pour" ? Math.max(120, r.hi - 20) : r.hi };
+  }
+  function engineHot(st, opts = {}) {
     const c = resolved(st);
     c.missing = [!c.process && "process", !c.roast && "roast"].filter(Boolean);
     c.process = c.process || "unsure"; c.roast = c.roast || "unsure";
@@ -2661,6 +2684,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     if (p.process) rows.push([`Process: ${c.process === "unsure" ? "not stated" : PROCESS[c.process].label}`, signed(p.process)]);
     if (p.learn) rows.push([r.learn && r.learn.source === "style" ? "Your nailed brews of this style" : "Your journal for this coffee", signed(p.learn)]);
     if (p.zero) rows.push(["Your C40 zero", signed(p.zero)]);
+    if (p.iced) rows.push(["Iced: less hot water, so finer", signed(p.iced)]);
     $("clkSumm").textContent = "";
     $("clkBody").innerHTML = `
       <p><b>C40 zero point.</b> Close the dial clockwise until it stops gently, burrs touching (don’t force it). That’s 0. Count clicks back anticlockwise. Stock C40 burrs, no Red Clix.</p>
@@ -2670,8 +2694,8 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
       ${isC40() ? "" : `<p class="muted"><b style="color:var(--ink)">On your ${esc(mill().name)}.</b> ${r.clicks} C40 clicks → ${esc(onMill(r.clicks).txt)} (${esc(mill().lbl)}). ${esc(mill().how || "Converted with Honest Coffee Guide’s V60 bands")}, which put C40 15–25 clicks level with ${esc(mill().show(mill().a))}–${esc(mill().show(mill().b))} here; in between and either side it’s linear. Units and zero points vary, so treat it as a starting point and dial in by drawdown time. <a href="${mill().src}" target="_blank" rel="noopener">Source</a></p>`}
       <p class="muted"><b style="color:var(--ink)">My C40 zero.</b> If your 0 isn’t burrs-touching, or recipes you trust always need a click or two more, set the offset once with − / + above. Every recipe shifts by it. Saved on this device; default 0.</p>`;
     // always-visible math + zero control
-    const short = { dose: "dose", roast: "roast", process: "process", learn: "your log", zero: "zero" };
-    const terms = ["dose", "roast", "process", "learn", "zero"].filter((k) => p[k]).map((k) => `${signed(p[k])} ${short[k]}`);
+    const short = { dose: "dose", roast: "roast", process: "process", learn: "your log", zero: "zero", iced: "iced" };
+    const terms = ["dose", "roast", "process", "learn", "zero", "iced"].filter((k) => p[k]).map((k) => `${signed(p[k])} ${short[k]}`);
     const g = onMill(r.clicks);
     $("zrMath").innerHTML = [`${p.base} base (${METHOD_REF[r.m]})`, ...terms].map(esc).join(" ")
       + (isC40() ? ` = <b>${r.clicks} clicks</b>` : ` = ${r.clicks} C40 clicks → <b>${esc(g.txt)} on the ${esc(mill().short)}</b>`);
@@ -2801,7 +2825,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     switch: "V60 paper, rinsed with the valve open. Have a second kettle or a jug of cold water ready for the 70°C pour. Tare with the coffee in.",
     clever: "Rinse the paper, then empty the Clever. Water goes in first, coffee second. Leave the lid off: Hoffmann found it makes no difference.",
     aero: "Paper in the cap, no need to rinse. Standard way up, straight on the cup. Tare with the coffee in.",
-    press: "Warm the cafetière with hot water first. Tare with the coffee in. Have a spoon ready for the crust.",
+    press: "Warm the French press with hot water first. Tare with the coffee in. Have a spoon ready for the crust.",
     cold: "Any jar or jug with a lid. Coarse and even, or the concentrate turns muddy.",
     moka: "Hot water in the base means the coffee spends less time on the heat and tastes less burnt. Optional: a wetted AeroPress paper on top of the coffee, under the upper chamber, catches the fines for a cleaner, lighter cup.",
   };
@@ -2813,7 +2837,8 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     switch: [30, "Use the Switch 03: the 02 holds about 360 ml."],
     clever: [25, "Use the large Clever: the small one holds about 300 ml."],
   };
-  const prepFor = (r) => { const base = r.brewer === "aero" && state.aeroWay === "inverted"
+  const prepFor = (r) => r.iced ? `Put ${r.ice} g of ice in the ${r.brewer === "aero" ? "cup" : "jug"} first, set the brewer on top and tare with the ice in. ` + prepHot(r) : prepHot(r);
+  const prepHot = (r) => { const base = r.brewer === "aero" && state.aeroWay === "inverted"
     ? "Plunger in just inside the chamber, stand it upside down on the scale. Tare with the coffee in." : PREP[r.brewer];
     const sz = SIZE_NOTE[r.brewer]; return sz && r.dose >= sz[0] ? sz[1] + " " + base : base; };
   const BLURB = {
@@ -2875,7 +2900,8 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     const S = [
       ["key", onMill(r.clicks).txt, "", mill().lbl, cBadges.join(", ")],
       ["dose", r.dose, "g", r.brewer === "moka" ? `basket, full and level (${doseName(r)} pot)` : "coffee", ""],
-      ["water", r.water, "g", r.brewer === "moka" ? "hot, to just under the valve" : r.brewer === "cold" ? "cold water, then dilute to taste" : "water", yours("water")],
+      ["water", r.water, "g", r.brewer === "moka" ? "hot, to just under the valve" : r.brewer === "cold" ? "cold water, then dilute to taste" : r.iced ? "hot water" : "water", yours("water")],
+      ...(r.iced ? [["ice", r.ice, "g", r.brewer === "aero" ? "ice in the cup" : "ice in the jug", ""]] : []),
       tempSpec, timeSpec,
     ];
     renderClicks(r);
@@ -3021,6 +3047,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     const b = brewerOf(state), B = BREWERS[b];
     return [
       B.kind !== "steps" && { key: "goal", label: "Cup", items: [["light", "Light & sweet"], ["balanced", "Balanced"], ["syrupy", "Rich & syrupy"]] },
+      ICED_OK.has(b) && { key: "serve", label: "Serve", items: [["hot", "Hot"], ["iced", "Iced"]] },
       { key: "dose", label: b === "moka" ? "Pot" : "Grams", items: B.doses },
       b === "aero" && { key: "aeroWay", label: "Method", items: [["standard", "Standard"], ["inverted", "Inverted"]] },
       b === "v60" && { key: "method", label: "Method", items: [["best", "Best for this coffee"], ["hoffmann", "Hoffmann"], ["fourSix", "Kasuya 4:6"], ...(Number(state.dose) >= 25 ? [] : [["ten", "Kasuya 10-Pour"]]), ["rao", "Rao"]] },   // ten 15 s pours don't scale to a double batch
@@ -3878,7 +3905,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
   // days spent in the freezer don't count: sealed and frozen, beans barely stale
   const frozenFor = (b) => (b.frozenDays || 0) + (b.frozen ? daysBetween(b.frozen, todayIso()) : 0);
   function restLine(b) {   // filter coffee: rest a week or two after roasting, best within about six weeks
-    if (!b.roasted) return b.frozen ? "Frozen. Add the roast date to see when it’s at its best." : "Add the roast date to see when it’s at its best.";
+    if (!b.roasted) return b.frozen ? "Frozen. Add the roast date to see its best." : "Add the roast date to see when it’s at its best.";
     if (b.frozen) { const left = 42 - daysBetween(b.roasted, b.frozen) + (b.frozenDays || 0); return left > 0 ? `Frozen, clock paused. ${left} days of its best left.` : "Frozen, clock paused."; }
     const light = /very light/i.test(b.text || "") || b.roast === "vlight" ? 14 : /light/i.test((b.text || "") + " " + (b.roast_level || "")) || b.roast === "light" ? 10 : 7;
     const today = todayIso(), fz = frozenFor(b), from = addDays(b.roasted, light + fz), until = addDays(b.roasted, 42 + fz);
@@ -3903,8 +3930,14 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
         </div>
         <div class="r">
           <button class="btn" type="button" data-brew="${i}">Brew</button>
+          <button type="button" class="pill bag-rm" data-rm="${i}">Remove</button>
         </div>
         <p class="bag-rest"><span class="bag-r1">${esc(restLine(b))}</span>${lowLine(b)}</p></article>`; }).join("");
+    // two taps, no pop-up: Remove, then Sure? in red
+    $("bagList").querySelectorAll("[data-rm]").forEach((x) => x.onclick = () => {
+      if (x.dataset.armed) { bags.splice(+x.dataset.rm, 1); saveBags(); renderBags(); renderShelf(); return; }
+      x.dataset.armed = "1"; x.textContent = "Sure?"; x.classList.add("armed");
+      setTimeout(() => { if (x.isConnected) { delete x.dataset.armed; x.textContent = "Remove"; x.classList.remove("armed"); } }, 3000); });
     $("bagList").querySelectorAll("[data-brew]").forEach((x) => x.onclick = () => { const b = bags[+x.dataset.brew];
       if (b.text && !b.roaster) { state.text = b.text; state.bag = null; state.roastPhoto = null; $("coffeeIn").value = b.text; saveState(); renderAllOpts(); render(); $("coffee").scrollIntoView({ behavior: "smooth", block: "start" }); }
       else brewThis(b); });
