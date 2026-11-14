@@ -1467,12 +1467,6 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 .shelf .item > .r > .price.muted{color:var(--muted)}
 .shelf .item .who .day{color:var(--muted);margin-left:.7em}
 .shelf .item > .l .tags{margin-top:2px}
-/* coffee list: one black pill with a dropdown for Brew, + My bags and Buy; the price under it */
-.shelf .item .act-sel{-webkit-appearance:none;appearance:none;height:var(--pill-h);border:0;border-radius:var(--r);background:var(--ink) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E") no-repeat right 12px center/10px 10px;color:var(--bg);font:500 var(--fs-s)/1 var(--sans);padding:0 32px 0 14px;cursor:pointer;text-align:left}
-:root[data-theme="dark"] .shelf .item .act-sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E")}
-.shelf .item .act-sel{width:104px}
-.shelf .item > .r{min-width:0!important}
-.shelf .item .in-bags{font-size:var(--fs-s);line-height:1.35;color:var(--muted);text-align:right}
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -3747,25 +3741,15 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
           <p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p>
         </div>
         <div class="r">
-          <select class="act-sel" data-a="${i}" aria-label="Brew, keep or buy ${esc(r.name)}">
-            <option value="" hidden selected>Brew</option>
-            <option value="brew">Brew</option>
-            <option value="bag">${hasBag(r) ? "Take out of my bags" : "+ My bags"}</option>
-            ${r.url ? `<option value="buy">Buy${r.price ? ", " + esc(r.price) : ""}</option>` : ""}
-          </select>
-          ${hasBag(r) ? '<span class="in-bags">In my bags</span>' : ""}
+          <button class="btn" type="button" data-i="${i}">Brew</button>
+          <button type="button" class="pill bag-add${hasBag(r) ? " in" : ""}" data-b="${i}" aria-pressed="${hasBag(r)}">${hasBag(r) ? "In my bags" : "+ My bags"}</button>
+          ${r.url ? `<a class="pill buy-pill" href="${esc(r.url)}" target="_blank" rel="noopener" aria-label="Buy ${esc(r.name)} from ${esc(r.roaster)}">Buy</a>` : ""}
           ${r.price ? `<span class="price">${esc(r.price)}</span>` : '<span class="price muted">Price on site</span>'}
         </div></article>`; }).join("") : `<p class="muted" style="padding:16px 0;margin:0">Nothing matches${shelfV === "v60" && shelf.some((r) => !shelfFit()(r)) ? ` in ${shelfFitName()}. Try Everything, or` : "."} <a href="#" class="mail-me" data-s="Missing coffee">${shelfV === "v60" ? "email me" : "Email me"}</a> and I’ll add the roaster.</p>`;
     const left = list.length - Math.min(shelfN, list.length);
     $("shelfMore").hidden = left <= 0; $("shelfMore").removeAttribute("aria-hidden");
     $("shelfMore").textContent = `Load more (${left} left)`;
     $("shelf").querySelectorAll("button[data-i]").forEach((b) => b.onclick = () => brewThis(shelf[+b.dataset.i]));
-    // one pill per coffee: Brew, + My bags or Buy from a dropdown, like the grinder
-    $("shelf").querySelectorAll("select[data-a]").forEach((x) => x.onchange = () => {
-      const r = shelf[+x.dataset.a], v = x.value; x.value = "";
-      if (v === "brew") brewThis(r);
-      else if (v === "bag") { toggleBag(r); renderShelf(); }
-      else if (v === "buy" && r.url) window.open(r.url, "_blank", "noopener"); });
     $("shelf").querySelectorAll("button[data-b]").forEach((b) => b.onclick = () => { toggleBag(shelf[+b.dataset.b]); renderShelf(); });
   }
 
