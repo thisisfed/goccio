@@ -1329,13 +1329,6 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 .shelf-tools { position: sticky; top: var(--top-h, 49px); z-index: 5; background: var(--bg); padding: 12px 0; margin-top: -12px; border-bottom: 1px solid transparent; }
 .shelf-tools.stuck { border-bottom-color: var(--rule); }
 #shelfMore { margin-top: 12px; }
-/* folded filters (phones, while stuck) */
-.fold-sum { display: none; }
-.shelf-tools.folded > .opt { display: none !important; }
-.shelf-tools.folded .fold-sum { display: flex; align-items: center; gap: 8px; width: 100%; height: var(--pill-h); padding: 0 10px; border: 0; border-radius: var(--r); background: var(--pill); color: var(--ink); font: 500 var(--fs-s)/1 var(--sans); text-align: left; cursor: pointer; }
-.fold-sum .fs-l { color: var(--muted); }
-.fold-sum #shelfSumT { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.fold-sum svg { width: 12px; height: 12px; flex: none; }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1413,7 +1406,6 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
     <div class="sec-head"><span class="cap" id="sh"><b>01</b>The coffees.</span></div>
     <p class="shelf-meta" id="shelfMeta" hidden></p>
     <div class="shelf-tools">
-      <button type="button" class="fold-sum" id="shelfSum" aria-expanded="false"><span class="fs-l">Filters</span><span id="shelfSumT"></span><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       <div class="opt"><label for="shelfQ">Search</label><input type="search" id="shelfQ" placeholder="Roaster, coffee, origin, process…"></div>
       <div class="opt"><span id="labR">Region</span><div class="chips" id="shelfR" role="group" aria-labelledby="labR"></div></div>
       <div class="opt"><span id="labF">Process</span><div class="chips" id="shelfF" role="group" aria-labelledby="labF"></div></div>
@@ -3758,17 +3750,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
     addEventListener("scroll", () => { const t = document.querySelector(".top"), h = t ? t.getBoundingClientRect().height : 0, r = tools.getBoundingClientRect();
       const stuck = r.top <= h + 0.5 && $("shelf").getBoundingClientRect().bottom > h + r.height;
       tools.classList.toggle("stuck", stuck);
-      if (!stuck || (shelfOpen && document.activeElement !== $("shelfQ") && Math.abs(scrollY - shelfOpenY) > 150)) shelfOpen = false;   // scrolling on folds them away again
-      setFold(); }, { passive: true }); }
-  // phones: once the filters are stuck they fold to one slim row saying what's picked; a tap opens them, a pick folds them again
-  let shelfOpen = false, shelfOpenY = 0;
-  function shelfSummary() { const on = (id) => { const b = $(id).querySelector("button.on, button[aria-pressed=true]"); return b ? b.textContent.trim() : ""; };
-    const q = $("shelfQ").value.trim(); return [q ? `“${q}”` : "", on("shelfR"), on("shelfF")].filter(Boolean).join(", "); }
-  function setFold() { const tools = document.querySelector(".shelf-tools"), phone = matchMedia("(max-width: 760px)").matches;
-    const fold = phone && tools.classList.contains("stuck") && !shelfOpen;
-    tools.classList.toggle("folded", fold); $("shelfSumT").textContent = shelfSummary(); $("shelfSum").setAttribute("aria-expanded", String(!fold)); }
-  $("shelfSum").onclick = () => { shelfOpen = true; shelfOpenY = scrollY; setFold(); };
-  ["shelfR", "shelfF"].forEach((id) => $(id).addEventListener("click", (e) => { if (e.target.closest("button")) { shelfOpen = false; requestAnimationFrame(setFold); } }));
+    }, { passive: true }); }
   const loadMore = () => { shelfN += 10; renderShelf(); };
   $("shelfMore").onclick = loadMore;
   // a filter tapped while the bar is stuck: keep the list starting right under it
