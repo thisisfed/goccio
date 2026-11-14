@@ -1580,6 +1580,14 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 .cam-howto{display:none}
 .cam.beans .cam-howto{display:block;position:absolute;left:12px;right:12px;bottom:12px;margin:0;text-align:center;font-size:var(--fs-s);line-height:1.35;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7)}
 #camDone:disabled{opacity:.45}
+/* Buy pill: "Buy" and the price take turns, a soft crossfade every few seconds, same width */
+.buy-pill{position:relative;overflow:hidden}
+.buy-pill .bp-a,.buy-pill .bp-b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;white-space:nowrap}
+.buy-pill .bp-a{animation:bpA 6s ease-in-out infinite}
+.buy-pill .bp-b{animation:bpB 6s ease-in-out infinite}
+@keyframes bpA{0%,42%{opacity:1;transform:none}50%,92%{opacity:0;transform:translateY(-35%)}100%{opacity:1;transform:none}}
+@keyframes bpB{0%,42%{opacity:0;transform:translateY(35%)}50%,92%{opacity:1;transform:none}100%{opacity:0;transform:translateY(35%)}}
+@media (prefers-reduced-motion: reduce){ .buy-pill .bp-a,.buy-pill .bp-b{animation:none} .buy-pill .bp-b{display:none} }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -4086,7 +4094,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
         <div class="r">
           <button class="btn" type="button" data-i="${i}">Brew</button>
           <button type="button" class="pill bag-add${hasBag(r) ? " in" : ""}" data-b="${i}" aria-pressed="${hasBag(r)}" aria-label="${hasBag(r) ? "Saved in my bags" : "Save to my bags"}">${hasBag(r) ? "Saved" : "Save"}</button>
-          ${r.url ? `<a class="pill buy-pill" href="${esc(r.url)}" target="_blank" rel="noopener" aria-label="Buy ${esc(r.name)} from ${esc(r.roaster)}">Buy</a>` : ""}
+          ${r.url ? `<a class="pill buy-pill" href="${esc(r.url)}" target="_blank" rel="noopener" aria-label="Buy ${esc(r.name)} from ${esc(r.roaster)}${r.price ? ", " + esc(r.price) : ""}">${r.price ? `<span class="bp-a">Buy</span><span class="bp-b">${esc(r.price.replace(/^From\s+/i, ""))}</span>` : "Buy"}</a>` : ""}
         </div></article>`; }).join("") : `<p class="muted" style="padding:16px 0;margin:0">Nothing matches${shelfV === "v60" && shelf.some((r) => !shelfFit()(r)) ? ` in ${shelfFitName()}. Try Everything, or` : "."} <a href="#" class="mail-me" data-s="Missing coffee">${shelfV === "v60" ? "email me" : "Email me"}</a> and I’ll add the roaster.</p>`;
     const left = list.length - Math.min(shelfN, list.length);
     $("shelfMore").hidden = left <= 0; $("shelfMore").removeAttribute("aria-hidden");
