@@ -4498,19 +4498,24 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
   const BOILER = /\b(whole ?bean|ground|net ?(wt|weight)?|\d+\s?(g|gr|kg|oz)\b|altitude|masl|m a s l|elevation|producer|harvest|importer|recyclable|compostable|roasted (in|on)|roast date|best before|bbe|www|http|instagram)\b|\d{1,2}[.\/-]\d{1,2}[.\/-]\d{2,4}|@|\.com/;
   /* Is this a coffee bag at all? A beer, wine or spirits label says so in its own words (beer, lager, brewery, 5.2% vol).
      One clear word is enough when nothing on the label speaks of coffee; two are needed when something does (a coffee
-     stout names both, and it's still a beer). Tea is left out: "black tea" and "jasmine" are tasting notes on coffee bags. */
+     stout names both, and it's still a beer). Tea and soft drinks need care, because "black tea", "jasmine", "cola" and
+     "lemonade" are tasting notes on coffee bags: those words alone never count. What counts is how the thing is sold
+     (tea bags, loose leaf, steep, per 100 ml, carbonated) or a kind of tea no coffee is described as (matcha, rooibos).
+     A process, variety or roast level read off the label counts as coffee speaking. */
   const NOT_COFFEE = [
     ["a beer label", /\b(beers?|birra|bi[eè]re?|cerveza|lager|i\.?p\.?a|stout|pils(?:ner|ener)?|brewery|brewing|brewed by|birrificio|brasserie|brauerei|pale ale|craft ale)\b/gi, /\b(ale|hops?|hopped|malt(?:ed)?|luppolo|porter|saison|barley|yeast)\b/gi],
     ["a wine label", /\b(wines?|vino|wein|vineyards?|winery|chardonnay|merlot|pinot|sauvignon|prosecco|riesling|cabernet|sangiovese|champagne)\b/gi, /\b(sulphites|sulfites|solfiti|vintage|cuv[eé]e|ros[eé])\b/gi],
     ["a spirits label", /\b(gin|vodka|whisky|whiskey|tequila|mezcal|liqueur|liquore|distillery|distilled|amaro|grappa)\b/gi, /\b(rum|botanicals|cask|proof)\b/gi],
-    ["a cider label", /\b(cider|cidre|sidro|sidra)\b/gi, /\b(apples?|orchard)\b/gi]];
+    ["a cider label", /\b(cider|cidre|sidro|sidra)\b/gi, /\b(apples?|orchard)\b/gi],
+    ["a tea label", /\b(tea ?bags?|loose[- ]leaf|tea leaves|whole leaf|matcha|oolong|sencha|rooibos|pu[- ]?erh|genmaicha|lapsang|english breakfast|herbal (?:tea|infusion)|fruit infusion|tisane|tea (?:company|co|merchants?|estate|garden)|teas|camellia sinensis|pyramids?)\b/gi, /\b(tea|t[èé]|th[eé]|tee|earl grey|darjeeling|assam|ceylon|chai|chamomile|camomile|peppermint|infus(?:e|ion)|steep|brew for \d)\b/gi],
+    ["another drink’s label", /\b(per 100 ?ml|nutrition(?:al)? (?:information|facts|values)|carbonated|soft drink|energy drink|kombucha|mineral water|sparkling water|spring water|from concentrate|not from concentrate|oat drink|drinking chocolate|hot chocolate|cocoa powder|isotonic)\b/gi, /\b(juice|succo|cola|lemonade|soda|tonic|smoothie|squash|sugars?|sweeteners?|\d{2,4} ?ml|\d{2,3} ?cl)\b/gi]];
   const ABV = /\b\d{1,2}(?:[.,]\d{1,2})?\s?%\s?(?:abv|vol|alc)|\b(?:abv|alc\.?(?:ohol)?(?: by vol(?:ume)?)?)\s?:?\s?\d{1,2}(?:[.,]\d)?\s?%|\bunits? of alcohol\b|\bdrink responsibly\b/i;
   const IS_COFFEE = /\b(coffees?|caff[eè]|caf[eé]|kaffee?|koffie|espresso|filter|roast(?:ed|ery|ers?|ing)?|torrefa\w+|whole beans?|arabica|robusta|washed|anaerobic|masl|m\.a\.s\.l|varietal|decaf\w*|cupping)\b/gi;
-  function notCoffee(ocr) {
+  function notCoffee(ocr, f) {
     const good = (ocr.lines || []).filter((l) => (l.conf == null || l.conf >= 45) && /[a-z]{3}/i.test(l.text)), text = good.map((l) => l.text).join("\n");
     if (!text) return null;
     const uniq = (re) => new Set((text.match(re) || []).map((w) => w.toLowerCase())).size;
-    const coffee = uniq(IS_COFFEE), abv = ABV.test(text);
+    const coffee = uniq(IS_COFFEE) + (f ? ["process", "variety", "roast"].filter((k) => f[k] && f[k].v && f[k].c !== "low").length : 0), abv = ABV.test(text);
     let best = null;
     for (const [label, strong, weak] of NOT_COFFEE) { const s2 = uniq(strong), w2 = uniq(weak);
       const hit = s2 && (coffee === 0 || s2 + w2 >= 2 || abv);
@@ -4713,7 +4718,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     const TIP = "Fill the frame with the label, straight on. Move slowly across it.";
     st.textContent = TIP;
     const now = () => readFields(mergeReads(me.reads), scanMem());
-    const finish = (f) => { stopLive(); const other = me.reads.length ? notCoffee(mergeReads(me.reads)) : null; if (other) { msg.textContent = notCoffeeMsg(other); return; } if (f && Object.values(f).some((x) => x && x.v)) showReview(f, me.reads); else msg.textContent = "Couldn’t make out the label. Try more light, or take a photo instead."; };
+    const finish = (f) => { stopLive(); const other = me.reads.length ? notCoffee(mergeReads(me.reads), now()) : null; if (other) { msg.textContent = notCoffeeMsg(other); return; } if (f && Object.values(f).some((x) => x && x.v)) showReview(f, me.reads); else msg.textContent = "Couldn’t make out the label. Try more light, or take a photo instead."; };
     const tick = async () => {
       if (!me.on) return;
       const c = grabFrame(v, $("camGuide"));
@@ -4724,8 +4729,8 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
           const pre = prepare(c), r = await me.worker.recognize(me.frames % 2 ? pre.bin : pre.gray); if (!me.on) return;
           me.frames++; me.reads.push(r.data); if (me.reads.length > 8) me.reads.shift();
           // a beer or wine label, seen in two frames running: stop and say so
-          me.other = notCoffee(mergeReads(me.reads)) ? (me.other || 0) + 1 : 0; if (me.other >= 2) return finish(null);
           const f = now(); liveTicks(f);
+          me.other = notCoffee(mergeReads(me.reads), f) ? (me.other || 0) + 1 : 0; if (me.other >= 2) return finish(null);
           // done when the read stops changing for two frames and it has the name plus two more things
           const key = JSON.stringify(Object.values(f).map((x) => x && x.v)); me.same = key === me.last ? me.same + 1 : 0; me.last = key;
           const n = ["origin", "process", "roast", "variety", "notes"].filter((k) => f[k].v).length;
@@ -4746,8 +4751,8 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     const msg = $("scanMsg"), btn = $("scanBtn"); btn.disabled = true; msg.textContent = "Reading the bag…";
     try {
       const ocr = await readPhoto(file, (t) => (msg.textContent = t));
-      const other = notCoffee(ocr); if (other) { msg.textContent = notCoffeeMsg(other); return; }
       let f = readFields(ocr, scanMem());
+      const other = notCoffee(ocr, f); if (other) { msg.textContent = notCoffeeMsg(other); return; }
       if (review && review.adding && review.fields) f = mergeFields(review.fields, f);   // the back of the bag adds to the front
       if (!Object.values(f).some((x) => x && x.v)) { msg.textContent = "Couldn’t make out the label. Try flat, close and in good light, or type it."; return; }
       showReview(f, ocr);
@@ -4758,7 +4763,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
   // test hook (only with ?scantest): run the whole photo pipeline on a file and return the fields
   if (/[?&]scantest\b/.test(location.search)) { window.__prep = async (blob) => { const img = await loadImg(blob), c0 = toCanvas(img); const pre = prepare(img);
       return { angle: pre.angle, inv: pre.inverted, gray: pre.gray.toDataURL("image/jpeg", 0.7), bin: pre.bin.toDataURL("image/png") }; }; }
-  if (/[?&]scantest\b/.test(location.search)) window.__scan = async (blob) => { const ocr = await readPhoto(blob); return { fields: readFields(ocr, null), other: notCoffee(ocr), lines: ocr.lines.map((l) => [l.text, Math.round(l.conf), l.h]), angle: ocr.angle, inverted: ocr.inverted, match: (shelfMatch(readFields(ocr, null)) || {}).name || null }; };
+  if (/[?&]scantest\b/.test(location.search)) window.__scan = async (blob) => { const ocr = await readPhoto(blob); return { fields: readFields(ocr, null), other: notCoffee(ocr, readFields(ocr, null)), lines: ocr.lines.map((l) => [l.text, Math.round(l.conf), l.h]), angle: ocr.angle, inverted: ocr.inverted, match: (shelfMatch(readFields(ocr, null)) || {}).name || null }; };
 
   $("shelfQ").addEventListener("input", () => { shelfAll = false; renderShelf(); });
   renderBags(); syncBagBtn();
