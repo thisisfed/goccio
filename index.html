@@ -2639,15 +2639,27 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
           if (inside >= Math.ceil(k * 0.5)) { count += k; c.multi = true; beans.push(c); } } }); }
       // a heap: one compact shape clearly darker than around it, with several creases inside pointing different ways
       if (count < 4 && dark) comps.forEach((c) => { if (c.n < N * 0.03 || c.n > N * 0.6 || c.fill < 0.45 || c.elong > 2.2 || c.brown < 0.8) return;
-        if (c.px.filter((j) => { const x = j % w, y = (j / w) | 0; return x === 0 || y === 0 || x === w - 1 || y === h - 1; }).length > 3) return;   // a heap sits inside the frame; floors and tables run off its edges
+        const onEdge = c.px.filter((j) => { const x = j % w, y = (j / w) | 0; return x === 0 || y === 0 || x === w - 1 || y === h - 1; }).length;   // a heap sits inside the frame; floors and tables run off its edges
+        if (onEdge > (w + h) * 0.5) return;
         const inv = 1 / (c.a * c.c - c.b * c.b || 1e-6);
         const inside = creases.filter((s) => { const dx = s.mx - c.mx, dy = s.my - c.my; return (dx * dx * c.c - 2 * dx * dy * c.b + dy * dy * c.a) * inv <= 4.5; });
-        if (inside.length < 5) return;
+        if (inside.length < 3) return;
         const R = Math.hypot(inside.reduce((a, s) => a + Math.cos(2 * s.ang), 0), inside.reduce((a, s) => a + Math.sin(2 * s.ang), 0)) / inside.length;
         let lin = 0, lout = 0; const inC = new Uint8Array(N); c.px.forEach((j) => { inC[j] = 1; lin += Lb[j]; });
         for (let j = 0; j < N; j++) if (!inC[j]) lout += Lb[j];
         const darker = lin / c.n < 0.5 * (lout / Math.max(1, N - c.n));
-        if (R <= 0.6 && darker && inside.length > count) { count = inside.length; c.multi = true; beans.length = 0; beans.push(c); } });
+        // one dark, textured clump with nothing else in view: everything outside it is as light as the sheet. Many beans lie
+        // crease down, so here a few creases are enough and they may point the same way. A hand, a bag or a room never
+        // leaves 92% of the rest of the frame paper-light
+        let alone = false;
+        if (darker && c.n >= N * 0.1) { const out = []; let sd = 0; const mL = lin / c.n;
+          for (let j = 0; j < N; j++) { if (!inC[j]) out.push(Lb[j]); else sd += (Lb[j] - mL) ** 2; }
+          out.sort((a, b) => a - b); const md = out[out.length >> 1]; let ok = 0; for (const v of out) if (v >= md * 0.7) ok++;
+          alone = ok / out.length >= 0.92 && Math.sqrt(sd / c.n) >= 15; }
+        // a clump alone on the sheet may poke past the frame a little (under a quarter of the border)
+        if (!alone && (inside.length < 5 || R > 0.6 || onEdge > 3)) return;
+        const k = alone ? Math.max(6, inside.length) : inside.length;
+        if (darker && k > count) { count = k; c.multi = true; c.alone = alone; beans.length = 0; beans.push(c); } });
       return { beans, count, plain };
     };
     let P = { count: 0, beans: [], plain: false };
@@ -2670,7 +2682,8 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
       // roasted coffee is a strongly coloured brown (red over green over blue, chroma well over a third). A guitar, a book or a
       // shadowed corner in a room is greyer than that
       let cr = 0, cg = 0, cb = 0, ck = 0; clump.forEach((c) => c.px.forEach((j) => { cr += d[j * 4]; cg += d[j * 4 + 1]; cb += d[j * 4 + 2]; ck++; }));
-      const brownish = ck && cr > cg && cg > cb && (cr - cb) / Math.max(1, cr) >= 0.4;
+      // (indoor light at night greys them: a clump alone on the sheet counts when it's warm at all)
+      const brownish = ck && cr > cg && cg > cb && ((cr - cb) / Math.max(1, cr) >= 0.4 || clump.some((c) => c.alone));
       if (brownish && area >= 0.03) { const g0 = beanGate(d, w, h, Y, lin, P.beans, true);
         if (!g0.ok && area >= 0.4) return { state: "blocked", n: P.count, reason: "Beans cover the whole view. Leave white paper showing around them." };
         if (g0.why === "clutter" && /cover/.test(g0.reason)) return { state: "blocked", n: P.count, reason: g0.reason };
@@ -2789,7 +2802,8 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
       return { L: Lof(m[0], m[1], m[2]) + shift, rgb: m, n: c.n, fill: c.fill, shine }; });
     if (per.length < 4) return { state: "beans", n: P.count, roast: { key: null, c: null, why: "Too few beans to judge. Spread a small handful, at least 8." } };
     const Ls = per.map((b2) => b2.L).sort((a2, b2) => a2 - b2), q = (f) => Ls[Math.min(Ls.length - 1, Math.floor(f * Ls.length))];
-    const med = q(0.5), iqr = q(0.75) - q(0.25), sd = Math.sqrt(Ls.reduce((s2, v) => s2 + (v - med) ** 2, 0) / Ls.length);
+    // a clump is read in tiles, and tiles catch shine and shadow as well as bean: judge its spread by the middle half only
+    const med = q(0.5), iqr = q(0.75) - q(0.25), sd = heap && P.onPaper ? iqr / 1.35 : Math.sqrt(Ls.reduce((s2, v) => s2 + (v - med) ** 2, 0) / Ls.length);
     // 3. visible defects: much paler than the rest (likely quakers, under-developed), and broken pieces (half the usual size)
     const allL = per.map((b2) => b2.L).sort((a2, b2) => a2 - b2);
     let gap = 0, at = 0; for (let i = 1; i < allL.length; i++) if (allL[i] - allL[i - 1] > gap) { gap = allL[i] - allL[i - 1]; at = i; }
@@ -2830,7 +2844,8 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
       roast = { key: null, c: "medium", mixed: true, why: `Two roasts in one photo: some look ${LBL(hi2)}, some ${LBL(lo)}. Photograph one bag at a time.` }; }
     else if (conf === "low") roast = { key: null, c: "low", guess: key, why: ref === "none" ? "No white reference, so the colour can’t be trusted. Put the beans on white paper, in daylight."
       : !plausible ? "The colour doesn’t look like roasted coffee against this background. Try white paper, in daylight."
-      : sd > 4.5 ? "The beans look uneven, maybe two roasts mixed. Photograph one bag at a time." : "The photo doesn’t support a confident level. Try more beans on white paper." };
+      : sd > 4.5 ? "The beans look uneven, maybe two roasts mixed. Photograph one bag at a time." : heap && P.onPaper ? "Hard to read while the beans touch in this light. Spread them a little apart on white paper, in daylight."
+      : "The photo doesn’t support a confident level. Try more beans on white paper." };
     else roast = { key, c: conf, near: near && near !== key ? near : null, why: ref === "paper" ? "measured against the white paper" : "no white paper, so roughly: check it against the bag" };
     // 6. plain notes: the colour in words, shine, evenness, defects. Nothing about origin, variety or process
     const WORDS = { vlight: "pale cinnamon", light: "light brown", medium: "milk-chocolate brown", mdark: "dark chocolate brown", dark: "very dark, near black" };
