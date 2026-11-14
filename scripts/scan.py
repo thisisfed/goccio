@@ -741,7 +741,7 @@ def listing_urls(shop, lists):
     return [(u, "") for u in out]
 
 
-SPEC_LABELS = re.compile(r"\b(Variet(?:y|al|ies)|Cultivar|Process(?:ing)?|Terroir|Region|Altitude|Producer|Farm)\b\s*:?\s*([^\n]{2,70})", re.I)
+LISTED_SPECS = re.compile(r"\b(Variet(?:y|al|ies)|Cultivar|Process(?:ing)?|Terroir|Region|Altitude|Producer|Farm)\b\s*:?\s*([^\n]{2,70})", re.I)
 
 
 def fetch_generic(shop, max_pages=45, extra="", lists=None):
@@ -772,7 +772,7 @@ def fetch_generic(shop, max_pages=45, extra="", lists=None):
                         it["body"] = (it["body"] + "\n" + html.unescape(m.group(1))).strip()
                 if listed:   # OpenGraph tags carry no origin details: add the page's own spec lines (Process: …, Variety: …)
                     seen_l = set()
-                    for lm2 in SPEC_LABELS.finditer(strip_html(page)):
+                    for lm2 in LISTED_SPECS.finditer(strip_html(page)):
                         if lm2.group(1).lower() not in seen_l:
                             seen_l.add(lm2.group(1).lower()); it["body"] += f"\n{lm2.group(1)}: {lm2.group(2).strip()}"
                 items.append(it)
