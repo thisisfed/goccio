@@ -52,7 +52,7 @@ n=Math.floor((now-new Date(y,0,0))/864e5),r=Math.PI/180,d=-23.44*Math.cos(2*Math
 B=2*Math.PI*(n-81)/364,eot=9.87*Math.sin(2*B)-7.53*Math.cos(B)-1.5*Math.sin(B),
 h=Math.acos(Math.max(-1,Math.min(1,(Math.sin(-.833*r)-Math.sin(lat*r)*Math.sin(d))/(Math.cos(lat*r)*Math.cos(d)))))/r,noon=12-lon/15-eot/60,u=now.getUTCHours()+now.getUTCMinutes()/60;
 return u<noon-h/15||u>noon+h/15;};
-try{localStorage.removeItem("v60.theme");document.documentElement.setAttribute("data-theme",window.__autoDark()?"dark":"light");}catch(e){}
+try{var t=localStorage.getItem("v60.theme");document.documentElement.setAttribute("data-theme",t==="light"||t==="dark"?t:(window.__autoDark()?"dark":"light"));}catch(e){}
 </script>
 <style>
 /* Layout idea: Apple product page, warmed up. Cream paper canvas, warm-white rounded tiles, system type set
@@ -1371,6 +1371,9 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 .glimpse .g-pours { padding-top: 0 !important; height: 50px; }
 .glimpse .g-pours::before, .glimpse .g-pours li::before { display: none !important; }
 .glimpse .g-pours li { padding-top: 6px !important; }
+/* the appearance switch: an icon in a pill the same height as the menu */
+.nav .theme-ic { display: inline-flex; align-items: center; justify-content: center; padding: 0 !important; width: var(--pill-h); height: var(--pill-h); }
+.nav .theme-ic svg { width: 18px; height: 18px; }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1405,6 +1408,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
       <button type="button" data-jump="shelves"><span class="nw">New c</span><span class="nc">C</span>offees</button>
       <button type="button" data-jump="recipe">Recipe</button>
       <button type="button" data-jump="journal">Journal</button>
+      <button type="button" class="theme-btn theme-ic" id="themeBtn" aria-label="Appearance"></button>
     </nav>
   </div>
 </header>
@@ -3961,14 +3965,21 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 
   // ---------- appearance: Auto follows daylight (sunrise to sunset), or pick Light or Dark ----------
   const THEMES = ["auto", "light", "dark"], THEME_LBL = { auto: "Auto", light: "Light", dark: "Dark" };
+  // one icon each: half-filled circle for Auto (follows the sun), a sun for Light, a moon for Dark
+  const IC = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
+  const THEME_IC = {
+    auto: IC('<circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/>'),
+    light: IC('<circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'),
+    dark: IC('<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>'),
+  };
   function applyTheme(t) {
     const root = document.documentElement;
     const dark = t === "dark" || (t === "auto" && window.__autoDark());
     root.setAttribute("data-theme", dark ? "dark" : "light");
     document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute("content", dark ? "#14100d" : "#f6f1ea"));
-    if ($("themeBtn")) $("themeBtn").textContent = THEME_LBL[t]; if ($("themeBtn")) $("themeBtn").setAttribute("aria-label", t === "auto" ? `Appearance: Auto, light from sunrise to sunset. Tap to change.` : `Appearance: ${THEME_LBL[t]}. Tap to change.`);
+    if ($("themeBtn")) $("themeBtn").innerHTML = THEME_IC[t]; if ($("themeBtn")) $("themeBtn").setAttribute("aria-label", t === "auto" ? `Appearance: Auto, light from sunrise to sunset. Tap to change.` : `Appearance: ${THEME_LBL[t]}. Tap to change.`);
   }
-  let theme = "auto";   // no switch any more: light by day, dark after sunset
+  let theme = (() => { try { return localStorage.getItem("v60.theme") || "auto"; } catch (e) { return "auto"; } })();
   if (!THEMES.includes(theme)) theme = "auto";
   if ($("themeBtn")) $("themeBtn").onclick = () => { theme = THEMES[(THEMES.indexOf(theme) + 1) % 3]; try { theme === "auto" ? localStorage.removeItem("v60.theme") : localStorage.setItem("v60.theme", theme); } catch (e) {} applyTheme(theme); };
   setInterval(() => theme === "auto" && applyTheme(theme), 60000);   // turns at sunset and sunrise while the page is open
