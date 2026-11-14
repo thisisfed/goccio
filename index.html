@@ -1427,6 +1427,14 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 /* every section ends flush, so the space under its last line is the page gap and nothing else */
 #bagList .item:only-child, #journalList .entry:last-child { padding-bottom: 0 !important; }
 .page > .outro { padding-bottom: 0 !important; }
+/* coffee details are plain text: origin (with its colour dot), process, variety; only tappable things are pills */
+.item .tags{margin:2px 0 0;font-size:var(--fs-s);line-height:1.35;color:var(--ink)}
+.item .tags .oc{display:inline!important;background:none!important;padding:0!important;height:auto!important;border-radius:0!important;font-weight:inherit;color:inherit}
+.item .tags .oc::before{width:6px;height:6px;margin-right:5px;vertical-align:.12em}
+.item .tags .miss{color:var(--muted)}
+.item .tags + .pills{margin-top:4px}
+/* every pill-shaped button is one height, the pill height */
+.hero-pill, #shelfMore, #copyBtn, #cardBtn, #linkBtn, #bagBtn, #saveLog { height: var(--pill-h) !important; min-height: 0 !important; padding-top: 0 !important; padding-bottom: 0 !important; display: inline-flex !important; align-items: center; }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -3661,19 +3669,21 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
       const isSp = r === sp;
       const group = isSp ? "Sponsored" : r.just_in ? justInLabel() : r.new ? "New in the last 3 weeks" : "Still on the shelves";
       const head = group !== lastGroup && shelfF !== "new" ? `<div class="grp">${group}</div>` : ""; lastGroup = group;
-      const pills = [
-        r.blend ? '<span class="pill">Blend</span>' : "",
-        r.roast && ROAST[r.roast] ? `<span class="pill">${esc(cap1(ROAST[r.roast].label))} roast</span>` : r.roast_level ? `<span class="pill">${r.roast_level === "dark" ? "Dark roast" : "Medium-dark"}</span>` : "",
-        r.process ? `<span class="pill ${PROC_TONE[bucket(r.process)]}">${esc(r.process)}</span>` : '<span class="pill miss">Process not listed</span>',
-        r.variety ? `<span class="pill">${esc(titleCase(r.variety))}</span>` : "",
-      ].join("");
+      // what the coffee is: plain text, never pills (pills are things you can tap)
+      const tagBits = [
+        r.blend ? "Blend" : "",
+        r.roast && ROAST[r.roast] ? esc(cap1(ROAST[r.roast].label)) + " roast" : r.roast_level ? (r.roast_level === "dark" ? "Dark roast" : "Medium-dark") : "",
+        r.process ? esc(r.process) : '<span class="miss">Process not listed</span>',
+        r.variety ? esc(titleCase(r.variety)) : "",
+      ];
       const origins = (r.origin || "").split(" / ").filter(Boolean).map((o) => `<span class="oc" data-o="${esc(o)}">${esc(o)}</span>`).join(" / ");
       const place = [origins, r.region ? esc(r.region) : ""].filter(Boolean).join(", ");
       return `${head}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
         <div class="l">
           <span class="who">${!isSp && r.just_in ? '<span class="ji">Just in</span>' : ""}${esc(r.roaster)}${r.roaster_city ? `, ${esc(r.roaster_city)}` : ""}</span>
           <span class="name">${esc(calm(r.name))}</span>
-          <div class="pills">${place ? `<span class="place">${place}</span>` : ""}${pills}<button type="button" class="pill bag-add${hasBag(r) ? " in" : ""}" data-b="${i}" aria-pressed="${hasBag(r)}">${hasBag(r) ? "In my bags" : "+ My bags"}</button></div>
+          <p class="tags">${[place, ...tagBits].filter(Boolean).join(", ")}</p>
+          <div class="pills"><button type="button" class="pill bag-add${hasBag(r) ? " in" : ""}" data-b="${i}" aria-pressed="${hasBag(r)}">${hasBag(r) ? "In my bags" : "+ My bags"}</button></div>
         </div>
         <div class="r">
           ${r.price ? `<span class="price">${esc(r.price)}</span>` : '<span class="date">Price on site</span>'}
@@ -3812,12 +3822,12 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
   function renderBags() {
     $("bags").hidden = !bags.length;
     $("bagList").innerHTML = bags.map((b, i) => {
-      const pills = [b.origin ? `<span class="place">${b.origin.split(" / ").map((o) => `<span class="oc" data-o="${esc(o)}">${esc(o)}</span>`).join(" / ")}</span>` : "", b.process ? `<span class="pill">${esc(titleCase(b.process))}</span>` : "", b.variety ? `<span class="pill">${esc(titleCase(b.variety))}</span>` : ""].join("");
+      const tags = [b.origin ? b.origin.split(" / ").map((o) => `<span class="oc" data-o="${esc(o)}">${esc(o)}</span>`).join(" / ") : "", b.process ? esc(titleCase(b.process)) : "", b.variety ? esc(titleCase(b.variety)) : ""].filter(Boolean).join(", ");
       return `<article class="item bag">
         <div class="l">
           <span class="who">${esc(b.roaster || "Your coffee")}</span>
           <span class="name">${esc(calm(b.name || b.text || "Coffee"))}</span>
-          ${pills ? `<div class="pills">${pills}</div>` : ""}
+          ${tags ? `<p class="tags">${tags}</p>` : ""}
           <div class="bag-f"><label>Roasted<span class="bag-d${b.roasted ? "" : " empty"}"><input type="date" data-k="roasted" data-i="${i}" value="${esc(b.roasted || "")}"></span></label>
             <label>Freezer<span><button type="button" class="pill bag-fz${b.frozen ? " in" : ""}" data-fz="${i}" aria-pressed="${!!b.frozen}">${b.frozen ? "In the freezer" : "Not frozen"}</button></span></label>
             <label>Left<span class="bag-g"><input type="number" inputmode="numeric" min="0" max="5000" step="1" data-k="left" data-i="${i}" value="${b.left ?? ""}">g</span></label></div>
