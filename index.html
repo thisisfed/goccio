@@ -1562,6 +1562,19 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 @media (max-width: 640px){ .scan-review .sc-row{grid-template-columns:72px minmax(0,1fr);column-gap:10px} }
 /* camera: the tip turns amber when the frame has glare, too little light or blur */
 .cam-status.warn{color:#ffb340}
+/* bean result card */
+.bc{display:grid;gap:8px;color:var(--ink);font-size:var(--fs-s);line-height:1.35}
+.bc p{margin:0}
+.bc-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.bc-conf{display:inline-flex;align-items:center;gap:5px;color:var(--muted);margin-left:auto}
+.bc-why,.bc-foot{color:var(--muted)}
+.bc-foot{font-size:12px}
+.bc-dl{display:grid;grid-template-columns:max-content 1fr;gap:2px 12px;margin:0}
+.bc-dl dt{color:var(--muted)} .bc-dl dd{margin:0}
+.bc-btns{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.bc-pick{display:contents}
+.bc .pill{height:var(--pill-h);padding:0 12px;border:0;border-radius:var(--r);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.bc .pill.on{background:var(--ink)!important;color:var(--bg)!important}
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1817,7 +1830,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     <button class="bv-go" id="bvGo" type="button">Start</button>
     <button class="bv-reset" id="bvReset" type="button">Reset</button>
     <button class="bv-drain" id="bvDrain" type="button" hidden>Drained</button>
-    <button class="bv-x" id="bvClose" type="button" aria-label="Close brew mode">Done</button>
+    <button class="bv-x" id="bvClose" type="button" aria-label="Close brew mode">Close</button>
   </div>
   <div class="bv-opts" id="bvOpts">
     <button type="button" id="optWake" aria-pressed="true">Keep screen on</button>
@@ -2512,6 +2525,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
       ${missing.includes("roast") ? q("roast", "Roast level: look at the beans", ROAST_Q, "Very light: pale tan, dry and dense. Light: light brown, matt. Medium: milk-chocolate brown. Medium-dark: dark brown, a little sheen. Dark: near black, oily. Or tap <b>Match by photo</b>: a few beans on white paper, in daylight. The photo is read on your phone and never uploaded.", PHOTO_CHIP) + `<p class="rp-msg" id="rpMsgNeed" hidden></p>` : ""}`;
     need.querySelectorAll("button[data-k]").forEach((b) => b.onclick = () => { state[b.dataset.k] = b.dataset.v; if (b.dataset.k === "roast") state.roastPhoto = null; saveState(); renderAllOpts(); render(); });
     need.querySelectorAll(".rp-go").forEach((b) => b.onclick = () => beanScan("rpMsgNeed"));
+    paintPhoto($("rpMsgNeed"));
     return true;
   }
 
@@ -2586,12 +2600,23 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
       return across <= Math.sqrt(m.l2) * 1.3 && along <= Math.sqrt(m.l1) * 1.2 && dAng < 0.7; });
     const tryPolarity = (dark, erode, t = thr) => {
       let m = new Uint8Array(N); for (let j = 0; j < N; j++) m[j] = dark ? Lb[j] <= t : Lb[j] > t;
+      // fill small enclosed holes: the shine on an oily bean punches a bright hole that would make it fail the "filled oval" test
+      if (dark) label((j) => m[j] === 0, false).forEach((px) => { if (px.length > N * 0.004) return;
+        for (const j of px) { const x = j % w, y = (j / w) | 0; if (x === 0 || y === 0 || x === w - 1 || y === h - 1) return; }
+        for (const j of px) m[j] = 1; });
       for (let it = 0; it < erode; it++) { const e = new Uint8Array(N);
         for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) { const j = y * w + x; e[j] = m[j] && m[j - 1] && m[j + 1] && m[j - w] && m[j + w] ? 1 : 0; }
         m = e; }
       const comps = label((j) => m[j] === 1, false).map((px) => { const mo = moments(px); let nb = 0; for (const j of px) nb += brown[j];
         return { ...mo, px, brown: nb / px.length, fill: px.length / (4 * Math.PI * Math.sqrt(mo.l1 * mo.l2)) }; });
-      const beans = comps.filter((c) => c.n >= Math.max(15, N * 0.0012) && c.n <= N * 0.12 && c.elong >= 1.12 && c.elong <= 2.1 && c.fill >= 0.72 && c.fill <= 1.15 && c.brown >= 0.6 && creased(c));
+      const ovals = comps.filter((c) => c.n >= Math.max(15, N * 0.0012) && c.n <= N * 0.12 && c.elong >= 1.12 && c.elong <= 2.1 && c.fill >= 0.72 && c.fill <= 1.15 && c.brown >= 0.6);
+      let beans = ovals.filter(creased), plain = false;
+      // small in the frame, a bean's crease is under a pixel wide and can't be seen. Eight or more brown ovals of one size, apart
+      // from each other, still read as beans (a hand, a table or a texture never gives that), at a little lower confidence
+      if (beans.length < 4 && ovals.length >= 8) { const sz = ovals.map((c) => c.n).sort((a2, b2) => a2 - b2), md = sz[sz.length >> 1];
+        const cv2 = Math.sqrt(sz.reduce((s2, v) => s2 + (v - md) ** 2, 0) / sz.length) / md;
+        const off = ovals.filter((c) => c.px.some((j) => { const x = j % w, y = (j / w) | 0; return x === 0 || y === 0 || x === w - 1 || y === h - 1; })).length;
+        if (cv2 < 0.45 && off <= ovals.length * 0.25) { beans = ovals.slice(); plain = true; } }
       let count = beans.length;
       if (beans.length >= 2) { const one = beans.map((c) => c.n).sort((a, b) => a - b)[beans.length >> 1];
         comps.forEach((c) => { if (!beans.includes(c) && c.brown >= 0.6 && c.n >= one * 1.6 && c.n <= one * 12 && c.fill >= 0.45) {
@@ -2608,7 +2633,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
         for (let j = 0; j < N; j++) if (!inC[j]) lout += Lb[j];
         const darker = lin / c.n < 0.5 * (lout / Math.max(1, N - c.n));
         if (R <= 0.6 && darker && inside.length > count) { count = inside.length; beans.length = 0; beans.push(c); } });
-      return { beans, count };
+      return { beans, count, plain };
     };
     let P = { count: 0, beans: [] };
     // shadows join beans to each other, so also try darker cut-offs that keep only the beans themselves
@@ -2618,22 +2643,112 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     for (const er of [1, 2, 4, 6, 9]) { const r = tryPolarity(false, er); if (r.count > P.count) P = r; }
     // no heap mode: wood grain and fabric look too much like a heap of creases. Beans have to be spread out, each its own oval
     if (P.count < 4) return { state: nBrown / N >= 0.2 ? "brownish" : "none" };
-    // colour: the middle of the beans (no creases, shadows or shine), white-balanced on the paper around them when it's light and neutral
-    const inBean = new Uint8Array(N); P.beans.forEach((c) => c.px.forEach((j) => inBean[j] = 1));
-    const beanPx = [], bg = [];
-    for (let j = 0; j < N; j++) (inBean[j] ? beanPx : bg).push(j);
-    const rgb = (j) => [lin(d[j * 4]), lin(d[j * 4 + 1]), lin(d[j * 4 + 2])];
-    beanPx.sort((a, b) => Y[a] - Y[b]); const mid = beanPx.slice(Math.floor(beanPx.length * 0.3), Math.ceil(beanPx.length * 0.7)).map(rgb);
-    bg.sort((a, b) => Y[b] - Y[a]); const top = bg.slice(0, Math.max(1, Math.floor(bg.length * 0.3))).map(rgb);
-    const avg = (arr, c) => arr.reduce((s, p) => s + p[c], 0) / arr.length;
-    const white = [0, 1, 2].map((c) => avg(top, c)), wY = 0.2126 * white[0] + 0.7152 * white[1] + 0.0722 * white[2];
-    const neutral = Math.max(...white) - Math.min(...white) < 0.25 * Math.max(...white);
-    const paper = wY > 0.25 && neutral;
-    const ref = paper ? white : [0.8, 0.8, 0.8];
-    const [R, G, Bc] = [0, 1, 2].map((c) => Math.min(1, avg(mid, c) / ref[c]));
-    const YY = 0.2126 * R + 0.7152 * G + 0.0722 * Bc, L = YY > 0.008856 ? 116 * Math.cbrt(YY) - 16 : 903.3 * YY;
+    return beanReport(P, d, w, h, Y, lin);   // P.plain: found by shape alone (no creases seen)
+  }
+  /* What a phone photo of beans can tell, and what it can't.
+     Can: roughly how dark the roast is (only against a white reference: the camera's exposure and white balance move
+     everything else), whether the beans are one roast or mixed, and visible oddities (pale beans, broken pieces).
+     Can't: origin, variety, process or an Agtron number. So none of those are guessed, and the roast comes back as
+     "not sure" whenever the photo doesn't support a level. */
+  const ROAST_MID = { vlight: 41, light: 35, medium: 29.5, mdark: 24.5, dark: 19 };   // middle L* of each band, for calibration
+  const BEAN_CAL = "v60.beancal";
+  const beanCal = () => { try { const a = JSON.parse(localStorage.getItem(BEAN_CAL) || "[]"); return Array.isArray(a) ? a : []; } catch (e) { return []; } };
+  function beanReport(P, d, w, h, Y, lin) {
+    const N = w * h, inBean = new Uint8Array(N); P.beans.forEach((c) => c.px.forEach((j) => inBean[j] = 1));
+    // 1. the reference: the lightest third of the background. Paper (light, neutral) gives exposure and white balance;
+    //    a tinted light surface gives white balance only roughly; a dark surface or a hand gives neither
+    const bg = []; for (let j = 0; j < N; j += 2) if (!inBean[j]) bg.push(j);
+    bg.sort((a2, b2) => Y[b2] - Y[a2]);
+    const top = bg.slice(Math.floor(bg.length * 0.03), Math.max(2, Math.floor(bg.length * 0.33)));   // skip the very brightest: glints
+    const ch = (j, c) => lin(d[j * 4 + c]);
+    const white = [0, 1, 2].map((c) => top.reduce((s2, j) => s2 + ch(j, c), 0) / top.length), wY = 0.2126 * white[0] + 0.7152 * white[1] + 0.0722 * white[2];
+    const encS = (v) => (v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055), wS = white.map(encS);
+    const tint = (Math.max(...wS) - Math.min(...wS)) / Math.max(1e-6, Math.max(...wS));   // the cast as you'd see it, not in raw sensor values
+    const clipped = top.filter((j) => d[j * 4] > 250 && d[j * 4 + 1] > 250 && d[j * 4 + 2] > 250).length / top.length;
+    // light and close to neutral: white paper. Light with a cast (warm bulbs, cool shade, cream paper): still a usable reference,
+    // the cast is corrected, but cream paper and warm light can't be told apart, so it's trusted less. Dark, or strongly coloured: none
+    // and bright: a phone exposes a frame of white paper well up. A mid-grey table or a dim room can't stand in for white,
+    // because then nothing says how bright "white" would have been
+    const heap = P.beans.some((c) => c.n >= N * 0.03);   // a pile, or beans in a hand: what's around it is skin or a bag, never a reference
+    const ref = heap ? "none" : wY > 0.35 && tint < 0.12 ? "paper" : wY > 0.35 && tint < 0.38 ? "tinted" : "none";
+    // white balance: scale each channel so the reference reads neutral. On a tinted surface keep its hue's lightness, correct only the cast
+    const refRGB = ref === "none" ? [0.8, 0.8, 0.8] : white;
+    const Lof = (r, g, b) => { const yy = 0.2126 * r + 0.7152 * g + 0.0722 * b; return yy > 0.008856 ? 116 * Math.cbrt(yy) - 16 : 903.3 * yy; };
+    // 2. one colour per bean: the lit body only. The darkest quarter is crease and rim shadow, the brightest tenth is shine (oily beans)
+    const cal = beanCal(), shift = cal.length >= 2 ? (() => { const o = cal.map((x) => ROAST_MID[x.key] - x.L).sort((a2, b2) => a2 - b2); return Math.max(-6, Math.min(6, o[o.length >> 1])); })() : 0;
+    const parts = []; P.beans.forEach((c) => { if (c.n < N * 0.03) { parts.push(c); return; }
+      const T = 6, cells = new Map(); c.px.forEach((j) => { const x = j % w, y = (j / w) | 0, k = ((x * T / w) | 0) + "," + ((y * T / h) | 0); if (!cells.has(k)) cells.set(k, []); cells.get(k).push(j); });
+      cells.forEach((px) => { if (px.length >= 20) parts.push({ px, n: px.length, fill: 1, heap: true }); }); });
+    const centre = (c) => { if (c.heap || !c.l1) return c.px; const co = Math.cos(c.ang), si = Math.sin(c.ang), A = Math.sqrt(c.l1) * 2, B = Math.sqrt(c.l2) * 2;
+      const k = c.px.filter((j) => { const dx = (j % w) - c.mx, dy = ((j / w) | 0) - c.my, u = (dx * co + dy * si) / A, v = (-dx * si + dy * co) / B; return u * u + v * v <= 0.45; });
+      return k.length >= 8 ? k : c.px; };   // the middle of the bean: a blurred edge mixes in the paper and reads too light
+    const per = parts.filter((c) => c.n >= 12).map((c) => { const px = centre(c).slice().sort((a2, b2) => Y[a2] - Y[b2]), body = px.slice(Math.floor(px.length * 0.25), Math.ceil(px.length * 0.9));
+      const m = [0, 1, 2].map((k) => Math.min(1, body.reduce((s2, j) => s2 + ch(j, k), 0) / body.length / refRGB[k]));
+      const hi = px.slice(Math.floor(px.length * 0.97)), med = Y[px[px.length >> 1]] || 1e-6;
+      const shine = hi.filter((j) => Y[j] > med * 2.4).length / Math.max(1, px.length);
+      return { L: Lof(m[0], m[1], m[2]) + shift, rgb: m, n: c.n, fill: c.fill, shine }; });
+    if (per.length < 4) return { state: "beans", n: P.count, roast: { key: null, c: null, why: "Too few beans to judge. Spread a small handful, at least 8." } };
+    const Ls = per.map((b2) => b2.L).sort((a2, b2) => a2 - b2), q = (f) => Ls[Math.min(Ls.length - 1, Math.floor(f * Ls.length))];
+    const med = q(0.5), iqr = q(0.75) - q(0.25), sd = Math.sqrt(Ls.reduce((s2, v) => s2 + (v - med) ** 2, 0) / Ls.length);
+    // 3. visible defects: much paler than the rest (likely quakers, under-developed), and broken pieces (half the usual size)
+    const allL = per.map((b2) => b2.L).sort((a2, b2) => a2 - b2);
+    let gap = 0, at = 0; for (let i = 1; i < allL.length; i++) if (allL[i] - allL[i - 1] > gap) { gap = allL[i] - allL[i - 1]; at = i; }
+    const mixed = gap >= 5 && at >= allL.length * 0.25 && allL.length - at >= allL.length * 0.25;
+    const madL = q(0.75) - q(0.25) || 1, paleCut = med + Math.max(7, 2.2 * madL), pale0 = per.filter((b2) => b2.L > paleCut), pale = !mixed && pale0.length <= per.length * 0.2 ? pale0 : [];
+    const sizes = per.map((b2) => b2.n).sort((a2, b2) => a2 - b2), mSize = sizes[sizes.length >> 1];
+    let broken = per.filter((b2) => b2.n < mSize * 0.55 || b2.fill < 0.62);
+    // a second look for what the bean finder skips (too pale, or broken, isn't an oval): every object clearly darker than the
+    // paper. Shadows are too faint to pass. Only against a light reference, where objects stand out
+    let others = { pale: 0, broken: 0, total: per.length };
+    if (ref !== "none" && !P.beans.some((c) => c.heap)) {
+      const Ln = new Float32Array(N), m = new Uint8Array(N);
+      for (let j = 0; j < N; j++) { const r0 = Math.min(1, ch(j, 0) / refRGB[0]), g0 = Math.min(1, ch(j, 1) / refRGB[1]), b0 = Math.min(1, ch(j, 2) / refRGB[2]); Ln[j] = Lof(r0, g0, b0); m[j] = Ln[j] < 70 ? 1 : 0; }
+      const seen = new Uint8Array(N), objs = [];
+      for (let j0 = 0; j0 < N; j0++) { if (!m[j0] || seen[j0]) continue; const st = [j0], px = []; seen[j0] = 1; let edge = false;
+        while (st.length) { const j = st.pop(), x = j % w, y = (j / w) | 0; px.push(j); if (x === 0 || y === 0 || x === w - 1 || y === h - 1) edge = true;
+          for (const k of [j - 1, j + 1, j - w, j + w]) { if (k < 0 || k >= N || Math.abs((k % w) - x) > 1 || seen[k] || !m[k]) continue; seen[k] = 1; st.push(k); } }
+        if (!edge && px.length >= mSize * 0.2 && px.length <= mSize * 1.6) { const Ls2 = px.map((j) => Ln[j]).sort((a2, b2) => a2 - b2); objs.push({ n: px.length, L: Ls2[Math.floor(Ls2.length * 0.6)] + shift }); } }
+      if (objs.length >= per.length) others = { pale: objs.filter((o) => o.n >= mSize * 0.5 && o.L > med + 9).length,
+        broken: objs.filter((o) => o.n < mSize * 0.6 && Math.abs(o.L - med) < 9).length, total: objs.length };
+    }
+    const sizeCV = Math.sqrt(sizes.reduce((s2, v) => s2 + (v - mSize) ** 2, 0) / sizes.length) / mSize;
+    // 4. one roast or two? Split at the biggest gap: two groups, both a quarter or more of the beans and 6+ L* apart, is a mix
+    const core = (mixed ? allL : per.filter((b2) => !pale.includes(b2)).map((b2) => b2.L)).sort((a2, b2) => a2 - b2);
+    const cMed = core[core.length >> 1], bandOf = (L) => ROAST_L.find(([, min]) => L >= min)[0];
+    // 5. the roast and how sure: reference quality × bean count × evenness × distance from a band edge
+    const edges = [38, 32, 27, 22], edge = Math.min(...edges.map((e) => Math.abs(cMed - e)));
+    let score = (ref === "paper" ? 1 : ref === "tinted" ? 0.82 : 0.4) * (P.plain ? 0.95 : 1) * (per.length >= 15 ? 1 : per.length >= 8 ? 0.9 : 0.7) * (sd <= 2.5 ? 1 : sd <= 4.5 ? 0.85 : 0.65) * (edge < 1.2 ? 0.75 : 1)
+      * (ref === "paper" && clipped > 0.5 ? 0.85 : 1) * (wY < 0.35 && ref === "paper" ? 0.85 : 1);
+    const key = bandOf(cMed), near = edge < 1.2 ? bandOf(cMed + (edges.find((e) => Math.abs(cMed - e) === edge) > cMed ? 1.3 : -1.3)) : null;
+    // roasted coffee sits roughly between L* 12 (very dark) and 46 (very light) against white: outside that, the reference was wrong
+    const plausible = cMed >= 12 && cMed <= 46;
+    const conf = !plausible || sd > 4.5 ? "low" : score >= 0.8 ? "high" : score >= 0.58 ? "medium" : "low";
+    const LBL = (k) => ROAST[k].label;
+    let roast;
+    if (mixed) { const lo = bandOf(core[0] + 0.01), hi2 = bandOf(core[core.length - 1]);
+      roast = { key: null, c: "medium", mixed: true, why: `Two roasts in one photo: some look ${LBL(hi2)}, some ${LBL(lo)}. Photograph one bag at a time.` }; }
+    else if (conf === "low") roast = { key: null, c: "low", guess: key, why: ref === "none" ? "No white reference, so the colour can’t be trusted. Put the beans on white paper, in daylight."
+      : !plausible ? "The colour doesn’t look like roasted coffee against this background. Try white paper, in daylight."
+      : sd > 4.5 ? "The beans look uneven, maybe two roasts mixed. Photograph one bag at a time." : "The photo doesn’t support a confident level. Try more beans on white paper." };
+    else roast = { key, c: conf, near: near && near !== key ? near : null, why: ref === "paper" ? "measured against the white paper" : "no white paper, so roughly: check it against the bag" };
+    // 6. plain notes: the colour in words, shine, evenness, defects. Nothing about origin, variety or process
+    const WORDS = { vlight: "pale cinnamon", light: "light brown", medium: "milk-chocolate brown", mdark: "dark chocolate brown", dark: "very dark, near black" };
+    const shineShare = per.filter((b2) => b2.shine > 0.012).length / per.length;
+    const notes = conf === "low" || mixed ? [] : [cap1(WORDS[key]) + (near && near !== key ? `, close to ${LBL(near)}` : "")];   // no colour words for a guess
+    if (shineShare > 0.4 && (key === "mdark" || key === "dark")) notes.push("Oily sheen: usual for dark roasts, or beans a few weeks off roast");
+    else if (shineShare > 0.4) notes.push("Some shine on the beans: they may be a few weeks off roast");
+    if (sizeCV > 0.35 && !heap) notes.push("Bean sizes vary a lot");
+    let uniform = heap ? { v: "can’t tell from a pile", c: null } : mixed ? { v: "mixed", c: "medium" } : sd <= 2.5 ? { v: "even", c: per.length >= 8 ? "high" : "medium" } : sd <= 4.5 ? { v: "fairly even", c: "medium" } : { v: "uneven", c: "medium" };
+    const mixAll = mixed || others.pale >= others.total * 0.25;   // a quarter or more much paler is two roasts, not defects
+    if (mixAll && !mixed) { roast = { key: null, c: "medium", mixed: true, why: "Some beans are much paler than the rest: two roasts, or very uneven. Photograph one bag at a time." }; uniform = { v: "mixed", c: "medium" }; }
+    const nPale = mixAll ? 0 : Math.max(pale.length, others.pale), nBroken = Math.max(broken.length, others.broken), tot = Math.max(per.length, others.total);
+    const nDef = nPale + nBroken, rate = nDef / tot;
+    const defects = heap ? { v: "can’t tell from a pile", c: null, detail: "" } : { v: nDef === 0 ? "none visible" : rate <= 0.06 ? "low" : rate <= 0.15 ? "medium" : "high", c: tot >= 12 ? "medium" : "low",   // a top-down photo only sees one side of each bean
+      detail: [nPale && `${nPale} of ${tot} much paler (possible quakers)`, nBroken && `${nBroken} broken or chipped`].filter(Boolean).join(", ") };
     const enc = (v) => Math.round(255 * (v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055));
-    return { state: "beans", n: P.count, paper, key: ROAST_L.find(([, min]) => L >= min)[0], L: Math.round(L), hex: "#" + [R, G, Bc].map((v) => enc(v).toString(16).padStart(2, "0")).join("") };
+    const mean = [0, 1, 2].map((k) => per.reduce((s2, b2) => s2 + b2.rgb[k], 0) / per.length);
+    return { state: "beans", n: P.count, measured: heap ? P.count : tot, ref, L: Math.round(cMed * 10) / 10, Lraw: Math.round((cMed - shift) * 10) / 10, sd: Math.round(sd * 10) / 10, key: roast.key, roast, uniform, defects, notes,
+      hex: "#" + mean.map((v) => enc(v).toString(16).padStart(2, "0")).join(""), paper: ref === "paper" };
   }
   function grabSmall(v, guide) { const c = grabFrame(v, guide); if (!c) return null; const k = Math.min(1, 240 / Math.max(c.width, c.height));
     const o = document.createElement("canvas"); o.width = Math.round(c.width * k); o.height = Math.round(c.height * k); o.getContext("2d").drawImage(c, 0, 0, o.width, o.height); return o; }
@@ -2644,11 +2759,14 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     const view = $("camView"), v = $("camVideo"), st = $("camStatus"), found = $("camFound");
     live = { on: true, start: Date.now(), streak: 0, last: null }; const me = live;
     view.hidden = false; view.classList.add("beans"); document.body.style.overflow = "hidden"; st.textContent = "Starting the camera…"; found.innerHTML = "";
-    $("camDone").textContent = "Use this colour"; $("camDone").disabled = true; $("camPhoto").textContent = "Take a photo instead";
+    $("camDone").textContent = "Read these beans"; $("camDone").disabled = true; $("camPhoto").textContent = "Take a photo instead";
     const say = (t) => { const m = $(msgId); if (m) { m.hidden = false; m.textContent = t; } };
     const end = () => { view.classList.remove("beans"); $("camDone").disabled = false; $("camDone").textContent = "Use what it read"; stopLive(); };
-    const use = (got) => { end(); state.roastPhoto = { key: got.key, L: got.L, hex: got.hex }; state.roast = got.key; saveState(); renderAllOpts(); render(); if ($("moreOpts")) $("moreOpts").open = true;
-      if (!got.paper) say(`Matched ${ROAST[got.key].label}. On white paper the colour reads truer.`); };
+    // the live view watches small frames for speed; the answer comes from one full-size frame, read like a photo
+    const sharp = (fallback) => { try { const c = grabFrame(v, $("camGuide")); if (!c) return fallback; const k = Math.min(1, 360 / Math.max(c.width, c.height)), o = document.createElement("canvas");
+      o.width = Math.round(c.width * k); o.height = Math.round(c.height * k); o.getContext("2d", { willReadFrequently: true }).drawImage(c, 0, 0, o.width, o.height);
+      const g = analyseBeans(o); return g.state === "beans" ? g : fallback; } catch (e) { return fallback; } };
+    const use = (got0) => { const got = sharp(got0); end(); beanCard = { ...got, where: msgId }; renderAllOpts(); if ($("moreOpts")) $("moreOpts").open = true; const m = $(msgId); if (m) m.scrollIntoView({ behavior: "smooth", block: "nearest" }); };
     $("camClose").onclick = () => end();
     $("camPhoto").onclick = () => { end(); askPhoto(msgId); };
     $("camDone").onclick = () => { if (me.last) use(me.last); };
@@ -2656,21 +2774,23 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     catch (e) { end(); askPhoto(msgId); return; }
     if (!me.on) { me.stream.getTracks().forEach((t) => t.stop()); return; }
     v.srcObject = me.stream; try { await v.play(); } catch (e) {}
-    st.textContent = "Spread 5 or more beans apart on white paper and fill the frame.";
+    const TIP = "Spread a small handful apart on white paper, in daylight. Fill the frame, no strong shadows.";
+    st.textContent = TIP;
     const tick = () => {
       if (!me.on) return;
       const c = grabSmall(v, $("camGuide"));
       if (c) {
         const got = analyseBeans(c);
         if (got.state === "beans") {
-          me.streak = me.last && me.last.key === got.key ? me.streak + 1 : 1; me.last = got; $("camDone").disabled = false;
-          st.textContent = "Coffee beans found. Hold still…"; st.classList.remove("warn");
-          found.innerHTML = `<span class="cam-tick"><i class="bean-dot" style="--c:${got.hex}"></i>${esc(cap1(ROAST[got.key].label))}</span>`;
+          me.streak = me.last && me.last.key === got.key && me.last.ref === got.ref ? me.streak + 1 : 1; me.last = got; $("camDone").disabled = false;
+          const tip = got.ref === "none" ? "Beans found, but no white paper behind them: the colour won’t be reliable." : "Coffee beans found. Hold still…";
+          st.textContent = tip; st.classList.toggle("warn", got.ref === "none");
+          found.innerHTML = got.key ? `<span class="cam-tick"><i class="bean-dot" style="--c:${got.hex}"></i>${esc(cap1(ROAST[got.key].label))}</span>` : `<span class="cam-tick">Not sure yet</span>`;
           if (me.streak >= 6) return use(got);   // about two seconds of steady beans
         } else {
           me.streak = 0;
           if (got.state === "brownish") { st.textContent = "Coffee beans not recognised. Spread 5 or more beans apart on a plain surface."; st.classList.add("warn"); }
-          else { st.textContent = "Spread 5 or more beans apart on white paper and fill the frame."; st.classList.remove("warn"); }
+          else { st.textContent = TIP; st.classList.remove("warn"); }
         }
       }
       if (Date.now() - me.start > 30000) { end(); say("Couldn’t find coffee beans. Try daylight and a few beans on white paper, or pick the roast yourself."); return; }
@@ -2679,47 +2799,55 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     tick();
   }
 
-  async function beansFromPhoto(file) {
+  // a photo goes through the same bean finder as the live camera: no beans found, no roast
+  async function beansFromPhoto(file, long = 360) {
     const url = URL.createObjectURL(file);
     try {
       const img = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = url; });
-      const k = Math.min(1, 240 / Math.max(img.naturalWidth, img.naturalHeight));
-      const w = Math.max(1, Math.round(img.naturalWidth * k)), h = Math.max(1, Math.round(img.naturalHeight * k));
-      const cv = document.createElement("canvas"); cv.width = w; cv.height = h;
-      const cx = cv.getContext("2d", { willReadFrequently: true }); cx.drawImage(img, 0, 0, w, h);
-      const d = cx.getImageData(0, 0, w, h).data;
-      const lin = (v) => (v /= 255) <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
-      const px = [];
-      for (let i = 0; i < d.length; i += 4) { const r = lin(d[i]), g = lin(d[i + 1]), b = lin(d[i + 2]); px.push([r, g, b, 0.2126 * r + 0.7152 * g + 0.0722 * b]); }
-      const ys = px.map((p) => p[3]).sort((a, b) => a - b), top = ys[Math.floor(ys.length * 0.95)];
-      if (top < 0.05) return { err: "That photo is too dark. Try daylight, beans on white paper." };
-      const paper = px.filter((p) => p[3] >= top * 0.9), white = [0, 1, 2].map((c) => paper.reduce((a, p) => a + p[c], 0) / paper.length);
-      const beans = px.filter((p) => p[3] < top * 0.5 && p[3] > top * 0.003).sort((a, b) => a[3] - b[3]);
-      if (beans.length < px.length * 0.03 || paper.length < px.length * 0.03) return { err: "Couldn’t tell the beans from the background. Put a few beans on white paper and fill most of the photo." };
-      const lit = beans.slice(Math.floor(beans.length * 0.3), Math.ceil(beans.length * 0.7));   // the middle of the beans: no creases, shadows or edges
-      const [R, G, B] = [0, 1, 2].map((c) => Math.min(1, lit.reduce((a, p) => a + p[c], 0) / lit.length / white[c]));
-      const Y = 0.2126 * R + 0.7152 * G + 0.0722 * B, L = Y > 0.008856 ? 116 * Math.cbrt(Y) - 16 : 903.3 * Y;
-      const enc = (v) => Math.round(255 * (v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055));
-      return { key: ROAST_L.find(([, min]) => L >= min)[0], L: Math.round(L), hex: "#" + [R, G, B].map((v) => enc(v).toString(16).padStart(2, "0")).join("") };
+      const k = Math.min(1, long / Math.max(img.naturalWidth, img.naturalHeight)), cv = document.createElement("canvas");
+      cv.width = Math.max(1, Math.round(img.naturalWidth * k)); cv.height = Math.max(1, Math.round(img.naturalHeight * k));
+      cv.getContext("2d", { willReadFrequently: true }).drawImage(img, 0, 0, cv.width, cv.height);
+      const got = analyseBeans(cv);
+      if (got.state !== "beans") return { err: got.state === "brownish" ? "Couldn’t pick out separate beans. Spread a small handful apart on white paper and fill the frame." : "No coffee beans found in that photo. Spread a small handful on white paper, in even light." };
+      return got;
     } catch (e) { return { err: "Couldn’t read that photo. Try another one." }; }
     finally { URL.revokeObjectURL(url); }
   }
+  if (/[?&]scantest\b/.test(location.search)) window.__beans = async (blob, long) => beansFromPhoto(blob, long);
+  // the result card: what the photo shows, how sure, and a choice. Nothing changes the Roast row until you tap one
+  let beanCard = null;
   function paintPhoto(el) {
-    const P = state.roastPhoto; if (!el) return;   // the matched roast is already picked in the Roast row: no extra panel
-    if (true) { el.hidden = true; el.innerHTML = ""; return; }
+    if (!el) return; const G = beanCard;
+    if (!G || (G.where && G.where !== el.id)) { if (!el.textContent.trim() || el.querySelector(".bc")) { el.hidden = true; el.innerHTML = ""; } return; }
+    const ro = G.roast || {}, LBL = (k) => cap1(ROAST[k].label), dot = (c) => `<i class="sc-dot ${c || "none"}"></i>`;
+    const head = ro.key ? `Looks <b>${esc(ROAST[ro.key].label)}</b>${ro.near ? `, close to ${esc(ROAST[ro.near].label)}` : ""}, ${esc(G.uniform.v)}.`
+      : ro.mixed ? "<b>Mixed roasts.</b>" : `<b>Not sure.</b>${ro.guess ? ` Roughly ${esc(ROAST[ro.guess].label)}, but don’t trust it.` : ""}`;
     el.hidden = false;
-    el.innerHTML = `<div class="rp-row"><span class="rp-me"><i class="bean-dot big" style="--c:${P.hex}"></i>Your beans</span>
-      <div class="rp-scale" role="group" aria-label="Roast colour scale">${Object.entries(ROAST_SW).map(([k, c]) => `<button type="button" class="rp-sw${k === P.key ? " on" : ""}" data-v="${k}" aria-pressed="${k === P.key}" title="${cap1(ROAST[k].label)}"><i style="--c:${c}"></i><span>${cap1(ROAST[k].label)}</span></button>`).join("")}</div></div>
-      <p>${state.roast === P.key ? `Closest match: <b>${esc(ROAST[P.key].label)}</b>, so it’s selected.` : `The photo matched <b>${esc(ROAST[P.key].label)}</b>; you picked another.`} Light and phone cameras vary, so if your beans look more like another swatch, tap it.</p>`;
-    el.querySelectorAll(".rp-sw").forEach((b) => b.onclick = () => { state.roast = b.dataset.v; saveState(); renderAllOpts(); render(); });
+    el.innerHTML = `<div class="bc">
+      <p class="bc-head"><i class="bean-dot big" style="--c:${G.hex}"></i><span>${head}</span>${ro.c ? `<span class="bc-conf">${dot(ro.c)}${ro.c === "high" ? "Sure" : ro.c === "medium" ? "Check it" : "A guess"}</span>` : ""}</p>
+      <p class="bc-why">${esc(ro.why || "")}</p>
+      <dl class="bc-dl">
+        <dt>Beans read</dt><dd>${G.measured || G.n}</dd>
+        <dt>Evenness</dt><dd>${esc(cap1(G.uniform ? G.uniform.v : "–"))}</dd>
+        <dt>Defects</dt><dd>${esc(cap1(G.defects ? G.defects.v : "–"))}${G.defects && G.defects.detail ? `: ${esc(G.defects.detail)}` : ""}</dd>
+        ${G.notes && G.notes.length ? `<dt>Notes</dt><dd>${G.notes.map(esc).join(". ")}.</dd>` : ""}
+      </dl>
+      <div class="bc-btns">${ro.key ? `<button type="button" class="pill on" data-bc="${ro.key}">Use ${esc(LBL(ro.key))}</button>` : ""}
+        <span class="bc-pick">Or pick: ${Object.keys(ROAST_SW).map((k) => `<button type="button" class="pill" data-bc="${k}"><i class="bean-dot" style="--c:${ROAST_SW[k]}"></i>${esc(LBL(k))}</button>`).join("")}</span>
+        <button type="button" class="pill" data-bc="">Ignore</button></div>
+      <p class="bc-foot">From a photo: roast colour only, and only against white paper. Origin, variety and process can’t be seen in beans.</p></div>`;
+    el.querySelectorAll("[data-bc]").forEach((b2) => b2.onclick = () => { const k = b2.dataset.bc;
+      if (k) { state.roast = k; state.roastPhoto = { key: k, L: G.L, hex: G.hex };
+        // what you chose for these beans, against what the photo read: after two, the reading shifts to match your light and camera
+        if (G.ref === "paper" && G.Lraw != null && !(ro.mixed)) { const cal = beanCal(); cal.push({ L: G.Lraw, key: k }); try { localStorage.setItem(BEAN_CAL, JSON.stringify(cal.slice(-12))); } catch (e) {} } }
+      beanCard = null; saveState(); renderAllOpts(); render(); });
   }
   $("roastPhotoIn").addEventListener("change", async (e) => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
     const msg = $(photoMsgId); if (msg) { msg.hidden = false; msg.textContent = "Reading the colour…"; }
     const got = await beansFromPhoto(f);
     if (got.err) { const m = $(photoMsgId); if (m) { m.hidden = false; m.textContent = got.err; } return; }
-    state.roastPhoto = got; state.roast = got.key; saveState(); renderAllOpts(); render();
-    $("moreOpts").open = true;   // the palette lives in Bag details once the recipe shows
+    beanCard = { ...got, where: photoMsgId }; renderAllOpts(); render(); if ($("moreOpts")) $("moreOpts").open = true;
   });
 
   function renderLearn(r) {
