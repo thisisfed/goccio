@@ -3665,8 +3665,11 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
       if (b.text && !b.roaster) { state.text = b.text; state.bag = null; state.roastPhoto = null; $("coffeeIn").value = b.text; saveState(); renderAllOpts(); render(); $("coffee").scrollIntoView({ behavior: "smooth", block: "start" }); }
       else brewThis(b); });
     $("bagList").querySelectorAll("[data-rm]").forEach((x) => x.onclick = (e) => { e.preventDefault(); bags.splice(+x.dataset.rm, 1); saveBags(); renderBags(); renderShelf(); });
-    $("bagList").querySelectorAll("input[data-k]").forEach((x) => x.onchange = () => { const b = bags[+x.dataset.i];
-      b[x.dataset.k] = x.dataset.k === "left" ? Math.max(0, Math.round(Number(x.value) || 0)) : x.value; saveBags(); renderBags(); });
+    // iPhone's date wheel fires "change" while it spins: save quietly and only refresh the line under it, never rebuild the picker you're using
+    $("bagList").querySelectorAll("input[data-k]").forEach((x) => { const save = () => { const b = bags[+x.dataset.i]; if (!b) return;
+        b[x.dataset.k] = x.dataset.k === "left" ? Math.max(0, Math.round(Number(x.value) || 0)) : x.value; saveBags();
+        const rest = x.closest(".item").querySelector(".bag-rest"); if (rest) rest.textContent = restLine(b); };
+      x.addEventListener("change", save); x.addEventListener("blur", save); });
   }
   // the recipe's own coffee (typed or from the list)
   const currentBag = () => state.bag && state.bag.name ? { ...state.bag, process: state.listProc && state.listProc !== "auto" ? state.listProc : "", roast: state.roast !== "auto" ? state.roast : null }
