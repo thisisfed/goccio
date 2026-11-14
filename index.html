@@ -27,7 +27,7 @@ if (/iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIn
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <title>Bag to Cup</title>
-<meta name="description" content="A recipe for the coffee in front of you, on V60, Kalita Wave, Melitta, Chemex, AeroPress, French press, cold brew or moka pot: the grind for your grinder, ratio, temperature, every step, a full-screen brew timer and a private brew journal. Plus new filter coffees from roasters in the UK, Europe and beyond, updated every morning.">
+<meta name="description" content="A recipe for the coffee in front of you, on V60, Kalita Wave, Melitta, Chemex, AeroPress, French Press, cold brew or moka pot: the grind for your grinder, ratio, temperature, every step, a full-screen brew timer and a private brew journal. Plus new filter coffees from roasters in the UK, Europe and beyond, updated every morning.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://bagtocup.thisisfed.xyz/">
 <meta property="og:site_name" content="Bag to Cup">
@@ -1489,6 +1489,35 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 #bagList .item > .r{display:flex;flex-direction:column;align-items:stretch;gap:5px}
 #bagList .item > .r > .btn, #bagList .item .bag-rm{height:var(--pill-h)!important;padding:0 12px!important;display:inline-flex!important;align-items:center;justify-content:center;margin:0!important;border:0!important;box-shadow:none!important;border-radius:var(--r)!important;font:500 var(--fs-s)/1 var(--sans)!important;background:var(--pill)!important;color:var(--ink)!important;cursor:pointer}
 #bagList .item .bag-rm.armed{background:#ff3b30!important;color:#fff!important}
+/* A4 sheet: hidden on screen, the only thing printed. Black on white, one system font, the site's scale */
+#printSheet{display:none}
+@page{size:A4;margin:0}
+@media print{
+  html,body{background:#fff!important}
+  body.printing > *:not(#printSheet){display:none!important}
+  body.printing #printSheet{display:block!important}
+  .ps{box-sizing:border-box;width:210mm;height:296mm;padding:14mm 14mm 12mm;display:flex;flex-direction:column;color:#000;font-family:var(--sans);-webkit-print-color-adjust:exact;print-color-adjust:exact;overflow:hidden}
+  .ps-top,.ps-foot{display:flex;justify-content:space-between;font-size:11pt;line-height:1.35}
+  .ps-top{border-bottom:.5pt solid #000;padding-bottom:3mm}
+  .ps-kick{margin:10mm 0 0;font-size:11pt;line-height:1.35;color:#666;display:flex;gap:4mm;align-items:baseline}
+  .ps-nail{color:#1e8a3c}
+  .ps-title{margin:2mm 0 0;font-size:54pt;line-height:1.02;letter-spacing:-.035em;font-weight:500;text-wrap:balance}
+  .ps-nums{margin-top:12mm;display:grid;grid-template-columns:repeat(3,1fr);gap:0 8mm}
+  .ps-nums > div{border-top:.5pt solid #000;padding:2.5mm 0 6mm;display:flex;flex-direction:column-reverse;gap:1mm}
+  .ps-nums b{font-size:40pt;line-height:1;font-weight:500;letter-spacing:-.03em;white-space:nowrap}
+  .ps-nums .key b{font-size:40pt}
+  .ps-nums span{font-size:10pt;color:#666}
+  .ps-pours{margin-top:8mm;width:100%;border-collapse:collapse;font-size:12pt;line-height:1.35}
+  .ps-pours td,.ps-pours th,.ps *{font-weight:inherit}
+  .ps{font-weight:400}
+  .ps-pours th{text-align:left;font-weight:400;color:#666;border-bottom:.5pt solid #000;padding:0 0 2mm}
+  .ps-pours td{border-bottom:.5pt solid #ddd;padding:2.2mm 0;vertical-align:top}
+  .ps-pours td:nth-child(1),.ps-pours th:nth-child(1){width:22mm}
+  .ps-pours td:nth-child(2),.ps-pours th:nth-child(2){width:26mm}
+  .ps-prep,.ps-note{margin:6mm 0 0;font-size:11pt;line-height:1.35;max-width:150mm}
+  .ps-note{color:#666}
+  .ps-foot{margin-top:auto;border-top:.5pt solid #000;padding-top:3mm}
+}
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1639,6 +1668,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     <div class="share">
       <button class="btn" id="copyBtn" type="button">Copy recipe</button>
       <button class="btn" id="cardBtn" type="button">Save recipe card</button>
+      <button class="btn" id="pdfBtn" type="button">Save as PDF</button>
       <button class="btn" id="linkBtn" type="button">Share link</button>
       <button class="btn" id="bagBtn" type="button">Add to my bags</button>
     </div>
@@ -1681,7 +1711,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
       <li><span class="rt">Hario Switch:</span> Tetsu Kasuya’s Hybrid Method.</li>
       <li><span class="rt">Clever Dripper:</span> James Hoffmann’s Ultimate Clever technique.</li>
       <li><span class="rt">AeroPress:</span> James Hoffmann’s Ultimate AeroPress technique, standard or inverted.</li>
-      <li><span class="rt">French press:</span> James Hoffmann’s Ultimate French Press technique.</li>
+      <li><span class="rt">French Press:</span> James Hoffmann’s Ultimate French Press technique.</li>
       <li><span class="rt">Bialetti Moka Express:</span> James Hoffmann’s Ultimate Moka Pot technique.</li>
       <li><span class="rt">Cold brew:</span> Ceremony Coffee’s guide.</li>
       <li><span class="rt">Grind:</span> Comandante C40 clicks, counted from zero. Other grinders converted from those clicks with Honest Coffee Guide’s grind charts.</li>
@@ -1701,7 +1731,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
       <li>Hoffmann, J. <span class="rt">A better 1 cup V60 technique</span> [Video]. YouTube. <a href="https://www.youtube.com/watch?v=1oB1oDrDkHM" target="_blank" rel="noopener">youtube.com</a></li>
       <li>Hoffmann, J. <span class="rt">The ultimate AeroPress technique</span> [Video]. YouTube. <a href="https://www.youtube.com/watch?v=j6VlT_jUVPc" target="_blank" rel="noopener">youtube.com</a></li>
       <li>Hoffmann, J. <span class="rt">The ultimate Clever Dripper technique</span> [Video]. YouTube. <a href="https://www.youtube.com/watch?v=RpOdennxP24" target="_blank" rel="noopener">youtube.com</a></li>
-      <li>Hoffmann, J. <span class="rt">The ultimate French press technique</span> [Video]. YouTube. <a href="https://www.youtube.com/results?search_query=James+Hoffmann+The+Ultimate+French+Press+Technique" target="_blank" rel="noopener">youtube.com</a></li>
+      <li>Hoffmann, J. <span class="rt">The ultimate French Press technique</span> [Video]. YouTube. <a href="https://www.youtube.com/results?search_query=James+Hoffmann+The+Ultimate+French+Press+Technique" target="_blank" rel="noopener">youtube.com</a></li>
       <li>Hoffmann, J. <span class="rt">The ultimate moka pot technique</span> [Video]. YouTube. <a href="https://www.youtube.com/results?search_query=James+Hoffmann+The+Ultimate+Moka+Pot+Technique" target="_blank" rel="noopener">youtube.com</a></li>
       <li>Hoffmann, J. <span class="rt">The ultimate V60 technique</span> [Video]. YouTube. <a href="https://www.youtube.com/watch?v=AI4ynXzkSQo" target="_blank" rel="noopener">youtube.com</a></li>
       <li>Honest Coffee Guide. <span class="rt">Grinder settings charts</span>. <a href="https://honestcoffeeguide.com/" target="_blank" rel="noopener">honestcoffeeguide.com</a></li>
@@ -1972,7 +2002,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
               base: 22, dA: { 15: 0, 18: 1, 20: 1, 25: 2 }, range: [14, 32], ratio: { light: 16.67, balanced: 16, syrupy: 15 }, dT: 5, cap: 340, capBig: 450, ey: [19.5, 21.5] },
     aero:   { name: "AeroPress", kind: "imm", doses: [[11, "11 g"], [13, "13 g"], [15, "15 g"]], dose: 11,
               base: 18, dA: { 11: 0, 13: 0, 15: 1 }, range: [12, 30], ratio: { light: 18, balanced: 16.5, syrupy: 15 }, dT: 4, cap: 250, ey: [19.5, 21.5] },
-    press:  { name: "French press", kind: "imm", doses: [[15, "15 g"], [30, "30 g"], [60, "60 g"]], dose: 30,
+    press:  { name: "French Press", kind: "imm", doses: [[15, "15 g"], [30, "30 g"], [60, "60 g"]], dose: 30,
               base: 28, dA: { 15: -1, 30: 0, 60: 1 }, range: [20, 45], ratio: { light: 17, balanced: 16, syrupy: 15 }, dT: 2, ey: [19, 21] },
     cold:   { name: "Cold brew", kind: "steps", doses: [[50, "50 g"], [100, "100 g"]], dose: 100, base: 36, dA: {}, range: [28, 45], fixed: 8 },
     moka:   { name: "Bialetti Moka Express", kind: "steps", doses: [[7, "1-cup"], [16, "3-cup"], [30, "6-cup"]], dose: 16, base: 15, dA: {}, range: [10, 22], water: { 7: 60, 16: 150, 30: 300 } },
@@ -2675,7 +2705,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
   // ---------- how the clicks were set ----------
   const signed = (n) => (n > 0 ? "+" : n < 0 ? "−" : "±") + Math.abs(n);
   const METHOD_REF = { hoffmann: "Hoffmann 1-Cup", hoffmannU: "Hoffmann Ultimate", fourSix: "Kasuya 4:6", ten: "Kasuya 10-Pour", rao: "Rao bloom & spin",
-    kalita: "Kalita Wave", melitta: "Melitta", chemex: "Chemex", origami: "Origami", switch: "Hario Switch", clever: "Clever Dripper", aero: "AeroPress", press: "French press", cold: "Cold brew", moka: "Bialetti Moka Express" };
+    kalita: "Kalita Wave", melitta: "Melitta", chemex: "Chemex", origami: "Origami", switch: "Hario Switch", clever: "Clever Dripper", aero: "AeroPress", press: "French Press", cold: "Cold brew", moka: "Bialetti Moka Express" };
   function renderClicks(r) {
     const p = r.clickParts, B = BASE[r.m], c = r.c;
     const rows = [[`Base: ${METHOD_REF[r.m]} at ${r.brewer === "v60" ? 15 : BREWERS[r.brewer].kind === "steps" ? doseName(r) : BREWERS[r.brewer].dose + " g"}`, String(p.base)]];
@@ -2825,7 +2855,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     switch: "V60 paper, rinsed with the valve open. Have a second kettle or a jug of cold water ready for the 70°C pour. Tare with the coffee in.",
     clever: "Rinse the paper, then empty the Clever. Water goes in first, coffee second. Leave the lid off: Hoffmann found it makes no difference.",
     aero: "Paper in the cap, no need to rinse. Standard way up, straight on the cup. Tare with the coffee in.",
-    press: "Warm the French press with hot water first. Tare with the coffee in. Have a spoon ready for the crust.",
+    press: "Warm the French Press with hot water first. Tare with the coffee in. Have a spoon ready for the crust.",
     cold: "Any jar or jug with a lid. Coarse and even, or the concentrate turns muddy.",
     moka: "Hot water in the base means the coffee spends less time on the heat and tastes less burnt. Optional: a wetted AeroPress paper on top of the coffee, under the upper chamber, catches the fines for a cleaner, lighter cup.",
   };
@@ -3362,7 +3392,8 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
       savePrefs();
     }
     journal.unshift({ at, undo, title: coffeeTitle(state, r), text: state.text, bag: state.bag, brewer: r.brewer, goal: state.goal, dose: r.dose,
-      method: r.method, clicks: r.clicks, temp: r.temp, ratio: r.ratio, water: r.water, dd, tastes: [...picked], note: $("logNote").value.trim(),
+      method: r.method, clicks: r.clicks, temp: r.temp, ratio: r.ratio, water: r.water, ice: r.ice || null, lo: r.lo, hi: r.hi,
+      pours: (r.pours || []).map((q) => ({ t: q.t, to: q.to, note: q.note || q.lbl || "" })), dd, tastes: [...picked], note: $("logNote").value.trim(),
       change: s ? s.text : "" });
     saveJournal();
     picked = new Set(); $("ddIn").value = ""; $("logNote").value = "";
@@ -3392,13 +3423,16 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
         <span class="num">${esc(e.method)} / ${esc(grindLine(e.clicks))} / ${e.dose}→${e.water} g${e.temp != null ? ` / ${e.temp}°C` : ""}${e.dd != null ? " / drained " + fmt(e.dd) : ""}</span>
         ${e.tastes && e.tastes.length ? `<span class="t">${esc(e.tastes.map((k) => (TASTES.find((x) => x[0] === k) || [k, k])[1]).join(", "))}${e.change ? " → " + esc(e.change) : ""}</span>` : ""}
         ${e.note ? `<span class="t muted">${esc(e.note)}</span>` : ""}</div>
-      <span class="e-act"><button type="button" data-i="${i}">Brew again</button><button type="button" class="del" data-del="${i}" aria-label="Delete this brew">Delete</button></span></div>`).join("");
+      <span class="e-act"><button type="button" data-i="${i}">Brew again</button>${(e.tastes || []).includes("balanced") ? `<button type="button" data-pdf="${i}">PDF</button>` : ""}<button type="button" class="del" data-del="${i}" aria-label="Delete this brew">Delete</button></span></div>`).join("");
     // two taps, no pop-up: Delete, then Sure?
     box.querySelectorAll("button[data-del]").forEach((b) => b.onclick = () => {
       if (b.dataset.armed) return deleteEntry(+b.dataset.del);
       b.dataset.armed = "1"; b.textContent = "Sure?"; b.classList.add("armed");
       setTimeout(() => { if (b.isConnected) { delete b.dataset.armed; b.textContent = "Delete"; b.classList.remove("armed"); } }, 3000);
     });
+    box.querySelectorAll("button[data-pdf]").forEach((b) => b.onclick = () => { const e = journal[+b.dataset.pdf];
+      printSheet({ title: e.title, brewer: (BREWERS[e.brewer] || BREWERS.v60).name, method: e.method, date: e.at, clicks: e.clicks, dose: e.dose, water: e.water, ice: e.ice,
+        temp: e.temp, ratio: e.ratio, lo: e.lo, hi: e.hi, dd: e.dd, pours: e.pours, note: e.note, nailed: true }); });
     box.querySelectorAll("button[data-i]").forEach((b) => b.onclick = () => {
       const e = journal[+b.dataset.i];
       state.text = e.text || e.title; state.bag = e.bag || null; state.goal = e.goal || state.goal;
@@ -3681,6 +3715,30 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     x.textAlign = "right"; x.font = F(500, 24); x.fillText(dmy(new Date()), W - M, H - 56); x.textAlign = "left";
     return new Promise((res) => cv.toBlob(res, "image/png"));
   }
+  // ---------- A4 sheet: the recipe as a page, printed or saved as PDF from the browser's own print dialog ----------
+  function printSheet(d) {
+    const g = onMill(d.clicks), when = d.date ? dmy(d.date) : dmy(new Date().toISOString());
+    const nums = [[isC40() ? String(d.clicks) : g.txt, isC40() ? "C40 clicks" : mill().name, "key"], [d.dose + " g", "Coffee"], [d.water + " g", d.ice ? "Hot water" : "Water"],
+      d.ice ? [d.ice + " g", "Ice in the jug"] : null, d.temp != null ? [d.temp + "°C", "Kettle"] : null,
+      d.lo ? [d.hi && d.hi !== d.lo ? `${fmt(d.lo)} – ${fmt(d.hi)}` : fmt(d.lo), "Total time"] : null].filter(Boolean);
+    const pours = (d.pours || []).filter((q) => q.t != null);
+    $("printSheet").innerHTML = `<div class="ps">
+      <header class="ps-top"><span>Bag to Cup</span><span>${esc(when)}</span></header>
+      <p class="ps-kick">${esc([d.brewer, d.method && d.method !== d.brewer ? d.method : "", d.ice ? "Iced" : "", d.ratio ? "1:" + d.ratio : ""].filter(Boolean).join(", "))}${d.nailed ? '<span class="ps-nail">Nailed it</span>' : ""}</p>
+      <h1 class="ps-title">${esc(d.title || "Your recipe")}</h1>
+      <div class="ps-nums">${nums.map(([v, l, k]) => `<div class="${k || ""}"><b>${esc(v)}</b><span>${esc(l)}</span></div>`).join("")}</div>
+      ${pours.length ? `<table class="ps-pours"><thead><tr><th>Time</th><th>Scale</th><th>Do</th></tr></thead><tbody>${pours.map((q) => `<tr><td>${fmt(q.t)}</td><td>${q.to != null ? q.to + " g" : ""}</td><td>${esc(q.note || "")}</td></tr>`).join("")}</tbody></table>` : ""}
+      ${d.prep ? `<p class="ps-prep">${esc(d.prep)}</p>` : ""}
+      ${d.note ? `<p class="ps-note">${esc(d.note)}</p>` : ""}
+      <div class="ps-foot"><span>Brew something good.</span><span>bagtocup.thisisfed.xyz</span></div></div>`;
+    document.body.classList.add("printing");
+    const done = () => { document.body.classList.remove("printing"); window.removeEventListener("afterprint", done); };
+    window.addEventListener("afterprint", done);
+    setTimeout(() => window.print(), 60);
+  }
+  $("pdfBtn").onclick = () => { const r = recipe; if (!r) return;
+    printSheet({ title: coffeeTitle(state, r), brewer: BREWERS[r.brewer] ? BREWERS[r.brewer].name : "V60", method: r.method, clicks: r.clicks, dose: r.dose, water: r.water, ice: r.ice,
+      temp: r.temp, ratio: r.goal ? r.ratio : null, lo: r.lo, hi: r.hi, pours: (r.pours || []).map((q) => ({ t: q.t, to: q.to, note: q.note || q.lbl || "" })), prep: prepFor(r) }); };
   $("cardBtn").onclick = async () => {
     const blob = await cardImage(); if (!blob) return;
     const name = (coffeeTitle(state, recipe).toLowerCase().replace(/[^a-z0-9]+/g, "-") || "recipe") + "-" + recipe.brewer + ".png";
@@ -4270,7 +4328,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
       }
       if (el.id === "sceneGrind") {   // the clock runs up to a V60's 3:15, then flips through the other brewers' times
         const T = 195, t0 = performance.now(), mm = (x) => `${Math.floor(x / 60)}:${String(x % 60).padStart(2, "0")}`;
-        const LAP = [["AeroPress", "3:00"], ["Origami", "2:40"], ["Kalita Wave", "3:30"], ["Clever Dripper", "4:00"], ["Chemex", "4:30"], ["Bialetti Moka Express", "5:00"], ["French press", "12:00"], ["Cold brew", "18 h"]];
+        const LAP = [["AeroPress", "3:00"], ["Origami", "2:40"], ["Kalita Wave", "3:30"], ["Clever Dripper", "4:00"], ["Chemex", "4:30"], ["Bialetti Moka Express", "5:00"], ["French Press", "12:00"], ["Cold brew", "18 h"]];
         const step = (t) => { const b = Math.min(1, Math.max(0, (t - t0 - 250) / 1300)), e = 1 - Math.pow(1 - b, 3);
           if (!el.classList.contains("on")) return;
           if (b < 1) { $("gT").textContent = mm(Math.round(T * e)); requestAnimationFrame(step); return; }
@@ -4311,5 +4369,6 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
   window.__v60 = { parseCoffee, engine, suggest, cupNotes, cardImage, risks, recipeText, BASE, get recipe() { return recipe; } };
 })();
 </script>
+<div id="printSheet" aria-hidden="true"></div>
 </body>
 </html>
