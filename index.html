@@ -1377,9 +1377,11 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 .glimpse .g-bar .seg.on { background: #ff9f0a !important; }
 .glimpse .g-bar .seg.done { background: var(--ink) !important; }
 /* My bags: Roasted and Left line up with the pills in every other row (same label column, same 12 / 10 px gap) */
-.bag-f { display: grid; gap: 12px; }
+.bag-f { display: grid; gap: 4px; }
 .bag-f label { display: grid; grid-template-columns: 80px auto; justify-content: start; align-items: center; gap: 12px; }
 @media (max-width: 640px) { .bag-f label { grid-template-columns: 72px auto; gap: 10px; } }
+.glimpse .g-bar .win { background: color-mix(in srgb, #30d158 22%, transparent) !important; transition: background-color .25s ease; }
+.glimpse .g-bar .win.lit { background: rgba(48, 209, 88, .75) !important; }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -3710,15 +3712,21 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
   let exRaf = 0, exVisible = true;
   function playExample(fig, r, P, T) {
     cancelAnimationFrame(exRaf);
-    const head = fig.querySelector(".g-bar .head"), segs = [...fig.querySelectorAll(".g-bar .seg")], wEl = fig.querySelectorAll(".g-specs b")[2];
+    const head = fig.querySelector(".g-bar .head"), segs = [...fig.querySelectorAll(".g-bar .seg")], wEl = fig.querySelectorAll(".g-specs b")[2], win = fig.querySelector(".g-bar .win");
     if (!head || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    if (!playExample.io && "IntersectionObserver" in window) { playExample.io = new IntersectionObserver((es) => { exVisible = es.some((e) => e.isIntersecting); }); playExample.io.observe(fig); }
     const RUN = 8000, PAUSE = 1600, pours = P.filter((p) => !p.act);
-    let t0 = performance.now();
+    let t0 = performance.now(), last = t0;
+    // starts again from 0:00 each time the card comes back into view
+    if (playExample.io) playExample.io.disconnect();
+    if ("IntersectionObserver" in window) { playExample.io = new IntersectionObserver((es) => { const v = es.some((e) => e.isIntersecting); if (v && !exVisible) t0 = performance.now(); exVisible = v; }); playExample.io.observe(fig); }
     const step = (now) => {
       exRaf = requestAnimationFrame(step);
-      if (!exVisible || document.hidden) { t0 = now - ((now - t0) % (RUN + PAUSE)); return; }
-      const k = ((now - t0) % (RUN + PAUSE)) / RUN, t = Math.min(1, k) * T;
+      if (!exVisible || document.hidden) { last = now; return; }
+      if (now - last > 1000) t0 += now - last;   // after a stall (tab away, low power), carry on rather than jump
+      last = now;
+      let el = now - t0; if (el >= RUN + PAUSE) { t0 = now; el = 0; }   // loop: back to the start after the pause
+      const k = el / RUN, t = Math.min(1, k) * T;
+      if (win) win.classList.toggle("lit", t >= r.lo);
       head.style.left = (t / T) * 100 + "%";
       P.forEach((p, i) => { const sg = segs[i]; if (!sg) return; const end = p.t + (p.dur || 6);
         sg.classList.toggle("on", t >= p.t && t < end); sg.classList.toggle("done", t >= end); });
