@@ -1346,6 +1346,12 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 /* iPhone zooms into any field under 16 px: fields there are 16 px so tapping Search, the postcode or a note doesn't zoom */
 @supports (-webkit-touch-callout: none) { input, textarea, select, #shelfQ, #wPc, #logNote, #coffeeIn { font-size: 16px !important; } }
 .item .r .bag-add { justify-self: end; height: var(--pill-h); padding: 0 10px; display: inline-flex; align-items: center; border-radius: var(--r); font-size: var(--fs-s); }
+/* the coffee box builds the recipe on its own: no Build recipe button */
+#go { display: none !important; }
+/* coffees and bags: the hairline sits under each one, not above */
+.shelf .item { border-top: 0 !important; border-bottom: 1px solid var(--rule); }
+.shelf .item.sponsored { border-bottom-color: transparent; }
+.chip .beta { margin-left: 6px; }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1447,7 +1453,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
       <div class="detected" id="detected" aria-live="polite"></div>
       <div class="need" id="need" hidden></div>
       <div class="kit" id="kit">
-  <div class="opt scan-opt"><span>Coffee</span><div class="scan-row"><button type="button" class="chip" id="scanBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>Scan the bag</button><span class="beta">Beta</span><span class="scan-msg" id="scanMsg" aria-live="polite"></span>
+  <div class="opt scan-opt"><span>Coffee</span><div class="scan-row"><button type="button" class="chip" id="scanBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>Scan the bag<span class="beta">Beta</span></button><span class="scan-msg" id="scanMsg" aria-live="polite"></span>
         <input type="file" accept="image/*" capture="environment" id="scanIn" hidden></div></div>
         <div class="opts" id="opts-kit"></div>
         <div class="opt"><span>Grinder</span><div class="kit-mill">
@@ -2274,7 +2280,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
   // than it. The lit middle of the bean pixels gives a CIE L* lightness, matched to five steps of bean colour.
   const ROAST_SW = { vlight: "#8e6137", light: "#784d2b", medium: "#643f27", mdark: "#503527", dark: "#3a2b24" };
   const ROAST_L = [["vlight", 38], ["light", 32], ["medium", 27], ["mdark", 22], ["dark", -1]];   // lowest L* for each step
-  const PHOTO_CHIP = `<button type="button" class="chip rp-go"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>Scan the beans</button><span class="beta">Beta</span>`;
+  const PHOTO_CHIP = `<button type="button" class="chip rp-go"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>Scan the beans<span class="beta">Beta</span></button>`;
   let photoMsgId = "";
   function askPhoto(msgId) { photoMsgId = msgId; const i = $("roastPhotoIn"); i.value = ""; i.click(); }
 
@@ -2887,11 +2893,11 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 
   // the recipe section only exists once there's a full recipe; until then go to the questions
   function goRecipe() { const t = !$("recipe").hidden ? $("recipe") : !$("need").hidden ? $("need") : $("coffee"); t.scrollIntoView({ behavior: "smooth", block: t.id === "need" ? "center" : "start" }); }
-  function build() {
+  function build(scroll) {
     const t = $("coffeeIn").value.trim();
     if (t !== state.text) { state.bag = null; state.process = "auto"; state.roast = "auto"; state.roastPhoto = null; state.listProc = null; renderAllOpts(); }   // new coffee: forget old answers
     state.text = t; saveState(); render();
-    goRecipe();
+    if (scroll !== false) goRecipe();
   }
 
   // ---------- your own numbers ("custom"): change any number, kept on this device for this coffee, brewer and method ----------
@@ -3797,7 +3803,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
     const finish = (got) => {
       stopLive();
       if (got && got.coffee) { msg.textContent = `Found it: ${got.coffee.roaster}, ${calm(got.coffee.name)}.`; brewThis(got.coffee); return; }
-      if (got && got.line) { $("coffeeIn").value = got.line; msg.textContent = "Here’s what the label says. Check it, then Build recipe."; $("coffeeIn").focus(); return; }
+      if (got && got.line) { $("coffeeIn").value = got.line; msg.textContent = "Here’s what the label says. Fix anything it misread."; build(); $("coffeeIn").focus(); return; }
       msg.textContent = "Couldn’t make out the label. Try more light, or take a photo instead.";
     };
     const tick = async () => {
@@ -3840,7 +3846,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
       if (!got) { msg.textContent = "Couldn’t make out the label. Try flat, close and in good light, or type it."; return; }
       if (got.coffee) { msg.textContent = `Found it: ${got.coffee.roaster}, ${calm(got.coffee.name)}.`; brewThis(got.coffee); return; }
       $("coffeeIn").value = got.line;
-      msg.textContent = "Here’s what the label says. Check it, then Build recipe.";
+      msg.textContent = "Here’s what the label says. Fix anything it misread."; build();
       $("coffeeIn").focus();
     } catch (err) {
       msg.textContent = err && err.message === "load" ? "Couldn’t load the reader. Check your connection and try again." : "Couldn’t read that photo. Try another, or type it.";
@@ -3907,9 +3913,13 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
   applyTheme(theme);
 
   // ---------- wire up ----------
-  $("go").onclick = build;
+  $("go").onclick = () => build();
   $("coffeeIn").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); build(); } });
-  $("coffeeIn").addEventListener("input", () => { $("detected").textContent = ""; });
+  // no button: the recipe builds itself a moment after you stop typing, on Enter, or when you leave the box
+  let buildT = null;
+  $("coffeeIn").addEventListener("input", () => { $("detected").textContent = ""; clearTimeout(buildT);
+    buildT = setTimeout(() => { if ($("coffeeIn").value.trim().length >= 3) build(false); }, 900); });
+  $("coffeeIn").addEventListener("blur", () => { clearTimeout(buildT); if ($("coffeeIn").value.trim().length >= 3 && $("coffeeIn").value.trim() !== (state.text || "").trim()) build(false); });
   $("ddIn").addEventListener("input", updateSuggest);
   $("saveLog").onclick = saveLog;
   // bottom: light the words one by one as the paragraph scrolls up through the screen
