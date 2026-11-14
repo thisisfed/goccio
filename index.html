@@ -52,7 +52,7 @@ n=Math.floor((now-new Date(y,0,0))/864e5),r=Math.PI/180,d=-23.44*Math.cos(2*Math
 B=2*Math.PI*(n-81)/364,eot=9.87*Math.sin(2*B)-7.53*Math.cos(B)-1.5*Math.sin(B),
 h=Math.acos(Math.max(-1,Math.min(1,(Math.sin(-.833*r)-Math.sin(lat*r)*Math.sin(d))/(Math.cos(lat*r)*Math.cos(d)))))/r,noon=12-lon/15-eot/60,u=now.getUTCHours()+now.getUTCMinutes()/60;
 return u<noon-h/15||u>noon+h/15;};
-try{var t=localStorage.getItem("v60.theme");document.documentElement.setAttribute("data-theme",t==="light"||t==="dark"?t:(window.__autoDark()?"dark":"light"));}catch(e){}
+try{localStorage.removeItem("v60.theme");document.documentElement.setAttribute("data-theme",window.__autoDark()?"dark":"light");}catch(e){}
 </script>
 <style>
 /* Layout idea: Apple product page, warmed up. Cream paper canvas, warm-white rounded tiles, system type set
@@ -1354,12 +1354,6 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 .chip .beta { margin-left: 6px; }
 /* phones: no animated headline, the page opens on the intro and the example */
 @media (max-width: 760px) { .hero .stage { display: none !important; } .hero-side { margin-top: 0 !important; padding-top: 0 !important; } }
-/* the filters, once stuck under the top bar: a slightly different background fades in, edge to edge, so it's clear they've pinned */
-.shelf-tools { --stuck-bg: #efefef; transition: background-color .3s ease, box-shadow .3s ease, border-color .3s ease; box-shadow: 0 0 0 100vmax transparent; clip-path: inset(0 -100vmax); }
-:root[data-theme="dark"] .shelf-tools { --stuck-bg: #161616; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .shelf-tools { --stuck-bg: #161616; } }
-.shelf-tools.stuck { background: var(--stuck-bg) !important; box-shadow: 0 0 0 100vmax var(--stuck-bg); }
-@media (prefers-reduced-motion: reduce) { .shelf-tools { transition: none; } }
 /* brew mode: Keep screen on and Sound share the full width, 4 px apart like Start / Reset / Done; no Haptics */
 #bvOpts { display: grid !important; grid-template-columns: 1fr 1fr; gap: 4px !important; width: 100%; }
 #bvOpts button { justify-content: center; width: 100%; }
@@ -1398,7 +1392,6 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
       <button type="button" data-jump="shelves"><span class="nw">New c</span><span class="nc">C</span>offees</button>
       <button type="button" data-jump="recipe">Recipe</button>
       <button type="button" data-jump="journal">Journal</button>
-      <button type="button" class="theme-btn" id="themeBtn" aria-label="Appearance">Auto</button>
     </nav>
   </div>
 </header>
@@ -2312,7 +2305,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
       if (v < 0.2) return r >= b && r >= g * 0.95;
       let hue = 0; if (mx === r) hue = 60 * (((g - b) / (mx - mn || 1)) % 6); else if (mx === g) hue = 60 * ((b - r) / (mx - mn || 1) + 2); else hue = 60 * ((r - g) / (mx - mn || 1) + 4);
       if (hue < 0) hue += 360;
-      return hue >= 6 && hue <= 45 && sat >= 0.25 && v <= 0.72; };   // skin and pale wood are lighter than any roasted bean
+      return v <= 0.72 && !(sat > 0.25 && hue >= 60 && hue <= 300); };   // warm or grey and not too light: phone cameras often turn beans grey or purple
     const hist = new Array(256).fill(0); let nBrown = 0;
     for (let i = 0, j = 0; i < d.length; i += 4, j++) {
       const y = 0.2126 * lin(d[i]) + 0.7152 * lin(d[i + 1]) + 0.0722 * lin(d[i + 2]); Y[j] = y;
@@ -2356,8 +2349,8 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
       const along = Math.abs(dx * Math.cos(m.ang) + dy * Math.sin(m.ang)), across = Math.abs(-dx * Math.sin(m.ang) + dy * Math.cos(m.ang));
       let dAng = Math.abs(c.ang - m.ang) % Math.PI; if (dAng > Math.PI / 2) dAng = Math.PI - dAng;
       return across <= Math.sqrt(m.l2) * 1.3 && along <= Math.sqrt(m.l1) * 1.2 && dAng < 0.7; });
-    const tryPolarity = (dark, erode) => {
-      let m = new Uint8Array(N); for (let j = 0; j < N; j++) m[j] = dark ? Lb[j] <= thr : Lb[j] > thr;
+    const tryPolarity = (dark, erode, t = thr) => {
+      let m = new Uint8Array(N); for (let j = 0; j < N; j++) m[j] = dark ? Lb[j] <= t : Lb[j] > t;
       for (let it = 0; it < erode; it++) { const e = new Uint8Array(N);
         for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) { const j = y * w + x; e[j] = m[j] && m[j - 1] && m[j + 1] && m[j - w] && m[j + w] ? 1 : 0; }
         m = e; }
@@ -2369,10 +2362,25 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
         comps.forEach((c) => { if (!beans.includes(c) && c.brown >= 0.6 && c.n >= one * 1.6 && c.n <= one * 12 && c.fill >= 0.45) {
           const k = Math.round(c.n / one), inside = creases.filter((s) => Math.hypot(s.mx - c.mx, s.my - c.my) <= Math.sqrt(c.l1) * 2).length;
           if (inside >= Math.ceil(k * 0.5)) { count += k; beans.push(c); } } }); }
+      // a heap: one compact shape clearly darker than around it, with several creases inside pointing different ways
+      if (count < 4 && dark) comps.forEach((c) => { if (c.n < N * 0.03 || c.n > N * 0.3 || c.fill < 0.45 || c.elong > 2.2 || c.brown < 0.8) return;
+        if (c.px.filter((j) => { const x = j % w, y = (j / w) | 0; return x === 0 || y === 0 || x === w - 1 || y === h - 1; }).length > 3) return;   // a heap sits inside the frame; floors and tables run off its edges
+        const inv = 1 / (c.a * c.c - c.b * c.b || 1e-6);
+        const inside = creases.filter((s) => { const dx = s.mx - c.mx, dy = s.my - c.my; return (dx * dx * c.c - 2 * dx * dy * c.b + dy * dy * c.a) * inv <= 4.5; });
+        if (inside.length < 5) return;
+        const R = Math.hypot(inside.reduce((a, s) => a + Math.cos(2 * s.ang), 0), inside.reduce((a, s) => a + Math.sin(2 * s.ang), 0)) / inside.length;
+        let lin = 0, lout = 0; const inC = new Uint8Array(N); c.px.forEach((j) => { inC[j] = 1; lin += Lb[j]; });
+        for (let j = 0; j < N; j++) if (!inC[j]) lout += Lb[j];
+        const darker = lin / c.n < 0.5 * (lout / Math.max(1, N - c.n));
+        if (R <= 0.6 && darker && inside.length > count) { count = inside.length; beans.length = 0; beans.push(c); } });
       return { beans, count };
     };
     let P = { count: 0, beans: [] };
-    for (const dark of [true, false]) for (const er of [1, 2, 4, 6, 9]) { const t = tryPolarity(dark, er); if (t.count > P.count) P = t; }
+    // shadows join beans to each other, so also try darker cut-offs that keep only the beans themselves
+    const sorted = Array.from(Lb).sort((a, b) => a - b), pct = (q) => sorted[Math.floor(q * (N - 1))];
+    const cuts = [...new Set([thr, Math.round(thr * 0.8), Math.round(thr * 0.65), pct(0.06), pct(0.1), pct(0.15), pct(0.22)])].filter((t) => t > 0 && t < 255);
+    for (const t of cuts) for (const er of [0, 1, 2, 4]) { const r = tryPolarity(true, er, t); if (r.count > P.count) P = r; }
+    for (const er of [1, 2, 4, 6, 9]) { const r = tryPolarity(false, er); if (r.count > P.count) P = r; }
     // no heap mode: wood grain and fabric look too much like a heap of creases. Beans have to be spread out, each its own oval
     if (P.count < 4) return { state: nBrown / N >= 0.2 ? "brownish" : "none" };
     // colour: the middle of the beans (no creases, shadows or shine), white-balanced on the paper around them when it's light and neutral
@@ -3905,7 +3913,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
     document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute("content", dark ? "#14100d" : "#f6f1ea"));
     if ($("themeBtn")) $("themeBtn").textContent = THEME_LBL[t]; if ($("themeBtn")) $("themeBtn").setAttribute("aria-label", t === "auto" ? `Appearance: Auto, light from sunrise to sunset. Tap to change.` : `Appearance: ${THEME_LBL[t]}. Tap to change.`);
   }
-  let theme = (() => { try { return localStorage.getItem("v60.theme") || "auto"; } catch (e) { return "auto"; } })();
+  let theme = "auto";   // no switch any more: light by day, dark after sunset
   if (!THEMES.includes(theme)) theme = "auto";
   if ($("themeBtn")) $("themeBtn").onclick = () => { theme = THEMES[(THEMES.indexOf(theme) + 1) % 3]; try { theme === "auto" ? localStorage.removeItem("v60.theme") : localStorage.setItem("v60.theme", theme); } catch (e) {} applyTheme(theme); };
   setInterval(() => theme === "auto" && applyTheme(theme), 60000);   // turns at sunset and sunrise while the page is open
