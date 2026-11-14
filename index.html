@@ -1592,6 +1592,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 #waterCard .w-adv{width:0;min-width:100%;box-sizing:border-box}
 /* coffee spec dots: whole-pixel circles (em sizes land on fractions and render slightly oval), a touch taller than the capitals */
 .item .tags .oc::before,.item .tags .tg.p-nat::before,.item .tags .tg.p-wash::before,.item .tags .tg.p-honey::before,.item .tags .tg.p-exp::before,.item .tags .tg.p-decaf::before,.item .tags .tg.vdot::before{content:"";display:inline-block;box-sizing:border-box;flex:none;width:12px;height:12px;min-width:12px;aspect-ratio:1/1;padding:0;border:0;border-radius:50%;margin-right:5px;vertical-align:-1px;transform:none}
+#journal[hidden],[data-jump="journal"][hidden]{display:none!important}
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -3706,7 +3707,11 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
       : `<span><b>Saved.</b> ${nailed ? "Recipe locked in for this coffee, and it counts towards your " + esc(PROCESS[a.c.process].label) + " brews." : "No change to the numbers."}</span>`;
     $("saveLog").textContent = "Saved"; setTimeout(() => ($("saveLog").textContent = "Save to journal"), 1400);
   }
+  // the Journal (and its link in the menu) only exists once there's a brew to write about: one started, or one already saved
+  function journalOn() { const on = journal.length > 0 || !!store.get("v60.brewed", false);
+    $("journal").hidden = !on; const nb = document.querySelector('[data-jump="journal"]'); if (nb) nb.hidden = !on; }
   function renderJournal() {
+    journalOn();
     const box = $("journalList");
     if (!journal.length) { box.innerHTML = ""; return; }
     box.innerHTML = journal.slice(0, 12).map((e, i) => `<div class="entry">
@@ -3785,6 +3790,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
   $("optBuzz").onclick = () => { prefs.buzz = !prefs.buzz; savePrefs(); renderBvOpts(); buzz(40); };
 
   function openBrew() {
+    store.set("v60.brewed", true); journalOn();
     if (!recipe) render();
     const r = recipe;
     if ($("rbody").hidden || r.kind === "steps") return;
