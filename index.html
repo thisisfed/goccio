@@ -2943,18 +2943,13 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     if (!el) return; const G = beanCard;
     if (!G || (G.where && G.where !== el.id)) { if (!el.textContent.trim() || el.querySelector(".bc")) { el.hidden = true; el.innerHTML = ""; } return; }
     const ro = G.roast || {}, LBL = (k) => cap1(ROAST[k].label), dot = (c) => `<i class="sc-dot ${c || "none"}"></i>`;
-    const head = ro.key ? `Looks <b>${esc(ROAST[ro.key].label)}</b>${ro.near ? `, close to ${esc(ROAST[ro.near].label)}` : ""}${G.uniform.c ? `, ${esc(G.uniform.v)}` : ""}.`
+    const head = ro.key ? `Looks <b>${esc(ROAST[ro.key].label)}</b>${ro.near ? `, close to ${esc(ROAST[ro.near].label)}` : ""}.`
       : ro.mixed ? "<b>Mixed roasts.</b>" : `<b>Not sure.</b>${ro.guess ? ` Roughly ${esc(ROAST[ro.guess].label)}, but don’t trust it.` : ""}`;
     el.hidden = false;
     el.innerHTML = `<div class="bc">
       <p class="bc-head"><i class="bean-dot big" style="--c:${G.hex}"></i><span>${head}</span>${ro.c ? `<span class="bc-conf">${dot(ro.c)}${ro.c === "high" ? "Sure" : ro.c === "medium" ? "Check it" : "A guess"}</span>` : ""}</p>
       <p class="bc-why">${esc(ro.why || "")}</p>
-      <dl class="bc-dl">
-        <dt>Beans read</dt><dd>${G.clump ? "Touching, read as one" : G.measured || G.n}</dd>
-        <dt>Evenness</dt><dd>${esc(cap1(G.uniform ? G.uniform.v : "–"))}</dd>
-        <dt>Defects</dt><dd>${esc(cap1(G.defects ? G.defects.v : "–"))}${G.defects && G.defects.detail ? `: ${esc(G.defects.detail)}` : ""}</dd>
-        ${G.notes && G.notes.length ? `<dt>Notes</dt><dd>${G.notes.map(esc).join(". ")}.</dd>` : ""}
-      </dl>
+      ${G.notes && G.notes.length ? `<dl class="bc-dl"><dt>Notes</dt><dd>${G.notes.map(esc).join(". ")}.</dd></dl>` : ""}
       <div class="bc-btns">${ro.key ? `<button type="button" class="pill on" data-bc="${ro.key}">Use ${esc(LBL(ro.key))}</button>` : ""}
         <span class="bc-pick">Or pick: ${Object.keys(ROAST_SW).map((k) => `<button type="button" class="pill" data-bc="${k}"><i class="bean-dot" style="--c:${ROAST_SW[k]}"></i>${esc(LBL(k))}</button>`).join("")}</span>
         <button type="button" class="pill" data-bc="">Ignore</button></div>
