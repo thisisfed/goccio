@@ -1325,6 +1325,10 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 .rp-go + .beta { align-self: center; }
 /* Brew something good. is part of the closing text: same size */
 .litext .outro-end, .litext .outro-end * { font-size: inherit !important; }
+/* the coffee list: Search, Region and Process stay under the top bar while you scroll the coffees */
+.shelf-tools { position: sticky; top: var(--top-h, 49px); z-index: 5; background: var(--bg); padding: 12px 0; margin-top: -12px; border-bottom: 1px solid transparent; }
+.shelf-tools.stuck { border-bottom-color: var(--rule); }
+#shelfMore { margin-top: 12px; }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -3472,7 +3476,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
   const SPONSOR = { roaster: "Climpson & Sons", name: "Uraga", live: false };
   const sponsorOn = () => SPONSOR.live || /[?&]sponsor=preview\b/.test(location.search);
   // ---------- shelves ----------
-  let shelf = [], shelfF = "all", shelfR = "all", shelfAll = false, shelfV = "all";   // one list: every coffee
+  let shelf = [], shelfF = "all", shelfR = "all", shelfAll = false, shelfV = "all", shelfN = 10;   // one list: every coffee
   // "Made for V60": single origins roasted for filter or omni. Blends, espresso roasts (the roaster shelves or
   // describes them as espresso, even when sold ground for filter), coffees named espresso and darker
   // roasts stay on the list, one tap away under Everything. Search stays inside whichever one is chosen.
@@ -3524,8 +3528,9 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
     if (q) list = list.filter((r) => [r.roaster, r.roaster_city, r.name, r.origin, r.region, r.process, r.variety].join(" ").toLowerCase().includes(q));
     if (shelfV === "v60") list = list.filter(shelfFit());
     list = interleave(list);
-    const LIMIT = 5;   // the five newest, then a button for the rest
-    let shown = shelfAll || q ? list : list.slice(0, LIMIT);
+    if (!shelfAll) shelfN = 10;   // a new filter or search starts again from the ten newest
+    shelfAll = true;
+    let shown = list.slice(0, shelfN);
     // sponsored slot: one coffee pinned first, clearly labelled. Shown to everyone only when SPONSOR.live is true;
     // until then it's a preview, visible with ?sponsor=preview in the address
     const sp = sponsorOn() && !q ? shelf.find((r) => r.roaster === SPONSOR.roaster && r.name === SPONSOR.name) : null;
@@ -3555,8 +3560,9 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
           <button class="btn" type="button" data-i="${i}">Brew</button>
           <span class="date">${r.url ? `<a href="${esc(r.url)}" target="_blank" rel="noopener" aria-label="Buy ${esc(r.name)} from ${esc(r.roaster)}">Buy</a>` : ""}<span>${r.published ? isoDmy(r.published).slice(0, 5) : isoDmy(r.found).slice(0, 5)}</span></span>
         </div></article>`; }).join("") : `<p class="muted" style="padding:16px 0;margin:0">Nothing matches${shelfV === "v60" && shelf.some((r) => !shelfFit()(r)) ? ` in ${shelfFitName()}. Try Everything, or` : "."} <a href="#" class="mail-me" data-s="Missing coffee">${shelfV === "v60" ? "email me" : "Email me"}</a> and I’ll add the roaster.</p>`;
-    $("shelfMore").hidden = true;
-    $("shelfMore").textContent = `Show all ${list.length}`;
+    const left = list.length - Math.min(shelfN, list.length);
+    $("shelfMore").hidden = left <= 0; $("shelfMore").removeAttribute("aria-hidden");
+    $("shelfMore").textContent = `Load more (${left} left)`;
     $("shelf").querySelectorAll("button[data-i]").forEach((b) => b.onclick = () => brewThis(shelf[+b.dataset.i]));
   }
   function brewThis(r) {
@@ -3737,8 +3743,21 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
     } finally { btn.disabled = false; }
   });
 
-  $("shelfQ").addEventListener("input", () => renderShelf());
-  $("shelfMore").onclick = () => { shelfAll = true; renderShelf(); };
+  $("shelfQ").addEventListener("input", () => { shelfAll = false; renderShelf(); });
+  { const setTop = () => { const t = document.querySelector(".top"); if (t) document.documentElement.style.setProperty("--top-h", t.getBoundingClientRect().height + "px"); };
+    setTop(); addEventListener("resize", setTop);
+    const tools = document.querySelector(".shelf-tools");
+    addEventListener("scroll", () => { const t = document.querySelector(".top"), h = t ? t.getBoundingClientRect().height : 0, r = tools.getBoundingClientRect();
+      tools.classList.toggle("stuck", r.top <= h + 0.5 && $("shelf").getBoundingClientRect().bottom > h + r.height); }, { passive: true }); }
+  const loadMore = () => { shelfN += 10; renderShelf(); };
+  $("shelfMore").onclick = loadMore;
+  // infinite scroll: the next ten load as the button comes near; the button stays for anyone who'd rather tap
+  if ("IntersectionObserver" in window) new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting) && !$("shelfMore").hidden) loadMore(); }, { rootMargin: "0px 0px 400px 0px" }).observe($("shelfMore"));
+  // a filter tapped while the bar is stuck: keep the list starting right under it
+  const keepShelfTop = () => { const t = document.querySelector(".shelf-tools"), top = document.querySelector(".top");
+    const h = top ? top.getBoundingClientRect().height : 0; if (t.getBoundingClientRect().top <= h + 1) {
+      const y = $("shelf").getBoundingClientRect().top + scrollY - h - t.getBoundingClientRect().height - 8; if (scrollY > y) scrollTo({ top: y }); } };
+  ["shelfR", "shelfF"].forEach((id) => $(id).addEventListener("click", () => requestAnimationFrame(keepShelfTop)));
   async function loadShelf() {
     try {
       const res = await fetch("data/releases.json", { cache: "no-cache" });
