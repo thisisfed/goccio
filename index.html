@@ -1339,6 +1339,8 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 .bag-g { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); }
 .item.bag .r .date { flex-direction: column; align-items: flex-end; gap: 4px; }
 .bag-rest { margin: 8px 0 0; font-size: var(--fs-s); color: var(--muted); }
+/* the arrow drawn in place of → : the text's own colour, centred on the digits */
+.arr-t { display: inline-block; width: 1.05em; height: .58em; vertical-align: .06em; margin: 0 .08em; overflow: visible; }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -3584,6 +3586,27 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
     $("shelf").querySelectorAll("button[data-i]").forEach((b) => b.onclick = () => brewThis(shelf[+b.dataset.i]));
     $("shelf").querySelectorAll("button[data-b]").forEach((b) => b.onclick = () => { toggleBag(shelf[+b.dataset.b]); renderShelf(); });
   }
+
+
+  // ---------- every → in the page is drawn as the same arrow as the example, sized to the text around it ----------
+  (() => {
+    const SKIP = /^(SCRIPT|STYLE|TEXTAREA|INPUT|OPTION|TITLE|SELECT|NOSCRIPT)$/;
+    const make = () => { const ns = "http://www.w3.org/2000/svg", svg = document.createElementNS(ns, "svg"), p = document.createElementNS(ns, "path");
+      svg.setAttribute("class", "arr-t"); svg.setAttribute("viewBox", "0 0 18 10"); svg.setAttribute("aria-hidden", "true");
+      p.setAttribute("d", "M1 5h15M12 1l4 4-4 4"); p.setAttribute("fill", "none"); p.setAttribute("stroke", "currentColor"); p.setAttribute("stroke-width", "1.6");
+      p.setAttribute("stroke-linecap", "round"); p.setAttribute("stroke-linejoin", "round"); svg.appendChild(p); return svg; };
+    const fix = (root) => {
+      const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode: (n) => n.nodeValue.includes("→") && n.parentElement && !SKIP.test(n.parentElement.tagName) && !n.parentElement.closest("[contenteditable]") ? 1 : 2 });
+      const list = []; while (w.nextNode()) list.push(w.currentNode);
+      list.forEach((n) => { const parts = n.nodeValue.split("→"), f = document.createDocumentFragment();
+        parts.forEach((t, i) => { if (i) { const s = make(); s.setAttribute("role", "img"); s.setAttribute("aria-label", "to"); f.appendChild(s); } if (t) f.appendChild(document.createTextNode(t)); });
+        n.parentNode.replaceChild(f, n); });
+    };
+    fix(document.body);
+    new MutationObserver((ms) => ms.forEach((m) => { if (m.type === "characterData") { if (m.target.nodeValue && m.target.nodeValue.includes("→") && m.target.parentElement) fix(m.target.parentElement); }
+      else m.addedNodes.forEach((n) => { if (n.nodeType === 3) { if (n.nodeValue.includes("→") && n.parentElement) fix(n.parentElement); } else if (n.nodeType === 1) fix(n); }); }))
+      .observe(document.body, { childList: true, subtree: true, characterData: true });
+  })();
 
   // ---------- my bags: coffees you own, kept on this device ----------
   const BAGS_KEY = "v60.bags";
