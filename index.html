@@ -1681,7 +1681,6 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     <details class="clk xp"><summary>Dial it in: change one thing per brew</summary><ul id="dial"></ul></details>
     <div class="share">
       <button class="btn" id="copyBtn" type="button">Copy recipe</button>
-      <button class="btn" id="cardBtn" type="button">Save recipe card</button>
       <button class="btn" id="pdfBtn" type="button">Save as PDF</button>
       <button class="btn" id="linkBtn" type="button">Share link</button>
       <button class="btn" id="bagBtn" type="button">Add to my bags</button>
@@ -3753,7 +3752,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
   $("pdfBtn").onclick = () => { const r = recipe; if (!r) return;
     printSheet({ title: coffeeTitle(state, r), brewer: BREWERS[r.brewer] ? BREWERS[r.brewer].name : "V60", method: r.method, clicks: r.clicks, dose: r.dose, water: r.water, ice: r.ice,
       temp: r.temp, ratio: r.goal ? r.ratio : null, lo: r.lo, hi: r.hi, pours: (r.pours || []).map((q) => ({ t: q.t, to: q.to, note: q.note || q.lbl || "" })), prep: prepFor(r) }); };
-  $("cardBtn").onclick = async () => {
+  if ($("cardBtn")) $("cardBtn").onclick = async () => {   // the image card is retired: Save as PDF replaces it
     const blob = await cardImage(); if (!blob) return;
     const name = (coffeeTitle(state, recipe).toLowerCase().replace(/[^a-z0-9]+/g, "-") || "recipe") + "-" + recipe.brewer + ".png";
     const file = new File([blob], name, { type: "image/png" });
