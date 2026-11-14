@@ -1537,6 +1537,9 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 .bag-gw{display:inline-flex;align-items:center;gap:5px}
 .bag-f .bag-g.low{color:#ff3b30}
 .bag-buy{display:inline-flex;align-items:center;height:var(--pill-h);padding:0 12px;border-radius:var(--r);background:var(--pill);color:var(--ink);text-decoration:none;font:500 var(--fs-s)/1 var(--sans)}
+/* grinder pill: room for descenders (g, y) */
+#millSel{line-height:1.3!important;padding-top:0!important;padding-bottom:0!important}
+@media (max-width: 640px){ #millSel{width:auto!important;min-width:0!important;max-width:100%!important} }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1683,7 +1686,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
       <div class="col" id="cupCol"><h3 id="cupH">Likely in the cup</h3><div class="notes-list" id="cupNotes"></div><p id="cupNote"></p></div>
     </div>
     <details class="clk xp" id="whyBox"><summary>Why this recipe <span class="muted" id="whyHint"></span></summary><ul id="why"></ul></details>
-    <details class="clk xp" id="clkHow"><summary>How these clicks were set <span class="muted" id="clkSumm" hidden></span></summary><div class="clk-body" id="clkBody"></div></details>
+    <details class="clk xp" id="clkHow"><summary>How the C40 clicks were set <span class="muted" id="clkSumm" hidden></span></summary><div class="clk-body" id="clkBody"></div></details>
     <details class="clk xp" id="expBox"><summary>What to expect</summary><ul id="expect"></ul></details>
     <details class="clk xp"><summary>Dial it in: change one thing per brew</summary><ul id="dial"></ul></details>
     <div class="share">
@@ -1698,7 +1701,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
   <section class="sec" id="journal" aria-labelledby="jh">
     <div class="sec-head"><span class="cap" id="jh"><b>04</b>Journal.</span><span class="cap">Stored on this device only</span></div>
     <div class="log" id="logBox">
-      <div class="opt"><span id="logTitle">Taste?</span><div class="taste" id="tasteChips" role="group" aria-labelledby="logTitle"></div></div>
+      <div class="opt"><span id="logTitle">Taste</span><div class="taste" id="tasteChips" role="group" aria-labelledby="logTitle"></div></div>
       <div class="opt dd" id="ddRow"><label for="ddIn">Drained at</label>
         <div class="dd-in"><input id="ddIn" type="text" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" placeholder="3:20" aria-describedby="ddHint"><span class="muted" id="ddHint"></span></div></div>
       <textarea id="logNote" placeholder="Note (optional)"></textarea>
@@ -3072,7 +3075,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     const hardFirst = waterLevel() === "hard";
     $("dial").innerHTML = dial.map((w, i) => `<li${i === 0 && hardFirst ? ' style="font-weight:700"' : ""}>${esc(w)}</li>`).join("");
 
-    $("logTitle").textContent = "Taste?";
+    $("logTitle").textContent = "Taste";
     $("ddRow").hidden = K !== "pour";
     $("ddHint").textContent = r.lo === r.hi ? `Target ${fmt(r.lo)}` : `Target ${fmt(r.lo)} – ${fmt(r.hi)}`;
     if (picked.size || $("ddIn").value) updateSuggest();
@@ -3542,17 +3545,21 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
   }
   function loop() { tick(); if (bv.running) bv.raf = requestAnimationFrame(loop); }
   // exact drawdown, to the second, straight into the journal form
+  // straight to the journal, no smooth scroll: jump now, and again once leaving full screen has settled (it can reset the scroll)
+  function toJournal() { const go = () => { const j = $("journal"), top = j.getBoundingClientRect().top + scrollY - (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--top-h")) || 56);
+      window.scrollTo({ top: Math.max(0, top), behavior: "instant" }); };
+    go(); requestAnimationFrame(go); setTimeout(go, 200); setTimeout(go, 500); }
   function drained() {
     const sec = Math.floor(elapsed());
     const r = recipe;
     closeBrew();
-    if (r.kind !== "pour") { buzz([40, 60, 40]); $("journal").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
+    if (r.kind !== "pour") { buzz([40, 60, 40]); toJournal(); return; }
     $("ddIn").value = fmt(sec);
     const v = sec < r.lo - 5 ? `fast, target ${fmt(r.lo)}–${fmt(r.hi)}` : sec > r.hi + 10 ? `slow, target ${fmt(r.lo)}–${fmt(r.hi)}` : "in the window";
     $("ddHint").innerHTML = `<b style="color:var(--ink)">Drained at ${fmt(sec)}</b>, ${v}. Now pick what you taste.`;
     buzz([40, 60, 40]);
     updateSuggest();
-    $("journal").scrollIntoView({ behavior: "smooth", block: "start" });
+    toJournal();
   }
 
   function setNow(cls, pill, lbl, big, unit, how, sub) {
