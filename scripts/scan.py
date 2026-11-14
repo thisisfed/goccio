@@ -1097,6 +1097,31 @@ def calm_caps(name):
     return " ".join(out)
 
 
+
+BAG_W = re.compile(r"(\d+(?:[.,]\d+)?)\s?(kg|kilos?|g|gr|grams?|oz|lbs?)\b", re.I)
+
+
+def bag_grams(item):
+    """The bag size in grams: the smallest bag in the sizes on sale (the listed price is the cheapest, so the smallest bag),
+    else from the title, else a size the description ties to the bag. None when the listing never says."""
+    def sizes(text):
+        out = []
+        for n, u in BAG_W.findall(text or ""):
+            v = float(n.replace(",", ".")); u = u.lower()
+            g = v * 1000 if u.startswith("k") else v * 28.35 if u == "oz" else v * 453.6 if u.startswith("lb") else v
+            if 50 <= g <= 2000:
+                out.append(int(round(g)))
+        return out
+    for text in (item.get("variants"), item.get("title")):
+        got = sizes(text)
+        if got:
+            return min(got)
+    m = re.search(r"(?:bag|pack|net|size|weight)[^.]{0,30}?\b(\d+(?:[.,]\d+)?\s?(?:kg|g|grams?|oz))\b|\b(\d+(?:[.,]\d+)?\s?(?:kg|g|grams?|oz))\s(?:bag|pack|net)", item.get("body") or "", re.I)
+    if m:
+        got = sizes(m.group(1) or m.group(2))
+        return min(got) if got else None
+    return None
+
 def money(v, ccy):
     sym = SYMBOL.get(ccy, ccy + " ")
     amount = f"{v:.0f}" if ccy in ("JPY", "DKK", "SEK", "NOK", "CZK") else f"{v:.2f}"
@@ -1204,6 +1229,7 @@ def classify(item, roaster):
         "notes": find_notes(item),
         "price": (item.get("price_prefix") or "") + money(item["price"], roaster.get("_ccy", "GBP")) if item["price"] else None,
         "url": item["url"],
+        "bag_g": bag_grams(item),
         "published": item["published"] or None,
         "roast": "filter" if filtery else "omni / unlabelled",
         "roast_for": roast_for(item),
