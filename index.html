@@ -2948,7 +2948,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
       : r.brewer === "cold" ? ["time", "12 – 18", "h", readyAt(), ""]
       : ["time", "4 – 5", "min", "medium heat, lid open", ""];
     const S = [
-      ["key", onMill(r.clicks).txt, "", mill().lbl, cBadges.join(", ")],
+      ["key", onMill(r.clicks).txt, "", isC40() ? mill().lbl : mill().name, cBadges.join(", ")],   // just the grinder's name, like Kettle and Coffee
       ["dose", r.dose, "g", r.brewer === "moka" ? `basket, full and level (${doseName(r)} pot)` : "coffee", ""],
       ["water", r.water, "g", r.brewer === "moka" ? "hot, to just under the valve" : r.brewer === "cold" ? "cold water, then dilute to taste" : r.iced ? "hot water" : "water", yours("water")],
       ...(r.iced ? [["ice", r.ice, "g", r.brewer === "aero" ? "ice in the cup" : "ice in the jug", ""]] : []),
@@ -2958,7 +2958,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
     $("zeroRow").hidden = !!r.mine; $("clkHow").hidden = !!r.mine;
     renderMine(r);
     const showRet = r.tds != null;
-    $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}"><b>${v}${u ? `<small>${u === "-cup" ? u : " " + u}</small>` : ""}</b><span class="sub2">${l.charAt(0).toUpperCase() + l.slice(1)}</span>${k === "key" && isC40() && prefs.zero ? `<span class="zo">${sign(prefs.zero)} zero offset</span>` : ""}${k === "key" && !isC40() ? `<span class="sub2">from ${r.clicks} C40 clicks${onMill(r.clicks).atMax ? ", coarsest setting, may still run fast" : onMill(r.clicks).atMin ? ", finest setting" : ""}</span>` : ""}${k === "ratio" && showRet && false ? `<span class="ret">(${r.water} g water − 2.1 × ${r.dose} g retained). Estimate only.</span>` : ""}${badge ? `<span class="badge">${esc(badge)}</span>` : ""}</div>`).join("");
+    $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}"><b>${v}${u ? `<small>${u === "-cup" ? u : " " + u}</small>` : ""}</b><span class="sub2">${l.charAt(0).toUpperCase() + l.slice(1)}</span>${k === "key" && isC40() && prefs.zero ? `<span class="zo">${sign(prefs.zero)} zero offset</span>` : ""}${k === "key" && !isC40() && (onMill(r.clicks).atMax || onMill(r.clicks).atMin) ? `<span class="sub2">${onMill(r.clicks).atMax ? "Coarsest setting, may still run fast" : "Finest setting"}</span>` : ""}${k === "ratio" && showRet && false ? `<span class="ret">(${r.water} g water − 2.1 × ${r.dose} g retained). Estimate only.</span>` : ""}${badge ? `<span class="badge">${esc(badge)}</span>` : ""}</div>`).join("");
     const agitTxt = r.agit >= 3 ? "Stir or swirl the bloom, pour with energy, one swirl at the end." :
       r.agit === 2 ? "Swirl the bloom gently, steady pours, one soft swirl at the end." :
       r.agit === 1 ? "No stirring. Pour low and gentle so the fruit stays clean." :
