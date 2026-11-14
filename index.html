@@ -1421,7 +1421,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 .bag-f input{-webkit-appearance:none;appearance:none;box-sizing:border-box;height:var(--pill-h)!important;min-height:0;max-height:var(--pill-h);line-height:var(--pill-h);margin:0;display:inline-flex;align-items:center;overflow:hidden}
 .bag-f input::-webkit-date-and-time-value{text-align:left;margin:0}
 .bag-f input::-webkit-datetime-edit{padding:0}
-.bag-low{margin:-4px 0 0!important}
+.bag-low{display:block;margin:0!important}
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -3799,7 +3799,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
     return `Past its best since ${isoDmy(until)}. Still fine to brew, a little flatter.`;
   }
   // a couple of brews or less left: say so, with the shop link when there is one
-  const lowLine = (b) => b.left != null && b.left > 0 && b.left <= 30 ? `<p class="bag-low">Running low, ${b.left} g left.${b.url ? ` <a href="${esc(b.url)}" target="_blank" rel="noopener">Buy again</a>` : ""}</p>` : "";
+  const lowLine = (b) => b.left != null && b.left > 0 && b.left <= 30 ? `<span class="bag-low">Running low, ${b.left} g left.${b.url ? ` <a href="${esc(b.url)}" target="_blank" rel="noopener">Buy again</a>` : ""}</span>` : "";
   function renderBags() {
     $("bags").hidden = !bags.length;
     $("bagList").innerHTML = bags.map((b, i) => {
@@ -3811,7 +3811,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
           ${pills ? `<div class="pills">${pills}</div>` : ""}
           <div class="bag-f"><label>Roasted<input type="date" data-k="roasted" data-i="${i}" value="${esc(b.roasted || "")}"></label>
             <label>Left<span class="bag-g"><input type="number" inputmode="numeric" min="0" max="5000" step="1" data-k="left" data-i="${i}" value="${b.left ?? ""}">g</span></label></div>
-          <p class="bag-rest">${esc(restLine(b))}</p>${lowLine(b)}
+          <p class="bag-rest"><span class="bag-r1">${esc(restLine(b))}</span>${lowLine(b)}</p>
         </div>
         <div class="r">
           <button class="btn" type="button" data-brew="${i}">Brew</button>
@@ -3823,8 +3823,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
     $("bagList").querySelectorAll("input[data-k]").forEach((x) => { const id = (bags[+x.dataset.i] || {}).id, save = () => { const b = bags.find((y) => y.id === id); if (!b) return;
         b[x.dataset.k] = x.dataset.k === "left" ? Math.max(0, Math.round(Number(x.value) || 0)) : x.value; saveBags();
         if (x.dataset.k === "left" && x.value !== "" && b.left === 0) { bags.splice(bags.indexOf(b), 1); saveBags(); renderBags(); renderShelf(); return; }   // 0 g left: the bag is finished, it goes
-        const it = x.closest(".item"), rest = it.querySelector(".bag-rest"); if (rest) rest.textContent = restLine(b);
-        const low = it.querySelector(".bag-low"), html = lowLine(b); if (low) low.outerHTML = html || ""; else if (html) rest.insertAdjacentHTML("afterend", html); };
+        const rest = x.closest(".item").querySelector(".bag-rest"); if (rest) rest.innerHTML = `<span class="bag-r1">${esc(restLine(b))}</span>${lowLine(b)}`; };
       x.addEventListener("change", save); x.addEventListener("blur", save); });
   }
   // the recipe's own coffee (typed or from the list)
