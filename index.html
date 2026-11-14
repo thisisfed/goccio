@@ -1412,6 +1412,9 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 @keyframes ogface{0%,10%{opacity:0;transform:translateY(.4em) scale(.2) rotate(-90deg)}22%,78%{opacity:1;transform:translateY(.05em) scale(1) rotate(0)}88%,100%{opacity:0;transform:translateY(-.3em) scale(.3) rotate(40deg)}}
 @keyframes ogshut{0%,40%{opacity:1}42%,58%{opacity:0}60%,100%{opacity:1}}
 @keyframes ogwink{0%,40%{opacity:0}42%,58%{opacity:1}60%,100%{opacity:0}}
+/* My bags: running low line, in ink with the shop link */
+.bag-low{margin:4px 0 0;font-size:var(--fs-s);color:var(--ink)}
+.bag-low a{color:var(--ink)}
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -3788,6 +3791,8 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
     if (today <= until) return `Ready. At its best until ${isoDmy(until)}.`;
     return `Past its best since ${isoDmy(until)}. Still fine to brew, a little flatter.`;
   }
+  // a couple of brews or less left: say so, with the shop link when there is one
+  const lowLine = (b) => b.left != null && b.left > 0 && b.left <= 30 ? `<p class="bag-low">Running low, ${b.left} g left.${b.url ? ` <a href="${esc(b.url)}" target="_blank" rel="noopener">Buy again</a>` : ""}</p>` : "";
   function renderBags() {
     $("bags").hidden = !bags.length;
     $("bagList").innerHTML = bags.map((b, i) => {
@@ -3799,25 +3804,20 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
           ${pills ? `<div class="pills">${pills}</div>` : ""}
           <div class="bag-f"><label>Roasted<input type="date" data-k="roasted" data-i="${i}" value="${esc(b.roasted || "")}"></label>
             <label>Left<span class="bag-g"><input type="number" inputmode="numeric" min="0" max="5000" step="1" data-k="left" data-i="${i}" value="${b.left ?? ""}">g</span></label></div>
-          <p class="bag-rest">${esc(restLine(b))}</p>
+          <p class="bag-rest">${esc(restLine(b))}</p>${lowLine(b)}
         </div>
         <div class="r">
           <button class="btn" type="button" data-brew="${i}">Brew</button>
-          <button type="button" class="pill bag-rm" data-rm="${i}">Remove</button>
-          ${b.url ? `<span class="date"><a href="${esc(b.url)}" target="_blank" rel="noopener">Buy again</a></span>` : ""}
         </div></article>`; }).join("");
     $("bagList").querySelectorAll("[data-brew]").forEach((x) => x.onclick = () => { const b = bags[+x.dataset.brew];
       if (b.text && !b.roaster) { state.text = b.text; state.bag = null; state.roastPhoto = null; $("coffeeIn").value = b.text; saveState(); renderAllOpts(); render(); $("coffee").scrollIntoView({ behavior: "smooth", block: "start" }); }
       else brewThis(b); });
-    // two taps, no pop-up: Remove, then Sure? in red, like Delete in the journal
-    $("bagList").querySelectorAll("[data-rm]").forEach((x) => x.onclick = () => {
-      if (x.dataset.armed) { bags.splice(+x.dataset.rm, 1); saveBags(); renderBags(); renderShelf(); return; }
-      x.dataset.armed = "1"; x.textContent = "Sure?"; x.classList.add("armed");
-      setTimeout(() => { if (x.isConnected) { delete x.dataset.armed; x.textContent = "Remove"; x.classList.remove("armed"); } }, 3000); });
     // iPhone's date wheel fires "change" while it spins: save quietly and only refresh the line under it, never rebuild the picker you're using
-    $("bagList").querySelectorAll("input[data-k]").forEach((x) => { const save = () => { const b = bags[+x.dataset.i]; if (!b) return;
+    $("bagList").querySelectorAll("input[data-k]").forEach((x) => { const id = (bags[+x.dataset.i] || {}).id, save = () => { const b = bags.find((y) => y.id === id); if (!b) return;
         b[x.dataset.k] = x.dataset.k === "left" ? Math.max(0, Math.round(Number(x.value) || 0)) : x.value; saveBags();
-        const rest = x.closest(".item").querySelector(".bag-rest"); if (rest) rest.textContent = restLine(b); };
+        if (x.dataset.k === "left" && x.value !== "" && b.left === 0) { bags.splice(bags.indexOf(b), 1); saveBags(); renderBags(); renderShelf(); return; }   // 0 g left: the bag is finished, it goes
+        const it = x.closest(".item"), rest = it.querySelector(".bag-rest"); if (rest) rest.textContent = restLine(b);
+        const low = it.querySelector(".bag-low"), html = lowLine(b); if (low) low.outerHTML = html || ""; else if (html) rest.insertAdjacentHTML("afterend", html); };
       x.addEventListener("change", save); x.addEventListener("blur", save); });
   }
   // the recipe's own coffee (typed or from the list)
@@ -3827,7 +3827,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
     b.textContent = inIt ? "In my bags" : "Add to my bags"; b.hidden = !(state.text || "").trim(); }
   $("bagBtn").onclick = () => { const r = currentBag(); if (!hasBag(r)) { toggleBag(r); renderShelf(); } syncBagBtn(); $("bags").scrollIntoView({ behavior: "smooth", block: "start" }); };
   // a brew logged from one of your bags takes its grams off what's left
-  function bagUsed(dose) { const r = currentBag(), b = bags.find((x) => x.id === bagId(r)); if (b && b.left != null) { b.left = Math.max(0, b.left - dose); saveBags(); renderBags(); } }
+  function bagUsed(dose) { const r = currentBag(), b = bags.find((x) => x.id === bagId(r)); if (b && b.left != null) { b.left = Math.max(0, b.left - dose); if (b.left === 0) bags.splice(bags.indexOf(b), 1); saveBags(); renderBags(); renderShelf(); } }
 
   function brewThis(r) {
     const notes = [];   // tasting notes are never picked from the listing
