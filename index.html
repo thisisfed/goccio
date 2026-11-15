@@ -1738,7 +1738,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
   </section>
 
   <section class="sec" id="shelves" aria-labelledby="sh">
-    <div class="sec-head"><span class="cap" id="sh"><b>01</b>Coffees</span></div>
+    <div class="sec-head"><span class="cap" id="sh"><b>01</b>Coffees.</span></div>
     <p class="shelf-meta" id="shelfMeta" hidden></p>
     <div class="shelf-tools">
       <div class="opt"><label for="shelfQ">Search</label><input type="search" id="shelfQ" placeholder="Roaster, coffee, origin, process…"></div>
@@ -3527,13 +3527,20 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
   // Touching, scrolling or a key press stops the checks, so it never fights you
   let jumpGen = 0;
   ["wheel", "touchstart", "keydown"].forEach((ev) => addEventListener(ev, () => { jumpGen++; }, { passive: true }));
+  // a smooth glide that aims at where the section is on every frame, not where it was when you tapped,
+  // so the filter bar changing height halfway through only bends the path and the landing stays exact
   function jumpTo(el, center) {
-    if (!el) return; const gen = ++jumpGen;
-    const go = () => { if (gen !== jumpGen) return;
-      const top = document.querySelector(".top"), h = top ? top.getBoundingClientRect().height : 49, r = el.getBoundingClientRect();
-      const y = center ? r.top + scrollY - (innerHeight - r.height) / 2 : r.top + scrollY - (h - 3);
-      const html = document.documentElement, sb = html.style.scrollBehavior; html.style.scrollBehavior = "auto"; window.scrollTo(0, Math.max(0, Math.round(y))); html.style.scrollBehavior = sb; };
-    go(); requestAnimationFrame(go); [120, 300, 600, 900].forEach((ms) => setTimeout(go, ms)); }
+    if (!el) return; const gen = ++jumpGen, html = document.documentElement;
+    const aim = () => { const top = document.querySelector(".top"), h = top ? top.getBoundingClientRect().height : 49, r = el.getBoundingClientRect();
+      return Math.max(0, Math.min(html.scrollHeight - innerHeight, Math.round(center ? r.top + scrollY - (innerHeight - r.height) / 2 : r.top + scrollY - (h - 3)))); };
+    const put = (y) => { const sb = html.style.scrollBehavior; html.style.scrollBehavior = "auto"; window.scrollTo(0, y); html.style.scrollBehavior = sb; };
+    const settle = () => [60, 200, 450].forEach((ms) => setTimeout(() => { if (gen === jumpGen) put(aim()); }, ms));
+    const y0 = scrollY, d = Math.abs(aim() - y0);
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches || d < 2) { put(aim()); settle(); return; }
+    const dur = Math.min(900, 380 + d * 0.12), t0 = performance.now(), ease = (t) => 1 - Math.pow(1 - t, 3);
+    const step = (now) => { if (gen !== jumpGen) return; const t = Math.min(1, (now - t0) / dur);
+      put(Math.round(y0 + (aim() - y0) * ease(t))); if (t < 1) requestAnimationFrame(step); else settle(); };
+    requestAnimationFrame(step); }
   function goRecipe() { const t = !$("recipe").hidden ? $("recipe") : !$("need").hidden ? $("need") : $("coffee"); jumpTo(t, t.id === "need"); }
   function build(scroll) {
     const t = $("coffeeIn").value.trim();
