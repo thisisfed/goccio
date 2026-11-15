@@ -4804,7 +4804,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
       : { v: null, why: "Variety not printed on this side" };
     // dates: roasted on, or best before. Day first, the European way; two-digit years read as 20xx
     const DT = /(\d{1,2})[.\/\- ](\d{1,2}|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[.\/\- ](\d{2,4})/i, MON = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
-    out.date = { v: null, why: "No date on this side" };
+    out.date = { v: null, why: "No roast date on this side" };
     for (const l of ocr.lines) { const m = l.text.match(DT); if (!m) continue; const d = +m[1], mo = isNaN(+m[2]) ? MON[m[2].slice(0, 3).toLowerCase()] : +m[2], y = +m[3] < 100 ? 2000 + +m[3] : +m[3];
       if (!(d >= 1 && d <= 31 && mo >= 1 && mo <= 12 && y >= 2020 && y <= 2035)) continue;
       const kind = /best|bbe|bb\b|use by|mhd|consumir|a consommer|da consumarsi|exp/i.test(l.text) ? "best" : "roasted";
@@ -4865,17 +4865,19 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
   // ---- 4. review sheet: every field editable, with how sure the reader is; nothing is applied until you say so ----
   const PROC_OPTS = [["", "Unknown"], ["washed", "Washed"], ["natural", "Natural"], ["honey", "Honey"], ["anaerobic", "Anaerobic"], ["cofer", "Co-ferment / Infused"], ["decaf", "Decaf"]];
   const ROAST_OPTS = [["", "Unknown"], ["vlight", "Very light"], ["light", "Light"], ["medium", "Medium"], ["mdark", "Medium-dark"], ["dark", "Dark"]];
-  const FIELD_ROWS = [["name", "Coffee"], ["roaster", "Roaster"], ["origin", "Origin"], ["process", "Process"], ["variety", "Variety"], ["roast", "Roast"], ["notes", "Notes"], ["date", "Date"]];
+  const FIELD_ROWS = [["name", "Coffee"], ["roaster", "Roaster"], ["origin", "Origin"], ["process", "Process"], ["variety", "Variety"], ["roast", "Roast"], ["notes", "Notes"], ["date", "Roasted"]];
   let review = null;
   function showReview(fields, raw) {
     review = { fields, raw, match: shelfMatch(fields) };
+    // it matched today's list but the roaster's logo wasn't readable: the listing knows who roasted it
+    if (review.match && !(fields.roaster && fields.roaster.v)) fields.roaster = { v: review.match.roaster, c: "high", why: "from today’s coffees" };
     const box = $("scanReview"), dot = (c) => `<i class="sc-dot ${c || "none"}" title="${c ? c + " confidence" : "not found"}"></i>`;
     const input = (k, f) => k === "process" || k === "roast"
       ? `<select data-f="${k}">${(k === "process" ? PROC_OPTS : ROAST_OPTS).map(([v, t]) => `<option value="${v}"${(f.v || "") === v ? " selected" : ""}>${t}</option>`).join("")}</select>`
       : `<input data-f="${k}" value="${esc(f.v || "")}" placeholder="${k === "date" ? "DD/MM/YYYY" : "Not found"}"${k === "notes" ? "" : ' autocapitalize="words"'}>`;
     const m = review.match;
     box.innerHTML = `${m ? `<div class="sc-match"><span>Looks like <b>${esc(m.roaster)}, ${esc(calm(m.name))}</b> from today’s coffees.</span><button type="button" class="pill" id="scUseListing">Use the listing</button></div>` : ""}
-      <div class="sc-rows">${FIELD_ROWS.map(([k, lbl]) => { const f = fields[k] || { v: null }; return `<label class="sc-row"><span class="sc-l">${lbl}${k === "date" && f.kind === "best" ? " (best before)" : ""}</span>
+      <div class="sc-rows">${FIELD_ROWS.map(([k, lbl]) => { const f = fields[k] || { v: null }; return `<label class="sc-row"><span class="sc-l">${k === "date" && f.kind === "best" ? "Best before" : lbl}</span>
         <span class="sc-in">${input(k, f)}${dot(f.v ? f.c : null)}</span><span class="sc-why">${esc(f.v ? f.why || "" : f.why || "")}</span></label>`; }).join("")}</div>
       <p class="sc-key">${dot("high")}Sure ${dot("medium")}Check it ${dot("low")}A guess. Fix anything it misread.</p>
       <div class="sc-btns"><button type="button" class="pill on" id="scUse">Use these</button><button type="button" class="pill" id="scMore">Add the back of the bag</button><button type="button" class="pill" id="scAgain">Scan again</button><button type="button" class="pill" id="scCancel">Cancel</button></div>`;
