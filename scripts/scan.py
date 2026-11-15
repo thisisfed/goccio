@@ -300,16 +300,17 @@ REJECTED = []   # non-coffee items caught by not_beans(), written to the scan lo
 # tasting notes say "milk chocolate" all the time, so only bar-specific wording counts.
 CHOC_HEAD = re.compile(r"\b\d{2,3}\s?%\s?(?:dark|milk|white|cacao|cocoa|salted|with)\b|bean[- ]to[- ]bar|\bcacao\b|\bcocoa\b|chocolate bar|"
                        r"hot chocolate|drinking chocolate|\bflakes\b|\bpralines?\b|\btruffles?\b|\bbonbons?\b|\bnibs\b(?! ?&)", re.I)
-CHOC_BODY = re.compile(r"bean[- ]to[- ]bar|cocoa (?:butter|solids|mass|liquor|beans?|content)|cacao (?:beans?|content|percentage|solids)|"
-                       r"\b\d{2,3}\s?%\s?(?:cocoa|cacao)\b|(?:milk|dark|white) chocolate bars?\b|chocolate maker|\bconche?d?\b|"
-                       r"\bper bar\b|\bthis bar\b|\bour bars?\b", re.I)
+# (only a chocolate maker's words: coffee notes say "cocoa beans" and "milk chocolate bar" too)
+CHOC_BODY = re.compile(r"bean[- ]to[- ]bar|cocoa (?:butter|solids|mass|liquor)|cacao (?:content|percentage|solids)|"
+                       r"\b\d{2,3}\s?%\s?(?:cocoa|cacao)\b|chocolate ?maker|\bconched\b", re.I)
 CHOC_URL = re.compile(r"bean-to-bar|cacao|cocoa|chocolate-bar|hot-chocolate|drinking-chocolate|-\d{2,3}-(?:milk|dark|white)\b", re.I)
 # whole categories that are never a bag of beans, as a shop files them (product type or a whole tag)
+# the product type only: whole categories a shop files as never a bag of beans
 NOT_COFFEE_TYPE = re.compile(r"^(?:chocolates?|cacao|cocoa|confectionery|sweets|snacks?|food|pantry|teas?|herbal|infusions?|"
                              r"equipment|brew(?:ing)? (?:gear|equipment)|accessor(?:y|ies)|gear|kit|merch(?:andise)?|apparel|clothing|"
-                             r"homeware|ceramics?|cups?|mugs?|books?|gifts?(?: cards?)?|vouchers?|subscriptions?|courses?|classes|"
+                             r"homeware|ceramics?|cups?|mugs?|books?|gift cards?|vouchers?|courses?|classes|"
                              r"workshops?|events?|tickets?|grinders?|machines?|spare parts?|cleaning|syrups?|capsules?|pods?|"
-                             r"drip ?bags?|coffee bags|instant|cold brew|concentrates?|rtd|wholesale)$", re.I)
+                             r"drip ?bags?|instant|cold brew|concentrates?|rtd)$", re.I)
 NOT_COFFEE_TITLE = re.compile(r"\bhario\b|decanter|\bcaddy\b|chamomile|dragon pearls|\bsachets?\b|drip[- ]?bags?|\b\d+\s?pcs?\b|"
                               r"\b(?:[2-9]|\d{2,})\s?x\s?\d+(?:[.,]\d+)?\s?(?:kg|g)\b|\bwholesale\b|\bcatering\b", re.I)
 # and a bag of coffee says so somewhere: coffee words, brewing words, the farm's processing, coffee varieties, or a coffee bag size
@@ -331,9 +332,7 @@ def not_coffee(item):
     body = item.get("body") or ""
     if NOT_COFFEE_TYPE.match(ptype.strip()):
         return f"product type '{ptype}'"
-    t = next((t for t in tags if NOT_COFFEE_TYPE.match(t)), None)
-    if t:
-        return f"tag '{t}'"
+    # (tags aren't used: shops tag coffees "gift", "subscription", "chocolate" or "coffee bags" as filters)
     m = CHOC_HEAD.search(f"{title} {ptype}") or CHOC_URL.search(url.rsplit("/", 1)[-1])
     if m:
         return f"chocolate '{m.group(0)}'"
