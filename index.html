@@ -221,7 +221,7 @@ body { overflow-x: clip; }
 /* bottom: words light up as you scroll past (apple.com product-page style), then a closing line with the crema sheen */
 .outro { justify-items: center; text-align: center; gap: 26px; padding: clamp(24px, 6vw, 72px) 0 8px; }
 .litext { margin: 0; max-width: 24ch; font-size: var(--big); font-weight: 700; line-height: 1.12; letter-spacing: -.035em; text-wrap: balance; }
-.litext span { color: color-mix(in srgb, var(--ink) 18%, transparent); transition: color .35s ease; }
+.litext span { color: color-mix(in srgb, var(--ink) 18%, var(--bg)); transition: color .35s ease; }
 .litext span.lit { color: var(--ink); }
 .outro-end { margin: 0; font-size: var(--big); font-weight: 700; letter-spacing: -.035em; line-height: 1.1; }
 .sheen-text { background: linear-gradient(100deg, #8b4a22 0%, #c96f2a 18%, #e9a94f 32%, #d9705f 48%, #a8653a 64%, #e0a252 80%, #8b4a22 100%);
@@ -1108,7 +1108,7 @@ details.clk > summary .muted { margin-left: auto; overflow: hidden; text-overflo
 .more { padding: 0; border: 0; display: grid; gap: 0; }
 .more-h { margin: 0; font: 500 var(--fs)/1.35 var(--sans); color: var(--ink); }
 .more .opts { padding-top: 0 !important; }
-.litext .outro-end { display: inline; font: inherit; color: color-mix(in srgb, var(--ink) 18%, transparent); transition: color .35s ease; }
+.litext .outro-end { display: inline; font: inherit; color: color-mix(in srgb, var(--ink) 18%, var(--bg)); transition: color .35s ease; }
 .litext .outro-end.on { color: var(--ink); }
 @media (prefers-reduced-motion: reduce) { .litext .outro-end { color: var(--ink); } }
 /* Pour. Taste. Tweak. Nail it. ✓ always on one line: the type shrinks on narrow phones rather than wrap */
@@ -1666,9 +1666,21 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
 @media (prefers-reduced-motion: reduce) { body { animation: none; } }
 /* Start brewing, in the recipe and in the bar at the bottom: the same height as every other pill */
 .go-big, .dock .btn { height: var(--pill-h) !important; min-height: 0 !important; }
-html.jumping .shelf-tools{position:relative!important}   /* a jump glides past the coffee filters without them sticking */
-#verb{display:inline-block;transition:transform .14s ease-in;transform-origin:50% 55%}
-#verb.flip{transform:rotateX(90deg)}
+.who .rn{color:var(--ink)}   /* the roaster stands out; the city stays grey */
+/* footer from 760 px: everything flows through three balanced columns, so they end level whatever is open or closed */
+@media (min-width:760px){
+  footer{display:block!important;columns:3!important;column-gap:40px!important;column-fill:balance}
+  footer .fcol{display:block!important;padding:0!important}
+  footer .fcol > *{margin-bottom:6px}
+  footer .fcol.f-src, footer .fcol.f-cred{margin-top:28px}
+  footer .refs li{break-inside:avoid}
+  footer summary{break-after:avoid}
+  footer .fcol:first-child > .foot-x{margin-top:28px}
+}
+/* Unknown picked for process or roast: red, so it's clear the recipe is playing safe */
+#o-process-unsure[aria-pressed="true"], #o-roast-unsure[aria-pressed="true"]{background:#ff3b30!important;color:#fff!important}
+footer .fcol > p + .foot-x{margin-top:14px}
+#o-goal-tea .beta{margin-left:12px}   /* same gap as Scan the bag and Scan the beans */
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1842,7 +1854,7 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
 
 
   <section class="sec outro" aria-label="How it learns">
-    <p class="litext" id="litext"><span>Every</span> <span>bag</span> <span>is</span> <span>different</span> <span>and</span> <span>so</span> <span>is</span> <span>every</span> <span>brew:</span> <span>the</span> <span>roast,</span> <span>your</span> <span>mood,</span> <span>the</span> <span>grind,</span> <span>your</span> <span>tastebuds</span> <span>that</span> <span>day,</span> <span>the</span> <span>water,</span> <span>your</span> <span>nose,</span> <span>the</span> <span>pour.</span> <span>None</span> <span>of</span> <span>it</span> <span>sits</span> <span>still,</span> <span>and</span> <span>that’s</span> <span>the</span> <span>fun</span> <span>of</span> <span>it.</span> <i class="pb" aria-hidden="true"></i> <span>Under</span> <span>the</span> <span>hood</span> <span>it’s</span> <span>a</span> <span>brew</span> <span>log.</span> <span>Dose,</span> <span>ratio,</span> <span>clicks,</span> <span>kettle</span> <span>temperature</span> <span>and</span> <span>drawdown,</span> <span>all</span> <span>on</span> <span>record.</span> <span>Change</span> <span>one</span> <span>variable</span> <span>per</span> <span>brew,</span> <span>keep</span> <span>what</span> <span>works</span> <span>and</span> <span>repeat</span> <span>it</span> <span>to</span> <span>the</span> <span>gram</span> <span>and</span> <span>the</span> <span>second.</span> <span>Dialled</span> <span>in</span> <span>once,</span> <span>dialled</span> <span>in</span> <span>every</span> <span>time.</span> <i class="pb" aria-hidden="true"></i> <span>This</span> <span>is</span> <span>a</span> <span>starting</span> <span>point,</span> <span>not</span> <span>a</span> <span>finish</span> <span>line.</span> <span>Brew</span> <span>it,</span> <span>taste</span> <span>it,</span> <span>write</span> <span>down</span> <span>what</span> <span>you</span> <span>got</span> <span>and</span> <span>the</span> <span>best</span> <span>cup</span> <span>you’ve</span> <span>ever</span> <span>tasted</span> <span>might</span> <span>be</span> <span>just</span> <span>one</span> <span id="verb">brew</span> <span>away.</span> <span class="outro-end">Brew something good.</span></p>
+    <p class="litext" id="litext"><span>Every</span> <span>bag</span> <span>is</span> <span>different</span> <span>and</span> <span>so</span> <span>is</span> <span>every</span> <span>brew:</span> <span>the</span> <span>roast,</span> <span>your</span> <span>mood,</span> <span>the</span> <span>grind,</span> <span>your</span> <span>tastebuds</span> <span>that</span> <span>day,</span> <span>the</span> <span>water,</span> <span>your</span> <span>nose,</span> <span>the</span> <span>pour.</span> <span>None</span> <span>of</span> <span>it</span> <span>sits</span> <span>still,</span> <span>and</span> <span>that’s</span> <span>the</span> <span>fun</span> <span>of</span> <span>it.</span> <i class="pb" aria-hidden="true"></i> <span>Under</span> <span>the</span> <span>hood</span> <span>it’s</span> <span>a</span> <span>brew</span> <span>log:</span> <span>dose,</span> <span>ratio,</span> <span>clicks,</span> <span>kettle</span> <span>temperature</span> <span>and</span> <span>drawdown,</span> <span>all</span> <span>on</span> <span>record.</span> <span>Change</span> <span>one</span> <span>variable</span> <span>per</span> <span>brew,</span> <span>keep</span> <span>what</span> <span>works</span> <span>and</span> <span>repeat</span> <span>it</span> <span>to</span> <span>the</span> <span>gram</span> <span>and</span> <span>the</span> <span>second.</span> <span>Dialled</span> <span>in</span> <span>once,</span> <span>dialled</span> <span>in</span> <span>every</span> <span>time.</span> <i class="pb" aria-hidden="true"></i> <span>This</span> <span>is</span> <span>a</span> <span>starting</span> <span>point,</span> <span>not</span> <span>a</span> <span>finish</span> <span>line.</span> <span>Brew</span> <span>it,</span> <span>taste</span> <span>it,</span> <span>write</span> <span>down</span> <span>what</span> <span>you</span> <span>got</span> <span>and</span> <span>the</span> <span>best</span> <span>cup</span> <span>you’ve</span> <span>ever</span> <span>tasted</span> <span>might</span> <span>be</span> <span>just</span> <span>one</span> <span id="verb">brew</span> <span>away.</span> <span class="outro-end">Brew something good.</span></p>
     <button type="button" class="hero-pill" data-jump="recipe">Back to the recipe</button>
   </section>
 
@@ -1850,18 +1862,16 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
     <div class="fcol">
     <p class="foot-note refs-h">Disclaimer</p>
     <p class="foot-note">Coffees come from roasters’ own shop listings, checked every day. Not affiliated with any roaster. Your journal never leaves this device.</p>
-    </div>
-    <div class="fcol">
-    <details class="foot-x"><summary class="foot-note refs-h">Methods</summary>
+    <details class="foot-x" open><summary class="foot-note refs-h">Methods</summary>
     <ul class="refs meth">
-      <li><span class="rt">V60:</span> James Hoffmann’s Better 1-Cup and Ultimate V60, Tetsu Kasuya’s 4:6 and 10-Pour, Scott Rao’s bloom &amp; spin, Onyx Coffee Lab’s V60, CAFEC’s Osmotic Flow.</li>
+      <li><span class="rt">V60:</span> James Hoffmann’s Better 1-Cup and Ultimate V60, Tetsu Kasuya’s 4:6 and 10-Pour, Scott Rao’s bloom &amp; spin, Onyx Coffee Lab’s V60, CAFEC’s Osmotic Flow, Matt Winton’s Five-Pour, Lance Hedrick’s double bloom.</li>
       <li><span class="rt">Kalita Wave:</span> George Howell’s 155 guide.</li>
       <li><span class="rt">Melitta:</span> Revelator Coffee’s Melitta pour over guide.</li>
       <li><span class="rt">Origami:</span> Carlos Medina’s 2023 World Brewers Cup recipe.</li>
       <li><span class="rt">Chemex:</span> Blue Bottle’s brew guide.</li>
       <li><span class="rt">Hario Switch:</span> Tetsu Kasuya’s Hybrid Method.</li>
       <li><span class="rt">Clever Dripper:</span> James Hoffmann’s Ultimate Clever technique.</li>
-      <li><span class="rt">AeroPress:</span> James Hoffmann’s Ultimate AeroPress technique, standard or inverted.</li>
+      <li><span class="rt">AeroPress:</span> James Hoffmann’s Ultimate AeroPress technique, standard or inverted; Tim Wendelboe’s café recipe.</li>
       <li><span class="rt">French Press:</span> James Hoffmann’s Ultimate French Press technique.</li>
       <li><span class="rt">Espresso:</span> the modern 1:2 in about 25–30 s, after James Hoffmann’s Understanding Espresso series; longer for lighter roasts, shorter for a ristretto.</li>
       <li><span class="rt">Bialetti Moka Express:</span> James Hoffmann’s Ultimate Moka Pot technique.</li>
@@ -1870,13 +1880,14 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
     </ul>
     </details>
     </div>
-    <div class="fcol">
-    <details class="foot-x"><summary class="foot-note refs-h">Sources</summary>
+    <div class="fcol f-src">
+    <details class="foot-x" open><summary class="foot-note refs-h">Sources</summary>
     <ol class="refs">
       <li>Batali, M. E., Ristenpart, W. D., &amp; Guinard, J.-X. (2020). <span class="rt">Brew temperature, at fixed brew strength and extraction, has little impact on the sensory profile of drip brew coffee</span>. <i>Scientific Reports</i>, 10. <a href="https://doi.org/10.1038/s41598-020-73341-4" target="_blank" rel="noopener">doi.org/10.1038/s41598-020-73341-4</a></li>
       <li>Cotter, A. R., Batali, M. E., Ristenpart, W. D., &amp; Guinard, J.-X. (2021). <span class="rt">Consumer preferences for black coffee are spread over a wide range of brew strengths and extraction yields</span>. <i>Journal of Food Science</i>. <a href="https://doi.org/10.1111/1750-3841.15561" target="_blank" rel="noopener">doi.org/10.1111/1750-3841.15561</a></li>
       <li>Frost, S. C., Ristenpart, W. D., &amp; Guinard, J.-X. (2020). <span class="rt">Effects of brew strength, brew yield, and roast on the sensory quality of drip brewed coffee</span>. <i>Journal of Food Science</i>, 85(8), 2530–2543. <a href="https://doi.org/10.1111/1750-3841.15326" target="_blank" rel="noopener">doi.org/10.1111/1750-3841.15326</a></li>
       <li>Guinard, J.-X., Frost, S., Batali, M., Cotter, A., Lim, L. X., &amp; Ristenpart, W. D. (2023). <span class="rt">A new Coffee Brewing Control Chart relating sensory properties and consumer liking to brew strength, extraction yield, and brew ratio</span>. <i>Journal of Food Science</i>, 88(5), 2168–2177. <a href="https://doi.org/10.1111/1750-3841.16531" target="_blank" rel="noopener">doi.org/10.1111/1750-3841.16531</a></li>
+      <li>Hedrick, L. <span class="rt">The world’s best pourover (with my recipes)</span> [Video]. YouTube. <a href="https://www.youtube.com/watch?v=wZst-D3eUm0" target="_blank" rel="noopener">youtube.com</a></li>
       <li>Hendon, C. H., Colonna-Dashwood, L., &amp; Colonna-Dashwood, M. (2014). <span class="rt">The role of dissolved cations in coffee extraction</span>. <i>Journal of Agricultural and Food Chemistry</i>, 62(21), 4947–4950. <a href="https://doi.org/10.1021/jf501687c" target="_blank" rel="noopener">doi.org/10.1021/jf501687c</a></li>
       <li>Méndez Harper, J., et al. (2023). <span class="rt">Moisture-controlled triboelectrification during coffee grinding</span>. <i>Matter</i>. <a href="https://doi.org/10.1016/j.matt.2023.11.005" target="_blank" rel="noopener">doi.org/10.1016/j.matt.2023.11.005</a></li>
       <li>Park, E., Young, M., &amp; Mathijssen, A. J. T. M. (2025). <span class="rt">Pour-over coffee: mixing by a water jet impinging on a granular bed with avalanche dynamics</span>. <i>Physics of Fluids</i>, 37(4). <a href="https://doi.org/10.1063/5.0257924" target="_blank" rel="noopener">doi.org/10.1063/5.0257924</a></li>
@@ -1901,8 +1912,12 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
       <li>Rao, S. <span class="rt">V60 recipe, interview with Hario</span>. <a href="https://www.hario.co.uk/blogs/hario-ambassadors/hario-v60-recipe-interview-with-hario-ambassador-scott-rao" target="_blank" rel="noopener">hario.co.uk</a></li>
       <li>Revelator Coffee. <span class="rt">Melitta pour over</span>. <a href="https://revelatorcoffee.com/blogs/recipes/melitta-pour-over-adjust-to-taste-series" target="_blank" rel="noopener">revelatorcoffee.com</a></li>
       <li>Sanyo Sangyo (CAFEC). <span class="rt">Osmotic Flow brewing</span>. <a href="https://docs.google.com/presentation/d/1oreatQ-WexYioGXuNebA00bAmGm5LqlW/htmlpresent" target="_blank" rel="noopener">CAFEC presentation</a></li>
+      <li>Wendelboe, T. <span class="rt">AeroPress recipe, as brewed at Tim Wendelboe, Oslo</span>. Aeroprecipe. <a href="https://aeroprecipe.com/recipes/tim-wendelboe" target="_blank" rel="noopener">aeroprecipe.com</a></li>
+      <li>Winton, M. (2021). <span class="rt">V60 five-pour recipe, World Brewers Cup champion</span> [Video]. HARIO. <a href="https://www.youtube.com/watch?v=YIC-2nFQ7vM" target="_blank" rel="noopener">youtube.com</a></li>
     </ol>
     </details>
+    </div>
+    <div class="fcol f-cred">
     <p class="foot-note refs-h foot-credits">Credits</p>
     <p class="foot-note" id="credit">Made by <a href="https://thisisfed.xyz/" target="_blank" rel="noopener">Federico Ferrari</a>, enjoying it? <a href="https://buymeacoffee.com/thisisfed" target="_blank" rel="noopener">Buy me a beer</a>.</p>
     </div>
@@ -2131,6 +2146,10 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
     hoffmannU: { c: 23, pub: "22–25 at 18–20 g", note: "Hoffmann gives medium-fine; C40 users publish 22–25 at 18–20 g, and he has quoted 25–30 for the full 30 g brew.", url: "https://www.youtube.com/watch?v=AI4ynXzkSQo", src: "The Ultimate V60" },
     fourSix:   { c: 28, pub: "30 at 20 g", note: "Kasuya’s 4:6 is coarse; 30 clicks at 20 g is the widely cited C40 setting, so 28 at 15 g.", url: "https://en.philocoffea.com/blogs/blog/coffee-brewing-method", src: "Philocoffea, 4:6" },
     ten:       { c: 40, pub: "40–45", note: "The 10-Pour runs very coarse so ten small pours don’t stall; C40 users publish 40–45.", url: "https://en.philocoffea.com/blogs/blog/coffee-brewing-method", src: "Philocoffea" },
+    winton:    { c: 24, pub: "none published", est: true, note: "Winton says medium, and that it should take about 2:40 to drain. Five pours from height stir the bed for you, so it sits a few clicks coarser than Hoffmann’s 1-Cup. Our estimate.", url: "https://www.youtube.com/watch?v=YIC-2nFQ7vM", src: "Winton, HARIO V60 Five-Pour Recipe" },
+    hedrick:   { c: 21, pub: "none published", est: true, note: "Hedrick grinds medium-fine and aims for a quick drawdown, close to Hoffmann’s 1-Cup. Our estimate.", url: "https://www.youtube.com/watch?v=wZst-D3eUm0", src: "Hedrick, The World’s Best Pourover (with my Recipes)" },
+    tea:       { c: 21, pub: "none published", est: true, note: "Tea-like starts from Hoffmann’s 1-Cup and goes coarser: big particles and few fines keep the cup clear, while the centre pulses keep the water in contact long enough to extract fully. Our recipe.", url: "", src: "Bag to Cup" },
+    wendelboe: { c: 17, pub: "15–20 clicks", note: "Wendelboe grinds “fine filter”, 15–20 clicks on the Comandante: finer than Hoffmann’s AeroPress, because his steep is only a minute.", url: "https://aeroprecipe.com/recipes/tim-wendelboe", src: "Tim Wendelboe’s AeroPress, as brewed in his Oslo café" },
     onyx:      { c: 19, pub: "550 µm, about 18–19", est: true, note: "Onyx gives 550 µm, finer than most V60 recipes: the heavy centre pour slows the drain so a finer grind doesn’t stall. A C40 click is about 30 µm, so about 18–19 clicks; 19 at 15 g. Our conversion.", url: "https://onyxcoffeelab.com/pages/help-me-brew", src: "Onyx Coffee Lab, Help Me Brew" },
     cafec:     { c: 26, pub: "none published", est: true, note: "CAFEC says medium to coarse. The thin centre pour keeps the water in the middle of the bed, so it starts a few clicks coarser than Hoffmann’s 1-Cup. Our estimate.", url: "https://docs.google.com/presentation/d/1oreatQ-WexYioGXuNebA00bAmGm5LqlW/htmlpresent", src: "CAFEC (Sanyo Sangyo), Osmotic Flow" },
     rao:       { c: 24, pub: "none published", est: true, note: "Rao publishes no C40 number, only medium-fine for a ~3:30 drawdown. One long pour drains slower than pulses, so we start a click coarser than Hoffmann’s Ultimate. Our estimate.", url: "https://www.hario.co.uk/blogs/hario-ambassadors/hario-v60-recipe-interview-with-hario-ambassador-scott-rao", src: "Hario UK interview" },
@@ -2142,6 +2161,10 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
     ten:       "Kasuya’s 10-Pour",
     rao:       "Rao’s Bloom & Spin",
     onyx:      "Onyx Coffee Lab’s V60",
+    winton:    "Matt Winton’s Five-Pour",
+    hedrick:   "Lance Hedrick’s double bloom",
+    tea:       "Tea-like, centre pulses",
+    wendelboe: "AeroPress, Tim Wendelboe",
     cafec:     "CAFEC Osmotic Flow",
   };
   const GOAL = { light: "Light & sweet", balanced: "Balanced", syrupy: "Rich & syrupy", tea: "Tea-like" };
@@ -2149,7 +2172,20 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
   // nothing stirred or swirled: a thin, clear cup with every note there but quiet. Paper-filtered brewers only:
   // a metal mesh, a moka or a shot can't make a cup this clean
   const TEA_OK = new Set(["v60", "kalita", "melitta", "chemex", "origami", "switch", "clever", "aero"]);
-  const TEA = { clicks: 4, temp: -2, ratio: 19, max: 21 };
+  const TEA = { clicks: 4, ratio: 20, max: 21 };
+  // where it works: clean, light to medium coffees. Heavy ferments turn thin and boozy, dark roasts thin and ashy, decaf empty
+  const teaFits = (c) => ["vlight", "light", "medium", "unsure"].includes(c.roast) && ["washed", "honey", "natural", "unsure"].includes(c.process);
+  // hot, not cool: a thin cup still needs a full extraction, or it tastes hollow and sour instead of delicate
+  const teaTemp = (c) => { let t = ROAST[c.roast].T + 2 + PROCESS[c.process].dT;
+    if (T_CAP[c.process]) t = Math.min(t, T_CAP[c.process]); if (T_CAP_ROAST[c.roast]) t = Math.min(t, T_CAP_ROAST[c.roast]); return clamp(t, 88, 98); };
+  // the pours: a centre-only bloom, then five small pulses into a coin-sized circle in the middle, never the paper.
+  // The bed is never stirred, so fines stay put and the cup stays clear; the long contact still pulls out sweetness and depth
+  function teaPulses(add, dose, water, t0) {
+    const bl = Math.round(dose * 2.5);
+    add(0, bl, "Bloom: a slow pour in the centre only, just enough to wet it all. No swirl", 15);
+    for (let i = 1; i <= 5; i++) add(t0 + (i - 1) * 30, i === 5 ? water : Math.round(bl + ((water - bl) * i) / 5),
+      i === 5 ? "Last pulse in the centre, then let it drain untouched" : "Centre only: a coin-sized circle, low and slow", 15);
+  }
 
   /* OTHER BREWERS
      Each one starts from one published recipe, then takes the same process × roast moves as the V60
@@ -2167,15 +2203,15 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
   const BREWERS = {
     v60:    { name: "V60", kind: "pour", doses: [[12, "12 g"], [15, "15 g"], [18, "18 g"], [20, "20 g"], [25, "25 g"], [30, "30 g"]], dose: 15 },
     kalita: { name: "Kalita Wave", kind: "pour", doses: [[12, "12 g"], [15, "15 g"], [18, "18 g"], [20, "20 g"], [25, "25 g"], [30, "30 g"]], dose: 15,
-              base: 24, dA: { 12: -1, 15: 0, 18: 1, 20: 1, 25: 2, 30: 3 }, range: [18, 36], ratio: { light: 17, balanced: 16, syrupy: 15, tea: 19 }, dT: 1, ey: [20, 22] },
+              base: 24, dA: { 12: -1, 15: 0, 18: 1, 20: 1, 25: 2, 30: 3 }, range: [18, 36], ratio: { light: 17, balanced: 16, syrupy: 15, tea: 20 }, dT: 1, ey: [20, 22] },
     melitta: { name: "Melitta", kind: "pour", doses: [[12, "12 g"], [15, "15 g"], [18, "18 g"], [20, "20 g"], [25, "25 g"], [30, "30 g"]], dose: 15,
-              base: 23, dA: { 12: -1, 15: 0, 18: 1, 20: 1, 25: 2, 30: 3 }, range: [17, 34], ratio: { light: 17, balanced: 16, syrupy: 15, tea: 19 }, dT: 2, ey: [19.5, 21.5] },
+              base: 23, dA: { 12: -1, 15: 0, 18: 1, 20: 1, 25: 2, 30: 3 }, range: [17, 34], ratio: { light: 17, balanced: 16, syrupy: 15, tea: 20 }, dT: 2, ey: [19.5, 21.5] },
     chemex: { name: "Chemex", kind: "pour", doses: [[20, "20 g"], [30, "30 g"], [40, "40 g"], [50, "50 g"]], dose: 30,
-              base: 30, dA: { 20: -1, 30: 0, 40: 1, 50: 2 }, range: [22, 42], ratio: { light: 17, balanced: 16, syrupy: 15, tea: 19 }, dT: 2, ey: [19.5, 21.5] },
+              base: 30, dA: { 20: -1, 30: 0, 40: 1, 50: 2 }, range: [22, 42], ratio: { light: 17, balanced: 16, syrupy: 15, tea: 20 }, dT: 2, ey: [19.5, 21.5] },
     origami: { name: "Origami", kind: "pour", doses: [[12, "12 g"], [15, "15 g"], [18, "18 g"], [20, "20 g"], [25, "25 g"], [30, "30 g"]], dose: 15,
-              base: 22, dA: { 12: -1, 15: 0, 18: 1, 20: 1, 25: 2, 30: 3 }, range: [16, 34], ratio: { light: 16.5, balanced: 16, syrupy: 15, tea: 18.5 }, dT: -3, ey: [19.5, 21.5] },
+              base: 22, dA: { 12: -1, 15: 0, 18: 1, 20: 1, 25: 2, 30: 3 }, range: [16, 34], ratio: { light: 16.5, balanced: 16, syrupy: 15, tea: 20 }, dT: -3, ey: [19.5, 21.5] },
     switch: { name: "Hario Switch", kind: "pour", doses: [[15, "15 g"], [20, "20 g"], [30, "30 g"]], dose: 20,
-              base: 26, dA: { 15: -1, 20: 0, 30: 2 }, range: [18, 36], ratio: { light: 15, balanced: 14.5, syrupy: 14, tea: 17 }, dT: 1, ey: [19.5, 21.5] },
+              base: 26, dA: { 15: -1, 20: 0, 30: 2 }, range: [18, 36], ratio: { light: 15, balanced: 14.5, syrupy: 14, tea: 19 }, dT: 1, ey: [19.5, 21.5] },
     clever: { name: "Clever Dripper", kind: "imm", doses: [[15, "15 g"], [18, "18 g"], [20, "20 g"], [25, "25 g"]], dose: 15,
               base: 22, dA: { 15: 0, 18: 1, 20: 1, 25: 2 }, range: [14, 32], ratio: { light: 16.67, balanced: 16, syrupy: 15, tea: 19 }, dT: 5, cap: 340, capBig: 450, ey: [19.5, 21.5] },
     aero:   { name: "AeroPress", kind: "imm", doses: [[11, "11 g"], [13, "13 g"], [15, "15 g"]], dose: 11,
@@ -2210,8 +2246,8 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
     const dose = Number(st.dose);
     if (st.method === "hoffmann") return dose >= 18 ? "hoffmannU" : "hoffmann";
     if (st.method === "ten" && dose >= 25) { st.method = "best"; }   // ten 15 s pours don't scale to a double batch
-    if (["fourSix", "ten", "rao", "onyx", "cafec"].includes(st.method)) return st.method;
-    if (st.goal === "tea") return "fourSix";                         // tea-like: the gentle, coarse 4:6, two big pours
+    if (st.goal === "tea" && teaFits(c)) return "tea";              // tea-like has its own pours: small pulses in the centre
+    if (["fourSix", "ten", "rao", "onyx", "cafec", "winton", "hedrick"].includes(st.method)) return st.method;
     if (st.goal === "syrupy") return dose >= 25 ? "hoffmannU" : "ten";
     if (agit <= 1 || c.roast === "mdark" || c.roast === "dark") return "fourSix";   // low agitation: few gentle pours
     if (c.delicate) return "rao";                                    // flat bed, crisp florals
@@ -2253,12 +2289,13 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
     const c = resolved(st);
     c.missing = [!c.process && "process", !c.roast && "roast"].filter(Boolean);
     c.process = c.process || "unsure"; c.roast = c.roast || "unsure";
-    const dose = Number(st.dose), tea = st.goal === "tea" && TEA_OK.has(brewerOf(st)), goal = st.goal === "tea" && !tea ? "light" : st.goal;
+    const dose = Number(st.dose), tea = st.goal === "tea" && TEA_OK.has(brewerOf(st)) && teaFits(c), goal = st.goal === "tea" && !tea ? "light" : st.goal;
     let agit = PROCESS[c.process].agit;
     if (c.roast === "mdark") agit = Math.min(agit, 1);
     if (c.roast === "dark") agit = 0;                                // dark roasts extract fast: no stirring at all
     if (c.delicate) agit = Math.min(agit, 2);                        // Geisha & co: keep the florals, don't thrash the bed
     if (tea || st.method === "cafec") agit = 0;                      // tea-like and Osmotic Flow: nothing stirred, nothing swirled
+    if (st.method === "winton" && !tea) agit = Math.max(agit, 2);   // Winton's pours from height do the stirring
     const brewer = brewerOf(st);
     const m = brewer === "v60" ? pickMethod(st, c, agit) : brewer;
 
@@ -2273,7 +2310,7 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
     const pc = learn ? learn.d : { clicks: 0, temp: 0, ratio: 0 };
     if (brewer !== "v60") return engineOther(st, c, agit, brewer, key, learn, pc, opts);
 
-    let ratio = tea ? (m === "ten" ? 18 : TEA.ratio) : m === "cafec" ? { light: 15, balanced: 13.5, syrupy: 12.5 }[goal] ?? 15
+    let ratio = tea ? TEA.ratio : m === "winton" ? { light: 16, balanced: 15, syrupy: 14.5 }[goal] ?? 15 : m === "hedrick" ? { light: 17, balanced: 16, syrupy: 15 }[goal] ?? 16 : m === "cafec" ? { light: 15, balanced: 13.5, syrupy: 12.5 }[goal] ?? 15
       : m === "onyx" ? { light: 16, balanced: 15, syrupy: 14.5 }[goal] ?? 16 : m === "ten" ? (goal === "syrupy" ? 15 : 16)
       : goal === "light" ? 17 : goal === "balanced" ? (m.startsWith("hoffmann") ? 16.7 : 16.5) : 15.5;
     const baseRatio = ratio, ratioPre = ratio + (pc.ratio || 0);
@@ -2284,7 +2321,7 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
     const B = BASE[m];
     const doseAdj = (m === "ten" ? { 12: -1, 15: 0, 18: 1, 20: 1 } : { 12: -1, 15: 0, 18: 1, 20: 2, 25: 3, 30: 4 })[dose] ?? 0;   // a deeper bed drains slower: coarser as the batch grows
     const roastAdj = ROAST[c.roast].dC, procAdj = PROCESS[c.process].dC;
-    const teaAdj = tea ? (m === "fourSix" ? 2 : TEA.clicks) : 0;   // the 4:6 already grinds coarse: half the step
+    const teaAdj = tea ? TEA.clicks : 0;
     const raw = B.c + doseAdj + roastAdj + procAdj + teaAdj;
     const baseClicks = clamp(raw, 16, 45);
     const zero = opts.noPrefs || !isC40() ? 0 : (prefs.zero || 0);   // the zero offset is a C40 calibration
@@ -2295,13 +2332,13 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
     const KASUYA_T = { vlight: 94, light: 93, medium: 88, mdark: 85, dark: 83, unsure: 90 };
     // CAFEC: 92°C light, 90 medium, 83 dark (Sanyo Sangyo). Onyx: 204°F, about 96
     const CAFEC_T = { vlight: 93, light: 92, medium: 90, mdark: 87, dark: 83, unsure: 89 };
-    let temp = (m === "fourSix" || m === "ten" ? KASUYA_T[c.roast] + (m === "ten" ? 1 : 0) : m === "cafec" ? CAFEC_T[c.roast] : ROAST[c.roast].T + ({ hoffmann: 5, hoffmannU: 5, rao: 2, onyx: 2 }[m])) + PROCESS[c.process].dT;
+    let temp = (m === "fourSix" || m === "ten" ? KASUYA_T[c.roast] + (m === "ten" ? 1 : 0) : m === "cafec" ? CAFEC_T[c.roast] : ROAST[c.roast].T + ({ hoffmann: 5, hoffmannU: 5, rao: 2, onyx: 2, winton: -1, hedrick: 5, tea: 2 }[m])) + PROCESS[c.process].dT;
     if (c.delicate) temp += 1;
     if (agit <= 1) temp = Math.min(temp, 95);                      // ferment-forward lots go boozy when pushed
     if (T_CAP[c.process]) temp = Math.min(temp, T_CAP[c.process]);
     if (T_CAP_ROAST[c.roast]) temp = Math.min(temp, T_CAP_ROAST[c.roast]);
     if (c.roast === "vlight" && agit >= 2 && m !== "cafec") temp = Math.max(temp, 96); // dense Nordic roasts under-extract below this
-    if (tea && m !== "fourSix" && m !== "ten" && m !== "cafec") temp += TEA.temp;   // Kasuya's temperatures already run cool
+    if (tea) temp = teaTemp(c);
     const baseTemp = clamp(temp, 82, 100);
     temp = clamp(temp + (pc.temp || 0), 82, 100);
 
@@ -2325,6 +2362,18 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
       add(45, water * 0.6, "Steady pour, done by 1:15", 30);
       add(75, water, agit >= 3 ? "Done by 1:45, stir once each way, swirl" : "Done by 1:45, gentle, no stir", 30);
       lo = 180; hi = 210;
+    } else if (m === "tea") {
+      teaPulses(add, dose, water, 45);
+      lo = 225; hi = 255;
+    } else if (m === "winton") { // Winton: five equal pours, each when the last has nearly drained, about 30 s apart, from height, no stirring
+      for (let i = 1; i <= 5; i++) add((i - 1) * 30, (water * i) / 5, i === 1 ? "Bloom: centre out to the edge and back, all of it wet" : i === 5 ? "Last pour, same circles, then let it drain. Swirl the jug, not the cone" : "Pour from a little higher: centre out and back in. No stirring", 10);
+      lo = 160; hi = 180;
+    } else if (m === "hedrick") { // Hedrick: two blooms of 3×, then two big pours at 1:00 and 1:30
+      add(0, dose * 3, agit >= 2 ? "First bloom, then a firm swirl" : "First bloom, a gentle swirl", 10);
+      add(30, dose * 6, agit >= 2 ? "Second bloom, swirl again" : "Second bloom, a gentle swirl", 10);
+      add(60, dose * 11, "Big pour, fast, just behind the centre", 12);
+      add(90, water, agit >= 2 ? "Big pour to the total, then a light swirl" : "Big pour to the total, let it drain", 12);
+      lo = 165; hi = 180;
     } else if (m === "onyx") {   // Onyx: 2× bloom, a heavy centre pour at 0:30, then spirals every 20 s, done by 2:30
       add(0, dose * 2, bloomNote, 10);
       add(30, water * 0.4, "Heavy pour in the centre: it sets the pace of the drain", 12);
@@ -2361,7 +2410,7 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
 
     // strength estimate: beverage = water − paper/grounds retention (~2.1 × dose)
     const bev = water - dose * 2.1;
-    const ey = { hoffmann: [20, 22], hoffmannU: [20, 22], rao: [20.5, 22.5], fourSix: [19, 21], ten: [20, 22], onyx: [20, 22], cafec: [19, 21] }[m].map((x) => x - (agit <= 1 ? 0.5 : 0));
+    const ey = { hoffmann: [20, 22], hoffmannU: [20, 22], rao: [20.5, 22.5], fourSix: [19, 21], ten: [20, 22], onyx: [20, 22], cafec: [19, 21], winton: [20, 22], hedrick: [20, 22], tea: [20.5, 22] }[m].map((x) => x - (agit <= 1 ? 0.5 : 0));
     const tds = ey.map((e) => (e / 100) * dose / bev * 100);
     const mid = (tds[0] + tds[1]) / 2;
     const body = mid < 1.25 ? "tea-like" : mid < 1.38 ? "light and clear" : mid < 1.5 ? "classic filter" : "rich";
@@ -2384,7 +2433,8 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
   function engineOther(st, c, agit, b, key, learn, pc, opts) {
     const B = BREWERS[b], kind = B.kind;
     const dose = B.doses.some(([v]) => v === Number(st.dose)) ? Number(st.dose) : B.dose;
-    const tea = st.goal === "tea" && TEA_OK.has(b);
+    const tea = st.goal === "tea" && TEA_OK.has(b) && teaFits(c);
+    const wendel = b === "aero" && st.aeroWay === "wendelboe" && !tea;
     const goal = B.ratio ? (GOAL[st.goal] && (st.goal !== "tea" || tea) ? st.goal : "light") : null;
     let ratio, water, ratioPre, capped = false;
     if (B.water) { water = B.water[dose]; ratio = Math.round((water / dose) * 10) / 10; ratioPre = ratio; }
@@ -2394,8 +2444,8 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
       ratio = clamp(Math.round(ratioPre * 10) / 10, 1.3, 3.5); water = Math.round(dose * ratio);
     }
     else {
-      ratioPre = B.ratio[goal] + (pc.ratio || 0);
-      ratio = clamp(Math.round(ratioPre * 10) / 10, 14, tea ? TEA.max : 18.5);
+      ratioPre = (wendel ? { light: 14.3, balanced: 14.3, syrupy: 13.5 }[goal] : B.ratio[goal]) + (pc.ratio || 0);
+      ratio = clamp(Math.round(ratioPre * 10) / 10, wendel ? 13 : 14, tea ? TEA.max : 18.5);
       water = Math.round(dose * ratio);
       const cap = B.capBig && dose >= 25 ? B.capBig : B.cap;
       if (cap && water > cap) { water = cap; ratio = Math.round((water / dose) * 10) / 10; capped = true; }
@@ -2406,14 +2456,15 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
     // espresso: one click is a big step this fine, so roast moves it by one or two and process not at all
     const doseAdj = B.dA[dose] ?? 0, roastAdj = B.shot ? { vlight: -2, light: -1, medium: 0, mdark: 1, dark: 1, unsure: 0 }[c.roast] : ROAST[c.roast].dC, procAdj = B.shot ? 0 : PROCESS[c.process].dC;
     const teaAdj = tea ? TEA.clicks : 0;
-    const raw = B.base + doseAdj + roastAdj + procAdj + teaAdj;
+    const base0 = wendel ? BASE.wendelboe.c : B.base;
+    const raw = base0 + doseAdj + roastAdj + procAdj + teaAdj;
     const baseClicks = clamp(raw, B.range[0], B.range[1] + teaAdj);
     const zero = opts.noPrefs || !isC40() ? 0 : (prefs.zero || 0);
     const clicks = clamp(baseClicks + (pc.clicks || 0) + zero, B.range[0] - 4, B.range[1] + 5);
-    const clickParts = { base: B.base, dose: doseAdj, roast: roastAdj, process: procAdj, tea: teaAdj, learn: pc.clicks || 0, zero, clamped: raw !== baseClicks, range: B.range };
+    const clickParts = { base: base0, dose: doseAdj, roast: roastAdj, process: procAdj, tea: teaAdj, learn: pc.clicks || 0, zero, clamped: raw !== baseClicks, range: B.range };
 
     let temp = null, baseTemp = null;
-    if (B.dT != null) { baseTemp = clamp(tempFor(c, agit, B.dT) + (tea ? TEA.temp : 0), 82, 100); temp = clamp(baseTemp + (pc.temp || 0), 82, 100); }
+    if (B.dT != null) { baseTemp = tea ? teaTemp(c) : wendel ? clamp(Math.min(ROAST[c.roast].T + 2 + PROCESS[c.process].dT, T_CAP[c.process] || 99, T_CAP_ROAST[c.roast] || 99), 82, 98) : clamp(tempFor(c, agit, B.dT), 82, 100); temp = clamp(baseTemp + (pc.temp || 0), 82, 100); }
     if (B.shot) {   // the machine's brew temperature: hotter for light roasts, cooler for dark; ferments and decaf a touch cooler
       baseTemp = { vlight: 96, light: 94, medium: 93, mdark: 91, dark: 90, unsure: 93 }[c.roast] - (["anaerobic", "cofer", "decaf"].includes(c.process) ? 1 : 0);
       temp = clamp(baseTemp + (pc.temp || 0), 85, 98);
@@ -2424,7 +2475,11 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
     const act = (t, lbl, note, dur) => P.push({ t, act: true, lbl, note, dur });
     const bloomNote = agit >= 3 ? "Bloom: swirl to wet all grounds" : agit === 2 ? "Bloom: gentle swirl" : "Bloom: gentle spiral, no stirring";
     let lo, hi;
-    if (b === "kalita") {            // Howell: equal pulses, 15 s on, 15 s to drop
+    if (tea && ["kalita", "melitta", "chemex", "origami", "switch"].includes(b)) {   // tea-like: centre pulses, nothing stirred
+      teaPulses(add, dose, water, 45);
+      if (b === "switch") P[0].note = "Valve open, and leave it open. " + P[0].note;
+      lo = { kalita: 240, melitta: 240, chemex: 270, origami: 210, switch: 225 }[b] + Math.max(0, dose - 15) * 3; hi = lo + 30;
+    } else if (b === "kalita") {            // Howell: equal pulses, 15 s on, 15 s to drop
       const bl = dose * 2, n = 4;
       add(0, bl, bloomNote, 10);
       for (let i = 1; i <= n; i++) add(10 + i * 30, i === n ? water : bl + ((water - bl) * i) / n,
@@ -2462,13 +2517,19 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
       act(120, "Stir", "Break the crust: one gentle stir", 5);
       act(150, "Release", "Set the Clever on the cup to drain, about a minute", 5);
       lo = 210; hi = 240;
-    } else if (b === "aero" && st.aeroWay === "inverted") {   // upside down: nothing drips through, so the steep time is exact
+    } else if (b === "aero" && st.aeroWay === "inverted" && !tea) {   // upside down: nothing drips through, so the steep time is exact
       add(0, water, "Upside down, plunger in at the top. Pour all the water in", 10);
       act(100, "Swirl", "Swirl gently, still upside down", 5);
       act(110, "Cap", "Rinsed paper in the cap, screw it on", 10);
       act(120, "Flip", "Cup on top, flip it over in one smooth move", 5);
       act(130, "Press", "Press gently, about 30 s, all the way down", 30);
       lo = hi = 160;
+    } else if (wendel) {             // Wendelboe: all the water, stir 3, plunger on, 1 min, stir 3, press
+      add(0, water, "Pour all the water in", 10);
+      act(10, "Stir", "Stir 3 times, back to front. Plunger on, about 1 cm in, so it stops dripping", 5);
+      act(60, "Stir", "Plunger off, stir 3 times back to front, plunger back on", 10);
+      act(70, "Press", "Press gently and steadily, about 20 s", 20);
+      lo = hi = 90;
     } else if (b === "aero" && tea) {   // tea-like: a longer steep, no swirl, a slow press
       add(0, water, "Pour all the water in. Then set the plunger in about 1 cm so it stops dripping. No stirring", 10);
       act(180, "Press", "Press very gently, about 30 s, and stop at the hiss", 30);
@@ -2511,7 +2572,7 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
       const mid = (tds[0] + tds[1]) / 2;
       body = mid < 1.25 ? "tea-like" : mid < 1.38 ? "light and clear" : mid < 1.5 ? "classic filter" : "rich";
     }
-    return { m: b, brewer: b, kind, method: b === "aero" && st.aeroWay === "inverted" ? "AeroPress, inverted" : METHOD[b], goal, c, agit, key, pc, learn, baseClicks, clickParts, baseTemp, baseRatio,
+    return { m: wendel ? "wendelboe" : b, brewer: b, kind, method: wendel ? METHOD.wendelboe : b === "aero" && st.aeroWay === "inverted" && !tea ? "AeroPress, inverted" : METHOD[b], goal, c, agit, key, pc, learn, baseClicks, clickParts, baseTemp, baseRatio,
       dose, water, ratio, ratioClamped: !!B.ratio && !capped && Math.abs(ratioPre - ratio) > 0.05, capped, clicks, temp,
       yieldG: Math.round(bev), bev, pours: P, lo, hi, tds, ey, body };
   }
@@ -2557,6 +2618,10 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
     hoffmann: "Pulsed pours push extraction: acidity and florals up front, clean finish.",
     hoffmannU: "Even, high extraction: clarity with a little more body.",
     rao: "Highest clarity here: crisp top notes, tea-like texture.",
+    winton: "Five equal pours from height, no stirring: clean, layered and aromatic.",
+    hedrick: "Two blooms and two big pours: sweet, high extraction, done fast.",
+    tea: "Thin like tea, layered like a good filter: every note there, but quiet.",
+    wendelboe: "A one-minute steep and a gentle press: sweet, bright and quick.",
     onyx: "A heavy centre pour and a finer grind: bright and sweet, high extraction, done quickly.",
     cafec: "Water only in the middle, nothing stirred: very clean and soft, aroma and sweetness first.",
     fourSix: "Few, gentle pours: aromatics first, light body, sweetness without ferment.",
@@ -2581,6 +2646,10 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
   const CUP = {
     hoffmann:  { body: 2, clar: 5, acid: 1, sweet: 0, how: "A cone with one big hole drains fast and the pulsed pours keep the bed moving, so the cup separates: top notes first, acidity articulated, each flavour distinct.", tex: "slick and clean, the paper takes the oils and most fines", fin: "short to medium, clean and slightly dry" },
     hoffmannU: { body: 3, clar: 4, acid: 0, sweet: 1, how: "A bigger dose and a deep bed extract higher and more evenly than the 1-Cup: the same clarity, with a fuller middle and more sweetness behind the acidity.", tex: "round and clean", fin: "medium and sweet" },
+    winton:    { body: 2, clar: 5, acid: 1, sweet: 1, how: "Five equal pours, each poured from height when the last has nearly drained: the water does the stirring, so the bed stays even without a spoon. Clean and layered, aromatic, light in body.", tex: "light and clean", fin: "long and aromatic" },
+    hedrick:   { body: 3, clar: 4, acid: 0, sweet: 2, how: "Two blooms wet every ground before the main water arrives, then two fast pours and a quick drawdown: a high, even extraction that tastes sweet rather than heavy.", tex: "juicy, round", fin: "medium and sweet" },
+    tea:       { body: 1, clar: 5, acid: 0, sweet: 1, how: "A coarse grind and water only in the middle, in small pulses: the bed is never stirred, so the cup is very clear, while the long contact pulls out the sweetness and the quieter notes. Thin like tea, but layered.", tex: "silky, tea-thin", fin: "long, clean and sweet" },
+    wendelboe: { body: 3, clar: 3, acid: 1, sweet: 1, how: "A finer grind and a one-minute steep with two short stirs: a stronger, brighter cup than Hoffmann’s AeroPress, done in 90 s.", tex: "dense, still clean", fin: "medium and bright" },
     onyx:      { body: 3, clar: 4, acid: 1, sweet: 1, how: "A heavy centre pour sets a steady drain, so it grinds finer than most V60 recipes and still finishes by 2:30: a high, even extraction, bright and sweet at once.", tex: "juicy and clean", fin: "medium and sweet" },
     cafec:     { body: 3, clar: 5, acid: -1, sweet: 1, how: "Water goes only into the middle in a thin, low stream; the outer coffee stays as a filter wall and nothing is stirred. Soft and very clean: aroma and sweetness up front, harsh edges held back.", tex: "soft and clean", fin: "clean and sweet" },
     rao:       { body: 2, clar: 5, acid: 0, sweet: 1, how: "One continuous pour and a spin leave a flat, even bed with little channelling: a very even extraction, sweet for its clarity, nothing sticking out.", tex: "silky, tea-like", fin: "medium, clean and sweet" },
@@ -2686,7 +2755,7 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
     $("coffee").classList.toggle("empty", blocked);   // before a coffee is named: only the question and Scan the bag
     // no coffee yet, no recipe: its menu link goes too, and the button at the bottom points at the first step instead
     document.querySelectorAll('.nav [data-jump="recipe"]').forEach((b) => b.hidden = blocked);
-    document.querySelectorAll('.hero-pill[data-jump="recipe"]').forEach((b) => b.textContent = blocked ? "Pick a coffee" : "Back to the recipe");
+    document.querySelectorAll('.hero-pill[data-jump="recipe"]').forEach((b) => { b.textContent = blocked ? "Pick a coffee" : "Back to the recipe"; b.dataset.pick = blocked ? "1" : ""; });
     if (!blocked) return false;
     if (empty) {
       $("rmethod").textContent = ""; $("rgoal").textContent = ""; $("rtitle").textContent = "Pick a coffee"; $("rread").textContent = "";
@@ -3148,7 +3217,7 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
 
   // ---------- how the clicks were set ----------
   const signed = (n) => (n > 0 ? "+" : n < 0 ? "−" : "±") + Math.abs(n);
-  const METHOD_REF = { hoffmann: "Hoffmann 1-Cup", hoffmannU: "Hoffmann Ultimate", fourSix: "Kasuya 4:6", ten: "Kasuya 10-Pour", rao: "Rao bloom & spin", onyx: "Onyx", cafec: "CAFEC Osmotic Flow",
+  const METHOD_REF = { hoffmann: "Hoffmann 1-Cup", hoffmannU: "Hoffmann Ultimate", fourSix: "Kasuya 4:6", ten: "Kasuya 10-Pour", rao: "Rao bloom & spin", onyx: "Onyx", cafec: "CAFEC Osmotic Flow", winton: "Winton Five-Pour", hedrick: "Hedrick double bloom", tea: "Tea-like", wendelboe: "Wendelboe AeroPress",
     kalita: "Kalita Wave", melitta: "Melitta", chemex: "Chemex", origami: "Origami", switch: "Hario Switch", clever: "Clever Dripper", aero: "AeroPress", press: "French Press", cold: "Cold brew", moka: "Bialetti Moka Express", espresso: "Espresso" };
   function renderClicks(r) {
     const p = r.clickParts, B = BASE[r.m], c = r.c;
@@ -3195,6 +3264,10 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
     hoffmannU: { r: 16.7, txt: "Classic Hoffmann Ultimate V60 is 1:16.7 (30→500 g)" },
     rao:       { r: 16,   txt: "Classic Rao bloom & spin is 1:16 (22→352 g)" },
     onyx:      { r: 15,   txt: "Onyx’s V60 is 1:15 (20→300 g)" },
+    winton:    { r: 15,   txt: "Winton’s Five-Pour is 1:15 (20→300 g), five pours of 60 g" },
+    hedrick:   { r: 16,   txt: "Hedrick’s double bloom is 1:16 (20→320 g)" },
+    tea:       { r: 20,   txt: "Tea-like brews at 1:20: about 1.1–1.2% strength at a full 20–22% extraction" },
+    wendelboe: { r: 14.3, txt: "Wendelboe’s AeroPress is 1:14.3 (14→200 g)" },
     cafec:     { r: 12.5, txt: "CAFEC’s Osmotic Flow is about 1:12.5 (12 g for a 150 ml cup)" },
     fourSix:   { r: 15,   txt: "Classic Kasuya 4:6 is 1:15 (20→300 g)" },
     ten:       { r: 16,   txt: "Kasuya’s 10-Pour has no single published ratio; it starts here at 1:16" },
@@ -3233,7 +3306,7 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
       return w;
     }
     const ferment = c.process === "anaerobic" || c.process === "cofer";
-    const busy = ["hoffmann", "hoffmannU", "rao", "ten", "onyx"].includes(r.m);       // pulses, spins or many pours
+    const busy = ["hoffmann", "hoffmannU", "rao", "ten", "onyx", "winton", "hedrick"].includes(r.m);       // pulses, spins or many pours
     const dark = c.roast === "mdark" || c.roast === "dark";
     const pl = c.process === "cofer" ? "Co-ferment" : cap1(PROCESS[c.process].label);
     if (ferment && r.temp >= 94) w.push(`${pl} at ${r.temp}°C: likely boozy and harsh. Drop to ${c.process === "cofer" ? 91 : 92}°C.`);
@@ -3436,10 +3509,13 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
     const why = [];
     if (r.m === "hoffmann") why.push("Hoffmann’s Better 1-Cup: five even pulses keep a small brew hot and evenly extracted.");
     if (r.m === "hoffmannU") why.push("Hoffmann’s Ultimate V60: 2× bloom, two main pours and a swirl for a flat bed at bigger doses.");
+    if (r.m === "winton") why.push("Matt Winton’s Five-Pour, from his 2021 World Brewers Cup win: five equal pours, each when the last has nearly drained, poured from a little height so the water stirs the bed. No spoon, no swirl. He starts at 93°C and lets the kettle cool towards 88°C for the later pours; leave yours off the base.");
+    if (r.m === "hedrick") why.push("Lance Hedrick’s double bloom: two blooms of 3× the coffee 30 s apart, so every ground is wet before the main water, then two big, fast pours at 1:00 and 1:30. Hot water, a quick drawdown.");
+    if (r.m === "wendelboe") why.push("Tim Wendelboe’s AeroPress, as brewed in his Oslo café: all the water at once, stir 3 times back to front, plunger on, a one-minute steep, stir 3 more times and press. Finer and shorter than Hoffmann’s.");
     if (r.m === "onyx") why.push("Onyx Coffee Lab’s V60: 2× bloom, a heavy centre pour at 0:30 that sets the drain, then three spiral pours 20 s apart. Finer than most V60 recipes, hot, done by 2:30.");
     if (r.m === "cafec") why.push("CAFEC’s Osmotic Flow, from the Japanese filter maker: wet the coffee just enough for it to dome, then a thin, low stream into the middle only. The outer coffee stays dry-ish and works as a filter; nothing is stirred. Cooler by roast: 92°C light, 90 medium, 83 dark.");
     if (r.m === "rao") why.push("Rao’s bloom & spin: 3× bloom, one continuous pour, a spin. Little late agitation, very high clarity.");
-    if (r.goal === "tea") why.push(`Tea-like, beta: brewed like a good oolong. 1:${r.ratio}, a coarse grind (${cl(r.clickParts.tea)} past the usual), ${r.temp}°C and nothing stirred or swirled. Less coffee in more water at a gentle extraction: a thin, clear cup with every note there but quiet. Experimental: if it tastes empty or sour, go ${cl(2)} finer; if it’s drying, go ${cl(2)} coarser.`);
+    if (r.goal === "tea") why.push(`Tea-like, Beta: brewed the way a tea master treats a fine oolong. 1:${r.ratio}, a coarse grind, hot water (${r.temp}°C) and water only in the centre, in small pulses. Nothing is ever stirred, so fines stay put and the cup stays clear; the long, gentle contact still pulls out sweetness and the quieter notes, so it’s thin without being hollow. Made for clean coffees roasted light to medium: washed, honey and natural. If it tastes hollow or sour, go ${cl(2)} finer; if it’s drying, go ${cl(2)} coarser.`);
     if (r.m === "fourSix") why.push(r.goal === "light" || r.goal === "tea" ? "Kasuya’s 4:6: the first 40% sets sweetness vs acidity, the last 60% sets strength. Two big pours keep the body light." : "Kasuya’s 4:6 with three strength pours: rounder and sweeter.");
     if (r.m === "ten") why.push("Kasuya’s 10-Pour: coarse grind, small pours every 15 s. Heavy and syrupy.");
     if (BLURB[r.m]) why.push(BLURB[r.m]);
@@ -3549,13 +3625,13 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
     renderShelfV(); renderShelf();
   }
   const optsMain = () => {
-    const b = brewerOf(state), B = BREWERS[b];
+    const b = brewerOf(state), B = BREWERS[b], teaOn = state.goal === "tea" && teaAvail(b);
     return [
-      B.kind !== "steps" && { key: "goal", label: "Cup", items: [["light", "Light & sweet"], ["balanced", "Balanced"], ["syrupy", "Rich & syrupy"], ...(TEA_OK.has(b) ? [["tea", "Tea-like"]] : [])] },
+      B.kind !== "steps" && { key: "goal", label: "Cup", items: [["light", "Light & sweet"], ["balanced", "Balanced"], ["syrupy", "Rich & syrupy"], ...(teaAvail(b) ? [["tea", "Tea-like"]] : [])] },
       ICED_OK.has(b) && { key: "serve", label: "Serve", items: [["hot", "Hot"], ["iced", "Iced"]] },
       { key: "dose", label: b === "moka" ? "Pot" : "Grams", items: B.doses },
-      b === "aero" && { key: "aeroWay", label: "Method", items: [["standard", "Standard"], ["inverted", "Inverted"]] },
-      b === "v60" && { key: "method", label: "Method", items: [["best", "Best for this coffee"], ["hoffmann", "Hoffmann"], ["fourSix", "Kasuya 4:6"], ...(Number(state.dose) >= 25 ? [] : [["ten", "Kasuya 10-Pour"]]), ["rao", "Rao"], ["onyx", "Onyx"], ["cafec", "CAFEC Osmotic Flow"]] },   // ten 15 s pours don't scale to a double batch
+      b === "aero" && !teaOn && { key: "aeroWay", label: "Method", items: [["standard", "Hoffmann"], ["inverted", "Hoffmann inverted"], ["wendelboe", "Wendelboe"]] },
+      b === "v60" && !teaOn && { key: "method", label: "Method", items: [["best", "Best for this coffee"], ["hoffmann", "Hoffmann"], ["fourSix", "Kasuya 4:6"], ...(Number(state.dose) >= 25 ? [] : [["ten", "Kasuya 10-Pour"]]), ["rao", "Rao"], ["onyx", "Onyx"], ["cafec", "CAFEC Osmotic Flow"], ["winton", "Winton Five-Pour"], ["hedrick", "Hedrick"]] },   // ten 15 s pours don't scale to a double batch
     ].filter(Boolean);
   };
   const OPTS_MORE = [
@@ -3563,8 +3639,11 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
     { key: "roast", label: "Roast", items: [["vlight", "Very light"], ["light", "Light"], ["medium", "Medium"], ["mdark", "Medium-dark"], ["dark", "Dark"], ["unsure", "Unknown"]] },
   ];
   // process and roast chips: your pick, else what the bag says, else Unknown. Re-marked on every render, so typing a coffee picks them
+  // Tea-like is offered only for brewers with paper and coffees it suits (see teaFits); otherwise the cup falls back to Light & sweet
+  const teaAvail = (b) => TEA_OK.has(b) && teaFits({ roast: pickedOf("roast"), process: pickedOf("process") });
   const pickedOf = (k) => state[k] !== "auto" ? state[k] : (resolved(state)[k] || "unsure");
-  function markPicked() { ["process", "roast"].forEach((k) => { const v = pickedOf(k);
+  function markPicked() {
+    if (state.goal === "tea" && !teaAvail(brewerOf(state))) { state.goal = "light"; saveState(); renderAllOpts(); } ["process", "roast"].forEach((k) => { const v = pickedOf(k);
     document.querySelectorAll(`[id^="o-${k}-"]`).forEach((b) => { if (!b.classList.contains("rp-go")) b.setAttribute("aria-pressed", String(b.id === `o-${k}-${v}`)); }); }); }
   function renderOpts(boxId, list) {
     const box = $(boxId); box.innerHTML = "";
@@ -3577,7 +3656,7 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
         // process and roast: what the bag says is picked for you; nothing stated, Unknown
         b.setAttribute("aria-pressed", String((o.key === "brewer" ? brewerOf(state) : o.key === "process" || o.key === "roast" ? pickedOf(o.key) : state[o.key]) === v));
         b.onclick = () => { if (o.on) o.on(v); else state[o.key] = v; if (o.key === "roast") state.roastPhoto = null; saveState(); renderAllOpts(); render(); };
-        if (o.key === "goal" && v === "tea") b.insertAdjacentHTML("beforeend", `<span class="beta">beta</span>`);
+        if (o.key === "goal" && v === "tea") b.insertAdjacentHTML("beforeend", `<span class="beta">Beta</span>`);
         if (o.key === "roast" && ROAST_SW[v]) b.insertAdjacentHTML("afterbegin", `<i class="bean-dot" style="--c:${ROAST_SW[v]}"></i>`);
         g.appendChild(b);
       });
@@ -3601,16 +3680,18 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
   // so the filter bar changing height halfway through only bends the path and the landing stays exact
   function jumpTo(el, center) {
     if (!el) return; const gen = ++jumpGen, html = document.documentElement;
-    // the bar takes the shape it will have on arrival, but only while it's off screen, and the page is held still as it changes size
+    // the coffee filter bar keeps one shape for the whole jump, so nothing changes size on the way and the target stays put.
+    // Passing through the list it stays stuck under the top bar with its dropdowns, as when you scroll; it opens up again on landing
     const tools = document.querySelector(".shelf-tools"), list = $("shelf");
-    let fold = null;
-    const refold = () => { if (fold === null || !tools) return; const tb = tools.getBoundingClientRect();
-      if (tools.classList.contains("compact") === fold) { fold = null; return; }
-      if (tb.bottom > 0 && tb.top < innerHeight) return;            // on screen: wait
-      const h0 = tools.offsetHeight; tools.classList.toggle("compact", fold); fold = null;
-      if (tb.bottom <= 0) { const dh = tools.offsetHeight - h0; if (dh) { const sb = html.style.scrollBehavior; html.style.scrollBehavior = "auto"; window.scrollTo(0, scrollY + dh); html.style.scrollBehavior = sb; } } };
-    if (tools && list) { html.classList.add("jumping"); tools.classList.remove("stuck");
-      fold = el.getBoundingClientRect().top > list.getBoundingClientRect().bottom; refold(); }   // landing below the list: folded
+    if (tools && list) {
+      html.classList.add("jumping");
+      const lt = list.getBoundingClientRect().top, fold = lt < 0 || el.getBoundingClientRect().top > list.getBoundingClientRect().bottom;
+      if (tools.classList.contains("compact") !== fold) {
+        tools.classList.toggle("compact", fold);
+        const d = list.getBoundingClientRect().top - lt;   // the list moved: if that happened above the screen, hold the page still
+        if (d && lt < 0) { const sb = html.style.scrollBehavior; html.style.scrollBehavior = "auto"; window.scrollTo(0, scrollY + d); html.style.scrollBehavior = sb; }
+      }
+    }
     const aim = () => { const top = document.querySelector(".top"), h = top ? top.getBoundingClientRect().height : 49, r = el.getBoundingClientRect();
       return Math.max(0, Math.min(html.scrollHeight - innerHeight, Math.round(center ? r.top + scrollY - (innerHeight - r.height) / 2 : r.top + scrollY - (h - 3)))); };
     const put = (y) => { const sb = html.style.scrollBehavior; html.style.scrollBehavior = "auto"; window.scrollTo(0, y); html.style.scrollBehavior = sb; };
@@ -3628,8 +3709,9 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
   function goRecipe() { const t = !$("recipe").hidden ? $("recipe") : !$("need").hidden ? $("need") : $("coffee"); jumpTo(t, t.id === "need"); }
   function build(scroll) {
     const t = $("coffeeIn").value.trim();
-    if (t !== state.text) { beanCard = null; state.bag = null; state.process = "auto"; state.roast = "auto"; state.roastPhoto = null; state.listProc = null; renderAllOpts(); }   // new coffee: forget old answers
-    state.text = t; saveState(); render(); markPicked();
+    const fresh = t !== state.text;
+    if (fresh) { beanCard = null; state.bag = null; state.process = "auto"; state.roast = "auto"; state.roastPhoto = null; state.listProc = null; }   // new coffee: forget old answers
+    state.text = t; if (fresh) renderAllOpts(); saveState(); render(); markPicked();
     if (scroll !== false) goRecipe();
   }
 
@@ -3784,8 +3866,8 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
     const B = BREWERS[brewerOf(state)];
     if (B.doses.some(([v]) => v === Number(o.d))) state.dose = Number(o.d);
     if (GOAL[o.g]) state.goal = o.g;
-    if (["best", "hoffmann", "fourSix", "ten", "rao", "onyx", "cafec"].includes(o.me)) state.method = o.me;
-    if (["standard", "inverted"].includes(o.aw)) state.aeroWay = o.aw;
+    if (["best", "hoffmann", "fourSix", "ten", "rao", "onyx", "cafec", "winton", "hedrick"].includes(o.me)) state.method = o.me;
+    if (["standard", "inverted", "wendelboe"].includes(o.aw)) state.aeroWay = o.aw;
     state.process = PROCESS[o.p] || o.p === "auto" ? o.p : "auto";
     state.roast = ROAST[o.ro] || o.ro === "auto" ? o.ro : "auto";
     state.roastPhoto = null; state.listProc = null;
@@ -4409,7 +4491,7 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
       const day = isoDmy(shelfDate(r)).slice(0, 5);
       return `${head}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
         <div class="l">
-          <span class="who">${!isSp && r.just_in ? '<span class="ji">Just in</span>' : ""}${esc(r.roaster)}${r.roaster_city ? `, ${esc(r.roaster_city)}` : ""}<span class="day">${day}</span></span>
+          <span class="who">${!isSp && r.just_in ? '<span class="ji">Just in</span>' : ""}<span class="rn">${esc(r.roaster)}</span>${r.roaster_city ? ` ${esc(r.roaster_city)}` : ""}<span class="day">${day}</span></span>
           <span class="name">${esc(calm(r.name))}</span>
           <p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p>
         </div>
@@ -5030,12 +5112,15 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
   { const setTop = () => { const t = document.querySelector(".top"); if (t) document.documentElement.style.setProperty("--top-h", t.getBoundingClientRect().height + "px"); };
     setTop(); addEventListener("resize", setTop);
     const tools = document.querySelector(".shelf-tools");
-    const syncShelfBar = window.syncShelfBar = () => { if (document.documentElement.classList.contains("jumping")) return;
+    // a couple of pixels of give: iPhone parks a sticky bar a fraction of a pixel off, which used to flip it back to the pills
+    const syncShelfBar = window.syncShelfBar = () => {
       const t = document.querySelector(".top"), h = t ? t.getBoundingClientRect().height : 0, r = tools.getBoundingClientRect();
-      const stuck = r.top <= h + 0.5 && $("shelf").getBoundingClientRect().bottom > h + Math.max(r.height, tools._open || 0);
+      const at = r.top <= h + 2;
+      const stuck = at && $("shelf").getBoundingClientRect().bottom > h + Math.max(r.height, tools._open || 0);
       tools.classList.toggle("stuck", stuck);
-      const compact = r.top <= h + 0.5; if (!compact) tools._open = r.height;
-      tools.classList.toggle("compact", compact); };
+      if (document.documentElement.classList.contains("jumping")) return;   // mid-jump: the bar keeps its shape (see jumpTo)
+      if (!at) tools._open = r.height;
+      tools.classList.toggle("compact", at); };
     addEventListener("scroll", syncShelfBar, { passive: true }); }
   const loadMore = () => { shelfN += 10; renderShelf(); };
   $("shelfMore").onclick = loadMore;
@@ -5115,16 +5200,10 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
   $("ddIn").addEventListener("input", updateSuggest);
   $("saveLog").onclick = saveLog;
   // bottom: light the words one by one as the paragraph scrolls up through the screen
-  // "one brew away": the brew flips to another thing a brewer asks of you every 3 s. The paragraph keeps the height of its
-  // tallest version, so nothing under it moves when a longer word wraps a line. Reduced motion: one word, no flip
+  // "one brew away": each visit, the brew is one of the things a brewer asks of you. No animation.
   (function verb() { const box = $("verb"); if (!box) return;
-    const V = ["brew", "pour", "bloom", "swirl", "steep", "stir", "press", "plunge"], p = $("litext");
-    let i = Math.floor(Math.random() * V.length); box.textContent = V[i];
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const fit = () => { const cur = box.textContent; p.style.minHeight = ""; let h = 0; V.forEach((w) => { box.textContent = w; h = Math.max(h, p.offsetHeight); }); box.textContent = cur; p.style.minHeight = h + "px"; };
-    fit(); addEventListener("resize", fit); if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
-    setInterval(() => { if (document.hidden) return; i = (i + 1 + Math.floor(Math.random() * (V.length - 1))) % V.length;
-      box.classList.add("flip"); setTimeout(() => { box.textContent = V[i]; box.classList.remove("flip"); }, 140); }, 3000); })();
+    const V = ["brew", "pour", "bloom", "swirl", "steep", "stir", "press", "plunge"];
+    box.textContent = V[Math.floor(Math.random() * V.length)]; })();
   (function outro() {
     const words = [...document.querySelectorAll("#litext > span:not(.outro-end)")], end = document.querySelector(".outro-end");
     if (!words.length) return;
@@ -5208,7 +5287,7 @@ html.jumping .shelf-tools{position:relative!important}   /* a jump glides past t
     timer = setTimeout(() => { i = -1; tick(); }, 3000);
     new IntersectionObserver((es) => { visible = es[0].isIntersecting; }).observe($("stage"));
   })();
-  document.querySelectorAll("[data-jump]").forEach((b) => b.onclick = () => b.dataset.jump === "recipe" ? goRecipe() : jumpTo($(b.dataset.jump)));
+  document.querySelectorAll("[data-jump]").forEach((b) => b.onclick = () => b.dataset.pick ? jumpTo($("shelves")) : b.dataset.jump === "recipe" ? goRecipe() : jumpTo($(b.dataset.jump)));
 
   const shared = readShared();
   $("coffeeIn").value = state.text;
