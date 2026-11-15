@@ -23,6 +23,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 ROASTERS = ROOT / "data" / "roasters.json"
 OUT = ROOT / "data" / "releases.json"
+SEEN = ROOT / "data" / "seen.json"   # when each coffee page was first seen, including ones the list leaves out as duplicates
 UA = "V60BrewCard/1.0 (+https://v60.thisisfed.xyz; daily filter-coffee list)"
 NEW_DAYS = 21
 MAX_ITEMS = 4000   # a safety cap only; the list is ~1,100 coffees
@@ -1703,10 +1704,22 @@ def main():
             for x in prev.get("releases", []):
                 old[x["url"]] = x
             for st in prev.get("roasters", []):
-                if st.get("platform"):
+                if st.get("first_seen") or st.get("platform"):   # a roaster whose shop was down for one scan keeps its date
                     first_seen[st["name"]] = st.get("first_seen") or prev.get("updated")
         except Exception:  # noqa: BLE001
             pass
+
+    # The published list drops duplicates (a coffee sold under two pages, two sizes), so it can't be the only memory of when
+    # a page was first seen: the dropped page came back as "new today" at every scan and took the listing's date with it.
+    seen_at = {}
+    if SEEN.exists():
+        try:
+            seen_at = json.loads(SEEN.read_text())
+        except Exception:  # noqa: BLE001
+            seen_at = {}
+    for u, x in old.items():
+        if x.get("found") and x["found"] < seen_at.get(u, "9"):
+            seen_at[u] = x["found"]
 
     found, status = [], []
     prev_status = []
@@ -1727,7 +1740,7 @@ def main():
             for it in items:
                 rec = classify(it, r)
                 if rec:
-                    rec["found"] = old.get(rec["url"], {}).get("found", today)
+                    rec["found"] = seen_at.get(rec["url"]) or old.get(rec["url"], {}).get("found", today)
                     recs.append(rec)
             add_page_details(recs, r, old)
         if r.get("roast"):   # a roaster that roasts every filter coffee the same way says so once in roasters.json
@@ -1769,6 +1782,21 @@ def main():
     found = [x for x in found if still_beans(x)]
     for x in found:   # entries carried over from older scans get today's name clean-up too
         x["name"] = tidy_name(x["name"], x["roaster"]) or x["name"]
+
+    # remember every page seen, and give duplicates of one coffee (same roaster, name, process, variety) the earliest date
+    # any of them was seen: whichever page ends up listed, the coffee has been around since then
+    same = lambda x: (x["roaster"], x["name"].lower(), (x.get("process") or "").lower(), (x.get("variety") or "").lower())
+    earliest = {}
+    for x in found:
+        if x.get("found"):   # looked up again here, by the address the record ends up with (some change while being read)
+            x["found"] = seen_at[x["url"]] = min(x["found"], seen_at.get(x["url"], x["found"]))
+            earliest[same(x)] = min(x["found"], earliest.get(same(x), x["found"]))
+    for x in found:
+        if x.get("found"):
+            x["found"] = earliest[same(x)]
+            seen_at[x["url"]] = x["found"]
+    old_cut = (datetime.now(timezone.utc) - timedelta(days=400)).date().isoformat()
+    SEEN.write_text(json.dumps({u: d for u, d in sorted(seen_at.items()) if d >= old_cut}, ensure_ascii=False, indent=0) + "\n")
 
     cutoff = (datetime.now(timezone.utc) - timedelta(days=NEW_DAYS)).date().isoformat()
     for x in found:
