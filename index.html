@@ -1851,7 +1851,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
     <div class="fcol">
     <details class="foot-x"><summary class="foot-note refs-h">Methods</summary>
     <ul class="refs meth">
-      <li><span class="rt">V60:</span> James Hoffmann’s Better 1-Cup and Ultimate V60, Tetsu Kasuya’s 4:6 and 10-Pour, Scott Rao’s bloom &amp; spin.</li>
+      <li><span class="rt">V60:</span> James Hoffmann’s Better 1-Cup and Ultimate V60, Tetsu Kasuya’s 4:6 and 10-Pour, Scott Rao’s bloom &amp; spin, Onyx Coffee Lab’s V60, CAFEC’s Osmotic Flow.</li>
       <li><span class="rt">Kalita Wave:</span> George Howell’s 155 guide.</li>
       <li><span class="rt">Melitta:</span> Revelator Coffee’s Melitta pour over guide.</li>
       <li><span class="rt">Origami:</span> Carlos Medina’s 2023 World Brewers Cup recipe.</li>
@@ -1894,8 +1894,10 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
       <li>Kasuya, T. <span class="rt">Hybrid Method for the Hario Switch</span>. Honest Coffee Guide. <a href="https://honestcoffeeguide.com/brew-recipes/tetsu-kasuya-hybrid-method/" target="_blank" rel="noopener">honestcoffeeguide.com</a></li>
       <li>Kasuya, T. <span class="rt">The 4:6 method</span>. Philocoffea. <a href="https://en.philocoffea.com/blogs/blog/coffee-brewing-method" target="_blank" rel="noopener">philocoffea.com</a></li>
       <li>Medina, C. (2023). <span class="rt">World Brewers Cup champion recipe, Origami</span>. Slow Pour Supply. <a href="https://slowpoursupply.co/pages/recipe-recap-carlos-medina-s-representing-chile-world-brewers-cup-champion-recipe" target="_blank" rel="noopener">slowpoursupply.co</a></li>
+      <li>Onyx Coffee Lab. <span class="rt">Help me brew: V60</span>. <a href="https://onyxcoffeelab.com/pages/help-me-brew" target="_blank" rel="noopener">onyxcoffeelab.com</a></li>
       <li>Rao, S. <span class="rt">V60 recipe, interview with Hario</span>. <a href="https://www.hario.co.uk/blogs/hario-ambassadors/hario-v60-recipe-interview-with-hario-ambassador-scott-rao" target="_blank" rel="noopener">hario.co.uk</a></li>
       <li>Revelator Coffee. <span class="rt">Melitta pour over</span>. <a href="https://revelatorcoffee.com/blogs/recipes/melitta-pour-over-adjust-to-taste-series" target="_blank" rel="noopener">revelatorcoffee.com</a></li>
+      <li>Sanyo Sangyo (CAFEC). <span class="rt">Osmotic Flow brewing</span>. <a href="https://docs.google.com/presentation/d/1oreatQ-WexYioGXuNebA00bAmGm5LqlW/htmlpresent" target="_blank" rel="noopener">CAFEC presentation</a></li>
     </ol>
     </details>
     <p class="foot-note refs-h foot-credits">Credits</p>
@@ -2126,6 +2128,8 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
     hoffmannU: { c: 23, pub: "22–25 at 18–20 g", note: "Hoffmann gives medium-fine; C40 users publish 22–25 at 18–20 g, and he has quoted 25–30 for the full 30 g brew.", url: "https://www.youtube.com/watch?v=AI4ynXzkSQo", src: "The Ultimate V60" },
     fourSix:   { c: 28, pub: "30 at 20 g", note: "Kasuya’s 4:6 is coarse; 30 clicks at 20 g is the widely cited C40 setting, so 28 at 15 g.", url: "https://en.philocoffea.com/blogs/blog/coffee-brewing-method", src: "Philocoffea, 4:6" },
     ten:       { c: 40, pub: "40–45", note: "The 10-Pour runs very coarse so ten small pours don’t stall; C40 users publish 40–45.", url: "https://en.philocoffea.com/blogs/blog/coffee-brewing-method", src: "Philocoffea" },
+    onyx:      { c: 19, pub: "550 µm, about 18–19", est: true, note: "Onyx gives 550 µm, finer than most V60 recipes: the heavy centre pour slows the drain so a finer grind doesn’t stall. A C40 click is about 30 µm, so about 18–19 clicks; 19 at 15 g. Our conversion.", url: "https://onyxcoffeelab.com/pages/help-me-brew", src: "Onyx Coffee Lab, Help Me Brew" },
+    cafec:     { c: 26, pub: "none published", est: true, note: "CAFEC says medium to coarse. The thin centre pour keeps the water in the middle of the bed, so it starts a few clicks coarser than Hoffmann’s 1-Cup. Our estimate.", url: "https://docs.google.com/presentation/d/1oreatQ-WexYioGXuNebA00bAmGm5LqlW/htmlpresent", src: "CAFEC (Sanyo Sangyo), Osmotic Flow" },
     rao:       { c: 24, pub: "none published", est: true, note: "Rao publishes no C40 number, only medium-fine for a ~3:30 drawdown. One long pour drains slower than pulses, so we start a click coarser than Hoffmann’s Ultimate. Our estimate.", url: "https://www.hario.co.uk/blogs/hario-ambassadors/hario-v60-recipe-interview-with-hario-ambassador-scott-rao", src: "Hario UK interview" },
   };
   const METHOD = {
@@ -2134,6 +2138,8 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
     fourSix:   "Kasuya’s 4:6",
     ten:       "Kasuya’s 10-Pour",
     rao:       "Rao’s Bloom & Spin",
+    onyx:      "Onyx Coffee Lab’s V60",
+    cafec:     "CAFEC Osmotic Flow",
   };
   const GOAL = { light: "Light & sweet", balanced: "Balanced", syrupy: "Rich & syrupy", tea: "Tea-like" };
   // Tea-like (beta): brewed the way you'd brew a good oolong. Less coffee in more water, a coarser grind, a touch cooler,
@@ -2201,7 +2207,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
     const dose = Number(st.dose);
     if (st.method === "hoffmann") return dose >= 18 ? "hoffmannU" : "hoffmann";
     if (st.method === "ten" && dose >= 25) { st.method = "best"; }   // ten 15 s pours don't scale to a double batch
-    if (["fourSix", "ten", "rao"].includes(st.method)) return st.method;
+    if (["fourSix", "ten", "rao", "onyx", "cafec"].includes(st.method)) return st.method;
     if (st.goal === "tea") return "fourSix";                         // tea-like: the gentle, coarse 4:6, two big pours
     if (st.goal === "syrupy") return dose >= 25 ? "hoffmannU" : "ten";
     if (agit <= 1 || c.roast === "mdark" || c.roast === "dark") return "fourSix";   // low agitation: few gentle pours
@@ -2249,7 +2255,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
     if (c.roast === "mdark") agit = Math.min(agit, 1);
     if (c.roast === "dark") agit = 0;                                // dark roasts extract fast: no stirring at all
     if (c.delicate) agit = Math.min(agit, 2);                        // Geisha & co: keep the florals, don't thrash the bed
-    if (tea) agit = 0;                                               // tea-like: nothing stirred, nothing swirled
+    if (tea || st.method === "cafec") agit = 0;                      // tea-like and Osmotic Flow: nothing stirred, nothing swirled
     const brewer = brewerOf(st);
     const m = brewer === "v60" ? pickMethod(st, c, agit) : brewer;
 
@@ -2264,10 +2270,11 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
     const pc = learn ? learn.d : { clicks: 0, temp: 0, ratio: 0 };
     if (brewer !== "v60") return engineOther(st, c, agit, brewer, key, learn, pc, opts);
 
-    let ratio = tea ? (m === "ten" ? 18 : TEA.ratio) : m === "ten" ? (goal === "syrupy" ? 15 : 16)
+    let ratio = tea ? (m === "ten" ? 18 : TEA.ratio) : m === "cafec" ? { light: 15, balanced: 13.5, syrupy: 12.5 }[goal] ?? 15
+      : m === "onyx" ? { light: 16, balanced: 15, syrupy: 14.5 }[goal] ?? 16 : m === "ten" ? (goal === "syrupy" ? 15 : 16)
       : goal === "light" ? 17 : goal === "balanced" ? (m.startsWith("hoffmann") ? 16.7 : 16.5) : 15.5;
     const baseRatio = ratio, ratioPre = ratio + (pc.ratio || 0);
-    ratio = clamp(Math.round((ratio + (pc.ratio || 0)) * 10) / 10, 14, tea ? TEA.max : 18.5);
+    ratio = clamp(Math.round((ratio + (pc.ratio || 0)) * 10) / 10, m === "cafec" ? 12 : 14, tea ? TEA.max : 18.5);   // CAFEC's own cup is about 1:12.5
     const water = Math.round(dose * ratio);
 
     // grind = method base at 15 g + dose + roast + process, then your log and your C40 zero (see BASE)
@@ -2283,13 +2290,15 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
 
     // Hoffmann: freshly boiled for lighter roasts. Kasuya (Philocoffea): about 93°C light, 88°C medium, 83°C dark.
     const KASUYA_T = { vlight: 94, light: 93, medium: 88, mdark: 85, dark: 83, unsure: 90 };
-    let temp = (m === "fourSix" || m === "ten" ? KASUYA_T[c.roast] + (m === "ten" ? 1 : 0) : ROAST[c.roast].T + ({ hoffmann: 5, hoffmannU: 5, rao: 2 }[m])) + PROCESS[c.process].dT;
+    // CAFEC: 92°C light, 90 medium, 83 dark (Sanyo Sangyo). Onyx: 204°F, about 96
+    const CAFEC_T = { vlight: 93, light: 92, medium: 90, mdark: 87, dark: 83, unsure: 89 };
+    let temp = (m === "fourSix" || m === "ten" ? KASUYA_T[c.roast] + (m === "ten" ? 1 : 0) : m === "cafec" ? CAFEC_T[c.roast] : ROAST[c.roast].T + ({ hoffmann: 5, hoffmannU: 5, rao: 2, onyx: 2 }[m])) + PROCESS[c.process].dT;
     if (c.delicate) temp += 1;
     if (agit <= 1) temp = Math.min(temp, 95);                      // ferment-forward lots go boozy when pushed
     if (T_CAP[c.process]) temp = Math.min(temp, T_CAP[c.process]);
     if (T_CAP_ROAST[c.roast]) temp = Math.min(temp, T_CAP_ROAST[c.roast]);
-    if (c.roast === "vlight" && agit >= 2) temp = Math.max(temp, 96); // dense Nordic roasts under-extract below this
-    if (tea && m !== "fourSix" && m !== "ten") temp += TEA.temp;   // Kasuya's temperatures already run cool
+    if (c.roast === "vlight" && agit >= 2 && m !== "cafec") temp = Math.max(temp, 96); // dense Nordic roasts under-extract below this
+    if (tea && m !== "fourSix" && m !== "ten" && m !== "cafec") temp += TEA.temp;   // Kasuya's temperatures already run cool
     const baseTemp = clamp(temp, 82, 100);
     temp = clamp(temp + (pc.temp || 0), 82, 100);
 
@@ -2313,6 +2322,19 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
       add(45, water * 0.6, "Steady pour, done by 1:15", 30);
       add(75, water, agit >= 3 ? "Done by 1:45, stir once each way, swirl" : "Done by 1:45, gentle, no stir", 30);
       lo = 180; hi = 210;
+    } else if (m === "onyx") {   // Onyx: 2× bloom, a heavy centre pour at 0:30, then spirals every 20 s, done by 2:30
+      add(0, dose * 2, bloomNote, 10);
+      add(30, water * 0.4, "Heavy pour in the centre: it sets the pace of the drain", 12);
+      add(50, water * 0.6, "Spiral pour", 10);
+      add(70, water * 0.8, "Spiral pour", 10);
+      add(90, water, agit >= 2 ? "Last spiral pour, then one gentle swirl" : "Last spiral pour, let it drain", 10);
+      lo = 145; hi = 165;
+    } else if (m === "cafec") {  // CAFEC Osmotic Flow: wet it just enough, let it dome, then a thin, low stream in the middle only
+      add(0, dose * 1.5, "Bloom: a slow circle from the centre, just enough to wet it. Let it dome", 10);
+      add(30, water * 0.4, "Once it cracks: a thin, low stream in the centre only. Never the edge, no swirl", 40);
+      add(80, water * 0.7, "Same thin stream, small circles in the middle", 35);
+      add(125, water, "Small circles to the total, then let it drain. No swirl", 35);
+      lo = 195; hi = 225;
     } else if (m === "rao") {
       add(0, dose * 3, bloomNote, 12);
       add(45, water, agit >= 3 ? "One steady pour (~60 s), then spin" : "One slow pour (~60 s), gentle spin", 60);
@@ -2336,7 +2358,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
 
     // strength estimate: beverage = water − paper/grounds retention (~2.1 × dose)
     const bev = water - dose * 2.1;
-    const ey = { hoffmann: [20, 22], hoffmannU: [20, 22], rao: [20.5, 22.5], fourSix: [19, 21], ten: [20, 22] }[m].map((x) => x - (agit <= 1 ? 0.5 : 0));
+    const ey = { hoffmann: [20, 22], hoffmannU: [20, 22], rao: [20.5, 22.5], fourSix: [19, 21], ten: [20, 22], onyx: [20, 22], cafec: [19, 21] }[m].map((x) => x - (agit <= 1 ? 0.5 : 0));
     const tds = ey.map((e) => (e / 100) * dose / bev * 100);
     const mid = (tds[0] + tds[1]) / 2;
     const body = mid < 1.25 ? "tea-like" : mid < 1.38 ? "light and clear" : mid < 1.5 ? "classic filter" : "rich";
@@ -2532,6 +2554,8 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
     hoffmann: "Pulsed pours push extraction: acidity and florals up front, clean finish.",
     hoffmannU: "Even, high extraction: clarity with a little more body.",
     rao: "Highest clarity here: crisp top notes, tea-like texture.",
+    onyx: "A heavy centre pour and a finer grind: bright and sweet, high extraction, done quickly.",
+    cafec: "Water only in the middle, nothing stirred: very clean and soft, aroma and sweetness first.",
     fourSix: "Few, gentle pours: aromatics first, light body, sweetness without ferment.",
     ten: "Many small pours, coarse grind: heavy, syrupy body.",
     kalita: "Flat bed, even pulses: sweet and balanced, a little more body than a V60.",
@@ -2554,6 +2578,8 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
   const CUP = {
     hoffmann:  { body: 2, clar: 5, acid: 1, sweet: 0, how: "A cone with one big hole drains fast and the pulsed pours keep the bed moving, so the cup separates: top notes first, acidity articulated, each flavour distinct.", tex: "slick and clean, the paper takes the oils and most fines", fin: "short to medium, clean and slightly dry" },
     hoffmannU: { body: 3, clar: 4, acid: 0, sweet: 1, how: "A bigger dose and a deep bed extract higher and more evenly than the 1-Cup: the same clarity, with a fuller middle and more sweetness behind the acidity.", tex: "round and clean", fin: "medium and sweet" },
+    onyx:      { body: 3, clar: 4, acid: 1, sweet: 1, how: "A heavy centre pour sets a steady drain, so it grinds finer than most V60 recipes and still finishes by 2:30: a high, even extraction, bright and sweet at once.", tex: "juicy and clean", fin: "medium and sweet" },
+    cafec:     { body: 3, clar: 5, acid: -1, sweet: 1, how: "Water goes only into the middle in a thin, low stream; the outer coffee stays as a filter wall and nothing is stirred. Soft and very clean: aroma and sweetness up front, harsh edges held back.", tex: "soft and clean", fin: "clean and sweet" },
     rao:       { body: 2, clar: 5, acid: 0, sweet: 1, how: "One continuous pour and a spin leave a flat, even bed with little channelling: a very even extraction, sweet for its clarity, nothing sticking out.", tex: "silky, tea-like", fin: "medium, clean and sweet" },
     fourSix:   { body: 2, clar: 4, acid: 0, sweet: 0, how: "The first 40% of the water sets the balance of acidity and sweetness, the last 60% the strength. Coarse and gentle: aromatics first, a lighter middle.", tex: "soft and delicate", fin: "short and clean" },
     ten:       { body: 4, clar: 3, acid: -1, sweet: 1, how: "Ten small pours through a very coarse grind keep contact long but gentle: sweetness and texture lead, acidity rounds off, top notes go quieter.", tex: "syrupy, still clean", fin: "long and sweet" },
@@ -3119,7 +3145,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
 
   // ---------- how the clicks were set ----------
   const signed = (n) => (n > 0 ? "+" : n < 0 ? "−" : "±") + Math.abs(n);
-  const METHOD_REF = { hoffmann: "Hoffmann 1-Cup", hoffmannU: "Hoffmann Ultimate", fourSix: "Kasuya 4:6", ten: "Kasuya 10-Pour", rao: "Rao bloom & spin",
+  const METHOD_REF = { hoffmann: "Hoffmann 1-Cup", hoffmannU: "Hoffmann Ultimate", fourSix: "Kasuya 4:6", ten: "Kasuya 10-Pour", rao: "Rao bloom & spin", onyx: "Onyx", cafec: "CAFEC Osmotic Flow",
     kalita: "Kalita Wave", melitta: "Melitta", chemex: "Chemex", origami: "Origami", switch: "Hario Switch", clever: "Clever Dripper", aero: "AeroPress", press: "French Press", cold: "Cold brew", moka: "Bialetti Moka Express", espresso: "Espresso" };
   function renderClicks(r) {
     const p = r.clickParts, B = BASE[r.m], c = r.c;
@@ -3165,6 +3191,8 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
     hoffmann:  { r: 16.7, txt: "Classic Hoffmann 1-Cup is 1:16.7 (15→250 g)" },
     hoffmannU: { r: 16.7, txt: "Classic Hoffmann Ultimate V60 is 1:16.7 (30→500 g)" },
     rao:       { r: 16,   txt: "Classic Rao bloom & spin is 1:16 (22→352 g)" },
+    onyx:      { r: 15,   txt: "Onyx’s V60 is 1:15 (20→300 g)" },
+    cafec:     { r: 12.5, txt: "CAFEC’s Osmotic Flow is about 1:12.5 (12 g for a 150 ml cup)" },
     fourSix:   { r: 15,   txt: "Classic Kasuya 4:6 is 1:15 (20→300 g)" },
     ten:       { r: 16,   txt: "Kasuya’s 10-Pour has no single published ratio; it starts here at 1:16" },
     kalita:    { r: 15,   txt: "George Howell’s Kalita 155 is about 1:15 (16–19→265 g)" },
@@ -3202,7 +3230,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
       return w;
     }
     const ferment = c.process === "anaerobic" || c.process === "cofer";
-    const busy = ["hoffmann", "hoffmannU", "rao", "ten"].includes(r.m);       // pulses, spins or many pours
+    const busy = ["hoffmann", "hoffmannU", "rao", "ten", "onyx"].includes(r.m);       // pulses, spins or many pours
     const dark = c.roast === "mdark" || c.roast === "dark";
     const pl = c.process === "cofer" ? "Co-ferment" : cap1(PROCESS[c.process].label);
     if (ferment && r.temp >= 94) w.push(`${pl} at ${r.temp}°C: likely boozy and harsh. Drop to ${c.process === "cofer" ? 91 : 92}°C.`);
@@ -3405,6 +3433,8 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
     const why = [];
     if (r.m === "hoffmann") why.push("Hoffmann’s Better 1-Cup: five even pulses keep a small brew hot and evenly extracted.");
     if (r.m === "hoffmannU") why.push("Hoffmann’s Ultimate V60: 2× bloom, two main pours and a swirl for a flat bed at bigger doses.");
+    if (r.m === "onyx") why.push("Onyx Coffee Lab’s V60: 2× bloom, a heavy centre pour at 0:30 that sets the drain, then three spiral pours 20 s apart. Finer than most V60 recipes, hot, done by 2:30.");
+    if (r.m === "cafec") why.push("CAFEC’s Osmotic Flow, from the Japanese filter maker: wet the coffee just enough for it to dome, then a thin, low stream into the middle only. The outer coffee stays dry-ish and works as a filter; nothing is stirred. Cooler by roast: 92°C light, 90 medium, 83 dark.");
     if (r.m === "rao") why.push("Rao’s bloom & spin: 3× bloom, one continuous pour, a spin. Little late agitation, very high clarity.");
     if (r.goal === "tea") why.push(`Tea-like, beta: brewed like a good oolong. 1:${r.ratio}, a coarse grind (${cl(r.clickParts.tea)} past the usual), ${r.temp}°C and nothing stirred or swirled. Less coffee in more water at a gentle extraction: a thin, clear cup with every note there but quiet. Experimental: if it tastes empty or sour, go ${cl(2)} finer; if it’s drying, go ${cl(2)} coarser.`);
     if (r.m === "fourSix") why.push(r.goal === "light" || r.goal === "tea" ? "Kasuya’s 4:6: the first 40% sets sweetness vs acidity, the last 60% sets strength. Two big pours keep the body light." : "Kasuya’s 4:6 with three strength pours: rounder and sweeter.");
@@ -3522,7 +3552,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
       ICED_OK.has(b) && { key: "serve", label: "Serve", items: [["hot", "Hot"], ["iced", "Iced"]] },
       { key: "dose", label: b === "moka" ? "Pot" : "Grams", items: B.doses },
       b === "aero" && { key: "aeroWay", label: "Method", items: [["standard", "Standard"], ["inverted", "Inverted"]] },
-      b === "v60" && { key: "method", label: "Method", items: [["best", "Best for this coffee"], ["hoffmann", "Hoffmann"], ["fourSix", "Kasuya 4:6"], ...(Number(state.dose) >= 25 ? [] : [["ten", "Kasuya 10-Pour"]]), ["rao", "Rao"]] },   // ten 15 s pours don't scale to a double batch
+      b === "v60" && { key: "method", label: "Method", items: [["best", "Best for this coffee"], ["hoffmann", "Hoffmann"], ["fourSix", "Kasuya 4:6"], ...(Number(state.dose) >= 25 ? [] : [["ten", "Kasuya 10-Pour"]]), ["rao", "Rao"], ["onyx", "Onyx"], ["cafec", "CAFEC Osmotic Flow"]] },   // ten 15 s pours don't scale to a double batch
     ].filter(Boolean);
   };
   const OPTS_MORE = [
@@ -3734,7 +3764,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
     const B = BREWERS[brewerOf(state)];
     if (B.doses.some(([v]) => v === Number(o.d))) state.dose = Number(o.d);
     if (GOAL[o.g]) state.goal = o.g;
-    if (["best", "hoffmann", "fourSix", "ten", "rao"].includes(o.me)) state.method = o.me;
+    if (["best", "hoffmann", "fourSix", "ten", "rao", "onyx", "cafec"].includes(o.me)) state.method = o.me;
     if (["standard", "inverted"].includes(o.aw)) state.aeroWay = o.aw;
     state.process = PROCESS[o.p] || o.p === "auto" ? o.p : "auto";
     state.roast = ROAST[o.ro] || o.ro === "auto" ? o.ro : "auto";
