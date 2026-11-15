@@ -3685,7 +3685,7 @@ footer .fcol > p + .foot-x{margin-top:14px}
     const tools = document.querySelector(".shelf-tools"), list = $("shelf");
     if (tools && list) {
       html.classList.add("jumping");
-      const lt = list.getBoundingClientRect().top, fold = lt < 0 || el.getBoundingClientRect().top > list.getBoundingClientRect().bottom;
+      const lt = list.getBoundingClientRect().top, fold = !!tools._always || lt < 0 || el.getBoundingClientRect().top > list.getBoundingClientRect().bottom;
       if (tools.classList.contains("compact") !== fold) {
         tools.classList.toggle("compact", fold);
         const d = list.getBoundingClientRect().top - lt;   // the list moved: if that happened above the screen, hold the page still
@@ -5120,7 +5120,13 @@ footer .fcol > p + .foot-x{margin-top:14px}
       tools.classList.toggle("stuck", stuck);
       if (document.documentElement.classList.contains("jumping")) return;   // mid-jump: the bar keeps its shape (see jumpTo)
       if (!at) tools._open = r.height;
-      tools.classList.toggle("compact", at); };
+      tools.classList.toggle("compact", at || tools._always); };
+    // on any screen where a row of pills wouldn't fit on one line, the menu is the dropdowns all the time
+    const checkWrap = () => { const was = tools.classList.contains("compact"); tools.classList.remove("compact");
+      tools._always = [...tools.querySelectorAll(".opt > .chips")].some((c) => { const k = c.children; return k.length > 1 && k[k.length - 1].offsetTop > k[0].offsetTop + 2; });
+      tools.classList.toggle("compact", was); syncShelfBar(); };
+    window.checkShelfWrap = checkWrap;
+    checkWrap(); addEventListener("resize", checkWrap); if (document.fonts && document.fonts.ready) document.fonts.ready.then(checkWrap);
     addEventListener("scroll", syncShelfBar, { passive: true }); }
   const loadMore = () => { shelfN += 10; renderShelf(); };
   $("shelfMore").onclick = loadMore;
