@@ -1715,6 +1715,8 @@ footer .fcol > p + .foot-x{margin-top:14px}
 .shelf .item > .r > .bag-add.in{background:var(--go)!important;color:var(--on-hl)!important}   /* Saved: the green */
 .go-big .num, .dock .num, .go-big > span, .dock .btn > span{font:inherit!important;opacity:1!important;letter-spacing:inherit}   /* Start brewing: one font in the pill */
 .bv-pill{height:var(--pill-h);display:inline-flex;align-items:center;padding:0 10px!important;font:500 var(--fs-s)/1 var(--sans)!important;box-sizing:border-box}   /* Ready / Pour 1 of 5: a normal pill */
+/* an unfolded menu row, and the grinder: the label sits level with the first line of pills */
+.shelf-tools.compact .opt.open > span, #millOpt.open > span{align-self:start;height:var(--pill-h);display:flex;align-items:center;padding-top:0!important}
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -4549,7 +4551,10 @@ footer .fcol > p + .foot-x{margin-top:14px}
     }
     return out;
   }
-  const SHELF_R = [["all", "Everywhere"], ["UK", "UK"], ["Europe", "Europe"], ["World", "Rest of world"]];
+  // the regions, then the countries most of the roasters come from (by roasters in data/roasters.json)
+  const SHELF_R = [["all", "Everywhere"], ["UK", "United Kingdom"], ["Europe", "Europe"], ["c:IT", "Italy"], ["c:ES", "Spain"], ["c:FR", "France"], ["c:DE", "Germany"],
+    ["c:NL", "Netherlands"], ["c:DK", "Denmark"], ["c:SE", "Sweden"], ["World", "Rest of world"], ["c:US", "United States"], ["c:CA", "Canada"], ["c:AU", "Australia"]];
+  const inRegion = (r) => shelfR === "all" || (shelfR.startsWith("c:") ? r.roaster_country === shelfR.slice(2) : market(r) === shelfR);
   const market = (r) => r.market || "UK";
   // the stuck filter bar shows each row as one long pill, a list like the grinder's: the choice in force, the rest inside
   // the folded menu: each row is one pill showing the current choice; a tap unfolds that row's own pills right there,
@@ -4598,7 +4603,7 @@ footer .fcol > p + .foot-x{margin-top:14px}
   const justInLabel = () => scanDay === todayIso() ? "Just in today" : `Just in, ${isoDmy(scanDay)}`;
   function renderShelf() {
     const q = $("shelfQ").value.trim().toLowerCase();
-    let list = shelf.filter((r) => (shelfR === "all" || market(r) === shelfR) && (shelfF === "all" || bucket(r.process) === shelfF));
+    let list = shelf.filter((r) => inRegion(r) && (shelfF === "all" || bucket(r.process) === shelfF));
     if (q) list = list.filter((r) => [r.roaster, r.roaster_city, r.name, r.origin, r.region, r.process, r.variety].join(" ").toLowerCase().includes(q));
     if (shelfV !== "all") list = list.filter(shelfFit());
     list = interleave(list);
@@ -4632,7 +4637,7 @@ footer .fcol > p + .foot-x{margin-top:14px}
         </div>
         <div class="r">
           <button class="btn" type="button" data-i="${i}">Brew</button>
-          <button type="button" class="pill bag-add${hasBag(r) ? " in" : ""}" data-b="${i}" aria-pressed="${hasBag(r)}" aria-label="${hasBag(r) ? "Saved in my bags" : "Save to my bags"}">${hasBag(r) ? "Saved" : "Save"}</button>
+          <button type="button" class="pill bag-add${hasBag(r) ? " in" : ""}" data-b="${i}" aria-pressed="${hasBag(r)}" aria-label="${hasBag(r) ? "In my bags" : "Save to my bags"}">${hasBag(r) ? "My bags" : "Save"}</button>
           ${r.url ? `<a class="pill buy-pill" href="${esc(r.url)}"${r.price ? ` data-price="${esc(r.price.replace(/^From\s+/i, ""))}"` : ""} target="_blank" rel="noopener" aria-label="Buy ${esc(r.name)} from ${esc(r.roaster)}${r.price ? ", " + esc(r.price) : ""}">${r.price ? esc(r.price.replace(/^From\s+/i, "")) : "Buy"}</a>` : ""}
         </div></article>`; }).join("") : `<p class="muted" style="padding:16px 0;margin:0">Nothing matches${shelfV !== "all" ? `. Try Everything under Made for, or` : "."} <a href="#" class="mail-me" data-s="Missing coffee">${shelfV !== "all" ? "email me" : "Email me"}</a> and I’ll add the roaster.</p>`;
     const left = list.length - Math.min(shelfN, list.length);
@@ -4643,7 +4648,7 @@ footer .fcol > p + .foot-x{margin-top:14px}
     $("shelf").querySelectorAll("button[data-b]").forEach((b) => b.onclick = () => { const r = shelf[+b.dataset.b];
       if (!hasBag(r) || b.dataset.armed) { toggleBag(r); renderShelf(); return; }
       b.dataset.armed = "1"; b.textContent = "Remove?"; b.classList.add("armed");
-      setTimeout(() => { if (b.isConnected && b.dataset.armed) { delete b.dataset.armed; b.textContent = "Saved"; b.classList.remove("armed"); } }, 3000); });
+      setTimeout(() => { if (b.isConnected && b.dataset.armed) { delete b.dataset.armed; b.textContent = "My bags"; b.classList.remove("armed"); } }, 3000); });
   }
 
 
