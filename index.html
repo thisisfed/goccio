@@ -1616,6 +1616,10 @@ footer .fcol + .fcol > .foot-x{margin-top:10px}
   .bv .bv-opts{grid-row:1!important;grid-column:2!important;align-self:start}
   .bv .bv-ctrls{grid-row:3!important;grid-column:2!important;align-self:end}
 }
+/* recipe: the brewer on one full-width line, as big as the figures (long names shrink to stay on the line) */
+.specs .spec.brewer{grid-column:1 / -1!important;order:0!important}
+.specs .spec.brewer b{white-space:nowrap;font-size:min(var(--fs-l), 8.6cqi)!important}
+@media (min-width:761px){ .specs .spec.brewer b{font-size:var(--fs-l)!important} }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -3248,6 +3252,7 @@ footer .fcol + .fcol > .foot-x{margin-top:10px}
       : r.brewer === "cold" ? ["time", "12 – 18", "h", readyAt(), ""]
       : ["time", "4 – 5", "min", "medium heat, lid open", ""];
     const S = [
+      ["brewer", esc(BREWERS[r.brewer].name), "", "brewer", ""],   // first, on a line of its own, in the big figures' size
       ["key", onMill(r.clicks).txt, "", isC40() ? mill().lbl : mill().name, cBadges.join(", ")],   // just the grinder's name, like Kettle and Coffee
       ["dose", r.dose, "g", r.brewer === "moka" ? `basket, full and level (${doseName(r)} pot)` : "coffee", ""],
       ["water", r.water, "g", r.brewer === "moka" ? "hot, to just under the valve" : r.brewer === "cold" ? "cold water, then dilute to taste" : r.iced ? "hot water" : "water", yours("water")],
