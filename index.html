@@ -2644,7 +2644,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
     return name ? titleCase(name) : "Your coffee";
   }
 
-  const PROC_Q = [["washed", "Washed"], ["natural", "Natural"], ["honey", "Honey"], ["anaerobic", "Anaerobic"], ["cofer", "Co-ferment / Infused"], ["decaf", "Decaf"], ["unsure", "Not stated"]];
+  const PROC_Q = [["washed", "Washed"], ["natural", "Natural"], ["honey", "Honey"], ["anaerobic", "Anaerobic"], ["cofer", "Co-ferment / Infused"], ["decaf", "Decaf"], ["unsure", "Unknown"]];
   const ROAST_Q = [["vlight", "Very light"], ["light", "Light"], ["medium", "Medium"], ["mdark", "Medium-dark"], ["dark", "Dark"]];
   function renderNeed(r) {
     const need = $("need"), body = $("rbody");
@@ -2669,7 +2669,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
     const where = missing.includes("process") ? (state.bag && state.bag.url ? ` The process is usually on the bag or <a href="${esc(state.bag.url)}" target="_blank" rel="noopener">the roaster’s page</a>.` : " The process is usually printed on the bag.") : "";
     need.innerHTML = `<h3>${missing.length === 2 ? "Two things" : "One thing"} before the numbers</h3>
       <p>The grind, temperature and how hard you pour all depend on ${missing.map((m) => m === "process" ? "the process" : "the roast level").join(" and ")}.${missing.includes("roast") ? " Roasters rarely print the roast level, so judge it by the colour of the beans." : ""}${where}</p>
-      ${missing.includes("process") ? q("process", "Process", PROC_Q, "“Not stated” is treated as possibly fermented: gentle pours, 94°C at most, a click coarser.") : ""}
+      ${missing.includes("process") ? q("process", "Process", PROC_Q, "“Unknown” is treated as possibly fermented: gentle pours, 94°C at most, a click coarser.") : ""}
       ${missing.includes("roast") ? q("roast", "Roast level: look at the beans", ROAST_Q, "Very light: pale tan, dry and dense. Light: light brown, matt. Medium: milk-chocolate brown. Medium-dark: dark brown, a little sheen. Dark: near black, oily. Or tap <b>Match by photo</b>: a few beans on white paper, in daylight. The photo is read on your phone and never uploaded.", PHOTO_CHIP) + `<p class="rp-msg" id="rpMsgNeed" hidden></p>` : ""}`;
     need.querySelectorAll("button[data-k]").forEach((b) => b.onclick = () => { state[b.dataset.k] = b.dataset.v; if (b.dataset.k === "roast") state.roastPhoto = null; saveState(); renderAllOpts(); render(); });
     need.querySelectorAll(".rp-go").forEach((b) => b.onclick = () => beanScan("rpMsgNeed"));
@@ -3310,6 +3310,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
   };
   function render() {
     if (typeof syncBagBtn === "function") try { syncBagBtn(); } catch (e) {}
+    try { markPicked(); } catch (e) {}
     { const so = document.querySelector(".scan-opt"); if (so) so.hidden = !!(state.bag && state.bag.name); }
     const r = recipe = withMine(engine(state));
     const c = r.c, K = r.kind;
@@ -3525,9 +3526,13 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
     ].filter(Boolean);
   };
   const OPTS_MORE = [
-    { key: "process", label: "Process", items: [["auto", "From the bag"], ["washed", "Washed"], ["natural", "Natural"], ["honey", "Honey"], ["anaerobic", "Anaerobic"], ["cofer", "Co-ferment / Infused"], ["decaf", "Decaf"], ["unsure", "Not stated"]] },
-    { key: "roast", label: "Roast", items: [["auto", "From the bag"], ["vlight", "Very light"], ["light", "Light"], ["medium", "Medium"], ["mdark", "Medium-dark"], ["dark", "Dark"]] },
+    { key: "process", label: "Process", items: [["washed", "Washed"], ["natural", "Natural"], ["honey", "Honey"], ["anaerobic", "Anaerobic"], ["cofer", "Co-ferment / Infused"], ["decaf", "Decaf"], ["unsure", "Unknown"]] },
+    { key: "roast", label: "Roast", items: [["vlight", "Very light"], ["light", "Light"], ["medium", "Medium"], ["mdark", "Medium-dark"], ["dark", "Dark"], ["unsure", "Unknown"]] },
   ];
+  // process and roast chips: your pick, else what the bag says, else Unknown. Re-marked on every render, so typing a coffee picks them
+  const pickedOf = (k) => state[k] !== "auto" ? state[k] : (resolved(state)[k] || "unsure");
+  function markPicked() { ["process", "roast"].forEach((k) => { const v = pickedOf(k);
+    document.querySelectorAll(`[id^="o-${k}-"]`).forEach((b) => { if (!b.classList.contains("rp-go")) b.setAttribute("aria-pressed", String(b.id === `o-${k}-${v}`)); }); }); }
   function renderOpts(boxId, list) {
     const box = $(boxId); box.innerHTML = "";
     list.forEach((o) => {
@@ -3536,7 +3541,8 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
       const g = document.createElement("div"); g.className = "chips"; g.setAttribute("role", "group"); g.setAttribute("aria-labelledby", lab.id);
       o.items.forEach(([v, t]) => {
         const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.textContent = t; b.id = `o-${o.key}-${v}`;
-        b.setAttribute("aria-pressed", String((o.key === "brewer" ? brewerOf(state) : state[o.key]) === v));
+        // process and roast: what the bag says is picked for you; nothing stated, Unknown
+        b.setAttribute("aria-pressed", String((o.key === "brewer" ? brewerOf(state) : o.key === "process" || o.key === "roast" ? pickedOf(o.key) : state[o.key]) === v));
         b.onclick = () => { if (o.on) o.on(v); else state[o.key] = v; if (o.key === "roast") state.roastPhoto = null; saveState(); renderAllOpts(); render(); };
         if (o.key === "goal" && v === "tea") b.insertAdjacentHTML("beforeend", `<span class="beta">beta</span>`);
         if (o.key === "roast" && ROAST_SW[v]) b.insertAdjacentHTML("afterbegin", `<i class="bean-dot" style="--c:${ROAST_SW[v]}"></i>`);
@@ -3573,7 +3579,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
   function build(scroll) {
     const t = $("coffeeIn").value.trim();
     if (t !== state.text) { beanCard = null; state.bag = null; state.process = "auto"; state.roast = "auto"; state.roastPhoto = null; state.listProc = null; renderAllOpts(); }   // new coffee: forget old answers
-    state.text = t; saveState(); render();
+    state.text = t; saveState(); render(); markPicked();
     if (scroll !== false) goRecipe();
   }
 
@@ -4827,8 +4833,8 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
   const scanMem = () => { try { return JSON.parse(localStorage.getItem(SCAN_MEM) || "{}") || {}; } catch (e) { return {}; } };
 
   // ---- 4. review sheet: every field editable, with how sure the reader is; nothing is applied until you say so ----
-  const PROC_OPTS = [["", "Not stated"], ["washed", "Washed"], ["natural", "Natural"], ["honey", "Honey"], ["anaerobic", "Anaerobic"], ["cofer", "Co-ferment / Infused"], ["decaf", "Decaf"]];
-  const ROAST_OPTS = [["", "Not stated"], ["vlight", "Very light"], ["light", "Light"], ["medium", "Medium"], ["mdark", "Medium-dark"], ["dark", "Dark"]];
+  const PROC_OPTS = [["", "Unknown"], ["washed", "Washed"], ["natural", "Natural"], ["honey", "Honey"], ["anaerobic", "Anaerobic"], ["cofer", "Co-ferment / Infused"], ["decaf", "Decaf"]];
+  const ROAST_OPTS = [["", "Unknown"], ["vlight", "Very light"], ["light", "Light"], ["medium", "Medium"], ["mdark", "Medium-dark"], ["dark", "Dark"]];
   const FIELD_ROWS = [["name", "Coffee"], ["roaster", "Roaster"], ["origin", "Origin"], ["process", "Process"], ["variety", "Variety"], ["roast", "Roast"], ["notes", "Notes"], ["date", "Date"]];
   let review = null;
   function showReview(fields, raw) {
