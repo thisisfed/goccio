@@ -1706,7 +1706,7 @@ footer .fcol > p + .foot-x{margin-top:14px}
 #millOpt.open .kit-mill{display:none!important}
 #millChips{display:flex;flex-wrap:wrap;gap:4px}
 #millChips[hidden]{display:none}
-/* What are we brewing?: the text sits as far from the edges as the text in a pill (10 px across, 6 px down) */
+/* What’s brewing?: the text sits as far from the edges as the text in a pill (10 px across, 6 px down) */
 .field{padding:0!important}
 .field textarea, #coffeeIn{padding:6px 10px!important}
 /* an option that isn't available: the pill stays, struck through corner to corner, and can't be picked */
@@ -1810,7 +1810,7 @@ footer .fcol > p + .foot-x{margin-top:14px}
 
   <section class="sec" id="coffee" aria-labelledby="askLbl">
     <div class="ask">
-      <label for="coffeeIn" id="askLbl">What are we brewing?</label>
+      <label for="coffeeIn" id="askLbl">What’s brewing?</label>
       <div class="field">
         <textarea id="coffeeIn" rows="2" placeholder="Roaster, coffee, origin, process, notes…"></textarea>
         <button class="btn" id="go" type="button">Build recipe</button>
@@ -4664,12 +4664,14 @@ footer .fcol > p + .foot-x{margin-top:14px}
   const BAGS_KEY = "v60.bags";
   let bags = []; try { bags = JSON.parse(localStorage.getItem(BAGS_KEY) || "[]"); if (!Array.isArray(bags)) bags = []; } catch (e) { bags = []; }
   const saveBags = () => { try { localStorage.setItem(BAGS_KEY, JSON.stringify(bags)); } catch (e) {} };
+  // the roaster's city: saved with the bag, or found in today's list for bags saved before it was kept
+  const bagCity = (b) => b.city || ((shelf || []).find((r) => r.roaster === b.roaster && r.roaster_city) || {}).roaster_city || "";
   const bagId = (r) => r.url ? "u:" + r.url : "t:" + norm([r.roaster, r.name].filter(Boolean).join(" ") || r.text || "");
   const hasBag = (r) => bags.some((b) => b.id === bagId(r));
   function toggleBag(r) {
     const id = bagId(r), i = bags.findIndex((b) => b.id === id);
     if (i >= 0) bags.splice(i, 1);
-    else bags.unshift({ id, roaster: r.roaster || "", name: r.name || "", origin: r.origin || "", region: r.region || "", variety: r.variety || "", process: r.process || "",
+    else bags.unshift({ id, roaster: r.roaster || "", city: r.roaster_city || "", name: r.name || "", origin: r.origin || "", region: r.region || "", variety: r.variety || "", process: r.process || "",
       roast: r.roast || null, roast_level: r.roast_level || null, url: r.url || null, price: r.price || null, text: r.text || null, added: new Date().toISOString().slice(0, 10), roasted: "", left: r.bag_g || 250, size: r.bag_g || null });   // the shop listing's bag size when the scan found one
     saveBags(); renderBags();
   }
@@ -4703,7 +4705,7 @@ footer .fcol > p + .foot-x{margin-top:14px}
       const tags = [originTag(b.origin), b.process ? `<span class="tg ${procTone(b.process)}">${esc(titleCase(b.process))}</span>` : "", b.variety ? varietyTag(b.variety) : ""].join("");
       return `<article class="item bag">
         <div class="l">
-          <span class="who">${esc(b.roaster || "Your coffee")}</span>
+          <span class="who">${b.roaster ? `<span class="rn">${esc(b.roaster)}</span>${bagCity(b) ? ` ${esc(bagCity(b))}` : ""}` : "Your coffee"}</span>
           <span class="name">${esc(calm(b.name || b.text || "Coffee"))}</span>
           ${tags ? `<p class="tags">${tags}</p>` : ""}
           <div class="bag-f"><label>Roasted<span class="bag-d${b.roasted ? "" : " empty"}"><input type="date" data-k="roasted" data-i="${i}" value="${esc(b.roasted || "")}"></span></label>
@@ -4757,7 +4759,7 @@ footer .fcol > p + .foot-x{margin-top:14px}
     state.listProc = state.process;   // came from the roaster's listing, not from you
     state.roast = r.roast_level === "dark" ? "dark" : r.roast_level === "medium-dark" ? "mdark" : "auto";
     $("coffeeIn").value = state.text; saveState(); renderAllOpts(); render();
-    jumpTo($("coffee"));   // land on What are we brewing?, with the coffee filled in
+    jumpTo($("coffee"));   // land on What’s brewing?, with the coffee filled in
   }
 
   // ---------- scan the bag: read the label on this device (Tesseract OCR, loaded only when used) ----------
@@ -5238,6 +5240,7 @@ footer .fcol > p + .foot-x{margin-top:14px}
       scanDay = (d.updated || "").slice(0, 10);
       renderShelfV();
       renderShelf();
+      try { renderBags(); } catch (e) {}   // bags saved before the city was kept pick it up from the list
     } catch (e) { $("shelfMeta").textContent = "Couldn’t load the coffee list. Refresh to try again."; $("shelfMeta").hidden = false; }
     finally { $("shelf").classList.remove("loading"); $("shelf").removeAttribute("aria-busy"); }
   }
