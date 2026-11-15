@@ -65,7 +65,7 @@ VARIETIES = ["Gesha", "Geisha", "Sidra", "Pink Bourbon", "Wush Wush", "Eugenioid
              "74110", "74112", "74158", "Heirloom", "Landrace", "Java", "Mokka", "Chiroso",
              "Tabi", "Villa Sarchi", "Parainema", "Marsellesa", "Catimor"]
 EXCLUDE = re.compile(r"subscri|abonnement|abbonamento|\babo\b|suscripci|prenumeration|geschenk|regalo|cadeau|gutschein|"
-                     r"\btasse\b|tazza|latte art|\bpen\b|\btool\b|accessor|machine|maker|moccamaster|ticket|party|event|festival|origami|glass|server|carafe|porcelain|ceramic|brewer|filter holder|gift|voucher|capsule|\bpods?\b|nespresso|coffee bags?|drip bags?|brew bags?|immersion bags?|caf[ée] de poche|"
+                     r"\btasse\b|tazza|dip ?style|in-store|xpods?|xbloom|セット|飲み比べ|ドリップバッグ|latte art|\bpen\b|\btool\b|accessor|machine|maker|moccamaster|ticket|party|event|festival|origami|glass|server|carafe|porcelain|ceramic|brewer|filter holder|gift|voucher|capsule|\bpods?\b|nespresso|coffee bags?|drip bags?|brew bags?|immersion bags?|caf[ée] de poche|"
                      r"steep|equipment|grinder|\bmug\b|kettle|dripper|filter papers?|papers\b|\bcups?\b(?! of excellence)|"
                      r"sampler|tasting pack|taster|bundle|merch|t-?shirt|hoodie|tote|cap\b|"
                      r"cold brew|concentrate|instant|\btea\b|chocolate bar|chocolate\b|cascara|"
@@ -973,6 +973,14 @@ def find_notes(item):
 
 
 def clean_name(title, roaster, origin):
+    title = re.sub(r"<br\s*/?>", " ", title, flags=re.I)
+    title = re.sub(r"<[^>]+>", "", title)
+    title = re.sub(r"^\s*\d{1,2}/\d{1,2}\s+\d{1,2}:\d{2}\s*[~〜]\s*", "", title)   # Philocoffea: "11/16 10:00~" release stamp
+    title = re.sub(r"\s*/\s*$", "", title)   # Fuglen Tokyo: "Arbegona /"
+    m = re.match(r"^\s*\d{3}\s+(\S.*)$", title)   # Philocoffea: "467 Ethiopia Bombe Washed", a lot number in front of the origin
+    if m and find_origin(m.group(1)[:25]):
+        title = m.group(1)
+    title = re.sub(r"\s{2,}", " ", title).strip()
     title = re.sub(r"\s*[•·]\s*$", "", title)
     # a shop tag on the front: "【NEW】Panama Lost Origin", "[NEW] …", "NEWPanama …" -> "Panama Lost Origin"
     title = re.sub(r"^\s*[【\[(（]\s*(?:NEW|New|SOLD OUT|LIMITED|新作|新入荷|限定)\s*[】\])）]\s*", "", title)
