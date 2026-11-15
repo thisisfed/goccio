@@ -1828,6 +1828,10 @@ footer .fcol + .fcol > .foot-x{margin-top:10px}
       <li>Frost, S. C., Ristenpart, W. D., &amp; Guinard, J.-X. (2020). <span class="rt">Effects of brew strength, brew yield, and roast on the sensory quality of drip brewed coffee</span>. <i>Journal of Food Science</i>, 85(8), 2530–2543. <a href="https://doi.org/10.1111/1750-3841.15326" target="_blank" rel="noopener">doi.org/10.1111/1750-3841.15326</a></li>
       <li>Guinard, J.-X., Frost, S., Batali, M., Cotter, A., Lim, L. X., &amp; Ristenpart, W. D. (2023). <span class="rt">A new Coffee Brewing Control Chart relating sensory properties and consumer liking to brew strength, extraction yield, and brew ratio</span>. <i>Journal of Food Science</i>, 88(5), 2168–2177. <a href="https://doi.org/10.1111/1750-3841.16531" target="_blank" rel="noopener">doi.org/10.1111/1750-3841.16531</a></li>
       <li>Hendon, C. H., Colonna-Dashwood, L., &amp; Colonna-Dashwood, M. (2014). <span class="rt">The role of dissolved cations in coffee extraction</span>. <i>Journal of Agricultural and Food Chemistry</i>, 62(21), 4947–4950. <a href="https://doi.org/10.1021/jf501687c" target="_blank" rel="noopener">doi.org/10.1021/jf501687c</a></li>
+      <li>Méndez Harper, J., et al. (2023). <span class="rt">Moisture-controlled triboelectrification during coffee grinding</span>. <i>Matter</i>. <a href="https://doi.org/10.1016/j.matt.2023.11.005" target="_blank" rel="noopener">doi.org/10.1016/j.matt.2023.11.005</a></li>
+      <li>Park, E., Young, M., &amp; Mathijssen, A. J. T. M. (2025). <span class="rt">Pour-over coffee: mixing by a water jet impinging on a granular bed with avalanche dynamics</span>. <i>Physics of Fluids</i>, 37(4). <a href="https://doi.org/10.1063/5.0257924" target="_blank" rel="noopener">doi.org/10.1063/5.0257924</a></li>
+      <li>Smrke, S., Adam, J., Mühlemann, S., Lantz, I., &amp; Yeretzian, C. (2022). <span class="rt">Effects of different coffee storage methods on coffee freshness after opening of packages</span>. <i>Food Packaging and Shelf Life</i>. <a href="https://digitalcollection.zhaw.ch/bitstream/11475/26687/3/2022_Smrke-etal_Effects-of-different-coffee-storage-methods-on-coffee-freshness_FPSL.pdf" target="_blank" rel="noopener">digitalcollection.zhaw.ch</a></li>
+      <li>Uman, E., et al. (2016). <span class="rt">The effect of bean origin and temperature on grinding roasted coffee</span>. <i>Scientific Reports</i>, 6. <a href="https://doi.org/10.1038/srep24483" target="_blank" rel="noopener">doi.org/10.1038/srep24483</a></li>
       <li>Specialty Coffee Association (2018). <span class="rt">Water Quality Handbook and water chart</span>: total hardness 50–175 ppm, alkalinity 40–75 ppm (as CaCO₃). <a href="https://sca.coffee" target="_blank" rel="noopener">sca.coffee</a></li>
       <li>Blue Bottle Coffee. <span class="rt">Chemex brew guide</span>. <a href="https://bluebottlecoffee.com/brew-guides/chemex" target="_blank" rel="noopener">bluebottlecoffee.com</a></li>
       <li>Ceremony Coffee. <span class="rt">Cold brew guide</span>. <a href="https://ceremonycoffee.com/pages/cold-brew-guide" target="_blank" rel="noopener">ceremonycoffee.com</a></li>
@@ -3220,7 +3224,7 @@ footer .fcol + .fcol > .foot-x{margin-top:10px}
       return;
     }
     const timed = K !== "steps";
-    $("startBrew").hidden = !timed; $("dock").hidden = !timed;
+    $("startBrew").hidden = !timed; $("dock").hidden = !timed; journalOn();
     $("rmethod").textContent = r.method;
     $("rgoal").innerHTML = [r.goal ? GOAL[r.goal] : "", doseName(r)].filter(Boolean).map((t) => `<span>${esc(t)}</span>`).join("");
     $("rzero").hidden = !prefs.zero; $("rzero").textContent = prefs.zero ? `${prefs.zero > 0 ? "+" : "−"}${Math.abs(prefs.zero)} zero offset` : "";
@@ -3739,8 +3743,9 @@ footer .fcol + .fcol > .foot-x{margin-top:10px}
       : `<span><b>Saved.</b> ${nailed ? "Recipe locked in for this coffee, and it counts towards your " + esc(PROCESS[a.c.process].label) + " brews." : "No change to the numbers."}</span>`;
     $("saveLog").textContent = "Saved"; setTimeout(() => ($("saveLog").textContent = "Save to journal"), 1400);
   }
-  // the Journal (and its link in the menu) only exists once there's a brew to write about: one started, or one already saved
-  function journalOn() { const on = journal.length > 0 || !!store.get("v60.brewed", false);
+  // the Journal (and its link in the menu) only exists once there's a brew to write about: Start pressed once, or one already saved
+  function journalOn() { const untimed = !$("recipe").hidden && $("startBrew").hidden;   // moka and cold brew have no timer to start
+    const on = journal.length > 0 || !!store.get("v60.brewed", false) || untimed;
     $("journal").hidden = !on; const nb = document.querySelector('[data-jump="journal"]'); if (nb) nb.hidden = !on; }
   function renderJournal() {
     journalOn();
@@ -3822,7 +3827,6 @@ footer .fcol + .fcol > .foot-x{margin-top:10px}
   $("optBuzz").onclick = () => { prefs.buzz = !prefs.buzz; savePrefs(); renderBvOpts(); buzz(40); };
 
   function openBrew() {
-    store.set("v60.brewed", true); journalOn();
     if (!recipe) render();
     const r = recipe;
     if ($("rbody").hidden || r.kind === "steps") return;
@@ -3848,6 +3852,7 @@ footer .fcol + .fcol > .foot-x{margin-top:10px}
     if (bv.running) { bv.paused = (now() - bv.t0) / 1000; stopLoop(); $("bvGo").textContent = "Resume"; $("bvGo").classList.remove("running"); tick(); return; }
     try { bv.audio = bv.audio || new (window.AudioContext || window.webkitAudioContext)(); bv.audio.resume && bv.audio.resume(); } catch (e) {}
     wakeOn();
+    if (!store.get("v60.brewed", false)) { store.set("v60.brewed", true); journalOn(); }   // a brew has begun: the Journal exists from now on
     bv.t0 = now() - bv.paused * 1000; bv.running = true; $("bvGo").textContent = "Pause"; $("bvGo").classList.add("running"); loop();
   }
   function loop() { tick(); if (bv.running) bv.raf = requestAnimationFrame(loop); }
@@ -4103,16 +4108,20 @@ footer .fcol + .fcol > .foot-x{margin-top:10px}
     $("shelfV").innerHTML = SHELF_V.map(([v, t]) => `<button type="button" class="chip" data-v="${v}" aria-pressed="${shelfV === v}">${t}${n ? ` <span class="n">${v === "v60" ? k : n}</span>` : ""}</button>`).join("");
     $("shelfV").querySelectorAll("button").forEach((b) => b.onclick = () => { shelfV = b.dataset.v; shelfAll = false; renderShelfV(); renderShelf(); });
   }
-  // newest first, but one coffee per roaster per round so no single shop fills the screen;
-  // coffees whose process isn't listed go after the rest of their group
+  // newest first, strictly by date inside each group, so the dates down the list never jump back and forth. Within one day
+  // the shops take turns (one coffee each per round) so no single shop fills the screen, and coffees whose process isn't
+  // listed go last. A coffee that's just in is dated by the day it reached the list.
+  const shelfDate = (r) => (r.just_in ? r.found : r.published || r.found) || "";
   function interleave(list) {
-    const date = (r) => r.published || r.found || "";
     const out = [];
-    for (const grp of [list.filter((r) => r.just_in), list.filter((r) => r.new && !r.just_in), list.filter((r) => !r.new && !r.just_in)]) for (const part of [grp.filter((r) => r.process), grp.filter((r) => !r.process)]) {
-      const q = new Map();
-      [...part].sort((a, b) => date(b).localeCompare(date(a))).forEach((r) => { if (!q.has(r.roaster)) q.set(r.roaster, []); q.get(r.roaster).push(r); });
-      const lanes = [...q.values()];
-      for (let round = 0; lanes.some((l) => l.length > round); round++) lanes.forEach((l) => { if (l[round]) out.push(l[round]); });
+    for (const grp of [list.filter((r) => r.just_in), list.filter((r) => r.new && !r.just_in), list.filter((r) => !r.new && !r.just_in)]) {
+      const days = new Map();
+      [...grp].sort((a, b) => shelfDate(b).localeCompare(shelfDate(a))).forEach((r) => { const d = shelfDate(r); if (!days.has(d)) days.set(d, []); days.get(d).push(r); });
+      for (const day of days.values()) for (const part of [day.filter((r) => r.process), day.filter((r) => !r.process)]) {
+        const q = new Map(); part.forEach((r) => { if (!q.has(r.roaster)) q.set(r.roaster, []); q.get(r.roaster).push(r); });
+        const lanes = [...q.values()];
+        for (let round = 0; lanes.some((l) => l.length > round); round++) lanes.forEach((l) => { if (l[round]) out.push(l[round]); });
+      }
     }
     return out;
   }
@@ -4167,7 +4176,7 @@ footer .fcol + .fcol > .foot-x{margin-top:10px}
       ];
       const origins = originTag(r.origin, r.region);
       const place = origins;
-      const day = r.published ? isoDmy(r.published).slice(0, 5) : isoDmy(r.found).slice(0, 5);
+      const day = isoDmy(shelfDate(r)).slice(0, 5);
       return `${head}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
         <div class="l">
           <span class="who">${!isSp && r.just_in ? '<span class="ji">Just in</span>' : ""}${esc(r.roaster)}${r.roaster_city ? `, ${esc(r.roaster_city)}` : ""}<span class="day">${day}</span></span>
@@ -4268,14 +4277,20 @@ footer .fcol + .fcol > .foot-x{margin-top:10px}
   const daysBetween = (a, z) => Math.max(0, Math.round((new Date(z + "T12:00:00") - new Date(a + "T12:00:00")) / 864e5));
   // days spent in the freezer don't count: sealed and frozen, beans barely stale
   const frozenFor = (b) => (b.frozenDays || 0) + (b.frozen ? daysBetween(b.frozen, todayIso()) : 0);
-  function restLine(b) {   // filter coffee: rest a week or two after roasting, best within about six weeks
-    if (!b.roasted) return b.frozen ? "Frozen. Add the roast date to see its best." : "Add the roast date to see when it’s at its best.";
-    if (b.frozen) { const left = 42 - daysBetween(b.roasted, b.frozen) + (b.frozenDays || 0); return left > 0 ? `Frozen, clock paused. ${left} days of its best left.` : "Frozen, clock paused."; }
+  // filter coffee: rest a week or two after roasting, best within about six weeks. Once the bag is opened the air gets in and
+  // it stales faster (Smrke et al., 2022): about three weeks from opening, if that comes sooner. The freezer pauses both clocks.
+  const OPEN_DAYS = 21;
+  function restLine(b) {
+    const op = b.opened || "";
+    if (!b.roasted && !op) return b.frozen ? "Frozen. Add the roast date to see its best." : "Add the roast date to see when it’s at its best.";
+    if (b.frozen) { const fd = b.frozenDays || 0, a = b.roasted ? 42 - daysBetween(b.roasted, b.frozen) + fd : Infinity, o = op && op <= b.frozen ? OPEN_DAYS - daysBetween(op, b.frozen) + fd : Infinity, left = Math.min(a, o);
+      return left > 0 && isFinite(left) ? `Frozen, clock paused. ${left} days of its best left.` : "Frozen, clock paused."; }
     const light = /very light/i.test(b.text || "") || b.roast === "vlight" ? 14 : /light/i.test((b.text || "") + " " + (b.roast_level || "")) || b.roast === "light" ? 10 : 7;
-    const today = todayIso(), fz = frozenFor(b), from = addDays(b.roasted, light + fz), until = addDays(b.roasted, 42 + fz);
-    if (today < from) return `Resting. At its best from ${isoDmy(from)}.`;
-    if (today <= until) return `Ready. At its best until ${isoDmy(until)}.`;
-    return `Past its best since ${isoDmy(until)}. Still fine to brew, a little flatter.`;
+    const today = todayIso(), fz = frozenFor(b), from = b.roasted ? addDays(b.roasted, light + fz) : "", byRoast = b.roasted ? addDays(b.roasted, 42 + fz) : "9999", byOpen = op ? addDays(op, OPEN_DAYS + fz) : "9999";
+    const until = byOpen < byRoast ? byOpen : byRoast, opened = byOpen < byRoast ? `Opened ${isoDmy(op).slice(0, 5)}. ` : "";
+    if (from && today < from) return `Resting. At its best from ${isoDmy(from)}${opened && until > from ? ` until ${isoDmy(until)}` : ""}.`;
+    if (today <= until) return `${opened || "Ready. "}At its best until ${isoDmy(until)}.`;
+    return `${opened}Past its best since ${isoDmy(until)}. Still fine to brew, a little flatter.`;
   }
   // a couple of brews or less left: say so, with the shop link when there is one
   // running low (30 g or less): the grams go red and a Buy again pill appears beside them; no line of text
