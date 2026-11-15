@@ -1914,6 +1914,13 @@ section.sec{scroll-margin-top:calc(var(--top-h, 49px) - 1px)!important}
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const fmt = (s) => { s = Math.max(0, Math.round(s)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
   const parseMS = (v) => { const m = /^\s*(\d{1,2})[:.](\d{1,2})\s*$/.exec(v || ""); return m ? (+m[1]) * 60 + (+m[2]) : (/^\s*\d{2,3}\s*$/.test(v || "") ? +v : null); };
+  // the journal's time field speaks each brewer's language: drained, pressed, steeped (in hours), brewed, shot
+  const ddOf = (b) => b === "cold" ? { lbl: "Steeped for", word: "steeped", ph: "16 h", show: (x) => `${Math.round(x / 360) / 10} h`,
+      parse: (v) => { const n = parseFloat(String(v || "").replace(",", ".")); return isFinite(n) && n > 0 && n < 100 ? Math.round(n * 3600) : null; } }
+    : b === "espresso" ? { lbl: "Shot time", word: "shot", ph: "28 s", show: (x) => `${x} s`,
+      parse: (v) => { const m = /^\s*(\d{1,3})\s*s?\s*$/i.exec(v || ""); return m ? +m[1] : parseMS(v); } }
+    : { lbl: b === "moka" ? "Brewed in" : b === "aero" ? "Pressed by" : b === "press" ? "Poured at" : "Drained at",
+        word: b === "moka" ? "brewed in" : b === "aero" ? "pressed by" : b === "press" ? "poured at" : "drained", ph: b === "moka" ? "4:30" : b === "aero" ? "3:00" : b === "press" ? "9:30" : "3:20", show: fmt, parse: parseMS };
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const cap1 = (s) => s ? s[0].toUpperCase() + s.slice(1) : s;
   // no shouting: a whole word in capitals becomes "Word"; short codes without two vowels (AA, SL28, CGLE) stay
@@ -3051,7 +3058,7 @@ section.sec{scroll-margin-top:calc(var(--top-h, 49px) - 1px)!important}
       return;
     }
     const changed = r.pc.clicks || r.pc.temp || r.pc.ratio;
-    const hist = (L.history || []).slice(0, 4).map((h) => `<li><span class="muted">${dmy(h.at)}</span> ${esc((h.tastes || []).map(TL).join(", ") || "logged")}${h.dd != null ? (r.kind === "shot" ? `, shot ${h.dd} s` : `, drained ${fmt(h.dd)}`) : ""}${h.fix ? ` → <b>${esc(h.fix)}</b>` : ""}</li>`).join("");
+    const hist = (L.history || []).slice(0, 4).map((h) => `<li><span class="muted">${dmy(h.at)}</span> ${esc((h.tastes || []).map(TL).join(", ") || "logged")}${h.dd != null ? `, ${ddOf(r.brewer).word} ${ddOf(r.brewer).show(h.dd)}` : ""}${h.fix ? ` → <b>${esc(h.fix)}</b>` : ""}</li>`).join("");
     box.innerHTML = `<div class="lrn-h"><span class="lrn-tag">Learned</span><b>${L.n} brew${L.n === 1 ? "" : "s"} of this coffee logged</b></div>
       ${changed ? `<p>Now <b>${now}</b> <span class="muted">(base was ${base})</span></p>` : `<p>Locked in at the base recipe: <b>${now}</b>.</p>`}
       ${hist ? `<ul class="lrn-list">${hist}</ul>` : ""}
@@ -3432,9 +3439,9 @@ section.sec{scroll-margin-top:calc(var(--top-h, 49px) - 1px)!important}
     $("dial").innerHTML = dial.map((w, i) => `<li${i === 0 && hardFirst ? ' style="font-weight:700"' : ""}>${esc(w)}</li>`).join("");
 
     $("logTitle").textContent = "Taste";
-    $("ddRow").hidden = K !== "pour" && K !== "shot";
-    $("ddRow").querySelector("label").textContent = K === "shot" ? "Shot time" : "Drained at"; $("ddIn").placeholder = K === "shot" ? "0:28" : "3:20";
-    $("ddHint").textContent = K === "shot" ? `Target ${r.lo} – ${r.hi} s` : r.lo === r.hi ? `Target ${fmt(r.lo)}` : `Target ${fmt(r.lo)} – ${fmt(r.hi)}`;
+    const D = ddOf(r.brewer);
+    $("ddRow").querySelector("label").textContent = D.lbl; $("ddIn").placeholder = D.ph;
+    $("ddHint").textContent = r.brewer === "cold" ? "Target 12 – 18 h" : K === "shot" ? `Target ${r.lo} – ${r.hi} s` : r.lo === r.hi ? `Target ${fmt(r.lo)}` : `Target ${fmt(r.lo)} – ${fmt(r.hi)}`;
     if (picked.size || $("ddIn").value) updateSuggest();
   }
   // cold brew: when it's ready if you start now
@@ -3686,7 +3693,7 @@ section.sec{scroll-margin-top:calc(var(--top-h, 49px) - 1px)!important}
   function suggest(r, tags, dd) {
     const has = (k) => tags.has(k);
     const fast = dd != null && dd < r.lo - 5, slow = dd != null && dd > r.hi + 10;
-    const ddTxt = dd != null ? ` (drained at ${fmt(dd)})` : "";
+    const ddTxt = dd != null ? ` (${ddOf(r.brewer).word}${ddOf(r.brewer).word === "drained" ? " at" : ""} ${ddOf(r.brewer).show(dd)})` : "";
     if (r.kind === "shot") {   // grind sets the time, the weight out sets the taste; one change per shot
       const f2 = dd != null && dd < r.lo - 2, s2 = dd != null && dd > r.hi + 2, at = dd != null ? ` (${dd} s)` : "";
       const longer = Math.round((r.ratio + 0.5) * 10) / 10, shorter = Math.round((r.ratio - 0.5) * 10) / 10;
@@ -3734,7 +3741,7 @@ section.sec{scroll-margin-top:calc(var(--top-h, 49px) - 1px)!important}
   let lastSuggestion = null;
   function updateSuggest() {
     if (!recipe) return;
-    const dd = parseMS($("ddIn").value);
+    const dd = ddOf(recipe.brewer).parse($("ddIn").value);
     const s = suggest(recipe, picked, dd);
     lastSuggestion = s;
     const box = $("suggest");
@@ -3760,7 +3767,7 @@ section.sec{scroll-margin-top:calc(var(--top-h, 49px) - 1px)!important}
     if (!recipe) return;
     if (!picked.size && !$("ddIn").value.trim()) { $("saveLog").textContent = "Pick a taste first"; setTimeout(() => ($("saveLog").textContent = "Save to journal"), 1600); return; }
     if (!recipe.bagTaken) { recipe.bagTaken = true; bagUsed(recipe.dose); }   // moka and cold brew have no timer: their grams come off here
-    const dd = parseMS($("ddIn").value);
+    const dd = ddOf(recipe.brewer).parse($("ddIn").value);
     const s = lastSuggestion;
     const r = recipe;
     const before = { clicks: r.clicks, temp: r.temp, ratio: r.ratio };
@@ -3827,7 +3834,7 @@ section.sec{scroll-margin-top:calc(var(--top-h, 49px) - 1px)!important}
     box.innerHTML = journal.slice(0, 12).map((e, i) => `<div class="entry">
       <span class="when">${dmy(e.at)}</span>
       <div class="what"><span class="serif">${esc(e.title)}</span>
-        <span class="num">${esc(e.method)} / ${esc(grindLine(e.clicks))} / ${e.dose}→${e.water} g${e.temp != null ? ` / ${e.temp}°C` : ""}${e.dd != null ? (e.brewer === "espresso" ? ` / shot ${e.dd} s` : " / drained " + fmt(e.dd)) : ""}</span>
+        <span class="num">${esc(e.method)} / ${esc(grindLine(e.clicks))} / ${e.dose}→${e.water} g${e.temp != null ? ` / ${e.temp}°C` : ""}${e.dd != null ? ` / ${ddOf(e.brewer).word} ${ddOf(e.brewer).show(e.dd)}` : ""}</span>
         ${e.tastes && e.tastes.length ? `<span class="t">${esc(e.tastes.map((k) => (TASTES.find((x) => x[0] === k) || [k, k])[1]).join(", "))}${e.change ? " → " + esc(e.change) : ""}</span>` : ""}
         ${e.note ? `<span class="t muted">${esc(e.note)}</span>` : ""}</div>
       <span class="e-act"><button type="button" data-i="${i}">Brew again</button>${(e.tastes || []).includes("balanced") ? `<button type="button" data-pdf="${i}">PDF</button>` : ""}<button type="button" class="del" data-del="${i}" aria-label="Delete this brew">Delete</button></span></div>`).join("");
@@ -3939,7 +3946,7 @@ section.sec{scroll-margin-top:calc(var(--top-h, 49px) - 1px)!important}
     const r = recipe;
     closeBrew();
     if (r.kind === "shot") {
-      $("ddIn").value = fmt(sec);
+      $("ddIn").value = `${sec} s`;
       const v = sec < r.lo - 2 ? `fast, target ${r.lo}–${r.hi} s` : sec > r.hi + 2 ? `slow, target ${r.lo}–${r.hi} s` : "in the window";
       $("ddHint").innerHTML = `<b style="color:var(--ink)">Shot ran ${sec} s</b>, ${v}. Now pick what you taste.`;
       buzz([40, 60, 40]); updateSuggest(); toJournal(); return;
