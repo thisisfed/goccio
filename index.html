@@ -1071,9 +1071,9 @@ details.clk > summary .muted { margin-left: auto; overflow: hidden; text-overflo
 .clk-sum span, .clk-sum .tot, #journalList > p.muted { font-size: var(--fs) !important; }
 .spec b { font-size: var(--fs-l) !important; }
 .spec b small { font-size: var(--fs-m) !important; }
-/* every recipe number the same 48 px. On narrower screens: clicks | kettle, coffee | water, then the time range on its own row */
+/* every recipe number the same size. Below 1000 px: clicks | kettle, coffee | water, then the time range on its own row */
 .spec b, .spec.key b, .spec.time b { font-size: var(--fs-l) !important; }
-@media (max-width: 760px) {
+@media (min-width: 0px) {   /* every screen: two even columns, the time on its own row */
   .spec.key, .spec.temp, .spec.dose, .spec.water { grid-column: span 3 !important; }
   .spec.time { grid-column: 1 / -1 !important; }
   .spec.key { order: 1; padding: 10px 0 18px !important; } .spec.temp { order: 2; } .spec.dose { order: 3; } .spec.water { order: 4; } .spec.time { order: 5; }
@@ -1131,7 +1131,7 @@ details.clk > summary .muted { margin-left: auto; overflow: hidden; text-overflo
 /* wide screens: the coffee box reads like the coffee search, one 44 px line with Build recipe tucked inside on the right */
 @media (min-width: 761px) {
   #coffee .field { height: 44px; padding: 4px; gap: 4px; align-items: center; }
-  #coffeeIn { height: 36px !important; min-height: 0 !important; padding: 7px 10px !important; font: 500 16px/21.6px var(--sans) !important;
+  #coffeeIn { height: 36px !important; min-height: 0 !important; padding: 7px 10px !important; font: 500 15px/21.6px var(--sans) !important;
     overflow: hidden; white-space: nowrap; resize: none; }
   #go { height: 36px !important; min-height: 36px !important; align-self: center !important; }
 }
@@ -1483,8 +1483,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 /* freezer: the pill stays light, only the tick goes dark */
 .bag-fz.in{background:var(--pill)!important;color:var(--ink)!important}
 /* iced: Ice sits next to Hot water's row, before the time */
-@media (max-width: 760px) { .spec.ice { grid-column: 4 / span 3 !important; order: 5; } .spec.time { order: 6 !important; } }   /* ice straight under Hot water */
-@media (min-width: 761px) { .spec.ice, .spec.ice ~ .spec { grid-column: span 2 !important; } }
+.spec.ice { grid-column: 4 / span 3 !important; order: 5; } .spec.ice ~ .spec.time { order: 6 !important; }   /* ice straight under Hot water */
 /* My bags: Brew with Remove under it, same pill size; Remove turns red Sure? on the first tap */
 #bagList .item > .r{display:flex;flex-direction:column;align-items:stretch;gap:5px}
 #bagList .item > .r > .btn, #bagList .item .bag-rm{height:var(--pill-h)!important;padding:0 12px!important;display:inline-flex!important;align-items:center;justify-content:center;margin:0!important;border:0!important;box-shadow:none!important;border-radius:var(--r)!important;font:500 var(--fs-s)/1 var(--sans)!important;background:var(--pill)!important;color:var(--ink)!important;cursor:pointer}
@@ -1642,6 +1641,23 @@ section.sec{scroll-margin-top:calc(var(--top-h, 49px) - 3px)!important}   /* 3 p
 /* footer: Credits sits under Sources, always open, in the footer's own size */
 footer .foot-credits{margin-top:14px!important}
 footer #credit a{color:var(--ink);text-decoration:underline;text-decoration-color:color-mix(in srgb, currentColor 40%, transparent);text-underline-offset:2px}
+/* every size on the scale (15 · 24 · 39 · 63 · 102 · 165): what used to shrink to fit now takes the largest step that fits */
+.stage { --hs2: 24px !important; }
+@media (min-width: 1000px) { .stage { --hs2: 39px !important; } }
+.scene.roasters, .scene.just { font-size: var(--hs2) !important; }
+.scene.one-line { font-size: min(24px, 7.4cqi) !important; }
+@container (min-width: 527px) { .scene.one-line { font-size: 39px !important; } }
+@media (min-width: 1000px) { @container (min-width: 852px) { .scene.one-line { font-size: 63px !important; } } }
+.spec.time b { font-size: 24px !important; }
+@container (min-width: 300px) { .spec.time b { font-size: 39px !important; } }
+@media (min-width: 1000px) { .spec.time b { font-size: 39px !important; } @container (min-width: 420px) { .spec.time b { font-size: 63px !important; } } }
+.bv-big { font-size: 39px !important; } .bv-big small { font-size: 15px !important; }
+@container (min-width: 150px) and (min-height: 170px) { .bv-big { font-size: 63px !important; } }
+@container (min-width: 243px) and (min-height: 276px) { .bv-big { font-size: 102px !important; } .bv-big small { font-size: 24px !important; } }
+@media (min-width: 1000px) { @container (min-width: 393px) and (min-height: 446px) { .bv-big { font-size: 165px !important; } .bv-big small { font-size: 39px !important; } } }
+.bv-now.act .bv-big { font-size: 39px !important; }
+@container (min-width: 243px) and (min-height: 210px) { .bv-now.act .bv-big { font-size: 63px !important; } }
+@media (min-width: 1000px) { @container (min-width: 243px) and (min-height: 276px) { .bv-now.act .bv-big { font-size: 102px !important; } } }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -4232,7 +4248,7 @@ footer #credit a{color:var(--ink);text-decoration:underline;text-decoration-colo
   // the stuck filter bar shows each row as one long pill, a list like the grinder's: the choice in force, the rest inside
   function fillSel(id, items, cur, on) { const el = $(id); if (!el) return;
     el.innerHTML = items.map(([v, t]) => `<option value="${v}"${v === cur ? " selected" : ""}>${esc(t)}</option>`).join("");
-    el.onchange = () => { on(el.value); requestAnimationFrame(keepShelfTop); }; }
+    el.onchange = () => { on(el.value); keepShelfTop(); }; }
   function renderShelfR() {
     $("shelfR").innerHTML = SHELF_R.map(([v, t]) => `<button type="button" class="chip" data-v="${v}" aria-pressed="${shelfR === v}">${t}</button>`).join("");
     $("shelfR").querySelectorAll("button").forEach((b) => b.onclick = () => { shelfR = b.dataset.v; shelfAll = false; renderShelfR(); renderShelf(); });
@@ -4896,7 +4912,7 @@ footer #credit a{color:var(--ink);text-decoration:underline;text-decoration-colo
       return { angle: pre.angle, inv: pre.inverted, gray: pre.gray.toDataURL("image/jpeg", 0.7), bin: pre.bin.toDataURL("image/png") }; }; }
   if (/[?&]scantest\b/.test(location.search)) window.__scan = async (blob) => { const ocr = await readPhoto(blob); return { fields: readFields(ocr, null), other: notCoffee(ocr, readFields(ocr, null)), lines: ocr.lines.map((l) => [l.text, Math.round(l.conf), l.h]), angle: ocr.angle, inverted: ocr.inverted, match: (shelfMatch(readFields(ocr, null)) || {}).name || null }; };
 
-  $("shelfQ").addEventListener("input", () => { shelfAll = false; renderShelf(); });
+  $("shelfQ").addEventListener("input", () => { shelfAll = false; renderShelf(); keepShelfTop(); });
   renderBags(); syncBagBtn();
   try { renderExample(); } catch (e) {}
   { const setTop = () => { const t = document.querySelector(".top"); if (t) document.documentElement.style.setProperty("--top-h", t.getBoundingClientRect().height + "px"); };
@@ -4911,15 +4927,19 @@ footer #credit a{color:var(--ink);text-decoration:underline;text-decoration-colo
   const loadMore = () => { shelfN += 10; renderShelf(); };
   $("shelfMore").onclick = loadMore;
   // a filter tapped while the bar is stuck: keep the list starting right under it
-  const keepShelfTop = () => { const t = document.querySelector(".shelf-tools"), top = document.querySelector(".top");
-    const h = top ? top.getBoundingClientRect().height : 0; if (t.getBoundingClientRect().top <= h + 1) {
-      const y = $("shelf").getBoundingClientRect().top + scrollY - h - t.getBoundingClientRect().height - 8; if (scrollY > y) scrollTo({ top: y }); } };
+  // after a search or a filter: if the bar is stuck and the list now starts behind it, scroll back so the first
+  // coffee sits right under the bar. Measured after layout, and again once the bar has settled (it can change height)
+  const fitShelf = () => { const t = document.querySelector(".shelf-tools"), top = document.querySelector(".top");
+    const h = top ? top.getBoundingClientRect().height : 0, tb = t.getBoundingClientRect(), st = $("shelf").getBoundingClientRect();
+    if (tb.top <= h + 1 && st.top < tb.bottom - 0.5) { const y = Math.max(0, window.scrollY - (tb.bottom - st.top)), html = document.documentElement, sb = html.style.scrollBehavior;
+      html.style.scrollBehavior = "auto"; window.scrollTo(0, y); html.style.scrollBehavior = sb; } };   // plain two-number scrollTo: instant in every browser
+  const keepShelfTop = () => { requestAnimationFrame(fitShelf); setTimeout(fitShelf, 120); setTimeout(fitShelf, 350); };
   // the price first; a tap shows Buy?, a second tap goes to the shop
   document.addEventListener("click", (e) => { const a = e.target.closest && e.target.closest(".buy-pill[data-price]"); if (!a || a.classList.contains("armed")) return;
     e.preventDefault(); document.querySelectorAll(".buy-pill.armed").forEach((o) => { o.classList.remove("armed"); o.textContent = o.dataset.price; });
     a.classList.add("armed"); a.textContent = "Buy?"; clearTimeout(a._t);
     a._t = setTimeout(() => { if (a.isConnected) { a.classList.remove("armed"); a.textContent = a.dataset.price; } }, 3000); });
-  ["shelfR", "shelfF", "shelfV"].forEach((id) => $(id).addEventListener("click", () => requestAnimationFrame(keepShelfTop)));
+  ["shelfR", "shelfF", "shelfV"].forEach((id) => $(id).addEventListener("click", keepShelfTop));
   async function loadShelf() {
     try {
       const res = await fetch("data/releases.json", { cache: "no-cache" });
