@@ -766,7 +766,7 @@ def fetch_generic(shop, max_pages=45, extra="", lists=None):
         except Exception:  # noqa: BLE001
             DIAG[shop]["pages_blocked"] += 1
             continue
-        prods = ld_products(page)[:1] or next_products(page) or og_product(page) or microdata_product(page) or spec_grid_product(page)
+        prods = ld_products(page)[:1] or next_products(page) or og_product(page) or microdata_product(page) or spec_grid_product(page) or plain_product(page, url)
         for p in prods:
             it = ld_to_item(p, url, lm)
             it["title"] = heading_if_seo(it["title"], page)
@@ -786,6 +786,86 @@ def fetch_generic(shop, max_pages=45, extra="", lists=None):
 
 
 PRICE_DIAG = {}
+
+
+PLAIN_URL = re.compile(r"/(?:product|products|store/p\d+|shop|item)/[^/]+", re.I)
+CART_WORDS = re.compile(r"add[\s-]*to[\s-]*(?:cart|basket|bag)|buy now", re.I)
+
+
+def plain_product(page, url):
+    """A product page with no structured data at all (Webflow, Weebly, hand-built shops): the page's own heading,
+    the first price shown and the visible text. Only for product-looking URLs on pages with an add-to-cart button."""
+    if not PLAIN_URL.search(url) or not CART_WORDS.search(page):
+        return []
+    body = re.sub(r"(?is)<(script|style|noscript|svg|template)[^>]*>.*?</\1>", " ", page)
+    body = re.sub(r"(?is)<(header|nav|footer)[^>]*>.*?</\1>", " ", body)
+    h1 = re.search(r"(?is)<h1[^>]*>(.*?)</h1>", body)
+    title = strip_html(h1.group(1)).strip() if h1 else ""
+    if not title:
+        m = re.search(r'<meta[^>]+property=["\']og:title["\'][^>]+content=["\']([^"\']+)', page, re.I)
+        title = html.unescape(m.group(1)).strip() if m else ""
+    if not title:
+        return []
+    text = re.sub(r"\s+", " ", strip_html(body))
+    after = text[text.find(title) + len(title):] if title in text else text
+    pm = re.search(r"([£€$])\s?(\d{1,4}(?:[.,]\d{2})?)", after)
+    ccy = {"£": "GBP", "€": "EUR", "$": "USD"}.get(pm.group(1)) if pm else None
+    i = after.find(title) if title in after else 0
+    return [{"name": title, "description": after[:3500], "url": url,
+             "offers": [{"price": pm.group(2).replace(",", "."), "priceCurrency": ccy}] if pm else []}]
+
+
+def _sqs_items(j):
+    if isinstance(j.get("item"), dict):
+        return [j["item"]]
+    return [x for x in (j.get("items") or []) if isinstance(x, dict)]
+
+
+def fetch_squarespace(shop):
+    """Squarespace answers any page with ?format=json: a product page gives its item, a shop page all of them."""
+    home = get_text(shop, tries=1, limit=600_000)
+    if "squarespace" not in home.lower():
+        raise ValueError("not squarespace")
+    urls = []
+    try:
+        sm = get_text(f"{shop}/sitemap.xml", tries=1)
+        urls = re.findall(r"<loc>([^<]+)</loc>", sm)
+    except Exception:  # noqa: BLE001
+        pass
+    seen, items, tried = set(), [], 0
+    for u in urls:
+        if tried >= 60 or SKIP_URL.search(u) or re.search(r"/(blog|news|journal|event|events|testimonials?)/", u, re.I):
+            continue
+        tried += 1
+        try:
+            j = get_json(u.split("?")[0] + "?format=json", tries=1)
+        except Exception:  # noqa: BLE001
+            continue
+        for it in _sqs_items(j):
+            sc = it.get("structuredContent") or {}
+            variants = sc.get("variants") if isinstance(sc, dict) else None
+            if not variants or it.get("id") in seen:
+                continue
+            seen.add(it.get("id"))
+            prices = []
+            for v in variants:
+                pm = v.get("salePriceMoney") if v.get("onSale") else v.get("priceMoney")
+                try:
+                    prices.append(float((pm or {}).get("value")) if pm else float(v.get("price")) / 100)
+                except (TypeError, ValueError):
+                    pass
+            avail = any(v.get("unlimited") or (v.get("qtyInStock") or 0) > 0 for v in variants)
+            full = it.get("fullUrl") or ""
+            pub = it.get("publishOn") or it.get("addedOn")
+            items.append({"title": html.unescape(it.get("title") or ""), "type": " ".join(it.get("categories") or []),
+                          "tags": it.get("tags") or [], "body": strip_html((it.get("excerpt") or "") + " " + (it.get("body") or "")),
+                          "variants": " / ".join(" ".join(map(str, (v.get("attributes") or {}).values())) for v in variants),
+                          "available": avail, "price": min(prices) if prices else None,
+                          "currency": ((variants[0].get("priceMoney") or {}).get("currency")),
+                          "url": shop + full if full.startswith("/") else full or u,
+                          "published": datetime.fromtimestamp(pub / 1000, timezone.utc).date().isoformat() if pub else ""})
+        time.sleep(0.4)
+    return items
 
 
 def woo_variation_price(shop, variations):
@@ -1615,7 +1695,7 @@ def scan_roaster(r):
     shop = r["shop"].rstrip("/")
     errors = []
     feed = (r.get("feed") or "").rstrip("/")   # a headless Shopify store's own myshopify.com address
-    for kind, fn in (("shopify", fetch_shopify), ("woocommerce", fetch_woo), ("sitemap", fetch_generic)):
+    for kind, fn in (("shopify", fetch_shopify), ("woocommerce", fetch_woo), ("squarespace", fetch_squarespace), ("sitemap", fetch_generic)):
         try:
             if feed and kind != "shopify":
                 continue

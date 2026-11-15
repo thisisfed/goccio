@@ -5,7 +5,7 @@ Candidates come from the roasterlist.pages.dev directory (UK) plus a hand list f
 website is then read with the same code as the daily scan, and data/discover.json records what came back:
 platform, how many single-origin coffees, a few names, or why it failed. Nothing is added to roasters.json here.
 """
-import json, re, sys, time, urllib.parse
+import json, re, sys, time, urllib.parse, urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -94,7 +94,18 @@ def norm(u):
     return f"{p.scheme or 'https'}://{p.netloc}".rstrip("/")
 
 
+def final_home(shop):
+    """Where the shop's home page really lives (theroastingparty.co.uk -> roastingparty.com)."""
+    try:
+        req = urllib.request.Request(shop, headers={"User-Agent": scan.UA})
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            return norm(resp.geturl())
+    except Exception:  # noqa: BLE001
+        return shop
+
+
 def test(c):
+    c = {**c, "shop": final_home(c["shop"])}
     r = {"name": c["name"], "shop": c["shop"], "city": c.get("place") or "", "region": "UK", "country": c.get("country", "GB")}
     if r["country"] == "IE":
         r["region"] = "Europe"
@@ -111,7 +122,10 @@ def test(c):
             rec = None
         if rec:
             recs.append(rec)
+    drops = {k: v[:4] for k, v in (scan.DROPS.get(r["name"]) or {}).items()}
+    keep = ("name", "origin", "process", "variety", "roast", "roast_for", "price", "bag_g", "url")
     return {**c, "platform": kind, "products": len(items or []), "coffees": len(recs), "error": (err or "")[:600],
+            "recs": [{k: x.get(k) for k in keep} for x in recs], "drops": drops,
             "sample": [f"{x['name']} | {x.get('origin')} | {x.get('process')} | {x.get('roast')} | {x.get('price')}" for x in recs[:6]],
             "secs": round(time.time() - t0, 1)}
 
@@ -140,6 +154,11 @@ def main():
     fresh = [c for c in todo if not c["already"]]
     with ThreadPoolExecutor(max_workers=16) as pool:
         res = list(pool.map(test, fresh))
+    # shops that asked us to slow down get one more, unhurried try
+    for i, x in enumerate(res):
+        if "429" in x["error"]:
+            time.sleep(20)
+            res[i] = test({k: x[k] for k in ("name", "shop", "place", "src", "country", "already") if k in x})
     out = {"directory": len(slugs), "no_site": [p for p in pages if not p.get("site")],
            "already": [c["name"] for c in todo if c["already"]], "tested": sorted(res, key=lambda x: -x["coffees"])}
     OUT.write_text(json.dumps(out, ensure_ascii=False, indent=1))
