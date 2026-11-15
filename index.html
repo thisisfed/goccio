@@ -1666,6 +1666,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
 @media (prefers-reduced-motion: reduce) { body { animation: none; } }
 /* Start brewing, in the recipe and in the bar at the bottom: the same height as every other pill */
 .go-big, .dock .btn { height: var(--pill-h) !important; min-height: 0 !important; }
+html.jumping .shelf-tools{position:relative!important}   /* a jump glides past the coffee filters without them sticking */
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -3590,19 +3591,32 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
   // (the coffee list's filter bar changes height as it sticks or unsticks, which used to leave a smooth scroll short or long).
   // Touching, scrolling or a key press stops the checks, so it never fights you
   let jumpGen = 0;
-  ["wheel", "touchstart", "keydown"].forEach((ev) => addEventListener(ev, () => { jumpGen++; }, { passive: true }));
+  // while a jump glides, the coffee list's filter bar stays put: it doesn't stick under the top bar or fold to the
+  // small selects on the way past, so nothing pops in and out under the bar. It takes its real state again on landing
+  const endJump = () => { const html = document.documentElement; if (!html.classList.contains("jumping")) return; html.classList.remove("jumping"); if (window.syncShelfBar) syncShelfBar(); };
+  ["wheel", "touchstart", "keydown"].forEach((ev) => addEventListener(ev, () => { jumpGen++; endJump(); }, { passive: true }));
   // a smooth glide that aims at where the section is on every frame, not where it was when you tapped,
   // so the filter bar changing height halfway through only bends the path and the landing stays exact
   function jumpTo(el, center) {
     if (!el) return; const gen = ++jumpGen, html = document.documentElement;
+    // the bar takes the shape it will have on arrival, but only while it's off screen, and the page is held still as it changes size
+    const tools = document.querySelector(".shelf-tools"), list = $("shelf");
+    let fold = null;
+    const refold = () => { if (fold === null || !tools) return; const tb = tools.getBoundingClientRect();
+      if (tools.classList.contains("compact") === fold) { fold = null; return; }
+      if (tb.bottom > 0 && tb.top < innerHeight) return;            // on screen: wait
+      const h0 = tools.offsetHeight; tools.classList.toggle("compact", fold); fold = null;
+      if (tb.bottom <= 0) { const dh = tools.offsetHeight - h0; if (dh) { const sb = html.style.scrollBehavior; html.style.scrollBehavior = "auto"; window.scrollTo(0, scrollY + dh); html.style.scrollBehavior = sb; } } };
+    if (tools && list) { html.classList.add("jumping"); tools.classList.remove("stuck");
+      fold = el.getBoundingClientRect().top > list.getBoundingClientRect().bottom; refold(); }   // landing below the list: folded
     const aim = () => { const top = document.querySelector(".top"), h = top ? top.getBoundingClientRect().height : 49, r = el.getBoundingClientRect();
       return Math.max(0, Math.min(html.scrollHeight - innerHeight, Math.round(center ? r.top + scrollY - (innerHeight - r.height) / 2 : r.top + scrollY - (h - 3)))); };
     const put = (y) => { const sb = html.style.scrollBehavior; html.style.scrollBehavior = "auto"; window.scrollTo(0, y); html.style.scrollBehavior = sb; };
-    const settle = () => [60, 200, 450].forEach((ms) => setTimeout(() => { if (gen === jumpGen) put(aim()); }, ms));
+    const settle = () => [60, 200, 450].forEach((ms) => setTimeout(() => { if (gen !== jumpGen) return; put(aim()); if (ms === 450) { endJump(); put(aim()); } }, ms));
     const y0 = scrollY, d = Math.abs(aim() - y0);
     if (matchMedia("(prefers-reduced-motion: reduce)").matches || d < 2) { put(aim()); settle(); return; }
     const dur = Math.min(900, 380 + d * 0.12), t0 = performance.now(), ease = (t) => 1 - Math.pow(1 - t, 3);
-    const step = (now) => { if (gen !== jumpGen) return; const t = Math.min(1, (now - t0) / dur);
+    const step = (now) => { if (gen !== jumpGen) return; refold(); const t = Math.min(1, (now - t0) / dur);
       put(Math.round(y0 + (aim() - y0) * ease(t))); if (t < 1) requestAnimationFrame(step); else settle(); };
     requestAnimationFrame(step); }
   function goRecipe() { const t = !$("recipe").hidden ? $("recipe") : !$("need").hidden ? $("need") : $("coffee"); jumpTo(t, t.id === "need"); }
@@ -5010,12 +5024,13 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
   { const setTop = () => { const t = document.querySelector(".top"); if (t) document.documentElement.style.setProperty("--top-h", t.getBoundingClientRect().height + "px"); };
     setTop(); addEventListener("resize", setTop);
     const tools = document.querySelector(".shelf-tools");
-    addEventListener("scroll", () => { const t = document.querySelector(".top"), h = t ? t.getBoundingClientRect().height : 0, r = tools.getBoundingClientRect();
+    const syncShelfBar = window.syncShelfBar = () => { if (document.documentElement.classList.contains("jumping")) return;
+      const t = document.querySelector(".top"), h = t ? t.getBoundingClientRect().height : 0, r = tools.getBoundingClientRect();
       const stuck = r.top <= h + 0.5 && $("shelf").getBoundingClientRect().bottom > h + Math.max(r.height, tools._open || 0);
       tools.classList.toggle("stuck", stuck);
       const compact = r.top <= h + 0.5; if (!compact) tools._open = r.height;
-      tools.classList.toggle("compact", compact);
-    }, { passive: true }); }
+      tools.classList.toggle("compact", compact); };
+    addEventListener("scroll", syncShelfBar, { passive: true }); }
   const loadMore = () => { shelfN += 10; renderShelf(); };
   $("shelfMore").onclick = loadMore;
   // a filter tapped while the bar is stuck: keep the list starting right under it
