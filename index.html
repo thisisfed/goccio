@@ -1685,7 +1685,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
   footer summary{break-after:avoid}
   footer .fcol:first-child > .foot-x{margin-top:28px}
 }
-/* Unknown picked for process or roast: the accent, so it's clear the recipe is playing safe */
+/* Unknown picked for process or roast: the accent, so it's clear the recipe is guessing */
 #o-process-unsure[aria-pressed="true"], #o-roast-unsure[aria-pressed="true"]{background:var(--hl)!important;color:var(--on-hl)!important}
 footer .fcol > p + .foot-x{margin-top:14px}
 #o-goal-tea .beta{margin-left:12px}   /* same gap as Scan the bag and Scan the beans */
@@ -2130,7 +2130,7 @@ footer .fcol > p + .foot-x{margin-top:14px}
     mdark:  { label: "medium-dark", T: 88, dC: 3 },
     dark:   { label: "dark",        T: 86, dC: 4 },
     // not sure: err towards less bitterness (cooler, a click coarser) rather than more extraction
-    unsure: { label: "roast not sure (safe middle)", T: 92, dC: 1 },
+    unsure: { label: "roast unknown", T: 92, dC: 1 },
   };
   const AGIT = ["very low", "low", "medium", "high"];
 
@@ -2870,7 +2870,7 @@ footer .fcol > p + .foot-x{margin-top:14px}
   function renderNeed(r) {
     const need = $("need"), body = $("rbody");
     const empty = !state.text && !state.bag;
-    const missing = [];   // a missing roast or process no longer blocks: the recipe uses the safe middle until you pick one below
+    const missing = [];   // a missing roast or process no longer blocks: the recipe works from the middle of the range until you pick one below
     const blocked = empty;
     need.hidden = !blocked; body.hidden = blocked; $("recipe").hidden = blocked;
     $("startBrew").disabled = blocked; $("dockGo").disabled = blocked;
@@ -3574,9 +3574,9 @@ footer .fcol > p + .foot-x{margin-top:14px}
     const psrc = c.processFrom === "you" && state.listProc && state.listProc === state.process ? " (from the roaster)" : src(c.processFrom);
     const rsrc = state.roastPhoto && state.roastPhoto.key === state.roast ? ` (from your photo <i class="bean-dot" style="--c:${state.roastPhoto.hex}"></i>)` : src(c.roastFrom);
     const miss = c.missing || [];
-    const pTxt = miss.includes("process") ? "<b>process not stated</b>, so gentle" : `<b>${esc(PROCESS[c.process].label)}</b>${psrc}`;
-    const rTxt = miss.includes("roast") ? "<b>roast not stated</b>, so a safe middle" : `<b>${esc(roastLabel(c.roast))}</b>${rsrc}`;
-    $("detected").innerHTML = state.text ? `Reading this as ${pTxt}, ${rTxt}. ${miss.length ? "Pick it under " + (miss.length === 2 ? "Process and Roast" : miss[0] === "roast" ? "Roast" : "Process") + " to sharpen the recipe." : "Wrong? Change it under Process or Roast."}` : "";
+    const pTxt = miss.includes("process") ? "<b>process not stated</b>" : `<b>${esc(PROCESS[c.process].label)}</b>${psrc}`;
+    const rTxt = miss.includes("roast") ? "<b>roast not stated</b>" : `<b>${esc(roastLabel(c.roast))}</b>${rsrc}`;
+    $("detected").innerHTML = state.text ? `Reading this as ${pTxt}, ${rTxt}${miss.length ? ", pick " + (miss.length === 2 ? "them under Process and Roast" : miss[0] === "roast" ? "it under Roast" : "it under Process") + " to sharpen the recipe." : ". Wrong? Change it under Process or Roast."}` : "";
 
     renderLearn(r);
     const sign = (n) => (n > 0 ? "+" : "−") + Math.abs(n);
