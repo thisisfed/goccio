@@ -1710,8 +1710,9 @@ footer .fcol > p + .foot-x{margin-top:14px}
 .field{padding:0!important}
 .field textarea, #coffeeIn{padding:6px 10px!important}
 /* an option that isn't available: the pill stays, struck through corner to corner, and can't be picked */
-.chip.off, .chip.off:hover{cursor:not-allowed;color:var(--ink)!important;background-color:var(--pill)!important;opacity:1!important;
-  background-image:linear-gradient(to bottom right, transparent calc(50% - 1.25px), var(--ink) calc(50% - 1.25px), var(--ink) calc(50% + 1.25px), transparent calc(50% + 1.25px))!important}
+.chip.off, .chip.off:hover{cursor:not-allowed;color:var(--ink)!important;-webkit-text-fill-color:var(--ink);background:var(--pill)!important;background-image:none!important;opacity:1!important;position:relative;overflow:hidden}
+.chip.off::after{content:"";position:absolute;left:-20%;right:-20%;top:50%;height:2.5px;margin-top:-1.25px;background:var(--ink);transform:rotate(-14deg);pointer-events:none}
+.off-note{grid-column:2;margin:2px 0 0;color:var(--muted);font-size:var(--fs-s);line-height:1.35}
 /* brew screen: Start, Reset, Close, Drained and the two toggles are the same size as every other pill */
 .bv-ctrls button, .bv-ctrls .bv-x, .bv-x, .bv-drain{height:var(--pill-h)!important;min-height:0!important;padding:0 14px!important;font:500 var(--fs-s)/1 var(--sans)!important}
 .bv-opts button{height:var(--pill-h)!important;min-height:0!important}
@@ -2143,6 +2144,13 @@ footer .fcol > p + .foot-x{margin-top:14px}
     c3:     { name: "Timemore C3 / C3S / C3 Pro", short: "C3", lbl: "Timemore C3 clicks", a: 11, b: 18, fp: 25, min: 0, max: 25, q: 1,
               show: String, unit: "click", src: HCG + "timemore-c3-grind-settings/" },
   };
+  // no listed grinder: say it the way a roaster would, a word, a texture and the size in microns.
+  // From C40 clicks at about 30 µm a click (Comandante's own figure), rounded to 50 µm
+  const GW = [[12, "Fine", "like fine table salt"], [17, "Medium-fine", "like table salt"], [22, "Medium", "like sand"], [27, "Medium-coarse", "like coarse sand"], [33, "Coarse", "like kosher salt"], [99, "Extra coarse", "like cracked pepper"]];
+  const gw = (clicks) => GW.find(([max]) => clicks <= max);
+  const microns = (clicks) => Math.round(clicks * 30 / 50) * 50;
+  GRINDERS.words = { name: "Other grinder", short: "", lbl: "Grind", a: 15, b: 25, fp: 40, min: 4, max: 60, q: 1, words: true,
+    show: (v) => gw(v)[1], unit: "", how: "No setting for your grinder, so the grind is said in words and microns: about 30 µm per C40 click. Start there, then let the drawdown time tell you which way to go." };
   const mill = () => GRINDERS[prefs.mill] || GRINDERS.c40;
   const isC40 = () => !GRINDERS[prefs.mill] || prefs.mill === "c40";
   // C40 clicks → this grinder: { txt, v, atMax, atMin }
@@ -2157,10 +2165,10 @@ footer .fcol > p + .foot-x{margin-top:14px}
   // (uses the V60-band slope: these are small corrections around a V60 setting)
   const stepsFor = (n) => { const G = mill(), x = n * (G.b - G.a) / 10; return G.dec ? x.toFixed(1) : String(Math.max(1, Math.round(x / G.q))); };
   const unitFor = (num) => { const G = mill(); return G.dec ? G.unit : G.unit + (num === "1" ? "" : "s"); };
-  const cl = (n) => { if (isC40()) return `${n} click${n === 1 ? "" : "s"}`; const k = stepsFor(n); return `${k} ${unitFor(k)}`; };
-  const clRange = (a, b) => { if (isC40()) return `${a}–${b} clicks`; const x = stepsFor(a), y = stepsFor(b); return x === y ? `${x} ${unitFor(x)}` : `${x}–${y} ${unitFor(y)}`; };
+  const cl = (n) => { if (isC40()) return `${n} click${n === 1 ? "" : "s"}`; if (mill().words) return `about ${n * 30} µm`; const k = stepsFor(n); return `${k} ${unitFor(k)}`; };
+  const clRange = (a, b) => { if (isC40()) return `${a}–${b} clicks`; if (mill().words) return `about ${a * 30}–${b * 30} µm`; const x = stepsFor(a), y = stepsFor(b); return x === y ? `${x} ${unitFor(x)}` : `${x}–${y} ${unitFor(y)}`; };
   // one line for headers, copy text and the journal
-  const grindLine = (clicks) => isC40() ? `${clicks} clicks` : `${onMill(clicks).txt} ${mill().short}`;
+  const grindLine = (clicks) => isC40() ? `${clicks} clicks` : mill().words ? `${gw(clicks)[1].toLowerCase()} grind, about ${microns(clicks)} µm` : `${onMill(clicks).txt} ${mill().short}`;
 
   // ---------- methods ----------
   /* C40 ZERO POINT AND BASE CLICKS
@@ -3275,14 +3283,14 @@ footer .fcol > p + .foot-x{margin-top:14px}
       <div class="clk-sum">${rows.map(([a, b]) => `<span>${esc(a)}</span><span>${b}</span>`).join("")}<span class="tot">Grind at</span><span class="tot">${r.clicks} clicks</span></div>
       ${p.clamped ? `<p class="muted">Held inside ${p.range ? p.range.join("–") : "16–45"} clicks, the useful ${esc(BREWERS[r.brewer].name)} range on a C40.</p>` : ""}
       <p class="muted"><b style="color:var(--ink)">Where ${p.base} comes from.</b> ${esc(B.note)} Published for this recipe: ${esc(B.pub)}. <a href="${B.url}" target="_blank" rel="noopener">${esc(B.src)}</a></p>
-      ${isC40() ? "" : `<p class="muted"><b style="color:var(--ink)">On your ${esc(mill().name)}.</b> ${r.clicks} C40 clicks → ${esc(onMill(r.clicks).txt)} (${esc(mill().lbl)}). ${esc(mill().how || "Converted with Honest Coffee Guide’s V60 bands")}, which put C40 15–25 clicks level with ${esc(mill().show(mill().a))}–${esc(mill().show(mill().b))} here; in between and either side it’s linear. Units and zero points vary, so treat it as a starting point and dial in by drawdown time. <a href="${mill().src}" target="_blank" rel="noopener">Source</a></p>`}
+      ${isC40() ? "" : mill().words ? `<p class="muted"><b style="color:var(--ink)">No grinder setting.</b> ${r.clicks} C40 clicks is about ${microns(r.clicks)} µm: ${esc(gw(r.clicks)[1].toLowerCase())}, ${esc(gw(r.clicks)[2])}. ${esc(mill().how)} Running fast and sour: finer. Slow and bitter or dry: coarser.</p>` : `<p class="muted"><b style="color:var(--ink)">On your ${esc(mill().name)}.</b> ${r.clicks} C40 clicks → ${esc(onMill(r.clicks).txt)} (${esc(mill().lbl)}). ${esc(mill().how || "Converted with Honest Coffee Guide’s V60 bands")}, which put C40 15–25 clicks level with ${esc(mill().show(mill().a))}–${esc(mill().show(mill().b))} here; in between and either side it’s linear. Units and zero points vary, so treat it as a starting point and dial in by drawdown time. <a href="${mill().src}" target="_blank" rel="noopener">Source</a></p>`}
       <p class="muted"><b style="color:var(--ink)">My C40 zero.</b> If your 0 isn’t burrs-touching, or recipes you trust always need a click or two more, set the offset once with − / + above. Every recipe shifts by it. Saved on this device; default 0.</p>`;
     // always-visible math + zero control
     const short = { dose: "dose", roast: "roast", process: "process", tea: "tea-like", learn: "your log", zero: "zero", iced: "iced" };
     const terms = ["dose", "roast", "process", "tea", "learn", "zero", "iced"].filter((k) => p[k]).map((k) => `${signed(p[k])} ${short[k]}`);
     const g = onMill(r.clicks);
     $("zrMath").innerHTML = [`${p.base} base (${METHOD_REF[r.m]})`, ...terms].map(esc).join(" ")
-      + (isC40() ? ` = <b>${r.clicks} clicks</b>` : ` = ${r.clicks} C40 clicks → <b>${esc(g.txt)} on the ${esc(mill().short)}</b>`);
+      + (isC40() ? ` = <b>${r.clicks} clicks</b>` : mill().words ? ` = ${r.clicks} C40 clicks → <b>${esc(g.txt.toLowerCase())}, about ${microns(r.clicks)} µm</b>` : ` = ${r.clicks} C40 clicks → <b>${esc(g.txt)} on the ${esc(mill().short)}</b>`);
     kitState();
   }
   // grinder and zero controls sit above the questions, so they update even before there's a full recipe
@@ -3512,7 +3520,7 @@ footer .fcol > p + .foot-x{margin-top:14px}
       : ["time", "4 – 5", "min", "medium heat, lid open", ""];
     const S = [
       ["brewer", esc(BREWERS[r.brewer].name), "", "brewer", ""],   // first, on a line of its own, in the big figures' size
-      ["key", onMill(r.clicks).txt, "", isC40() ? mill().lbl : mill().name, cBadges.join(", ")],   // just the grinder's name, like Kettle and Coffee
+      ["key", onMill(r.clicks).txt, "", isC40() ? mill().lbl : mill().words ? `${gw(r.clicks)[2]}, about ${microns(r.clicks)} µm` : mill().name, cBadges.join(", ")],   // just the grinder's name, like Kettle and Coffee
       ["dose", r.dose, "g", r.brewer === "moka" ? `basket, full and level (${doseName(r)} pot)` : K === "shot" ? "coffee in" : "coffee", ""],
       ["water", r.water, "g", K === "shot" ? `out, 1:${r.ratio}` : r.brewer === "moka" ? "hot, to just under the valve" : r.brewer === "cold" ? "cold water, then dilute to taste" : r.iced ? "hot water" : "water", yours("water")],
       ...(r.iced ? [["ice", r.ice, "g", r.brewer === "aero" ? "ice in the cup" : "ice in the jug", ""]] : []),
@@ -3532,7 +3540,7 @@ footer .fcol > p + .foot-x{margin-top:14px}
       $("tech").innerHTML = `<span><b>Agitation: ${AGIT[r.agit]}.</b> ${agitTxt}</span>
       <span class="muted">Bloom ${bloomTimes}× the dose. ${prepFor(r)}</span>`;
     } else $("tech").innerHTML = `<span>${esc(prepFor(r))}</span>`;
-    const sum = `${isC40() ? r.clicks + " clk" : onMill(r.clicks).txt + " " + mill().short} / ${r.dose} → ${r.water} g${r.temp != null ? ` / ${r.temp}°` : ""}`;
+    const sum = `${isC40() ? r.clicks + " clk" : (onMill(r.clicks).txt + " " + mill().short).trim()} / ${r.dose} → ${r.water} g${r.temp != null ? ` / ${r.temp}°` : ""}`;
     const ARR = '<svg class="arr" viewBox="0 0 18 10" aria-hidden="true"><path d="M1 5h15M12 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     const sumHtml = esc(sum).replace(" → ", ARR);
     $("startSum").innerHTML = sumHtml; $("dockSum").innerHTML = sumHtml;
@@ -3716,8 +3724,11 @@ footer .fcol > p + .foot-x{margin-top:14px}
         if (o.key === "roast" && ROAST_SW[v]) b.insertAdjacentHTML("afterbegin", `<i class="bean-dot" style="--c:${ROAST_SW[v]}"></i>`);
         g.appendChild(b);
       });
+      const offs = [...new Set(o.items.map((x) => x[2]).filter(Boolean))];
+      if (offs.length) { const n = document.createElement("p"); n.className = "off-note";
+        n.textContent = o.items.every((x) => x[2]) ? cap1(offs[0]) + "." : o.items.filter((x) => x[2]).map((x) => `${x[1]}: ${x[2]}`).join(". ") + "."; row._note = n; }
       if (o.key === "roast") { g.insertAdjacentHTML("beforeend", PHOTO_CHIP); g.querySelector(".rp-go").onclick = () => beanScan("rpMsgOpts"); }
-      row.append(lab, g); box.appendChild(row);
+      row.append(lab, g); if (row._note) row.appendChild(row._note); box.appendChild(row);
       if (o.key === "roast") { const m = document.createElement("div"); m.id = "rpMsgOpts"; m.className = "rp-msg"; row.appendChild(m); paintPhoto(m); }   // in the row, under its pills
     });
   }
