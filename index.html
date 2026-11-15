@@ -1620,6 +1620,15 @@ footer .fcol + .fcol > .foot-x{margin-top:10px}
 .specs .spec.brewer{grid-column:1 / -1!important;order:0!important}
 .specs .spec.brewer b{white-space:nowrap;font-size:min(var(--fs-l), 8.6cqi)!important}
 @media (min-width:761px){ .specs .spec.brewer b{font-size:var(--fs-l)!important} }
+/* closing text: "Brew" turns into what each brewer asks of you (pour, swirl, press…). The old word's letters lift off and
+   blur away one after another, the new ones rise into place. The box keeps one width, so the lines never move */
+.litext .verb{display:inline-block;position:relative;white-space:nowrap;vertical-align:baseline;transition:color .35s ease}
+.litext .verb i{font-style:normal;display:inline-block}
+.litext .verb .vw.out{position:absolute;top:0}
+.litext .verb .vw.out i{animation:verbOut .42s cubic-bezier(.5,0,.8,.4) both;animation-delay:calc(var(--i) * 28ms)}
+.litext .verb .vw.in i{animation:verbIn .55s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(120ms + var(--i) * 36ms)}
+@keyframes verbOut{to{transform:translateY(-.55em) rotate(-6deg);opacity:0;filter:blur(6px)}}
+@keyframes verbIn{from{transform:translateY(.6em) rotate(5deg);opacity:0;filter:blur(6px)}}
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1793,7 +1802,7 @@ footer .fcol + .fcol > .foot-x{margin-top:10px}
 
 
   <section class="sec outro" aria-label="How it learns">
-    <p class="litext" id="litext"><span>Every</span> <span>bag</span> <span>is</span> <span>different</span> <span>and</span> <span>so</span> <span>is</span> <span>every</span> <span>brew:</span> <span>the</span> <span>roast,</span> <span>your</span> <span>mood,</span> <span>the</span> <span>grind,</span> <span>your</span> <span>tastebuds</span> <span>that</span> <span>day,</span> <span>the</span> <span>water,</span> <span>your</span> <span>nose,</span> <span>the</span> <span>pour.</span> <span>None</span> <span>of</span> <span>it</span> <span>sits</span> <span>still,</span> <span>and</span> <span>that’s</span> <span>the</span> <span>fun</span> <span>of</span> <span>it.</span> <i class="pb" aria-hidden="true"></i> <span>Under</span> <span>the</span> <span>hood</span> <span>it’s</span> <span>a</span> <span>brew</span> <span>log.</span> <span>Dose,</span> <span>ratio,</span> <span>clicks,</span> <span>kettle</span> <span>temperature</span> <span>and</span> <span>drawdown,</span> <span>all</span> <span>on</span> <span>record.</span> <span>Change</span> <span>one</span> <span>variable</span> <span>per</span> <span>brew,</span> <span>keep</span> <span>what</span> <span>works</span> <span>and</span> <span>repeat</span> <span>it</span> <span>to</span> <span>the</span> <span>gram</span> <span>and</span> <span>the</span> <span>second.</span> <span>Dialled</span> <span>in</span> <span>once,</span> <span>dialled</span> <span>in</span> <span>every</span> <span>time.</span> <i class="pb" aria-hidden="true"></i> <span>This</span> <span>is</span> <span>a</span> <span>starting</span> <span>point,</span> <span>not</span> <span>a</span> <span>finish</span> <span>line.</span> <span>Brew</span> <span>it,</span> <span>taste</span> <span>it,</span> <span>write</span> <span>down</span> <span>what</span> <span>you</span> <span>got,</span> <span>and</span> <span>the</span> <span>next</span> <span>cup</span> <span>lands</span> <span>a</span> <span>little</span> <span>closer</span> <span>to</span> <span>the</span> <span>one</span> <span>you</span> <span>wanted.</span> <span>The</span> <span>best</span> <span>cup</span> <span>you’ve</span> <span>ever</span> <span>tasted</span> <span>might</span> <span>be</span> <span>one</span> <span>brew</span> <span>away.</span> <span class="outro-end">Brew something good.</span></p>
+    <p class="litext" id="litext"><span>Every</span> <span>bag</span> <span>is</span> <span>different</span> <span>and</span> <span>so</span> <span>is</span> <span>every</span> <span>brew:</span> <span>the</span> <span>roast,</span> <span>your</span> <span>mood,</span> <span>the</span> <span>grind,</span> <span>your</span> <span>tastebuds</span> <span>that</span> <span>day,</span> <span>the</span> <span>water,</span> <span>your</span> <span>nose,</span> <span>the</span> <span>pour.</span> <span>None</span> <span>of</span> <span>it</span> <span>sits</span> <span>still,</span> <span>and</span> <span>that’s</span> <span>the</span> <span>fun</span> <span>of</span> <span>it.</span> <i class="pb" aria-hidden="true"></i> <span>Under</span> <span>the</span> <span>hood</span> <span>it’s</span> <span>a</span> <span>brew</span> <span>log.</span> <span>Dose,</span> <span>ratio,</span> <span>clicks,</span> <span>kettle</span> <span>temperature</span> <span>and</span> <span>drawdown,</span> <span>all</span> <span>on</span> <span>record.</span> <span>Change</span> <span>one</span> <span>variable</span> <span>per</span> <span>brew,</span> <span>keep</span> <span>what</span> <span>works</span> <span>and</span> <span>repeat</span> <span>it</span> <span>to</span> <span>the</span> <span>gram</span> <span>and</span> <span>the</span> <span>second.</span> <span>Dialled</span> <span>in</span> <span>once,</span> <span>dialled</span> <span>in</span> <span>every</span> <span>time.</span> <i class="pb" aria-hidden="true"></i> <span>This</span> <span>is</span> <span>a</span> <span>starting</span> <span>point,</span> <span>not</span> <span>a</span> <span>finish</span> <span>line.</span> <span class="verb" id="verb"><i class="vw">Brew</i></span> <span>it,</span> <span>taste</span> <span>it,</span> <span>write</span> <span>down</span> <span>what</span> <span>you</span> <span>got,</span> <span>and</span> <span>the</span> <span>best</span> <span>cup</span> <span>you’ve</span> <span>ever</span> <span>tasted</span> <span>might</span> <span>be</span> <span>one</span> <span>brew</span> <span>away.</span> <span class="outro-end">Brew something good.</span></p>
     <button type="button" class="hero-pill" data-jump="recipe">Back to the recipe</button>
   </section>
 
@@ -4872,6 +4881,25 @@ footer .fcol + .fcol > .foot-x{margin-top:10px}
   $("ddIn").addEventListener("input", updateSuggest);
   $("saveLog").onclick = saveLog;
   // bottom: light the words one by one as the paragraph scrolls up through the screen
+  // the first verb of the last paragraph takes turns: what you do with each brewer
+  (function verbs() {
+    const box = $("verb"); if (!box || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const V = ["Brew", "Pour", "Bloom", "Swirl", "Steep", "Stir", "Press"]; let k = 0, seen = false, t = null;
+    const word = (w, cls) => { const el = document.createElement("i"); el.className = "vw " + cls; el.setAttribute("aria-hidden", cls === "out");
+      [...w].forEach((ch, i) => { const l = document.createElement("i"); l.textContent = ch; l.style.setProperty("--i", i); el.appendChild(l); }); return el; };
+    // the box is as wide as the widest verb, so the paragraph never re-wraps when the word changes. A shorter word sits
+    // against "it" (the spare room falls after the full stop before it), or against the margin when it starts a line
+    const fit = () => { box.style.width = ""; const cur = box.querySelector(".vw:not(.out)"), keep = cur.textContent; let w = 0;
+      V.forEach((v) => { cur.textContent = v; w = Math.max(w, cur.offsetWidth); }); cur.textContent = keep;
+      box.style.width = Math.ceil(w) + "px"; box.style.textAlign = box.offsetLeft < 4 ? "left" : "right"; };
+    const next = () => { if (!seen || document.hidden) return;
+      const old = box.querySelector(".vw:not(.out)"); k = (k + 1) % V.length;
+      const out = word(old.textContent, "out"), inn = word(V[k], "in");
+      out.style[box.style.textAlign === "right" ? "right" : "left"] = "0";
+      box.replaceChildren(out, inn); setTimeout(() => out.remove(), 700); };
+    fit(); addEventListener("resize", fit); if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+    new IntersectionObserver((es) => { seen = es[0].isIntersecting; if (seen && !t) t = setInterval(next, 2200); if (!seen && t) { clearInterval(t); t = null; } }).observe(box);
+  })();
   (function outro() {
     const words = [...document.querySelectorAll("#litext > span:not(.outro-end)")], end = document.querySelector(".outro-end");
     if (!words.length) return;
