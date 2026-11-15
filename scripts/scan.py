@@ -973,12 +973,12 @@ def find_notes(item):
 
 
 def clean_name(title, roaster, origin):
-    title = re.sub(r"<br\s*/?>", " ", title, flags=re.I)
+    title = re.sub(r"<br\s*/?>", " ", html.unescape(title), flags=re.I)
     title = re.sub(r"<[^>]+>", "", title)
-    title = re.sub(r"^\s*\d{1,2}/\d{1,2}\s+\d{1,2}:\d{2}\s*[~〜]\s*", "", title)   # Philocoffea: "11/16 10:00~" release stamp
+    title = re.sub(r"^\s*\d{1,2}/\d{1,2}\s+\d{1,2}:\d{2}\s*[~〜～]\s*", "", title)   # Philocoffea: "11/16 10:00~" release stamp
     title = re.sub(r"\s*/\s*$", "", title)   # Fuglen Tokyo: "Arbegona /"
     m = re.match(r"^\s*\d{3}\s+(\S.*)$", title)   # Philocoffea: "467 Ethiopia Bombe Washed", a lot number in front of the origin
-    if m and find_origin(m.group(1)[:25]):
+    if m and (find_origin(m.group(1)[:25]) or re.match(r"[A-Z]", m.group(1))):
         title = m.group(1)
     title = re.sub(r"\s{2,}", " ", title).strip()
     title = re.sub(r"\s*[•·]\s*$", "", title)
@@ -1053,7 +1053,8 @@ def tidy_name(name, roaster):
     """'Buy Specialty Coffee Beans Online UK | Nude Coffee Roasters' -> '' (caller falls back);
     'Farm • Sagastume Geisha | doubleshot' -> 'Sagastume Geisha'; 'Limited Release | Franken Grind Blend' -> 'Franken Grind Blend';
     'EAST BLEND' -> 'East Blend'."""
-    name = re.sub(r"\s*[\u3000-\u9fff\uac00-\ud7af\uff00-\uffef]+", "", name).strip()   # Big Sur: the Chinese name after the English one
+    name = re.sub(r"\s*[\u3000-\u9fff\uac00-\ud7af\uff00-\uffef]+\s*", " ", name).strip()   # Big Sur: the Chinese name after the English one
+    name = re.sub(r"\s{2,}", " ", re.sub(r"\s*/\s*$", "", name)).strip()   # Fuglen Tokyo: "Arbegona / アルベゴナ" leaves a slash
     name = re.sub(r"^\s*(?:\d{2,4}(?:/\d{2,4})?\s+)?new (?:season|crop)\b\s*[-–—:|]?\s*", "", name, flags=re.I)   # "25/26 New Season Ethiopia …"
     name = re.sub(r"\s*\[[^\]]{2,40}\]\s*$", "", name)   # Mellow: "… [Syrina]", the variety in square brackets is a tag
     if re.search(r"\s[•·]\s", name):
