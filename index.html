@@ -1724,7 +1724,7 @@ footer .fcol > p + .foot-x{margin-top:14px}
 .specs .spec b, .specs .spec .sub2{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* Remove? stays the accent even on a coffee that's in my bags (the green In my bags rule came later and won) */
 .shelf .item > .r > .bag-add.in.armed{background:var(--hl)!important;color:var(--on-hl)!important}
-/* brew screen, less but better: three sizes only (15 for words, 24 for what you act on, the hero for the weight),
+/* brew screen, less but better: two sizes inside the card (24 for every line of words, the hero for the weight),
    one left edge, no boxes inside the card. The state and the clock share a line and a size; the label, the weight and
    what to do sit together as one block in the middle; what comes next and the bar sit at the bottom */
 .bv .bv-now{display:flex!important;flex-direction:column;row-gap:0!important;padding:20px!important}
@@ -1733,10 +1733,10 @@ footer .fcol > p + .foot-x{margin-top:14px}
 .bv .bv-now.over .bv-pill{color:var(--hl)!important}
 .bv .bv-clock{font:500 24px/1.2 var(--sans)!important;color:inherit!important;font-variant-numeric:tabular-nums}
 .bv .bv-now{color:var(--ink)} .bv .bv-now.pour{color:var(--bg)}
-.bv .bv-lbl{margin-top:auto!important;padding-bottom:4px;font:500 15px/1.3 var(--sans)!important;height:auto!important}
+.bv .bv-lbl{margin-top:auto!important;padding-bottom:4px;font:500 24px/1.2 var(--sans)!important;height:auto!important}
 .bv .bv-big{line-height:.9;display:flex!important;justify-content:flex-start!important;align-items:baseline;text-align:left!important;width:100%;margin-left:-.04em}
-.bv .bv-how{margin:10px 0 auto!important;font:500 24px/1.25 var(--sans)!important;letter-spacing:-.02em}
-.bv .bv-sub{font:500 15px/1.3 var(--sans)!important;height:auto!important;padding-bottom:10px}
+.bv .bv-how{display:block!important;-webkit-line-clamp:unset!important;overflow:visible!important;max-height:none!important;height:auto!important;margin:10px 0 auto!important;font:500 24px/1.25 var(--sans)!important;letter-spacing:-.02em}
+.bv .bv-sub{font:500 24px/1.2 var(--sans)!important;height:auto!important;padding-bottom:12px}
 .bv .bv-sub b{font:inherit!important;color:inherit!important}
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
@@ -2289,7 +2289,7 @@ footer .fcol > p + .foot-x{margin-top:14px}
   // The bed is never stirred, so fines stay put and the cup stays clear; the long contact still pulls out sweetness and depth
   function teaPulses(add, dose, water, t0) {
     const bl = Math.round(dose * 2.5);
-    add(0, bl, "Bloom: a slow pour in the centre only, just enough to wet it all. No swirl", 15);
+    add(0, bl, "Bloom: spiral out from the centre, short of the paper, until it’s all wet. No swirl", 15);
     for (let i = 1; i <= 5; i++) add(t0 + (i - 1) * 30, i === 5 ? water : Math.round(bl + ((water - bl) * i) / 5),
       i === 5 ? "Last pulse in the centre, then let it drain untouched" : "Centre only: a coin-sized circle, low and slow", 15);
   }
@@ -4295,7 +4295,8 @@ footer .fcol > p + .foot-x{margin-top:14px}
   function setNow(cls, pill, lbl, big, unit, how, sub) {
     $("bvNow").className = "bv-now " + cls; $("bvState").textContent = pill; $("bvLbl").textContent = lbl;
     $("bvBig").textContent = big; $("bvUnit").textContent = unit; $("bvUnit").hidden = !unit;
-    $("bvHow").textContent = how; $("bvSub").innerHTML = sub;   // sub is built from numbers only
+    $("bvHow").textContent = how && !/[.!?…]$/.test(how.trim()) ? how.trim() + "." : how;   // every instruction ends with a full stop
+    $("bvSub").innerHTML = sub;   // sub is built from numbers only
   }
 
   function tick() {
