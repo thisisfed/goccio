@@ -15,6 +15,7 @@ import re
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
@@ -305,6 +306,7 @@ def strip_html(s):
 def get_json(url, tries=2):
     for i in range(tries):
         try:
+            url = urllib.parse.quote(url, safe=":/?&=%#+,;@!$'()*~")   # accented paths (Dayglow) broke the request
             req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/json"})
             with urllib.request.urlopen(req, timeout=25) as r:
                 ctype = r.headers.get("Content-Type", "")
@@ -430,6 +432,7 @@ def _fetch_shopify(shop, base, extra=""):
 def get_text(url, tries=2, limit=2_000_000):
     for i in range(tries):
         try:
+            url = urllib.parse.quote(url, safe=":/?&=%#+,;@!$'()*~")   # accented paths (Dayglow) broke the request
             req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "text/html,application/xml;q=0.9,*/*;q=0.8"})
             with urllib.request.urlopen(req, timeout=25) as r:
                 raw = r.read(limit)
@@ -902,14 +905,16 @@ def find_process(text):
         return "Decaf"
     for pat, name in [(r"anaerobic natural", "Anaerobic natural"), (r"anaerobic washed", "Anaerobic washed"),
                       (r"anaerobic honey", "Anaerobic honey"), (r"carbonic maceration", "Carbonic maceration"),
-                      (r"co-?ferment", "Co-fermented"), (r"thermal shock", "Thermal shock"),
+                      (r"co-?ferment", "Co-fermented"), (r"thermal shock|\bthermic\b", "Thermal shock"),
+                      (r"mac[ée]ration carbonique|carbonic", "Carbonic maceration"),
                       (r"yeast|inoculat|\bkoji\b|mosto", "Yeast fermented"),
                       (r"anaerobic", "Anaerobic"), (r"double fermentation|double ferment", "Double fermented"),
                       (r"anaerob", "Anaerobic"),
+                      (r"\baerobic\b", "Aerobic fermentation"), (r"\bcultur(?:ed|ing)\b", "Yeast fermented"),
                       (r"wet[- ]hull|giling basah", "Wet-hulled"),
-                      (r"\bnatural\b|\bnaturalna\b|dry[- ]process|\bnaturale\b|\bnaturel\b|\bnatur\b|naturlig|\bnatuurlijk", "Natural"),
+                      (r"\bnatural\b|\bnaturally (?:processed|dried)\b|\bnaturalna\b|\bnature\b(?= mac[ée]ration| process)|dry[- ]process|\bnaturale\b|\bnaturel\b|\bnatur\b|naturlig|\bnatuurlijk", "Natural"),
                       (r"\bhoney\b|pulped natural|\bmiel\b|\bhonig\b|\bmiele\b|\bmiodowa\b", "Honey"),
-                      (r"\bwashed\b|wet[- ]process|\blavato\b|gewaschen|\blavé\b|\blavado\b|tvättad|\bvasket\b|gewassen|vaskad|\bmyta\b|\bmyt[aey]\b", "Washed")]:
+                      (r"\bwashed\b|\b(?:extended|double|fully) wash\b|wet[- ]process|\blavato\b|gewaschen|\blavé\b|\blavado\b|tvättad|\bvasket\b|gewassen|vaskad|\bmyta\b|\bmyt[aey]\b", "Washed")]:
         if re.search(pat, t):
             return name
     return None
@@ -1301,10 +1306,57 @@ def raw_labelled(raw, k):
     Works even when the page wraps its product block in something _visible() strips."""
     words = PAGE_LABEL[k].pattern.split(r"\s*(?::|\n)")[0]
     for m in re.finditer(r">\s*" + words + r"\s*:?\s*<", raw, re.I):
-        after = strip_html(raw[m.end() - 1:m.end() + 500])
+        after = strip_html(raw[m.end() - 1:m.end() + 1500])
         got = labelled(("Process" if k == "process" else "Variety") + ":\n" + after, k)
         if got:
             return got
+    return None
+
+
+def tidy_variety(v):
+    """A variety written in a theme block or a value-first line: no "variety" word, no process, natural capitals."""
+    v = re.sub(r"\b(?:variet(?:y|ies|al|als)|cultivars?)\b", " ", v, flags=re.I)
+    for part in re.split(r"\s+[-–|/]\s+|\s*\|\s*", v):
+        part = part.strip(" -–/|,:.\xa0")
+        if not part or find_process(part) or re.search(r"process", part, re.I):
+            continue
+        got = labelled(f"Variety:\n{part}\n", "variety")
+        if got:
+            return " ".join(w.capitalize() if w.isalpha() and (w.isupper() or w.islower()) and len(w) > 2 else w for w in got.split())
+    return None
+
+
+def class_labelled(raw, k):
+    """A short block the shop's theme names after the field: <p class="product__process">washed process</p>,
+    <span class="coffeeTitle_varietyProcess">CHIROSO - WASHED</span>; or the process in a product's class list
+    (WooCommerce: "process_traditional-washed", "pa_process-natural")."""
+    want = r"process" if k == "process" else r"variet|cultivar"
+    for m in re.finditer(r'<([a-z][a-z0-9-]*)\b[^>]*?\b(?:class|id)\s*=\s*["\'][^"\']*?(?:' + want + r')[^"\']*["\'][^>]*>', raw, re.I):
+        end = raw.find("</" + m.group(1), m.end())
+        if end < 0 or end - m.end() > 600:
+            continue
+        inner = strip_html(raw[m.end():end]).strip()
+        if not inner or len(inner) > 80:
+            continue
+        got = find_process(inner) if k == "process" else tidy_variety(inner)
+        if got:
+            return got
+    if k == "process":
+        m = re.search(r'class\s*=\s*["\'][^"\']*\b(?:pa_)?process[_-]([a-z][a-z-]{2,40})', raw, re.I)
+        if m:
+            return find_process(m.group(1).replace("-", " "))
+    return None
+
+
+def suffix_labelled(text, k, start=0):
+    """A line that is the value followed by the field's name: "washed process", "typica variety"."""
+    rx = re.compile(r"(?im)^[ \t]*([^\n:]{2,40}?)\s+process(?:ed)?[ \t]*$") if k == "process" else \
+        re.compile(r"(?im)^[ \t]*([^\n:]{2,50}?)\s+(?:variet(?:y|ies|al)|cultivars?)[ \t]*$")
+    for t in ((text[start:start + 6000], text) if start else (text,)):
+        for m in rx.finditer(t):
+            got = find_process(m.group(1)) if k == "process" else tidy_variety(m.group(1))
+            if got:
+                return got
     return None
 
 
@@ -1325,9 +1377,12 @@ def _visible(raw):
     return strip_html(raw)
 
 
+GLUED_LABEL = {"process": re.compile(r"(?<=[a-z])Process\s*:"), "variety": re.compile(r"(?<=[a-z])Variety\s*:")}
+
+
 def labelled(text, key, start=0):
     """The value written after a "Process:" / "Variety:" label, or None."""
-    for m in PAGE_LABEL[key].finditer(text, start):
+    for m in [*PAGE_LABEL[key].finditer(text, start), *GLUED_LABEL[key].finditer(text, start)]:
         window = text[m.end():m.end() + 90]
         if key == "process":
             got = find_process(window)
@@ -1335,6 +1390,8 @@ def labelled(text, key, start=0):
                 return got
         else:
             line = next((l.strip(" :-\xa0\t") for l in window.split("\n") if l.strip(" :-\xa0\t")), "")
+            # labels run on one line ("Variety: Castillo Process: Washed", "GeishaProcess: Washed"): stop at the next one
+            line = re.split(r"(?:\s+|(?<=[a-z]))(?=[A-Z][a-z]+(?:\s[A-Za-z]+){0,3}\s*:)", line)[0].strip(" :-\xa0\t")
             if line and not PAGE_LABEL["process"].match(line + ":") and len(line) <= 60 and \
                     (first(VARIETIES, line) or re.search(r"[A-Z][a-z]+|\d{3,}", line)):
                 junk = re.search(r"\b(?:process|altitude|elevation|masl|harvest|origin|region|notes?|producer|farm)\b|\b(?:19|20)\d\d\b", line, re.I)
@@ -1503,7 +1560,10 @@ def add_page_details(recs, roaster, old):
                     rec["roast_level"] = "medium-dark" if r_ == "mdark" else "dark"
         got = False
         for k in need:
-            v = labelled(text, k, start) or (labelled(text, k) if start else None) or raw_labelled(raw, k) or from_json(raw, k)
+            v = labelled(text, k, start) or (labelled(text, k) if start else None) or raw_labelled(raw, k) or from_json(raw, k) \
+                or class_labelled(raw, k) or suffix_labelled(text, k, start)
+            if not v and k == "process" and not rec.get("blend"):   # a sentence about processing in the description
+                v = process_from_text(text[start:start + 4000])
             if v:
                 rec[k], rec[k + "_from"] = v, "page"
                 got = True
@@ -1840,6 +1900,15 @@ def main():
         for k, v in reasons.items():
             if k != "sold out":
                 print(f"      {k}: " + " | ".join(v[:6]))
+    # watch list: coffees still without a process, by roaster, so a new page layout shows up in the log
+    miss = {}
+    for x in found:
+        if not x.get("process") and not x.get("blend"):
+            miss.setdefault(x["roaster"], []).append(x["name"])
+    if miss:
+        print(f"\nNo process found ({sum(len(v) for v in miss.values())} single origins), most first:")
+        for name, xs in sorted(miss.items(), key=lambda kv: -len(kv[1]))[:25]:
+            print(f"  {name}: {len(xs)} ({' | '.join(xs[:4])})")
     if REJECTED:
         print(f"\nNot coffee beans, skipped ({len(REJECTED)}):")
         for line in REJECTED:
