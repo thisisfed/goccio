@@ -56,7 +56,8 @@ COUNTRY_ALIASES = {
 SYMBOL = {"GBP": "£", "EUR": "€", "USD": "$", "CAD": "CA$", "AUD": "A$", "NZD": "NZ$", "JPY": "¥", "DKK": " kr", "SEK": " kr", "NOK": " kr",
           "PLN": " zł", "CZK": " Kč", "CHF": "CHF "}
 COUNTRY_CCY = {"GB": "GBP", "US": "USD", "CA": "CAD", "AU": "AUD", "NZ": "NZD", "JP": "JPY", "DK": "DKK", "SE": "SEK", "NO": "NOK",
-               "PL": "PLN", "CZ": "CZK", "CH": "CHF", "CN": "CNY", "HK": "HKD", "TW": "TWD", "KR": "KRW", "SG": "SGD", "MY": "MYR"}
+               "PL": "PLN", "CZ": "CZK", "CH": "CHF", "CN": "CNY", "HK": "HKD", "TW": "TWD", "KR": "KRW", "SG": "SGD", "MY": "MYR",
+               "TH": "THB", "PH": "PHP", "ID": "IDR"}
 
 VARIETIES = ["Gesha", "Geisha", "Sidra", "Pink Bourbon", "Wush Wush", "Eugenioides", "Laurina",
              "Sudan Rume", "SL28", "SL34", "Ruiru 11", "Batian", "Red Bourbon", "Yellow Bourbon",
