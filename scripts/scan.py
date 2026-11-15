@@ -1242,11 +1242,9 @@ def classify(item, roaster):
     if not is_coffee:
         return _drop(roaster, "no origin found" if not origin else "no coffee details", title)
     filtery = bool(FILTERY.search(blob)) or bool(re.search(r"roasted for filter|filter roast|omni roast", item["body"], re.I))
-    espresso_only = bool(ESPRESSO.search(title + " " + item["type"])) and not filtery
-    if espresso_only:
-        return _drop(roaster, "espresso (title/type)", title)
-    if not filtery and ESPRESSO.search(" ".join(item["tags"])) and not FILTERY.search(item["body"]):
-        return _drop(roaster, "espresso (tags)", title)
+    # espresso-only coffees stay in (the site brews espresso and moka too); they're marked as espresso roasts
+    espresso_only = (bool(ESPRESSO.search(title + " " + item["type"])) and not filtery) \
+        or (not filtery and bool(ESPRESSO.search(" ".join(item["tags"]))) and not FILTERY.search(item["body"]))
     process = find_process(title + " " + " ".join(item["tags"])) or process_from_text(item["body"])
     variety = first(VARIETIES, title + " " + " ".join(item["tags"])) or first(VARIETIES, item["body"])
     rec = {
@@ -1261,7 +1259,7 @@ def classify(item, roaster):
         "bag_g": bag_grams(item),
         "published": item["published"] or None,
         "roast": "filter" if filtery else "omni / unlabelled",
-        "roast_for": roast_for(item),
+        "roast_for": "espresso" if espresso_only else roast_for(item),
         "blend": True if blend else None,
         "roast_level": roast_level,
         "roast": roast or ("mdark" if roast_level == "medium-dark" else "dark" if roast_level else None),
@@ -1785,7 +1783,7 @@ def main():
 
     # remember every page seen, and give duplicates of one coffee (same roaster, name, process, variety) the earliest date
     # any of them was seen: whichever page ends up listed, the coffee has been around since then
-    same = lambda x: (x["roaster"], x["name"].lower(), (x.get("process") or "").lower(), (x.get("variety") or "").lower())
+    same = lambda x: (x["roaster"], x["name"].lower(), (x.get("process") or "").lower(), (x.get("variety") or "").lower(), x.get("roast_for") == "espresso")
     earliest = {}
     for x in found:
         if x.get("found"):   # looked up again here, by the address the record ends up with (some change while being read)
@@ -1813,7 +1811,8 @@ def main():
     # one listing per coffee: drop size/variant duplicates and stores that share a catalogue
     seen, per_roaster, deduped = set(), {}, []
     for x in found:
-        key_same = (x["roaster"], x["name"].lower(), (x.get("process") or "").lower(), (x.get("variety") or "").lower())
+        # a roaster's filter and espresso versions of one coffee are two coffees
+        key_same = (x["roaster"], x["name"].lower(), (x.get("process") or "").lower(), (x.get("variety") or "").lower(), x.get("roast_for") == "espresso")
         key_shared = (x["name"].lower(), x.get("price"), x.get("origin"))
         if key_same in seen or key_shared in seen:
             continue

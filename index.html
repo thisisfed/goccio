@@ -1625,6 +1625,8 @@ footer .fcol + .fcol > .foot-x{margin-top:10px}
 .opt > .rp-msg[hidden]{display:none}
 p.bc{display:block;margin:0;color:var(--ink);font-size:var(--fs-s);line-height:1.35}
 p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
+/* jumping to a section: its top rule lands exactly behind the top bar's bottom rule (the bar's last pixel) */
+section.sec{scroll-margin-top:calc(var(--top-h, 49px) - 1px)!important}
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1706,7 +1708,7 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
       <div class="opt"><label for="shelfQ">Search</label><input type="search" id="shelfQ" placeholder="Roaster, coffee, origin, process…"></div>
       <div class="opt"><span id="labR">Region</span><div class="chips" id="shelfR" role="group" aria-labelledby="labR"></div></div>
       <div class="opt"><span id="labF">Process</span><div class="chips" id="shelfF" role="group" aria-labelledby="labF"></div></div>
-      <div class="chips" id="shelfV" role="group" aria-label="Which coffees" hidden></div>
+      <div class="opt"><span id="labV">Made for</span><div class="chips" id="shelfV" role="group" aria-labelledby="labV"></div></div>
     </div>
     <div class="shelf loading" id="shelf" aria-busy="true"></div>
     <button class="btn ghost more-btn" id="shelfMore" type="button" hidden aria-hidden="true">Show all</button>
@@ -1819,6 +1821,7 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
       <li><span class="rt">Clever Dripper:</span> James Hoffmann’s Ultimate Clever technique.</li>
       <li><span class="rt">AeroPress:</span> James Hoffmann’s Ultimate AeroPress technique, standard or inverted.</li>
       <li><span class="rt">French Press:</span> James Hoffmann’s Ultimate French Press technique.</li>
+      <li><span class="rt">Espresso:</span> the modern 1:2 in about 25–30 s, after James Hoffmann’s Understanding Espresso series; longer for lighter roasts, shorter for a ristretto.</li>
       <li><span class="rt">Bialetti Moka Express:</span> James Hoffmann’s Ultimate Moka Pot technique.</li>
       <li><span class="rt">Cold brew:</span> Ceremony Coffee’s guide.</li>
       <li><span class="rt">Grind:</span> Comandante C40 clicks, counted from zero. Other grinders converted from those clicks with Honest Coffee Guide’s grind charts.</li>
@@ -1841,6 +1844,7 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
       <li>Blue Bottle Coffee. <span class="rt">Chemex brew guide</span>. <a href="https://bluebottlecoffee.com/brew-guides/chemex" target="_blank" rel="noopener">bluebottlecoffee.com</a></li>
       <li>Ceremony Coffee. <span class="rt">Cold brew guide</span>. <a href="https://ceremonycoffee.com/pages/cold-brew-guide" target="_blank" rel="noopener">ceremonycoffee.com</a></li>
       <li>Hoffmann, J. <span class="rt">A better 1 cup V60 technique</span> [Video]. YouTube. <a href="https://www.youtube.com/watch?v=1oB1oDrDkHM" target="_blank" rel="noopener">youtube.com</a></li>
+      <li>Hoffmann, J. <span class="rt">Understanding espresso</span> [Video series]. YouTube. <a href="https://www.youtube.com/results?search_query=James+Hoffmann+Understanding+Espresso" target="_blank" rel="noopener">youtube.com</a></li>
       <li>Hoffmann, J. <span class="rt">The ultimate AeroPress technique</span> [Video]. YouTube. <a href="https://www.youtube.com/watch?v=j6VlT_jUVPc" target="_blank" rel="noopener">youtube.com</a></li>
       <li>Hoffmann, J. <span class="rt">The ultimate Clever Dripper technique</span> [Video]. YouTube. <a href="https://www.youtube.com/watch?v=RpOdennxP24" target="_blank" rel="noopener">youtube.com</a></li>
       <li>Hoffmann, J. <span class="rt">The ultimate French Press technique</span> [Video]. YouTube. <a href="https://www.youtube.com/results?search_query=James+Hoffmann+The+Ultimate+French+Press+Technique" target="_blank" rel="noopener">youtube.com</a></li>
@@ -2019,13 +2023,13 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
     ditting: { name: "Ditting KR / KFA 1203 / 1403", short: "Ditting", lbl: "Ditting dial (1–9)", a: 4.5, b: 7.5, fp: 9.5, min: 1, max: 10, q: 0.1,
               show: (v) => v.toFixed(1), unit: "numbers", dec: true, src: "https://prima-coffee.com/learn/video/overviews/video-Ditting-KR1403",
               how: "Converted by burr gap (about 30 µm per C40 click, about 100 µm per number on the Ditting dial, where 8 is about 800 µm)" },
-    ode2:   { name: "Fellow Ode Gen 2", short: "Ode Gen 2", lbl: "Ode Gen 2, number.step (3 steps per number)", a: 2 + 2 / 3, b: 5 + 2 / 3, fp: 11, min: 1, max: 11, q: 1 / 3,
+    ode2:   { noEsp: true, name: "Fellow Ode Gen 2", short: "Ode Gen 2", lbl: "Ode Gen 2, number.step (3 steps per number)", a: 2 + 2 / 3, b: 5 + 2 / 3, fp: 11, min: 1, max: 11, q: 1 / 3,
               show: thirds, unit: "step", src: HCG + "fellow-ode-brew-grinder-gen-2-grind-settings/" },
     kultra: { name: "1Zpresso K-Ultra", short: "K-Ultra", lbl: "K-Ultra, rotation.number.tick", a: 5.3, b: 9.2, fp: 10, min: 0, max: 15, q: 0.1,
               show: rnt, unit: "tick", src: HCG + "1zpresso-k-ultra-grind-settings/" },
-    zp6:    { name: "1Zpresso ZP6 Special", short: "ZP6", lbl: "ZP6, number.click", a: 1.4, b: 3.9, fp: 7, min: 0, max: 9, q: 0.1,
+    zp6:    { noEsp: true, name: "1Zpresso ZP6 Special", short: "ZP6", lbl: "ZP6, number.click", a: 1.4, b: 3.9, fp: 7, min: 0, max: 9, q: 0.1,
               show: nc, unit: "click", src: HCG + "1zpresso-zp6-grind-settings/" },
-    encore: { name: "Baratza Encore", short: "Encore", lbl: "Encore setting (1–40)", a: 7, b: 18, min: 1, max: 40, q: 1,
+    encore: { noEsp: true, name: "Baratza Encore", short: "Encore", lbl: "Encore setting (1–40)", a: 7, b: 18, min: 1, max: 40, q: 1,
               show: String, unit: "setting", src: HCG + "baratza-encore-grind-settings/" },
     encoreEsp: { name: "Baratza Encore ESP", short: "Encore ESP", lbl: "Encore ESP setting (1–40)", a: 15, b: 25, fp: 38, min: 1, max: 40, q: 1,
               show: String, unit: "setting", src: HCG + "baratza-encore-esp-grind-settings/" },
@@ -2118,6 +2122,9 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
     press:  { name: "French Press", kind: "imm", doses: [[15, "15 g"], [30, "30 g"], [60, "60 g"]], dose: 30,
               base: 28, dA: { 15: -1, 30: 0, 60: 1 }, range: [20, 45], ratio: { light: 17, balanced: 16, syrupy: 15 }, dT: 2, ey: [19, 21] },
     cold:   { name: "Cold brew", kind: "steps", doses: [[50, "50 g"], [100, "100 g"]], dose: 100, base: 36, dA: {}, range: [28, 45], fixed: 8 },
+    // espresso: dose in, weight out, shot time. "ratio" here is out ÷ in (1:2 = 36 g from 18 g)
+    espresso: { name: "Espresso", kind: "shot", shot: true, doses: [[14, "14 g"], [16, "16 g"], [18, "18 g"], [20, "20 g"]], dose: 18,
+              base: 11, dA: { 14: -1, 16: 0, 18: 0, 20: 1 }, range: [6, 16], ratio: { light: 2.5, balanced: 2, syrupy: 1.6 } },
     moka:   { name: "Bialetti Moka Express", kind: "steps", doses: [[7, "1-cup"], [16, "3-cup"], [30, "6-cup"]], dose: 16, base: 15, dA: {}, range: [10, 22], water: { 7: 60, 16: 150, 30: 300 } },
   };
   const brewerOf = (st) => BREWERS[st.brewer] ? st.brewer : "v60";
@@ -2133,9 +2140,10 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
     aero:   { c: 18, pub: "none published", est: true, note: "Hoffmann says the finer end of medium for a light roast, and a little coarser as roasts get darker. Our estimate, between a V60 and espresso.", url: "https://www.youtube.com/watch?v=j6VlT_jUVPc", src: "Hoffmann, The Ultimate AeroPress Technique" },
     press:  { c: 28, pub: "~26–30", note: "Hoffmann says medium, not coarse: the long rest settles the fines, so you don’t need a coarse grind. C40 users publish around 26–30.", url: YT("James Hoffmann The Ultimate French Press Technique"), src: "Hoffmann, The Ultimate French Press Technique" },
     cold:   { c: 36, pub: "none published", est: true, note: "Ceremony says coarse. Too fine and the concentrate turns muddy and hard to filter. Our estimate.", url: "https://ceremonycoffee.com/pages/cold-brew-guide", src: "Ceremony Coffee, cold brew" },
+    espresso: { c: 11, pub: "~8–12", est: true, note: "C40 owners publish about 8–12 clicks for espresso on the standard axle; a Red Clix axle halves each step. Lighter roasts go finer, darker coarser, one click at a time: at espresso fineness one click is a big change. Our estimate.", url: YT("James Hoffmann Understanding Espresso"), src: "Hoffmann, Understanding Espresso" },
     moka:   { c: 15, pub: "none published", est: true, note: "Hoffmann grinds a little finer than filter for light roasts, coarser for darker ones. Espresso-fine chokes the pot. Our estimate.", url: YT("James Hoffmann The Ultimate Moka Pot Technique"), src: "Hoffmann, The Ultimate Moka Pot Technique" },
   });
-  Object.assign(METHOD, { melitta: "Melitta, after Revelator Coffee", origami: "Origami, after Carlos Medina", switch: "Hario Switch, Kasuya’s Hybrid", clever: "Hoffmann’s Ultimate Clever", kalita: "Kalita Wave, after George Howell", chemex: "Chemex, after Blue Bottle", aero: "Hoffmann’s Ultimate AeroPress", press: "Hoffmann’s Ultimate French Press", cold: "Cold brew, after Ceremony", moka: "Bialetti Moka Express, after Hoffmann" });
+  Object.assign(METHOD, { melitta: "Melitta, after Revelator Coffee", origami: "Origami, after Carlos Medina", switch: "Hario Switch, Kasuya’s Hybrid", clever: "Hoffmann’s Ultimate Clever", kalita: "Kalita Wave, after George Howell", chemex: "Chemex, after Blue Bottle", aero: "Hoffmann’s Ultimate AeroPress", press: "Hoffmann’s Ultimate French Press", cold: "Cold brew, after Ceremony", moka: "Bialetti Moka Express, after Hoffmann", espresso: "Espresso, the modern 1:2" });
 
   function pickMethod(st, c, agit) {
     const dose = Number(st.dose);
@@ -2298,6 +2306,10 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
     let ratio, water, ratioPre, capped = false;
     if (B.water) { water = B.water[dose]; ratio = Math.round((water / dose) * 10) / 10; ratioPre = ratio; }
     else if (B.fixed) { ratio = B.fixed; ratioPre = ratio; water = Math.round(dose * ratio); }
+    else if (B.shot) {   // lighter roasts want a longer shot, darker a shorter one; a journal step moves it 0.5
+      ratioPre = B.ratio[goal] + ({ vlight: 0.5, light: 0.2, mdark: -0.2, dark: -0.2 }[c.roast] || 0) + (pc.ratio || 0) * 0.5;
+      ratio = clamp(Math.round(ratioPre * 10) / 10, 1.3, 3.5); water = Math.round(dose * ratio);
+    }
     else {
       ratioPre = B.ratio[goal] + (pc.ratio || 0);
       ratio = clamp(Math.round(ratioPre * 10) / 10, 14, 18.5);
@@ -2308,7 +2320,8 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
     }
     const baseRatio = B.ratio ? B.ratio[goal] : ratio;
 
-    const doseAdj = B.dA[dose] ?? 0, roastAdj = ROAST[c.roast].dC, procAdj = PROCESS[c.process].dC;
+    // espresso: one click is a big step this fine, so roast moves it by one or two and process not at all
+    const doseAdj = B.dA[dose] ?? 0, roastAdj = B.shot ? { vlight: -2, light: -1, medium: 0, mdark: 1, dark: 1, unsure: 0 }[c.roast] : ROAST[c.roast].dC, procAdj = B.shot ? 0 : PROCESS[c.process].dC;
     const raw = B.base + doseAdj + roastAdj + procAdj;
     const baseClicks = clamp(raw, B.range[0], B.range[1]);
     const zero = opts.noPrefs || !isC40() ? 0 : (prefs.zero || 0);
@@ -2317,6 +2330,10 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
 
     let temp = null, baseTemp = null;
     if (B.dT != null) { baseTemp = tempFor(c, agit, B.dT); temp = clamp(baseTemp + (pc.temp || 0), 82, 100); }
+    if (B.shot) {   // the machine's brew temperature: hotter for light roasts, cooler for dark; ferments and decaf a touch cooler
+      baseTemp = { vlight: 96, light: 94, medium: 93, mdark: 91, dark: 90, unsure: 93 }[c.roast] - (["anaerobic", "cofer", "decaf"].includes(c.process) ? 1 : 0);
+      temp = clamp(baseTemp + (pc.temp || 0), 85, 98);
+    }
 
     const P = [], r1 = (v) => Math.round(v * 10) / 10;
     const add = (t, to, note, dur) => { const x = r1(to); P.push({ t, x, to: Math.round(x), note, dur }); };
@@ -2381,6 +2398,9 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
       act(2, "Filter", "Pour it through a paper filter (a V60 works) or a fine sieve", 0);
       act(3, "Serve", "Over ice. Add water to taste, about 0.4 × the concentrate, or milk. Keeps a week in the fridge", 0);
       lo = 12 * 3600; hi = 18 * 3600;
+    } else if (b === "espresso") {   // one pull: start the shot and the timer together, stop at the weight
+      lo = goal === "light" ? 28 : goal === "syrupy" ? 22 : 25; hi = goal === "light" ? 35 : goal === "syrupy" ? 28 : 32;
+      add(0, water, "Start the shot and the timer together. Stop it the moment the scale reads the target", hi);
     } else {                          // moka
       act(0, "Heat", "Boil the kettle. Fill the base with the hot water to just under the valve", 0);
       act(1, "Fill", "Fill the basket full and level. Don’t tamp. Wipe the rim", 0);
@@ -2391,7 +2411,7 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
     }
     const wP = P.filter((p) => !p.act).pop(); if (wP) { wP.x = water; wP.to = water; }
 
-    const bev = water - dose * 2.1;
+    const bev = B.shot ? water : water - dose * 2.1;   // a shot's weight is what's in the cup
     let tds = null, ey = null, body = null;
     if (B.ey) {
       ey = B.ey.map((x) => x - (agit <= 1 ? 0.5 : 0));
@@ -2457,6 +2477,7 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
     press: "Full immersion through metal: heavy body, oils and sweetness.",
     cold: "Brewed cold: low acidity, chocolate and nuts, very smooth.",
     moka: "Strong and syrupy, close to espresso: chocolate and caramel first.",
+    espresso: "Nine bars through a fine, tamped bed: the most concentrated cup here, thick and intense.",
   };
 
 
@@ -2478,6 +2499,7 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
     aero:      { body: 3, clar: 3, acid: -1, sweet: 1, how: "A short steep, then a gentle press through thin paper: dense and sweet, acidity rounded, a little top-note detail lost against a V60.", tex: "dense, still clean", fin: "medium and sweet" },
     press:     { body: 5, clar: 2, acid: -2, sweet: 0, how: "The metal mesh lets oils and fines through: rich, with less definition. Fruit reads as compote rather than fresh, acidity sits low.", tex: "oily, a little silt: leave the last sip", fin: "long, with some grip" },
     cold:      { body: 3, clar: 3, acid: -3, sweet: 0, how: "Cold water barely extracts acids and many aromatics: chocolate, nuts and dried fruit lead, florals mostly fade.", tex: "smooth and round once diluted", fin: "medium, soft and sweet" },
+    espresso:  { body: 5, clar: 2, acid: 0, sweet: 1, how: "Pressure forces water through a fine, tamped bed in under half a minute: about ten times the strength of filter. Acidity and sweetness concentrate together; a longer shot is clearer and sweeter, a shorter one thicker and more intense.", tex: "thick, with crema", fin: "long and intense" },
     moka:      { body: 5, clar: 2, acid: -2, sweet: -1, how: "Steam pushes near-boiling water through a fine bed at high strength: intense and bittersweet, close to espresso. Florals vanish, fruit turns jammy or dark.", tex: "thick and coating", fin: "long, cocoa-like, a gentle bitterness" },
   };
   const VARIETY_NOTES = [[/gesha|geisha/i, ["jasmine", "bergamot"]], [/sl ?28|sl ?34/i, ["blackcurrant"]], [/pink bourbon/i, ["red fruit", "florals"]],
@@ -2529,7 +2551,7 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
     let b = P.body + (r.goal === "syrupy" ? 1 : r.goal === "light" ? -1 : 0) + (darkish ? 0.5 : 0) + (fermented ? 0.5 : 0);
     b = Math.max(1, Math.min(5, Math.round(b)));
     const tds = r.tds && r.tds.length ? ` About ${r.tds[0].toFixed(2)}–${r.tds[1].toFixed(2)}% TDS at ${r.ey[0]}–${r.ey[1]}% extraction.` : "";
-    out.push(`Body: ${BODY_W[b - 1]}, ${P.tex}.${r.m === "cold" || r.m === "moka" ? "" : tds}`);
+    out.push(`Body: ${BODY_W[b - 1]}, ${P.tex}.${r.m === "cold" || r.m === "moka" || r.m === "espresso" ? "" : tds}`);
     // clarity
     let cl = P.clar - (fermented ? 0.5 : 0) - (darkish ? 1 : 0);
     cl = Math.max(1, Math.min(5, Math.round(cl)));
@@ -3019,7 +3041,7 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
       return;
     }
     const changed = r.pc.clicks || r.pc.temp || r.pc.ratio;
-    const hist = (L.history || []).slice(0, 4).map((h) => `<li><span class="muted">${dmy(h.at)}</span> ${esc((h.tastes || []).map(TL).join(", ") || "logged")}${h.dd != null ? `, drained ${fmt(h.dd)}` : ""}${h.fix ? ` → <b>${esc(h.fix)}</b>` : ""}</li>`).join("");
+    const hist = (L.history || []).slice(0, 4).map((h) => `<li><span class="muted">${dmy(h.at)}</span> ${esc((h.tastes || []).map(TL).join(", ") || "logged")}${h.dd != null ? (r.kind === "shot" ? `, shot ${h.dd} s` : `, drained ${fmt(h.dd)}`) : ""}${h.fix ? ` → <b>${esc(h.fix)}</b>` : ""}</li>`).join("");
     box.innerHTML = `<div class="lrn-h"><span class="lrn-tag">Learned</span><b>${L.n} brew${L.n === 1 ? "" : "s"} of this coffee logged</b></div>
       ${changed ? `<p>Now <b>${now}</b> <span class="muted">(base was ${base})</span></p>` : `<p>Locked in at the base recipe: <b>${now}</b>.</p>`}
       ${hist ? `<ul class="lrn-list">${hist}</ul>` : ""}
@@ -3030,7 +3052,7 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
   // ---------- how the clicks were set ----------
   const signed = (n) => (n > 0 ? "+" : n < 0 ? "−" : "±") + Math.abs(n);
   const METHOD_REF = { hoffmann: "Hoffmann 1-Cup", hoffmannU: "Hoffmann Ultimate", fourSix: "Kasuya 4:6", ten: "Kasuya 10-Pour", rao: "Rao bloom & spin",
-    kalita: "Kalita Wave", melitta: "Melitta", chemex: "Chemex", origami: "Origami", switch: "Hario Switch", clever: "Clever Dripper", aero: "AeroPress", press: "French Press", cold: "Cold brew", moka: "Bialetti Moka Express" };
+    kalita: "Kalita Wave", melitta: "Melitta", chemex: "Chemex", origami: "Origami", switch: "Hario Switch", clever: "Clever Dripper", aero: "AeroPress", press: "French Press", cold: "Cold brew", moka: "Bialetti Moka Express", espresso: "Espresso" };
   function renderClicks(r) {
     const p = r.clickParts, B = BASE[r.m], c = r.c;
     const rows = [[`Base: ${METHOD_REF[r.m]} at ${r.brewer === "v60" ? 15 : BREWERS[r.brewer].kind === "steps" ? doseName(r) : BREWERS[r.brewer].dose + " g"}`, String(p.base)]];
@@ -3086,6 +3108,7 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
     press:     { r: 16.7, txt: "Hoffmann’s Ultimate French Press is 1:16.7 (30→500 g), 60–70 g a litre" },
     cold:      { r: 8,    txt: "Ceremony’s cold brew starts at 1:8, a light concentrate you dilute to taste" },
     moka:      { r: 9.4,  txt: "A moka pot sets its own ratio: a full basket and water to the valve, about 1:9 to 1:10" },
+    espresso:  { r: 2,    txt: "The modern espresso is 1:2 (18 g in, 36 g out) in about 25–30 s; a ristretto is shorter, about 1:1.5, and lighter roasts often run longer, 1:2.5 or more" },
   };
   const GOAL_SHORT = { light: "Light & sweet", balanced: "Balanced", syrupy: "Rich & syrupy" };
   const step = (d) => `${d > 0 ? "adds" : "takes off"} ${Math.abs(d).toFixed(1).replace(/\.0$/, "")}`;
@@ -3095,15 +3118,20 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
     const dGoal = Math.round((r.baseRatio - C.r) * 10) / 10;
     parts.push(dGoal ? `${GOAL_SHORT[r.goal]} goal ${step(dGoal)}, to 1:${r.baseRatio}.` : `${GOAL_SHORT[r.goal]} goal keeps it there.`);
     if (r.pc.ratio) parts.push(`${r.learn && r.learn.source === "style" ? "Your nailed brews of this style" : "Your journal for this coffee"} ${step(r.pc.ratio)}.`);
-    if (r.ratioClamped) parts.push("Held inside 1:14–1:18.5.");
+    if (r.ratioClamped && r.kind !== "shot") parts.push("Held inside 1:14–1:18.5.");
     if (r.capped) parts.push(`An AeroPress holds about 250 g, so it stops there: 1:${r.ratio}.`);
-    parts.push(`${r.dose} g × ${r.ratio} = ${r.water} g water. Strength is set by ratio, not grind.`);
+    parts.push(r.kind === "shot" ? `${r.dose} g × ${r.ratio} = ${r.water} g in the cup. Stop the shot on weight, and fix the time with the grind.` : `${r.dose} g × ${r.ratio} = ${r.water} g water. Strength is set by ratio, not grind.`);
     return parts.join(" ");
   }
 
   // ---------- high-risk combinations (one line each, shown first under Why this recipe) ----------
   function risks(r) {
     const c = r.c, w = [];
+    if (r.kind === "shot") {   // a machine runs hotter than filter by design: the kettle warnings don't apply
+      if (c.roast === "vlight") w.push("Very light roast as espresso: hard to dial in. Expect a long shot (1:2.5 or more), the finest grind your grinder manages and a hot machine.");
+      if (mill().noEsp) w.push(`The ${mill().name} isn’t made for espresso: it can’t grind fine enough for a proper shot.`);
+      return w;
+    }
     const ferment = c.process === "anaerobic" || c.process === "cofer";
     const busy = ["hoffmann", "hoffmannU", "rao", "ten"].includes(r.m);       // pulses, spins or many pours
     const dark = c.roast === "mdark" || c.roast === "dark";
@@ -3145,7 +3173,8 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
     const lv = waterLevel(), w = prefs.water || {};
     const name = (WATER.find((x) => x[0] === w.kind) || [0, "Not set"])[1];
     const adv = $("wAdv"); adv.className = "w-adv" + (lv === "hard" ? " hard" : "");
-    adv.innerHTML = lv === "hard" ? `<b class="w-fix">Hard tap first fix: try ${clRange(1, 2)} coarser or −2 °C before changing grind for bitterness or flatness.</b>${r.clicks == null ? "" : `<span class="w-fixn">Here that’s ${isC40() ? `${r.clicks + 1}–${r.clicks + 2} clicks` : `${esc(onMill(r.clicks + 1).txt)}–${esc(onMill(r.clicks + 2).txt)} on the ${esc(mill().short)}`}${r.temp != null ? ` or ${r.temp - 2}°C` : ""}.</span>`}`
+    adv.innerHTML = lv === "hard" && r.kind === "shot" ? `<b class="w-fix">Use filtered or softened water: hard tap water builds up scale inside an espresso machine and dulls the shot.</b>`
+      : lv === "hard" ? `<b class="w-fix">Hard tap first fix: try ${clRange(1, 2)} coarser or −2 °C before changing grind for bitterness or flatness.</b>${r.clicks == null ? "" : `<span class="w-fixn">Here that’s ${isC40() ? `${r.clicks + 1}–${r.clicks + 2} clicks` : `${esc(onMill(r.clicks + 1).txt)}–${esc(onMill(r.clicks + 2).txt)} on the ${esc(mill().short)}`}${r.temp != null ? ` or ${r.temp - 2}°C` : ""}.</span>`}`
       : lv === "vsoft" ? "Very soft water can taste flat and thin. If it does, try 1–2°C hotter before changing the grind."
       : lv === "soft" ? ""
       : lv === "unknown" ? "Add your hardness or alkalinity to get advice."
@@ -3182,6 +3211,7 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
     aero: "Paper in the cap, no need to rinse. Standard way up, straight on the cup. Tare with the coffee in.",
     press: "Warm the French Press with hot water first. Tare with the coffee in. Have a spoon ready for the crust.",
     cold: "Any jar or jug with a lid. Coarse and even, or the concentrate turns muddy.",
+    espresso: "Warm the machine up for 20 minutes. Dry basket, dose, break up any clumps, level the bed, tamp flat and firm. Lock in, cup on the scale, tare, then start the shot straight away.",
     moka: "Hot water in the base means the coffee spends less time on the heat and tastes less burnt. Optional: a wetted AeroPress paper on top of the coffee, under the upper chamber, catches the fines for a cleaner, lighter cup.",
   };
   const SIZE_NOTE = {   // a double batch needs the bigger brewer
@@ -3206,6 +3236,7 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
     aero: "Hoffmann’s Ultimate AeroPress: all the water at once, a 2 minute steep, one swirl and a slow, gentle press. Hard to get wrong.",
     press: "Hoffmann’s Ultimate French Press: 4 minutes, break the crust, skim, then a long rest so the silt sinks. The plunger is only a strainer.",
     cold: "Cold brew, after Ceremony Coffee: 1:8 for a light concentrate, a coarse grind and a long cold steep. Low acidity, smooth and sweet.",
+    espresso: "The modern espresso: 18 g in, about 36 g out in 25–30 s. Stop on weight, fix the time with the grind, and taste: sour means finer or longer, bitter means coarser or shorter.",
     moka: "Hoffmann’s moka pot technique: boiled water in the base, a full level basket, lid open so you can stop it the moment it turns pale.",
   };
   function render() {
@@ -3245,8 +3276,9 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
     const tBadge = r.pc.temp && r.temp != null ? `${sign(r.pc.temp)}° ${lw}` : r.temp != null ? yours("temp") : "";
     const ratioSpec = r.brewer === "moka" ? ["ratio", parseInt(doseName(r)), "-cup", "pot size, Bialetti Moka Express", ""]
       : ["ratio", "1:" + r.ratio, "", r.brewer === "cold" ? "a concentrate: dilute to taste" : `≈${r.yieldG} g in the cup`, r.pc.ratio && r.goal ? `${sign(r.pc.ratio)} ${lw}` : ""];
-    const tempSpec = r.temp != null ? ["temp", r.temp, "°C", "kettle", tBadge] : r.brewer === "cold" ? ["temp", "Cold", "", "fridge-cold water", ""] : ["temp", "Boiled", "", "water into the base", ""];
-    const timeSpec = K === "pour" ? ["time", `${fmt(r.lo)} – ${fmt(r.hi)}`, "", "total time", r.mine && (r.lo !== r.auto.lo || r.hi !== r.auto.hi) ? "yours" : ""]
+    const tempSpec = r.temp != null ? ["temp", r.temp, "°C", K === "shot" ? "machine" : "kettle", tBadge] : r.brewer === "cold" ? ["temp", "Cold", "", "fridge-cold water", ""] : ["temp", "Boiled", "", "water into the base", ""];
+    const timeSpec = K === "shot" ? ["time", `${r.lo} – ${r.hi}`, "s", "shot time", r.mine && (r.lo !== r.auto.lo || r.hi !== r.auto.hi) ? "yours" : ""]
+      : K === "pour" ? ["time", `${fmt(r.lo)} – ${fmt(r.hi)}`, "", "total time", r.mine && (r.lo !== r.auto.lo || r.hi !== r.auto.hi) ? "yours" : ""]
       : r.brewer === "aero" ? ["time", fmt(r.hi), "", "total, pressed", ""]
       : r.brewer === "clever" ? ["time", `${fmt(r.lo)} – ${fmt(r.hi)}`, "", "total, drained", ""]
       : r.brewer === "press" ? ["time", `${r.lo / 60} – ${r.hi / 60}`, "min", "total, mostly waiting", ""]
@@ -3255,8 +3287,8 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
     const S = [
       ["brewer", esc(BREWERS[r.brewer].name), "", "brewer", ""],   // first, on a line of its own, in the big figures' size
       ["key", onMill(r.clicks).txt, "", isC40() ? mill().lbl : mill().name, cBadges.join(", ")],   // just the grinder's name, like Kettle and Coffee
-      ["dose", r.dose, "g", r.brewer === "moka" ? `basket, full and level (${doseName(r)} pot)` : "coffee", ""],
-      ["water", r.water, "g", r.brewer === "moka" ? "hot, to just under the valve" : r.brewer === "cold" ? "cold water, then dilute to taste" : r.iced ? "hot water" : "water", yours("water")],
+      ["dose", r.dose, "g", r.brewer === "moka" ? `basket, full and level (${doseName(r)} pot)` : K === "shot" ? "coffee in" : "coffee", ""],
+      ["water", r.water, "g", K === "shot" ? `out, 1:${r.ratio}` : r.brewer === "moka" ? "hot, to just under the valve" : r.brewer === "cold" ? "cold water, then dilute to taste" : r.iced ? "hot water" : "water", yours("water")],
       ...(r.iced ? [["ice", r.ice, "g", r.brewer === "aero" ? "ice in the cup" : "ice in the jug", ""]] : []),
       tempSpec, timeSpec,
     ];
@@ -3264,7 +3296,7 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
     $("zeroRow").hidden = !!r.mine; $("clkHow").hidden = !!r.mine;
     renderMine(r);
     const showRet = r.tds != null;
-    $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}"><b>${v}${u ? `<small>${u === "-cup" ? u : " " + u}</small>` : ""}</b><span class="sub2">${l.charAt(0).toUpperCase() + l.slice(1)}</span>${k === "key" && isC40() && prefs.zero ? `<span class="zo">${sign(prefs.zero)} zero offset</span>` : ""}${k === "key" && !isC40() && (onMill(r.clicks).atMax || onMill(r.clicks).atMin) ? `<span class="sub2">${onMill(r.clicks).atMax ? "Coarsest setting, may still run fast" : "Finest setting"}</span>` : ""}${k === "ratio" && showRet && false ? `<span class="ret">(${r.water} g water − 2.1 × ${r.dose} g retained). Estimate only.</span>` : ""}${badge ? `<span class="badge">${esc(badge)}</span>` : ""}</div>`).join("");
+    $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}"><b>${v}${u ? `<small>${u === "-cup" ? u : " " + u}</small>` : ""}</b><span class="sub2">${l.charAt(0).toUpperCase() + l.slice(1)}</span>${k === "key" && isC40() && prefs.zero ? `<span class="zo">${sign(prefs.zero)} zero offset</span>` : ""}${k === "key" && K === "shot" && mill().noEsp ? `<span class="sub2">Not an espresso grinder</span>` : k === "key" && !isC40() && (onMill(r.clicks).atMax || onMill(r.clicks).atMin) ? `<span class="sub2">${onMill(r.clicks).atMax ? "Coarsest setting, may still run fast" : "Finest setting"}</span>` : ""}${k === "ratio" && showRet && false ? `<span class="ret">(${r.water} g water − 2.1 × ${r.dose} g retained). Estimate only.</span>` : ""}${badge ? `<span class="badge">${esc(badge)}</span>` : ""}</div>`).join("");
     const agitTxt = r.agit >= 3 ? "Stir or swirl the bloom, pour with energy, one swirl at the end." :
       r.agit === 2 ? "Swirl the bloom gently, steady pours, one soft swirl at the end." :
       r.agit === 1 ? "No stirring. Pour low and gentle so the fruit stays clean." :
@@ -3325,13 +3357,17 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
         why.push(`Why the grind jumps from a medium roast: darker roasts switch to Kasuya 4:6, which grinds coarser by design (base ${BASE.fourSix.c} vs Hoffmann’s ${BASE.hoffmann.c} C40 clicks). The roast itself only adds ${ROAST[c.roast].dC - ROAST.medium.dC} more. Pick Hoffmann above to stay finer.`);
       if (c.delicate) why.push(`${c.variety ? titleCase(c.variety) : "Delicate variety"}: florals fade with rough pours. Hot water, but agitation capped at medium${r.m === "rao" ? " and a flat, undisturbed bed" : ""}.`);
       if (state.method === "best" && why.length === whyBase && c.process !== "unsure" && c.roast !== "unsure") why.push(`${pl}, ${ROAST[c.roast].label} roast: dense enough to take hot water and pulsed pours for full sweetness.`);
+    } else if (K === "shot") {   // espresso: its own reasons, no kettle and no filter studies
+      if (c.roast !== "unsure") why.push(`${cap1(ROAST[c.roast].label)} roast: ${r.clickParts.roast ? `${cl(Math.abs(r.clickParts.roast))} ${r.clickParts.roast < 0 ? "finer" : "coarser"} than a medium` : "the grind stays at the base"}, ${r.temp}°C on the machine${c.roast === "vlight" || c.roast === "light" ? ", and a longer shot: light roasts are dense and need more water to get sweet" : c.roast === "mdark" || c.roast === "dark" ? ", and a shorter shot: darker roasts give up their flavour quickly and turn bitter if pushed" : ""}.`);
+      if (["anaerobic", "cofer", "decaf"].includes(c.process)) why.push(`${pl}: extracts fast and goes harsh when pushed, so the machine runs 1°C cooler.`);
+      why.push(`The weight out sets the taste: ${r.dose} g in, ${r.water} g out (1:${r.ratio}). Longer is clearer and sweeter, shorter is thicker and more intense. Grind sets the time: aim for ${r.lo}–${r.hi} s.`);
     } else {
       const moves = [r.clickParts.roast && `${ROAST[c.roast].label} roast ${signed(r.clickParts.roast)}`, r.clickParts.process && `${PROCESS[c.process].label} ${signed(r.clickParts.process)}`].filter(Boolean);
       if (c.process !== "unsure" && c.roast !== "unsure") why.push(`${pl}, ${ROAST[c.roast].label} roast: ${moves.length ? `the grind moves ${moves.join(", ")} clicks` : "the grind stays at the base"}${hasT ? `, and the kettle goes to ${r.temp}°C` : ""}, the same rules as the V60 recipes.`);
     }
-    if (hasT) why.push(`Temperature, grind and agitation are all ways to reach the same extraction. At equal strength and extraction, UC Davis panels tasted no difference between 87, 90 and 93°C (Batali et al. 2020), so ${r.temp}°C is set together with the grind, not on its own.`);
-    if (["anaerobic", "cofer", "natural", "decaf"].includes(c.process) && hasT) why.push(`${pl} coffees tend to extract faster, so this recipe runs a little cooler and gentler. If yours tastes thin, sour or sharply vinegary, it is under-extracted: go 2°C hotter, as the dial-in tips say.`);
-    if (r.goal) why.push(`Strength comes from the ratio (1:${r.ratio}). In UC Davis tests, sweetness went down as strength went up (Frost et al. 2020): a lighter ratio tastes sweeter, a stronger one heavier.`);
+    if (hasT && K !== "shot") why.push(`Temperature, grind and agitation are all ways to reach the same extraction. At equal strength and extraction, UC Davis panels tasted no difference between 87, 90 and 93°C (Batali et al. 2020), so ${r.temp}°C is set together with the grind, not on its own.`);
+    if (["anaerobic", "cofer", "natural", "decaf"].includes(c.process) && hasT && K !== "shot") why.push(`${pl} coffees tend to extract faster, so this recipe runs a little cooler and gentler. If yours tastes thin, sour or sharply vinegary, it is under-extracted: go 2°C hotter, as the dial-in tips say.`);
+    if (r.goal && K !== "shot") why.push(`Strength comes from the ratio (1:${r.ratio}). In UC Davis tests, sweetness went down as strength went up (Frost et al. 2020): a lighter ratio tastes sweeter, a stronger one heavier.`);
     const rk = risks(r);
     $("why").innerHTML = rk.map((w) => `<li class="warn">${esc(w)}</li>`).join("") + cons.map((w) => `<li class="cons">${esc(w)}</li>`).join("") + why.map((w) => `<li>${esc(w)}</li>`).join("");
     $("expect").innerHTML = expectCup(r).map((w) => { const i = w.indexOf(": "); return `<li><b>${esc(w.slice(0, i))}</b>${esc(w.slice(i))}</li>`; }).join("");
@@ -3366,6 +3402,12 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
       `Bitter, woody or muddy → steep less (12 h), then ${cl(2)} coarser.`,
       "Cloudy → filter it a second time through paper.",
     ];
+    else if (r.brewer === "espresso") dial = [
+      `Runs fast (under ${r.lo} s) and sour → ${cl(1)} finer. Runs slow (over ${r.hi} s) and bitter → ${cl(1)} coarser.`,
+      `On time but sour → a longer shot, 1:${Math.round((r.ratio + 0.5) * 10) / 10}, or 1°C hotter. On time but bitter → 1:${Math.round((r.ratio - 0.3) * 10) / 10}, or 1°C cooler.`,
+      "Sour and bitter together, or spurts from one side → it’s channelling. Break up the clumps, level the bed, tamp flat.",
+      "Change one thing per shot and weigh every one: grind for the time, the weight out for the taste.",
+    ];
     else dial = [
       `Bitter or burnt → take it off the heat sooner, turn the flame down, then ${cl(2)} coarser.`,
       `Sour or thin → ${cl(2)} finer, and fill the basket right to the top, level.`,
@@ -3374,13 +3416,15 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
       "Too strong → add a splash of hot water to the cup. Don’t underfill the basket.",
     ];
     if (r.agit <= 1 && r.temp != null) dial.push("Fermenty, boozy, harsh → 2°C cooler before touching the grind.");
-    if (waterLevel() === "hard") dial.unshift(r.temp != null ? `Hard tap selected → first try ${clRange(1, 2)} coarser or −2 °C.` : `Hard tap selected → first try ${clRange(1, 2)} coarser, or filtered water.`);
+    if (waterLevel() === "hard" && r.kind === "shot") dial.unshift("Hard tap selected → use filtered or softened water: scale builds up inside an espresso machine and dulls the shot.");
+    else if (waterLevel() === "hard") dial.unshift(r.temp != null ? `Hard tap selected → first try ${clRange(1, 2)} coarser or −2 °C.` : `Hard tap selected → first try ${clRange(1, 2)} coarser, or filtered water.`);
     const hardFirst = waterLevel() === "hard";
     $("dial").innerHTML = dial.map((w, i) => `<li${i === 0 && hardFirst ? ' style="font-weight:700"' : ""}>${esc(w)}</li>`).join("");
 
     $("logTitle").textContent = "Taste";
-    $("ddRow").hidden = K !== "pour";
-    $("ddHint").textContent = r.lo === r.hi ? `Target ${fmt(r.lo)}` : `Target ${fmt(r.lo)} – ${fmt(r.hi)}`;
+    $("ddRow").hidden = K !== "pour" && K !== "shot";
+    $("ddRow").querySelector("label").textContent = K === "shot" ? "Shot time" : "Drained at"; $("ddIn").placeholder = K === "shot" ? "0:28" : "3:20";
+    $("ddHint").textContent = K === "shot" ? `Target ${r.lo} – ${r.hi} s` : r.lo === r.hi ? `Target ${fmt(r.lo)}` : `Target ${fmt(r.lo)} – ${fmt(r.hi)}`;
     if (picked.size || $("ddIn").value) updateSuggest();
   }
   // cold brew: when it's ready if you start now
@@ -3472,15 +3516,15 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
     }
     const last = [...x.pours].reverse().find((p) => !p.act); if (last) { last.x = x.water; last.to = x.water; }
     x.pours.forEach((p, i) => { const nx = x.pours[i + 1]; if (nx && nx.t > p.t) p.dur = Math.max(3, Math.min(p.dur, nx.t - p.t)); });
-    if (M.lo != null && M.hi != null && r.kind === "pour") { x.lo = M.lo; x.hi = M.hi; }
-    if (r.bev != null) { x.bev = x.water - x.dose * 2.1; x.yieldG = Math.round(x.bev); if (r.ey) x.tds = r.ey.map((e) => (e / 100) * x.dose / x.bev * 100); }
+    if (M.lo != null && M.hi != null && (r.kind === "pour" || r.kind === "shot")) { x.lo = M.lo; x.hi = M.hi; }
+    if (r.bev != null) { x.bev = r.kind === "shot" ? x.water : x.water - x.dose * 2.1; x.yieldG = Math.round(x.bev); if (r.ey) x.tds = r.ey.map((e) => (e / 100) * x.dose / x.bev * 100); }
     return x;
   }
   function applyToMine(r, d) {
     const k = mineKey(r), M = k && prefs.mine[k]; if (!M) return;
     if (d.clicks) M.clicks = (M.clicks ?? r.clicks) + d.clicks;
     if (d.temp && r.temp != null) M.temp = clamp((M.temp ?? r.temp) + d.temp, 60, 100);
-    if (d.ratio && r.brewer !== "moka") M.ratio = clamp((M.ratio ?? r.water / r.dose) + d.ratio, 2, 25);
+    if (d.ratio && r.brewer !== "moka") M.ratio = r.kind === "shot" ? clamp((M.ratio ?? r.water / r.dose) + d.ratio * 0.5, 1.2, 4) : clamp((M.ratio ?? r.water / r.dose) + d.ratio, 2, 25);
     savePrefs(); render();
   }
   function renderMine(r) {
@@ -3507,9 +3551,9 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
     const hasPours = r.kind !== "steps";
     ed.innerHTML = `<div class="ed-grid">
         <div class="ed-f"><span>Grind, ${esc(G.lbl)}</span><div class="step"><button type="button" id="eG-">−</button><span id="eGv">${esc(showG(gv))}</span><button type="button" id="eG+">+</button></div></div>
-        ${r.temp != null ? `<label class="ed-f"><span>Kettle, °C</span><input class="ed-in" id="eT" inputmode="numeric" value="${r.temp}"></label>` : ""}
-        ${moka ? "" : `<label class="ed-f"><span>Water, g <i class="muted" id="eR">1:${r.ratio}</i></span><input class="ed-in" id="eW" inputmode="numeric" value="${r.water}"></label>`}
-        ${r.kind === "pour" ? `<div class="ed-f"><span>Done between</span><div class="ed-two"><input class="ed-in" id="eLo" inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false" value="${fmt(r.lo)}" aria-label="Drawdown from"><input class="ed-in" id="eHi" inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false" value="${fmt(r.hi)}" aria-label="Drawdown to"></div></div>` : ""}
+        ${r.temp != null ? `<label class="ed-f"><span>${r.kind === "shot" ? "Machine" : "Kettle"}, °C</span><input class="ed-in" id="eT" inputmode="numeric" value="${r.temp}"></label>` : ""}
+        ${moka ? "" : `<label class="ed-f"><span>${r.kind === "shot" ? "Out" : "Water"}, g <i class="muted" id="eR">1:${r.ratio}</i></span><input class="ed-in" id="eW" inputmode="numeric" value="${r.water}"></label>`}
+        ${r.kind === "pour" || r.kind === "shot" ? `<div class="ed-f"><span>Done between</span><div class="ed-two"><input class="ed-in" id="eLo" inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false" value="${fmt(r.lo)}" aria-label="Drawdown from"><input class="ed-in" id="eHi" inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false" value="${fmt(r.hi)}" aria-label="Drawdown to"></div></div>` : ""}
       </div>
       <div class="ed-steps" id="eSteps"></div>
       <div class="ed-add">${hasPours ? '<button type="button" class="chip" id="eAddP">Add a pour</button>' : ""}<button type="button" class="chip" id="eAddS">Add a step</button></div>
@@ -3633,6 +3677,25 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
     const has = (k) => tags.has(k);
     const fast = dd != null && dd < r.lo - 5, slow = dd != null && dd > r.hi + 10;
     const ddTxt = dd != null ? ` (drained at ${fmt(dd)})` : "";
+    if (r.kind === "shot") {   // grind sets the time, the weight out sets the taste; one change per shot
+      const f2 = dd != null && dd < r.lo - 2, s2 = dd != null && dd > r.hi + 2, at = dd != null ? ` (${dd} s)` : "";
+      const longer = Math.round((r.ratio + 0.5) * 10) / 10, shorter = Math.round((r.ratio - 0.5) * 10) / 10;
+      if (has("sour") && has("bitter")) return { text: "Sour and bitter together: the water found a channel. Same numbers; break up the clumps, level the bed and tamp flat.", d: {} };
+      if (has("harsh")) return { text: `Harsh or drying${at}: ${cl(1)} coarser, and check the bed is level before you tamp.`, d: { clicks: 1 } };
+      if (has("bitter")) return s2 ? { text: `Bitter and slow${at}: ${cl(1)} coarser.`, d: { clicks: 1 } } : { text: `Bitter${dd != null ? " on time" : ""}${at}: a shorter shot, 1:${shorter}.`, d: { ratio: -1 } };
+      if (has("sour")) {
+        if (f2) return { text: `Sour and fast${at}: ${cl(1)} finer.`, d: { clicks: -1 } };
+        if (r.temp != null && r.temp < 94) return { text: `Sour${dd != null ? " on time" : ""}${at}: 1°C hotter.`, d: { temp: 1 } };
+        return { text: `Sour${dd != null ? " on time" : ""}${at}: a longer shot, 1:${longer}.`, d: { ratio: 1 } };
+      }
+      if (has("flat")) return { text: `Flat: ${cl(1)} finer and 1°C hotter.`, d: { clicks: -1, temp: 1 } };
+      if (has("thin")) return { text: `Thin: a shorter shot, 1:${shorter}. Same grind.`, d: { ratio: -1 } };
+      if (has("heavy")) return { text: `Heavy: a longer shot, 1:${longer}. Same grind.`, d: { ratio: 1 } };
+      if (f2) return { text: `Fast${at}: ${cl(1)} finer to bring it into ${r.lo}–${r.hi} s.`, d: { clicks: -1 } };
+      if (s2) return { text: `Slow${at}: ${cl(1)} coarser to bring it into ${r.lo}–${r.hi} s.`, d: { clicks: 1 } };
+      if (has("sweet") || has("balanced")) return { text: "Keep it. This is now your recipe for this coffee.", d: {} };
+      return null;
+    }
     if (r.temp == null) {   // cold brew and moka: no kettle temperature to move, so grind and time do the work
       const moka = r.brewer === "moka";
       if (has("sour") && has("bitter")) return { text: moka ? "Sour and bitter together: the heat was too high. Same grind, a lower flame, off as soon as it turns pale." : "Sour and bitter together: stir it well at the start so every ground is wet. Same grind.", d: {} };
@@ -3702,7 +3765,7 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
       pc.clicks = clamp(pc.clicks + (d.clicks || 0), -8, 8);
       pc.temp = clamp(pc.temp + (d.temp || 0), -6, 6);
       pc.ratio = clamp(pc.ratio + (d.ratio || 0), -3, 3);
-      const fix = Object.keys(d).length ? [d.clicks && `${d.clicks < 0 ? Math.abs(d.clicks) + " finer" : d.clicks + " coarser"}`, d.temp && `${d.temp > 0 ? "+" : "−"}${Math.abs(d.temp)}°C`, d.ratio && `ratio ${d.ratio > 0 ? "+" : "−"}${Math.abs(d.ratio)}`].filter(Boolean).join(", ") : (nailed ? "kept" : "");
+      const fix = Object.keys(d).length ? [d.clicks && `${d.clicks < 0 ? Math.abs(d.clicks) + " finer" : d.clicks + " coarser"}`, d.temp && `${d.temp > 0 ? "+" : "−"}${Math.abs(d.temp)}°C`, d.ratio && (r.kind === "shot" ? `${d.ratio > 0 ? "longer" : "shorter"} shot` : `ratio ${d.ratio > 0 ? "+" : "−"}${Math.abs(d.ratio)}`)].filter(Boolean).join(", ") : (nailed ? "kept" : "");
       undo.d = { clicks: pc.clicks - before0.clicks, temp: pc.temp - before0.temp, ratio: pc.ratio - before0.ratio };
       pc.history = [{ at, tastes: [...picked], dd, fix }, ...(pc.history || [])].slice(0, 8);
       pc.n = (pc.n || 0) + 1; pc.last = new Date().toISOString();
@@ -3754,7 +3817,7 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
     box.innerHTML = journal.slice(0, 12).map((e, i) => `<div class="entry">
       <span class="when">${dmy(e.at)}</span>
       <div class="what"><span class="serif">${esc(e.title)}</span>
-        <span class="num">${esc(e.method)} / ${esc(grindLine(e.clicks))} / ${e.dose}→${e.water} g${e.temp != null ? ` / ${e.temp}°C` : ""}${e.dd != null ? " / drained " + fmt(e.dd) : ""}</span>
+        <span class="num">${esc(e.method)} / ${esc(grindLine(e.clicks))} / ${e.dose}→${e.water} g${e.temp != null ? ` / ${e.temp}°C` : ""}${e.dd != null ? (e.brewer === "espresso" ? ` / shot ${e.dd} s` : " / drained " + fmt(e.dd)) : ""}</span>
         ${e.tastes && e.tastes.length ? `<span class="t">${esc(e.tastes.map((k) => (TASTES.find((x) => x[0] === k) || [k, k])[1]).join(", "))}${e.change ? " → " + esc(e.change) : ""}</span>` : ""}
         ${e.note ? `<span class="t muted">${esc(e.note)}</span>` : ""}</div>
       <span class="e-act"><button type="button" data-i="${i}">Brew again</button>${(e.tastes || []).includes("balanced") ? `<button type="button" data-pdf="${i}">PDF</button>` : ""}<button type="button" class="del" data-del="${i}" aria-label="Delete this brew">Delete</button></span></div>`).join("");
@@ -3833,6 +3896,7 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
     if (!r.bagTaken) { r.bagTaken = true; bagUsed(r.dose); }   // starting the brew takes the grams off the bag, once per recipe
     $("bvCoffee").textContent = `${BREWERS[r.brewer].name} / ${coffeeTitle(state, r)} / ${grindLine(r.clicks)}${isC40() && prefs.zero ? ` (${prefs.zero > 0 ? "+" : "−"}${Math.abs(prefs.zero)} zero offset)` : ""} / ${r.temp}°C / ${r.dose}→${r.water} g`;
     $("bvDrain").textContent = r.kind === "pour" ? "Drained" : "Done";
+    if (r.kind === "shot") $("bvCoffee").textContent = `Espresso / ${coffeeTitle(state, r)} / ${grindLine(r.clicks)} / ${r.temp}°C / ${r.dose} g in, ${r.water} g out`;
     const T = r.hi + 20;
     $("bvBar").innerHTML = `<div class="win" style="left:${(r.lo / T) * 100}%;width:${((r.hi - r.lo) / T) * 100}%"></div>` +
       r.pours.map((p, i) => `<div class="seg" id="sg${i}" style="left:${(p.t / T) * 100}%;width:${Math.max(1.2, (p.dur / T) * 100)}%"></div>`).join("") + '<div class="head" id="bvHead" style="left:0"></div>';
@@ -3857,13 +3921,19 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
   function loop() { tick(); if (bv.running) bv.raf = requestAnimationFrame(loop); }
   // exact drawdown, to the second, straight into the journal form
   // straight to the journal, no smooth scroll: jump now, and again once leaving full screen has settled (it can reset the scroll)
-  function toJournal() { const go = () => { const j = $("journal"), top = j.getBoundingClientRect().top + scrollY - (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--top-h")) || 56);
+  function toJournal() { const go = () => { const j = $("journal"), top = j.getBoundingClientRect().top + scrollY - ((parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--top-h")) || 49) - 1);
       window.scrollTo({ top: Math.max(0, top), behavior: "instant" }); };
     go(); requestAnimationFrame(go); setTimeout(go, 200); setTimeout(go, 500); }
   function drained() {
     const sec = Math.floor(elapsed());
     const r = recipe;
     closeBrew();
+    if (r.kind === "shot") {
+      $("ddIn").value = fmt(sec);
+      const v = sec < r.lo - 2 ? `fast, target ${r.lo}–${r.hi} s` : sec > r.hi + 2 ? `slow, target ${r.lo}–${r.hi} s` : "in the window";
+      $("ddHint").innerHTML = `<b style="color:var(--ink)">Shot ran ${sec} s</b>, ${v}. Now pick what you taste.`;
+      buzz([40, 60, 40]); updateSuggest(); toJournal(); return;
+    }
     if (r.kind !== "pour") { buzz([40, 60, 40]); toJournal(); return; }
     $("ddIn").value = fmt(sec);
     const v = sec < r.lo - 5 ? `fast, target ${fmt(r.lo)}–${fmt(r.hi)}` : sec > r.hi + 10 ? `slow, target ${fmt(r.lo)}–${fmt(r.hi)}` : "in the window";
@@ -3901,7 +3971,14 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
     const what = (p) => p.act ? `${fmt(p.t)} → ${p.lbl}` : `${fmt(p.t)} → ${p.to} g`;
     const endTxt = imm ? (r.lo === r.hi ? `Done at ${fmt(r.hi)}` : `Pour from ${fmt(r.lo)}, by ${fmt(r.hi)}`) : `Drain, done by ${fmt(r.hi)}`;
     const word = imm ? "Step" : "Pour";
-    if (idle) {
+    if (r.kind === "shot") {   // one pull: the weight to stop at stays big, the clock runs, the window shows where you are
+      const tgt = `Target ${r.lo}–${r.hi} s`;
+      expected = r.water;
+      if (idle) { setNow("idle", "Ready", "Stop the shot at", r.water, "g", "Cup on the scale and tared. Press Start the moment the shot starts.", `${r.dose} g in, 1:${r.ratio}, ${r.lo}–${r.hi} s`); nextT = "Stop at the weight, tap Done"; }
+      else if (el < r.lo) { prog = clamp(el / r.lo, 0, 1); setNow("pour", "Pulling", "Stop at", r.water, "g", "Watch the scale. Stop the shot at the weight, then tap Done.", tgt); nextLbl = "Window"; nextT = `${r.lo}–${r.hi} s`; nextCd = cd(r.lo - el); }
+      else if (el <= r.hi) { prog = clamp((el - r.lo) / Math.max(1, r.hi - r.lo), 0, 1); setNow("drain", "In the window", "Stop at", r.water, "g", "Stop at the weight, then tap Done.", tgt); nextT = "Log how it tastes"; }
+      else { prog = 1; setNow("over", "Over time", "Stop at", r.water, "g", "Running slow. Stop at the weight and tap Done.", tgt); nextT = "Log how it tastes"; }
+    } else if (idle) {
       setNow("idle", "Ready", imm ? "Pour all the water, scale to" : "First pour, scale to", P[0].to, "g", "Tare with the coffee in. Press Start as you begin to pour.", `${n} ${imm ? "steps" : "pours"}, done by ${fmt(r.hi)}`);
       nextT = n > 1 ? what(P[1]) : endTxt;
     } else if (inPour) {
@@ -3973,16 +4050,18 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
       isC40() ? `Grind    ${r.clicks} clicks, Comandante C40 from zero${prefs.zero ? ` (my zero ${signed(prefs.zero)})` : ""}`
         : `Grind    ${onMill(r.clicks).txt} on ${mill().name} (${mill().lbl}; from ${r.clicks} C40 clicks)`,
       `Coffee   ${r.dose} g${r.brewer === "moka" ? ` (${doseName(r)} pot, basket full and level)` : ""}`,
-      r.temp != null ? `Water    ${r.water} g (1:${r.ratio}) at ${r.temp}°C` : r.brewer === "cold" ? `Water    ${r.water} g cold (1:${r.ratio})` : `Water    ${r.water} g, boiled, to just under the valve`,
+      K === "shot" ? `Out      ${r.water} g (1:${r.ratio}), machine at ${r.temp}°C` : r.temp != null ? `Water    ${r.water} g (1:${r.ratio}) at ${r.temp}°C` : r.brewer === "cold" ? `Water    ${r.water} g cold (1:${r.ratio})` : `Water    ${r.water} g, boiled, to just under the valve`,
     ];
     if (K === "pour") L.push(`Drain    ${fmt(r.lo)}–${fmt(r.hi)}`, `Pours    agitation ${AGIT[r.agit]}`,
       ...r.pours.flatMap((p, i) => [`  ${fmt(p.t).padStart(4)}  ${g1(p.x).padStart(5)} g  +${g1(pourAdd(r, i))} g in ~${p.dur} s  ${p.note}`, `${" ".repeat(13)}(scale: ${p.to} g)`]),
       "  Targets shown to 0.1 g. Pour to the nearest gram on your scale.");
+    else if (K === "shot") L.push(`Time     ${r.lo}–${r.hi} s`, `Shot     start the shot and the timer together, stop at ${r.water} g`);
     else if (K === "imm") L.push(`Time     ${r.lo === r.hi ? fmt(r.hi) : `${fmt(r.lo)}–${fmt(r.hi)}`}`, "Steps",
       ...r.pours.map((p) => `  ${fmt(p.t).padStart(4)}  ${p.act ? p.lbl.padEnd(7) : (p.to + " g").padEnd(7)}  ${p.note}`));
     else L.push(r.brewer === "cold" ? "Time     12–18 h in the fridge" : "Heat     medium, lid open", "Steps", ...r.pours.map((p, i) => `  ${i + 1}. ${p.lbl}: ${p.note}`));
     const rk = risks(r); if (rk.length) L.push("", ...rk.map((x) => "! " + x));
-    if (lv === "hard") L.push("", r.temp != null ? `Hard tap first fix: try ${clRange(1, 2)} coarser or −2 °C before changing grind for bitterness or flatness.` : `Hard tap first fix: try ${clRange(1, 2)} coarser, or filtered water.`);
+    if (lv === "hard" && K === "shot") L.push("", "Hard tap: use filtered or softened water, or scale builds up inside the machine.");
+    else if (lv === "hard") L.push("", r.temp != null ? `Hard tap first fix: try ${clRange(1, 2)} coarser or −2 °C before changing grind for bitterness or flatness.` : `Hard tap first fix: try ${clRange(1, 2)} coarser, or filtered water.`);
     L.push("", SITE());
     return L.join("\n");
   }
@@ -4056,14 +4135,15 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
   }
   // ---------- A4 sheet: the recipe as a page, printed or saved as PDF from the browser's own print dialog ----------
   function printSheet(d) {
-    const g = onMill(d.clicks), when = d.date ? dmy(d.date) : dmy(new Date().toISOString());
-    const nums = [[isC40() ? String(d.clicks) : g.txt, isC40() ? "C40 clicks" : mill().name, "key"], [d.dose + " g", "Coffee"], [d.water + " g", d.ice ? "Hot water" : "Water"],
+    const g = onMill(d.clicks), when = d.date ? dmy(d.date) : dmy(new Date().toISOString()), shot = d.brewer === "Espresso";
+    const nums = shot ? [[isC40() ? String(d.clicks) : g.txt, isC40() ? "C40 clicks" : mill().name, "key"], [d.dose + " g", "Coffee in"], [d.water + " g", "Out"],
+      d.temp != null ? [d.temp + "°C", "Machine"] : null, d.lo ? [`${d.lo} – ${d.hi} s`, "Shot time"] : null].filter(Boolean) : [[isC40() ? String(d.clicks) : g.txt, isC40() ? "C40 clicks" : mill().name, "key"], [d.dose + " g", "Coffee"], [d.water + " g", d.ice ? "Hot water" : "Water"],
       d.ice ? [d.ice + " g", "Ice in the jug"] : null, d.temp != null ? [d.temp + "°C", "Kettle"] : null,
       d.lo ? [d.hi && d.hi !== d.lo ? `${fmt(d.lo)} – ${fmt(d.hi)}` : fmt(d.lo), "Total time"] : null].filter(Boolean);
     const pours = (d.pours || []).filter((q) => q.t != null);
     $("printSheet").innerHTML = `<div class="ps${pours.length > 7 ? " dense" : ""}${pours.length > 11 ? " xdense" : ""}">
       <header class="ps-top"><span>Bag to Cup</span><span>${esc(when)}</span></header>
-      <p class="ps-kick">${esc([d.brewer, d.method && d.method !== d.brewer ? d.method : "", d.ice ? "Iced" : "", d.ratio ? "1:" + d.ratio : ""].filter(Boolean).join(", "))}${d.nailed ? '<span class="ps-nail">Nailed it</span>' : ""}</p>
+      <p class="ps-kick">${esc([d.brewer, !shot && d.method && d.method !== d.brewer ? d.method : "", d.ice ? "Iced" : "", d.ratio ? "1:" + d.ratio : ""].filter(Boolean).join(", "))}${d.nailed ? '<span class="ps-nail">Nailed it</span>' : ""}</p>
       <h1 class="ps-title">${esc(d.title || "Your recipe")}</h1>
       <div class="ps-nums">${nums.map(([v, l, k]) => `<div class="${k || ""}"><b>${esc(v)}</b><span>${esc(l)}</span></div>`).join("")}</div>
       ${pours.length ? `<table class="ps-pours"><thead><tr><th>Time</th><th>Scale</th><th>Do</th></tr></thead><tbody>${pours.map((q) => `<tr><td>${fmt(q.t)}</td><td>${q.to != null ? q.to + " g" : ""}</td><td>${esc(q.note || "")}</td></tr>`).join("")}</tbody></table>` : ""}
@@ -4093,21 +4173,19 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
   // ---------- shelves ----------
   let knownRoasters = [];   // every roaster we follow, for reading their names off a bag
   let shelf = [], shelfF = "all", shelfR = "all", shelfAll = false, shelfV = "all", shelfN = 10;   // one list: every coffee
-  // "Made for V60": single origins roasted for filter or omni. Blends, espresso roasts (the roaster shelves or
-  // describes them as espresso, even when sold ground for filter), coffees named espresso and darker
-  // roasts stay on the list, one tap away under Everything. Search stays inside whichever one is chosen.
-  const forV60 = (r) => !r.blend && r.roast_for !== "espresso" && !/espresso/i.test(r.name || "") && !r.roast_level;
-  // the moka pot wants what espresso does: blends, espresso roasts, medium and darker, or listed for moka
-  const forMoka = (r) => !!(r.blend || r.roast_for === "espresso" || /espresso/i.test(r.name || "") || r.roast_level
+  // Made for, picked by you (Everything until you do). Filter: roasted for filter or omni, single origins, and blends
+  // only when the roaster says filter. Espresso & moka: espresso roasts, blends, coffees named espresso, medium and darker,
+  // or listed for moka or espresso. A medium-roast single origin fits both.
+  const forFilter = (r) => (!r.blend || r.roast_for === "filter") && r.roast_for !== "espresso" && !/espresso/i.test(r.name || "") && !r.roast_level;
+  const forEspresso = (r) => !!(r.blend || r.roast_for === "espresso" || /espresso/i.test(r.name || "") || r.roast_level
     || ["medium", "mdark", "dark"].includes(r.roast) || (r.methods || []).some((m) => /moka|espresso/.test(m)));
-  const shelfFit = () => brewerOf(state) === "moka" ? forMoka : forV60;
-  const shelfFitName = () => brewerOf(state) === "moka" ? "Made for moka" : "Made for filter";
+  const SHELF_V = [["all", "Everything"], ["filter", "Filter"], ["espresso", "Espresso & moka"]];
+  const shelfFit = () => shelfV === "filter" ? forFilter : shelfV === "espresso" ? forEspresso : () => true;
   function renderShelfV() {
-    const SHELF_V = [["v60", shelfFitName()], ["all", "Everything"]];
-    const n = shelf.length, k = shelf.filter(shelfFit()).length;
-    $("shelfV").innerHTML = SHELF_V.map(([v, t]) => `<button type="button" class="chip" data-v="${v}" aria-pressed="${shelfV === v}">${t}${n ? ` <span class="n">${v === "v60" ? k : n}</span>` : ""}</button>`).join("");
+    $("shelfV").innerHTML = SHELF_V.map(([v, t]) => `<button type="button" class="chip" data-v="${v}" aria-pressed="${shelfV === v}">${t}</button>`).join("");
     $("shelfV").querySelectorAll("button").forEach((b) => b.onclick = () => { shelfV = b.dataset.v; shelfAll = false; renderShelfV(); renderShelf(); });
   }
+
   // newest first, strictly by date inside each group, so the dates down the list never jump back and forth. Within one day
   // the shops take turns (one coffee each per round) so no single shop fills the screen, and coffees whose process isn't
   // listed go last. A coffee that's just in is dated by the day it reached the list.
@@ -4153,7 +4231,7 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
     const q = $("shelfQ").value.trim().toLowerCase();
     let list = shelf.filter((r) => (shelfR === "all" || market(r) === shelfR) && (shelfF === "all" || (shelfF === "new" ? r.new : bucket(r.process) === shelfF)));
     if (q) list = list.filter((r) => [r.roaster, r.roaster_city, r.name, r.origin, r.region, r.process, r.variety].join(" ").toLowerCase().includes(q));
-    if (shelfV === "v60") list = list.filter(shelfFit());
+    if (shelfV !== "all") list = list.filter(shelfFit());
     list = interleave(list);
     if (!shelfAll) shelfN = 10;   // a new filter or search starts again from the ten newest
     shelfAll = true;
@@ -4173,6 +4251,7 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
       const tagBits = [
         r.process ? tg(esc(r.process), procTone(r.process)) : tg("Process not listed", "miss"),
         r.variety ? varietyTag(r.variety) : "",
+        r.roast_for === "espresso" || (r.blend && /espresso/i.test(r.name || "")) ? tg("Espresso roast") : "",
       ];
       const origins = originTag(r.origin, r.region);
       const place = origins;
@@ -4187,7 +4266,7 @@ p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
           <button class="btn" type="button" data-i="${i}">Brew</button>
           <button type="button" class="pill bag-add${hasBag(r) ? " in" : ""}" data-b="${i}" aria-pressed="${hasBag(r)}" aria-label="${hasBag(r) ? "Saved in my bags" : "Save to my bags"}">${hasBag(r) ? "Saved" : "Save"}</button>
           ${r.url ? `<a class="pill buy-pill" href="${esc(r.url)}"${r.price ? ` data-price="${esc(r.price.replace(/^From\s+/i, ""))}"` : ""} target="_blank" rel="noopener" aria-label="Buy ${esc(r.name)} from ${esc(r.roaster)}${r.price ? ", " + esc(r.price) : ""}">${r.price ? esc(r.price.replace(/^From\s+/i, "")) : "Buy"}</a>` : ""}
-        </div></article>`; }).join("") : `<p class="muted" style="padding:16px 0;margin:0">Nothing matches${shelfV === "v60" && shelf.some((r) => !shelfFit()(r)) ? ` in ${shelfFitName()}. Try Everything, or` : "."} <a href="#" class="mail-me" data-s="Missing coffee">${shelfV === "v60" ? "email me" : "Email me"}</a> and I’ll add the roaster.</p>`;
+        </div></article>`; }).join("") : `<p class="muted" style="padding:16px 0;margin:0">Nothing matches${shelfV !== "all" ? `. Try Everything under Made for, or` : "."} <a href="#" class="mail-me" data-s="Missing coffee">${shelfV !== "all" ? "email me" : "Email me"}</a> and I’ll add the roaster.</p>`;
     const left = list.length - Math.min(shelfN, list.length);
     $("shelfMore").hidden = left <= 0; $("shelfMore").removeAttribute("aria-hidden");
     $("shelfMore").textContent = `Load more (${left} left)`;
