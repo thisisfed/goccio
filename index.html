@@ -1738,7 +1738,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
   </section>
 
   <section class="sec" id="shelves" aria-labelledby="sh">
-    <div class="sec-head"><span class="cap" id="sh"><b>01</b>The coffees.</span></div>
+    <div class="sec-head"><span class="cap" id="sh"><b>01</b>Coffees</span></div>
     <p class="shelf-meta" id="shelfMeta" hidden></p>
     <div class="shelf-tools">
       <div class="opt"><label for="shelfQ">Search</label><input type="search" id="shelfQ" placeholder="Roaster, coffee, origin, process…"></div>
@@ -1757,7 +1757,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
 
   <section class="sec" id="coffee" aria-labelledby="askLbl">
     <div class="ask">
-      <label for="coffeeIn" id="askLbl">What are you brewing?</label>
+      <label for="coffeeIn" id="askLbl">What are we brewing?</label>
       <div class="field">
         <textarea id="coffeeIn" rows="2" placeholder="Roaster, coffee, origin, process, notes…"></textarea>
         <button class="btn" id="go" type="button">Build recipe</button>
@@ -1785,7 +1785,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
   </section>
 
   <section class="sec" id="recipe" aria-labelledby="rtitle">
-    <div class="sec-head"><span class="cap"><b>03</b>Your recipe.</span><span class="cap" id="rsource"></span></div>
+    <div class="sec-head"><span class="cap"><b>03</b>Recipe.</span><span class="cap" id="rsource"></span></div>
     <div class="r-title">
       <div class="r-kick"><span class="method" id="rmethod"></span><span class="cap" id="rgoal"></span><span class="zero-pill" id="rzero" hidden></span></div>
       <h2 id="rtitle"></h2>
@@ -1896,7 +1896,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
     </ol>
     </details>
     <p class="foot-note refs-h foot-credits">Credits</p>
-    <p class="foot-note" id="credit">Made by <a href="https://thisisfed.xyz/" target="_blank" rel="noopener">Federico Ferrari</a>, enjoying it? <a href="https://buymeacoffee.com/thisisfed" target="_blank" rel="noopener">Buy me a coffee</a>.</p>
+    <p class="foot-note" id="credit">Made by <a href="https://thisisfed.xyz/" target="_blank" rel="noopener">Federico Ferrari</a>, enjoying it? <a href="https://buymeacoffee.com/thisisfed" target="_blank" rel="noopener">Buy me a beer</a>.</p>
     </div>
   </footer>
 </main>
@@ -1942,7 +1942,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
   const fmt = (s) => { s = Math.max(0, Math.round(s)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
   const parseMS = (v) => { const m = /^\s*(\d{1,2})[:.](\d{1,2})\s*$/.exec(v || ""); return m ? (+m[1]) * 60 + (+m[2]) : (/^\s*\d{2,3}\s*$/.test(v || "") ? +v : null); };
   // the journal's time field speaks each brewer's language: drained, pressed, steeped (in hours), brewed, shot
-  const ddOf = (b) => b === "cold" ? { lbl: "Steeped for", word: "steeped", ph: "16 h", show: (x) => `${Math.round(x / 360) / 10} h`,
+  const ddOf = (b) => b === "cold" ? { lbl: "Steeped", word: "steeped", ph: "16 h", show: (x) => `${Math.round(x / 360) / 10} h`,
       parse: (v) => { const n = parseFloat(String(v || "").replace(",", ".")); return isFinite(n) && n > 0 && n < 100 ? Math.round(n * 3600) : null; } }
     : b === "espresso" ? { lbl: "Shot time", word: "shot", ph: "28 s", show: (x) => `${x} s`,
       parse: (v) => { const m = /^\s*(\d{1,3})\s*s?\s*$/i.exec(v || ""); return m ? +m[1] : parseMS(v); } }
@@ -3522,7 +3522,19 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
   const renderAllOpts = () => { renderOpts("opts-kit", [{ key: "brewer", label: "Brewer", items: Object.entries(BREWERS).map(([k, x]) => [k, x.name]), on: setBrewer }]); renderOpts("opts-main", optsMain()); renderOpts("opts-more", OPTS_MORE); };
 
   // the recipe section only exists once there's a full recipe; until then go to the questions
-  function goRecipe() { const t = !$("recipe").hidden ? $("recipe") : !$("need").hidden ? $("need") : $("coffee"); t.scrollIntoView({ behavior: "smooth", block: t.id === "need" ? "center" : "start" }); }
+  // jumping to a section: straight there, its top rule just under the top bar, then checked again while the page settles
+  // (the coffee list's filter bar changes height as it sticks or unsticks, which used to leave a smooth scroll short or long).
+  // Touching, scrolling or a key press stops the checks, so it never fights you
+  let jumpGen = 0;
+  ["wheel", "touchstart", "keydown"].forEach((ev) => addEventListener(ev, () => { jumpGen++; }, { passive: true }));
+  function jumpTo(el, center) {
+    if (!el) return; const gen = ++jumpGen;
+    const go = () => { if (gen !== jumpGen) return;
+      const top = document.querySelector(".top"), h = top ? top.getBoundingClientRect().height : 49, r = el.getBoundingClientRect();
+      const y = center ? r.top + scrollY - (innerHeight - r.height) / 2 : r.top + scrollY - (h - 3);
+      const html = document.documentElement, sb = html.style.scrollBehavior; html.style.scrollBehavior = "auto"; window.scrollTo(0, Math.max(0, Math.round(y))); html.style.scrollBehavior = sb; };
+    go(); requestAnimationFrame(go); [120, 300, 600, 900].forEach((ms) => setTimeout(go, ms)); }
+  function goRecipe() { const t = !$("recipe").hidden ? $("recipe") : !$("need").hidden ? $("need") : $("coffee"); jumpTo(t, t.id === "need"); }
   function build(scroll) {
     const t = $("coffeeIn").value.trim();
     if (t !== state.text) { beanCard = null; state.bag = null; state.process = "auto"; state.roast = "auto"; state.roastPhoto = null; state.listProc = null; renderAllOpts(); }   // new coffee: forget old answers
@@ -3656,7 +3668,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
       if ($("eLo")) { lo = parseMS($("eLo").value); hi = parseMS($("eHi").value); if (lo == null || hi == null || hi < lo) return err("Done between: two times, like 2:45 and 3:15."); }
       prefs.mine[mineKey(r)] = { clicks: clicksFor(gv), temp: temp, ratio: $("eW") ? water / r.dose : null,
         steps, lo, hi, m: mOf(r), at: new Date().toISOString() };
-      savePrefs(); editing = false; render(); $("recipe").scrollIntoView({ behavior: "smooth", block: "start" });
+      savePrefs(); editing = false; render(); jumpTo($("recipe"));
     };
   }
 
@@ -3965,9 +3977,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
   function loop() { tick(); if (bv.running) bv.raf = requestAnimationFrame(loop); }
   // exact drawdown, to the second, straight into the journal form
   // straight to the journal, no smooth scroll: jump now, and again once leaving full screen has settled (it can reset the scroll)
-  function toJournal() { const go = () => { const j = $("journal"), top = j.getBoundingClientRect().top + scrollY - ((parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--top-h")) || 49) - 3);
-      window.scrollTo({ top: Math.max(0, top), behavior: "instant" }); };
-    go(); requestAnimationFrame(go); setTimeout(go, 200); setTimeout(go, 500); }
+  function toJournal() { jumpTo($("journal")); }
   function drained() {
     const sec = Math.floor(elapsed());
     const r = recipe;
@@ -4451,7 +4461,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
       x.dataset.armed = "1"; x.textContent = "Sure?"; x.classList.add("armed");
       setTimeout(() => { if (x.isConnected) { delete x.dataset.armed; x.textContent = "Remove"; x.classList.remove("armed"); } }, 3000); });
     $("bagList").querySelectorAll("[data-brew]").forEach((x) => x.onclick = () => { const b = bags[+x.dataset.brew];
-      if (b.text && !b.roaster) { state.text = b.text; state.bag = null; state.roastPhoto = null; $("coffeeIn").value = b.text; saveState(); renderAllOpts(); render(); $("coffee").scrollIntoView({ behavior: "smooth", block: "start" }); }
+      if (b.text && !b.roaster) { state.text = b.text; state.bag = null; state.roastPhoto = null; $("coffeeIn").value = b.text; saveState(); renderAllOpts(); render(); jumpTo($("coffee")); }
       else brewThis(b); });
     // iPhone's date wheel fires "change" while it spins: save quietly and only refresh the line under it, never rebuild the picker you're using
     $("bagList").querySelectorAll("[data-fz]").forEach((x) => x.onclick = (e) => { e.preventDefault(); const b = bags[+x.dataset.fz]; if (!b) return;
@@ -4472,7 +4482,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
     : { text: state.text, name: (state.text || "").split(/[,.]/)[0], roast: state.roast !== "auto" ? state.roast : null };
   function syncBagBtn() { const b = $("bagBtn"); if (!b) return; const r = currentBag(), inIt = !!(r.name || r.text) && hasBag(r);
     b.textContent = "Add to my bags"; b.hidden = inIt || !(state.text || "").trim(); }   // once it's in your bags the button goes
-  $("bagBtn").onclick = () => { const r = currentBag(); if (!hasBag(r)) { toggleBag(r); if (state.scanRoasted && bags[0] && !bags[0].roasted) { bags[0].roasted = state.scanRoasted; saveBags(); renderBags(); } renderShelf(); } syncBagBtn(); $("bags").scrollIntoView({ behavior: "smooth", block: "start" }); };
+  $("bagBtn").onclick = () => { const r = currentBag(); if (!hasBag(r)) { toggleBag(r); if (state.scanRoasted && bags[0] && !bags[0].roasted) { bags[0].roasted = state.scanRoasted; saveBags(); renderBags(); } renderShelf(); } syncBagBtn(); jumpTo($("bags")); };
   // a brew logged from one of your bags takes its grams off what's left
   function bagUsed(dose) { const r = currentBag(), b = bags.find((x) => x.id === bagId(r)); if (b && b.left != null) { b.left = Math.max(0, b.left - dose); if (b.left === 0) bags.splice(bags.indexOf(b), 1); saveBags(); renderBags(); renderShelf(); } }
 
@@ -4486,7 +4496,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
     state.listProc = state.process;   // came from the roaster's listing, not from you
     state.roast = r.roast_level === "dark" ? "dark" : r.roast_level === "medium-dark" ? "mdark" : "auto";
     $("coffeeIn").value = state.text; saveState(); renderAllOpts(); render();
-    $("coffee").scrollIntoView({ behavior: "smooth", block: "start" });   // land on What are you brewing?, with the coffee filled in
+    jumpTo($("coffee"));   // land on What are we brewing?, with the coffee filled in
   }
 
   // ---------- scan the bag: read the label on this device (Tesseract OCR, loaded only when used) ----------
@@ -5094,7 +5104,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
     timer = setTimeout(() => { i = -1; tick(); }, 3000);
     new IntersectionObserver((es) => { visible = es[0].isIntersecting; }).observe($("stage"));
   })();
-  document.querySelectorAll("[data-jump]").forEach((b) => b.onclick = () => b.dataset.jump === "recipe" ? goRecipe() : $(b.dataset.jump).scrollIntoView({ behavior: "smooth", block: "start" }));
+  document.querySelectorAll("[data-jump]").forEach((b) => b.onclick = () => b.dataset.jump === "recipe" ? goRecipe() : jumpTo($(b.dataset.jump)));
 
   const shared = readShared();
   $("coffeeIn").value = state.text;
