@@ -27,7 +27,7 @@ OUT = ROOT / "data" / "releases.json"
 SEEN = ROOT / "data" / "seen.json"   # when each coffee page was first seen, including ones the list leaves out as duplicates
 UA = "V60BrewCard/1.0 (+https://v60.thisisfed.xyz; daily filter-coffee list)"
 NEW_DAYS = 21
-MAX_ITEMS = 4000   # a safety cap only; the list is ~1,100 coffees
+MAX_ITEMS = 12000   # a safety cap only; the list is ~5,000 coffees
 PER_ROASTER = 100   # was 8, which hid most of a big roaster's range
 
 COUNTRIES = ["Ethiopia", "Kenya", "Colombia", "Panama", "Costa Rica", "Guatemala", "El Salvador",
@@ -1366,6 +1366,8 @@ def classify(item, roaster):
     rec["market"] = roaster.get("region", "UK")
     rec["roaster_country"] = roaster.get("country")
     rec["roaster_city"] = roaster.get("city")
+    if roaster.get("nation"):
+        rec["roaster_nation"] = roaster["nation"]
     return {k: v for k, v in rec.items() if v not in (None, "", [])}
 
 
@@ -1900,7 +1902,7 @@ def main():
             add_page_prices(recs, r, old)
         return kind, err, recs
 
-    with ThreadPoolExecutor(max_workers=8) as pool:
+    with ThreadPoolExecutor(max_workers=16) as pool:
         results = list(pool.map(run, roasters))
     for r, (kind, err, recs) in zip(roasters, results):
         kept = len(recs)
