@@ -1620,15 +1620,19 @@ footer .fcol + .fcol > .foot-x{margin-top:10px}
 .specs .spec.brewer{grid-column:1 / -1!important;order:0!important}
 .specs .spec.brewer{min-width:0}
 .specs .spec.brewer b{display:block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15;padding-bottom:.04em}
-/* closing text: the brew in "one brew away" turns into what each brewer asks of you (pour, swirl, press…). The old word's letters lift off and
-   blur away one after another, the new ones rise into place. The gap opens and closes to fit */
-.litext .verb{display:inline-block;position:relative;white-space:nowrap;vertical-align:baseline;text-align:left;transition:color .35s ease,width .5s cubic-bezier(.2,.7,.2,1)}
-.litext .verb i{font-style:normal;display:inline-block}
-.litext .verb .vw.out{position:absolute;top:0;left:0}
-.litext .verb .vw.out i{animation:verbOut .42s cubic-bezier(.5,0,.8,.4) both;animation-delay:calc(var(--i) * 28ms)}
-.litext .verb .vw.in i{animation:verbIn .55s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(120ms + var(--i) * 36ms)}
-@keyframes verbOut{to{transform:translateY(-.55em) rotate(-6deg);opacity:0;filter:blur(6px)}}
-@keyframes verbIn{from{transform:translateY(.6em) rotate(5deg);opacity:0;filter:blur(6px)}}
+/* closing text: the brew in "one brew away" flips to what each brewer asks of you (pour, swirl, press…), twice a second,
+   like a departures board: the old word tips away backwards, the new one drops in from the top. No fading. */
+.litext .verb{display:inline-block;position:relative;white-space:nowrap;vertical-align:baseline;text-align:left;perspective:6em;transition:color .35s ease,width .16s ease-out}
+.litext .verb i{font-style:normal;display:inline-block;backface-visibility:hidden;transform-origin:50% 55%}
+.litext .verb .vw.out{position:absolute;top:0;left:0;animation:verbOut .11s ease-in both}
+.litext .verb .vw.in{animation:verbIn .15s cubic-bezier(.3,1.5,.6,1) .1s both}
+@keyframes verbOut{to{transform:rotateX(-90deg)}}
+@keyframes verbIn{from{transform:rotateX(90deg)}}
+/* bean scan result: one paragraph, starting where the Roast pills start */
+.opt > .rp-msg{grid-column:2;min-width:0}
+.opt > .rp-msg[hidden]{display:none}
+p.bc{display:block;margin:0;color:var(--ink);font-size:var(--fs-s);line-height:1.35}
+p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -2991,10 +2995,8 @@ footer .fcol + .fcol > .foot-x{margin-top:10px}
     const head = ro.key ? `This is a <b>${esc(ROAST[ro.key].label)}</b> roast.`
       : "<b>Too few beans.</b>";
     el.hidden = false;
-    el.innerHTML = `<div class="bc">
-      <p class="bc-head"><i class="bean-dot big" style="--c:${G.hex}"></i><span>${head}</span></p>
-      <p class="bc-why">${esc(ro.why || "")}</p>
-      ${G.notes && G.notes.length ? `<dl class="bc-dl"><dt>Notes</dt><dd>${G.notes.map(esc).join(". ")}.</dd></dl>` : ""}</div>`;
+    // one paragraph: the call, what it was measured against, what the beans look like
+    el.innerHTML = `<p class="bc"><i class="bean-dot big" style="--c:${G.hex}"></i>${head} ${esc(ro.why || "")}${G.notes && G.notes.length ? " " + G.notes.map(esc).join(". ") + "." : ""}</p>`;
   }
   // a reading sets the Roast row straight away; to overrule it, tap another level in that row
   function useBeans(got, where) { beanCard = { ...got, where };
@@ -3434,7 +3436,7 @@ footer .fcol + .fcol > .foot-x{margin-top:10px}
       });
       if (o.key === "roast") { g.insertAdjacentHTML("beforeend", PHOTO_CHIP); g.querySelector(".rp-go").onclick = () => beanScan("rpMsgOpts"); }
       row.append(lab, g); box.appendChild(row);
-      if (o.key === "roast") { const m = document.createElement("div"); m.id = "rpMsgOpts"; m.className = "rp-msg"; box.appendChild(m); paintPhoto(m); }
+      if (o.key === "roast") { const m = document.createElement("div"); m.id = "rpMsgOpts"; m.className = "rp-msg"; row.appendChild(m); paintPhoto(m); }   // in the row, under its pills
     });
   }
   const renderAllOpts = () => { renderOpts("opts-kit", [{ key: "brewer", label: "Brewer", items: Object.entries(BREWERS).map(([k, x]) => [k, x.name]), on: setBrewer }]); renderOpts("opts-main", optsMain()); renderOpts("opts-more", OPTS_MORE); };
@@ -4883,7 +4885,7 @@ footer .fcol + .fcol > .foot-x{margin-top:10px}
     const box = $("verb"); if (!box || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const V = ["brew", "pour", "bloom", "swirl", "steep", "stir", "press", "plunge"]; let k = 0, seen = false, t = null;
     const word = (w, cls) => { const el = document.createElement("i"); el.className = "vw " + cls; el.setAttribute("aria-hidden", cls === "out");
-      [...w].forEach((ch, i) => { const l = document.createElement("i"); l.textContent = ch; l.style.setProperty("--i", i); el.appendChild(l); }); return el; };
+      el.textContent = w; return el; };
     // Words differ in width. At each screen width, only the ones that leave the line breaks exactly as "brew" has them take
     // part, so the lines never jump; the gap opens and closes around the word.
     let ok = V;
@@ -4895,9 +4897,9 @@ footer .fcol + .fcol > .foot-x{margin-top:10px}
       const out = word(old.textContent, "out"), inn = word(ok[k], "in");
       box.replaceChildren(out, inn); const w1 = inn.offsetWidth;
       box.style.width = w0 + "px"; box.offsetWidth; box.style.width = w1 + "px";
-      setTimeout(() => { out.remove(); box.style.width = ""; }, 700); };
+      setTimeout(() => { out.remove(); box.style.width = ""; }, 300); };
     fit(); addEventListener("resize", fit); if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
-    new IntersectionObserver((es) => { seen = es[0].isIntersecting; if (seen && !t) t = setInterval(next, 2200); if (!seen && t) { clearInterval(t); t = null; } }).observe(box);
+    new IntersectionObserver((es) => { seen = es[0].isIntersecting; if (seen && !t) t = setInterval(next, 500); if (!seen && t) { clearInterval(t); t = null; } }).observe(box);
   })();
   (function outro() {
     const words = [...document.querySelectorAll("#litext > span:not(.outro-end)")], end = document.querySelector(".outro-end");
