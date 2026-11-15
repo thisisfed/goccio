@@ -1633,7 +1633,15 @@ section.sec{scroll-margin-top:calc(var(--top-h, 49px) - 3px)!important}   /* 3 p
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E")}
 :root[data-theme="dark"] .shelf-tools select.shelf-sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E")}
 .shelf-tools.compact .opt > .chips{display:none!important}
-.shelf-tools.compact select.shelf-sel{display:block}
+.shelf-tools.compact select.shelf-sel{display:none}
+.shelf-tools .shelf-dd{display:none;width:100%;box-sizing:border-box;height:var(--pill-h);border:0;border-radius:var(--r);background-color:var(--wash);color:var(--ink);text-align:left;cursor:pointer;
+  font:500 var(--fs-s)/1.3 var(--sans);padding:0 28px 0 12px;margin:0;background-repeat:no-repeat;background-position:right 12px center;background-size:10px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E")}
+:root[data-theme="dark"] .shelf-tools .shelf-dd{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E")}
+.shelf-tools.compact .shelf-dd{display:block}
+.shelf-tools.compact .opt.open > .shelf-dd{display:none}
+.shelf-tools.compact .opt.open > .chips{display:flex!important;flex-wrap:wrap}
+.shelf-tools.compact .opt.open{align-items:start!important}
 .shelf-tools.compact .opt{align-items:center!important}
 .shelf-tools.compact .opt > span{padding-top:0!important}
 @supports (-webkit-touch-callout: none){ .shelf-tools select.shelf-sel{font-size:16px;line-height:1.3!important} }   /* a line height of 1 cuts the g and y on iPhone */
@@ -1691,13 +1699,6 @@ footer .fcol > p + .foot-x{margin-top:14px}
 .beta, :root[data-theme="dark"] .beta{color:var(--hl)!important}                         /* Beta tags, same orange */
 .litext .outro-end.on{color:var(--hl)!important}                                         /* Brew something good. */
 :focus-visible{outline-color:var(--hl)!important}
-/* every pill ends in a half circle at both ends; boxes (fields, cards, notes) keep the small corner */
-.nav button, .nav .theme-btn, .hero-pill, .btn, .go-big, .dock .btn, .more-btn, .chip, .rp-go, .need .chip, .w-body .chip, .taste .chip,
-.shelf-tools input[type=search], .shelf-tools select.shelf-sel, .zr-mill select, .kit-mill select, .dd input, .w-custom input, .w-pc input, .ed-in,
-.spec .badge, .lrn-tag, .zero-pill, .ji-tag, .mine-tag, .notes-list span, .pill, .oc, .entry button,
-.bv-x, .bv-go, .bv-reset, .bv-drain, .bv-opt, .bv-pill, .bv-ctrls button, .cam-tick,
-.bag-f input, .bag-f .bag-g, .item .r .bag-add, .shelf .item > .r > .bag-add, .bag-rm, .bag-fz, .bag-buy, .shelf .item .buy-pill, #bagList .item > .r > .btn,
-.scan-review .sc-in input, .scan-review .sc-in select, .scan-review .pill, .bc .pill, .bv-opts button, .cam-ctrls .chip, .cam-ctrls button { border-radius: 999px !important; }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -4457,9 +4458,26 @@ footer .fcol > p + .foot-x{margin-top:14px}
   const SHELF_R = [["all", "Everywhere"], ["UK", "UK"], ["Europe", "Europe"], ["World", "Rest of world"]];
   const market = (r) => r.market || "UK";
   // the stuck filter bar shows each row as one long pill, a list like the grinder's: the choice in force, the rest inside
+  // the folded menu: each row is one pill showing the current choice; a tap unfolds that row's own pills right there,
+  // a tap on one picks it and folds the row again. The select stays in the page for anything that can't run this
   function fillSel(id, items, cur, on) { const el = $(id); if (!el) return;
     el.innerHTML = items.map(([v, t]) => `<option value="${v}"${v === cur ? " selected" : ""}>${esc(t)}</option>`).join("");
-    el.onchange = () => { on(el.value); keepShelfTop(); }; }
+    el.onchange = () => { on(el.value); keepShelfTop(); };
+    const row = el.closest(".opt"), chips = row && row.querySelector(".chips"); if (!row || !chips) return;
+    let b = row.querySelector(".shelf-dd");
+    if (!b) { b = document.createElement("button"); b.type = "button"; b.className = "shelf-dd"; b.setAttribute("aria-controls", chips.id); row.appendChild(b);
+      b.onclick = (e) => { const open = !row.classList.contains("open"); closeShelfRows(); if (!open) return;
+        row.classList.add("open"); b.setAttribute("aria-expanded", "true");
+        if (e.detail === 0) { const on = chips.querySelector('[aria-pressed="true"]') || chips.querySelector("button"); if (on) on.focus(); } }; }   // keyboard: straight onto the pills
+    const lbl = (items.find(([v]) => v === cur) || items[0] || [, ""])[1];
+    b.textContent = lbl; b.setAttribute("aria-expanded", String(row.classList.contains("open")));
+    b.setAttribute("aria-label", `${(row.querySelector(":scope > span") || {}).textContent || ""}: ${lbl}`); }
+  function closeShelfRows() { document.querySelectorAll(".shelf-tools .opt.open").forEach((r) => { r.classList.remove("open"); const b = r.querySelector(".shelf-dd"); if (b) b.setAttribute("aria-expanded", "false"); }); }
+  { const tools = document.querySelector(".shelf-tools");
+    // a pill picked in an unfolded row: fold it back and keep the list starting right under the bar
+    tools.addEventListener("click", (e) => { const row = e.target.closest(".opt.open"); if (row && e.target.closest(".chips button")) { setTimeout(() => { const f = document.activeElement && row.contains(document.activeElement); closeShelfRows(); if (f) { const b = row.querySelector(".shelf-dd"); if (b) b.focus(); } keepShelfTop(); }, 0); } }, true);   // capture: the row is found before the pick re-draws the pills
+    document.addEventListener("click", (e) => { if (!e.target.closest(".shelf-tools .opt.open")) closeShelfRows(); }, true);
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && document.querySelector(".shelf-tools .opt.open")) { const b = document.querySelector(".shelf-tools .opt.open .shelf-dd"); closeShelfRows(); if (b) b.focus(); } }); }
   function renderShelfR() {
     $("shelfR").innerHTML = SHELF_R.map(([v, t]) => `<button type="button" class="chip" data-v="${v}" aria-pressed="${shelfR === v}">${t}</button>`).join("");
     $("shelfR").querySelectorAll("button").forEach((b) => b.onclick = () => { shelfR = b.dataset.v; shelfAll = false; renderShelfR(); renderShelf(); });
