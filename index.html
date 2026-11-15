@@ -347,8 +347,8 @@ details.clk > summary .muted { font-weight: 400; font-size: var(--fs-s); flex: 1
 .spec .zo { font-size: var(--fs-s); font-weight: 700; color: var(--accent); }
 .zero-pill { font-size: var(--fs-s); font-weight: 700; color: var(--accent); background: color-mix(in srgb, var(--accent) 13%, transparent); padding: 3px 10px; border-radius: 980px; }
 /* warnings */
-#why li.warn { list-style: none; margin-left: -18px; padding: 8px 12px; border-radius: 12px; background: color-mix(in srgb, #ff3b30 11%, transparent); color: var(--ink); font-weight: 500; }
-#why li.warn::before { content: "⚠︎ "; color: #ff3b30; font-weight: 700; }
+#why li.warn { list-style: none; margin-left: -18px; padding: 8px 12px; border-radius: 12px; background: color-mix(in srgb, var(--hl) 13%, transparent); color: var(--ink); font-weight: 500; }
+#why li.warn::before { content: "⚠︎ "; color: var(--hl); font-weight: 700; }
 #why li.cons { list-style: none; margin-left: -18px; padding: 8px 12px; border-radius: 12px; background: color-mix(in srgb, var(--blue) 10%, transparent); }
 /* water card */
 details.water { background: var(--card); border-radius: 20px; padding: 0 20px; }
@@ -513,7 +513,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: var(--
 .bv-pill { font-size: var(--fs-s); font-weight: 700; letter-spacing: .03em; text-transform: uppercase; padding: 6px 12px; border-radius: 980px; background: #2d2520; color: #f7f0e8; white-space: nowrap; }
 .pour .bv-pill { background: #ff9f0a; color: #0e0b09; }
 .drain .bv-pill { background: #30d158; color: #0e0b09; }
-.over .bv-pill { background: #ff453a; color: #0e0b09; }
+.over .bv-pill { background: var(--hl); color: var(--on-hl); }
 .bv-clock { font-size: 24px; font-weight: 500; font-variant-numeric: tabular-nums; color: #a2958a; }
 .bv-lbl { font-size: 18px; font-weight: 600; color: #a2958a; height: 22px; line-height: 22px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bv-big { align-self: center; font-size: min(168px, 42cqw, 37cqh); font-weight: 700; line-height: 1; letter-spacing: -.055em; font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -549,7 +549,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: var(--
 .bv-opts button[aria-pressed="true"] { color: #f7f0e8; }
 .bv-opts button::before { content: "● "; color: #4d433c; }
 .bv-opts button[aria-pressed="true"]::before { color: #30d158; }
-.bv-opts button.warn::before { color: #ff9f0a; }
+.bv-opts button.warn::before { color: var(--hl); }
 @media (orientation: landscape) and (max-height: 560px) {
   .bv { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto auto auto; column-gap: 16px; }
   .bv-top { grid-column: 1 / -1; }
@@ -928,11 +928,11 @@ details.clk > summary .muted { margin-left: auto; overflow: hidden; text-overflo
 .bv-now { background: var(--wash); border-radius: var(--r); box-shadow: none; }
 .bv-now.pour { background: var(--ink); color: var(--bg); box-shadow: none; }
 .bv-now.drain { background: var(--wash); }
-.bv-now.over { background: var(--wash); box-shadow: inset 0 0 0 2px #ff3b30; }
+.bv-now.over { background: var(--wash); box-shadow: inset 0 0 0 2px var(--hl); }
 .bv-pill { background: var(--bg); color: var(--ink); border-radius: var(--r); font-size: var(--fs-s); font-weight: 500; letter-spacing: 0; padding: 6px 9px; }
 .pour .bv-pill { background: var(--bg); color: var(--ink); }
 .drain .bv-pill { background: #30d158; color: #000; }
-.over .bv-pill { background: #ff3b30; color: #fff; }
+.over .bv-pill { background: var(--hl); color: var(--on-hl); }
 .bv-clock { color: var(--muted); font-size: var(--fs-m); }
 .pour .bv-clock, .pour .bv-lbl, .pour .bv-sub, .pour .bv-big small { color: color-mix(in srgb, var(--bg) 60%, var(--ink)); }
 .bv-lbl { color: var(--muted); font-size: var(--fs); font-weight: 500; }
@@ -1203,7 +1203,7 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
 /* the dot says on or off: green on, grey off, orange when the screen can't be kept awake */
 .bv-opts button::before { content: "" !important; display: inline-block !important; width: 7px; height: 7px; border-radius: 50%; background: color-mix(in srgb, var(--ink) 30%, transparent); flex: none; }
 .bv-opts button[aria-pressed="true"]::before { background: #30d158; }
-.bv-opts button.warn::before { background: #e8590c; }
+.bv-opts button.warn::before { background: var(--hl); }
 .bv-opts button.warn { color: var(--ink) !important; }
 /* Start, Reset and Done sit 4 px apart, like the pills */
 .bv-ctrls { gap: 4px !important; }
@@ -1320,7 +1320,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
   .bv-now.act .bv-big { font-size: min(102px, 42cqw, 37cqh) !important; }
 }
 /* bean scan */
-.cam-status.warn { color: #ffb15c; }
+.cam-status.warn { color: var(--hl); }
 .cam .bean-dot { width: 12px; height: 12px; }
 .cam-tick:has(.bean-dot)::before { display: none; }
 .cam-ctrls .chip:disabled { opacity: .45; }
@@ -1535,7 +1535,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 .shelf .item > .r{width:84px;min-width:84px!important;flex:none}
 /* My bags running low: red grams, Buy again pill beside them */
 .bag-gw{display:inline-flex;align-items:center;gap:5px}
-.bag-f .bag-g.low{color:#ff3b30}
+.bag-f .bag-g.low{color:var(--hl)}
 .bag-buy,.bag-buy:hover,.bag-buy:active,.bag-buy:focus,.bag-buy:visited,.buy-pill,.buy-pill:hover,.buy-pill:active,.buy-pill:visited{text-decoration:none!important}
 .bag-buy{display:inline-flex;align-items:center;height:var(--pill-h);padding:0 12px;border-radius:var(--r);background:var(--pill);color:var(--ink);text-decoration:none;font:500 var(--fs-s)/1 var(--sans)}
 /* grinder pill: room for descenders (g, y) */
@@ -1554,7 +1554,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 .scan-review .sc-why{grid-column:2;font-size:12px;line-height:1.3;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .scan-review .sc-why:empty{display:none}
 .sc-dot{flex:none;width:9px;height:9px;border-radius:50%;display:inline-block;background:transparent;box-shadow:inset 0 0 0 1.5px var(--rule)}
-.sc-dot.high{background:#30d158;box-shadow:none}.sc-dot.medium{background:#ff9f0a;box-shadow:none}.sc-dot.low{background:#ff3b30;box-shadow:none}
+.sc-dot.high{background:#30d158;box-shadow:none}.sc-dot.medium{background:#ff9f0a;box-shadow:none}.sc-dot.low{background:var(--hl);box-shadow:none}
 .scan-review .sc-key{margin:0;font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px}
 .scan-review .sc-key .sc-dot{margin-left:6px}.scan-review .sc-key .sc-dot:first-child{margin-left:0}
 .scan-review .sc-btns{display:flex;flex-wrap:wrap;gap:5px}
@@ -1562,7 +1562,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 .scan-review .pill.on{background:var(--ink)!important;color:var(--bg)!important}
 @media (max-width: 640px){ .scan-review .sc-row{grid-template-columns:72px minmax(0,1fr);column-gap:10px} }
 /* camera: the tip turns amber when the frame has glare, too little light or blur */
-.cam-status.warn{color:#ffb340}
+.cam-status.warn{color:var(--hl)}
 /* bean result card */
 .bc{display:grid;gap:8px;color:var(--ink);font-size:var(--fs-s);line-height:1.35}
 .bc p{margin:0}
@@ -1685,8 +1685,8 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
   footer summary{break-after:avoid}
   footer .fcol:first-child > .foot-x{margin-top:28px}
 }
-/* Unknown picked for process or roast: red, so it's clear the recipe is playing safe */
-#o-process-unsure[aria-pressed="true"], #o-roast-unsure[aria-pressed="true"]{background:#ff3b30!important;color:#fff!important}
+/* Unknown picked for process or roast: the accent, so it's clear the recipe is playing safe */
+#o-process-unsure[aria-pressed="true"], #o-roast-unsure[aria-pressed="true"]{background:var(--hl)!important;color:var(--on-hl)!important}
 footer .fcol > p + .foot-x{margin-top:14px}
 #o-goal-tea .beta{margin-left:12px}   /* same gap as Scan the bag and Scan the beans */
 /* one accent, used only where something is happening or new: signal orange, black text on it */
@@ -1709,6 +1709,13 @@ footer .fcol > p + .foot-x{margin-top:14px}
 /* What are we brewing?: the text sits as far from the edges as the text in a pill (10 px across, 6 px down) */
 .field{padding:0!important}
 .field textarea, #coffeeIn{padding:6px 10px!important}
+/* an option that isn't available: the pill stays, struck through corner to corner, and can't be picked */
+.chip.off, .chip.off:hover{cursor:not-allowed;color:var(--muted)!important;background-color:var(--pill)!important;
+  background-image:linear-gradient(to top right, transparent calc(50% - .75px), var(--muted) calc(50% - .75px), var(--muted) calc(50% + .75px), transparent calc(50% + .75px))!important}
+.chip.off .beta{opacity:.5}
+/* brew screen: Start, Reset, Close, Drained and the two toggles are the same size as every other pill */
+.bv-ctrls button, .bv-ctrls .bv-x, .bv-x, .bv-drain{height:var(--pill-h)!important;min-height:0!important;padding:0 14px!important;font:500 var(--fs-s)/1 var(--sans)!important}
+.bv-opts button{height:var(--pill-h)!important;min-height:0!important}
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -3673,11 +3680,13 @@ footer .fcol > p + .foot-x{margin-top:14px}
   const optsMain = () => {
     const b = brewerOf(state), B = BREWERS[b], teaOn = state.goal === "tea" && teaAvail(b);
     return [
-      B.kind !== "steps" && { key: "goal", label: "Cup", items: [["light", "Light & sweet"], ["balanced", "Balanced"], ["syrupy", "Rich & syrupy"], ...(teaAvail(b) ? [["tea", "Tea-like"]] : [])] },
+      B.kind !== "steps" && { key: "goal", label: "Cup", items: [["light", "Light & sweet"], ["balanced", "Balanced"], ["syrupy", "Rich & syrupy"],
+        ["tea", "Tea-like", teaAvail(b) ? null : !TEA_OK.has(b) ? "needs a paper filter" : "made for light to medium washed, honey or natural coffees"]] },
       ICED_OK.has(b) && { key: "serve", label: "Serve", items: [["hot", "Hot"], ["iced", "Iced"]] },
       { key: "dose", label: b === "moka" ? "Pot" : "Grams", items: B.doses },
-      b === "aero" && !teaOn && { key: "aeroWay", label: "Method", items: [["standard", "Hoffmann"], ["inverted", "Hoffmann inverted"], ["wendelboe", "Wendelboe"]] },
-      b === "v60" && !teaOn && { key: "method", label: "Method", items: [["best", "Best for this coffee"], ["hoffmann", "Hoffmann"], ["fourSix", "Kasuya 4:6"], ...(Number(state.dose) >= 25 ? [] : [["ten", "Kasuya 10-Pour"]]), ["rao", "Rao"], ["onyx", "Onyx"], ["cafec", "CAFEC Osmotic Flow"], ["winton", "Winton Five-Pour"], ["hedrick", "Hedrick"]] },   // ten 15 s pours don't scale to a double batch
+      b === "aero" && { key: "aeroWay", label: "Method", items: [["standard", "Hoffmann"], ["inverted", "Hoffmann inverted"], ["wendelboe", "Wendelboe"]].map(([v, t]) => [v, t, teaOn ? "Tea-like has its own steep" : null]) },
+      b === "v60" && { key: "method", label: "Method", items: [["best", "Best for this coffee"], ["hoffmann", "Hoffmann"], ["fourSix", "Kasuya 4:6"], ["ten", "Kasuya 10-Pour"], ["rao", "Rao"], ["onyx", "Onyx"], ["cafec", "CAFEC Osmotic Flow"], ["winton", "Winton Five-Pour"], ["hedrick", "Hedrick"]]
+        .map(([v, t]) => [v, t, teaOn ? "Tea-like has its own pours" : v === "ten" && Number(state.dose) >= 25 ? "its 15 s pours don’t scale past 20 g" : null]) },   // ten 15 s pours don't scale to a double batch
     ].filter(Boolean);
   };
   const OPTS_MORE = [
@@ -3697,8 +3706,10 @@ footer .fcol > p + .foot-x{margin-top:14px}
       const row = document.createElement("div"); row.className = "opt";
       const lab = document.createElement("span"); lab.textContent = o.label; lab.id = "lab-" + o.key;
       const g = document.createElement("div"); g.className = "chips"; g.setAttribute("role", "group"); g.setAttribute("aria-labelledby", lab.id);
-      o.items.forEach(([v, t]) => {
+      o.items.forEach(([v, t, off]) => {
         const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.textContent = t; b.id = `o-${o.key}-${v}`;
+        // not available here: the pill stays, struck through and not clickable; the reason is in its label
+        if (off) { b.disabled = true; b.classList.add("off"); b.title = off; b.setAttribute("aria-label", `${t}, not available: ${off}`); }
         // process and roast: what the bag says is picked for you; nothing stated, Unknown
         b.setAttribute("aria-pressed", String((o.key === "brewer" ? brewerOf(state) : o.key === "process" || o.key === "roast" ? pickedOf(o.key) : state[o.key]) === v));
         b.onclick = () => { if (o.on) o.on(v); else state[o.key] = v; if (o.key === "roast") state.roastPhoto = null; saveState(); renderAllOpts(); render(); };
