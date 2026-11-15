@@ -14,24 +14,24 @@ import scan  # noqa: E402
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "data" / "discover.json"
 DIR = "https://roasterlist.pages.dev"
-SOCIAL = re.compile(r"instagram|facebook|twitter|x\.com|tiktok|linkedin|youtube|pinterest|google|roasterlist|pages\.dev|wa\.me|maps\.|threads\.net|spotify|apple\.com|trustpilot|cloudflare", re.I)
+SOCIAL = re.compile(r"gstatic|googleapis|jsdelivr|unpkg|cdn|fonts\.|schema\.org|w3\.org|gravatar|wp\.com|instagram|facebook|twitter|x\.com|tiktok|linkedin|youtube|pinterest|google|roasterlist|pages\.dev|wa\.me|maps\.|threads\.net|spotify|apple\.com|trustpilot|cloudflare", re.I)
 
 IRELAND = [  # name, website, city (the directory is UK-only)
-    ("Full Circle Roasters", "https://fullcircleroasters.com", "Dublin"), ("Imbibe", "https://imbibe.ie", "Dublin"),
-    ("Cloud Picker", "https://cloudpickercoffee.ie", "Dublin"), ("Upside Coffee", "https://upsidecoffee.ie", "Dublin"),
+    ("Full Circle Roasters", "https://fullcircleroasters.ie", "Dublin"), ("Imbibe", "https://imbibe.ie", "Dublin"),
+    ("Cloud Picker", "https://cloudpickercoffee.ie", "Dublin"), ("Upside Coffee", "https://upsidecoffee.com", "Dublin"),
     ("Silverskin", "https://silverskincoffee.ie", "Dublin"), ("Sumo Coffee Roasters", "https://sumocoffeeroasters.com", "Dublin"),
-    ("Calendar Coffee", "https://calendarcoffee.ie", "Galway"), ("Bell Lane", "https://belllanecoffee.com", "Mullingar"),
-    ("West Cork Coffee", "https://westcorkcoffee.ie", "Innishannon"), ("Golden Bean", "https://goldenbean.ie", "Shanagarry"),
+    ("Calendar Coffee", "https://calendarcoffee.ie", "Galway"), ("Bell Lane", "https://belllane.ie", "Mullingar"),
+    ("West Cork Coffee", "https://westcorkcoffee.ie", "Innishannon"), ("Golden Bean", "https://thegoldenbean.ie", "Shanagarry"),
     ("Badger & Dodo", "https://badgeranddodo.ie", "Fermoy"), ("Roasted Brown", "https://roastedbrown.com", "Dublin"),
-    ("Two Fifty Square", "https://twofiftysquare.ie", "Dublin"), ("Creed Coffee Roasters", "https://creedcoffee.ie", "Celbridge"),
-    ("Stonevalley", "https://stonevalleyroastery.com", "Clonakilty"), ("Carrow Coffee", "https://carrowcoffee.ie", "Sligo"),
+    ("Two Fifty Square", "https://twofiftysquare.ie", "Dublin"), ("Velo Coffee", "https://velocoffee.ie", "Dublin"),
+    ("Stonevalley", "https://stonevalleyroasters.com", "Clonakilty"), 
     ("The Old Barracks", "https://theoldbarracks.ie", "Birdhill"), ("Ariosa", "https://ariosacoffee.com", "Meath"),
     ("Mind the Step", "https://mindthestep.ie", "Dublin"), ("Groundstate", "https://groundstate.ie", "Dublin"),
-    ("Cool Hand Coffee", "https://coolhandcoffee.ie", "Dublin"), ("Urbanity", "https://urbanity.ie", "Dublin"),
+    ("Cool Hand Coffee", "https://coolhandcoffeeroasters.ie", "Dublin"), ("Urbanity", "https://urbanity.ie", "Dublin"),
     ("PS Coffee Roasters", "https://pscoffeeroasters.ie", "Naas"), ("Ponaire", "https://ponaire.ie", "Limerick"),
-    ("Cork Coffee Roasters", "https://corkcoffee.ie", "Cork"), ("Coffeeangel", "https://coffeeangel.com", "Dublin"),
-    ("Anam Coffee", "https://anamcoffee.ie", "Dublin"), ("Flying Bean", "https://flyingbean.ie", "Dublin"),
-    ("Wildflower Coffee", "https://wildflowercoffee.ie", "Dublin"), ("Proper Order", "https://properordercoffee.ie", "Dublin"),
+    ("Cork Coffee Roasters", "https://corkcoffee.ie", "Cork"), ("Baobab", "https://baobabcoffee.ie", "Celbridge"), ("Coffeeangel", "https://coffeeangel.com", "Dublin"),
+    ("Anam Coffee", "https://anamcoffee.ie", "Dublin"), 
+    ("Red Strand Coffee", "https://redstrandcoffee.ie", "Clonakilty"), ("Bear Market", "https://bearmarket.ie", "Dublin"),
 ]
 
 
@@ -78,9 +78,9 @@ def roaster_page(slug):
     name = scan.strip_html(name.group(1)).strip() if name else slug.replace("-", " ").title()
     loc = re.search(r'"addressLocality"\s*:\s*"([^"]+)"', html) or re.search(r'"addressRegion"\s*:\s*"([^"]+)"', html)
     site = None
-    m = re.search(r'"url"\s*:\s*"(https?://[^"]+)"', html)
-    cands = re.findall(r'href="(https?://[^"]+)"', html)
-    for u in ([m.group(1)] if m else []) + cands:
+    v = re.search(r'<a[^>]+href="(https?://[^"]+)"[^>]*>(?:\s|<[^>]+>)*Visit\b', html, re.I)
+    cands = ([v.group(1)] if v else []) + re.findall(r'"(?:url|sameAs)"\s*:\s*"(https?://[^"]+)"', html) + re.findall(r'href="(https?://[^"]+)"', html)
+    for u in cands:
         if not SOCIAL.search(urllib.parse.urlparse(u).netloc):
             site = u
             break
