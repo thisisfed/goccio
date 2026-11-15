@@ -303,11 +303,11 @@ REJECTED = []   # non-coffee items caught by not_beans(), written to the scan lo
 CHOC_HEAD = re.compile(r"\b\d{2,3}\s?%\s?(?:dark|milk|white|cacao|cocoa|salted|with)\b|bean[- ]to[- ]bar|chocolate bar|hot chocolate|"
                        r"drinking chocolate|\bflakes\b", re.I)
 # a cacao product by name, unless the title also says it's a coffee ("Alpha Blend - pomegranate, cacao nibs & caramel")
-CACAO_ITEM = re.compile(r"^(?:pure |organic |ceremonial |raw )?(?:cacao|cocoa)\b|\b(?:cacao|cocoa) (?:nibs|block|powder|paste|butter|bar)\b", re.I)
+CACAO_ITEM = re.compile(r"^\W*(?:pure |organic |ceremonial |raw |nibbed\W+)?(?:cacao|cocoa)\b", re.I)
 # (only a chocolate maker's words: coffee notes say "cocoa beans" and "milk chocolate bar" too)
 CHOC_BODY = re.compile(r"bean[- ]to[- ]bar|cocoa (?:solids|mass|liquor)|cacao (?:content|percentage|solids)|"
                        r"\b\d{2,3}\s?%\s?(?:cocoa|cacao)\b|chocolate ?maker|\bconched\b", re.I)
-CHOC_URL = re.compile(r"bean-to-bar|cacao|cocoa|chocolate-bar|hot-chocolate|drinking-chocolate|-\d{2,3}-(?:milk|dark|white)\b", re.I)
+CHOC_URL = re.compile(r"bean-to-bar|chocolate-bar|hot-chocolate|drinking-chocolate|-\d{2,3}-(?:milk|dark|white)\b", re.I)
 # whole categories that are never a bag of beans, as a shop files them (product type or a whole tag)
 # the product type only: whole categories a shop files as never a bag of beans
 NOT_COFFEE_TYPE = re.compile(r"^(?:chocolates?|cacao|cocoa|confectionery|sweets|snacks?|food|pantry|teas?|herbal|infusions?|"
