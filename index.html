@@ -2133,7 +2133,12 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
     ten:       "Kasuya’s 10-Pour",
     rao:       "Rao’s Bloom & Spin",
   };
-  const GOAL = { light: "Light & sweet", balanced: "Balanced", syrupy: "Rich & syrupy" };
+  const GOAL = { light: "Light & sweet", balanced: "Balanced", syrupy: "Rich & syrupy", tea: "Tea-like" };
+  // Tea-like (beta): brewed the way you'd brew a good oolong. Less coffee in more water, a coarser grind, a touch cooler,
+  // nothing stirred or swirled: a thin, clear cup with every note there but quiet. Paper-filtered brewers only:
+  // a metal mesh, a moka or a shot can't make a cup this clean
+  const TEA_OK = new Set(["v60", "kalita", "melitta", "chemex", "origami", "switch", "clever", "aero"]);
+  const TEA = { clicks: 4, temp: -2, ratio: 19, max: 21 };
 
   /* OTHER BREWERS
      Each one starts from one published recipe, then takes the same process × roast moves as the V60
@@ -2151,19 +2156,19 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
   const BREWERS = {
     v60:    { name: "V60", kind: "pour", doses: [[12, "12 g"], [15, "15 g"], [18, "18 g"], [20, "20 g"], [25, "25 g"], [30, "30 g"]], dose: 15 },
     kalita: { name: "Kalita Wave", kind: "pour", doses: [[12, "12 g"], [15, "15 g"], [18, "18 g"], [20, "20 g"], [25, "25 g"], [30, "30 g"]], dose: 15,
-              base: 24, dA: { 12: -1, 15: 0, 18: 1, 20: 1, 25: 2, 30: 3 }, range: [18, 36], ratio: { light: 17, balanced: 16, syrupy: 15 }, dT: 1, ey: [20, 22] },
+              base: 24, dA: { 12: -1, 15: 0, 18: 1, 20: 1, 25: 2, 30: 3 }, range: [18, 36], ratio: { light: 17, balanced: 16, syrupy: 15, tea: 19 }, dT: 1, ey: [20, 22] },
     melitta: { name: "Melitta", kind: "pour", doses: [[12, "12 g"], [15, "15 g"], [18, "18 g"], [20, "20 g"], [25, "25 g"], [30, "30 g"]], dose: 15,
-              base: 23, dA: { 12: -1, 15: 0, 18: 1, 20: 1, 25: 2, 30: 3 }, range: [17, 34], ratio: { light: 17, balanced: 16, syrupy: 15 }, dT: 2, ey: [19.5, 21.5] },
+              base: 23, dA: { 12: -1, 15: 0, 18: 1, 20: 1, 25: 2, 30: 3 }, range: [17, 34], ratio: { light: 17, balanced: 16, syrupy: 15, tea: 19 }, dT: 2, ey: [19.5, 21.5] },
     chemex: { name: "Chemex", kind: "pour", doses: [[20, "20 g"], [30, "30 g"], [40, "40 g"], [50, "50 g"]], dose: 30,
-              base: 30, dA: { 20: -1, 30: 0, 40: 1, 50: 2 }, range: [22, 42], ratio: { light: 17, balanced: 16, syrupy: 15 }, dT: 2, ey: [19.5, 21.5] },
+              base: 30, dA: { 20: -1, 30: 0, 40: 1, 50: 2 }, range: [22, 42], ratio: { light: 17, balanced: 16, syrupy: 15, tea: 19 }, dT: 2, ey: [19.5, 21.5] },
     origami: { name: "Origami", kind: "pour", doses: [[12, "12 g"], [15, "15 g"], [18, "18 g"], [20, "20 g"], [25, "25 g"], [30, "30 g"]], dose: 15,
-              base: 22, dA: { 12: -1, 15: 0, 18: 1, 20: 1, 25: 2, 30: 3 }, range: [16, 34], ratio: { light: 16.5, balanced: 16, syrupy: 15 }, dT: -3, ey: [19.5, 21.5] },
+              base: 22, dA: { 12: -1, 15: 0, 18: 1, 20: 1, 25: 2, 30: 3 }, range: [16, 34], ratio: { light: 16.5, balanced: 16, syrupy: 15, tea: 18.5 }, dT: -3, ey: [19.5, 21.5] },
     switch: { name: "Hario Switch", kind: "pour", doses: [[15, "15 g"], [20, "20 g"], [30, "30 g"]], dose: 20,
-              base: 26, dA: { 15: -1, 20: 0, 30: 2 }, range: [18, 36], ratio: { light: 15, balanced: 14.5, syrupy: 14 }, dT: 1, ey: [19.5, 21.5] },
+              base: 26, dA: { 15: -1, 20: 0, 30: 2 }, range: [18, 36], ratio: { light: 15, balanced: 14.5, syrupy: 14, tea: 17 }, dT: 1, ey: [19.5, 21.5] },
     clever: { name: "Clever Dripper", kind: "imm", doses: [[15, "15 g"], [18, "18 g"], [20, "20 g"], [25, "25 g"]], dose: 15,
-              base: 22, dA: { 15: 0, 18: 1, 20: 1, 25: 2 }, range: [14, 32], ratio: { light: 16.67, balanced: 16, syrupy: 15 }, dT: 5, cap: 340, capBig: 450, ey: [19.5, 21.5] },
+              base: 22, dA: { 15: 0, 18: 1, 20: 1, 25: 2 }, range: [14, 32], ratio: { light: 16.67, balanced: 16, syrupy: 15, tea: 19 }, dT: 5, cap: 340, capBig: 450, ey: [19.5, 21.5] },
     aero:   { name: "AeroPress", kind: "imm", doses: [[11, "11 g"], [13, "13 g"], [15, "15 g"]], dose: 11,
-              base: 18, dA: { 11: 0, 13: 0, 15: 1 }, range: [12, 30], ratio: { light: 18, balanced: 16.5, syrupy: 15 }, dT: 4, cap: 250, ey: [19.5, 21.5] },
+              base: 18, dA: { 11: 0, 13: 0, 15: 1 }, range: [12, 30], ratio: { light: 18, balanced: 16.5, syrupy: 15, tea: 19.5 }, dT: 4, cap: 250, ey: [19.5, 21.5] },
     press:  { name: "French Press", kind: "imm", doses: [[15, "15 g"], [30, "30 g"], [60, "60 g"]], dose: 30,
               base: 28, dA: { 15: -1, 30: 0, 60: 1 }, range: [20, 45], ratio: { light: 17, balanced: 16, syrupy: 15 }, dT: 2, ey: [19, 21] },
     cold:   { name: "Cold brew", kind: "steps", doses: [[50, "50 g"], [100, "100 g"]], dose: 100, base: 36, dA: {}, range: [28, 45], fixed: 8 },
@@ -2195,6 +2200,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
     if (st.method === "hoffmann") return dose >= 18 ? "hoffmannU" : "hoffmann";
     if (st.method === "ten" && dose >= 25) { st.method = "best"; }   // ten 15 s pours don't scale to a double batch
     if (["fourSix", "ten", "rao"].includes(st.method)) return st.method;
+    if (st.goal === "tea") return "fourSix";                         // tea-like: the gentle, coarse 4:6, two big pours
     if (st.goal === "syrupy") return dose >= 25 ? "hoffmannU" : "ten";
     if (agit <= 1 || c.roast === "mdark" || c.roast === "dark") return "fourSix";   // low agitation: few gentle pours
     if (c.delicate) return "rao";                                    // flat bed, crisp florals
@@ -2236,11 +2242,12 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
     const c = resolved(st);
     c.missing = [!c.process && "process", !c.roast && "roast"].filter(Boolean);
     c.process = c.process || "unsure"; c.roast = c.roast || "unsure";
-    const dose = Number(st.dose), goal = st.goal;
+    const dose = Number(st.dose), tea = st.goal === "tea" && TEA_OK.has(brewerOf(st)), goal = st.goal === "tea" && !tea ? "light" : st.goal;
     let agit = PROCESS[c.process].agit;
     if (c.roast === "mdark") agit = Math.min(agit, 1);
     if (c.roast === "dark") agit = 0;                                // dark roasts extract fast: no stirring at all
     if (c.delicate) agit = Math.min(agit, 2);                        // Geisha & co: keep the florals, don't thrash the bed
+    if (tea) agit = 0;                                               // tea-like: nothing stirred, nothing swirled
     const brewer = brewerOf(st);
     const m = brewer === "v60" ? pickMethod(st, c, agit) : brewer;
 
@@ -2255,21 +2262,22 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
     const pc = learn ? learn.d : { clicks: 0, temp: 0, ratio: 0 };
     if (brewer !== "v60") return engineOther(st, c, agit, brewer, key, learn, pc, opts);
 
-    let ratio = m === "ten" ? (goal === "syrupy" ? 15 : 16)
+    let ratio = tea ? (m === "ten" ? 18 : TEA.ratio) : m === "ten" ? (goal === "syrupy" ? 15 : 16)
       : goal === "light" ? 17 : goal === "balanced" ? (m.startsWith("hoffmann") ? 16.7 : 16.5) : 15.5;
     const baseRatio = ratio, ratioPre = ratio + (pc.ratio || 0);
-    ratio = clamp(Math.round((ratio + (pc.ratio || 0)) * 10) / 10, 14, 18.5);
+    ratio = clamp(Math.round((ratio + (pc.ratio || 0)) * 10) / 10, 14, tea ? TEA.max : 18.5);
     const water = Math.round(dose * ratio);
 
     // grind = method base at 15 g + dose + roast + process, then your log and your C40 zero (see BASE)
     const B = BASE[m];
     const doseAdj = (m === "ten" ? { 12: -1, 15: 0, 18: 1, 20: 1 } : { 12: -1, 15: 0, 18: 1, 20: 2, 25: 3, 30: 4 })[dose] ?? 0;   // a deeper bed drains slower: coarser as the batch grows
     const roastAdj = ROAST[c.roast].dC, procAdj = PROCESS[c.process].dC;
-    const raw = B.c + doseAdj + roastAdj + procAdj;
+    const teaAdj = tea ? (m === "fourSix" ? 2 : TEA.clicks) : 0;   // the 4:6 already grinds coarse: half the step
+    const raw = B.c + doseAdj + roastAdj + procAdj + teaAdj;
     const baseClicks = clamp(raw, 16, 45);
     const zero = opts.noPrefs || !isC40() ? 0 : (prefs.zero || 0);   // the zero offset is a C40 calibration
     let clicks = clamp(baseClicks + (pc.clicks || 0) + zero, 12, 50);
-    const clickParts = { base: B.c, dose: doseAdj, roast: roastAdj, process: procAdj, learn: pc.clicks || 0, zero, clamped: raw !== baseClicks };
+    const clickParts = { base: B.c, dose: doseAdj, roast: roastAdj, process: procAdj, tea: teaAdj, learn: pc.clicks || 0, zero, clamped: raw !== baseClicks };
 
     // Hoffmann: freshly boiled for lighter roasts. Kasuya (Philocoffea): about 93°C light, 88°C medium, 83°C dark.
     const KASUYA_T = { vlight: 94, light: 93, medium: 88, mdark: 85, dark: 83, unsure: 90 };
@@ -2279,6 +2287,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
     if (T_CAP[c.process]) temp = Math.min(temp, T_CAP[c.process]);
     if (T_CAP_ROAST[c.roast]) temp = Math.min(temp, T_CAP_ROAST[c.roast]);
     if (c.roast === "vlight" && agit >= 2) temp = Math.max(temp, 96); // dense Nordic roasts under-extract below this
+    if (tea && m !== "fourSix" && m !== "ten") temp += TEA.temp;   // Kasuya's temperatures already run cool
     const baseTemp = clamp(temp, 82, 100);
     temp = clamp(temp + (pc.temp || 0), 82, 100);
 
@@ -2308,12 +2317,13 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
       lo = 180; hi = 210;
     } else if (m === "fourSix") {
       const first = water * 0.4;
-      const split = goal === "light" ? 0.44 : goal === "syrupy" ? 0.4 : 0.42;   // smaller first pour = sweeter
-      const strength = goal === "light" ? 2 : 3;                               // fewer pours = lighter body
+      const lightish = goal === "light" || goal === "tea";
+      const split = lightish ? 0.44 : goal === "syrupy" ? 0.4 : 0.42;   // smaller first pour = sweeter
+      const strength = lightish ? 2 : 3;                               // fewer pours = lighter body
       add(0, first * split, bloomNote, 10);
       add(45, first, "Centre outwards, slow", 10);
       for (let i = 1; i <= strength; i++) add(45 * (i + 1), i === strength ? water : first + ((water - first) * i) / strength, i === strength ? lastNote : "Steady, no stirring", 12);
-      lo = goal === "light" ? 195 : 210; hi = goal === "light" ? 210 : 225;
+      lo = lightish ? 195 : 210; hi = lightish ? 210 : 225;
     } else {
       for (let i = 1; i <= 10; i++) add((i - 1) * 15, i === 10 ? water : (water * i) / 10, i === 1 ? "Small pour to wet the bed" : i === 10 ? "Last pour, then drain" : "Small pour, centre", 6);
       lo = 180; hi = 210;
@@ -2347,7 +2357,8 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
   function engineOther(st, c, agit, b, key, learn, pc, opts) {
     const B = BREWERS[b], kind = B.kind;
     const dose = B.doses.some(([v]) => v === Number(st.dose)) ? Number(st.dose) : B.dose;
-    const goal = B.ratio ? (GOAL[st.goal] ? st.goal : "light") : null;
+    const tea = st.goal === "tea" && TEA_OK.has(b);
+    const goal = B.ratio ? (GOAL[st.goal] && (st.goal !== "tea" || tea) ? st.goal : "light") : null;
     let ratio, water, ratioPre, capped = false;
     if (B.water) { water = B.water[dose]; ratio = Math.round((water / dose) * 10) / 10; ratioPre = ratio; }
     else if (B.fixed) { ratio = B.fixed; ratioPre = ratio; water = Math.round(dose * ratio); }
@@ -2357,7 +2368,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
     }
     else {
       ratioPre = B.ratio[goal] + (pc.ratio || 0);
-      ratio = clamp(Math.round(ratioPre * 10) / 10, 14, 18.5);
+      ratio = clamp(Math.round(ratioPre * 10) / 10, 14, tea ? TEA.max : 18.5);
       water = Math.round(dose * ratio);
       const cap = B.capBig && dose >= 25 ? B.capBig : B.cap;
       if (cap && water > cap) { water = cap; ratio = Math.round((water / dose) * 10) / 10; capped = true; }
@@ -2367,14 +2378,15 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
 
     // espresso: one click is a big step this fine, so roast moves it by one or two and process not at all
     const doseAdj = B.dA[dose] ?? 0, roastAdj = B.shot ? { vlight: -2, light: -1, medium: 0, mdark: 1, dark: 1, unsure: 0 }[c.roast] : ROAST[c.roast].dC, procAdj = B.shot ? 0 : PROCESS[c.process].dC;
-    const raw = B.base + doseAdj + roastAdj + procAdj;
-    const baseClicks = clamp(raw, B.range[0], B.range[1]);
+    const teaAdj = tea ? TEA.clicks : 0;
+    const raw = B.base + doseAdj + roastAdj + procAdj + teaAdj;
+    const baseClicks = clamp(raw, B.range[0], B.range[1] + teaAdj);
     const zero = opts.noPrefs || !isC40() ? 0 : (prefs.zero || 0);
     const clicks = clamp(baseClicks + (pc.clicks || 0) + zero, B.range[0] - 4, B.range[1] + 5);
-    const clickParts = { base: B.base, dose: doseAdj, roast: roastAdj, process: procAdj, learn: pc.clicks || 0, zero, clamped: raw !== baseClicks, range: B.range };
+    const clickParts = { base: B.base, dose: doseAdj, roast: roastAdj, process: procAdj, tea: teaAdj, learn: pc.clicks || 0, zero, clamped: raw !== baseClicks, range: B.range };
 
     let temp = null, baseTemp = null;
-    if (B.dT != null) { baseTemp = tempFor(c, agit, B.dT); temp = clamp(baseTemp + (pc.temp || 0), 82, 100); }
+    if (B.dT != null) { baseTemp = clamp(tempFor(c, agit, B.dT) + (tea ? TEA.temp : 0), 82, 100); temp = clamp(baseTemp + (pc.temp || 0), 82, 100); }
     if (B.shot) {   // the machine's brew temperature: hotter for light roasts, cooler for dark; ferments and decaf a touch cooler
       baseTemp = { vlight: 96, light: 94, medium: 93, mdark: 91, dark: 90, unsure: 93 }[c.roast] - (["anaerobic", "cofer", "decaf"].includes(c.process) ? 1 : 0);
       temp = clamp(baseTemp + (pc.temp || 0), 85, 98);
@@ -2414,6 +2426,10 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
       add(78, water, "Pour the rest at about 70°C: kettle off a few minutes, or half hot, half cold", 15);
       act(105, "Open", "Open the valve and let it drain", 3);
       lo = dose >= 30 ? 200 : 180; hi = lo + 15;
+    } else if (b === "clever" && tea) {   // tea-like: a longer, untouched steep instead of the stir
+      add(0, water, "All the water in, then the coffee. Push any dry grounds under with a spoon, no stirring", 15);
+      act(180, "Release", "Set the Clever on the cup to drain, about a minute. Don’t stir first", 5);
+      lo = 240; hi = 270;
     } else if (b === "clever") {     // Hoffmann: water first, coffee in, stir, steep 2:00, break the crust, settle 30 s, release
       add(0, water, "All the water in, then the coffee. Stir so every ground is wet", 15);
       act(120, "Stir", "Break the crust: one gentle stir", 5);
@@ -2426,6 +2442,10 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
       act(120, "Flip", "Cup on top, flip it over in one smooth move", 5);
       act(130, "Press", "Press gently, about 30 s, all the way down", 30);
       lo = hi = 160;
+    } else if (b === "aero" && tea) {   // tea-like: a longer steep, no swirl, a slow press
+      add(0, water, "Pour all the water in. Then set the plunger in about 1 cm so it stops dripping. No stirring", 10);
+      act(180, "Press", "Press very gently, about 30 s, and stop at the hiss", 30);
+      lo = hi = 210;
     } else if (b === "aero") {       // Hoffmann: standard way up, no stir, swirl at 2:00, press gently at 2:30
       add(0, water, "Pour all the water in. Then set the plunger in about 1 cm so it stops dripping", 10);
       act(120, "Swirl", "Lift the brewer and swirl it gently", 5);
@@ -2582,7 +2602,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
     let acid = { vlight: 4, light: 3, medium: 2, mdark: 1, dark: 0, unsure: 2 }[ro] ?? 2;
     if (/Kenya|Ethiopia|Rwanda|Burundi|Tanzania/.test(c.origin || "") && pr === "washed") acid += 1;
     if (fermented || pr === "decaf") acid -= 1;
-    acid += P.acid + (r.goal === "light" ? 0.4 : r.goal === "syrupy" ? -0.4 : 0);
+    acid += P.acid + (r.goal === "light" || r.goal === "tea" ? 0.4 : r.goal === "syrupy" ? -0.4 : 0);
     acid = Math.max(0, Math.min(4, Math.round(acid)));
     const kind = /Kenya|Tanzania/.test(c.origin || "") ? "savoury-bright, blackcurrant and tomato" : pr === "washed" ? "citric, lemon to orange" : fermented ? "winey and fruity" : "malic, like red apple";
     out.push(`Acidity: ${["very low, smooth", "low and soft", `medium, ${kind}`, `bright, ${kind}`, `vivid, ${kind}`][acid]}.`);
@@ -2590,10 +2610,11 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
     let sw = darkish ? "bittersweet, like dark chocolate" : fermented ? "high and jammy" : pr === "honey" ? "high, honey and brown sugar" : ro === "medium" ? "caramel-like" : "clean, like cane sugar";
     if (!darkish && P.sweet > 0) sw += ", pushed up by this brewer";
     if (!darkish && P.sweet < 0) sw += ", held back by the strength";
+    if (!darkish && r.goal === "tea") sw += `, but quiet: at 1:${r.ratio} it reads as a sweet finish rather than a sweet middle`;
     if (!darkish && r.goal === "light") sw += `. The lighter ratio (1:${r.ratio}) tastes sweeter: sweetness drops as strength rises`;
     out.push(`Sweetness: ${sw}.`);
     // body
-    let b = P.body + (r.goal === "syrupy" ? 1 : r.goal === "light" ? -1 : 0) + (darkish ? 0.5 : 0) + (fermented ? 0.5 : 0);
+    let b = P.body + (r.goal === "syrupy" ? 1 : r.goal === "light" ? -1 : r.goal === "tea" ? -3 : 0) + (darkish ? 0.5 : 0) + (fermented ? 0.5 : 0);
     b = Math.max(1, Math.min(5, Math.round(b)));
     const tds = r.tds && r.tds.length ? ` About ${r.tds[0].toFixed(2)}–${r.tds[1].toFixed(2)}% TDS at ${r.ey[0]}–${r.ey[1]}% extraction.` : "";
     out.push(`Body: ${BODY_W[b - 1]}, ${P.tex}.${r.m === "cold" || r.m === "moka" || r.m === "espresso" ? "" : tds}`);
@@ -3104,6 +3125,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
     if (p.dose) rows.push([`Dose ${r.dose} g`, signed(p.dose)]);
     if (p.roast) rows.push([`Roast: ${c.roast === "unsure" ? "not sure" : ROAST[c.roast].label}`, signed(p.roast)]);
     if (p.process) rows.push([`Process: ${c.process === "unsure" ? "not stated" : PROCESS[c.process].label}`, signed(p.process)]);
+    if (p.tea) rows.push(["Tea-like: coarser, gentler", signed(p.tea)]);
     if (p.learn) rows.push([r.learn && r.learn.source === "style" ? "Your nailed brews of this style" : "Your journal for this coffee", signed(p.learn)]);
     if (p.zero) rows.push(["Your C40 zero", signed(p.zero)]);
     if (p.iced) rows.push(["Iced: less hot water, so finer", signed(p.iced)]);
@@ -3116,8 +3138,8 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
       ${isC40() ? "" : `<p class="muted"><b style="color:var(--ink)">On your ${esc(mill().name)}.</b> ${r.clicks} C40 clicks → ${esc(onMill(r.clicks).txt)} (${esc(mill().lbl)}). ${esc(mill().how || "Converted with Honest Coffee Guide’s V60 bands")}, which put C40 15–25 clicks level with ${esc(mill().show(mill().a))}–${esc(mill().show(mill().b))} here; in between and either side it’s linear. Units and zero points vary, so treat it as a starting point and dial in by drawdown time. <a href="${mill().src}" target="_blank" rel="noopener">Source</a></p>`}
       <p class="muted"><b style="color:var(--ink)">My C40 zero.</b> If your 0 isn’t burrs-touching, or recipes you trust always need a click or two more, set the offset once with − / + above. Every recipe shifts by it. Saved on this device; default 0.</p>`;
     // always-visible math + zero control
-    const short = { dose: "dose", roast: "roast", process: "process", learn: "your log", zero: "zero", iced: "iced" };
-    const terms = ["dose", "roast", "process", "learn", "zero", "iced"].filter((k) => p[k]).map((k) => `${signed(p[k])} ${short[k]}`);
+    const short = { dose: "dose", roast: "roast", process: "process", tea: "tea-like", learn: "your log", zero: "zero", iced: "iced" };
+    const terms = ["dose", "roast", "process", "tea", "learn", "zero", "iced"].filter((k) => p[k]).map((k) => `${signed(p[k])} ${short[k]}`);
     const g = onMill(r.clicks);
     $("zrMath").innerHTML = [`${p.base} base (${METHOD_REF[r.m]})`, ...terms].map(esc).join(" ")
       + (isC40() ? ` = <b>${r.clicks} clicks</b>` : ` = ${r.clicks} C40 clicks → <b>${esc(g.txt)} on the ${esc(mill().short)}</b>`);
@@ -3155,7 +3177,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
     moka:      { r: 9.4,  txt: "A moka pot sets its own ratio: a full basket and water to the valve, about 1:9 to 1:10" },
     espresso:  { r: 2,    txt: "The modern espresso is 1:2 (18 g in, 36 g out) in about 25–30 s; a ristretto is shorter, about 1:1.5, and lighter roasts often run longer, 1:2.5 or more" },
   };
-  const GOAL_SHORT = { light: "Light & sweet", balanced: "Balanced", syrupy: "Rich & syrupy" };
+  const GOAL_SHORT = { light: "Light & sweet", balanced: "Balanced", syrupy: "Rich & syrupy", tea: "Tea-like" };
   const step = (d) => `${d > 0 ? "adds" : "takes off"} ${Math.abs(d).toFixed(1).replace(/\.0$/, "")}`;
   function ratioWhy(r) {
     const C = CLASSIC[r.m], parts = [C.txt + "."];
@@ -3381,7 +3403,8 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
     if (r.m === "hoffmann") why.push("Hoffmann’s Better 1-Cup: five even pulses keep a small brew hot and evenly extracted.");
     if (r.m === "hoffmannU") why.push("Hoffmann’s Ultimate V60: 2× bloom, two main pours and a swirl for a flat bed at bigger doses.");
     if (r.m === "rao") why.push("Rao’s bloom & spin: 3× bloom, one continuous pour, a spin. Little late agitation, very high clarity.");
-    if (r.m === "fourSix") why.push(r.goal === "light" ? "Kasuya’s 4:6: the first 40% sets sweetness vs acidity, the last 60% sets strength. Two big pours keep the body light." : "Kasuya’s 4:6 with three strength pours: rounder and sweeter.");
+    if (r.goal === "tea") why.push(`Tea-like, beta: brewed like a good oolong. 1:${r.ratio}, a coarse grind (${cl(r.clickParts.tea)} past the usual), ${r.temp}°C and nothing stirred or swirled. Less coffee in more water at a gentle extraction: a thin, clear cup with every note there but quiet. Experimental: if it tastes empty or sour, go ${cl(2)} finer; if it’s drying, go ${cl(2)} coarser.`);
+    if (r.m === "fourSix") why.push(r.goal === "light" || r.goal === "tea" ? "Kasuya’s 4:6: the first 40% sets sweetness vs acidity, the last 60% sets strength. Two big pours keep the body light." : "Kasuya’s 4:6 with three strength pours: rounder and sweeter.");
     if (r.m === "ten") why.push("Kasuya’s 10-Pour: coarse grind, small pours every 15 s. Heavy and syrupy.");
     if (BLURB[r.m]) why.push(BLURB[r.m]);
     const hasT = r.temp != null;
@@ -3486,12 +3509,13 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
     state.brewer = v;
     const B = BREWERS[v], d = state.doses[v];
     state.dose = B.doses.some(([x]) => x === d) ? d : B.dose;
+    if (state.goal === "tea" && !TEA_OK.has(v)) state.goal = "light";
     renderShelfV(); renderShelf();
   }
   const optsMain = () => {
     const b = brewerOf(state), B = BREWERS[b];
     return [
-      B.kind !== "steps" && { key: "goal", label: "Cup", items: [["light", "Light & sweet"], ["balanced", "Balanced"], ["syrupy", "Rich & syrupy"]] },
+      B.kind !== "steps" && { key: "goal", label: "Cup", items: [["light", "Light & sweet"], ["balanced", "Balanced"], ["syrupy", "Rich & syrupy"], ...(TEA_OK.has(b) ? [["tea", "Tea-like"]] : [])] },
       ICED_OK.has(b) && { key: "serve", label: "Serve", items: [["hot", "Hot"], ["iced", "Iced"]] },
       { key: "dose", label: b === "moka" ? "Pot" : "Grams", items: B.doses },
       b === "aero" && { key: "aeroWay", label: "Method", items: [["standard", "Standard"], ["inverted", "Inverted"]] },
@@ -3512,6 +3536,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
         const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.textContent = t; b.id = `o-${o.key}-${v}`;
         b.setAttribute("aria-pressed", String((o.key === "brewer" ? brewerOf(state) : state[o.key]) === v));
         b.onclick = () => { if (o.on) o.on(v); else state[o.key] = v; if (o.key === "roast") state.roastPhoto = null; saveState(); renderAllOpts(); render(); };
+        if (o.key === "goal" && v === "tea") b.insertAdjacentHTML("beforeend", `<span class="beta">beta</span>`);
         if (o.key === "roast" && ROAST_SW[v]) b.insertAdjacentHTML("afterbegin", `<i class="bean-dot" style="--c:${ROAST_SW[v]}"></i>`);
         g.appendChild(b);
       });
