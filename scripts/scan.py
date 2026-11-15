@@ -295,6 +295,65 @@ def not_beans(item):
 
 REJECTED = []   # non-coffee items caught by not_beans(), written to the scan log for review
 
+# ---------- coffee only: a product has to look like a bag of coffee, and nothing on it may look like something else ----------
+# Chocolate first: bean-to-bar makers share coffee's words (single origin, Honduras, tasting notes, producer), and coffee
+# tasting notes say "milk chocolate" all the time, so only bar-specific wording counts.
+# (in the title only, and only unmistakable wording: coffees are called "Cherry Truffle", "Pecan Praline", "Choc Nuts",
+# and their notes, which some shops put in the title or product type, say cacao and cocoa)
+CHOC_HEAD = re.compile(r"\b\d{2,3}\s?%\s?(?:dark|milk|white|cacao|cocoa|salted|with)\b|bean[- ]to[- ]bar|chocolate bar|hot chocolate|"
+                       r"drinking chocolate|\bflakes\b", re.I)
+# a cacao product by name, unless the title also says it's a coffee ("Alpha Blend - pomegranate, cacao nibs & caramel")
+CACAO_ITEM = re.compile(r"^\W*(?:pure |organic |ceremonial |raw |nibbed\W+)?(?:cacao|cocoa)\b", re.I)
+# (only a chocolate maker's words: coffee notes say "cocoa beans" and "milk chocolate bar" too)
+CHOC_BODY = re.compile(r"bean[- ]to[- ]bar|cocoa (?:solids|mass|liquor)|cacao (?:content|percentage|solids)|"
+                       r"\b\d{2,3}\s?%\s?(?:cocoa|cacao)\b|chocolate ?maker|\bconched\b", re.I)
+CHOC_URL = re.compile(r"bean-to-bar|chocolate-bar|hot-chocolate|drinking-chocolate|-\d{2,3}-(?:milk|dark|white)\b", re.I)
+# whole categories that are never a bag of beans, as a shop files them (product type or a whole tag)
+# the product type only: whole categories a shop files as never a bag of beans
+NOT_COFFEE_TYPE = re.compile(r"^(?:chocolates?|cacao|cocoa|confectionery|sweets|snacks?|food|pantry|teas?|herbal|infusions?|"
+                             r"equipment|brew(?:ing)? (?:gear|equipment)|accessor(?:y|ies)|gear|kit|merch(?:andise)?|apparel|clothing|"
+                             r"homeware|ceramics?|cups?|mugs?|books?|gift cards?|vouchers?|courses?|classes|"
+                             r"workshops?|events?|tickets?|grinders?|machines?|spare parts?|cleaning|syrups?|capsules?|pods?|"
+                             r"drip ?bags?|instant|cold brew|concentrates?|rtd)$", re.I)
+NOT_COFFEE_TITLE = re.compile(r"\bhario\b|decanter|\bcaddy\b|chamomile|dragon pearls|\bsachets?\b|drip[- ]?bags?|\b\d+\s?pcs?\b|"
+                              r"\b(?:[2-9]|\d{2,})\s?x\s?\d+(?:[.,]\d+)?\s?(?:kg|g)\b|\bwholesale\b|\bcatering\b", re.I)
+# and a bag of coffee says so somewhere: coffee words, brewing words, the farm's processing, coffee varieties, or a coffee bag size
+COFFEE_WORDS = re.compile(r"coffee|espresso|\bfilter\b|\bbrew|roast(?:ed|ery|er|ing)?\b|whole ?beans?|wholebean|\bground\b|\bgrind|"
+                          r"aeropress|\bv60\b|cafeti[eè]re|french press|\bmoka\b|chemex|\bmasl\b|m\.?a\.?s\.?l|metres above|meters above|"
+                          r"washing station|wet mill|dry mill|\bcherr(?:y|ies)\b|parchment|\bsca\b|cup(?:ping)? score|varietal|cultivar|"
+                          r"\bsl ?28\b|\bsl ?34\b|bourbon|caturra|typica|gesha|geisha|catua[ií]|castillo|pacamara|heirloom|landrace|"
+                          r"\b74\d{3}\b|ruiru|batian|maragogyp|kaffee?|koffie|caf[eé]\b|caff[eè]|\bkawa\b|k[aá]va|kahvi|"
+                          r"anaerobic|carbonic|honey process|natural process|washed process|fully washed|semi[- ]washed|wet[- ]hulled|"
+                          r"decaf|swiss water|mountain water|sugar ?cane process|\bea\b process", re.I)
+COFFEE_BAG = re.compile(r"\b(?:200|225|227|250|300|340|350|454|500|750|1000)\s?g\b|\b(?:1|2)\s?kg\b|\b(?:8|10|12|16)\s?oz\b", re.I)
+
+
+def not_coffee(item):
+    """Why a product isn't coffee at all (chocolate, tea, gear, bulk trade packs), or None."""
+    title, ptype = item.get("title") or "", item.get("type") or ""
+    tags = [str(t).strip() for t in item.get("tags") or []]
+    url = (item.get("url") or "").lower()
+    body = item.get("body") or ""
+    if NOT_COFFEE_TYPE.match(ptype.strip()):
+        return f"product type '{ptype}'"
+    # (tags aren't used: shops tag coffees "gift", "subscription", "chocolate" or "coffee bags" as filters)
+    m = CHOC_HEAD.search(title) or CHOC_URL.search(url.rsplit("/", 1)[-1]) \
+        or (None if re.search(r"coffee|espresso|blend|roast|filter", title, re.I) else CACAO_ITEM.search(title))
+    if m:
+        return f"chocolate '{m.group(0)}'"
+    m = CHOC_BODY.search(body)
+    if m and not re.search(r"\bcoffee\b|espresso|\bbrew", f"{title} {ptype}", re.I):
+        return f"chocolate page '{m.group(0)}'"
+    m = NOT_COFFEE_TITLE.search(title)
+    if m:
+        return f"not a bag of beans '{m.group(0)}'"
+    sold = f"{title} {ptype} {' '.join(tags)} {item.get('variants') or ''} {url}"
+    # a shop that describes the product at length and never says anything coffee-like isn't selling coffee
+    # (a bare feed with no description is left to the page check further on)
+    if len(body) > 120 and not (COFFEE_WORDS.search(sold) or COFFEE_WORDS.search(body) or COFFEE_BAG.search(sold) or COFFEE_HINT.search(body)):
+        return "no coffee words anywhere"
+    return None
+
 
 def strip_html(s):
     s = re.sub(r"<(br|/p|/li|/h\d|/div)[^>]*>", "\n", s or "", flags=re.I)
@@ -1313,7 +1372,7 @@ def classify(item, roaster):
     m = EXCLUDE.search(title) or EXCLUDE.search(item["type"])
     if m:
         return _drop(roaster, f"not coffee ({m.group(0)})", title)
-    why = not_beans(item) or not_one_coffee(item)
+    why = not_coffee(item) or not_beans(item) or not_one_coffee(item)
     if why:
         REJECTED.append(f"{roaster['name']}: {title} ({why})")
         return _drop(roaster, why.split(":")[0], title)
