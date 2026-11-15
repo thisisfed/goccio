@@ -833,7 +833,7 @@ table.pours { padding: 0; }
 .entry .e-act { display: inline-flex; gap: 4px; }
 .entry button { background: var(--pill); color: var(--ink); border-radius: var(--r); padding: 7px 10px; font-size: var(--fs-s); font-weight: 500; line-height: 1; }
 .entry button.del { background: none; color: var(--muted); box-shadow: inset 0 0 0 1px var(--rule); }
-.entry button.del.armed { background: #ff3b30; color: #fff; box-shadow: none; }
+.entry button.del.armed { background: var(--hl); color: var(--on-hl); box-shadow: none; }
 
 /* the end: same small type, left aligned */
 .outro { justify-items: start; text-align: left; border-top: 1px solid var(--ink); padding-top: 10px; }
@@ -889,7 +889,7 @@ body, .lede, .ask label, .need h3, .log h3, .sec-head .cap:first-child, .mark, .
 /* your kit: brewer, grinder and water as one block */
 .kit { display: grid; gap: 12px; padding-bottom: 16px; margin-bottom: 4px; border-bottom: 1px solid var(--rule); }
 .kit-mill { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; min-width: 0; }
-.kit-mill select { flex: 1 1 220px; min-width: 0; font: 500 var(--fs)/1.2 var(--sans); color: var(--ink); background: var(--pill); border: 0; border-radius: var(--r); padding: 9px 10px; -webkit-appearance: none; appearance: none; }
+.kit-mill select, .kit-mill .mill-btn { flex: 1 1 220px; min-width: 0; font: 500 var(--fs)/1.2 var(--sans); color: var(--ink); background: var(--pill); border: 0; border-radius: var(--r); padding: 9px 10px; -webkit-appearance: none; appearance: none; }
 .zr-ctl { display: flex; align-items: center; gap: 10px; }
 .zr-lbl { color: var(--muted); font-size: var(--fs-s); }
 .step button, #zVal { font-size: var(--fs); }
@@ -971,7 +971,7 @@ details.clk > summary .muted { margin-left: auto; overflow: hidden; text-overflo
 .bean-dot { width: 10px; height: 10px; margin-right: 6px; vertical-align: 0; }
 .bean-dot.big { width: 10px; height: 10px; margin-right: 6px; vertical-align: 0; }
 .rp-go svg { width: 14px; height: 14px; }
-.kit-mill select { height: var(--pill-h); padding: 0 10px; font: 500 var(--fs-s)/1 var(--sans); flex: 0 1 auto; width: auto; max-width: 100%; }
+.kit-mill select, .kit-mill .mill-btn { height: var(--pill-h); padding: 0 10px; font: 500 var(--fs-s)/1 var(--sans); flex: 0 1 auto; width: auto; max-width: 100%; }
 .step { height: var(--pill-h); display: inline-flex; align-items: center; }
 .step button, #zVal { font: 500 var(--fs-s)/1 var(--sans); height: var(--pill-h); min-width: var(--pill-h); padding: 0 8px; }
 .zr-lbl { font-size: var(--fs-s); }
@@ -1157,7 +1157,7 @@ details.clk > summary .muted { margin-left: auto; overflow: hidden; text-overflo
 #ddRow { margin-top: -4px; }   /* 12 px under Taste?, like the option rows */
 @media (min-width: 641px) { #logBox .opt { gap: 12px !important; } }
 /* phones: the grinder pill runs as wide as the Adjust clicks row under it */
-@media (max-width: 640px) { .kit-mill { display: inline-grid !important; grid-template-columns: max-content; justify-items: stretch; } #millSel { width: 0 !important; min-width: 100% !important; max-width: none !important; text-overflow: ellipsis; } }
+@media (max-width: 640px) { .kit-mill { display: inline-grid !important; grid-template-columns: max-content; justify-items: stretch; } #millSel, #millBtn { width: 0 !important; min-width: 100% !important; max-width: none !important; text-overflow: ellipsis; } }
 /* coffee filters: the same 8 px between the search, the rows and wrapped pills */
 .shelf-tools { gap: 12px !important; }
 .shelf-tools .chips { gap: 4px !important; }
@@ -1209,9 +1209,9 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
 .bv-ctrls { gap: 4px !important; }
 #logBox #tasteChips { gap: 4px !important; display: flex; flex-wrap: wrap; }   /* wrapped rows 4 px apart, like Roast */
 /* the grinder pill shows it's a list: a small down arrow inside, on the right */
-#millSel { -webkit-appearance: none; appearance: none; padding-right: 28px !important; background-repeat: no-repeat !important; background-position: right 10px center !important; background-size: 10px 10px !important;
+#millSel, #millBtn { -webkit-appearance: none; appearance: none; padding-right: 28px !important; background-repeat: no-repeat !important; background-position: right 10px center !important; background-size: 10px 10px !important;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E") !important; }
-:root[data-theme="dark"] #millSel {
+:root[data-theme="dark"] #millSel, :root[data-theme="dark"] #millBtn {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E") !important; }
 /* coffee rows: name and pills sit at the bottom, so the rule under each row is always the same distance from the pills */
 /* coffee rows: a compact right column (pill-height Brew), so the roaster line, the name and the pills keep fixed gaps
@@ -1392,7 +1392,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 .glimpse .g-pours li.end.hit .ex-tick{opacity:1}
 .glimpse .g-pours li.end.hit .ex-tick path{stroke-dashoffset:0;transition:stroke-dashoffset .45s cubic-bezier(.2,.7,.2,1)}
 .bag-rm{border:0;cursor:pointer;font:inherit;background:transparent!important;box-shadow:inset 0 0 0 1px var(--rule);color:var(--muted);justify-self:end;height:var(--pill-h);padding:0 10px;display:inline-flex;align-items:center;border-radius:var(--r);font-size:var(--fs-s)}
-.bag-rm.armed{background:#ff3b30!important;color:#fff!important;box-shadow:none}
+.bag-rm.armed{background:var(--hl)!important;color:var(--on-hl)!important;box-shadow:none}
 }
 /* My bags: running low line, in ink with the shop link */
 .bag-low{margin:4px 0 0;font-size:var(--fs-s);color:var(--ink)}
@@ -1488,7 +1488,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 /* My bags: Brew with Remove under it, same pill size; Remove turns red Sure? on the first tap */
 #bagList .item > .r{display:flex;flex-direction:column;align-items:stretch;gap:5px}
 #bagList .item > .r > .btn, #bagList .item .bag-rm{height:var(--pill-h)!important;padding:0 12px!important;display:inline-flex!important;align-items:center;justify-content:center;margin:0!important;border:0!important;box-shadow:none!important;border-radius:var(--r)!important;font:500 var(--fs-s)/1 var(--sans)!important;background:var(--pill)!important;color:var(--ink)!important;cursor:pointer}
-#bagList .item .bag-rm.armed{background:#ff3b30!important;color:#fff!important}
+#bagList .item .bag-rm.armed{background:var(--hl)!important;color:var(--on-hl)!important}
 /* A4 sheet: hidden on screen, the only thing printed. Black on white, one system font, the site's scale */
 #printSheet{display:none}
 @page{size:A4;margin:0}
@@ -1539,8 +1539,8 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 .bag-buy,.bag-buy:hover,.bag-buy:active,.bag-buy:focus,.bag-buy:visited,.buy-pill,.buy-pill:hover,.buy-pill:active,.buy-pill:visited{text-decoration:none!important}
 .bag-buy{display:inline-flex;align-items:center;height:var(--pill-h);padding:0 12px;border-radius:var(--r);background:var(--pill);color:var(--ink);text-decoration:none;font:500 var(--fs-s)/1 var(--sans)}
 /* grinder pill: room for descenders (g, y) */
-#millSel{line-height:1.3!important;padding-top:0!important;padding-bottom:0!important}
-@media (max-width: 640px){ #millSel{width:auto!important;min-width:0!important;max-width:100%!important} }
+#millSel, #millBtn{line-height:1.3!important;padding-top:0!important;padding-bottom:0!important}
+@media (max-width: 640px){ #millSel, #millBtn{width:auto!important;min-width:0!important;max-width:100%!important} }
 /* scan review: one row per field, label | editable pill | how sure; the why underneath in small grey */
 .scan-review{grid-column:1/-1;margin:4px 0 8px;display:grid;gap:12px}
 .scan-review .sc-match{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;font-size:var(--fs-s);line-height:1.35}
@@ -1699,6 +1699,16 @@ footer .fcol > p + .foot-x{margin-top:14px}
 .beta, :root[data-theme="dark"] .beta{color:var(--hl)!important}                         /* Beta tags, same orange */
 .litext .outro-end.on{color:var(--hl)!important}                                         /* Brew something good. */
 :focus-visible{outline-color:var(--hl)!important}
+/* grinder: a pill like the old dropdown; a tap unfolds every grinder as pills in its place */
+#millSel{display:none!important}
+#millBtn{display:block;text-align:left;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:0;color:var(--ink)}
+.mill-cell{min-width:0}
+#millOpt.open .kit-mill{display:none!important}
+#millChips{display:flex;flex-wrap:wrap;gap:4px}
+#millChips[hidden]{display:none}
+/* What are we brewing?: the text sits as far from the edges as the text in a pill (10 px across, 6 px down) */
+.field{padding:0!important}
+.field textarea, #coffeeIn{padding:6px 10px!important}
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1805,11 +1815,11 @@ footer .fcol > p + .foot-x{margin-top:14px}
         <input type="file" accept="image/*" capture="environment" id="scanIn" hidden></div></div>
         <div class="scan-review" id="scanReview" hidden></div>
         <div class="opts" id="opts-kit"></div>
-        <div class="opt"><span>Grinder</span><div class="kit-mill">
-          <select id="millSel" aria-label="Your grinder"></select>
+        <div class="opt" id="millOpt"><span>Grinder</span><div class="mill-cell"><div class="kit-mill">
+          <select id="millSel" aria-label="Your grinder"></select><button type="button" id="millBtn" class="mill-btn" aria-expanded="false" aria-controls="millChips"></button>
           <div class="zr-ctl" id="zrCtl"><span class="zr-lbl" id="zrLbl">Adjust clicks</span>
             <div class="step" role="group" aria-labelledby="zrLbl"><button type="button" id="zMinus" aria-label="Zero offset one click lower">−</button><span id="zVal">0</span><button type="button" id="zPlus" aria-label="Zero offset one click higher">+</button></div></div>
-        </div></div>
+        </div><div class="chips" id="millChips" role="group" aria-label="Your grinder" hidden></div></div></div>
         <div class="opt"><span>Water</span><div class="w-row" id="waterCard"><div class="w-body" id="wBody"></div><p class="w-adv" id="wAdv"></p></div></div>
       </div>
       <div class="opts" id="opts-main"></div>
@@ -3272,12 +3282,24 @@ footer .fcol > p + .foot-x{margin-top:14px}
   // grinder and zero controls sit above the questions, so they update even before there's a full recipe
   function kitState() {
     $("zrCtl").hidden = !isC40();
-    $("millSel").value = GRINDERS[prefs.mill] ? prefs.mill : "c40";
+    $("millSel").value = GRINDERS[prefs.mill] ? prefs.mill : "c40"; syncMill();
     $("zVal").textContent = String(prefs.zero || 0).replace("-", "−").replace(/^−/, "−");   // no "+" in front
     $("zeroRow").classList.toggle("on", !!prefs.zero);
   }
   $("millSel").innerHTML = Object.entries(GRINDERS).map(([k, G]) => `<option value="${k}">${esc(G.name)}</option>`).join("");
-  $("millSel").onchange = () => { prefs.mill = $("millSel").value; savePrefs(); render(); };
+  $("millSel").onchange = () => { prefs.mill = $("millSel").value; savePrefs(); render(); syncMill(); };
+  // the grinder pill: shows your grinder; a tap swaps it for every grinder as pills, a pick sets it and folds back
+  function syncMill() { const v = $("millSel").value, G = GRINDERS[v]; $("millBtn").textContent = G ? G.name : "";
+    $("millBtn").setAttribute("aria-label", "Your grinder: " + (G ? G.name : ""));
+    $("millChips").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === v))); }
+  function foldMill(focus) { $("millOpt").classList.remove("open"); $("millChips").hidden = true; $("millBtn").setAttribute("aria-expanded", "false"); if (focus) $("millBtn").focus(); }
+  $("millChips").innerHTML = Object.entries(GRINDERS).map(([k, G]) => `<button type="button" class="chip" data-v="${k}" aria-pressed="false">${esc(G.name)}</button>`).join("");
+  $("millChips").onclick = (e) => { const b = e.target.closest("button[data-v]"); if (!b) return; const kb = e.detail === 0;
+    $("millSel").value = b.dataset.v; $("millSel").dispatchEvent(new Event("change")); foldMill(kb); };
+  $("millBtn").onclick = (e) => { $("millOpt").classList.add("open"); $("millChips").hidden = false; $("millBtn").setAttribute("aria-expanded", "true"); syncMill();
+    if (e.detail === 0) { const on = $("millChips").querySelector('[aria-pressed="true"]'); if (on) on.focus(); } };
+  document.addEventListener("click", (e) => { if ($("millOpt").classList.contains("open") && !e.target.closest("#millOpt")) foldMill(false); }, true);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && $("millOpt").classList.contains("open")) foldMill(true); });
   // permanent C40 zero offset, stored in localStorage (v60.prefs.zero), default 0, range ±6
   const setZero = (d) => { prefs.zero = clamp((prefs.zero || 0) + d, -6, 6); savePrefs(); render(); };
   $("zMinus").onclick = () => setZero(-1); $("zPlus").onclick = () => setZero(1);
