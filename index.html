@@ -1658,6 +1658,11 @@ footer #credit a{color:var(--ink);text-decoration:underline;text-decoration-colo
 .bv-now.act .bv-big { font-size: 39px !important; }
 @container (min-width: 243px) and (min-height: 210px) { .bv-now.act .bv-big { font-size: 63px !important; } }
 @media (min-width: 1000px) { @container (min-width: 243px) and (min-height: 276px) { .bv-now.act .bv-big { font-size: 102px !important; } } }
+/* the page appears as a quick fade from the empty background (light or dark), once, on load */
+html { background: var(--bg); }
+@keyframes pageIn { from { opacity: 0; } }
+body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
+@media (prefers-reduced-motion: reduce) { body { animation: none; } }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
