@@ -1470,6 +1470,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 /* coffee list: Brew, + My bags and Buy are three pills of the same grey */
 .shelf .item > .r > .btn, .shelf .item > .r > .bag-add, .shelf .item > .r > .buy-pill{background:var(--pill)!important;color:var(--ink)!important;border:0!important;box-shadow:none!important}
 .shelf .item > .r > .bag-add.in{background:var(--ink)!important;color:var(--bg)!important}
+.shelf .item > .r > .bag-add.armed{background:#ff3b30!important;color:#fff!important}
 /* My bags: Grams left looks like the grams pills, the g sits inside the pill next to the number */
 .bag-f .bag-g{display:inline-flex;align-items:center;gap:4px;height:var(--pill-h);padding:0 10px;border-radius:var(--r);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);cursor:text}
 .bag-f .bag-g input{-webkit-appearance:none;appearance:none;-moz-appearance:textfield;width:calc(var(--w,3ch) + 2px)!important;min-width:1ch;height:auto!important;max-height:none!important;line-height:1!important;padding:0!important;margin:0;border:0;background:none!important;color:inherit;font:inherit;font-size:16px;text-align:right}
@@ -4338,7 +4339,11 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
     $("shelfMore").hidden = left <= 0; $("shelfMore").removeAttribute("aria-hidden");
     $("shelfMore").textContent = `Load more (${left} left)`;
     $("shelf").querySelectorAll("button[data-i]").forEach((b) => b.onclick = () => brewThis(shelf[+b.dataset.i]));
-    $("shelf").querySelectorAll("button[data-b]").forEach((b) => b.onclick = () => { toggleBag(shelf[+b.dataset.b]); renderShelf(); });
+    // Save saves straight away; Saved asks first: one tap shows a red Remove?, a second takes it out of your bags. Back to Saved after 3 s
+    $("shelf").querySelectorAll("button[data-b]").forEach((b) => b.onclick = () => { const r = shelf[+b.dataset.b];
+      if (!hasBag(r) || b.dataset.armed) { toggleBag(r); renderShelf(); return; }
+      b.dataset.armed = "1"; b.textContent = "Remove?"; b.classList.add("armed");
+      setTimeout(() => { if (b.isConnected && b.dataset.armed) { delete b.dataset.armed; b.textContent = "Saved"; b.classList.remove("armed"); } }, 3000); });
   }
 
 
