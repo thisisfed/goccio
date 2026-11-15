@@ -56,7 +56,8 @@ COUNTRY_ALIASES = {
 SYMBOL = {"GBP": "£", "EUR": "€", "USD": "$", "CAD": "CA$", "AUD": "A$", "NZD": "NZ$", "JPY": "¥", "DKK": " kr", "SEK": " kr", "NOK": " kr",
           "PLN": " zł", "CZK": " Kč", "CHF": "CHF "}
 COUNTRY_CCY = {"GB": "GBP", "US": "USD", "CA": "CAD", "AU": "AUD", "NZ": "NZD", "JP": "JPY", "DK": "DKK", "SE": "SEK", "NO": "NOK",
-               "PL": "PLN", "CZ": "CZK", "CH": "CHF", "CN": "CNY", "HK": "HKD", "TW": "TWD", "KR": "KRW", "SG": "SGD", "MY": "MYR"}
+               "PL": "PLN", "CZ": "CZK", "CH": "CHF", "CN": "CNY", "HK": "HKD", "TW": "TWD", "KR": "KRW", "SG": "SGD", "MY": "MYR",
+               "TH": "THB", "PH": "PHP", "ID": "IDR"}
 
 VARIETIES = ["Gesha", "Geisha", "Sidra", "Pink Bourbon", "Wush Wush", "Eugenioides", "Laurina",
              "Sudan Rume", "SL28", "SL34", "Ruiru 11", "Batian", "Red Bourbon", "Yellow Bourbon",
@@ -64,7 +65,7 @@ VARIETIES = ["Gesha", "Geisha", "Sidra", "Pink Bourbon", "Wush Wush", "Eugenioid
              "74110", "74112", "74158", "Heirloom", "Landrace", "Java", "Mokka", "Chiroso",
              "Tabi", "Villa Sarchi", "Parainema", "Marsellesa", "Catimor"]
 EXCLUDE = re.compile(r"subscri|abonnement|abbonamento|\babo\b|suscripci|prenumeration|geschenk|regalo|cadeau|gutschein|"
-                     r"\btasse\b|tazza|latte art|\bpen\b|\btool\b|accessor|machine|maker|moccamaster|ticket|party|event|festival|origami|glass|server|carafe|porcelain|ceramic|brewer|filter holder|gift|voucher|capsule|\bpods?\b|nespresso|coffee bags?|drip bags?|brew bags?|immersion bags?|caf[ée] de poche|"
+                     r"\btasse\b|tazza|dip ?style|in-store|xpods?|xbloom|セット|飲み比べ|ドリップバッグ|latte art|\bpen\b|\btool\b|accessor|machine|maker|moccamaster|ticket|party|event|festival|origami|glass|server|carafe|porcelain|ceramic|brewer|filter holder|gift|voucher|capsule|\bpods?\b|nespresso|coffee bags?|drip bags?|brew bags?|immersion bags?|caf[ée] de poche|"
                      r"steep|equipment|grinder|\bmug\b|kettle|dripper|filter papers?|papers\b|\bcups?\b(?! of excellence)|"
                      r"sampler|tasting pack|taster|bundle|merch|t-?shirt|hoodie|tote|cap\b|"
                      r"cold brew|concentrate|instant|\btea\b|chocolate bar|chocolate\b|cascara|"
@@ -972,6 +973,14 @@ def find_notes(item):
 
 
 def clean_name(title, roaster, origin):
+    title = re.sub(r"<br\s*/?>", " ", html.unescape(title), flags=re.I)
+    title = re.sub(r"<[^>]+>", "", title)
+    title = re.sub(r"^\s*\d{1,2}/\d{1,2}\s+\d{1,2}:\d{2}\s*[~〜～]\s*", "", title)   # Philocoffea: "11/16 10:00~" release stamp
+    title = re.sub(r"\s*/\s*$", "", title)   # Fuglen Tokyo: "Arbegona /"
+    m = re.match(r"^\s*\d{3}\s+(\S.*)$", title)   # Philocoffea: "467 Ethiopia Bombe Washed", a lot number in front of the origin
+    if m and (find_origin(m.group(1)[:25]) or re.match(r"[A-Z]", m.group(1))):
+        title = m.group(1)
+    title = re.sub(r"\s{2,}", " ", title).strip()
     title = re.sub(r"\s*[•·]\s*$", "", title)
     # a shop tag on the front: "【NEW】Panama Lost Origin", "[NEW] …", "NEWPanama …" -> "Panama Lost Origin"
     title = re.sub(r"^\s*[【\[(（]\s*(?:NEW|New|SOLD OUT|LIMITED|新作|新入荷|限定)\s*[】\])）]\s*", "", title)
@@ -1044,7 +1053,10 @@ def tidy_name(name, roaster):
     """'Buy Specialty Coffee Beans Online UK | Nude Coffee Roasters' -> '' (caller falls back);
     'Farm • Sagastume Geisha | doubleshot' -> 'Sagastume Geisha'; 'Limited Release | Franken Grind Blend' -> 'Franken Grind Blend';
     'EAST BLEND' -> 'East Blend'."""
-    name = re.sub(r"\s*[\u3000-\u9fff\uac00-\ud7af\uff00-\uffef]+", "", name).strip()   # Big Sur: the Chinese name after the English one
+    name = re.sub(r"\s*[\u3000-\u9fff\uac00-\ud7af\uff00-\uffef]+\s*", " ", name).strip()   # Big Sur: the Chinese name after the English one
+    name = re.sub(r"\s{2,}", " ", re.sub(r"\s*/\s*$", "", name)).strip()   # Fuglen Tokyo: "Arbegona / アルベゴナ" leaves a slash
+    name = re.sub(r"^\W*\d{1,2}/\d{1,2}\s+\d{1,2}:\d{2}\W*", "", name)   # Philocoffea: "11/16 10:00~" release stamp
+    name = re.sub(r"^\W*\d{3}\s+(?=[A-Z])", "", name)   # and its lot number: "459 China Yunnan …"
     name = re.sub(r"^\s*(?:\d{2,4}(?:/\d{2,4})?\s+)?new (?:season|crop)\b\s*[-–—:|]?\s*", "", name, flags=re.I)   # "25/26 New Season Ethiopia …"
     name = re.sub(r"\s*\[[^\]]{2,40}\]\s*$", "", name)   # Mellow: "… [Syrina]", the variety in square brackets is a tag
     if re.search(r"\s[•·]\s", name):
