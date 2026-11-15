@@ -1627,6 +1627,16 @@ p.bc{display:block;margin:0;color:var(--ink);font-size:var(--fs-s);line-height:1
 p.bc .bean-dot{margin-right:6px;vertical-align:-2px}
 /* jumping to a section: its top rule lands exactly behind the top bar's bottom rule (the bar's last pixel) */
 section.sec{scroll-margin-top:calc(var(--top-h, 49px) - 1px)!important}
+/* stuck filter bar: Region, Process and Made for each become one long pill, a list like the grinder's */
+.shelf-tools select.shelf-sel{display:none;width:100%;box-sizing:border-box;height:var(--pill-h);border:0;border-radius:var(--r);background-color:var(--wash);color:var(--ink);
+  font:500 var(--fs-s)/1 var(--sans);padding:0 28px 0 10px;margin:0;-webkit-appearance:none;appearance:none;background-repeat:no-repeat;background-position:right 10px center;background-size:10px 10px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E")}
+:root[data-theme="dark"] .shelf-tools select.shelf-sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E")}
+.shelf-tools.stuck .opt > .chips{display:none!important}
+.shelf-tools.stuck select.shelf-sel{display:block}
+.shelf-tools.stuck .opt{align-items:center!important}
+.shelf-tools.stuck .opt > span{padding-top:0!important}
+@supports (-webkit-touch-callout: none){ .shelf-tools select.shelf-sel{font-size:16px} }
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1706,9 +1716,9 @@ section.sec{scroll-margin-top:calc(var(--top-h, 49px) - 1px)!important}
     <p class="shelf-meta" id="shelfMeta" hidden></p>
     <div class="shelf-tools">
       <div class="opt"><label for="shelfQ">Search</label><input type="search" id="shelfQ" placeholder="Roaster, coffee, origin, process…"></div>
-      <div class="opt"><span id="labR">Region</span><div class="chips" id="shelfR" role="group" aria-labelledby="labR"></div></div>
-      <div class="opt"><span id="labF">Process</span><div class="chips" id="shelfF" role="group" aria-labelledby="labF"></div></div>
-      <div class="opt"><span id="labV">Made for</span><div class="chips" id="shelfV" role="group" aria-labelledby="labV"></div></div>
+      <div class="opt"><span id="labR">Region</span><div class="chips" id="shelfR" role="group" aria-labelledby="labR"></div><select class="shelf-sel" id="shelfRSel" aria-label="Region"></select></div>
+      <div class="opt"><span id="labF">Process</span><div class="chips" id="shelfF" role="group" aria-labelledby="labF"></div><select class="shelf-sel" id="shelfFSel" aria-label="Process"></select></div>
+      <div class="opt"><span id="labV">Made for</span><div class="chips" id="shelfV" role="group" aria-labelledby="labV"></div><select class="shelf-sel" id="shelfVSel" aria-label="Made for"></select></div>
     </div>
     <div class="shelf loading" id="shelf" aria-busy="true"></div>
     <button class="btn ghost more-btn" id="shelfMore" type="button" hidden aria-hidden="true">Show all</button>
@@ -4184,6 +4194,7 @@ section.sec{scroll-margin-top:calc(var(--top-h, 49px) - 1px)!important}
   function renderShelfV() {
     $("shelfV").innerHTML = SHELF_V.map(([v, t]) => `<button type="button" class="chip" data-v="${v}" aria-pressed="${shelfV === v}">${t}</button>`).join("");
     $("shelfV").querySelectorAll("button").forEach((b) => b.onclick = () => { shelfV = b.dataset.v; shelfAll = false; renderShelfV(); renderShelf(); });
+    fillSel("shelfVSel", SHELF_V, shelfV, (v) => { shelfV = v; shelfAll = false; renderShelfV(); renderShelf(); });
   }
 
   // newest first, strictly by date inside each group, so the dates down the list never jump back and forth. Within one day
@@ -4205,9 +4216,14 @@ section.sec{scroll-margin-top:calc(var(--top-h, 49px) - 1px)!important}
   }
   const SHELF_R = [["all", "Everywhere"], ["UK", "UK"], ["Europe", "Europe"], ["World", "Rest of world"]];
   const market = (r) => r.market || "UK";
+  // the stuck filter bar shows each row as one long pill, a list like the grinder's: the choice in force, the rest inside
+  function fillSel(id, items, cur, on) { const el = $(id); if (!el) return;
+    el.innerHTML = items.map(([v, t]) => `<option value="${v}"${v === cur ? " selected" : ""}>${esc(t)}</option>`).join("");
+    el.onchange = () => { on(el.value); requestAnimationFrame(keepShelfTop); }; }
   function renderShelfR() {
     $("shelfR").innerHTML = SHELF_R.map(([v, t]) => `<button type="button" class="chip" data-v="${v}" aria-pressed="${shelfR === v}">${t}</button>`).join("");
     $("shelfR").querySelectorAll("button").forEach((b) => b.onclick = () => { shelfR = b.dataset.v; shelfAll = false; renderShelfR(); renderShelf(); });
+    fillSel("shelfRSel", SHELF_R, shelfR, (v) => { shelfR = v; shelfAll = false; renderShelfR(); renderShelf(); });
   }
   const SHELF_F = [["all", "All"], ["new", "New"], ["natural", "Natural"], ["washed", "Washed"], ["honey", "Honey"], ["exp", "Anaerobic & co-ferment"]];
   const bucket = (p) => { p = (p || "").toLowerCase(); if (/anaerob|co-?ferment|carbonic|thermal|infus|double|yeast/.test(p)) return "exp"; if (/natural/.test(p)) return "natural"; if (/honey/.test(p)) return "honey"; if (/washed/.test(p)) return "washed"; return "other"; };
@@ -4215,6 +4231,7 @@ section.sec{scroll-margin-top:calc(var(--top-h, 49px) - 1px)!important}
   function renderShelfF() {
     $("shelfF").innerHTML = SHELF_F.map(([v, t]) => `<button type="button" class="chip" data-v="${v}" aria-pressed="${shelfF === v}">${t}</button>`).join("");
     $("shelfF").querySelectorAll("button").forEach((b) => b.onclick = () => { shelfF = b.dataset.v; shelfAll = false; renderShelfF(); renderShelf(); });
+    fillSel("shelfFSel", SHELF_F, shelfF, (v) => { shelfF = v; shelfAll = false; renderShelfF(); renderShelf(); });
   }
   // one dot for the origin: a blend keeps its countries together, Ethiopia / Colombia, under the first one's colour
   const originTag = (origin, region) => { const os = (origin || "").split(" / ").filter(Boolean); if (!os.length) return "";
@@ -4251,7 +4268,6 @@ section.sec{scroll-margin-top:calc(var(--top-h, 49px) - 1px)!important}
       const tagBits = [
         r.process ? tg(esc(r.process), procTone(r.process)) : tg("Process not listed", "miss"),
         r.variety ? varietyTag(r.variety) : "",
-        r.roast_for === "espresso" || (r.blend && /espresso/i.test(r.name || "")) ? tg("Espresso roast") : "",
       ];
       const origins = originTag(r.origin, r.region);
       const place = origins;
@@ -4874,7 +4890,8 @@ section.sec{scroll-margin-top:calc(var(--top-h, 49px) - 1px)!important}
     setTop(); addEventListener("resize", setTop);
     const tools = document.querySelector(".shelf-tools");
     addEventListener("scroll", () => { const t = document.querySelector(".top"), h = t ? t.getBoundingClientRect().height : 0, r = tools.getBoundingClientRect();
-      const stuck = r.top <= h + 0.5 && $("shelf").getBoundingClientRect().bottom > h + r.height;
+      const stuck = r.top <= h + 0.5 && $("shelf").getBoundingClientRect().bottom > h + Math.max(r.height, tools._open || 0);
+      if (!tools.classList.contains("stuck")) tools._open = r.height;
       tools.classList.toggle("stuck", stuck);
     }, { passive: true }); }
   const loadMore = () => { shelfN += 10; renderShelf(); };
@@ -4888,7 +4905,7 @@ section.sec{scroll-margin-top:calc(var(--top-h, 49px) - 1px)!important}
     e.preventDefault(); document.querySelectorAll(".buy-pill.armed").forEach((o) => { o.classList.remove("armed"); o.textContent = o.dataset.price; });
     a.classList.add("armed"); a.textContent = "Buy?"; clearTimeout(a._t);
     a._t = setTimeout(() => { if (a.isConnected) { a.classList.remove("armed"); a.textContent = a.dataset.price; } }, 3000); });
-  ["shelfR", "shelfF"].forEach((id) => $(id).addEventListener("click", () => requestAnimationFrame(keepShelfTop)));
+  ["shelfR", "shelfF", "shelfV"].forEach((id) => $(id).addEventListener("click", () => requestAnimationFrame(keepShelfTop)));
   async function loadShelf() {
     try {
       const res = await fetch("data/releases.json", { cache: "no-cache" });
