@@ -1709,13 +1709,11 @@ footer .fcol > p + .foot-x{margin-top:14px}
 /* What’s brewing?: the text sits as far from the edges as the text in a pill (10 px across, 6 px down) */
 .field{padding:0!important}
 .field textarea, #coffeeIn{padding:6px 10px!important}
-/* an option that isn't available: the pill stays, struck through corner to corner, and can't be picked */
-.chip.off, .chip.off:hover{cursor:not-allowed;color:var(--ink)!important;-webkit-text-fill-color:var(--ink);background:var(--pill)!important;background-image:none!important;opacity:1!important;position:relative;overflow:hidden}
-.chip.off::after{content:"";position:absolute;left:-20%;right:-20%;top:50%;height:2.5px;margin-top:-1.25px;background:var(--ink);transform:rotate(-14deg);pointer-events:none}
-.off-note{grid-column:2;margin:2px 0 0;color:var(--muted);font-size:var(--fs-s);line-height:1.35}
 /* brew screen: Start, Reset, Close, Drained and the two toggles are the same size as every other pill */
 .bv-ctrls button, .bv-ctrls .bv-x, .bv-x, .bv-drain{height:var(--pill-h)!important;min-height:0!important;padding:0 14px!important;font:500 var(--fs-s)/1 var(--sans)!important}
 .bv-opts button{height:var(--pill-h)!important;min-height:0!important}
+.shelf .item > .r > .bag-add.in{background:var(--go)!important;color:var(--on-hl)!important}   /* Saved: the green */
+.go-big .num, .dock .num, .go-big > span, .dock .btn > span{font:inherit!important;opacity:1!important;letter-spacing:inherit}   /* Start brewing: one font in the pill */
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -2122,6 +2120,12 @@ footer .fcol > p + .foot-x{margin-top:14px}
   const rnt = (v) => { const t = Math.round(v * 10); return `${Math.floor(t / 100)}.${Math.floor((t % 100) / 10)}.${t % 10}`; };
   const nc = (v) => { const t = Math.round(v * 10); return `${Math.floor(t / 10)}.${t % 10}`; };
   const HCG = "https://honestcoffeeguide.com/";
+  // dials that count in rotations: v is the step count from zero, shown the way Honest Coffee Guide writes it
+  const pad2 = (n) => String(n).padStart(2, "0");
+  const rotStep = (per) => (v) => { v = Math.round(v); return `${Math.floor(v / per)}.${pad2(v % per)}`; };               // K6, Niche: rotation.step
+  const rotNumTick = (perNum, nums) => (v) => { v = Math.round(v); const per = perNum * nums;                              // J-Max, Q2: rotation.number.tick
+    return `${Math.floor(v / per)}.${Math.floor((v % per) / perNum)}.${v % perNum}`; };
+  const quarters = (v) => { let n = Math.floor(v + 1e-6), k = Math.round((v - n) * 4); if (k === 4) { n++; k = 0; } return k ? `${n}.${k}` : `${n}`; };   // Opus: number.step
   const GRINDERS = {
     c40:    { name: "Comandante C40", short: "C40", lbl: "C40 clicks" },
     ek43:   { name: "Mahlkönig EK43 / EK43 S", short: "EK43", lbl: "EK43 dial (0–16)", a: 5.7, b: 13.3, fp: 16, min: 0, max: 16, q: 0.1,
@@ -2143,6 +2147,35 @@ footer .fcol > p + .foot-x{margin-top:14px}
               show: String, unit: "setting", src: HCG + "baratza-encore-esp-grind-settings/" },
     c3:     { name: "Timemore C3 / C3S / C3 Pro", short: "C3", lbl: "Timemore C3 clicks", a: 11, b: 18, fp: 25, min: 0, max: 25, q: 1,
               show: String, unit: "click", src: HCG + "timemore-c3-grind-settings/" },
+    // Added from Honest Coffee Guide's charts, the same way as the rest: its V60 range sits level with C40 15–25 clicks (a–b),
+    // its French press top with C40 40 (fp), and the middle of its espresso range with C40 10, the middle of the C40's 7–13 (es)
+    k6:     { name: "KINGrinder K6", short: "K6", lbl: "K6, rotation.click (60 clicks a turn)", a: 48, b: 82, fp: 154, es: 33.5, min: 0, max: 180, q: 1,
+              show: rotStep(60), unit: "click", src: HCG + "kingrinder-k6-grind-settings/" },
+    jmax:   { name: "1Zpresso J-Max / J-Max S", short: "J-Max", lbl: "J-Max, rotation.number.tick (90 clicks a turn)", a: 152, b: 264, fp: 450, es: 106, min: 0, max: 450, q: 1,
+              show: rotNumTick(10, 9), unit: "tick", src: HCG + "1zpresso-j-max-grind-settings/" },
+    q2:     { name: "1Zpresso Q2", short: "Q2", lbl: "Q2, rotation.number.tick (30 clicks a turn)", a: 36, b: 61, fp: 114, es: 24.5, min: 0, max: 120, q: 1,
+              show: rotNumTick(3, 10), unit: "tick", src: HCG + "1zpresso-q2-heptagonal-burrs-grind-settings/" },
+    c2:     { noEsp: true, name: "Timemore C2", short: "C2", lbl: "Timemore C2 clicks", a: 13, b: 22, fp: 30, es: 9, min: 0, max: 30, q: 1,
+              show: String, unit: "click", src: HCG + "timemore-c2-grind-settings/" },
+    skerton: { noEsp: true, name: "Hario Skerton / Plus / Pro", short: "Skerton", lbl: "Skerton notches from zero", a: 2, b: 3, fp: 8, es: 1, min: 1, max: 9, q: 1,
+              show: String, unit: "notch", src: HCG + "hario-skerton-pro-grind-settings/",
+              how: "The Skerton moves in big notches, so one notch covers several C40 clicks: use the drawdown time to choose between two." },
+    niche:  { name: "Niche Zero", short: "Niche", lbl: "Niche Zero, rotation.step (100 steps a turn, past 50 into the blank part of the dial)", a: 33, b: 56, fp: 114, es: 22.5, min: 0, max: 130, q: 1,
+              show: rotStep(100), unit: "step", src: HCG + "niche-zero-grind-settings/" },
+    df64:   { name: "Turin DF64 (Gen 2)", short: "DF64", lbl: "DF64 Gen 2 dial", a: 23, b: 53, fp: 90, es: 10, min: 0, max: 90, q: 1,
+              show: String, unit: "number", src: HCG + "turin-df64-gen-2-grind-settings/" },
+    df64g1: { name: "Turin DF64 (Gen 1)", short: "DF64 Gen 1", lbl: "DF64 Gen 1 dial", a: 22, b: 47, fp: 90, es: 11, min: 0, max: 90, q: 1,
+              show: String, unit: "number", src: HCG + "turin-df64-gen-1-grind-settings/" },
+    sgp:    { name: "Sage / Breville Smart Grinder Pro", short: "SGP", lbl: "Smart Grinder Pro setting (1–60)", a: 21, b: 48, fp: 60, es: 9.5, min: 1, max: 60, q: 1,
+              show: String, unit: "setting", src: HCG + "breville-sage-the-smart-grinder-pro-grind-settings/" },
+    opus:   { name: "Fellow Opus", short: "Opus", lbl: "Opus, number.step (4 steps per number)", a: 3, b: 6, fp: 11, es: 1.75, min: 1, max: 11, q: 0.25,
+              show: quarters, unit: "step", src: HCG + "fellow-opus-grind-settings/" },
+    virtuoso: { noEsp: true, name: "Baratza Virtuoso+", short: "Virtuoso+", lbl: "Virtuoso+ setting (0–40)", a: 8, b: 20, fp: 40, es: 3.5, min: 0, max: 40, q: 1,
+              show: String, unit: "setting", src: HCG + "baratza-virtuoso-plus-grind-settings/" },
+    svart:  { noEsp: true, name: "Wilfa Svart", short: "Svart", lbl: "Svart, dots", a: 3, b: 9, fp: 18, es: 1.5, min: 1, max: 18, q: 1,
+              show: String, unit: "dot", src: HCG + "wilfa-svart-grind-settings/" },
+    uniform: { name: "Wilfa Uniform", short: "Uniform", lbl: "Uniform setting (1–41)", a: 11, b: 25, fp: 41, es: 5, min: 1, max: 41, q: 1,
+              show: String, unit: "setting", src: HCG + "wilfa-uniform-grind-settings/" },
   };
   // no listed grinder: say it the way a roaster would, a word, a texture and the size in microns.
   // From C40 clicks at about 30 µm a click (Comandante's own figure), rounded to 50 µm
@@ -2156,7 +2189,8 @@ footer .fcol > p + .foot-x{margin-top:14px}
   // C40 clicks → this grinder: { txt, v, atMax, atMin }
   function onMill(clicks) {
     const G = mill(); if (isC40()) return { txt: String(clicks), v: clicks, atMax: false, atMin: false };
-    const raw = clicks <= 25 || G.fp == null ? G.a + (G.b - G.a) * (clicks - 15) / 10
+    const raw = clicks < 15 && G.es != null ? G.es + (G.a - G.es) * (clicks - 10) / 5     // espresso side: its espresso middle sits level with C40 10
+      : clicks <= 25 || G.fp == null ? G.a + (G.b - G.a) * (clicks - 15) / 10
       : G.b + (G.fp - G.b) * Math.min(clicks - 25, 15) / 15;
     const v = clamp(Math.round(raw / G.q) * G.q, G.min, G.max);
     return { txt: G.show(v), v, atMax: raw >= G.max, atMin: raw <= G.min };
@@ -2164,7 +2198,7 @@ footer .fcol > p + .foot-x{margin-top:14px}
   // "2 clicks" on a C40, the same change in the chosen grinder's own steps elsewhere
   // (uses the V60-band slope: these are small corrections around a V60 setting)
   const stepsFor = (n) => { const G = mill(), x = n * (G.b - G.a) / 10; return G.dec ? x.toFixed(1) : String(Math.max(1, Math.round(x / G.q))); };
-  const unitFor = (num) => { const G = mill(); return G.dec ? G.unit : G.unit + (num === "1" ? "" : "s"); };
+  const unitFor = (num) => { const G = mill(); return G.dec ? G.unit : num === "1" ? G.unit : G.unit === "notch" ? "notches" : G.unit + "s"; };
   const cl = (n) => { if (isC40()) return `${n} click${n === 1 ? "" : "s"}`; if (mill().words) return `about ${n * 30} µm`; const k = stepsFor(n); return `${k} ${unitFor(k)}`; };
   const clRange = (a, b) => { if (isC40()) return `${a}–${b} clicks`; if (mill().words) return `about ${a * 30}–${b * 30} µm`; const x = stepsFor(a), y = stepsFor(b); return x === y ? `${x} ${unitFor(x)}` : `${x}–${y} ${unitFor(y)}`; };
   // one line for headers, copy text and the journal
@@ -3688,12 +3722,11 @@ footer .fcol > p + .foot-x{margin-top:14px}
     const b = brewerOf(state), B = BREWERS[b], teaOn = state.goal === "tea" && teaAvail(b);
     return [
       B.kind !== "steps" && { key: "goal", label: "Cup", items: [["light", "Light & sweet"], ["balanced", "Balanced"], ["syrupy", "Rich & syrupy"],
-        ["tea", "Tea-like", teaAvail(b) ? null : !TEA_OK.has(b) ? "needs a paper filter" : "made for light to medium washed, honey or natural coffees"]] },
+        ...(teaAvail(b) ? [["tea", "Tea-like"]] : [])] },
       ICED_OK.has(b) && { key: "serve", label: "Serve", items: [["hot", "Hot"], ["iced", "Iced"]] },
       { key: "dose", label: b === "moka" ? "Pot" : "Grams", items: B.doses },
-      b === "aero" && { key: "aeroWay", label: "Method", items: [["standard", "Hoffmann"], ["inverted", "Hoffmann inverted"], ["wendelboe", "Wendelboe"]].map(([v, t]) => [v, t, teaOn ? "Tea-like has its own steep" : null]) },
-      b === "v60" && { key: "method", label: "Method", items: [["best", "Best for this coffee"], ["hoffmann", "Hoffmann"], ["fourSix", "Kasuya 4:6"], ["ten", "Kasuya 10-Pour"], ["rao", "Rao"], ["onyx", "Onyx"], ["cafec", "CAFEC Osmotic Flow"], ["winton", "Winton Five-Pour"], ["hedrick", "Hedrick"]]
-        .map(([v, t]) => [v, t, teaOn ? "Tea-like has its own pours" : v === "ten" && Number(state.dose) >= 25 ? "its 15 s pours don’t scale past 20 g" : null]) },   // ten 15 s pours don't scale to a double batch
+      b === "aero" && !teaOn && { key: "aeroWay", label: "Method", items: [["standard", "Hoffmann"], ["inverted", "Hoffmann inverted"], ["wendelboe", "Wendelboe"]] },
+      b === "v60" && !teaOn && { key: "method", label: "Method", items: [["best", "Best for this coffee"], ["hoffmann", "Hoffmann"], ["fourSix", "Kasuya 4:6"], ...(Number(state.dose) >= 25 ? [] : [["ten", "Kasuya 10-Pour"]]), ["rao", "Rao"], ["onyx", "Onyx"], ["cafec", "CAFEC Osmotic Flow"], ["winton", "Winton Five-Pour"], ["hedrick", "Hedrick"]] },   // ten: 15 s pours don't scale to a double batch   // ten 15 s pours don't scale to a double batch
     ].filter(Boolean);
   };
   const OPTS_MORE = [
@@ -3713,10 +3746,8 @@ footer .fcol > p + .foot-x{margin-top:14px}
       const row = document.createElement("div"); row.className = "opt";
       const lab = document.createElement("span"); lab.textContent = o.label; lab.id = "lab-" + o.key;
       const g = document.createElement("div"); g.className = "chips"; g.setAttribute("role", "group"); g.setAttribute("aria-labelledby", lab.id);
-      o.items.forEach(([v, t, off]) => {
+      o.items.forEach(([v, t]) => {
         const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.textContent = t; b.id = `o-${o.key}-${v}`;
-        // not available here: the pill stays, struck through and not clickable; the reason is in its label
-        if (off) { b.disabled = true; b.classList.add("off"); b.title = off; b.setAttribute("aria-label", `${t}, not available: ${off}`); }
         // process and roast: what the bag says is picked for you; nothing stated, Unknown
         b.setAttribute("aria-pressed", String((o.key === "brewer" ? brewerOf(state) : o.key === "process" || o.key === "roast" ? pickedOf(o.key) : state[o.key]) === v));
         b.onclick = () => { if (o.on) o.on(v); else state[o.key] = v; if (o.key === "roast") state.roastPhoto = null; saveState(); renderAllOpts(); render(); };
@@ -3724,11 +3755,8 @@ footer .fcol > p + .foot-x{margin-top:14px}
         if (o.key === "roast" && ROAST_SW[v]) b.insertAdjacentHTML("afterbegin", `<i class="bean-dot" style="--c:${ROAST_SW[v]}"></i>`);
         g.appendChild(b);
       });
-      const offs = [...new Set(o.items.map((x) => x[2]).filter(Boolean))];
-      if (offs.length) { const n = document.createElement("p"); n.className = "off-note";
-        n.textContent = o.items.every((x) => x[2]) ? cap1(offs[0]) + "." : o.items.filter((x) => x[2]).map((x) => `${x[1]}: ${x[2]}`).join(". ") + "."; row._note = n; }
       if (o.key === "roast") { g.insertAdjacentHTML("beforeend", PHOTO_CHIP); g.querySelector(".rp-go").onclick = () => beanScan("rpMsgOpts"); }
-      row.append(lab, g); if (row._note) row.appendChild(row._note); box.appendChild(row);
+      row.append(lab, g); box.appendChild(row);
       if (o.key === "roast") { const m = document.createElement("div"); m.id = "rpMsgOpts"; m.className = "rp-msg"; row.appendChild(m); paintPhoto(m); }   // in the row, under its pills
     });
   }
@@ -3790,7 +3818,8 @@ footer .fcol > p + .foot-x{margin-top:14px}
   // keyed by the method you picked ("Best for this coffee" can switch method with the dose); pours only carry over on the same method
   const mOf = (r) => r.brewer === "aero" ? "aero-" + (state.aeroWay || "standard") : r.m;
   const mineKey = (r) => r && r.key ? r.key + "|" + (r.brewer === "v60" ? (state.method || "best") : mOf(r)) : null;
-  const clicksFor = (v) => { const G = mill(); if (isC40()) return v; return v <= G.b || G.fp == null ? 15 + (v - G.a) * 10 / (G.b - G.a) : 25 + (v - G.b) * 15 / (G.fp - G.b); };
+  const clicksFor = (v) => { const G = mill(); if (isC40()) return v; if (v < G.a && G.es != null) return 10 + (v - G.es) * 5 / (G.a - G.es);
+    return v <= G.b || G.fp == null ? 15 + (v - G.a) * 10 / (G.b - G.a) : 25 + (v - G.b) * 15 / (G.fp - G.b); };
   function withMine(r) {
     const k = mineKey(r), M = k && prefs.mine[k];
     if (!M) return r;
