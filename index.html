@@ -5483,6 +5483,27 @@ footer .fcol > p + .foot-x{margin-top:14px}
   $("coffeeIn").value = state.text;
   renderAllOpts(); renderTaste(); render();
   if (shared) setTimeout(goRecipe, 400); renderJournal(); renderShelfR(); renderShelfF(); renderShelfV(); loadShelf();
+  // a refresh lands where you were: the section you were in and how far into it, kept for this tab only.
+  // Measured from the section, not the page top, so the coffee list loading in above doesn't push you off
+  (function keepPlace() {
+    try { history.scrollRestoration = "manual"; } catch (e) {}
+    const KEY = "v60.place", all = () => [...document.querySelectorAll("main > section, footer")];
+    const save = () => { const y = window.scrollY; let at = null;
+      all().forEach((el, i) => { if (el.hidden || !el.offsetHeight) return; const t = el.getBoundingClientRect().top + y; if (t <= y + 1) at = { i, o: y - t }; });
+      try { sessionStorage.setItem(KEY, JSON.stringify({ y, ...(at || {}) })); } catch (e) {} };
+    let st = 0; addEventListener("scroll", () => { clearTimeout(st); st = setTimeout(save, 150); }, { passive: true });
+    addEventListener("pagehide", save);
+    const nav = (performance.getEntriesByType && performance.getEntriesByType("navigation")[0] || {}).type;
+    if (shared || location.hash || (nav !== "reload" && nav !== "back_forward")) return;
+    let p; try { p = JSON.parse(sessionStorage.getItem(KEY) || "null"); } catch (e) {}
+    if (!p) return;
+    let stop = false; const quit = () => { stop = true; };
+    ["wheel", "touchstart", "keydown", "pointerdown"].forEach((ev) => addEventListener(ev, quit, { once: true, passive: true }));
+    const put = () => { if (stop) return; const el = all()[p.i], html = document.documentElement;
+      const y = el && !el.hidden && el.offsetHeight ? el.getBoundingClientRect().top + window.scrollY + p.o : p.y;
+      const sb = html.style.scrollBehavior; html.style.scrollBehavior = "auto"; window.scrollTo(0, Math.round(y)); html.style.scrollBehavior = sb; };
+    [0, 60, 200, 450, 800, 1300, 2000, 2800].forEach((ms) => setTimeout(put, ms));
+  })();
 
   window.__v60 = { parseCoffee, engine, suggest, cupNotes, cardImage, risks, recipeText, BASE, get recipe() { return recipe; } };
 })();
