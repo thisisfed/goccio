@@ -1055,6 +1055,8 @@ def tidy_name(name, roaster):
     'EAST BLEND' -> 'East Blend'."""
     name = re.sub(r"\s*[\u3000-\u9fff\uac00-\ud7af\uff00-\uffef]+\s*", " ", name).strip()   # Big Sur: the Chinese name after the English one
     name = re.sub(r"\s{2,}", " ", re.sub(r"\s*/\s*$", "", name)).strip()   # Fuglen Tokyo: "Arbegona / アルベゴナ" leaves a slash
+    name = re.sub(r"^\W*\d{1,2}/\d{1,2}\s+\d{1,2}:\d{2}\W*", "", name)   # Philocoffea: "11/16 10:00~" release stamp
+    name = re.sub(r"^\W*\d{3}\s+(?=[A-Z])", "", name)   # and its lot number: "459 China Yunnan …"
     name = re.sub(r"^\s*(?:\d{2,4}(?:/\d{2,4})?\s+)?new (?:season|crop)\b\s*[-–—:|]?\s*", "", name, flags=re.I)   # "25/26 New Season Ethiopia …"
     name = re.sub(r"\s*\[[^\]]{2,40}\]\s*$", "", name)   # Mellow: "… [Syrina]", the variety in square brackets is a tag
     if re.search(r"\s[•·]\s", name):
