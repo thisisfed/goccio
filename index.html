@@ -1714,6 +1714,7 @@ footer .fcol > p + .foot-x{margin-top:14px}
 .bv-opts button{height:var(--pill-h)!important;min-height:0!important}
 .shelf .item > .r > .bag-add.in{background:var(--go)!important;color:var(--on-hl)!important}   /* Saved: the green */
 .go-big .num, .dock .num, .go-big > span, .dock .btn > span{font:inherit!important;opacity:1!important;letter-spacing:inherit}   /* Start brewing: one font in the pill */
+.bv-pill{height:var(--pill-h);display:inline-flex;align-items:center;padding:0 10px!important;font:500 var(--fs-s)/1 var(--sans)!important;box-sizing:border-box}   /* Ready / Pour 1 of 5: a normal pill */
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -1867,6 +1868,7 @@ footer .fcol > p + .foot-x{margin-top:14px}
       <button class="btn" id="copyBtn" type="button">Copy recipe</button>
       <button class="btn" id="linkBtn" type="button">Share link</button>
       <button class="btn" id="bagBtn" type="button">Add to my bags</button>
+      <button class="btn" id="calBtn" type="button" hidden>Remind me to strain</button>
     </div>
     </div>
   </section>
@@ -3511,6 +3513,7 @@ footer .fcol > p + .foot-x{margin-top:14px}
     try { markPicked(); } catch (e) {}
     { const so = document.querySelector(".scan-opt"); if (so) so.hidden = !!(state.bag && state.bag.name); }
     const r = recipe = withMine(engine(state));
+    if ($("calBtn")) $("calBtn").hidden = !(r && r.brewer === "cold");
     const c = r.c, K = r.kind;
     kitState();
     if (renderNeed(r)) {
@@ -4388,6 +4391,25 @@ footer .fcol > p + .foot-x{margin-top:14px}
     L.push("", SITE());
     return L.join("\n");
   }
+  // cold brew: a calendar event for the straining window, 12 to 18 h from now, with an alert when it opens.
+  // A plain .ics file: the phone's own calendar does the alarm, so it rings even with the page closed. Nothing leaves the device
+  $("calBtn").onclick = () => {
+    const r = recipe; if (!r) return;
+    const z = (d) => d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+    const now = new Date(), a = new Date(now.getTime() + 12 * 3600e3), b = new Date(now.getTime() + 18 * 3600e3);
+    const title = "Strain the cold brew", what = coffeeTitle(state, r);
+    const esc2 = (t) => String(t).replace(/[\\;,]/g, (m) => "\\" + m).replace(/\n/g, "\\n");
+    const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Bag to Cup//Cold brew//EN", "BEGIN:VEVENT",
+      `UID:${now.getTime()}-cold@bagtocup.thisisfed.xyz`, `DTSTAMP:${z(now)}`, `DTSTART:${z(a)}`, `DTEND:${z(b)}`,
+      `SUMMARY:${esc2(title)}`, `DESCRIPTION:${esc2(`${what}. Strain any time in the next 6 hours: through a paper filter or a fine sieve. Serve over ice, topped up with about 0.4 × its weight in water, or with milk.`)}`,
+      "BEGIN:VALARM", "ACTION:DISPLAY", `DESCRIPTION:${esc2(title)}`, "TRIGGER:PT0M", "END:VALARM",
+      "BEGIN:VALARM", "ACTION:DISPLAY", `DESCRIPTION:${esc2(title + ", last call")}`, "TRIGGER;RELATED=END:-PT30M", "END:VALARM",
+      "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+    const url = URL.createObjectURL(new Blob([ics], { type: "text/calendar" }));
+    const link = document.createElement("a"); link.href = url; link.download = "cold-brew.ics"; document.body.appendChild(link); link.click(); link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    const btn = $("calBtn"), t0 = btn.textContent; btn.textContent = "Added: open it to save"; setTimeout(() => { btn.textContent = t0; }, 2500);
+  };
   $("copyBtn").onclick = () => {
     const done = () => { $("copyBtn").textContent = "Copied"; setTimeout(() => ($("copyBtn").textContent = "Copy recipe"), 1400); };
     const fallback = () => { const t = document.createElement("textarea"); t.value = recipeText(); t.setAttribute("readonly", ""); t.style.cssText = "position:fixed;opacity:0";
