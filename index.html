@@ -1754,6 +1754,10 @@ footer .fcol > p + .foot-x{margin-top:14px}
 .bv #bvClose{justify-content:center}
 .bv .bv-ctrls{grid-template-columns:none!important;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
 .bv .bv-ctrls > [hidden]{display:none!important}
+/* Italian labels run longer (Lavorazione, Grammi rimasti): a wider label column so the pills never sit on them */
+html[lang="it"] .opt{grid-template-columns:100px minmax(0,1fr)!important}
+html[lang="it"] .bag-f label{grid-template-columns:118px auto!important}
+html[lang="it"] .bag-d.empty::before{content:"Aggiungi"}
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -4820,7 +4824,7 @@ footer .fcol > p + .foot-x{margin-top:14px}
         </div>
         <div class="r">
           <button class="btn" type="button" data-i="${i}">Brew</button>
-          <button type="button" class="pill bag-add${hasBag(r) ? " in" : ""}" data-b="${i}" aria-pressed="${hasBag(r)}" aria-label="${hasBag(r) ? "In my bags" : "Save to my bags"}">${hasBag(r) ? "My bags" : "Save"}</button>
+          <button type="button" class="pill bag-add${hasBag(r) ? " in" : ""}" data-b="${i}" aria-pressed="${hasBag(r)}" aria-label="${hasBag(r) ? "In my bags" : "Save to my bags"}">${hasBag(r) ? (LANG === "it" ? "Salvato" : "My bags") : "Save"}</button>
           ${r.url ? `<a class="pill buy-pill" href="${esc(r.url)}"${r.price ? ` data-price="${esc(r.price.replace(/^From\s+/i, ""))}"` : ""} target="_blank" rel="noopener" aria-label="Buy ${esc(r.name)} from ${esc(r.roaster)}${r.price ? ", " + esc(r.price) : ""}">${r.price ? esc(r.price.replace(/^From\s+/i, "")) : "Buy"}</a>` : ""}
         </div></article>`; }).join("") : `<p class="muted" style="padding:16px 0;margin:0">Nothing matches${shelfV !== "all" ? `. Try Everything under Made for, or` : "."} <a href="#" class="mail-me" data-s="Missing coffee">${shelfV !== "all" ? "email me" : "Email me"}</a> and I’ll add the roaster.</p>`;
     const left = list.length - Math.min(shelfN, list.length);
@@ -4831,7 +4835,7 @@ footer .fcol > p + .foot-x{margin-top:14px}
     $("shelf").querySelectorAll("button[data-b]").forEach((b) => b.onclick = () => { const r = shelf[+b.dataset.b];
       if (!hasBag(r) || b.dataset.armed) { toggleBag(r); renderShelf(); return; }
       b.dataset.armed = "1"; b.textContent = "Remove?"; b.classList.add("armed");
-      setTimeout(() => { if (b.isConnected && b.dataset.armed) { delete b.dataset.armed; b.textContent = "My bags"; b.classList.remove("armed"); } }, 3000); });
+      setTimeout(() => { if (b.isConnected && b.dataset.armed) { delete b.dataset.armed; b.textContent = LANG === "it" ? "Salvato" : "My bags"; b.classList.remove("armed"); } }, 3000); });
   }
 
 
