@@ -1435,7 +1435,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 .item .tags .miss{color:var(--muted)}
 .item .tags + .pills{margin-top:4px}
 /* every pill-shaped button is one height, the pill height */
-.hero-pill, #shelfMore, #copyBtn, #cardBtn, #pdfBtn, #linkBtn, #bagBtn, #saveLog { height: var(--pill-h) !important; min-height: 0 !important; padding-top: 0 !important; padding-bottom: 0 !important; display: inline-flex !important; align-items: center; }
+.hero-pill, #shelfMore, #copyBtn, #cardBtn, #pdfBtn, #linkBtn, #bagBtn, #calBtn, #saveLog { height: var(--pill-h) !important; min-height: 0 !important; padding-top: 0 !important; padding-bottom: 0 !important; display: inline-flex !important; align-items: center; }
 /* coffee details: plain words with their colour dots, a space apart; on the list they share a row with Buy and the date */
 .item .tags{display:flex;flex-wrap:wrap;gap:2px 14px;align-items:baseline}
 .item .tags .tg{white-space:nowrap}
@@ -1724,6 +1724,20 @@ footer .fcol > p + .foot-x{margin-top:14px}
 .specs .spec b, .specs .spec .sub2{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* Remove? stays the accent even on a coffee that's in my bags (the green In my bags rule came later and won) */
 .shelf .item > .r > .bag-add.in.armed{background:var(--hl)!important;color:var(--on-hl)!important}
+/* brew screen, less but better: three sizes only (15 for words, 24 for what you act on, the hero for the weight),
+   one left edge, no boxes inside the card. The state and the clock share a line and a size; the label, the weight and
+   what to do sit together as one block in the middle; what comes next and the bar sit at the bottom */
+.bv .bv-now{display:flex!important;flex-direction:column;row-gap:0!important;padding:20px!important}
+.bv .bv-nowhead{height:auto!important;align-items:baseline!important}
+.bv .bv-pill{background:none!important;padding:0!important;height:auto!important;font:500 24px/1.2 var(--sans)!important;color:inherit!important;border-radius:0!important}
+.bv .bv-now.over .bv-pill{color:var(--hl)!important}
+.bv .bv-clock{font:500 24px/1.2 var(--sans)!important;color:inherit!important;font-variant-numeric:tabular-nums}
+.bv .bv-now{color:var(--ink)} .bv .bv-now.pour{color:var(--bg)}
+.bv .bv-lbl{margin-top:auto!important;padding-bottom:4px;font:500 15px/1.3 var(--sans)!important;height:auto!important}
+.bv .bv-big{line-height:.9;display:flex!important;justify-content:flex-start!important;align-items:baseline;text-align:left!important;width:100%;margin-left:-.04em}
+.bv .bv-how{margin:10px 0 auto!important;font:500 24px/1.25 var(--sans)!important;letter-spacing:-.02em}
+.bv .bv-sub{font:500 15px/1.3 var(--sans)!important;height:auto!important;padding-bottom:10px}
+.bv .bv-sub b{font:inherit!important;color:inherit!important}
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -4321,7 +4335,7 @@ footer .fcol > p + .foot-x{margin-top:14px}
       prog = k;
       if (cur.act) { expected = prevTo; setNow("pour act", `${word} ${idx + 1} of ${n}`, "Now", cur.lbl, "", cur.note, `${Math.max(0, Math.ceil(cur.t + cur.dur - el))} s`); }
       else { expected = prevTo + (cur.to - prevTo) * k;
-        setNow("pour", `${word} ${idx + 1} of ${n}`, "Scale to", cur.to, "g", cur.note, `<b>+${g1(pourAdd(r, idx))} g</b> in ${Math.max(0, Math.ceil(cur.t + cur.dur - el))} s`); }
+        setNow("pour", `${word} ${idx + 1} of ${n}`, "Scale to", cur.to, "g", cur.note, `+${Math.round(pourAdd(r, idx))} g in ${Math.max(0, Math.ceil(cur.t + cur.dur - el))} s`); }
       if (next) { nextLbl = "Next"; nextT = what(next); nextCd = cd(next.t - el); } else nextT = endTxt;
     } else if (!afterLast) {
       expected = cur.act ? prevTo : cur.to;
@@ -4329,7 +4343,7 @@ footer .fcol > p + .foot-x{margin-top:14px}
       prog = gap > 0 ? clamp(1 - left / gap, 0, 1) : 1;
       const rest = imm && next.lbl === "Pour";   // the cafetière's long rest: the fines sink while you wait
       if (next.act) setNow("wait", rest ? "Resting" : imm ? "Steeping" : "Wait", `${next.lbl} in`, cd(left), "", left <= 5 ? "Get ready." : rest ? "Hands off. The fines are sinking, so the cup pours clean." : next.note, `${word} ${idx + 2} of ${n}`);
-      else setNow("wait", "Wait", `${word} ${idx + 2} of ${n}, scale to`, next.to, "g", left <= 5 ? "Get ready to pour." : "Hands off. Let it settle.", `<b>Pour in ${cd(left)}</b>, +${g1(pourAdd(r, idx + 1))} g`);
+      else setNow("wait", "Wait", `${word} ${idx + 2} of ${n}, scale to`, next.to, "g", left <= 5 ? "Get ready to pour." : "Hands off. Let it settle.", `Pour in ${cd(left)}, +${Math.round(pourAdd(r, idx + 1))} g`);
       nextT = after ? what(after) : endTxt;
       if (after) nextCd = cd(after.t - el);
     } else if (imm) {
