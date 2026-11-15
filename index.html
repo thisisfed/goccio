@@ -4340,7 +4340,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
     $("shelfR").querySelectorAll("button").forEach((b) => b.onclick = () => { shelfR = b.dataset.v; shelfAll = false; renderShelfR(); renderShelf(); });
     fillSel("shelfRSel", SHELF_R, shelfR, (v) => { shelfR = v; shelfAll = false; renderShelfR(); renderShelf(); });
   }
-  const SHELF_F = [["all", "All"], ["new", "New"], ["natural", "Natural"], ["washed", "Washed"], ["honey", "Honey"], ["exp", "Anaerobic & co-ferment"]];
+  const SHELF_F = [["all", "All"], ["natural", "Natural"], ["washed", "Washed"], ["honey", "Honey"], ["exp", "Anaerobic & co-ferment"]];
   const bucket = (p) => { p = (p || "").toLowerCase(); if (/anaerob|co-?ferment|carbonic|thermal|infus|double|yeast/.test(p)) return "exp"; if (/natural/.test(p)) return "natural"; if (/honey/.test(p)) return "honey"; if (/washed/.test(p)) return "washed"; return "other"; };
   const procKey = (p) => { const b = bucket(p); if (b === "exp") return /co-?ferment|infus|thermal|yeast/i.test(p || "") ? "cofer" : "anaerobic"; return ["natural", "washed", "honey"].includes(b) ? b : (/decaf/i.test(p || "") ? "decaf" : "auto"); };
   function renderShelfF() {
@@ -4361,7 +4361,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
   const justInLabel = () => scanDay === todayIso() ? "Just in today" : `Just in, ${isoDmy(scanDay)}`;
   function renderShelf() {
     const q = $("shelfQ").value.trim().toLowerCase();
-    let list = shelf.filter((r) => (shelfR === "all" || market(r) === shelfR) && (shelfF === "all" || (shelfF === "new" ? r.new : bucket(r.process) === shelfF)));
+    let list = shelf.filter((r) => (shelfR === "all" || market(r) === shelfR) && (shelfF === "all" || bucket(r.process) === shelfF));
     if (q) list = list.filter((r) => [r.roaster, r.roaster_city, r.name, r.origin, r.region, r.process, r.variety].join(" ").toLowerCase().includes(q));
     if (shelfV !== "all") list = list.filter(shelfFit());
     list = interleave(list);
@@ -4377,7 +4377,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
       const i = shelf.indexOf(r);
       const isSp = r === sp;
       const group = isSp ? "Sponsored" : r.just_in ? justInLabel() : r.new ? "New in the last 3 weeks" : "Still on the shelves";
-      const head = group !== lastGroup && shelfF !== "new" ? `<div class="grp">${group}</div>` : ""; lastGroup = group;
+      const head = group !== lastGroup ? `<div class="grp">${group}</div>` : ""; lastGroup = group;
       // what the coffee is: plain text, never pills (pills are things you can tap)
       const tg = (t, c = "") => `<span class="tg${c ? " " + c : ""}">${t}</span>`;
       const tagBits = [
