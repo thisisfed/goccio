@@ -1616,10 +1616,10 @@ footer .fcol + .fcol > .foot-x{margin-top:10px}
   .bv .bv-opts{grid-row:1!important;grid-column:2!important;align-self:start}
   .bv .bv-ctrls{grid-row:3!important;grid-column:2!important;align-self:end}
 }
-/* recipe: the brewer on one full-width line, as big as the figures (long names shrink to stay on the line) */
+/* recipe: the brewer on one full-width line, as big as the figures; a name too long for the line ends in an ellipsis */
 .specs .spec.brewer{grid-column:1 / -1!important;order:0!important}
-.specs .spec.brewer b{white-space:nowrap;font-size:min(var(--fs-l), 8.6cqi)!important}
-@media (min-width:761px){ .specs .spec.brewer b{font-size:var(--fs-l)!important} }
+.specs .spec.brewer{min-width:0}
+.specs .spec.brewer b{display:block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15;padding-bottom:.04em}
 /* closing text: "Brew" turns into what each brewer asks of you (pour, swirl, press…). The old word's letters lift off and
    blur away one after another, the new ones rise into place. The box keeps one width, so the lines never move */
 .litext .verb{display:inline-block;position:relative;white-space:nowrap;vertical-align:baseline;transition:color .35s ease}
@@ -2933,7 +2933,7 @@ footer .fcol + .fcol > .foot-x{margin-top:10px}
         o.width = Math.round(c.width * k); o.height = Math.round(c.height * k); o.getContext("2d", { willReadFrequently: true }).drawImage(c, 0, 0, o.width, o.height);
         const g = analyseBeans(o); if (g.state === "beans") return g; me.why = g.reason; }
       return fallback; } catch (e) { return fallback; } };
-    const use = (got) => { end(); beanCard = { ...got, where: msgId }; renderAllOpts(); if ($("moreOpts")) $("moreOpts").open = true; const m = $(msgId); if (m) m.scrollIntoView({ behavior: "smooth", block: "nearest" }); };
+    const use = (got) => { end(); useBeans(got, msgId); renderAllOpts(); render(); if ($("moreOpts")) $("moreOpts").open = true; const m = $(msgId); if (m) m.scrollIntoView({ behavior: "smooth", block: "nearest" }); };
     $("camClose").onclick = () => end();
     $("camPhoto").onclick = () => { end(); askPhoto(msgId); };
     $("camDone").onclick = () => { if (!me.last || $("camDone").disabled) return; const big = sharp(me.last);
@@ -2982,7 +2982,7 @@ footer .fcol + .fcol > .foot-x{margin-top:10px}
     finally { URL.revokeObjectURL(url); }
   }
   if (/[?&]scantest\b/.test(location.search)) window.__beans = async (blob, long) => beansFromPhoto(blob, long);
-  // the result card: what the photo shows, how sure, and a choice. Nothing changes the Roast row until you tap one
+  // the result card: what the photo shows and why
   let beanCard = null;
   function paintPhoto(el) {
     if (!el) return; const G = beanCard;
@@ -2994,23 +2994,17 @@ footer .fcol + .fcol > .foot-x{margin-top:10px}
     el.innerHTML = `<div class="bc">
       <p class="bc-head"><i class="bean-dot big" style="--c:${G.hex}"></i><span>${head}</span></p>
       <p class="bc-why">${esc(ro.why || "")}</p>
-      ${G.notes && G.notes.length ? `<dl class="bc-dl"><dt>Notes</dt><dd>${G.notes.map(esc).join(". ")}.</dd></dl>` : ""}
-      <div class="bc-btns">${ro.key ? `<button type="button" class="pill on" data-bc="${ro.key}">Use ${esc(LBL(ro.key))}</button>` : ""}
-        <span class="bc-pick">Or pick: ${Object.keys(ROAST_SW).map((k) => `<button type="button" class="pill" data-bc="${k}"><i class="bean-dot" style="--c:${ROAST_SW[k]}"></i>${esc(LBL(k))}</button>`).join("")}</span>
-        <button type="button" class="pill" data-bc="">Ignore</button></div>
-      <p class="bc-foot">From a photo: roast colour only, and only against white paper. Origin, variety and process can’t be seen in beans.</p></div>`;
-    el.querySelectorAll("[data-bc]").forEach((b2) => b2.onclick = () => { const k = b2.dataset.bc;
-      if (k) { state.roast = k; state.roastPhoto = { key: k, L: G.L, hex: G.hex };
-        // what you chose for these beans, against what the photo read: after two, the reading shifts to match your light and camera
-        if (G.ref === "paper" && G.Lraw != null && !(ro.mixed)) { const cal = beanCal(); cal.push({ L: G.Lraw, key: k }); try { localStorage.setItem(BEAN_CAL, JSON.stringify(cal.slice(-12))); } catch (e) {} } }
-      beanCard = null; saveState(); renderAllOpts(); render(); });
+      ${G.notes && G.notes.length ? `<dl class="bc-dl"><dt>Notes</dt><dd>${G.notes.map(esc).join(". ")}.</dd></dl>` : ""}</div>`;
   }
+  // a reading sets the Roast row straight away; to overrule it, tap another level in that row
+  function useBeans(got, where) { beanCard = { ...got, where };
+    const k = got.roast && got.roast.key; if (k) { state.roast = k; state.roastPhoto = { key: k, L: got.L, hex: got.hex }; saveState(); } }
   $("roastPhotoIn").addEventListener("change", async (e) => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
     const msg = $(photoMsgId); if (msg) { msg.hidden = false; msg.textContent = "Reading the colour…"; }
     const got = await beansFromPhoto(f);
     if (got.err) { const m = $(photoMsgId); if (m) { m.hidden = false; m.textContent = got.err; } return; }
-    beanCard = { ...got, where: photoMsgId }; renderAllOpts(); render(); if ($("moreOpts")) $("moreOpts").open = true;
+    useBeans(got, photoMsgId); renderAllOpts(); render(); if ($("moreOpts")) $("moreOpts").open = true;
   });
 
   function renderLearn(r) {
@@ -3449,7 +3443,7 @@ footer .fcol + .fcol > .foot-x{margin-top:10px}
   function goRecipe() { const t = !$("recipe").hidden ? $("recipe") : !$("need").hidden ? $("need") : $("coffee"); t.scrollIntoView({ behavior: "smooth", block: t.id === "need" ? "center" : "start" }); }
   function build(scroll) {
     const t = $("coffeeIn").value.trim();
-    if (t !== state.text) { state.bag = null; state.process = "auto"; state.roast = "auto"; state.roastPhoto = null; state.listProc = null; renderAllOpts(); }   // new coffee: forget old answers
+    if (t !== state.text) { beanCard = null; state.bag = null; state.process = "auto"; state.roast = "auto"; state.roastPhoto = null; state.listProc = null; renderAllOpts(); }   // new coffee: forget old answers
     state.text = t; saveState(); render();
     if (scroll !== false) goRecipe();
   }
