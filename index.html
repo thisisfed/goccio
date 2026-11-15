@@ -1717,6 +1717,13 @@ footer .fcol > p + .foot-x{margin-top:14px}
 .bv-pill{height:var(--pill-h);display:inline-flex;align-items:center;padding:0 10px!important;font:500 var(--fs-s)/1 var(--sans)!important;box-sizing:border-box}   /* Ready / Pour 1 of 5: a normal pill */
 /* an unfolded menu row, and the grinder: the label sits level with the first line of pills */
 .shelf-tools.compact .opt.open > span, #millOpt.open > span{align-self:start;height:var(--pill-h);display:flex;align-items:center;padding-top:0!important}
+/* grind said in words ("Medium-coarse") needs the full width, like the brewer; and no spec ever spills into its neighbour */
+.specs .spec.wide{grid-column:1 / -1!important}
+.specs .spec.wide ~ .spec.temp{grid-column:1 / -1!important}   /* then the kettle on its own line too, so coffee and water stay a pair */
+.specs .spec{min-width:0}
+.specs .spec b, .specs .spec .sub2{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Remove? stays the accent even on a coffee that's in my bags (the green In my bags rule came later and won) */
+.shelf .item > .r > .bag-add.in.armed{background:var(--hl)!important;color:var(--on-hl)!important}
 /* two-line scenes: each line its own row */
 .scene.two { flex-direction: column; align-items: flex-start; }
 .scene.two .ln { display: block; width: 100%; }
@@ -3569,7 +3576,7 @@ footer .fcol > p + .foot-x{margin-top:14px}
     $("zeroRow").hidden = !!r.mine; $("clkHow").hidden = !!r.mine;
     renderMine(r);
     const showRet = r.tds != null;
-    $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}"><b>${v}${u ? `<small>${u === "-cup" ? u : " " + u}</small>` : ""}</b><span class="sub2">${l.charAt(0).toUpperCase() + l.slice(1)}</span>${k === "key" && isC40() && prefs.zero ? `<span class="zo">${sign(prefs.zero)} zero offset</span>` : ""}${k === "key" && K === "shot" && mill().noEsp ? `<span class="sub2">Not an espresso grinder</span>` : k === "key" && !isC40() && (onMill(r.clicks).atMax || onMill(r.clicks).atMin) ? `<span class="sub2">${onMill(r.clicks).atMax ? "Coarsest setting, may still run fast" : "Finest setting"}</span>` : ""}${k === "ratio" && showRet && false ? `<span class="ret">(${r.water} g water − 2.1 × ${r.dose} g retained). Estimate only.</span>` : ""}${badge ? `<span class="badge">${esc(badge)}</span>` : ""}</div>`).join("");
+    $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}${k === "key" && mill().words ? " wide" : ""}"><b>${v}${u ? `<small>${u === "-cup" ? u : " " + u}</small>` : ""}</b><span class="sub2">${l.charAt(0).toUpperCase() + l.slice(1)}</span>${k === "key" && isC40() && prefs.zero ? `<span class="zo">${sign(prefs.zero)} zero offset</span>` : ""}${k === "key" && K === "shot" && mill().noEsp ? `<span class="sub2">Not an espresso grinder</span>` : k === "key" && !isC40() && (onMill(r.clicks).atMax || onMill(r.clicks).atMin) ? `<span class="sub2">${onMill(r.clicks).atMax ? "Coarsest setting, may still run fast" : "Finest setting"}</span>` : ""}${k === "ratio" && showRet && false ? `<span class="ret">(${r.water} g water − 2.1 × ${r.dose} g retained). Estimate only.</span>` : ""}${badge ? `<span class="badge">${esc(badge)}</span>` : ""}</div>`).join("");
     const agitTxt = r.agit >= 3 ? "Stir or swirl the bloom, pour with energy, one swirl at the end." :
       r.agit === 2 ? "Swirl the bloom gently, steady pours, one soft swirl at the end." :
       r.agit === 1 ? "No stirring. Pour low and gentle so the fruit stays clean." :
