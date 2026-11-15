@@ -4041,50 +4041,53 @@ footer .fcol > p + .foot-x{margin-top:14px}
 
   // one change per brew, most important problem first
   function suggest(r, tags, dd) {
+    const s = suggestRaw(r, tags, dd);
+    return s && { ...s, text: s.text.charAt(0).toUpperCase() + s.text.slice(1) };
+  }
+  function suggestRaw(r, tags, dd) {
     const has = (k) => tags.has(k);
     const fast = dd != null && dd < r.lo - 5, slow = dd != null && dd > r.hi + 10;
-    const ddTxt = dd != null ? ` (${ddOf(r.brewer).word}${ddOf(r.brewer).word === "drained" ? " at" : ""} ${ddOf(r.brewer).show(dd)})` : "";
     if (r.kind === "shot") {   // grind sets the time, the weight out sets the taste; one change per shot
-      const f2 = dd != null && dd < r.lo - 2, s2 = dd != null && dd > r.hi + 2, at = dd != null ? ` (${dd} s)` : "";
+      const f2 = dd != null && dd < r.lo - 2, s2 = dd != null && dd > r.hi + 2;
       const longer = Math.round((r.ratio + 0.5) * 10) / 10, shorter = Math.round((r.ratio - 0.5) * 10) / 10;
-      if (has("sour") && has("bitter")) return { text: "Sour and bitter together: the water found a channel. Same numbers; break up the clumps, level the bed and tamp flat.", d: {} };
-      if (has("harsh")) return { text: `Harsh or drying${at}: ${cl(1)} coarser, and check the bed is level before you tamp.`, d: { clicks: 1 } };
-      if (has("bitter")) return s2 ? { text: `Bitter and slow${at}: ${cl(1)} coarser.`, d: { clicks: 1 } } : { text: `Bitter${dd != null ? " on time" : ""}${at}: a shorter shot, 1:${shorter}.`, d: { ratio: -1 } };
+      if (has("sour") && has("bitter")) return { text: "Same numbers. Break up the clumps, level the bed and tamp flat.", d: {} };
+      if (has("harsh")) return { text: `${cl(1)} coarser, and check the bed is level before you tamp.`, d: { clicks: 1 } };
+      if (has("bitter")) return s2 ? { text: `${cl(1)} coarser.`, d: { clicks: 1 } } : { text: `A shorter shot, 1:${shorter}.`, d: { ratio: -1 } };
       if (has("sour")) {
-        if (f2) return { text: `Sour and fast${at}: ${cl(1)} finer.`, d: { clicks: -1 } };
-        if (r.temp != null && r.temp < 94) return { text: `Sour${dd != null ? " on time" : ""}${at}: 1°C hotter.`, d: { temp: 1 } };
-        return { text: `Sour${dd != null ? " on time" : ""}${at}: a longer shot, 1:${longer}.`, d: { ratio: 1 } };
+        if (f2) return { text: `${cl(1)} finer.`, d: { clicks: -1 } };
+        if (r.temp != null && r.temp < 94) return { text: "1°C hotter.", d: { temp: 1 } };
+        return { text: `A longer shot, 1:${longer}.`, d: { ratio: 1 } };
       }
-      if (has("flat")) return { text: `Flat: ${cl(1)} finer and 1°C hotter.`, d: { clicks: -1, temp: 1 } };
-      if (has("thin")) return { text: `Thin: a shorter shot, 1:${shorter}. Same grind.`, d: { ratio: -1 } };
-      if (has("heavy")) return { text: `Heavy: a longer shot, 1:${longer}. Same grind.`, d: { ratio: 1 } };
-      if (f2) return { text: `Fast${at}: ${cl(1)} finer to bring it into ${r.lo}–${r.hi} s.`, d: { clicks: -1 } };
-      if (s2) return { text: `Slow${at}: ${cl(1)} coarser to bring it into ${r.lo}–${r.hi} s.`, d: { clicks: 1 } };
+      if (has("flat")) return { text: `${cl(1)} finer and 1°C hotter.`, d: { clicks: -1, temp: 1 } };
+      if (has("thin")) return { text: `A shorter shot, 1:${shorter}. Same grind.`, d: { ratio: -1 } };
+      if (has("heavy")) return { text: `A longer shot, 1:${longer}. Same grind.`, d: { ratio: 1 } };
+      if (f2) return { text: `${cl(1)} finer to bring it into ${r.lo}–${r.hi} s.`, d: { clicks: -1 } };
+      if (s2) return { text: `${cl(1)} coarser to bring it into ${r.lo}–${r.hi} s.`, d: { clicks: 1 } };
       if (has("sweet") || has("balanced")) return { text: "Keep it. This is now your recipe for this coffee.", d: {} };
       return null;
     }
     if (r.temp == null) {   // cold brew and moka: no kettle temperature to move, so grind and time do the work
       const moka = r.brewer === "moka";
-      if (has("sour") && has("bitter")) return { text: moka ? "Sour and bitter together: the heat was too high. Same grind, a lower flame, off as soon as it turns pale." : "Sour and bitter together: stir it well at the start so every ground is wet. Same grind.", d: {} };
-      if (has("harsh") || has("bitter")) return { text: moka ? `Bitter: ${cl(2)} coarser, and take it off the heat as soon as it turns pale.` : `Bitter or woody: ${cl(2)} coarser, or steep a few hours less.`, d: { clicks: 2 } };
-      if (has("sour") || has("flat")) return { text: moka ? `Sour or flat: ${cl(2)} finer, and fill the basket right to the top.` : `Sour or flat: ${cl(2)} finer, or steep a few hours longer.`, d: { clicks: -2 } };
-      if (has("thin")) return moka ? { text: `Thin: ${cl(1)} finer and a full, level basket.`, d: { clicks: -1 } } : { text: "Thin: dilute less, or not at all.", d: {} };
-      if (has("heavy")) return { text: moka ? "Heavy: add a splash of hot water to the cup." : "Heavy: dilute a little more.", d: {} };
+      if (has("sour") && has("bitter")) return { text: moka ? "Same grind, a lower flame, and off the heat as soon as it turns pale." : "Same grind. Stir well at the start so every ground is wet.", d: {} };
+      if (has("harsh") || has("bitter")) return { text: moka ? `${cl(2)} coarser, and off the heat as soon as it turns pale.` : `${cl(2)} coarser, or steep a few hours less.`, d: { clicks: 2 } };
+      if (has("sour") || has("flat")) return { text: moka ? `${cl(2)} finer, and fill the basket right to the top.` : `${cl(2)} finer, or steep a few hours longer.`, d: { clicks: -2 } };
+      if (has("thin")) return moka ? { text: `${cl(1)} finer and a full, level basket.`, d: { clicks: -1 } } : { text: "Dilute less, or not at all.", d: {} };
+      if (has("heavy")) return { text: moka ? "Add a splash of hot water to the cup." : "Dilute a little more.", d: {} };
       if (has("sweet") || has("balanced")) return { text: "Keep it. This is now your recipe for this coffee.", d: {} };
       return null;
     }
-    if (has("sour") && has("bitter")) return { text: "Sour and bitter together means uneven extraction. Keep the numbers; pour gentler, keep the bed flat and swirl once at the end.", d: {} };
-    if (has("harsh")) return { text: `Harsh or drying${ddTxt}: ${cl(1)} coarser and gentler pours.`, d: { clicks: 1 } };
-    if (has("bitter")) return slow ? { text: `Bitter and slow${ddTxt}: ${cl(2)} coarser.`, d: { clicks: 2 } } : { text: `Bitter on time${ddTxt}: 2°C cooler.`, d: { temp: -2 } };
+    if (has("sour") && has("bitter")) return { text: "Keep the numbers. Pour gentler, keep the bed flat and swirl once at the end.", d: {} };
+    if (has("harsh")) return { text: `${cl(1)} coarser and gentler pours.`, d: { clicks: 1 } };
+    if (has("bitter")) return slow ? { text: `${cl(2)} coarser.`, d: { clicks: 2 } } : { text: "2°C cooler.", d: { temp: -2 } };
     if (has("sour")) {
-      if (fast) return { text: `Sour and fast${ddTxt}: ${cl(2)} finer.`, d: { clicks: -2 } };
-      if (slow) return { text: `Sour but slow${ddTxt}: water is running past the coffee, not through it. Same grind, gentler pours, and 2°C hotter.`, d: { temp: 2 } };
-      if (r.temp >= 97) return { text: `Sour, already hot${ddTxt}: ${cl(1)} finer.`, d: { clicks: -1 } };
-      return { text: `Sour${dd != null ? " on time" : ""}${ddTxt}: 2°C hotter.`, d: { temp: 2 } };
+      if (fast) return { text: `${cl(2)} finer.`, d: { clicks: -2 } };
+      if (slow) return { text: "Same grind, gentler pours, and 2°C hotter.", d: { temp: 2 } };
+      if (r.temp >= 97) return { text: `${cl(1)} finer.`, d: { clicks: -1 } };
+      return { text: "2°C hotter.", d: { temp: 2 } };
     }
-    if (has("flat")) return { text: `Flat: 1°C hotter and ${cl(1)} finer. If it stays flat, check your water.`, d: { temp: 1, clicks: -1 } };
-    if (has("thin")) return { text: `Thin: less water next time, 1:${Math.round((r.ratio - 1) * 10) / 10}. Same grind.`, d: { ratio: -1 } };
-    if (has("heavy")) return { text: `Heavy: more water next time, 1:${Math.round((r.ratio + 1) * 10) / 10}. Same grind.`, d: { ratio: 1 } };
+    if (has("flat")) return { text: `1°C hotter and ${cl(1)} finer. If nothing changes, check your water.`, d: { temp: 1, clicks: -1 } };
+    if (has("thin")) return { text: `Less water, 1:${Math.round((r.ratio - 1) * 10) / 10}. Same grind.`, d: { ratio: -1 } };
+    if (has("heavy")) return { text: `More water, 1:${Math.round((r.ratio + 1) * 10) / 10}. Same grind.`, d: { ratio: 1 } };
     if (has("sweet") || has("balanced")) return { text: "Keep it. This is now your recipe for this coffee.", d: {} };
     return null;
   }
@@ -4098,7 +4101,7 @@ footer .fcol > p + .foot-x{margin-top:14px}
     if (!s) { box.hidden = true; return; }
     box.hidden = false;
     const hasChange = Object.keys(s.d).length > 0;
-    box.innerHTML = `<span><b>Next time:</b> ${esc(s.text)}</span>${hasChange && recipe.key ? (recipe.mine ? '<span class="muted">Your numbers stay as you set them. After saving you can apply this with one tap.</span>' : '<span class="muted">Saving applies this to this coffee’s recipe.</span>') : ""}`;
+    box.innerHTML = `<span><b>Next time:</b> ${esc(s.text)}${hasChange && recipe.key ? (recipe.mine ? " Your numbers stay as you set them. After saving you can apply this with one tap." : " Saving applies this to this coffee’s recipe.") : ""}</span>`;
   }
   // delete a brew: its fix comes off this coffee's numbers and its "nailed it" leaves the style memory
   function deleteEntry(i) {
@@ -4345,7 +4348,7 @@ footer .fcol > p + .foot-x{margin-top:14px}
       else if (el <= r.hi) { prog = clamp((el - r.lo) / Math.max(1, r.hi - r.lo), 0, 1); setNow("drain", "In the window", "Stop at", r.water, "g", "Stop at the weight, then tap Done.", tgt); nextT = "Log how it tastes"; }
       else { prog = 1; setNow("over", "Over time", "Stop at", r.water, "g", "Running slow. Stop at the weight and tap Done.", tgt); nextT = "Log how it tastes"; }
     } else if (idle) {
-      setNow("idle", "Ready", imm ? "Pour all the water, scale to" : "First pour, scale to", P[0].to, "g", "Tare with the coffee in. Press Start as you begin to pour.", `${n} ${imm ? "steps" : "pours"}, done by ${fmt(r.hi)}`);
+      setNow("idle", "Ready", imm ? "Pour all the water" : "First pour", P[0].to, "g", "Tare with the coffee in. Press Start as you begin to pour.", `${n} ${imm ? "steps" : "pours"}, done by ${fmt(r.hi)}`);
       nextT = n > 1 ? what(P[1]) : endTxt;
     } else if (inPour) {
       const k = clamp((el - cur.t) / cur.dur, 0, 1);
@@ -4360,7 +4363,7 @@ footer .fcol > p + .foot-x{margin-top:14px}
       prog = gap > 0 ? clamp(1 - left / gap, 0, 1) : 1;
       const rest = imm && next.lbl === "Pour";   // the cafetière's long rest: the fines sink while you wait
       if (next.act) setNow("wait", rest ? "Resting" : imm ? "Steeping" : "Wait", `${next.lbl} in`, cd(left), "", left <= 5 ? "Get ready." : rest ? "Hands off. The fines are sinking, so the cup pours clean." : next.note, `${word} ${idx + 2} of ${n}`);
-      else setNow("wait", "Wait", `${word} ${idx + 2} of ${n}, scale to`, next.to, "g", left <= 5 ? "Get ready to pour." : "Hands off. Let it settle.", `Pour in ${cd(left)}, +${Math.round(pourAdd(r, idx + 1))} g`);
+      else setNow("wait", "Wait", `${word} ${idx + 2} of ${n}`, next.to, "g", left <= 5 ? "Get ready to pour." : "Hands off. Let it settle.", `Pour in ${cd(left)}, +${Math.round(pourAdd(r, idx + 1))} g`);
       nextT = after ? what(after) : endTxt;
       if (after) nextCd = cd(after.t - el);
     } else if (imm) {
