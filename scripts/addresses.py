@@ -91,6 +91,59 @@ def text_address(raw, country):
     return None
 
 
+LABEL_SEG = re.compile(r"^(?:where to find us|find us|visit us|come (?:and|for)\b.*|our roastery|the roastery|roastery|address|location|"
+                       r"duration\b.*|appointment\b.*|\(?appointment only\)?)$", re.I)
+
+
+def tidy(addr, name):
+    """One clean line: no phone numbers, labels ("Visit us", "Roastery:"), the shop's own name or repeats; capitals as
+    in a sentence (no words in capitals), postcodes upper case."""
+    addr = re.sub(r"\s+", " ", addr).strip(" .,")
+    if re.fullmatch(r"-?\d+\.\d+,\s*-?\d+\.\d+", addr):   # map coordinates, not an address
+        return ""
+    addr = re.sub(r"\((?:a )?trading name[^)]*\)", "", addr, flags=re.I)
+    segs, out = [p.strip(" .") for p in re.split(r"\s*[,;]\s*", addr)], []
+    for seg in segs:
+        seg = re.sub(r"^(?:roastery|location|address|visit us|find us|[A-Za-z]+(?: [A-Za-z]+)?)\s*:\s*", "", seg, flags=re.I).strip()
+        short = re.sub(r"\s+(?:coffee|roasters?|roastery|roasting|company|co\.?)\b.*$", "", name, flags=re.I) or name
+        seg = re.sub(r"^(?:" + re.escape(name) + "|" + re.escape(short) + r")\s+(?=\d)", "", seg, flags=re.I)
+        seg = re.sub(r"^20\d\d\s+(?=\D)", "", seg)   # a copyright year run into the street   # "Ginger Monkey 31 Christleton Rd" -> "31 Christleton Rd"
+        seg = re.sub(r"\s*\b(?:ltd|limited)\b\.?", "", seg, flags=re.I).strip()
+        if re.search(r"\b(?:\d{1,2}\s?(?:am|pm)|mon|tues?|wed|thur?s?|fri|sat|sun)(?:day)?s?\b|closed|bank holiday|powered by|company reg|"
+                     r"view all|visit the|\bNI\d{4,}|\d{7,}|[\U0001F300-\U0001FAFF]|celebrat", seg, re.I) and not UK_PC.search(seg.upper()):
+            continue
+        if re.fullmatch(r"\d{1,4}[a-z]?", seg) and seg not in ("",):   # "13, Lymington Enterprise Centre": a number on its own joins the next part
+            out.append("\0" + seg)
+            continue
+        if not seg or LABEL_SEG.match(seg) or re.fullmatch(r"[+()\d\s-]{8,}", seg) or re.search(r"\+\d{2}|\b0\d{9,10}\b|\bhrs?\b", seg, re.I):
+            continue
+        if seg.lower() == name.lower() or (name.lower() in seg.lower() and not STREETY.search(seg.lower().replace(name.lower(), ""))):
+            continue
+        if seg.lower() in (o.lower() for o in out):
+            continue
+        if out and out[-1].startswith("\0"):
+            out[-1] = out[-1][1:] + " " + seg
+            continue
+        out.append(seg)
+    out = [o[1:] if o.startswith("\0") else o for o in out]   # a number left at the end is a postcode (Oslo 0680)
+    if re.fullmatch(r"(?:20\d\d|\d{1,3})", out[0] if out else ""):
+        out = out[1:]
+    def word(w):
+        if UK_PC.fullmatch(w.upper()) or re.fullmatch(r"[A-Z]{1,2}\d[A-Z\d]?|\d[A-Z]{2}", w.upper()) and len(w) <= 4:
+            return w.upper() if re.search(r"\d", w) else w
+        core = w.strip(",.")
+        if (core.isupper() and len(core) > 2 and core.isalpha()) or (core.islower() and core.isalpha() and len(core) > 3):
+            return w.replace(core, core.capitalize())
+        return w
+    line = ", ".join(out)
+    line = " ".join(word(w) for w in line.split(" "))
+    m = UK_PC.search(line.upper())
+    if m:   # "g12 8hx" -> "G12 8HX"
+        i = line.upper().find(m.group(0))
+        line = line[:i] + m.group(0) + line[i + len(m.group(0)):]
+    return line
+
+
 def find(r):
     shop = r["shop"].rstrip("/")
     for path in PAGES:
@@ -114,6 +167,7 @@ def main():
     with ThreadPoolExecutor(max_workers=16) as pool:
         for r, got in zip(roasters, pool.map(find, roasters)):
             if got:
+                got["address"] = tidy(got["address"], r["name"])
                 out[r["name"]] = got
             print(f"{r['name']:<34} {got['address'] if got else '-'}")
     OUT.write_text(json.dumps(dict(sorted(out.items())), ensure_ascii=False, indent=1) + "\n")
