@@ -45,6 +45,11 @@ jobs:
         with:
           node-version: 22
 
+      - uses: actions/setup-python@v5
+        if: steps.gate.outputs.go == 'yes'
+        with:
+          python-version: "3.12"
+
       - name: Publish
         if: steps.gate.outputs.go == 'yes'
         run: |
@@ -55,5 +60,8 @@ jobs:
           cp -r functions /tmp/site/functions
           cp -r lib /tmp/site/lib   # the QR code maker, fetched only when a computer asks for it
           cp -r icons /tmp/site/icons && cp icons/apple-touch-icon.png /tmp/site/apple-touch-icon.png   # iPhones also look at /apple-touch-icon.png
+          # a page per coffee and per roaster, plus sitemap.xml, for search engines; the recipes come from the app's own engine.
+          # If this step fails the site still goes out, just without those pages.
+          pip install -q playwright==1.63.0 && python scripts/pages.py /tmp/site || echo "Coffee pages skipped this time"
           cd /tmp/site
           npx --yes wrangler@4 pages deploy . --project-name=v60 --branch=main --commit-dirty=true
