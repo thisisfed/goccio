@@ -1812,6 +1812,19 @@ body{transition:opacity .3s ease}
 .gear-tools .chip.armed{background:var(--hl)!important;color:var(--on-hl)!important}   /* Remove?: the accent, as on a saved bag */
 .gear-tools .gear-btn{display:inline-flex;align-items:center;height:var(--pill-h);padding:0 12px;border:0;border-radius:var(--r);background:var(--pill);color:var(--ink);
   font:500 var(--fs-s)/1 var(--sans);letter-spacing:inherit;cursor:pointer}   /* the same grey pill as Brew and Save */
+/* Surprise me: a moving glow of colour, like Siri. A slow spinning ring of hues, blurred soft, behind white text.
+   Nothing about the text or the pill's size changes on hover: the colours just brighten. Still for reduced motion */
+.gear-tools #surprise{position:relative;isolation:isolate;overflow:hidden;color:#fff;background:#140b2e;text-shadow:0 1px 6px rgba(20,8,50,.45)}
+.gear-tools #surprise::before{content:"";position:absolute;left:50%;top:50%;width:max(260%,220px);aspect-ratio:1;z-index:-1;translate:-50% -50%;
+  background:conic-gradient(from 0deg,#ff375f,#ff9f0a,#ff2d95,#bf5af2,#5e5ce6,#0a84ff,#64d2ff,#bf5af2,#ff375f);filter:blur(12px) saturate(1.25);
+  animation:siriSpin 7s linear infinite}
+.gear-tools #surprise::after{content:"";position:absolute;inset:-30%;z-index:-1;
+  background:radial-gradient(90% 120% at 25% 30%,rgba(255,255,255,.28),transparent 55%),radial-gradient(80% 120% at 80% 80%,rgba(20,8,50,.35),transparent 60%);
+  animation:siriDrift 4.5s ease-in-out infinite alternate}
+.gear-tools #surprise:hover{background:#140b2e;filter:brightness(1.12) saturate(1.2)}
+@keyframes siriSpin{to{rotate:1turn}}
+@keyframes siriDrift{from{transform:translateX(-12%)}to{transform:translateX(12%)}}
+@media (prefers-reduced-motion: reduce){.gear-tools #surprise::before,.gear-tools #surprise::after{animation:none}}
 .specs .spec.pick{grid-column:1 / -1!important;order:-1!important;min-width:0;border-top:0!important}   /* Surprise me: the coffee it picked, above the brewer */
 .specs .spec.pick b{display:block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15;padding-bottom:.04em}
 .specs .spec.pick ~ .spec.brewer{border-top:1px solid var(--rule)!important}
