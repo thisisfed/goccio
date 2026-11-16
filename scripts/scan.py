@@ -54,10 +54,11 @@ COUNTRY_ALIASES = {
     "Perù": "Peru", "Honduras": "Honduras", "Jemen": "Yemen", "Kongo": "DR Congo", "Kenija": "Kenya", "Ugandzie": "Uganda",
 }
 SYMBOL = {"GBP": "£", "EUR": "€", "USD": "$", "CAD": "CA$", "AUD": "A$", "NZD": "NZ$", "JPY": "¥", "DKK": " kr", "SEK": " kr", "NOK": " kr",
-          "PLN": " zł", "CZK": " Kč", "CHF": "CHF "}
+          "PLN": " zł", "CZK": " Kč", "CHF": "CHF ", "BRL": "R$", "COP": "COL$", "PEN": "S/", "ARS": "AR$", "CLP": "CLP$", "MXN": "MX$"}
 COUNTRY_CCY = {"GB": "GBP", "US": "USD", "CA": "CAD", "AU": "AUD", "NZ": "NZD", "JP": "JPY", "DK": "DKK", "SE": "SEK", "NO": "NOK",
                "PL": "PLN", "CZ": "CZK", "CH": "CHF", "CN": "CNY", "HK": "HKD", "TW": "TWD", "KR": "KRW", "SG": "SGD", "MY": "MYR",
-               "TH": "THB", "PH": "PHP", "ID": "IDR"}
+               "TH": "THB", "PH": "PHP", "ID": "IDR", "BR": "BRL", "CO": "COP", "PE": "PEN", "AR": "ARS", "CL": "CLP", "EC": "USD",
+               "MX": "MXN", "UY": "UYU"}
 
 VARIETIES = ["Gesha", "Geisha", "Sidra", "Pink Bourbon", "Wush Wush", "Eugenioides", "Laurina",
              "Sudan Rume", "SL28", "SL34", "Ruiru 11", "Batian", "Red Bourbon", "Yellow Bourbon",
@@ -1358,7 +1359,7 @@ def bag_grams(item):
 
 def money(v, ccy):
     sym = SYMBOL.get(ccy, ccy + " ")
-    amount = f"{v:.0f}" if ccy in ("JPY", "DKK", "SEK", "NOK", "CZK") else f"{v:.2f}"
+    amount = f"{v:,.0f}" if ccy in ("COP", "CLP", "ARS") else f"{v:.0f}" if ccy in ("JPY", "DKK", "SEK", "NOK", "CZK") else f"{v:.2f}"
     return amount + sym if sym.startswith(" ") else sym + amount
 
 
