@@ -33,12 +33,12 @@ def main():
         start = max(0, text.lower().find(rec["name"].lower()[:30]))
         cur = scan.labelled(text, "process", start) or scan.labelled(text, "process") or scan.raw_labelled(raw, "process") or scan.from_json(raw, "process") \
             or scan.class_labelled(raw, "process") or scan.suffix_labelled(text, "process", start) or scan.process_from_text(text[start:start + 4000])
-        new = getattr(scan, "process_phrase", lambda t: None)(text[start:start + 6000]) if not cur else None
+        new = scan.process_phrase(text[start:start + 6000], why=True) if not cur else None
         anyw = [m for m in WORD.finditer(text[start:start + 6000])]
         if cur:
             stats["current readers find it"] += 1
         elif new:
-            stats["phrase reader finds it"] += 1; snippets.append(("NEW " + new, rec, text[start:start + 6000]))
+            stats["phrase reader finds it"] += 1; snippets.insert(0, ("NEW " + new[0], rec, new[1]))
         elif anyw:
             stats["a process word somewhere, no reader"] += 1; by_roaster[rec["roaster"]] += 1
             m = anyw[0]; t = text[start:start + 6000]
@@ -48,7 +48,7 @@ def main():
     print(dict(stats))
     print("roasters with process words but no reader:", by_roaster.most_common(30))
     for tag, rec, s in snippets[:140]:
-        print(f"{tag} | {rec['roaster']} | {rec['name']} | {re.sub(r'\\s+', ' ', s)[:300] if tag == 'WORD' else ''}")
+        print(f"{tag} | {rec['roaster']} | {rec['name']} | {re.sub(r'\\s+', ' ', s)[:300]}")
 
 
 if __name__ == "__main__":

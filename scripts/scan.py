@@ -1091,9 +1091,10 @@ def find_process(text):
                       (r"anaerob", "Anaerobic"),
                       (r"\baerobic\b", "Aerobic fermentation"), (r"\bcultur(?:ed|ing)\b", "Yeast fermented"),
                       (r"wet[- ]hull|giling basah", "Wet-hulled"),
+                      (r"monsoon(?:ed|ing)", "Monsooned"), (r"semi[- ]washed", "Semi-washed"),
                       (r"\bnatural\b|\bnaturally (?:processed|dried)\b|\bnaturalna\b|\bnature\b(?= mac[ée]ration| process)|dry[- ]process|\bnaturale\b|\bnaturel\b|\bnatur\b|naturlig|\bnatuurlijk", "Natural"),
                       (r"\bhoney\b|pulped natural|\bmiel\b|\bhonig\b|\bmiele\b|\bmiodowa\b", "Honey"),
-                      (r"\bwashed\b|\b(?:extended|double|fully) wash\b|wet[- ]process|\blavato\b|gewaschen|\blavé\b|\blavado\b|tvättad|\bvasket\b|gewassen|vaskad|\bmyta\b|\bmyt[aey]\b", "Washed")]:
+                      (r"\bwashed\b|\b(?:extended|double|fully)[- ]wash(?:ed)?\b|wet[- ]process|\blavato\b|gewaschen|\blavé\b|\blavado\b|tvättad|\bvasket\b|gewassen|vaskad|\bmyta\b|\bmyt[aey]\b", "Washed")]:
         if re.search(pat, t):
             return name
     return None
@@ -1125,21 +1126,26 @@ def process_from_text(body):
 
 # "processed using Giling Basah", "it went through a washed process", "Process - Natural", "honey processing": the process
 # word sits right next to "process"/"processed"/"method", so the sentence can talk about flavour too and still be read.
-PROC_AFTER = re.compile(r"\bprocess(?:ed|ing)?\b\s*(?:[:\-–]|\bis\b|\bwas\b|\busing\b|\bby\b|\bwith\b|\bas\b|\bvia\b|\bthrough\b)?\s*(?:(?:the|a|an|their|its|traditional|classic)\s+)?([A-Za-z][\w\-]*(?:\s[\w\-]+){0,2})", re.I)
+PROC_AFTER = re.compile(r"\bprocess(?:ed|ing)?\b\s*(?:[:\-–|]|\bis\b|\bwas\b|\busing\b|\bby\b|\bwith\b|\bas\b|\bvia\b|\bthrough\b)?\s*(?:(?:the|a|an|their|its|traditional|classic)\s+)?([A-Za-z][\w\-]*(?:\s[\w\-]+){0,2})", re.I)
 PROC_BEFORE = re.compile(r"\b([A-Za-z][\w\-]*(?:\s[A-Za-z][\w\-]*)?)\s+(?:process(?:ed|ing)?|method|processing method)\b", re.I)
+# words that only ever describe processing, so they count wherever they stand ("a fully washed coffee", "naturally
+# processed and slow-dried"); plain "washed" only when it qualifies the coffee ("washed Arabica", "a washed lot")
+PROC_STRONG = re.compile(r"\b(fully[- ]washed|double[- ]washed|semi[- ]washed|wet[- ]hulled|giling basah|pulped natural|naturally (?:processed|dried)|"
+                         r"sun[- ]dried (?:natural|cherr(?:y|ies))|anaerobic(?:ally)?|carbonic maceration|monsooned|washed (?:coffee|lot|arabica|beans?|microlot|process))\b", re.I)
 NOT_PROC = re.compile(r"brew|filter|espresso|roast|grind|order|payment|cookie|data|checkout|shipping|delivery|decaffeinat|cafeti", re.I)
 
 
-def process_phrase(text):
-    """A process named right next to the word 'process' (or 'method'), anywhere in the text."""
-    for rx in (PROC_AFTER, PROC_BEFORE):
-        for m in rx.finditer(text or ""):
+def process_phrase(text, why=False):
+    """A process named right next to the word 'process' (or 'method'), or a word that can only mean a process."""
+    text = re.sub(r"(?<=[a-z])(?=[A-Z]{2})", " ", text or "")   # "Fully WashedELEVATION": labels glued together
+    for rx in (PROC_AFTER, PROC_BEFORE, PROC_STRONG):
+        for m in rx.finditer(text):
             bit = m.group(1)
             if NOT_PROC.search(bit) or NOT_PROC.search(text[max(0, m.start() - 30):m.end() + 10]):
                 continue
             got = find_process(bit)
             if got and got != "Decaf":
-                return got
+                return (got, text[max(0, m.start() - 60):m.end() + 40]) if why else got
     return None
 
 
