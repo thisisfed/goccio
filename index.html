@@ -1649,6 +1649,15 @@ section.sec{scroll-margin-top:calc(var(--top-h, 49px) - 3px)!important}   /* 3 p
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E")}
 :root[data-theme="dark"] .shelf-tools .shelf-dd{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E")}
 .shelf-tools.compact .shelf-dd{display:block}
+/* search: the browser's own blue cross is hidden; ours is drawn like the dropdown chevrons and the − + of the grinder (same 10 px, same line) */
+.shelf-tools .q-wrap{position:relative;min-width:0}
+.shelf-tools .q-wrap #shelfQ{width:100%;box-sizing:border-box;padding-right:34px}
+#shelfQ::-webkit-search-cancel-button, #shelfQ::-webkit-search-decoration{-webkit-appearance:none;appearance:none;display:none}
+.shelf-tools .q-x{position:absolute;top:0;right:0;width:34px;height:var(--pill-h);border:0;margin:0;padding:0;border-radius:0 var(--r) var(--r) 0;cursor:pointer;
+  background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round'%3E%3Cpath d='M3 3l6 6M9 3l-6 6'/%3E%3C/svg%3E") no-repeat right 12px center / 10px 10px;transition:opacity .15s ease}
+.shelf-tools .q-x:hover{opacity:.55}
+:root[data-theme="dark"] .shelf-tools .q-x{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round'%3E%3Cpath d='M3 3l6 6M9 3l-6 6'/%3E%3C/svg%3E")}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .shelf-tools .q-x{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round'%3E%3Cpath d='M3 3l6 6M9 3l-6 6'/%3E%3C/svg%3E")} }
 .shelf-tools.compact .opt.open > .shelf-dd{display:none}
 .shelf-tools.compact .opt.open > .chips{display:flex!important;flex-wrap:wrap}
 .shelf-tools.compact .opt.open{align-items:start!important}
@@ -1952,7 +1961,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     <div class="sec-head"><span class="cap" id="sh"><b>01</b><span class="sh-t">Coffees.</span><span class="ro-title" id="roName" translate="no"></span></span></div>
     <p class="shelf-meta" id="shelfMeta" hidden></p>
     <div class="shelf-tools">
-      <div class="opt"><label for="shelfQ">Search</label><input type="search" id="shelfQ" placeholder="Roaster, coffee, origin, process…"></div>
+      <div class="opt"><label for="shelfQ">Search</label><div class="q-wrap"><input type="search" id="shelfQ" placeholder="Roaster, coffee, origin, process…"><button type="button" class="q-x" id="shelfQx" aria-label="Clear the search" hidden></button></div></div>
       <div class="opt"><span id="labR">Region</span><div class="chips" id="shelfR" role="group" aria-labelledby="labR"></div><select class="shelf-sel" id="shelfRSel" aria-label="Region"></select></div>
       <div class="opt"><span id="labF">Process</span><div class="chips" id="shelfF" role="group" aria-labelledby="labF"></div><select class="shelf-sel" id="shelfFSel" aria-label="Process"></select></div>
       <div class="opt"><span id="labX">Extras</span><div class="chips" id="shelfX" role="group" aria-labelledby="labX"></div><select class="shelf-sel" id="shelfXSel" aria-label="Extras"></select></div>
@@ -5129,7 +5138,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
       const i = shelf.indexOf(r);
       const isSp = r === sp;
       // Just in (the accent on the roaster line) and new coffees need no heading: the list opens with a bare black rule
-      const group = isSp ? "Sponsored" : shelfT || r.just_in || r.new ? "" : "Still on the shelves";   // top lots: one list, dearest first, no headings
+      const group = isSp ? "Sponsored" : "";   // one list: no "Still on the shelves" heading
       const head = !shelfRo && group !== lastGroup ? (group ? `<div class="grp">${group}</div>` : `<div class="grp bare" aria-hidden="true"></div>`) : ""; lastGroup = group;
       // what the coffee is: plain text, never pills (pills are things you can tap)
       const tg = (t, c = "") => `<span class="tg${c ? " " + c : ""}">${t}</span>`;
@@ -5953,7 +5962,9 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
       return { angle: pre.angle, inv: pre.inverted, gray: pre.gray.toDataURL("image/jpeg", 0.7), bin: pre.bin.toDataURL("image/png"), edge: pre.edge.toDataURL("image/png") }; }; }
   if (/[?&]scantest\b/.test(location.search)) window.__scan = async (blob) => { const ocr = await readPhoto(blob); return { fields: readFields(ocr, null), other: notCoffee(ocr, readFields(ocr, null)), lines: ocr.lines.map((l) => [l.text, Math.round(l.conf), l.h]), angle: ocr.angle, inverted: ocr.inverted, match: (() => { const m = shelfMatch(readFields(ocr, null)); return !m ? null : m.pick ? m.pick.roaster + " | " + m.pick.name + (m.sure ? "" : " (?)") : "choose: " + m.choices.map((r) => r.roaster).join(", "); })() }; };
 
-  $("shelfQ").addEventListener("input", () => { shelfAll = false; renderShelf(); keepShelfTop(); });
+  $("shelfQ").addEventListener("input", () => { $("shelfQx").hidden = !$("shelfQ").value; shelfAll = false; renderShelf(); keepShelfTop(); });
+  // the cross clears what you typed and leaves the cursor in the box
+  $("shelfQx").onclick = () => { const q = $("shelfQ"); q.value = ""; q.dispatchEvent(new Event("input")); q.focus(); };
   renderBags(); syncBagBtn();
   try { renderExample(); } catch (e) {}
   { const setTop = () => { const t = document.querySelector(".top"); if (t) document.documentElement.style.setProperty("--top-h", t.getBoundingClientRect().height + "px"); };
