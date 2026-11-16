@@ -30,7 +30,8 @@ STREETY = re.compile(r"\d|\b(?:road|rd|street|st|lane|ln|unit|units|way|avenue|a
                      r"house|mill|works|arches?|arch|close|row|terrace|square|drive|business|centre|center|quay|wharf|farm|"
                      r"building|trading|floor|studio|market|bridge|hill|green|gate|walk|parade|crescent|mews)\b", re.I)
 JUNK = re.compile(r"©|copyright|registered|company (?:no|number)|vat\b|all rights|cookie|privacy|newsletter|subscribe|"
-                  r"@|https?:|www\.|\bltd\b\.?$|limited|phone|tel\b|call us|email|opening|hours|mon(?:day)?\b|cart|basket", re.I)
+                  r"@|https?:|www\.|\bltd\b\.?$|limited|phone|tel\b|call us|email|opening|hours|mon(?:day)?\b|cart|basket|"
+                  r"[£€$%]|deliver|shipping|dispatch|order|\bfree\b|\bsale\b|\boff\b|returns?\b|\bgift", re.I)
 
 
 def ld_address(raw):
