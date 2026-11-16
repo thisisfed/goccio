@@ -1703,7 +1703,7 @@ section.sec{scroll-margin-top:calc(var(--top-h, 49px) - 3px)!important}   /* 3 p
 @media (max-width: 640px) { .kit-mill .zr-ctl { justify-content: space-between; } .kit-mill .zr-ctl .step { flex: 0 0 auto !important; justify-content: flex-start !important; } .kit-mill #zVal { flex: 0 0 auto !important; } }
 /* footer: Credits sits under Sources, always open, in the footer's own size */
 footer .foot-credits{margin-top:14px!important}
-footer #credit a{color:var(--ink);text-decoration:underline;text-decoration-color:color-mix(in srgb, currentColor 40%, transparent);text-underline-offset:2px}
+footer #credit a, footer .foot-all a{color:var(--ink);text-decoration:underline;text-decoration-color:color-mix(in srgb, currentColor 40%, transparent);text-underline-offset:2px}
 /* every size on the scale (15 · 24 · 39 · 63 · 102 · 165): what used to shrink to fit now takes the largest step that fits */
 .stage { --hs2: 24px !important; }
 @media (min-width: 1000px) { .stage { --hs2: 39px !important; } }
@@ -1845,8 +1845,8 @@ html[lang="it"] .bag-d.empty::before{content:"Aggiungi"}
 /* a link, not a button: it stays inline, so a long line is cut with an ellipsis inside the text, not before the roaster's name */
 .item .who a.rn{color:var(--ink)}
 /* links in the footer and the roaster names in the list: a soft underline that fades out quickly on hover */
-footer .refs a, footer #credit a, .item .who a.rn{text-decoration:underline;text-decoration-color:color-mix(in srgb, currentColor 40%, transparent);text-underline-offset:2px;transition:text-decoration-color .15s ease}
-footer .refs a:hover, footer #credit a:hover, .item .who a.rn:hover{text-decoration-color:transparent}
+footer .refs a, footer #credit a, footer .foot-all a, .item .who a.rn{text-decoration:underline;text-decoration-color:color-mix(in srgb, currentColor 40%, transparent);text-underline-offset:2px;transition:text-decoration-color .15s ease}
+footer .refs a:hover, footer #credit a:hover, footer .foot-all a:hover, .item .who a.rn:hover{text-decoration-color:transparent}
 /* every grey pill darkens a touch on hover, the same as the chips: Brew, Save, Buy, the price, Remove, Buy again, grams left, freezer, grinder, theme */
 .theme-btn:hover, #millBtn:hover, .shelf .item > .r > .btn:hover, #bagList .item > .r > .btn:hover, .shelf .item > .r > .buy-pill:not(.armed):hover,
 .shelf .item > .r > .bag-add:not(.in):not(.armed):hover, .bag-fz:not(.in):hover, .bag-f .bag-g:hover, .bag-buy:hover, #bagList .item .bag-rm:not(.armed):hover{
@@ -2094,8 +2094,8 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
       <div class="col" id="cupCol"><h3 id="cupH">Likely in the cup</h3><div class="notes-list" id="cupNotes"></div><p id="cupNote"></p></div>
     </div>
     <details class="clk xp" id="whyBox"><summary>Why this recipe <span class="muted" id="whyHint"></span></summary><ul id="why"></ul></details>
-    <details class="clk xp" id="clkHow"><summary>How the C40 clicks were set <span class="muted" id="clkSumm" hidden></span></summary><div class="clk-body" id="clkBody"></div></details>
     <details class="clk xp" id="expBox"><summary>What to expect</summary><ul id="expect"></ul></details>
+    <details class="clk xp" id="clkHow"><summary>How the C40 clicks were set <span class="muted" id="clkSumm" hidden></span></summary><div class="clk-body" id="clkBody"></div></details>
     <details class="clk xp"><summary>Dial it in: change one thing per brew</summary><ul id="dial"></ul></details>
     <div class="share">
       <button class="btn" id="copyBtn" type="button">Copy recipe</button>
@@ -2208,7 +2208,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     <div class="fcol f-cred">
     <p class="foot-note refs-h foot-credits">Credits</p>
     <p class="foot-note" id="credit">Made by <a href="https://thisisfed.xyz/" target="_blank" rel="noopener">Federico R. T. Ferrari</a>, enjoying it? <a href="https://buymeacoffee.com/thisisfed" target="_blank" rel="noopener">Buy me a beer</a>.</p>
-    <p class="foot-note"><a href="/coffee/">Every coffee, by roaster</a></p>
+    <p class="foot-note foot-all"><a href="/coffee/">Every coffee, by roaster</a></p>
     </div>
   </footer>
   <script>
@@ -4125,11 +4125,8 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     const rk = risks(r);
     $("why").innerHTML = rk.map((w) => `<li class="warn">${esc(w)}</li>`).join("") + cons.map((w) => `<li class="cons">${esc(w)}</li>`).join("") + why.map((w) => `<li>${esc(w)}</li>`).join("");
     $("expect").innerHTML = expectCup(r).map((w) => { const i = w.indexOf(": "); return `<li><b>${esc(w.slice(0, i))}</b>${esc(w.slice(i))}</li>`; }).join("");
-    // Surprise me: What to expect comes open straight under the numbers, so you can decide before reading the rest
-    // (Buy this bag sits at the bottom, by Copy recipe); any other recipe puts it back, folded, where it lives
-    { const box = $("expBox"); if (!box._home) box._home = { parent: box.parentNode, next: box.nextElementSibling };
-      if (surprisePick) { if (box.previousElementSibling !== $("specs")) { $("specs").after(box); box.open = true; } }
-      else if (box.parentNode !== box._home.parent || box.previousElementSibling === $("specs")) { box._home.parent.insertBefore(box, box._home.next); box.open = false; } }
+    // What to expect sits right after Why this recipe, for every recipe; Surprise me opens it, any other recipe folds it again
+    { const box = $("expBox"), sp = !!surprisePick; if (box._sp !== sp) { box.open = sp; box._sp = sp; } }
     $("whyHint").textContent = rk.length ? `${rk.length} warning${rk.length > 1 ? "s" : ""}` : ""; $("whyHint").classList.toggle("warn", rk.length > 0);
 
     const lighter = Math.round((r.ratio + 1) * 10) / 10, stronger = Math.round((r.ratio - 1) * 10) / 10;
