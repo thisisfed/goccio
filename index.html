@@ -2094,7 +2094,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
       <div class="col" id="cupCol"><h3 id="cupH">Likely in the cup</h3><div class="notes-list" id="cupNotes"></div><p id="cupNote"></p></div>
     </div>
     <details class="clk xp" id="whyBox"><summary>Why this recipe <span class="muted" id="whyHint"></span></summary><ul id="why"></ul></details>
-    <details class="clk xp" id="expBox"><summary>What to expect</summary><ul id="expect"></ul></details>
+    <details class="clk xp" id="expBox" open><summary>What to expect</summary><ul id="expect"></ul></details>
     <details class="clk xp" id="clkHow"><summary>How the C40 clicks were set <span class="muted" id="clkSumm" hidden></span></summary><div class="clk-body" id="clkBody"></div></details>
     <details class="clk xp"><summary>Dial it in: change one thing per brew</summary><ul id="dial"></ul></details>
     <div class="share">
@@ -4125,8 +4125,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     const rk = risks(r);
     $("why").innerHTML = rk.map((w) => `<li class="warn">${esc(w)}</li>`).join("") + cons.map((w) => `<li class="cons">${esc(w)}</li>`).join("") + why.map((w) => `<li>${esc(w)}</li>`).join("");
     $("expect").innerHTML = expectCup(r).map((w) => { const i = w.indexOf(": "); return `<li><b>${esc(w.slice(0, i))}</b>${esc(w.slice(i))}</li>`; }).join("");
-    // What to expect sits right after Why this recipe, for every recipe; Surprise me opens it, any other recipe folds it again
-    { const box = $("expBox"), sp = !!surprisePick; if (box._sp !== sp) { box.open = sp; box._sp = sp; } }
+    // What to expect sits right after Why this recipe, open, for every recipe
     $("whyHint").textContent = rk.length ? `${rk.length} warning${rk.length > 1 ? "s" : ""}` : ""; $("whyHint").classList.toggle("warn", rk.length > 0);
 
     const lighter = Math.round((r.ratio + 1) * 10) / 10, stronger = Math.round((r.ratio - 1) * 10) / 10;
@@ -5353,7 +5352,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
   const lowLine = () => "";
   // the roaster didn't say how dark it is (and it isn't a typed coffee): the bag has a Roast dropdown, and your answer stays with it
   const roastStated = (b) => !b.roastYou && ((b.roast && ROAST[b.roast]) || ["dark", "medium-dark"].includes(b.roast_level));
-  const bagNeedsRoast = (b) => !!(b.roaster || b.name) && !roastStated(b);
+  const bagNeedsRoast = (b) => !!(b.roaster || b.name) && !bagRoastKey(b);   // once picked (or stated), the dropdown goes: the roast shows under the coffee
   const bagRoastKey = (b) => b.roast && ROAST[b.roast] ? b.roast : b.roast_level === "dark" ? "dark" : b.roast_level === "medium-dark" ? "mdark" : "";
   function renderBags() {
     $("bags").hidden = !bags.length;
@@ -5431,11 +5430,12 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     row("gearB", gear.brewers, Object.fromEntries(Object.entries(BREWERS).filter(([k]) => k !== "cold")), (B) => B.name);
     row("gearG", gear.grinders, GRINDERS, (G) => G.name);
     gearWait();
-    // Surprise me only works from your own things: a brewer, a grinder and a bag that's open
+    // Surprise me only works from your own things: a brewer, a grinder and a bag with coffee in it (in the freezer or not)
     $("surpriseRow").style.display = gear.brewers.length && gear.grinders.length && openBags().length ? "" : "none";
     $("gearNote").textContent = "A random recipe from your equipment and your bags.";
   }
-  function openBags() { return bags.filter((x) => !x.frozen && (x.left == null || x.left > 0)); }
+  // bags with coffee left, the freezer included: Surprise me prefers one that's out, but a frozen bag still counts
+  function openBags() { return bags.filter((x) => x.left == null || x.left > 0); }
   const V60_METHODS = ["best", "hoffmann", "fourSix", "ten", "rao", "onyx", "cafec", "winton", "hedrick"];
   $("surprise").onclick = () => {
     let b = pickOne(gear.brewers.length ? gear.brewers : [brewerOf(state)]);
@@ -5445,7 +5445,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     if (b !== brewerOf(state)) setBrewer(b);
     if (b === "v60") state.method = pickOne(V60_METHODS);
     // only your own bags: one you have open (not in the freezer), with enough left for this brewer if one has
-    const open = openBags(), mine = open.filter((x) => x.left == null || x.left >= (BREWERS[b].dose || 15));
+    const all = openBags(), out = all.filter((x) => !x.frozen), open = out.length ? out : all, mine = open.filter((x) => x.left == null || x.left >= (BREWERS[b].dose || 15));
     const late = curfewOn(), dec = (a) => late && a.some(isDecaf) ? a.filter(isDecaf) : a;   // after 2 pm a decaf, if there is one
     const c = pickOne(dec(mine.length ? mine : open));
     if (!c) { jumpTo($("bags")); return; }
