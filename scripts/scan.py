@@ -88,7 +88,7 @@ DARK = re.compile(r"dark roast|medium[- ]dark|french roast|italian roast", re.I)
 # Roast level, in the site's five steps. Read only from a labelled line ("Roast: Light", "Röstgrad: hell"),
 # a tag, or an "X roast" phrase in the coffee's own description; never from anywhere on a page.
 ROAST_WORDS = [
-    ("vlight", r"very[- ]light|ultra[- ]?light|extra[- ]light|super[- ]light|nordic|bardzo jasn|zeer licht|sehr hell|tr[eè]s clair|molto chiar|muy clar"),
+    ("vlight", r"very[- ]light|ultra[- ]?light|extra[- ]light|super[- ]light|lightest|nordic|bardzo jasn|zeer licht|sehr hell|tr[eè]s clair|molto chiar|muy clar"),
     ("mdark", r"medium[- ]dark|full[- ]city|mittel[- ]?dunkel|moyen[- ]fonc|medio[- ]scur|[sś]rednio[- ]ciemn|halvm[øö]rk"),
     ("dark", r"\bdark|ciemn|donker|dunkel|fonc[ée]|\bscur[ao]|oscur[ao]|m[øö]rk"),
     ("light", r"medium[- ]light|light[- ]medium|\blight|\blys\b|\bljus|vaalea|\bhell\b|\bclair|chiar[ao]|jasn|\bclaro|\blicht\b"),
@@ -111,11 +111,34 @@ def roast_word(v):
 def roast_labelled(text):
     """'Roast level: Light' / 'Röstgrad\nhell' -> 'light'."""
     for m in ROAST_LINE.finditer(text or ""):
-        line = next((l.strip(" :-–\xa0\t") for l in text[m.end():m.end() + 60].split("\n") if l.strip(" :-–\xa0\t")), "")
-        if 0 < len(line) <= 30:
-            got = roast_word(line)
+        # the value line, or the one after a short note ("Roast level\nBased on the Agtron scale\nLight roast")
+        lines = [l.strip(" :-–\xa0\t") for l in text[m.end():m.end() + 120].split("\n") if l.strip(" :-–\xa0\t")][:2]
+        for line in lines:
+            if 0 < len(line) <= 30:
+                got = roast_word(line)
+                if got:
+                    return got
+                break
+    return None
+
+
+ROAST_JSON = [re.compile(r'"name"\s*:\s*"(?:roast(?:ing)?(?: level| degree| profile)?|r[öo]stgrad)"\s*,\s*"value"\s*:\s*"([^"]{2,30})"', re.I),
+              re.compile(r'"roast[_ -]?(?:level|degree|profile)?"\s*:\s*"([^"]{2,30})"', re.I),
+              re.compile(r'"key"\s*:\s*"roast[^"]{0,20}"[^{}]{0,300}?"value"\s*:\s*"([^"]{2,30})"', re.I)]
+ROAST_SCALE = re.compile(r'roast(?:ing)?(?: level| degree)?\W{0,4}([1-5])\s?(?:/|of|out of)\s?5\b', re.I)
+
+
+def roast_from_raw(raw):
+    """Roast written in the page's data (schema.org PropertyValue "Roast Level": "Medium", a Shopify metafield
+    "roast_level": "Light") or a five-step scale ("Roast level 2/5")."""
+    for rx in ROAST_JSON:
+        for m in rx.finditer(raw or ""):
+            got = roast_word(html.unescape(m.group(1)))
             if got:
                 return got
+    m = ROAST_SCALE.search(raw or "")
+    if m:
+        return ["vlight", "light", "medium", "mdark", "dark"][int(m.group(1)) - 1]
     return None
 
 
@@ -195,7 +218,11 @@ VOLUME = re.compile(r"\b\d+(?:[.,]\d+)?\s?(?:ml|cl|l|ltr|litres?|liters?|fl ?oz)
 #  4. its page calls it a blend and the title names no country, unless the page names exactly one
 #     country. "A blend of harvests, lots, varieties or producers" describes one origin.
 NOT_ONE_COFFEE = re.compile(r"\ball[- ]?\d\b|\b\d\s?x\s?\d{2,3}\s?g\b|roaster'?s[- ]choice|mystery|rotating|subscp?ri|abonnement|"
-                            r"taste card|tasting (?:set|box|pack)|sampler|probierset|proefpakket|proefset|discovery (?:set|box|pack)|\bbundle\b|gift (?:set|box)", re.I)
+                            r"taste card|tasting (?:set|box|pack)|sampler|probierset|proefpakket|proefset|discovery (?:set|box|pack)|\bbundle\b|gift (?:set|box)|"
+                            # prepaid plans: "Jones Prepaid Weekly 12 months", "Coffee of the Month (6 month Prepaid)",
+                            # "Uphill Espresso - 6 months", "Seasonal Special Coffee Plan" ("Plan Vivo" is a coffee)
+                            r"pre-?paid|(?<!aged )(?<!rested )\b\d{1,2}\s?months?\b|\bof the month\b|\bcoffee plan\b|"
+                            r"\b(?:weekly|fortnightly|monthly|quarterly)\b", re.I)
 BLEND_TITLE = re.compile(r"(?<!field )\bblends?\b|low[- ]caff?\b|house[- ](?:roast|coffee|blend|espresso)|signature[- ](?:roast|blend|coffee)|"
                          r"seasonal[- ](?:filter|espresso|blend|roast)|half[- ]caff|miscela|m[ée]lange|mezcla|mischung", re.I)
 # "a blend of harvests / lots / varieties / producers" is still one origin, and so is a "field blend"
@@ -1188,6 +1215,16 @@ def is_brand(seg, roaster):
     return rest != seg and not BRAND_FILLER.sub(" ", rest).strip()
 
 
+UI_WORD = re.compile(r"^\W*(?:close|menu|cart|basket|search|back|home|shop|view|quick view|add to (?:cart|basket)|sold out|"
+                     r"choose an option|select options?|read more)\W*$", re.I)
+SALE_FORM = re.compile(r"\(?\b(?:whole ?beans?|beans?|wholebean|ground(?: coffee)?|coffee beans?|\d+(?:[.,]\d+)?\s?(?:g|gr|kg|oz|lbs?))\b\)?", re.I)
+
+
+def same_name(name):
+    """A coffee's name without how it's sold: "Kiambu AB - Whole Bean 250g" and "Kiambu AB (Ground)" are one coffee."""
+    return re.sub(r"\W+", "", SALE_FORM.sub(" ", name or "").lower()) or (name or "").lower()
+
+
 def tidy_name(name, roaster):
     """'Buy Specialty Coffee Beans Online UK | Nude Coffee Roasters' -> '' (caller falls back);
     'Farm • Sagastume Geisha | doubleshot' -> 'Sagastume Geisha'; 'Limited Release | Franken Grind Blend' -> 'Franken Grind Blend';
@@ -1438,7 +1475,10 @@ PAGE_LABEL = {
     "process": re.compile(r"\b(?:process(?:ing)?(?: method)?|processo|proceso|prozess|aufbereitung|proc[ée]d[ée]|bearbetning|prosess|proces|zpracov[aá]n[ií]|obr[oó]bka|verwerking(?: na oogst)?|verwerkingsmethode)\s*(?::|\n)", re.I),
     "variety": re.compile(r"\b(?:variet(?:y|ies|al|als)|cultivars?|variedad(?:es)?|variet[àa]|sorte[n]?|vari[ée]t[ée]s?|vari[eë]teit(?:\(?en\)?)?|odmian[ay]?)\s*(?::|\n)", re.I),
 }
-PAGE_FETCHES_PER_ROASTER = 60
+PAGE_FETCHES_PER_ROASTER = 300
+# a coffee's page is read for its roast once per version of the roast reader: when the reader learns a new
+# way shops write it, every coffee still without a roast gets one more look, and never again after that
+ROAST_CHECK = 2
 
 
 JSON_PROCESS = [re.compile(r'"(?:process(?:ing)?(?:_method|Method)?)"\s*:\s*"([^"]{2,60})"', re.I),
@@ -1674,8 +1714,8 @@ def add_page_details(recs, roaster, old):
             rec["methods_none"] = True
         if not rec.get("roast") and prev.get("roast") and prev.get("roast_from") == "page":
             rec["roast"], rec["roast_from"] = prev["roast"], "page"
-        if prev.get("roast_checked"):
-            rec["roast_checked"] = True
+        if prev.get("roast_checked") == ROAST_CHECK:
+            rec["roast_checked"] = ROAST_CHECK
         want_roast = not rec.get("roast") and not rec.get("roast_checked") and rec.get("roast_for") != "espresso"
         need = [k for k in ("process", "variety") if not rec.get(k)]
         # every coffee the shop doesn't label filter or espresso gets its page read once for the brewers it names
@@ -1704,9 +1744,9 @@ def add_page_details(recs, roaster, old):
         else:
             rec["methods_none"] = True
         start = max(0, text.lower().find(rec["name"].lower()[:30]))
-        rec["roast_checked"] = True
+        rec["roast_checked"] = ROAST_CHECK
         if not rec.get("roast"):
-            r_ = roast_labelled(text[start:start + 6000]) or roast_from_agtron(text)
+            r_ = roast_labelled(text[start:start + 6000]) or roast_from_raw(raw) or roast_from_agtron(text)
             if r_:
                 rec["roast"], rec["roast_from"] = r_, "page"
                 if r_ in ("mdark", "dark") and not rec.get("roast_level"):
@@ -1993,6 +2033,9 @@ def main():
     found = [x for x in found if still_beans(x)]
     for x in found:   # entries carried over from older scans get today's name clean-up too
         x["name"] = tidy_name(x["name"], x["roaster"]) or x["name"]
+        if UI_WORD.match(x["name"]):   # a theme's button read as the title (Conscious Speciality: every coffee "Close")
+            slug = re.sub(r"[-_]+", " ", x["url"].split("?")[0].rstrip("/").rsplit("/", 1)[-1]).strip()
+            x["name"] = " ".join(w.capitalize() if w.islower() else w for w in slug.split()) or x["name"]
 
     # remember every page seen, and give duplicates of one coffee (same roaster, name, process, variety) the earliest date
     # any of them was seen: whichever page ends up listed, the coffee has been around since then
@@ -2021,17 +2064,25 @@ def main():
         fs = first_seen.get(x["roaster"]) or today
         x["just_in"] = x.get("found") == today and fs < today and (not x.get("published") or x["published"] >= week)
     found.sort(key=lambda x: (x.get("published") or x.get("found") or ""), reverse=True)
-    # one listing per coffee: drop size/variant duplicates and stores that share a catalogue
-    seen, per_roaster, deduped = set(), {}, []
+    # one listing per coffee: drop size/variant duplicates and stores that share a catalogue. A roaster that lists
+    # one coffee twice (beans and ground, 250 g and 1 kg) keeps the newest listing, with anything it lacks filled
+    # in from the other
+    seen, per_roaster, deduped, kept = set(), {}, [], {}
     for x in found:
         # a roaster's filter and espresso versions of one coffee are two coffees
-        key_same = (x["roaster"], x["name"].lower(), (x.get("process") or "").lower(), (x.get("variety") or "").lower(), x.get("roast_for") == "espresso")
+        key_same = (x["roaster"], same_name(x["name"]), (x.get("process") or "").lower(), (x.get("variety") or "").lower(), x.get("roast_for") == "espresso")
         key_shared = (x["name"].lower(), x.get("price"), x.get("origin"))
         if key_same in seen or key_shared in seen:
+            first = kept.get(key_same)
+            if first is not None:
+                for k in ("origin", "process", "variety", "roast", "roast_from", "price", "price_from", "methods", "roast_for", "notes"):
+                    if x.get(k) and not first.get(k):
+                        first[k] = x[k]
             continue
         if per_roaster.get(x["roaster"], 0) >= PER_ROASTER:
             continue
         seen.update([key_same, key_shared])
+        kept[key_same] = x
         per_roaster[x["roaster"]] = per_roaster.get(x["roaster"], 0) + 1
         deduped.append(x)
     found = deduped[:MAX_ITEMS]
