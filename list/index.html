@@ -23,8 +23,8 @@ a{color:inherit;text-decoration:none}
 .sec-head{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--ink);padding-top:8px;font-size:24px;line-height:1.1;letter-spacing:-.025em}
 .sec-head .muted{color:var(--muted)}
 .crumb{margin:0 0 12px;color:var(--muted)}
-.crumb a,.r-read a,footer a{text-decoration:underline;text-decoration-color:color-mix(in srgb,currentColor 40%,transparent);text-underline-offset:2px;transition:text-decoration-color .15s ease}
-.crumb a:hover,.r-read a:hover,footer a:hover{text-decoration-color:transparent}
+.crumb a,.r-read a,footer a,a.ul{text-decoration:underline;text-decoration-color:color-mix(in srgb,currentColor 40%,transparent);text-underline-offset:2px;transition:text-decoration-color .15s ease}
+.crumb a:hover,.r-read a:hover,footer a:hover,a.ul:hover{text-decoration-color:transparent}
 .list .name{transition:color .15s ease}.list a:hover .name{color:var(--muted)}
 .specs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}
 @media (min-width:760px){.specs{grid-template-columns:repeat(4,minmax(0,1fr))}}
@@ -104,20 +104,35 @@ footer p{margin:0 0 6px}
 <button type="submit" id="listGo">Send</button>
 <p class="msg" id="listMsg" role="status"></p>
 </form>
-<p class="note">We use your email only to reply about your listing. Nothing else on this site collects or keeps personal data.</p>
+</section>
+<section id="remove">
+<div class="sec-head"><span>Ask to be removed.</span></div>
+<p class="note">Roasters can ask to be removed at any time. Your coffees come off the site within a day, and we don't add them back unless you ask.</p>
+<form class="form" id="removeForm" novalidate>
+<input type="hidden" name="want" value="remove">
+<label>Roastery name<input type="text" name="name" required autocomplete="organization"></label>
+<label>Your shop's address<input type="url" name="shop" required placeholder="https://" inputmode="url"></label>
+<label>Email, for our reply<input type="email" name="email" required autocomplete="email"></label>
+<label class="hp" aria-hidden="true">Leave this empty<input type="text" name="website2" tabindex="-1" autocomplete="off"></label>
+<button type="submit">Send</button>
+<p class="msg" role="status"></p>
+</form>
+<p class="note">We use your email only to reply about your request. Nothing else on this site collects or keeps personal data. <a class="ul" href="/privacy/">Privacy</a>.</p>
 </section>
 </main>
-<footer><p><a href="/">A Bag to a Cup</a>: a recipe for any coffee, for your brewer and your grinder.</p></footer>
+<footer><p><a href="/">A Bag to a Cup</a>: a recipe for any coffee, for your brewer and your grinder. <a href="/privacy/">Privacy</a>.</p></footer>
 <script>
-  const f = document.getElementById("listForm"), go = document.getElementById("listGo"), msg = document.getElementById("listMsg");
-  f.addEventListener("submit", async (e) => {
-    e.preventDefault(); go.disabled = true; msg.className = "msg"; msg.textContent = "Checking your shop…";
-    try {
-      const r = await fetch("/api/list", { method: "POST", body: new FormData(f) }), d = await r.json();
-      msg.className = "msg " + (d.ok ? "ok" : "no"); msg.textContent = d.msg;
-      if (d.ok) f.reset();
-    } catch (err) { msg.className = "msg no"; msg.textContent = "That didn't go through. Check your connection and try again."; }
-    go.disabled = false;
-  });
+  for (const f of document.querySelectorAll("#listForm, #removeForm")) {
+    const go = f.querySelector("button"), msg = f.querySelector(".msg");
+    f.addEventListener("submit", async (e) => {
+      e.preventDefault(); go.disabled = true; msg.className = "msg"; msg.textContent = f.id === "listForm" ? "Checking your shop…" : "Sending…";
+      try {
+        const r = await fetch("/api/list", { method: "POST", body: new FormData(f) }), d = await r.json();
+        msg.className = "msg " + (d.ok ? "ok" : "no"); msg.textContent = d.msg;
+        if (d.ok) f.reset();
+      } catch (err) { msg.className = "msg no"; msg.textContent = "That didn't go through. Check your connection and try again."; }
+      go.disabled = false;
+    });
+  }
 </script>
 </body></html>
