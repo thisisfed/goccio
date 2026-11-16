@@ -1784,8 +1784,6 @@ html[lang="it"] .bag-d.empty::before{content:"Aggiungi"}
 /* the page waits for the coffee list, then fades in */
 html.wait body{opacity:0}
 body{transition:opacity .3s ease}
-/* the intro's last words, in the accent */
-.lede .yours{color:var(--hl)}
 /* Light roast: the freezer's square tick pill, its name in the label column */
 .shelf-tools .opt > span{white-space:nowrap}   /* "Light roast" is 2 px wider than the column: it runs into the gap, not onto two lines */
 html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!important}   /* Tostatura chiara */
@@ -4785,9 +4783,9 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
   function closeRoaster() {
     if (!shelfRo) return; shelfRo = ""; shelfAll = false;
     if (roParam()) history.pushState(null, "", location.pathname + location.search);
-    renderShelf(); keepShelfTop();
+    renderShelf(); if (window.checkShelfWrap) checkShelfWrap(); keepShelfTop();
   }
-  window.addEventListener("popstate", () => { const n = roParam(); if (n !== shelfRo) { shelfRo = n; shelfAll = false; renderShelf(); } });
+  window.addEventListener("popstate", () => { const n = roParam(); if (n !== shelfRo) { shelfRo = n; shelfAll = false; renderShelf(); if (!n && window.checkShelfWrap) checkShelfWrap(); } });
   function renderRoHead() {
     const on = !!shelfRo && shelf.some((r) => r.roaster === shelfRo);
     $("roHead").hidden = !on; $("shelves").classList.toggle("ro-on", on);
@@ -5545,7 +5543,8 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
       if (!at) tools._open = r.height;
       tools.classList.toggle("compact", at || tools._always); };
     // on any screen where a row of pills wouldn't fit on one line, the menu is the dropdowns all the time
-    const checkWrap = () => { const was = tools.classList.contains("compact"); tools.classList.remove("compact");
+    // not while the bar is hidden (a roaster's page): nothing has a position then, so every row would look like it fits
+    const checkWrap = () => { if (!tools.getClientRects().length) return; const was = tools.classList.contains("compact"); tools.classList.remove("compact");
       tools._always = [...tools.querySelectorAll(".opt > .chips")].some((c) => { const k = c.children; return k.length > 1 && k[k.length - 1].offsetTop > k[0].offsetTop + 2; });
       tools.classList.toggle("compact", was); syncShelfBar(); };
     window.checkShelfWrap = checkWrap;
