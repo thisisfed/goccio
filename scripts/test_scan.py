@@ -111,6 +111,11 @@ CASES = [
      lambda: scan.process_phrase("If you enjoy Brazil or Indian Monsooned Malabar Coffee, try this lighter Limu.") is None),
     ("'the natural sweetness of the coffee' is a flavour, not a process", lambda: scan.process_phrase("It brings out the natural sweetness of the coffee.") is None),
     ("Kaffa's 'våtforedlet' is washed", lambda: scan.find_process("partiet er våtforedlet") == "Washed"),
+    # Kiss the Hippo's Ratnagiri Hydro showed generic notes (16/11/2026): its notes are in a sentence
+    ("'Expect notes of pineapple, red apple and hazelnut in a layered, sweet cup' gives the three notes",
+     lambda: scan.find_notes({"body": "Expect notes of pineapple, red apple and hazelnut in a layered, sweet cup.", "title": "Ratnagiri Hydro", "tags": []}) == ["Pineapple", "Red apple", "Hazelnut"]),
+    ("'hints of the terroir and the farm's history' is not tasting notes",
+     lambda: scan.find_notes({"body": "You can taste hints of the terroir and the farm's history.", "title": "X", "tags": []}) == []),
 ]
 
 
