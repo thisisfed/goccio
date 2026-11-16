@@ -221,7 +221,7 @@ def main():
         for c in cs:
             r = rec.get(id(c))
             path = cpath[id(c)]
-            notes = [n for n in (c.get("notes") or []) if isinstance(n, str) and n.strip() and len(n) < 40][:5]
+            notes = [re.sub(r"\b[A-Z](?=[a-z])", lambda m: m.group(0).lower(), n) for n in (c.get("notes") or []) if isinstance(n, str) and n.strip() and len(n) < 40][:5]
             process = c.get("process") or (cap(r["processLabel"]) if r and "process" not in r["missing"] else "")
             facts = [("Origin", e(c.get("origin"))), ("Process", e(process)), ("Variety", e(c.get("variety"))),
                      ("Roast", e(cap(r["roastLabel"])) if r and "roast" not in r["missing"] else ""),
@@ -294,7 +294,7 @@ def main():
     items = "".join(f'<li><a href="/coffee/{rslug[n]}/"><span class="name">{e(n)}</span></a><span class="sub">'
                     + e(", ".join(x for x in [next((c.get("roaster_city") for c in by_roaster[n] if c.get("roaster_city")), ""),
                                               f"{len(by_roaster[n])} coffee{'s' if len(by_roaster[n]) != 1 else ''}"] if x)) + "</span></li>" for n in names)
-    body = (f'<section><div class="specs"><div class="spec wide"><span class="k">Every coffee, by roaster</span><h1>Roasters</h1></div></div>'
+    body = (f'<section><div class="specs"><div class="spec wide"><span class="k">Every coffee, by roaster</span><h1>Roasters A to Z</h1></div></div>'
             f'<p class="r-read">{len(names)} roasters, {len(coffees):,} coffees, updated {ddmmyyyy(updated)}. Every coffee has a V60 recipe.</p></section>'
             f'<section><ul class="list">{items}</ul></section>')
     write("coffee/index.html", page("Specialty coffee roasters and V60 recipes for their coffees",
