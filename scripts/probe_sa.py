@@ -16,17 +16,19 @@ C = [("Pergamino", "https://pergamino.co", "Medellín", "CO"), ("Pergamino US", 
      ("LAB Tostadores", "https://labtostadores.com", "Buenos Aires", "AR"), ("Cuervo Café", "https://cuervocafe.com", "Buenos Aires", "AR"),
      ("Full City Coffee House", "https://fullcitycoffeehouse.com", "Buenos Aires", "AR"), ("Café Altura", "https://cafealtura.cl", "Santiago", "CL"),
      ("Wonderful Café", "https://wonderfulcafe.cl", "Santiago", "CL"), ("Café Galletti", "https://cafegalletti.com", "Quito", "EC")]
+C = [c for c in C if c[0] in ("Puku Puku", "Tocaya", "Pergamino US", "Sofá Café", "Coffee++", "Cuervo Café", "Um Coffee Co")]
 def probe(c):
     name, shop, city, cc = c
     r = {"name": name, "shop": shop, "city": city, "country": cc, "region": "World"}
-    try:
-        kind, items, err = scan.scan_roaster(r)
-    except Exception as e:  # noqa: BLE001
-        return f"{name:<24} {shop:<38} ERROR {type(e).__name__}: {str(e)[:80]}"
-    kept = [scan.classify(it, r) for it in items] if kind else []
-    kept = [k for k in kept if k]
-    return f"{name:<24} {shop:<38} {kind or 'FAILED':<11} items={len(items):<4} kept={len(kept):<4} {err or ''} | " + " ; ".join(f"{k['name']} ({k.get('origin')}, {k.get('process')}, {k.get('price')})" for k in kept[:4])
+    kind, items, err = scan.scan_roaster(r)
+    kept = [k for k in (scan.classify(it, r) for it in items) if k]
+    out = [f"## {name} {kind} items={len(items)} kept={len(kept)} {err or ''}"]
+    out += [f"  KEPT {k['name']} | {k.get('origin')} | {k.get('process')} | {k.get('price')} | {k['url']}" for k in kept[:30]]
+    for why, v in scan.DROPS.get(name, {}).items():
+        out.append(f"  DROP {why}: {v[:10]}")
+    if items:
+        it = items[0]; out.append(f"  ITEM0 {it['title']!r} type={it.get('type')!r} tags={it.get('tags')[:8]} price={it.get('price')} {it.get('currency')} body={it.get('body','')[:300]!r}")
+    return "\n".join(out)
 with ThreadPoolExecutor(8) as pool:
     out = list(pool.map(probe, C))
 Path("data/probe_sa.txt").write_text("\n".join(out))
-# rerun
