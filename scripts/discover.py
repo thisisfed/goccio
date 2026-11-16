@@ -76,6 +76,9 @@ def directory():
                 stack.extend(x)
     for m in re.finditer(r'<a[^>]+href="([^"]*/roaster/[^"#?]+)"[^>]*>(.*?)</a>', page, re.S | re.I):
         add(m.group(2), m.group(1))
+    for slug in re.findall(r'/roaster/([a-z0-9-]+)/', page):   # every other mention: the name comes from the roaster's own page
+        add(slug.replace("-", " ").title(), f"/roaster/{slug}/")
+    print(f"index: {page.count('/roaster/')} mentions of a roaster page")
     if not out:
         for m in list(re.finditer(r"/roaster/", page))[:5]:
             print("CONTEXT:", page[max(0, m.start() - 300): m.end() + 200].replace("\n", " "))
@@ -83,20 +86,46 @@ def directory():
 
 
 def website(entry):
-    """The roaster's own site and place, from its directory page."""
+    """The roaster's name, place and own site, from its directory page (title, structured data, the Visit link)."""
     try:
-        t = scan.get_text(entry["page"], tries=1, limit=600_000)
+        t = scan.get_text(entry["page"], tries=1, limit=800_000)
     except Exception as e:  # noqa: BLE001
         entry["error"] = f"directory page: {e}"; return entry
-    for m in re.finditer(r'<a[^>]+href="(https?://[^"]+)"[^>]*>(.*?)</a>', t, re.S | re.I):
-        href, label = m.group(1), re.sub(r"<[^>]+>", " ", m.group(2))
-        if "roasterlist" in href or "pages.dev" in href:
+    title = re.search(r"<title>(.*?)</title>", t, re.S)
+    if title:   # "Cargo Coffee | County Down Coffee Roaster | Roasterlist"
+        bits = [html.unescape(b).strip() for b in title.group(1).split("|")]
+        if bits and bits[0]:
+            entry["name"] = bits[0]
+        if len(bits) > 2:
+            entry["place"] = re.sub(r"\s*Coffee Roaster.*$", "", bits[1]).strip()
+    for blob in re.findall(r'<script type="application/ld\+json">(.*?)</script>', t, re.S):
+        try:
+            data = json.loads(blob)
+        except Exception:  # noqa: BLE001
             continue
-        if re.search(r"visit|website|shop", label, re.I):
-            entry["shop"] = href.rstrip("/"); break
-    place = re.search(r'<(?:p|span|div)[^>]*class="[^"]*(?:location|place|region|meta)[^"]*"[^>]*>(.*?)</', t, re.S | re.I)
-    if place:
-        entry["place"] = html.unescape(re.sub(r"<[^>]+>|\s+", " ", place.group(1))).strip()[:60]
+        stack = [data]
+        while stack and not entry.get("shop"):
+            x = stack.pop()
+            if isinstance(x, dict):
+                for k in ("url", "sameAs"):
+                    vals = x.get(k) if isinstance(x.get(k), list) else [x.get(k)]
+                    for v in vals:
+                        if isinstance(v, str) and v.startswith("http") and "roasterlist" not in v and not re.search(r"instagram|facebook|twitter|x\.com|tiktok|linkedin|youtube|google", v):
+                            entry["shop"] = v.rstrip("/"); break
+                    if entry.get("shop"):
+                        break
+                stack.extend(x.values())
+            elif isinstance(x, list):
+                stack.extend(x)
+    if not entry.get("shop"):
+        for m in re.finditer(r'<a[^>]+href="(https?://[^"]+)"[^>]*>(.*?)</a>', t, re.S | re.I):
+            href, label = m.group(1), re.sub(r"<[^>]+>", " ", m.group(2))
+            if "roasterlist" in href or "pages.dev" in href:
+                continue
+            if re.search(r"visit|website", label, re.I):
+                entry["shop"] = href.rstrip("/"); break
+    if entry.get("shop"):
+        u = urlparse(entry["shop"]); entry["shop"] = f"{u.scheme}://{u.netloc}"   # the shop's home: the scan finds its products from there
     return entry
 
 
