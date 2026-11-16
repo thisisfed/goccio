@@ -36,6 +36,8 @@ export async function onRequestPost({ request, env }) {
   let f;
   try { f = await request.formData(); } catch (e) { return json({ ok: false, msg: "That didn't come through. Try again." }, 400); }
   if ((f.get("website2") || "").toString().trim()) return json({ ok: true, msg: "Thanks." });   // honeypot: a person never fills this
+  const want = (f.get("want") || "list").toString();
+  if (want === "ask") return ask(f, env);
   const name = (f.get("name") || "").toString().trim().slice(0, 80);
   const town = (f.get("town") || "").toString().trim().slice(0, 60);
   const email = (f.get("email") || "").toString().trim().slice(0, 120);
@@ -47,6 +49,12 @@ export async function onRequestPost({ request, env }) {
   let u; try { u = new URL(shop); } catch (e) { return json({ ok: false, msg: "That shop address doesn't look right." }, 400); }
   if (!/\./.test(u.hostname) || /bagtocup|thisisfed|localhost/.test(u.hostname)) return json({ ok: false, msg: "That shop address doesn't look right." }, 400);
   shop = `${u.protocol}//${u.hostname}`;
+  if (want === "remove") {
+    // no shop check and no consent box: a removal request is filed for the morning run, which takes the shop off the list
+    const ok = await file(env, `Removal: ${name}`, { name, shop, email, at: new Date().toISOString() }, "removal");
+    return ok ? json({ ok: true, msg: "Thanks. Your coffees come off the site within a day, and we'll email you when they have." })
+              : json({ ok: false, msg: "Something went wrong on our side. Please try again later." }, 502);
+  }
   if (f.get("consent") !== "yes") return json({ ok: false, msg: "Please tick the box that says we may read your shop once a day." }, 400);
 
   const p = await probe(shop);
@@ -61,6 +69,29 @@ export async function onRequestPost({ request, env }) {
   }).catch(() => null);
   if (!gh || !gh.ok) return json({ ok: false, msg: `${seen} Something went wrong on our side saving your request. Please try again later.` }, 502);
   return json({ ok: true, msg: p.platform ? `${seen} Your coffees should appear within two days. We'll email you if anything needs checking.` : `${seen} We'll email you within a week.` });
+}
+
+// files a request as an issue in the private repo; false when the token is missing or GitHub says no
+async function file(env, title, data, label) {
+  if (!env.LISTING_TOKEN) return false;
+  const body = ["```json", JSON.stringify(data, null, 1), "```"].join("\n");
+  const gh = await fetch(`https://api.github.com/repos/${REPO}/issues`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${env.LISTING_TOKEN}`, Accept: "application/vnd.github+json", "User-Agent": "bagtocup-listing", "content-type": "application/json" },
+    body: JSON.stringify({ title, body, labels: [label] }),
+  }).catch(() => null);
+  return !!(gh && gh.ok);
+}
+
+// a question from the privacy page
+async function ask(f, env) {
+  const email = (f.get("email") || "").toString().trim().slice(0, 120);
+  const note = (f.get("note") || "").toString().trim().slice(0, 1200);
+  if (!note) return json({ ok: false, msg: "Please write your question." }, 400);
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ ok: false, msg: "That email address doesn't look right." }, 400);
+  const ok = await file(env, "Question", { email, note, at: new Date().toISOString() }, "question");
+  return ok ? json({ ok: true, msg: email ? "Thanks. We'll reply by email." : "Thanks, it's been sent." })
+            : json({ ok: false, msg: "Something went wrong on our side. Please try again later." }, 502);
 }
 
 export const onRequestGet = () => json({ ok: false, msg: "Send the form on /list/." }, 405);
