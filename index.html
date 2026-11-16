@@ -1561,8 +1561,6 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 .scan-review .sc-in input,.scan-review .sc-in select{flex:1;min-width:0;height:var(--pill-h);border:0;border-radius:var(--r);background:var(--pill);color:var(--ink);padding:0 10px;font:500 16px/1.3 var(--sans);-webkit-appearance:none;appearance:none}
 @media (min-width: 761px){ .scan-review .sc-in input,.scan-review .sc-in select{font-size:var(--fs-s)} }
 .scan-review .sc-in input::placeholder{color:var(--muted)}
-.scan-review .sc-why{grid-column:2;font-size:12px;line-height:1.3;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.scan-review .sc-why:empty{display:none}
 .sc-dot{flex:none;width:9px;height:9px;border-radius:50%;display:inline-block;background:transparent;box-shadow:inset 0 0 0 1.5px var(--rule)}
 .sc-dot.high{background:#30d158;box-shadow:none}.sc-dot.medium{background:#ff9f0a;box-shadow:none}.sc-dot.low{background:var(--hl);box-shadow:none}
 .scan-review .sc-key{margin:0;font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px}
@@ -5592,7 +5590,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
   // ---- 4. review sheet: every field editable, with how sure the reader is; nothing is applied until you say so ----
   const PROC_OPTS = [["", "Unknown"], ["washed", "Washed"], ["natural", "Natural"], ["honey", "Honey"], ["anaerobic", "Anaerobic"], ["cofer", "Co-ferment / Infused"], ["decaf", "Decaf"]];
   const ROAST_OPTS = [["", "Unknown"], ["vlight", "Very light"], ["light", "Light"], ["medium", "Medium"], ["mdark", "Medium-dark"], ["dark", "Dark"]];
-  const FIELD_ROWS = [["name", "Coffee"], ["roaster", "Roaster"], ["origin", "Origin"], ["process", "Process"], ["variety", "Variety"], ["date", "Roasted"]];   // no roast level here: the Roast row in What’s brewing? has it   // no tasting notes: the site never shows or uses them
+  const FIELD_ROWS = [["name", "Coffee"], ["roaster", "Roaster"], ["origin", "Origin"], ["process", "Process"], ["variety", "Variety"]];   // no roast or roast date here: the Roast row in What’s brewing? has the roast   // no tasting notes: the site never shows or uses them
   let review = null;
   function showReview(fields, raw) {
     const sm = shelfMatch(fields);
@@ -5610,25 +5608,18 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     box.innerHTML = `${m ? `<div class="sc-match"><span>${review.sure ? "Found it on today’s list" : "Looks like this one from today’s list"}: <b>${esc(m.roaster)}, ${esc(calm(m.name))}</b>.</span><button type="button" class="pill" id="scUseListing">Use the listing</button></div>`
       : ch ? `<div class="sc-match"><span>${ch.length === 2 ? "Two" : ch.length === 3 ? "Three" : "Four"} roasters have a coffee called <b>${esc(calm(ch[0].name).split(/:|\(/)[0].trim())}</b> today. Whose bag is it?</span><span class="sc-pick">${ch.map((r, i) => `<button type="button" class="pill" data-pick="${i}">${esc(r.roaster)}</button>`).join("")}</span></div>` : ""}
       <div class="sc-rows">${FIELD_ROWS.map(([k, lbl]) => { const f = fields[k] || { v: null }; return `<label class="sc-row"><span class="sc-l">${k === "date" && f.kind === "best" ? "Best before" : lbl}</span>
-        <span class="sc-in">${input(k, f)}${dot(f.v ? f.c : null)}</span><span class="sc-why">${esc(f.v ? f.why || "" : f.why || "")}</span></label>`; }).join("")}</div>
+        <span class="sc-in">${input(k, f)}${dot(f.v ? f.c : null)}</span></label>`; }).join("")}</div>
       <p class="sc-key">${dot("high")}Sure ${dot("medium")}Check it ${dot("low")}A guess. Fix anything it misread.</p>
-      <div class="sc-btns"><button type="button" class="pill" id="scMore">Add the back of the bag</button><button type="button" class="pill" id="scBag">Add to my bags</button></div>
+      ${m ? `<div class="sc-btns"><button type="button" class="pill" id="scBag">Add to my bags</button></div>` : ""}
       <div class="sc-btns"><button type="button" class="pill on" id="scUse">Use these</button><button type="button" class="pill" id="scAgain">Scan again</button><button type="button" class="pill" id="scCancel">Cancel</button></div>`;
     box.hidden = false;
     box.querySelectorAll("[data-f]").forEach((x) => x.addEventListener("input", () => { const f = review.fields[x.dataset.f] = { ...(review.fields[x.dataset.f] || {}), v: x.value.trim() || null, c: "high", why: "edited by you" };
-      const d = x.parentNode.querySelector(".sc-dot"); d.className = "sc-dot " + (f.v ? "high" : "none");
-      const w = x.closest(".sc-row").querySelector(".sc-why"); if (w) w.textContent = f.v ? "edited by you" : ""; }));
+      const d = x.parentNode.querySelector(".sc-dot"); d.className = "sc-dot " + (f.v ? "high" : "none"); }));
     $("scUse").onclick = () => applyReview(); $("scCancel").onclick = closeReview;
     // Add to my bags: the same as Use these, then straight into My bags (with the roast date, if there is one)
-    $("scBag").onclick = () => { const f = review.fields, v = (k) => (f[k] && f[k].v) || "", m = review.match, roasted = (() => { const d = v("date").match(/^(\d{2})\/(\d{2})\/(\d{4})$/); return d && !(f.date && f.date.kind === "best") ? `${d[3]}-${d[2]}-${d[1]}` : ""; })();
-      if (!applyReview(false)) return;
-      // the bag is the listing when it matched (so the list shows it Saved), else what the label says, by roaster and name
-      const r = m || { roaster: v("roaster"), name: v("name"), origin: v("origin"), variety: v("variety"), process: (PROC_OPTS.find(([k]) => k === v("process")) || [, ""])[1], text: state.text };
-      if (!hasBag(r)) toggleBag(r);
-      const b = bags.find((x) => x.id === bagId(r)); if (b && roasted && !b.roasted) { b.roasted = roasted; saveBags(); renderBags(); }
-      renderShelf(); syncBagBtn(); jumpTo($("bags")); };
+    // Add to my bags: only for a bag found on today's list. Sets the coffee, saves that listing (shown Saved in the list), goes to My bags
+    if (m) $("scBag").onclick = () => { closeReview(); $("scanMsg").textContent = ""; brewThis(m, false); if (!hasBag(m)) toggleBag(m); renderShelf(); syncBagBtn(); jumpTo($("bags")); };
     $("scAgain").onclick = () => { closeReview(); startScan(); };
-    $("scMore").onclick = () => { review.adding = true; pickPhoto(); };
     if (m) $("scUseListing").onclick = () => { closeReview(); $("scanMsg").textContent = `Found it: ${m.roaster}, ${calm(m.name)}.`; brewThis(m); };
     if (ch) box.querySelectorAll("[data-pick]").forEach((x) => x.onclick = () => { const r = ch[+x.dataset.pick]; closeReview(); $("scanMsg").textContent = `Found it: ${r.roaster}, ${calm(r.name)}.`; brewThis(r); });
     $("scanMsg").textContent = "Here’s what the label says. Check it, then Use these.";
