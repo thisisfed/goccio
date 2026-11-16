@@ -5598,7 +5598,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     const sm = shelfMatch(fields);
     review = { fields, raw, match: sm && sm.pick || null, sure: !!(sm && sm.sure), choices: sm && sm.choices || null };
     // found on today's list: the listing's details are the roaster's own, so they fill the sheet (the label's reading stays where the listing is silent)
-    if (review.match) { const m = review.match, why = "from today’s coffees", put = (k, v) => { if (v) fields[k] = { v, c: "high", why }; };
+    if (review.match) { const m = review.match, put = (k, v) => { if (v) fields[k] = { v, c: "high", why: "", src: "list" }; };   // the line above says it's from today's list
       put("name", calm(m.name)); put("roaster", m.roaster); put("origin", m.origin); put("variety", m.variety);
       if (m.process && PROC_OPTS.some(([k]) => k === procKey(m.process))) put("process", procKey(m.process));
       if (m.roast && ROAST_OPTS.some(([k]) => k === m.roast)) put("roast", m.roast); }
@@ -5638,7 +5638,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
   function applyReview(land = true) {
     const f = review.fields, v = (k) => (f[k] && f[k].v) || null, PL = { washed: "washed", natural: "natural", honey: "honey", anaerobic: "anaerobic", cofer: "co-fermented", decaf: "decaf" };
     // the roast isn't on the review sheet: only today's list (or a bag you confirmed before) can say it; otherwise you pick it or scan the beans
-    const roastKnown = f.roast && f.roast.v && /today|last scan/.test(f.roast.why || "") ? f.roast.v : null;
+    const roastKnown = f.roast && f.roast.v && (f.roast.src === "list" || /last scan/.test(f.roast.why || "")) ? f.roast.v : null;
     const line = [v("roaster"), v("name"), v("origin"), v("variety"), v("process") ? PL[v("process")] : null, roastKnown ? ROAST[roastKnown].label + " roast" : null].filter(Boolean).join(", ");
     if (!line.trim()) { $("scanMsg").textContent = "Nothing to use yet. Type the coffee, or scan again."; return false; }
     // remember what you confirmed, so this bag reads better next time
