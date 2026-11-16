@@ -223,6 +223,8 @@ def main():
     OUT.write_text(json.dumps(new, ensure_ascii=False, indent=1) + "\n")
     ok = [c for c in new if c["coffees"]]
     print(f"readable with coffees: {len(ok)}; readable, no coffees: {sum(1 for c in new if c['platform'] and not c['coffees'])}; unreadable: {sum(1 for c in new if not c['platform'])}")
+    for c in new:   # the whole record, for whoever reviews the run (artifacts aren't always reachable)
+        print("CAND " + json.dumps({k: c.get(k) for k in ("name", "shop", "place", "nation", "platform", "coffees", "sample")}, ensure_ascii=False))
     for c in new:
         print(f"{c['name'][:34]:<34} {c['shop'][:44]:<44} {(c['platform'] or 'FAILED'):<12} {c['coffees']:>3}  {'; '.join(c['sample'])[:90]}")
 
