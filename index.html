@@ -3,6 +3,11 @@
 <head>
 <meta charset="utf-8">
 <script>
+/* the page shows once the coffee list has loaded (roasters and coffees counted), never later than 6 s */
+document.documentElement.classList.add("wait");
+setTimeout(() => document.documentElement.classList.remove("wait"), 6000);
+</script>
+<script>
 /* The site moved from v60.thisisfed.xyz to bagtocup.thisisfed.xyz. Browser storage belongs to one address, so the old
    address packs this device's journal, preferences and recipe into the link and the new one unpacks them. */
 (() => {
@@ -1777,6 +1782,13 @@ html[lang="it"] .bag-d.empty::before{content:"Aggiungi"}
 .item .who a.rn{color:var(--ink);text-decoration:none}
 .item .who a.rn:hover{text-decoration:underline;text-underline-offset:3px}
 .grp.bare{padding:0!important;min-height:0!important;height:0;margin-top:-13px}   /* the rule under the filters as far below them as the top rule is above "Coffees." */
+/* the page waits for the coffee list, then fades in */
+html.wait body{opacity:0}
+body{transition:opacity .3s ease}
+/* phones: the title under the wordmark, in the accent (wider screens have it as the hero title's last line) */
+.wm-screen{flex-direction:column;justify-content:flex-end;align-items:stretch}
+.wm-tag{margin:-.1em 0 0;font:500 var(--fs-xl)/1 var(--sans);letter-spacing:-.04em;color:var(--hl);padding-bottom:.4em}
+@media (min-width: 761px){ .wm-tag{display:none} }
 /* Light roast: the freezer's square tick pill, its name in the label column */
 .shelf-tools .opt > span{white-space:nowrap}   /* "Light roast" is 2 px wider than the column: it runs into the gap, not onto two lines */
 html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!important}   /* Tostatura chiara */
@@ -1841,6 +1853,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     <div class="hero">
       <div class="wm-screen">
         <p class="wordmark" aria-hidden="true"><span id="wm">Bag to Cup</span></p>
+        <p class="wm-tag">Brewed your way.</p>
       </div>
       <div class="hero-row">
       <div class="stage" id="stage">
@@ -5572,8 +5585,9 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
         if (shelf.length && nR && $("heroLive")) { $("heroLiveT").textContent = `${nR.toLocaleString("en-GB")} roasters, ${shelf.length.toLocaleString("en-GB")} coffees`; $("heroLive").hidden = false; } }
       renderShelfV();
       renderShelf();
+      document.documentElement.classList.remove("wait");
       try { renderBags(); } catch (e) {}   // bags saved before the city was kept pick it up from the list
-    } catch (e) { $("shelfMeta").textContent = "Couldn’t load the coffee list. Refresh to try again."; $("shelfMeta").hidden = false; }
+    } catch (e) { $("shelfMeta").textContent = "Couldn’t load the coffee list. Refresh to try again."; $("shelfMeta").hidden = false; document.documentElement.classList.remove("wait"); }
     finally { $("shelf").classList.remove("loading"); $("shelf").removeAttribute("aria-busy"); }
   }
 
