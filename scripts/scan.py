@@ -1131,22 +1131,42 @@ PROC_BEFORE = re.compile(r"\b([A-Za-z][\w\-]*(?:\s[A-Za-z][\w\-]*)?)\s+(?:proces
 # words that only ever describe processing, so they count wherever they stand ("a fully washed coffee", "naturally
 # processed and slow-dried"); plain "washed" only when it qualifies the coffee ("washed Arabica", "a washed lot")
 PROC_STRONG = re.compile(r"\b(fully[- ]washed|double[- ]washed|semi[- ]washed|wet[- ]hulled|giling basah|pulped natural|naturally (?:processed|dried)|"
-                         r"sun[- ]dried (?:natural|cherr(?:y|ies))|anaerobic(?:ally)?|carbonic maceration|monsooned|washed (?:coffee|lot|arabica|beans?|microlot|process))\b", re.I)
+                         r"sun[- ]dried (?:natural|cherr(?:y|ies))|anaerobic(?:ally)?|carbonic maceration|washed (?:coffee|lot|arabica|beans?|microlot|process))\b", re.I)
 NOT_PROC = re.compile(r"brew|filter|espresso|roast|grind|order|payment|cookie|data|checkout|shipping|delivery|decaffeinat|cafeti", re.I)
 
 
+# a sentence that hedges or compares ("usually natural", "if you enjoy a washed Kenya", "between a washed and a natural")
+# says nothing sure about this coffee, so it is skipped; so is one naming two processes ("80% natural and 20% honey")
+PROC_HEDGE = re.compile(r"\b(?:usually|often|typically|generally|commonly|traditionally|tend|tends|expect|if you|compared|unlike|than|between|such as|like most|most of|many)\b", re.I)
+PAGE_END = re.compile(r"related products|you may also like|you might also like|recently viewed|customers (?:also|who)|frequently bought|more (?:coffees|from)|other products|similar products|reviews?\b", re.I)
+
+
 def process_phrase(text, why=False):
-    """A process named right next to the word 'process' (or 'method'), or a word that can only mean a process."""
+    """A process named right next to the word 'process' (or 'method'), or in words that can only mean a process,
+    in a sentence that is sure about this one coffee."""
     text = re.sub(r"(?<=[a-z])(?=[A-Z]{2})", " ", text or "")   # "Fully WashedELEVATION": labels glued together
-    for rx in (PROC_AFTER, PROC_BEFORE, PROC_STRONG):
-        for m in rx.finditer(text):
-            bit = m.group(1)
-            if NOT_PROC.search(bit) or NOT_PROC.search(text[max(0, m.start() - 30):m.end() + 10]):
-                continue
-            got = find_process(bit)
-            if got and got != "Decaf":
-                return (got, text[max(0, m.start() - 60):m.end() + 40]) if why else got
+    for sent in re.split(r"(?<=[.!?])\s+|\n+|\s\|\s(?=[A-Z]{3,})", text):
+        found = set()
+        for rx in (PROC_AFTER, PROC_BEFORE, PROC_STRONG):
+            for m in rx.finditer(sent):
+                bit = m.group(1)
+                if NOT_PROC.search(bit) or NOT_PROC.search(sent[max(0, m.start() - 30):m.end() + 10]):
+                    continue
+                got = find_process(bit)
+                if got and got != "Decaf":
+                    found.add(got)
+        plain = {w.lower() for w in re.findall(r"\b(natural|washed|honey)\b", sent, re.I)}   # "80% natural and 20% honey"
+        if len(found) == 1 and len(plain) <= 1 and not PROC_HEDGE.search(sent):
+            got = found.pop()
+            return (got, sent[:200]) if why else got
     return None
+
+
+def description_window(text, start, size=2500):
+    """The product's own words on its page: from its name on, up to the related products or reviews."""
+    t = text[start:start + size]
+    m = PAGE_END.search(t, 200)
+    return t[:m.start()] if m else t
 
 
 def find_notes(item):
@@ -1813,7 +1833,7 @@ def add_page_details(recs, roaster, old):
             v = labelled(text, k, start) or (labelled(text, k) if start else None) or raw_labelled(raw, k) or from_json(raw, k) \
                 or class_labelled(raw, k) or suffix_labelled(text, k, start)
             if not v and k == "process" and not rec.get("blend"):   # a sentence about processing in the description
-                v = process_from_text(text[start:start + 4000]) or process_phrase(text[start:start + 6000])
+                v = process_from_text(text[start:start + 4000]) or process_phrase(description_window(text, start))
             if v:
                 rec[k], rec[k + "_from"] = v, "page"
                 got = True
