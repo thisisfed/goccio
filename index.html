@@ -878,6 +878,7 @@ body, .lede, .ask label, .need h3, .log h3, .sec-head .cap:first-child, .mark, .
 .mark-on .mark { opacity: 1; transform: none; }
 /* A Bag to a Cup: ABC first, then the letters in between open out */
 .mark.abc { gap: 0 !important; }
+.mark.abc .k { white-space: pre; }   /* the header reads AB to a C until tapped */
 .mark.abc .r { display: inline-block; overflow: hidden; white-space: pre; vertical-align: bottom; padding-bottom: .26em; margin-bottom: -.26em; }   /* opened by abcOpen(), the same as the big wordmark */
 
 /* hero: words and intro on top, the big name sitting on the bottom of the first screen */
@@ -1461,6 +1462,9 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 /* coffee details: plain words with their colour dots, a space apart; on the list they share a row with Buy and the date */
 .item .tags{display:flex;flex-wrap:wrap;gap:2px 14px;align-items:baseline}
 .item .tags .tg{white-space:nowrap}
+.item .tags .tg{white-space:normal;min-width:0;overflow-wrap:anywhere}   /* a long variety list wraps inside the column instead of pushing the page sideways */
+.item .l > *{min-width:0;overflow-wrap:anywhere}
+html,body{overflow-x:clip}   /* nothing may ever scroll the page sideways on a phone */
 .item .tags .tg.p-nat::before,.item .tags .tg.p-wash::before,.item .tags .tg.p-honey::before,.item .tags .tg.p-exp::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:.12em}
 .item .tags .tg.p-nat::before{background:#af52de}.item .tags .tg.p-wash::before{background:#30b0c7}.item .tags .tg.p-honey::before{background:#ff9f0a}.item .tags .tg.p-exp::before{background:#ff2d55}
 .item .spec-row{grid-column:1/-1;display:flex;justify-content:space-between;align-items:baseline;gap:14px}
@@ -1932,7 +1936,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
 <body>
 <header class="top">
   <div class="top-in">
-    <div class="mark abc" aria-label="A Bag to a Cup"><span class="i">A</span><span class="r" aria-hidden="true"> </span><span class="i">B</span><span class="r" aria-hidden="true">ag to a </span><span class="i">C</span><span class="r" aria-hidden="true">up</span></div>
+    <div class="mark abc" aria-label="A Bag to a Cup"><span class="i">A</span><span class="r" aria-hidden="true"> </span><span class="i">B</span><span class="r" aria-hidden="true">ag</span><span class="k" aria-hidden="true"> to a </span><span class="i">C</span><span class="r" aria-hidden="true">up</span></div>
     <nav class="nav" aria-label="Sections">
       <button type="button" data-jump="shelves"><span class="nw">New c</span><span class="nc">C</span>offees</button>
       <button type="button" data-jump="recipe">Recipe</button>
@@ -6193,8 +6197,14 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     rs.forEach((r) => { r.style.maxWidth = "0px"; }); chs.forEach((c) => { c.style.transition = "none"; c.style.opacity = "0"; }); void el.offsetWidth;
     // 1. the gaps open: A, B and C move apart (1 s)
     rs.forEach((r, i) => { r.style.transition = "max-width 1s cubic-bezier(.65,0,.35,1) .45s"; r.style.maxWidth = ws[i] + "px"; });
-    // 2. a breath with A, B and C in place (.5 s), then the letters, in order, 45 ms apart
-    chs.forEach((c, i) => { c.style.transition = `opacity .35s ease ${1.95 + i * 0.045}s`; c.style.opacity = "1"; });
+    // 2. a breath with A, B and C in place (.5 s), then typed, in order: A Bag (long pause) to (short pause) a Cup
+    const seq = [...el.querySelectorAll(".i, .k, .r .ch")], at = new Map(); let full = "";
+    seq.forEach((n) => { if (n.classList.contains("ch")) at.set(full.length, n); full += n.textContent; });
+    const PAUSE = { 2: 0.9, 3: 0.35 }; let t = 1.95, word = 0;   // after word 2 (Bag) and word 3 (to)
+    for (let k = 0; k < full.length; k++) {
+      const c = at.get(k); if (c) { c.style.transition = `opacity .25s ease ${t.toFixed(3)}s`; c.style.opacity = "1"; t += 0.06; }
+      if (full[k] !== " " && (k + 1 === full.length || full[k + 1] === " ")) { word++; t += PAUSE[word] || 0; }
+    }
     el._abcT = setTimeout(() => rs.forEach((r) => { r.style.maxWidth = "none"; r.style.overflow = "visible"; }), 1500);   // whole again: nothing clipped (the p of Cup), and a resize keeps it right
   }
   (function abcMark() {
