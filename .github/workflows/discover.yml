@@ -1,0 +1,35 @@
+name: Find new roasters
+
+# By hand only: reads the public UK roaster directory, leaves out roasters already on the list, and checks whether the
+# scanner can read each new shop. Nothing is added: the result (candidates.json) is attached to the run for review.
+on:
+  workflow_dispatch:
+    inputs:
+      urls:
+        description: "Only check these shops (comma-separated links). Leave empty for the whole directory."
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  find:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Find and check
+        env:
+          URLS: ${{ github.event.inputs.urls }}
+        run: |
+          if [ -n "$URLS" ]; then python scripts/discover.py --urls "$URLS"; else python scripts/discover.py; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: candidates
+          path: data/candidates.json
+          if-no-files-found: ignore
