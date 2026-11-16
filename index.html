@@ -5018,11 +5018,12 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
   const EXTRAS = [["light", "Light roast"], ["top", "Top lots"], ["decaf", "Decaf"]];
   const extraOn = (v) => v === "light" ? shelfO === "light" : v === "top" ? shelfT : shelfD;
   function renderShelfO() {
-    $("shelfX").innerHTML = EXTRAS.map(([v, t]) => `<button type="button" class="chip" data-v="${v}" aria-pressed="${extraOn(v)}">${t}</button>`).join("");
+    const xs = EXTRAS.filter(([v]) => v !== "decaf" || !curfewOn());   // after 14:00 the list is decaf already: no Decaf pill
+    $("shelfX").innerHTML = xs.map(([v, t]) => `<button type="button" class="chip" data-v="${v}" aria-pressed="${extraOn(v)}">${t}</button>`).join("");
     $("shelfX").querySelectorAll("button").forEach((b) => b.onclick = () => { const v = b.dataset.v;
       if (v === "light") shelfO = shelfO === "light" ? "all" : "light"; else if (v === "top") shelfT = !shelfT; else shelfD = !shelfD;
       shelfAll = false; renderShelfO(); renderShelf(); });
-    const on = EXTRAS.filter(([v]) => extraOn(v)).map(([, t]) => t);
+    const on = xs.filter(([v]) => extraOn(v)).map(([, t]) => t);
     fillSel("shelfXSel", [["", on.length ? on.join(", ") : "None"]], "", () => {});   // the folded row's pill says what's ticked
   }
   const renderShelfT = renderShelfO;
@@ -5107,7 +5108,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     if (shelfV !== "all") list = list.filter(shelfFit());
     if (shelfO === "light") list = list.filter(isLight);
     if (shelfT) list = list.filter(isTopLot);
-    if (shelfD) list = list.filter(isDecaf);
+    if (shelfD && !curfewOn()) list = list.filter(isDecaf);
     if (renderCurfew()) list = list.filter(isDecaf);   // after 2 pm: decaf only, until you say otherwise
     }
     list = shelfRo ? [...list].sort((a, b) => shelfDate(b).localeCompare(shelfDate(a)))
@@ -5973,11 +5974,11 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     addEventListener("scroll", syncShelfBar, { passive: true }); }
   const loadMore = () => { shelfN += 10; renderShelf(); };
   $("shelfMore").onclick = loadMore;
-  const cfSet = (v) => { cfLift = true; try { localStorage.setItem(CF_KEY, v); } catch (e) {} shelfAll = false; renderShelf(); };
+  const cfSet = (v) => { cfLift = true; try { localStorage.setItem(CF_KEY, v); } catch (e) {} shelfAll = false; renderShelfO(); renderShelf(); };
   $("cfAll").onclick = () => cfSet("skip:" + nightOf());
   $("cfOff").onclick = () => cfSet("off");
   // the clock moves on while the page is open: at 2 pm the list turns decaf, at 5 am it comes back
-  const cfTick = () => { const on = curfewOn(); if (cfWas !== null && on !== cfWas && shelf.length) { shelfAll = false; renderShelf(); } else renderCurfew(); cfWas = on; };
+  const cfTick = () => { const on = curfewOn(); if (cfWas !== null && on !== cfWas && shelf.length) { shelfAll = false; renderShelfO(); renderShelf(); } else renderCurfew(); cfWas = on; };
   setInterval(cfTick, 30000); document.addEventListener("visibilitychange", () => { if (!document.hidden) cfTick(); });
   // a filter tapped while the bar is stuck: keep the list starting right under it
   // after a search or a filter: if the bar is stuck and the list now starts behind it, scroll back so the first
