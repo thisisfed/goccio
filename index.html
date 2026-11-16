@@ -1787,6 +1787,8 @@ body{transition:opacity .3s ease}
 /* My equipment: tick what you own, in the filters' label | value rows; Surprise me picks from it and from your bags */
 .gear-tools{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;padding:12px 0 0}
 .gear-tools .opt > span{font:500 var(--fs-s)/1.2 var(--sans);color:var(--muted);margin:0}
+.gear-tools .opt{align-items:start!important}
+.gear-tools .opt > span{height:var(--pill-h);display:flex;align-items:center;padding-top:0!important}   /* the label sits level with the first row of pills */
 .gear-tools .chips{display:flex;flex-wrap:wrap;gap:4px;justify-self:start}
 .gear-tools .gear-go{display:flex;flex-direction:column;align-items:flex-start;gap:8px}
 .gear-tools .gear-btn:hover, .ro-head .ro-pill:hover{background:color-mix(in srgb, var(--pill) 80%, var(--ink))}   /* the grey pills' hover */
@@ -5108,15 +5110,18 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
   try { const g = JSON.parse(localStorage.getItem(GEAR_KEY) || "{}"); gear = { brewers: (g.brewers || []).filter((k) => BREWERS[k]), grinders: (g.grinders || []).filter((k) => GRINDERS[k]) }; } catch (e) {}
   const saveGear = () => { try { localStorage.setItem(GEAR_KEY, JSON.stringify(gear)); } catch (e) {} };
   const pickOne = (a) => a[Math.floor(Math.random() * a.length)];
-  const gearOpen = { gearB: false, gearG: false }, gearFold = {};   // See all: the rest of the list, to add something
+  const gearOpen = { gearB: false, gearG: false };
+  // open lists fold back together, given time to read them all (2 s plus 0.15 s a pill: about 7 s for both lists); each tap starts the wait again
+  let gearFold = 0;
+  const gearWait = () => { clearTimeout(gearFold); const n = $("gear").querySelectorAll(".chips button").length;
+    if (Object.values(gearOpen).some(Boolean)) gearFold = setTimeout(() => { gearOpen.gearB = gearOpen.gearG = false; renderGear(); }, 2000 + n * 150); };   // See all: the rest of the list, to add something
   function renderGear() {
     // once you've ticked something, the row shows only what you own and See all; an owned pill asks Remove? first, like a saved bag
     const row = (id, list, all, label) => { const open = gearOpen[id] || !list.length, keys = Object.keys(all).filter((k) => open || list.includes(k));
       $(id).innerHTML = keys.map((k) => `<button type="button" class="chip" data-k="${k}" aria-pressed="${list.includes(k)}">${esc(label(all[k]))}</button>`).join("")
         + (list.length && !open ? `<button type="button" class="chip gear-more" aria-expanded="false">See all</button>` : "");
-      // the full list folds back by itself, given time to read it (2 s plus a quarter of a second a pill); each tap starts the wait again
-      const wait = () => { clearTimeout(gearFold[id]); if (open && list.length) gearFold[id] = setTimeout(() => { gearOpen[id] = false; renderGear(); }, 2000 + keys.length * 250); };
-      wait();
+      // the full list folds back by itself, given time to read it (2 s plus 0.15 s a pill: about 7 s for both lists); each tap starts the wait again
+      const wait = gearWait;
       $(id).querySelectorAll("button[data-k]").forEach((b) => b.onclick = () => { const k = b.dataset.k, i = list.indexOf(k);
         if (i < 0) { if (!list.length) gearOpen[id] = true; list.push(k); saveGear(); renderGear(); return; }   // ticking from the full list keeps it open a while
         if (b.dataset.armed) { list.splice(i, 1); saveGear(); renderGear(); return; }
@@ -5125,6 +5130,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
       const more = $(id).querySelector(".gear-more"); if (more) more.onclick = () => { gearOpen[id] = true; renderGear(); }; };
     row("gearB", gear.brewers, BREWERS, (B) => B.name);
     row("gearG", gear.grinders, GRINDERS, (G) => G.name);
+    gearWait();
     const n = bags.filter((b) => !b.frozen).length;
     $("gearNote").textContent = !gear.brewers.length ? "Tick the brewers you own, then a random recipe from them and your bags."
       : n ? "A random recipe from your equipment and your bags." : "A random recipe from your equipment and the newest coffees.";
