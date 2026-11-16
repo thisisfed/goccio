@@ -1047,6 +1047,7 @@ details.clk > summary .muted { margin-left: auto; overflow: hidden; text-overflo
 /* the big wordmark, like the header: ABC first, then the letters in between open out to fill the width */
 .wordmark #wm .i, .wordmark #wm .r { padding-right: 0; }
 .wordmark #wm .r { white-space: pre; overflow: hidden; vertical-align: bottom; padding-bottom: .26em; margin-bottom: -.26em; }   /* room for the g's tail */
+#wm .r .ch, .mark.abc .r .ch { display: inline; padding: 0; white-space: pre; }
 /* the question, the size of a section title */
 .ask label { font-size: var(--fs-m); font-weight: 500; line-height: 1.1; }
 /* the missing-info questions now sit under the coffee box */
@@ -6178,16 +6179,22 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
   // the same timing and curve, each to its exact width. The wordmark plays once the page shows and each time you scroll back
   // up to it; the header's name each time it appears in the bar
   const ABC_STILL = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const abcShut = (el) => { if (!el || ABC_STILL) return; el.querySelectorAll(".r").forEach((r) => { r.style.transition = "none"; r.style.maxWidth = "0px"; r.style.opacity = "0"; }); };
+  const abcShut = (el) => { if (!el || ABC_STILL) return; clearTimeout(el._abcT); abcChars(el); el.querySelectorAll(".r").forEach((r) => { r.style.transition = "none"; r.style.maxWidth = "0px"; r.style.overflow = "hidden"; r.style.opacity = "1"; }); el.querySelectorAll(".r .ch").forEach((c) => { c.style.transition = "none"; c.style.opacity = "0"; }); };
+  // two steps: A, B and C slide apart to where they will sit, then the missing letters fade in, one after another, in reading order
+  const abcChars = (el) => el.querySelectorAll(".r").forEach((r) => { if (!r.querySelector(".ch")) r.innerHTML = [...r.textContent].map((c) => `<span class="ch">${c}</span>`).join(""); });
   function abcOpen(el) {
-    if (!el || ABC_STILL) return; const rs = [...el.querySelectorAll(".r")];
-    rs.forEach((r) => { r.style.transition = "none"; r.style.maxWidth = "none"; });
+    if (!el || ABC_STILL) return; abcChars(el); const rs = [...el.querySelectorAll(".r")], chs = [...el.querySelectorAll(".r .ch")];
+    clearTimeout(el._abcT);
+    rs.forEach((r) => { r.style.transition = "none"; r.style.maxWidth = "none"; r.style.overflow = "hidden"; r.style.opacity = "1"; });
     const ws = rs.map((r) => r.getBoundingClientRect().width);
-    if (!ws.some(Boolean)) { rs.forEach((r) => { r.style.maxWidth = "none"; r.style.opacity = "1"; }); return; }   // not on screen (a very small phone hides the header's name)
-    rs.forEach((r) => { r.style.maxWidth = "0px"; r.style.opacity = "0"; }); void el.offsetWidth;
-    rs.forEach((r, i) => { r.style.transition = "max-width 1.1s cubic-bezier(.2,.8,.2,1) .55s, opacity .6s ease .6s"; r.style.maxWidth = ws[i] + "px"; r.style.opacity = "1"; });
+    if (!ws.some(Boolean)) { rs.forEach((r) => { r.style.overflow = "visible"; }); chs.forEach((c) => { c.style.transition = "none"; c.style.opacity = "1"; }); return; }
+    rs.forEach((r) => { r.style.maxWidth = "0px"; }); chs.forEach((c) => { c.style.transition = "none"; c.style.opacity = "0"; }); void el.offsetWidth;
+    // 1. the gaps open: A, B and C move apart (1 s)
+    rs.forEach((r, i) => { r.style.transition = "max-width 1s cubic-bezier(.65,0,.35,1) .45s"; r.style.maxWidth = ws[i] + "px"; });
+    // 2. then the letters, in order, 45 ms apart
+    chs.forEach((c, i) => { c.style.transition = `opacity .35s ease ${1.5 + i * 0.045}s`; c.style.opacity = "1"; });
+    el._abcT = setTimeout(() => rs.forEach((r) => { r.style.maxWidth = "none"; r.style.overflow = "visible"; }), 1500);   // whole again: nothing clipped (the p of Cup), and a resize keeps it right
   }
-  document.querySelectorAll("#wm .r, .mark.abc .r").forEach((r) => r.addEventListener("transitionend", (e) => { if (e.propertyName === "max-width" && r.style.opacity === "1") r.style.maxWidth = "none"; }));   // a resize later keeps it whole
   (function abcMark() {
     const w = $("wm"), m = document.querySelector(".mark.abc"); if (!w || ABC_STILL) return;
     abcShut(w); abcShut(m);   // start shut, so the first thing seen is ABC
