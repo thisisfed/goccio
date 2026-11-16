@@ -5310,7 +5310,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
   function mergeReads(reads) {
     const lines = new Map(), words = [];
     reads.forEach((d) => { (d.lines || []).forEach((l) => { const t = (l.text || "").replace(/\s+/g, " ").trim(), k = norm(t); if (!k || k.length < 2) return;
-        const item = { text: t, conf: l.confidence || 0, h: l.bbox ? l.bbox.y1 - l.bbox.y0 : 0, y: l.bbox ? l.bbox.y0 : 0, x: l.bbox ? l.bbox.x0 : 0 };
+        const item = { text: t, conf: l.confidence || 0, h: l.bbox ? l.bbox.y1 - l.bbox.y0 : 0, y: l.bbox ? l.bbox.y0 : 0, x: l.bbox ? l.bbox.x0 : 0, w: l.bbox ? l.bbox.x1 - l.bbox.x0 : 0 };
         let key = k; for (const [k2, p] of lines) { if (Math.abs(p.y - item.y) < Math.max(p.h, item.h) * 0.6 && Math.abs(p.x - item.x) < Math.max(p.h, item.h) * 2 && lev(k2, k) <= Math.max(1, Math.round(k.length * 0.3))) { key = k2; break; } }
         const prev = lines.get(key); if (!prev || item.conf > prev.conf) { if (prev) lines.delete(key); lines.set(k, item); } });
       (d.words || []).forEach((w) => words.push({ text: w.text, conf: w.confidence || 0, h: w.bbox ? w.bbox.y1 - w.bbox.y0 : 0 })); });
@@ -5507,9 +5507,22 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
       || (((proc && proc.l === l) || (roast && roast.l === l) || varLines.has(l)) && !isTitle(l));
     const geoOnly = (l) => { const ws = l.n.split(" "); const country = Object.values(V.country).flat().some((t) => findTerm(l.n, t) >= 0.8);
       return country && ws.length <= 3 && ws.every((w) => w.length <= 2 || Object.values(V.country).flat().some((t) => t.split(" ").includes(w) || lev(t, w) <= 1) || REGION_OF.some(([re]) => re.test(w))); };
-    const cands = L.map((l, i) => ({ l, i })).filter(({ l, i }) => !taken.has(i) && !fieldLine(l) && !geoOnly(l) && !flavours(l) && l.n.length >= 2 && /[a-z]{2}/.test(l.n));
+    // a label set out as a table (Cup / Process / Varietal / Producer…): the headings and the lines under them are details, not the name
+    const HEAD = /^(cup|cupping notes|tasting notes|notes|flavou?rs?|flavou?r notes|altitude|elevation|timezone|time zone|producers?|farm|finca|process|processing|method|varietals?|variety|varieties|cultivars?|origin|region|country|importer|imported by|exporter|harvest|lot|grower|washing station|station|roast|roasted|roast date|roast level|we taste|tastes like|masl)$/;
+    const heads = L.filter((l) => HEAD.test(l.n));
+    const overX = (a, b) => { const pad = Math.max(a.h, b.h); return (a.x - pad) < (b.x + (b.w || b.h * 4)) && (b.x - pad) < (a.x + (a.w || a.h * 4)); };
+    const underHead = (l) => heads.some((hd) => hd !== l && l.y > hd.y && l.y - hd.y < hd.h * 7 && l.h < hd.h * 1.6 && overX(hd, l));   // a big title under a small heading is still the title
+    // a block of four or more lines of the same size, stacked: a paragraph of copy (the roaster's story), not a title
+    const para = (l) => { const same = L.filter((m) => (m === l || (m.conf >= 60 && /[a-z]{3}/.test(m.n))) && Math.abs(m.h - l.h) <= l.h * 0.25 && overX(m, l)).sort((a, b) => a.y - b.y);
+      const i = same.indexOf(l); let lo = i, hi = i;
+      while (lo > 0 && same[lo].y - same[lo - 1].y < l.h * 2.6) lo--;
+      while (hi < same.length - 1 && same[hi + 1].y - same[hi].y < l.h * 2.6) hi++;
+      return hi - lo + 1 >= 4; };
+    const cands = L.map((l, i) => ({ l, i })).filter(({ l, i }) => !taken.has(i) && !fieldLine(l) && !geoOnly(l) && !flavours(l) && l.n.length >= 2 && /[a-z]{2}/.test(l.n)
+      && !HEAD.test(l.n) && !underHead(l) && !/,\s*$/.test(l.text) && !/[a-z]{3}\.\s*$/i.test(l.text) && !para(l));
+    const filler = (l) => l.n.split(" ").every((w) => /^(coffee|coffees|roasters?|roastery|the|and|of|for|to|a|our|shop|good|with|from|by|in)$/.test(w));   // "COFFEE" alone is never the name (THE can sit over one)   // "Mango Sorbet," is one of a list, "for good." the end of a sentence
     const good = cands.filter(({ l }) => l.conf >= 60 && /^[\p{L}\p{N} '’&.,\-]+$/u.test(l.text) && /[a-z]{3}/i.test(l.text)), pool = good.length ? good : cands.filter(({ l }) => l.conf >= 45 && /[a-z]{3}/.test(l.n));
-    const top = pool.filter(({ l }) => !kicker(l)).sort((a, b) => b.l.h - a.l.h)[0] || pool.slice().sort((a, b) => b.l.h - a.l.h)[0];
+    const top = pool.filter(({ l }) => !kicker(l) && !filler(l)).sort((a, b) => b.l.h - a.l.h)[0] || pool.slice().sort((a, b) => b.l.h - a.l.h)[0];
     if (top) {
       const H = top.l.h, group = [top], near = (a, b) => Math.abs(a.l.x - b.l.x) < H * 1.6 && Math.abs(a.l.y - b.l.y) < H * 1.9;
       let grew = true;
@@ -5541,6 +5554,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
   // break ties, and when two or three roasters still fit, you pick.
   const NAME_STOP = new Set(["the", "and", "del", "des", "los", "las", "von", "der", "die", "das", "les", "of", "di", "da", "de", "la", "el", "le", "il"]);
   const coreWords = (name) => norm(calm(String(name || "").split(/:|\(| [-–—|] /)[0])).split(" ").filter((w) => w.length >= 3 && !NAME_STOP.has(w));
+  const GENERIC_NAME = new Set(["washed", "natural", "honey", "decaf", "blend", "espresso", "filter", "house", "seasonal", "single", "origin", "omni", "coffee", "anaerobic", "lot", "microlot", "reserve", "classic", "dark", "light", "medium", "roast"]);
   const near1 = (t, w) => t === w || (w.length >= 4 && Math.abs(t.length - w.length) <= 1 && lev(t, w) <= 1);
   function shelfMatch(f) {
     if (!f || !f.name || !f.name.v || !shelf.length) return null;
@@ -5554,6 +5568,9 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
       const hit = cw.filter(has).length / cw.length; if (hit < 1 && !(cw.length >= 3 && hit >= 0.67)) return;
       if (!cw.some((w) => title.some((t) => t.length >= 4 ? near1(t, w) : t === w))) return;   // the listing's name is the label's title, not a word in the small print
       if (title.filter((t) => !cw.some((w) => near1(t, w))).length > 1) return;   // and the title isn't a longer name that merely contains it
+      const exact = norm(calm(String(r.name).split(/:|\(| [-–—|] /)[0])) === titleFull;
+      if (!rk && !(exact && titleFull.includes(" ")) && cw.every((w) => GEO_WORDS.has(w) || [...GENERIC_NAME].some((g) => near1(w, g)))) return;   // "Washed", "Colombia Decaf": the name alone says nothing ("The Decaf" word for word will do)
+      if (cw.filter((w) => title.some((t) => near1(t, w))).length / cw.length < (cw.length >= 3 ? 0.67 : 1)) return;   // every word of its name is in the label's title
       const sameR = !!rk && (roasterKey(r.roaster) === rk || roasterKey(r.roaster).includes(rk) || rk.includes(roasterKey(r.roaster)));
       let sc = hit * 2;
       if (norm(calm(String(r.name).split(/:|\(| [-–—|] /)[0])) === titleFull) sc += 1;   // the listing is called exactly what the label says ("The Decaf", not just "Decaf")
