@@ -3925,9 +3925,11 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
       : r.brewer === "cold" ? ["time", "12 – 18", "h", readyAt(), ""]
       : r.brewer === "mocca" ? ["time", `${r.lo / 60} – ${r.hi / 60}`, "min", "the machine runs it", ""]
       : ["time", "4 – 5", "min", "medium heat, lid open", ""];
+    const rc = recipeCoffee();
     const S = [
-      ...(surprisePick && surprisePick.roaster ? [["roastery", esc(surprisePick.roaster + (surprisePick.place ? ", " + surprisePick.place : "")), "", "roastery", ""]] : []),
-      ...(surprisePick ? [["pick", esc(calm(surprisePick.name)), "", "coffee", ""]] : []),
+      // every recipe opens with whose coffee it is: Roastery (name, city), then the Coffee's own name
+      ...(rc && rc.roaster ? [["roastery", esc(rc.roaster + (rc.place ? ", " + rc.place : "")), "", "roastery", ""]] : []),
+      ...(rc && rc.name ? [["pick", esc(calm(rc.name)), "", "coffee", ""]] : []),
       ["brewer", esc(BREWERS[r.brewer].name), "", "brewer", ""],   // first, on a line of its own, in the big figures' size
       // the grinder's name on top, the setting with its unit beside the number: Comandante C40 / 29 clicks
       ["key", onMill(r.clicks).txt, keyUnit(onMill(r.clicks).txt), isC40() ? mill().name : mill().words ? `${gw(r.clicks)[2]}, about ${microns(r.clicks)} µm` : millShort(), cBadges.join(", ")],   // just the grinder's name, like Kettle and Coffee
@@ -5332,12 +5334,22 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     const roastWords = r.roast && ROAST[r.roast] ? ROAST[r.roast].label + " roast" : null;   // the scan read it from the roaster: it counts as "from the bag"
     state.text = [r.roaster, r.name, r.origin, r.region, r.variety, r.process, roastWords].filter(Boolean).join(", ") + (notes.length ? ". Notes: " + notes.join(", ") : "");
     state.roastPhoto = null;
-    state.bag = { roaster: r.roaster, name: r.name, origin: r.origin, variety: r.variety, notes, url: r.url };
+    state.bag = { roaster: r.roaster, name: r.name, origin: r.origin, variety: r.variety, notes, url: r.url, place: r.roaster_city || r.city || "" };
     state.process = r.process ? procKey(r.process) : "auto";
     state.listProc = state.process;   // came from the roaster's listing, not from you
     state.roast = r.roast_level === "dark" ? "dark" : r.roast_level === "medium-dark" ? "mdark" : "auto";
     $("coffeeIn").value = state.text; saveState(); renderAllOpts(); render();
     if (jump) landBrewing();
+  }
+  // the coffee in the recipe: Surprise me's pick, a coffee from the list or your bags, or what's typed ("Intermission, Sundial, …")
+  const cityOf = (n) => (shelf.find((r) => r.roaster === n) || {}).roaster_city || "";
+  function recipeCoffee() {
+    if (surprisePick) return { roaster: surprisePick.roaster, place: surprisePick.place || cityOf(surprisePick.roaster), name: surprisePick.name };
+    const b = state.bag; if (b && b.name) return { roaster: b.roaster || "", place: b.place || cityOf(b.roaster), name: b.name };
+    const t = String(state.text || "").replace(/\.\s*Notes:.*$/i, "").trim(); if (!t) return null;
+    const nt = norm(t), ro = (knownRoasters || []).filter((n) => { const k = norm(n); return k && (nt === k || nt.startsWith(k + " ")); }).sort((a, z) => z.length - a.length)[0];
+    if (ro) { const rest = t.split(/,\s*/).slice(1); return { roaster: ro, place: cityOf(ro), name: rest[0] || "" }; }
+    return { roaster: "", place: "", name: t.split(/,\s*/)[0] };
   }
   // land on What’s brewing?, with the coffee filled in and nothing selected: no text highlighted, no field or button holding focus
   function landBrewing() {
