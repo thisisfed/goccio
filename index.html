@@ -878,7 +878,7 @@ body, .lede, .ask label, .need h3, .log h3, .sec-head .cap:first-child, .mark, .
 .mark-on .mark { opacity: 1; transform: none; }
 /* A Bag to a Cup: ABC first, then the letters in between open out */
 .mark.abc { gap: 0 !important; }
-.mark.abc .k { white-space: pre; }   /* the header reads AB to a C until tapped */
+.mark.abc .k { white-space: pre; }   /* the header reads A B to a C until tapped */
 .mark.abc .r { display: inline-block; overflow: hidden; white-space: pre; vertical-align: bottom; padding-bottom: .26em; margin-bottom: -.26em; }   /* opened by abcOpen(), the same as the big wordmark */
 
 /* hero: words and intro on top, the big name sitting on the bottom of the first screen */
@@ -1936,7 +1936,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
 <body>
 <header class="top">
   <div class="top-in">
-    <div class="mark abc" aria-label="A Bag to a Cup"><span class="i">A</span><span class="r" aria-hidden="true"> </span><span class="i">B</span><span class="r" aria-hidden="true">ag</span><span class="k" aria-hidden="true"> to a </span><span class="i">C</span><span class="r" aria-hidden="true">up</span></div>
+    <div class="mark abc" aria-label="A Bag to a Cup"><span class="i">A</span><span class="k" aria-hidden="true"> </span><span class="i">B</span><span class="r" aria-hidden="true">ag</span><span class="k" aria-hidden="true"> to a </span><span class="i">C</span><span class="r" aria-hidden="true">up</span></div>
     <nav class="nav" aria-label="Sections">
       <button type="button" data-jump="shelves"><span class="nw">New c</span><span class="nc">C</span>offees</button>
       <button type="button" data-jump="recipe">Recipe</button>
@@ -6200,10 +6200,15 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     // 2. a breath with A, B and C in place (.5 s), then typed, in order: A Bag (long pause) to (short pause) a Cup
     const seq = [...el.querySelectorAll(".i, .k, .r .ch")], at = new Map(); let full = "";
     seq.forEach((n) => { if (n.classList.contains("ch")) at.set(full.length, n); full += n.textContent; });
-    const PAUSE = { 2: 0.9, 3: 0.35 }; let t = 1.95, word = 0;   // after word 2 (Bag) and word 3 (to)
+    // one even typing beat for every letter of a word being typed (a letter already in place, like the C of Cup, still takes its beat)
+    const wid = []; let w = 0; for (let k = 0; k < full.length; k++) { if (full[k] === " ") wid[k] = 0; else { if (!k || full[k - 1] === " ") w++; wid[k] = w; } }
+    const live = new Set([...at.keys()].map((k) => wid[k]).filter(Boolean));
+    const STEP = 0.075, PAUSE = { 2: 0.8, 3: 0.4 }; let t = 1.95;   // A Bag (long pause) to (short pause) a Cup
     for (let k = 0; k < full.length; k++) {
-      const c = at.get(k); if (c) { c.style.transition = `opacity .25s ease ${t.toFixed(3)}s`; c.style.opacity = "1"; t += 0.06; }
-      if (full[k] !== " " && (k + 1 === full.length || full[k + 1] === " ")) { word++; t += PAUSE[word] || 0; }
+      const c = at.get(k);
+      if (c) { c.style.transition = `opacity .18s ease ${t.toFixed(3)}s`; c.style.opacity = "1"; t += STEP; }
+      else if (live.has(wid[k])) t += STEP;
+      if (wid[k] && live.has(wid[k]) && (k + 1 === full.length || full[k + 1] === " ")) t += PAUSE[wid[k]] || 0;
     }
     el._abcT = setTimeout(() => rs.forEach((r) => { r.style.maxWidth = "none"; r.style.overflow = "visible"; }), 1500);   // whole again: nothing clipped (the p of Cup), and a resize keeps it right
   }
