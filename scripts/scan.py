@@ -89,9 +89,11 @@ DARK = re.compile(r"dark roast|medium[- ]dark|french roast|italian roast", re.I)
 # a tag, or an "X roast" phrase in the coffee's own description; never from anywhere on a page.
 ROAST_WORDS = [
     ("vlight", r"very[- ]light|ultra[- ]?light|extra[- ]light|super[- ]light|lightest|nordic|bardzo jasn|zeer licht|sehr hell|tr[eè]s clair|molto chiar|muy clar"),
+    # medium-light is the light end of medium, not a light roast (Bella Barista's "Roast level: Medium-Light")
+    ("medium", r"medium[- ]light|light[- ]medium|light[- ]to[- ]medium|medium[- ]to[- ]light"),
     ("mdark", r"medium[- ]dark|full[- ]city|mittel[- ]?dunkel|moyen[- ]fonc|medio[- ]scur|[sś]rednio[- ]ciemn|halvm[øö]rk"),
     ("dark", r"\bdark|ciemn|donker|dunkel|fonc[ée]|\bscur[ao]|oscur[ao]|m[øö]rk"),
-    ("light", r"medium[- ]light|light[- ]medium|\blight|\blys\b|\bljus|vaalea|\bhell\b|\bclair|chiar[ao]|jasn|\bclaro|\blicht\b"),
+    ("light", r"\blight|\blys\b|\bljus|vaalea|\bhell\b|\bclair|chiar[ao]|jasn|\bclaro|\blicht\b"),
     ("medium", r"\bmedium|\bmittel|\bmoyen|\bmedi[oa]\b|[sś]redni|middels|mellan"),
 ]
 ROAST_LINE = re.compile(r"\b(?:roast(?:ing)?(?: level| degree| profile| colou?r| style)?|röstgrad|röstung|rostning(?:sgrad)?|brenning(?:sgrad)?|"
@@ -1494,7 +1496,7 @@ PAGE_LABEL = {
 PAGE_FETCHES_PER_ROASTER = 300
 # a coffee's page is read for its roast once per version of the roast reader: when the reader learns a new
 # way shops write it, every coffee still without a roast gets one more look, and never again after that
-ROAST_CHECK = 2
+ROAST_CHECK = 3
 
 
 JSON_PROCESS = [re.compile(r'"(?:process(?:ing)?(?:_method|Method)?)"\s*:\s*"([^"]{2,60})"', re.I),
@@ -1728,7 +1730,7 @@ def add_page_details(recs, roaster, old):
             rec["roast_for"] = "filter" if "filter" in prev["methods"] else "espresso"
         if prev.get("methods_none"):
             rec["methods_none"] = True
-        if not rec.get("roast") and prev.get("roast") and prev.get("roast_from") == "page":
+        if not rec.get("roast") and prev.get("roast") and prev.get("roast_from") == "page" and prev.get("roast_checked") == ROAST_CHECK:
             rec["roast"], rec["roast_from"] = prev["roast"], "page"
         if prev.get("roast_checked") == ROAST_CHECK:
             rec["roast_checked"] = ROAST_CHECK
