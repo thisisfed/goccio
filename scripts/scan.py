@@ -78,7 +78,7 @@ EXCLUDE = re.compile(r"subscri|abonnement|abbonamento|\babo\b|suscripci|assinatu
                      r"\b\d+(?:[.,]\d+)?\s?kg\b|\btin\b|longjing|sencha|oolong|rooibos|darjeeling|\bassam\b|earl grey|bai hao|jasmine (?:green|tea|pearl)|"
                      r"sticker|socks?\b|bandana|poster|\binsert\b|screw|basket|portafilter|gasket|spout|tablets?\b|cleaner|\bpin\b|scoop|\bjar\b|"
                      r"\bcake\b|bread\b|sandwich|tumbler|calendar|kalender|shipping\b|postcard|\bpaper\b|filtry|\bfilters\b|\bcards?\b|\bhoney (?:jar|mini)|"
-                     r"coffee blossom honey|surprise|we choose|filter cone|\bcone\b|\boffice\b|\bgreen\s*$|\bsample\b|cupping|atelier|d[ée]gustation", re.I)
+                     r"coffee blossom honey|surprise|super jolly|\bkony\b|\bphilos\b|we choose|filter cone|\bcone\b|\boffice\b|\bgreen\s*$|\bsample\b|cupping|atelier|d[ée]gustation", re.I)
 FILTERY = re.compile(r"\bfilter\b|\bomni\b|pour[- ]?over|\bv60\b|chemex|batch brew|filter roast|\bfiltro\b|\bfiltre\b|"
                      r"filterröst|filterkaffe|handfilter|brew roast", re.I)
 ESPRESSO = re.compile(r"\bespresso\b", re.I)
@@ -1155,6 +1155,7 @@ def clean_name(title, roaster, origin):
     title = re.sub(r"<[^>]+>", "", title)
     title = re.sub(r"^\s*\d{1,2}/\d{1,2}\s+\d{1,2}:\d{2}\s*[~〜～]\s*", "", title)   # Philocoffea: "11/16 10:00~" release stamp
     title = re.sub(r"\s*/\s*$", "", title)   # Fuglen Tokyo: "Arbegona /"
+    title = re.sub(r"\s*\(\s*\d+\s?(?:g|gr|kg)\b[^)]*\)\s*$", "", title, flags=re.I)   # Pergamino: "Lomaverde (500g coffee bag)"
     m = re.match(r"^\s*\d{3}\s+(\S.*)$", title)   # Philocoffea: "467 Ethiopia Bombe Washed", a lot number in front of the origin
     if m and (find_origin(m.group(1)[:25]) or re.match(r"[A-Z]", m.group(1))):
         title = m.group(1)
@@ -1450,7 +1451,8 @@ def classify(item, roaster):
                        or re.search(r"/coff?ees?/[^/?#]+/?$", item.get("url") or "", re.I)):
         # the shop's feed doesn't say where it's from (Nomad, Dak, Blossom...): read the product page
         origin = origin_from_page(item, roaster)
-    if not origin and roaster.get("country") in GROWING_HOME and COFFEE_HINT.search(full):
+    if not origin and roaster.get("country") in GROWING_HOME and COFFEE_HINT.search(full) \
+            and re.search(r"\b\d{2,4}\s?g\b|gr[aã]os|grano|mo[ií]do|molido|whole bean|ground", f"{title} {item['variants']}", re.I):
         # a roaster in a growing country names the farm, not the country: Pergamino's "Lomaverde" is Colombian
         origin = GROWING_HOME[roaster["country"]]
     blend = blend_reason(item)
