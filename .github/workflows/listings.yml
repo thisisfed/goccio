@@ -31,9 +31,9 @@ jobs:
         run: python scripts/discover.py --listings
       - name: Save new roasters
         run: |
-          if ! git diff --quiet data/roasters.json; then
+          if ! git diff --quiet data/roasters.json data/removed.json; then
             git config user.name "github-actions[bot]"
             git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
-            git commit -qam "New roasters from listing requests $(date -u +%d/%m/%Y)"
+            git commit -qam "Listing and removal requests $(date -u +%d/%m/%Y)"
             git push -q
           fi

@@ -159,6 +159,53 @@ def gh(method, path, body=None):
         return json.loads(r.read() or b"null")
 
 
+REMOVED = ROOT / "data" / "removed.json"   # shops whose roasters asked to be taken off: never added back by the directory
+
+
+def removed():
+    try:
+        return set(json.loads(REMOVED.read_text()))
+    except (OSError, ValueError):
+        return set()
+
+
+def save_roasters(roasters):
+    (ROOT / "data" / "roasters.json").write_text("[\n" + ",\n".join("  " + json.dumps(r, ensure_ascii=False) for r in roasters) + "\n]\n")   # one roaster a line, as the file is kept
+
+
+def same_owner(email, shop):
+    """True when the email is at the shop's own domain (shop.x.co.uk and x.co.uk both match hello@x.co.uk)."""
+    d = (email or "").rsplit("@", 1)[-1].lower()
+    h = host(shop)
+    return bool(d) and (h == d or h.endswith("." + d) or d.endswith("." + h))
+
+
+def removals():
+    """Requests from the "Ask to be removed" form (issues labelled "removal"). When the email is at the shop's own
+    domain the shop comes off data/roasters.json and goes on data/removed.json at once; otherwise the issue stays
+    open for a person to check, so nobody can take a rival off the site."""
+    roasters = json.loads((ROOT / "data" / "roasters.json").read_text())
+    gone, out = removed(), []
+    for iss in gh("GET", "/issues?labels=removal&state=open&per_page=50"):
+        m = re.search(r"```json\s*(\{.*?\})\s*```", iss.get("body") or "", re.S)
+        if not m:
+            continue
+        req = json.loads(m.group(1))
+        h = host(req["shop"])
+        if not same_owner(req.get("email"), req["shop"]):
+            gh("POST", f"/issues/{iss['number']}/comments", {"body": f"Not removed yet: {req.get('email')} isn't at {h}. Check it's the roaster, then add {h} to data/removed.json and take it off data/roasters.json."})
+            continue
+        before = len(roasters)
+        roasters = [r for r in roasters if host(r["shop"]) != h and host(r.get("feed") or "") != h]
+        gone.add(h); out.append(h)
+        gh("POST", f"/issues/{iss['number']}/comments", {"body": f"Removed {h} ({before - len(roasters)} on the list). Its coffees go at the next daily scan. Reply to {req.get('email')} to say so."})
+        gh("PATCH", f"/issues/{iss['number']}", {"state": "closed"})
+    if out:
+        save_roasters(roasters)
+        REMOVED.write_text(json.dumps(sorted(gone), indent=1) + "\n")
+    print(f"removal requests: {len(out)} removed: {', '.join(out)}")
+
+
 def listings():
     """Requests from the Get your roastery listed page (issues labelled "listing"): check each shop with the real scanner,
     add the ones with coffees to data/roasters.json, and answer the issue. A request it can't read stays open for a person."""
@@ -185,7 +232,9 @@ def listings():
         else:
             gh("POST", f"/issues/{iss['number']}/comments", {"body": f"Not added: the scanner {'reads the shop (' + c['platform'] + ') but finds no coffee beans in it' if c['platform'] else 'cannot read the shop'}. {(c.get('error') or '')[:300]}"})
     if added:
-        (ROOT / "data" / "roasters.json").write_text("[\n" + ",\n".join("  " + json.dumps(r, ensure_ascii=False) for r in roasters) + "\n]\n")   # one roaster a line, as the file is kept
+        save_roasters(roasters)
+    if added and REMOVED.exists():   # a roaster who asked to come back is no longer on the removed list
+        REMOVED.write_text(json.dumps(sorted(removed() - {host(r["shop"]) for r in roasters}), indent=1) + "\n")
     print(f"listing requests: {len(added)} added: {', '.join(added)}")
 
 
@@ -212,6 +261,7 @@ def contacts(shop):
 
 def main():
     if "--listings" in sys.argv[1:]:
+        removals()
         return listings()
     if "--contacts" in sys.argv[1:]:
         shops = [u.strip() for u in sys.argv[sys.argv.index("--contacts") + 1].split(",") if u.strip()]
@@ -220,7 +270,7 @@ def main():
                 print("CONTACT " + json.dumps(c))
         return
     roasters = json.loads((ROOT / "data" / "roasters.json").read_text())
-    have_hosts = {host(r["shop"]) for r in roasters} | {host(r["feed"]) for r in roasters if r.get("feed")}
+    have_hosts = {host(r["shop"]) for r in roasters} | {host(r["feed"]) for r in roasters if r.get("feed")} | removed()
     have_names = {norm(r["name"]) for r in roasters}
     args = sys.argv[1:]
     if "--urls" in args:

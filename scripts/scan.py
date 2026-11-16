@@ -2128,10 +2128,12 @@ def main():
         print(f"{r['name']:<26} {kind or 'FAILED':<12} {kept:>3} {err or ''}")
 
     status = prev_status + status
-    # keep last week's coffees from roasters that failed this time (temporary outages)
+    # keep last week's coffees from roasters that failed this time (temporary outages),
+    # but never from a roaster that has left data/roasters.json (one that asked to be removed goes at once)
     urls = {x["url"] for x in found}
+    listed = {r["name"] for r in json.loads(ROASTERS.read_text())}
     for u, x in old.items():
-        if x["roaster"] not in scanned_ok and u not in urls:
+        if x["roaster"] not in scanned_ok and u not in urls and x["roaster"] in listed:
             found.append(x)
 
     # safety net: re-check everything that will be published, including entries carried over from
