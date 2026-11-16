@@ -1178,6 +1178,8 @@ def clean_name(title, roaster, origin):
         if len(re.sub(r"[^A-Za-z]", "", name)) < 4:     # "COLOMBIA | EA | Castillo | Decaf" -> "Colombia EA"
             o = next((p for p in parts if find_origin(p)), "")
             name = f"{o} {name}".strip()
+    elif len(parts) == 2 and re.fullmatch(r"\s*[A-Za-z]+ & [A-Za-z]+\s*", parts[0]) and find_origin(parts[1]):
+        name = parts[1].strip()     # Kaffa Roastery: "Fruity & Floral - Nicaragua Santa Isabel", the shop's flavour style first
     elif len(parts) == 2 and find_origin(parts[1]):
         name = parts[0]
     elif len(parts) == 2 and find_origin(parts[0]) and len(parts[0]) <= len(find_origin(parts[0])) + 2:
