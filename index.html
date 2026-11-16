@@ -1792,7 +1792,11 @@ body{transition:opacity .3s ease}
 .gear-tools .opt > span{height:var(--pill-h);display:flex;align-items:center;padding-top:0!important}   /* the label sits level with the first row of pills */
 .gear-tools .chips{display:flex;flex-wrap:wrap;gap:4px;justify-self:start}
 .gear-tools .gear-go{display:flex;flex-direction:column;align-items:flex-start;gap:8px}
-.gear-tools .gear-btn:hover, .ro-head .ro-pill:hover{background:color-mix(in srgb, var(--pill) 80%, var(--ink))}   /* the grey pills' hover */
+.gear-tools .gear-btn:hover, #expBox .sp-buy{margin:0;padding:0 0 18px}
+#expBox .ro-pill{display:inline-flex;align-items:center;height:var(--pill-h);padding:0 12px;border-radius:var(--r);background:var(--pill);color:var(--ink);
+  font:500 var(--fs-s)/1 var(--sans);text-decoration:none}
+#expBox .ro-pill:hover{background:color-mix(in srgb, var(--pill) 80%, var(--ink))}
+.ro-head .ro-pill:hover{background:color-mix(in srgb, var(--pill) 80%, var(--ink))}   /* the grey pills' hover */
 .gear-tools .chip.armed{background:var(--hl)!important;color:var(--on-hl)!important}   /* Remove?: the accent, as on a saved bag */
 .gear-tools .gear-btn{display:inline-flex;align-items:center;height:var(--pill-h);padding:0 12px;border:0;border-radius:var(--r);background:var(--pill);color:var(--ink);
   font:500 var(--fs-s)/1 var(--sans);letter-spacing:inherit;cursor:pointer}   /* the same grey pill as Brew and Save */
@@ -3911,6 +3915,19 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     const rk = risks(r);
     $("why").innerHTML = rk.map((w) => `<li class="warn">${esc(w)}</li>`).join("") + cons.map((w) => `<li class="cons">${esc(w)}</li>`).join("") + why.map((w) => `<li>${esc(w)}</li>`).join("");
     $("expect").innerHTML = expectCup(r).map((w) => { const i = w.indexOf(": "); return `<li><b>${esc(w.slice(0, i))}</b>${esc(w.slice(i))}</li>`; }).join("");
+    // Surprise me: What to expect comes open straight under the numbers, with Buy this bag for a coffee you don't have,
+    // so you can decide before reading the rest; any other recipe puts it back, folded, where it lives
+    { const box = $("expBox"); if (!box._home) box._home = { parent: box.parentNode, next: box.nextElementSibling };
+      let buy = box.querySelector(".sp-buy");
+      if (surprisePick) {
+        if (box.previousElementSibling !== $("specs")) { $("specs").after(box); box.open = true; }
+        if (surprisePick.url && !hasBag(currentBag())) {
+          if (!buy) { buy = document.createElement("p"); buy.className = "sp-buy"; box.appendChild(buy); }
+          buy.innerHTML = `<a class="ro-pill" href="${esc(surprisePick.url)}" target="_blank" rel="noopener">Buy this bag</a>`;
+        } else if (buy) buy.remove();
+      } else if (box.parentNode !== box._home.parent || box.previousElementSibling === $("specs")) {
+        box._home.parent.insertBefore(box, box._home.next); box.open = false; if (buy) buy.remove();
+      } }
     $("whyHint").textContent = rk.length ? `${rk.length} warning${rk.length > 1 ? "s" : ""}` : ""; $("whyHint").classList.toggle("warn", rk.length > 0);
 
     const lighter = Math.round((r.ratio + 1) * 10) / 10, stronger = Math.round((r.ratio - 1) * 10) / 10;
