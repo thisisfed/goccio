@@ -1086,15 +1086,15 @@ def find_process(text):
                       (r"anaerobic honey", "Anaerobic honey"), (r"carbonic maceration", "Carbonic maceration"),
                       (r"co-?ferment", "Co-fermented"), (r"thermal shock|\bthermic\b", "Thermal shock"),
                       (r"mac[ée]ration carbonique|carbonic", "Carbonic maceration"),
-                      (r"yeast|inoculat|\bkoji\b|mosto", "Yeast fermented"),
+                      (r"yeast|inoculat|\bkoji\b|mosto|\bhefe\b", "Yeast fermented"),
                       (r"anaerobic", "Anaerobic"), (r"double fermentation|double ferment", "Double fermented"),
                       (r"anaerob", "Anaerobic"),
                       (r"\baerobic\b", "Aerobic fermentation"), (r"\bcultur(?:ed|ing)\b", "Yeast fermented"),
                       (r"wet[- ]hull|giling basah", "Wet-hulled"),
                       (r"monsoon(?:ed|ing)", "Monsooned"), (r"semi[- ]washed", "Semi-washed"),
-                      (r"\bnatural\b|\bnaturally (?:processed|dried)\b|\bnaturalna\b|\bnature\b(?= mac[ée]ration| process)|dry[- ]process|\bnaturale\b|\bnaturel\b|\bnatur\b|naturlig|\bnatuurlijk", "Natural"),
+                      (r"\bnatural\b|\bnaturally (?:processed|dried)\b|\bnaturalna\b|\bnature\b(?= mac[ée]ration| process)|dry[- ]process|\bnaturale\b|\bnaturel\b|\bnatur\b|naturlig|\bnatuurlijk|t[øo]rrforedl", "Natural"),
                       (r"\bhoney\b|pulped natural|\bmiel\b|\bhonig\b|\bmiele\b|\bmiodowa\b", "Honey"),
-                      (r"\bwashed\b|\b(?:extended|double|fully)[- ]wash(?:ed)?\b|wet[- ]process|\blavato\b|gewaschen|\blavé\b|\blavado\b|tvättad|\bvasket\b|gewassen|vaskad|\bmyta\b|\bmyt[aey]\b", "Washed")]:
+                      (r"\bwashed\b|\b(?:extended|double|fully)[- ]wash(?:ed)?\b|wet[- ]process|\blavato\b|gewaschen|\blavé\b|\blavado\b|tvättad|\bvasket\b|v[åa]tforedl|gewassen|vaskad|\bmyta\b|\bmyt[aey]\b", "Washed")]:
         if re.search(pat, t):
             return name
     return None

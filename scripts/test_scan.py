@@ -98,6 +98,19 @@ CASES = [
                   {**UK, "name": "Um Coffee Co", "country": "BR", "region": "World"}) is None),
     # Onyx (16/11/2026)
     ("Onyx's Cometeer frozen capsules are not beans", lambda: scan.EXCLUDE.search("Eclipse - Cometeer") is not None),
+    # 12% of coffees had no process (16/11/2026): pages that say it in a sentence, not under a label
+    ("'Processed using Giling Basah' with flavour in the same sentence is wet-hulled",
+     lambda: scan.process_phrase("Processed using Giling Basah, this coffee has a huge body and a spicy aroma with hints of tobacco.") == "Wet-hulled"),
+    ("'it is a fully washed coffee, which gives ... a note of marzipan' is washed",
+     lambda: scan.process_phrase("It is a fully washed coffee, which gives a rich creamy body and a lovely note of marzipan.") == "Washed"),
+    ("'PROCESS | Fully WashedELEVATION' is washed", lambda: scan.process_phrase("VARIETAL | Typica, Caturra, PROCESS | Fully WashedELEVATION | 1,200-1,800") == "Washed"),
+    ("'Brazilian coffee (usually natural process)' says nothing sure about this coffee",
+     lambda: scan.process_phrase("The full bodied taste of the best Brazilian coffee (usually natural process) with chocolate.") is None),
+    ("'80% natural and 20% honey processing' is not called honey", lambda: scan.process_phrase("This lot combines 80% natural and 20% honey processing.") is None),
+    ("'if you enjoy Monsooned Malabar' doesn't make this coffee monsooned",
+     lambda: scan.process_phrase("If you enjoy Brazil or Indian Monsooned Malabar Coffee, try this lighter Limu.") is None),
+    ("'the natural sweetness of the coffee' is a flavour, not a process", lambda: scan.process_phrase("It brings out the natural sweetness of the coffee.") is None),
+    ("Kaffa's 'våtforedlet' is washed", lambda: scan.find_process("partiet er våtforedlet") == "Washed"),
 ]
 
 
