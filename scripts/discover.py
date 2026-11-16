@@ -8,7 +8,7 @@ honest user agent. Nothing is added to the list: the result goes to data/candida
     python3 scripts/discover.py            # the whole directory
     python3 scripts/discover.py --urls https://a.example,https://b.example   # just these shops (the listing page's requests)
 """
-import json, re, sys, html
+import json, os, re, sys, html
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from urllib.parse import urlparse
@@ -148,7 +148,50 @@ def probe(c):
     return c
 
 
+def gh(method, path, body=None):
+    """GitHub's REST API with the workflow's own token (issues on this private repo only)."""
+    import urllib.request
+    req = urllib.request.Request(f"https://api.github.com/repos/{os.environ['GITHUB_REPOSITORY']}{path}", method=method,
+                                 data=json.dumps(body).encode() if body is not None else None,
+                                 headers={"Authorization": f"Bearer {os.environ['GH_TOKEN']}", "Accept": "application/vnd.github+json",
+                                          "User-Agent": "bagtocup-listings", "Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=30) as r:
+        return json.loads(r.read() or b"null")
+
+
+def listings():
+    """Requests from the Get your roastery listed page (issues labelled "listing"): check each shop with the real scanner,
+    add the ones with coffees to data/roasters.json, and answer the issue. A request it can't read stays open for a person."""
+    roasters = json.loads((ROOT / "data" / "roasters.json").read_text())
+    have = {host(r["shop"]) for r in roasters}
+    added = []
+    for iss in gh("GET", "/issues?labels=listing&state=open&per_page=50"):
+        m = re.search(r"```json\s*(\{.*?\})\s*```", iss.get("body") or "", re.S)
+        if not m:
+            continue
+        req = json.loads(m.group(1))
+        shop = req["shop"].rstrip("/")
+        if host(shop) in have:
+            gh("POST", f"/issues/{iss['number']}/comments", {"body": "Already on the list."}); gh("PATCH", f"/issues/{iss['number']}", {"state": "closed"}); continue
+        c = probe({"name": req["name"], "shop": shop})
+        if c["coffees"]:
+            ie = host(shop).endswith(".ie")
+            r = {"name": req["name"], "shop": shop, "city": req.get("town") or "", "region": "UK", "country": "IE" if ie else "GB"}
+            if not ie:
+                r["nation"] = nation(req.get("town") or "")
+            roasters.append(r); have.add(host(shop)); added.append(r["name"])
+            gh("POST", f"/issues/{iss['number']}/comments", {"body": f"Added: the scanner reads {c['coffees']} coffees ({c['platform']}), e.g. {', '.join(c['sample'][:3])}. They appear after the next daily scan. Reply to {req.get('email')} to say so."})
+            gh("PATCH", f"/issues/{iss['number']}", {"state": "closed"})
+        else:
+            gh("POST", f"/issues/{iss['number']}/comments", {"body": f"Not added: the scanner {'reads the shop (' + c['platform'] + ') but finds no coffee beans in it' if c['platform'] else 'cannot read the shop'}. {(c.get('error') or '')[:300]}"})
+    if added:
+        (ROOT / "data" / "roasters.json").write_text("[\n" + ",\n".join("  " + json.dumps(r, ensure_ascii=False) for r in roasters) + "\n]\n")   # one roaster a line, as the file is kept
+    print(f"listing requests: {len(added)} added: {', '.join(added)}")
+
+
 def main():
+    if "--listings" in sys.argv[1:]:
+        return listings()
     roasters = json.loads((ROOT / "data" / "roasters.json").read_text())
     have_hosts = {host(r["shop"]) for r in roasters} | {host(r["feed"]) for r in roasters if r.get("feed")}
     have_names = {norm(r["name"]) for r in roasters}

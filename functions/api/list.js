@@ -1,0 +1,66 @@
+// "Get your roastery listed" (POST /api/list), a Cloudflare Pages Function.
+// 1. Checks the form (a hidden honeypot field stops most bots).
+// 2. Looks at the shop once, the way the daily scan does: Shopify's /products.json, WooCommerce's Store API,
+//    Squarespace's ?format=json, else a sitemap. It reads nothing private and buys nothing.
+// 3. Files the request as a GitHub issue (label "listing") in the private repo, if the LISTING_TOKEN secret is set.
+//    The "Find new roasters" workflow picks those up, checks them with the real scanner and adds the ones it can read.
+// The roaster's email is used only to reply about the listing; it goes into that private issue and nowhere else.
+
+const UA = "BagToCup/1.0 (+https://bagtocup.thisisfed.xyz/list/; checking a shop that asked to be listed)";
+const REPO = "thisisfed/v60";
+
+const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } });
+
+async function get(url, accept = "application/json") {
+  const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 8000);
+  try {
+    const r = await fetch(url, { headers: { "User-Agent": UA, Accept: accept }, redirect: "follow", signal: ctl.signal });
+    return r.ok ? r : null;
+  } catch (e) { return null; } finally { clearTimeout(t); }
+}
+
+// what the scan would find: the platform and how many products it can see (coffee or not; the scan sorts that out)
+async function probe(shop) {
+  let r = await get(`${shop}/products.json?limit=250`);
+  if (r) { try { const d = await r.json(); if (Array.isArray(d.products)) return { platform: "Shopify", products: d.products.length }; } catch (e) {} }
+  r = await get(`${shop}/wp-json/wc/store/v1/products?per_page=100`);
+  if (r) { try { const d = await r.json(); if (Array.isArray(d)) return { platform: "WooCommerce", products: d.length }; } catch (e) {} }
+  r = await get(`${shop}/shop?format=json`);
+  if (r) { try { const d = await r.json(); if (d && (d.items || d.collection)) return { platform: "Squarespace", products: (d.items || []).length }; } catch (e) {} }
+  r = await get(`${shop}/sitemap.xml`, "application/xml,text/xml");
+  if (r) { const t = await r.text(); const n = (t.match(/<loc>[^<]*(product|shop|coffee)[^<]*<\/loc>/gi) || []).length; if (n) return { platform: "sitemap", products: n }; }
+  return { platform: null, products: 0 };
+}
+
+export async function onRequestPost({ request, env }) {
+  let f;
+  try { f = await request.formData(); } catch (e) { return json({ ok: false, msg: "That didn't come through. Try again." }, 400); }
+  if ((f.get("website2") || "").toString().trim()) return json({ ok: true, msg: "Thanks." });   // honeypot: a person never fills this
+  const name = (f.get("name") || "").toString().trim().slice(0, 80);
+  const town = (f.get("town") || "").toString().trim().slice(0, 60);
+  const email = (f.get("email") || "").toString().trim().slice(0, 120);
+  const note = (f.get("note") || "").toString().trim().slice(0, 600);
+  let shop = (f.get("shop") || "").toString().trim();
+  if (!name || !shop || !email) return json({ ok: false, msg: "Please fill in your roastery's name, its shop and an email address." }, 400);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ ok: false, msg: "That email address doesn't look right." }, 400);
+  if (!/^https?:\/\//i.test(shop)) shop = "https://" + shop;
+  let u; try { u = new URL(shop); } catch (e) { return json({ ok: false, msg: "That shop address doesn't look right." }, 400); }
+  if (!/\./.test(u.hostname) || /bagtocup|thisisfed|localhost/.test(u.hostname)) return json({ ok: false, msg: "That shop address doesn't look right." }, 400);
+  shop = `${u.protocol}//${u.hostname}`;
+  if (f.get("consent") !== "yes") return json({ ok: false, msg: "Please tick the box that says we may read your shop once a day." }, 400);
+
+  const p = await probe(shop);
+  const seen = p.platform ? `We can read your shop (${p.platform}, ${p.products} product${p.products === 1 ? "" : "s"} visible).` : "We couldn't read your shop automatically, so a person will look at it.";
+
+  if (!env.LISTING_TOKEN) return json({ ok: false, msg: `${seen} Listing requests open very soon: please try again in a few days.` }, 503);
+  const body = ["```json", JSON.stringify({ name, shop, town, email, note, platform: p.platform, products: p.products, at: new Date().toISOString() }, null, 1), "```"].join("\n");
+  const gh = await fetch(`https://api.github.com/repos/${REPO}/issues`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${env.LISTING_TOKEN}`, Accept: "application/vnd.github+json", "User-Agent": "bagtocup-listing", "content-type": "application/json" },
+    body: JSON.stringify({ title: `Listing: ${name}`, body, labels: ["listing"] }),
+  }).catch(() => null);
+  if (!gh || !gh.ok) return json({ ok: false, msg: `${seen} Something went wrong on our side saving your request. Please try again later.` }, 502);
+  return json({ ok: true, msg: p.platform ? `${seen} Your coffees should appear within two days. We'll email you if anything needs checking.` : `${seen} We'll email you within a week.` });
+}
+
+export const onRequestGet = () => json({ ok: false, msg: "Send the form on /list/." }, 405);
