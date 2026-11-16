@@ -1789,6 +1789,11 @@ body{transition:opacity .3s ease}
 .gear-tools .opt > span{font:500 var(--fs-s)/1.2 var(--sans);color:var(--muted);margin:0}
 .gear-tools .chips{display:flex;flex-wrap:wrap;gap:4px;justify-self:start}
 .gear-tools .gear-go{display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+.gear-tools .gear-btn{display:inline-flex;align-items:center;height:var(--pill-h);padding:0 12px;border:0;border-radius:var(--r);background:var(--pill);color:var(--ink);
+  font:500 var(--fs-s)/1 var(--sans);letter-spacing:inherit;cursor:pointer}   /* the same grey pill as Brew and Save */
+.specs .spec.pick{grid-column:1 / -1!important;order:-1!important;min-width:0;border-top:0!important}   /* Surprise me: the coffee it picked, above the brewer */
+.specs .spec.pick b{display:block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15;padding-bottom:.04em}
+.specs .spec.pick ~ .spec.brewer{border-top:1px solid var(--rule)!important}
 .gear-tools .gear-note{margin:0;font:500 var(--fs-s)/1.35 var(--sans);color:var(--muted)}
 /* Light roast: the freezer's square tick pill, its name in the label column */
 .shelf-tools .opt > span{white-space:nowrap}   /* "Light roast" is 2 px wider than the column: it runs into the gap, not onto two lines */
@@ -1913,7 +1918,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     <div class="gear-tools">
       <div class="opt"><span id="labGB">Brewers</span><div class="chips" id="gearB" role="group" aria-labelledby="labGB"></div></div>
       <div class="opt"><span id="labGG">Grinders</span><div class="chips" id="gearG" role="group" aria-labelledby="labGG"></div></div>
-      <div class="opt"><span></span><div class="gear-go"><button type="button" class="btn" id="surprise">Surprise me</button>
+      <div class="opt"><span></span><div class="gear-go"><button type="button" class="gear-btn" id="surprise">Surprise me</button>
         <p class="gear-note" id="gearNote">A random recipe from your equipment and your bags.</p></div></div>
     </div>
   </section>
@@ -3807,6 +3812,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
       : r.brewer === "cold" ? ["time", "12 – 18", "h", readyAt(), ""]
       : ["time", "4 – 5", "min", "medium heat, lid open", ""];
     const S = [
+      ...(surprisePick ? [["pick", esc(calm(surprisePick.name)), "", surprisePick.roaster || "your coffee", ""]] : []),
       ["brewer", esc(BREWERS[r.brewer].name), "", "brewer", ""],   // first, on a line of its own, in the big figures' size
       ["key", onMill(r.clicks).txt, "", isC40() ? mill().lbl : mill().words ? `${gw(r.clicks)[2]}, about ${microns(r.clicks)} µm` : mill().name, cBadges.join(", ")],   // just the grinder's name, like Kettle and Coffee
       ["dose", r.dose, "g", r.brewer === "moka" ? `basket, full and level (${doseName(r)} pot)` : K === "shot" ? "coffee in" : "coffee", ""],
@@ -5095,20 +5101,19 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
   }
   // ---------- my equipment: the brewers and grinders you own, and a random recipe from them and your bags ----------
   const GEAR_KEY = "v60.gear";
+  var surprisePick = null;   // the coffee Surprise me picked, shown at the top of the recipe until you pick another way
   let gear = { brewers: [], grinders: [] };
   try { const g = JSON.parse(localStorage.getItem(GEAR_KEY) || "{}"); gear = { brewers: (g.brewers || []).filter((k) => BREWERS[k]), grinders: (g.grinders || []).filter((k) => GRINDERS[k]) }; } catch (e) {}
   const saveGear = () => { try { localStorage.setItem(GEAR_KEY, JSON.stringify(gear)); } catch (e) {} };
   const pickOne = (a) => a[Math.floor(Math.random() * a.length)];
-  let gearAllG = false;   // the grinder list is long: yours, plus All grinders to add another
   function renderGear() {
     const row = (id, list, all, label, fold) => { const keys = Object.keys(all).filter((k) => !fold || list.includes(k));
-      $(id).innerHTML = keys.map((k) => `<button type="button" class="chip" data-k="${k}" aria-pressed="${list.includes(k)}">${esc(label(all[k]))}</button>`).join("")
-        + (id === "gearG" ? `<button type="button" class="chip gear-more" aria-expanded="${!fold}">${fold ? (list.length ? "Add a grinder" : "All grinders") : "Done"}</button>` : "");
+      $(id).innerHTML = keys.map((k) => `<button type="button" class="chip" data-k="${k}" aria-pressed="${list.includes(k)}">${esc(label(all[k]))}</button>`).join("");
       $(id).querySelectorAll("button[data-k]").forEach((b) => b.onclick = () => { const i = list.indexOf(b.dataset.k); if (i >= 0) list.splice(i, 1); else list.push(b.dataset.k);
         saveGear(); renderGear(); });
-      const more = $(id).querySelector(".gear-more"); if (more) more.onclick = () => { gearAllG = !gearAllG; renderGear(); }; };
+    };
     row("gearB", gear.brewers, BREWERS, (B) => B.name, false);
-    row("gearG", gear.grinders, GRINDERS, (G) => G.name, !gearAllG);
+    row("gearG", gear.grinders, GRINDERS, (G) => G.name, false);
     const n = bags.filter((b) => !b.frozen).length;
     $("gearNote").textContent = !gear.brewers.length ? "Tick the brewers you own, then a random recipe from them and your bags."
       : n ? "A random recipe from your equipment and your bags." : "A random recipe from your equipment and the newest coffees.";
@@ -5126,6 +5131,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     const fresh = shelf.filter((r) => (r.just_in || r.new) && (espressoish ? forEspresso(r) : forFilter(r)));
     const c = mine.length ? pickOne(mine) : fresh.length ? pickOne(fresh) : shelf.length ? pickOne(shelf) : null;
     if (!c) { jumpTo($("coffee")); return; }
+    surprisePick = { name: c.name || (c.text || "").split(/[,.]/)[0] || "Your coffee", roaster: c.roaster || "" };
     if (c.text && !c.roaster) { state.text = c.text; state.bag = null; state.roastPhoto = null; $("coffeeIn").value = c.text; saveState(); renderAllOpts(); render(); }
     else brewThis(c, false);
     build();
@@ -5141,6 +5147,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
   function bagUsed(dose) { const r = currentBag(), b = bags.find((x) => x.id === bagId(r)); if (b && b.left != null) { b.left = Math.max(0, b.left - dose); if (b.left === 0) bags.splice(bags.indexOf(b), 1); saveBags(); renderBags(); renderShelf(); } }
 
   function brewThis(r, jump = true) {
+    if (jump) surprisePick = null;
     const notes = [];   // tasting notes are never picked from the listing
     const roastWords = r.roast && ROAST[r.roast] ? ROAST[r.roast].label + " roast" : null;   // the scan read it from the roaster: it counts as "from the bag"
     state.text = [r.roaster, r.name, r.origin, r.region, r.variety, r.process, roastWords].filter(Boolean).join(", ") + (notes.length ? ". Notes: " + notes.join(", ") : "");
@@ -5683,7 +5690,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
   applyTheme(theme);
 
   // ---------- wire up ----------
-  $("go").onclick = () => build();
+  $("go").onclick = () => { surprisePick = null; build(); };
   $("coffeeIn").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); build(); } });
   // no button: the recipe builds itself a moment after you stop typing, on Enter, or when you leave the box
   let buildT = null;
