@@ -44,6 +44,10 @@ jobs:
         if: steps.guard.outputs.skip != '1'
         with:
           python-version: "3.12"
+      - name: Check the scanner against every reported mistake
+        # if an old mistake is back, the scan stops here and yesterday's list stays up
+        if: steps.guard.outputs.skip != '1'
+        run: python3 scripts/test_scan.py
       - name: Scan roasters
         if: steps.guard.outputs.skip != '1'
         env:
