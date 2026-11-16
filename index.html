@@ -220,7 +220,6 @@ section.sec > * { min-width: 0; }
 /* section titles stay the size the headline used to be */
 h1 { margin: 0; font-weight: 600; max-width: none; text-wrap: balance; }
 #h1 .serif { display: block; }
-#h1 .serif.yours { color: var(--hl) !important; }   /* the last line in the accent */
 .lede { margin: 0; color: var(--muted); max-width: 52ch; font-size: clamp(17px, 2.4vw, 23px); line-height: 1.35; letter-spacing: -.015em; text-wrap: balance; }
 body { overflow-x: clip; }
 
@@ -1785,10 +1784,8 @@ html[lang="it"] .bag-d.empty::before{content:"Aggiungi"}
 /* the page waits for the coffee list, then fades in */
 html.wait body{opacity:0}
 body{transition:opacity .3s ease}
-/* phones: the title under the wordmark, in the accent (wider screens have it as the hero title's last line) */
-.wm-screen{flex-direction:column;justify-content:flex-end;align-items:stretch}
-.wm-tag{margin:-.1em 0 0;font:500 var(--fs-xl)/1 var(--sans);letter-spacing:-.04em;color:var(--hl);padding-bottom:.4em}
-@media (min-width: 761px){ .wm-tag{display:none} }
+/* the intro's last words, in the accent */
+.lede .yours{color:var(--hl)}
 /* Light roast: the freezer's square tick pill, its name in the label column */
 .shelf-tools .opt > span{white-space:nowrap}   /* "Light roast" is 2 px wider than the column: it runs into the gap, not onto two lines */
 html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!important}   /* Tostatura chiara */
@@ -1853,7 +1850,6 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     <div class="hero">
       <div class="wm-screen">
         <p class="wordmark" aria-hidden="true"><span id="wm">Bag to Cup</span></p>
-        <p class="wm-tag">Brewed your way.</p>
       </div>
       <div class="hero-row">
       <div class="stage" id="stage">
@@ -1865,11 +1861,11 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
         <p class="scene words two" aria-hidden="true"><span class="ln"><span class="w" style="--i:0">Ten</span> <span class="w" style="--i:1">brewers.</span></span><span class="ln"><span class="w" style="--i:2">One</span> <span class="w" style="--i:3">recipe.</span></span></p>
         <div class="scene stat" aria-hidden="true" id="sceneGrind"><span class="stat-k" id="gB">V60</span><span class="stat-n">Got <span class="hw"><svg class="heart doodle" viewBox="0 0 24 24" role="img" aria-label="timer"><path pathLength="1" style="--p:0" d="M12 21.5a8 8 0 1 0 0-16 8 8 0 0 0 0 16z"/><path pathLength="1" style="--p:1" d="M12 9.5v4l2.6 1.6"/><path pathLength="1" style="--p:2" d="M10 2.5h4"/><path pathLength="1" style="--p:3" d="M12 2.5v3"/></svg></span> <span id="gT">3:15</span>?</span><span class="stat-s">It’s all it takes.</span></div>
         <p class="scene words one-line" aria-hidden="true"><span class="w" style="--i:0">Pour.</span> <span class="w" style="--i:1">Taste.</span> <span class="w" style="--i:2">Tweak.</span> <span class="w" style="--i:3">Nail</span> <span class="w hw" style="--i:4">it.&nbsp;<svg class="heart doodle" viewBox="0 0 24 24" role="img" aria-label="done"><path pathLength="1" style="--p:0" d="M4 12.5l5 5L20 6.5"/></svg></span></p>
-        <div class="scene final on"><h1 id="h1">New coffees. <span class="serif">The recipe for each bag.</span> <span class="serif yours">Brewed your way.</span></h1></div>
+        <div class="scene final on"><h1 id="h1">New coffees. <span class="serif">The recipe for each bag.</span></h1></div>
       </div>
       <div class="hero-side">
       <p class="hero-kick">Updated every day<span class="hero-live" id="heroLive" hidden><i class="live-dot" aria-hidden="true"></i><span id="heroLiveT"></span></span></p>
-      <p class="lede">New coffees from roasters in the UK, Europe and beyond, updated every day. Pick one or type your own, choose your brewer, and get the grind for your grinder, the temperature and every step. Or brew it your way: change any number or step, write how you pour, and share your recipe with a link. Brew full screen, log how it tasted, and it adjusts next time.</p>
+      <p class="lede">New coffees from roasters in the UK, Europe and beyond, updated every day. Pick one or type your own, choose your brewer, and get the grind for your grinder, the temperature and every step. Or brew it your way: change any number or step, write how you pour, and share your recipe with a link. Brew full screen, log how it tasted, and it adjusts next time. <span class="yours">Brewed your way.</span></p>
       <details class="clk xp g-ex"><summary>See an example</summary>
       <figure class="glimpse" aria-label="Example recipe: washed Ethiopia, light roast. 15 g coffee to 255 g water, 99°C, about 3:15. Pours at 0:00 to 51 g, 0:45 to 102 g, 1:10 to 153 g, 1:30 to 204 g, 1:50 to 255 g.">
         <figcaption><span class="g-name">Washed Ethiopia, light roast</span></figcaption>
@@ -2209,7 +2205,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     if (sc[5]) sc[5].innerHTML = `<span class="ln">${W(["Dieci", "metodi."])}</span><span class="ln">${W(["Una", "ricetta."], 2)}</span>`;
     const gn = sc[6] && sc[6].querySelector(".stat-n"); if (gn && gn.firstChild) gn.firstChild.textContent = "Hai ";
     if (sc[7]) sc[7].innerHTML = W(["Versa.", "Assaggia.", "Correggi.", "Ci"]) + ` <span class="w hw" style="--i:4">sei.&nbsp;${hDone}</span>`;
-    const h1 = document.getElementById("h1"); if (h1) h1.innerHTML = `Caffè nuovi. <span class="serif">La ricetta per ogni busta.</span> <span class="serif yours">Come piace a te.</span>`;
+    const h1 = document.getElementById("h1"); if (h1) h1.innerHTML = `Caffè nuovi. <span class="serif">La ricetta per ogni busta.</span>`;
     const li = document.getElementById("litext");
     if (li) {
       const S = (t) => t.split(" ").map((w) => `<span>${w}</span>`).join(" ");
