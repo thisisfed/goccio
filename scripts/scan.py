@@ -89,6 +89,25 @@ COFFEE_HINT = re.compile(r"single origin|single-origin|altitude|masl|variet|proc
 NOTES_RE = re.compile(r"(?:tasting notes|flavour notes|flavor notes|flavour profile|in the cup|tastes like|we taste|cup notes|"
                       r"note di degustazione|note aromatiche|note|geschmacksnoten|geschmack|aromen|notes de dégustation|"
                       r"smaksnoter|smagsnoter|smaksnotater|notas de cata|notas|notes)\s*[:\-–]\s*([^\n.]{3,120})", re.I)
+# notes said in a sentence: "Expect notes of pineapple, red apple and hazelnut in a layered, sweet cup"
+NOTES_SENT = re.compile(r"(?:notes? of|flavou?rs? of|tastes? of|hints? of|aromas? of|we(?:'re| are)? (?:getting|tasting)|expect(?:ing)?(?! notes)|tasting like)\s+"
+                        r"((?:[A-Za-z][\w'’\-]*(?:\s(?!and\b)[A-Za-z][\w'’\-]*){0,2})(?:\s*(?:,|&|\band\b)\s*[A-Za-z][\w'’\-]*(?:\s(?!and\b)[A-Za-z][\w'’\-]*){0,2}){1,5})", re.I)
+NOTES_TAIL = re.compile(r"\s(?:in|with|for|that|which|on|to|from|giving|making|alongside|plus|throughout|backed|balanced|layered|all|as|when|while)\b.*$", re.I)
+
+
+def notes_from_text(text):
+    """Notes in a sentence ("notes of A, B and C"), the list cut where the sentence moves on ("... in a sweet cup")."""
+    for m in NOTES_SENT.finditer(text or ""):
+        raw = m.group(1)
+        parts = [NOTES_TAIL.sub("", p).strip() for p in re.split(r",|&|\band\b", raw)]
+        parts = [p for p in parts if p]
+        if any(re.match(r"(?:the|a|an|its|this|their|our|your|his|her|every|each|all|some|more|great|good|nice)\b", p, re.I) for p in parts):
+            continue   # "hints of the terroir and the farm's history" is a story, not tasting notes
+        if len(parts) >= 2:
+            return ", ".join(parts)
+    return None
+
+
 DARK = re.compile(r"dark roast|medium[- ]dark|french roast|italian roast", re.I)
 # Roast level, in the site's five steps. Read only from a labelled line ("Roast: Light", "Röstgrad: hell"),
 # a tag, or an "X roast" phrase in the coffee's own description; never from anywhere on a page.
@@ -1174,6 +1193,8 @@ def find_notes(item):
     m = NOTES_RE.search(text)
     raw = m.group(1) if m else None
     if not raw:
+        raw = notes_from_text(text)
+    if not raw:
         # "Name - Country - Note, Note, Note" style titles
         parts = re.split(r"\s[-–|]\s", item["title"])
         if len(parts) >= 3 and "," in parts[-1]:
@@ -1794,12 +1815,16 @@ def add_page_details(recs, roaster, old):
         if prev.get("roast_checked") == ROAST_CHECK:
             rec["roast_checked"] = ROAST_CHECK
         want_roast = not rec.get("roast") and not rec.get("roast_checked") and rec.get("roast_for") != "espresso"
-        need = [k for k in ("process", "variety") if not rec.get(k)]
+        if not rec.get("notes") and prev.get("notes") and prev.get("notes_from") == "page":
+            rec["notes"], rec["notes_from"] = prev["notes"], "page"
+        if prev.get("notes_checked"):
+            rec["notes_checked"] = 1
+        need = [k for k in ("process", "variety", "notes") if not rec.get(k) and not (k == "notes" and rec.get("notes_checked"))]
         # every coffee the shop doesn't label filter or espresso gets its page read once for the brewers it names
         want_methods = not rec.get("roast_for") and not rec.get("methods") and not rec.get("methods_none")
         if not need and not want_methods and not want_roast:
             continue
-        for k in need:
+        for k in [k for k in need if k != "notes"]:
             ok = prev.get(k) and (labelled(f"Variety:\n{prev[k]}\n", "variety") if k == "variety" else find_process(prev[k]))
             if ok and prev.get(k + "_from") == "page":
                 rec[k], rec[k + "_from"] = prev[k].strip(" \xa0"), "page"
@@ -1829,6 +1854,16 @@ def add_page_details(recs, roaster, old):
                 if r_ in ("mdark", "dark") and not rec.get("roast_level"):
                     rec["roast_level"] = "medium-dark" if r_ == "mdark" else "dark"
         got = False
+        if "notes" in need:   # the shop's own tasting notes: a labelled line, a sentence, or the page's description tag
+            meta = re.search(r'<meta[^>]+(?:name|property)=["\'](?:og:)?description["\'][^>]+content=["\']([^"\']+)', raw, re.I)
+            src = description_window(text, start) + "\n" + (html.unescape(meta.group(1)) if meta else "")
+            ns = find_notes({"body": src, "title": rec["name"], "tags": []})
+            if ns:
+                rec["notes"], rec["notes_from"] = ns, "page"
+                got = True
+            else:
+                rec["notes_checked"] = 1   # read once and the page names none: don't fetch it again just for notes
+            need = [k for k in need if k != "notes"]
         for k in need:
             v = labelled(text, k, start) or (labelled(text, k) if start else None) or raw_labelled(raw, k) or from_json(raw, k) \
                 or class_labelled(raw, k) or suffix_labelled(text, k, start)

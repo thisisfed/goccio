@@ -189,9 +189,36 @@ def listings():
     print(f"listing requests: {len(added)} added: {', '.join(added)}")
 
 
+EMAIL = re.compile(r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}")
+JUNK = re.compile(r"sentry|wixpress|example\.|domain\.|email\.com|yourname|@2x|\.(?:png|jpe?g|gif|webp|svg)$|shopify|squarespace|godaddy|wordpress|u003e", re.I)
+
+
+def contacts(shop):
+    """Public contact addresses a shop publishes on its home or contact page (for asking permission to list it)."""
+    found, pages = [], [shop] + [shop + p for p in ("/contact", "/contact-us", "/pages/contact", "/pages/contact-us", "/about")]
+    for u in pages:
+        try:
+            t = scan.get_text(u, tries=1, limit=800_000)
+        except Exception:  # noqa: BLE001
+            continue
+        for e in EMAIL.findall(html.unescape(t)):
+            e = e.strip(".").lower()
+            if not JUNK.search(e) and e not in found:
+                found.append(e)
+        if found:
+            break
+    return {"shop": shop, "emails": found[:3]}
+
+
 def main():
     if "--listings" in sys.argv[1:]:
         return listings()
+    if "--contacts" in sys.argv[1:]:
+        shops = [u.strip() for u in sys.argv[sys.argv.index("--contacts") + 1].split(",") if u.strip()]
+        with ThreadPoolExecutor(max_workers=12) as pool:
+            for c in pool.map(contacts, shops):
+                print("CONTACT " + json.dumps(c))
+        return
     roasters = json.loads((ROOT / "data" / "roasters.json").read_text())
     have_hosts = {host(r["shop"]) for r in roasters} | {host(r["feed"]) for r in roasters if r.get("feed")}
     have_names = {norm(r["name"]) for r in roasters}
