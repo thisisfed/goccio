@@ -24,6 +24,7 @@ jobs:
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: 1c3773d3175301c1a989184b445ac1f2
+      LISTING_TOKEN: ${{ secrets.LISTING_TOKEN }}
     steps:
       - name: Skip until the token is added
         id: gate
@@ -59,9 +60,12 @@ jobs:
           cp -r data /tmp/site/data
           cp -r functions /tmp/site/functions
           cp -r lib /tmp/site/lib   # the QR code maker, fetched only when a computer asks for it
+          cp -r list /tmp/site/list   # Get your roastery listed (its form posts to functions/api/list.js)
           cp -r icons /tmp/site/icons && cp icons/apple-touch-icon.png /tmp/site/apple-touch-icon.png   # iPhones also look at /apple-touch-icon.png
           # a page per coffee and per roaster, plus sitemap.xml, for search engines; the recipes come from the app's own engine.
           # If this step fails the site still goes out, just without those pages.
           pip install -q playwright==1.63.0 && python scripts/pages.py /tmp/site || echo "Coffee pages skipped this time"
+          # the listing form files requests as issues with this token, when it has been added (Settings > Secrets > Actions)
+          if [ -n "$LISTING_TOKEN" ]; then printf '%s' "$LISTING_TOKEN" | npx --yes wrangler@4 pages secret put LISTING_TOKEN --project-name=v60 >/dev/null 2>&1 && echo "Listing token set" || echo "Couldn't set the listing token"; fi
           cd /tmp/site
           npx --yes wrangler@4 pages deploy . --project-name=v60 --branch=main --commit-dirty=true

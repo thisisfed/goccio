@@ -164,7 +164,7 @@ def page(title, desc, path, body, extra_head=""):
 {body}
 </main>
 <footer><p>Coffee details are read every day from each roaster’s own shop. Prices and stock change: check the roaster’s page before you buy.</p>
-<p><a href="/">A Bag to a Cup</a>: a recipe for any coffee, for your brewer and your grinder.</p></footer>
+<p><a href="/">A Bag to a Cup</a>: a recipe for any coffee, for your brewer and your grinder. A roaster? <a href="/list/">Get your roastery listed</a>.</p></footer>
 </body></html>
 """
 
@@ -209,7 +209,7 @@ def main():
 
     recs = recipes(coffees)
     rec = {id(c): r for c, r in zip(coffees, recs)}
-    urls = [(BASE + "/", updated), (BASE + "/coffee/", updated)]
+    urls = [(BASE + "/", updated), (BASE + "/coffee/", updated), (BASE + "/list/", updated)]
 
     # ---------- a page per coffee ----------
     for name, cs in by_roaster.items():
