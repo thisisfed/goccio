@@ -1773,8 +1773,9 @@ html[lang="it"] .bag-d.empty::before{content:"Aggiungi"}
 /* the date starts with a digit, and the iPhone font's figures carry their own space on the left: a little less margin so the gap looks the same */
 .item .who .day{margin-left:.1em!important}
 /* roaster page: tap a roaster's name for all its coffees, where it roasts and its shop */
-.item .who button.rn{font:inherit;color:var(--ink);background:none;border:0;padding:0;margin:0;cursor:pointer;letter-spacing:inherit}
-.item .who button.rn:hover{text-decoration:underline;text-underline-offset:3px}
+/* a link, not a button: it stays inline, so a long line is cut with an ellipsis inside the text, not before the roaster's name */
+.item .who a.rn{color:var(--ink);text-decoration:none}
+.item .who a.rn:hover{text-decoration:underline;text-underline-offset:3px}
 .grp.bare{padding:0!important;min-height:0!important;height:0;margin-top:-13px}   /* the rule under the filters as far below them as the top rule is above "Coffees." */
 /* Light roast: the freezer's square tick pill, its name in the label column */
 .shelf-tools .opt > span{white-space:nowrap}   /* "Light roast" is 2 px wider than the column: it runs into the gap, not onto two lines */
@@ -4905,7 +4906,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
       const day = isoDmy(shelfDate(r)).slice(0, 5);
       return `${head}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
         <div class="l">
-          <span class="who">${!isSp && r.just_in ? '<span class="ji">Just in</span> ' : ""}<button type="button" class="rn" data-ro="${esc(r.roaster)}">${esc(r.roaster)}</button>${r.roaster_city ? ` <span class="rcity">${esc(r.roaster_city)}</span>` : ""} <span class="day">${day}</span></span>
+          <span class="who">${!isSp && r.just_in ? '<span class="ji">Just in</span> ' : ""}<a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(r.roaster)}</a>${r.roaster_city ? ` <span class="rcity">${esc(r.roaster_city)}</span>` : ""} <span class="day">${day}</span></span>
           <span class="name">${esc(calm(r.name))}</span>
           <p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p>
         </div>
@@ -4918,7 +4919,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     $("shelfMore").hidden = left <= 0; $("shelfMore").removeAttribute("aria-hidden");
     $("shelfMore").textContent = `Load more (${left} left)`;
     $("shelf").querySelectorAll("button[data-i]").forEach((b) => b.onclick = () => brewThis(shelf[+b.dataset.i]));
-    $("shelf").querySelectorAll("button[data-ro]").forEach((b) => b.onclick = () => openRoaster(b.dataset.ro));
+    $("shelf").querySelectorAll("a[data-ro]").forEach((b) => b.onclick = (e) => { e.preventDefault(); openRoaster(b.dataset.ro); });
     // Save saves straight away; Saved asks first: one tap shows a red Remove?, a second takes it out of your bags. Back to Saved after 3 s
     $("shelf").querySelectorAll("button[data-b]").forEach((b) => b.onclick = () => { const r = shelf[+b.dataset.b];
       if (!hasBag(r) || b.dataset.armed) { toggleBag(r); renderShelf(); return; }
