@@ -1435,14 +1435,17 @@ def classify(item, roaster):
         return _drop(roaster, why.split(":")[0], title)
     # dark roasts stay (the recipe handles them); read the level from the title/tags or a labelled roast line,
     # not from anywhere on the page: Hasbean prints the whole light-to-dark scale on every coffee
-    m = DARK.search(blob) or ROAST_LABEL.search(item["body"])
+    # tags naming two roast levels are the shop's filter menu, not this coffee: they say nothing about its roast
+    menu_tags = len({roast_word(t.split(":", 1)[-1]) for t in item["tags"] if re.search(r"roast", t, re.I)} - {None}) > 1
+    dark_src = " ".join([title, item["type"], item["variants"]]) if menu_tags else blob
+    m = DARK.search(dark_src) or ROAST_LABEL.search(item["body"])
     roast_level = None
     if m:
         lvl = (m.group(1) if m.re is ROAST_LABEL else m.group(0)).lower()
         roast_level = "medium-dark" if "medium" in lvl else "dark"
     tags_txt = "\n".join(f"Roast: {t.split(':', 1)[-1].replace('roast', '')}" if re.search(r"roast", t, re.I) else "" for t in item["tags"])
-    if len({roast_word(t.split(":", 1)[-1]) for t in item["tags"] if re.search(r"roast", t, re.I)} - {None}) > 1:
-        tags_txt = ""   # tags naming two roast levels are the shop's filter menu, not this coffee
+    if menu_tags:
+        tags_txt = ""
     # the coffee's own "Roast: Medium" line first: a shop's tags can say otherwise (Danelaw tagged Polaris, a
     # medium roast espresso, as light)
     roast = roast_labelled(item["body"]) or find_roast(tags_txt, f"{title}\n{item['type']}", item["body"])
