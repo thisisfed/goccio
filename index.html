@@ -1568,6 +1568,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 .scan-review .sc-key{margin:0;font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px}
 .scan-review .sc-key .sc-dot{margin-left:6px}.scan-review .sc-key .sc-dot:first-child{margin-left:0}
 .scan-review .sc-btns{display:flex;flex-wrap:wrap;gap:5px}
+.scan-review .sc-btns + .sc-btns{margin-top:5px}
 .scan-review .pill{height:var(--pill-h);padding:0 12px;border:0;border-radius:var(--r);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);cursor:pointer;display:inline-flex;align-items:center}
 .scan-review .pill.on{background:var(--ink)!important;color:var(--bg)!important}
 @media (max-width: 640px){ .scan-review .sc-row{grid-template-columns:72px minmax(0,1fr);column-gap:10px} }
@@ -5591,7 +5592,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
   // ---- 4. review sheet: every field editable, with how sure the reader is; nothing is applied until you say so ----
   const PROC_OPTS = [["", "Unknown"], ["washed", "Washed"], ["natural", "Natural"], ["honey", "Honey"], ["anaerobic", "Anaerobic"], ["cofer", "Co-ferment / Infused"], ["decaf", "Decaf"]];
   const ROAST_OPTS = [["", "Unknown"], ["vlight", "Very light"], ["light", "Light"], ["medium", "Medium"], ["mdark", "Medium-dark"], ["dark", "Dark"]];
-  const FIELD_ROWS = [["name", "Coffee"], ["roaster", "Roaster"], ["origin", "Origin"], ["process", "Process"], ["variety", "Variety"]];   // roast and roast date: not asked here; the Roast row in What’s brewing? has them   // no tasting notes: the site never shows or uses them
+  const FIELD_ROWS = [["name", "Coffee"], ["roaster", "Roaster"], ["origin", "Origin"], ["process", "Process"], ["variety", "Variety"], ["date", "Roasted"]];   // no roast level here: the Roast row in What’s brewing? has it   // no tasting notes: the site never shows or uses them
   let review = null;
   function showReview(fields, raw) {
     const sm = shelfMatch(fields);
@@ -5611,11 +5612,21 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
       <div class="sc-rows">${FIELD_ROWS.map(([k, lbl]) => { const f = fields[k] || { v: null }; return `<label class="sc-row"><span class="sc-l">${k === "date" && f.kind === "best" ? "Best before" : lbl}</span>
         <span class="sc-in">${input(k, f)}${dot(f.v ? f.c : null)}</span><span class="sc-why">${esc(f.v ? f.why || "" : f.why || "")}</span></label>`; }).join("")}</div>
       <p class="sc-key">${dot("high")}Sure ${dot("medium")}Check it ${dot("low")}A guess. Fix anything it misread.</p>
-      <div class="sc-btns"><button type="button" class="pill on" id="scUse">Use these</button><button type="button" class="pill" id="scMore">Add the back of the bag</button><button type="button" class="pill" id="scAgain">Scan again</button><button type="button" class="pill" id="scCancel">Cancel</button></div>`;
+      <div class="sc-btns"><button type="button" class="pill" id="scMore">Add the back of the bag</button><button type="button" class="pill" id="scBag">Add to my bags</button></div>
+      <div class="sc-btns"><button type="button" class="pill on" id="scUse">Use these</button><button type="button" class="pill" id="scAgain">Scan again</button><button type="button" class="pill" id="scCancel">Cancel</button></div>`;
     box.hidden = false;
     box.querySelectorAll("[data-f]").forEach((x) => x.addEventListener("input", () => { const f = review.fields[x.dataset.f] = { ...(review.fields[x.dataset.f] || {}), v: x.value.trim() || null, c: "high", why: "edited by you" };
-      const d = x.parentNode.querySelector(".sc-dot"); d.className = "sc-dot " + (f.v ? "high" : "none"); }));
-    $("scUse").onclick = applyReview; $("scCancel").onclick = closeReview;
+      const d = x.parentNode.querySelector(".sc-dot"); d.className = "sc-dot " + (f.v ? "high" : "none");
+      const w = x.closest(".sc-row").querySelector(".sc-why"); if (w) w.textContent = f.v ? "edited by you" : ""; }));
+    $("scUse").onclick = () => applyReview(); $("scCancel").onclick = closeReview;
+    // Add to my bags: the same as Use these, then straight into My bags (with the roast date, if there is one)
+    $("scBag").onclick = () => { const f = review.fields, v = (k) => (f[k] && f[k].v) || "", m = review.match, roasted = (() => { const d = v("date").match(/^(\d{2})\/(\d{2})\/(\d{4})$/); return d && !(f.date && f.date.kind === "best") ? `${d[3]}-${d[2]}-${d[1]}` : ""; })();
+      if (!applyReview(false)) return;
+      // the bag is the listing when it matched (so the list shows it Saved), else what the label says, by roaster and name
+      const r = m || { roaster: v("roaster"), name: v("name"), origin: v("origin"), variety: v("variety"), process: (PROC_OPTS.find(([k]) => k === v("process")) || [, ""])[1], text: state.text };
+      if (!hasBag(r)) toggleBag(r);
+      const b = bags.find((x) => x.id === bagId(r)); if (b && roasted && !b.roasted) { b.roasted = roasted; saveBags(); renderBags(); }
+      renderShelf(); syncBagBtn(); jumpTo($("bags")); };
     $("scAgain").onclick = () => { closeReview(); startScan(); };
     $("scMore").onclick = () => { review.adding = true; pickPhoto(); };
     if (m) $("scUseListing").onclick = () => { closeReview(); $("scanMsg").textContent = `Found it: ${m.roaster}, ${calm(m.name)}.`; brewThis(m); };
@@ -5624,12 +5635,12 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     box.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
   function closeReview() { const b = $("scanReview"); b.hidden = true; b.innerHTML = ""; review = null; }
-  function applyReview() {
+  function applyReview(land = true) {
     const f = review.fields, v = (k) => (f[k] && f[k].v) || null, PL = { washed: "washed", natural: "natural", honey: "honey", anaerobic: "anaerobic", cofer: "co-fermented", decaf: "decaf" };
     // the roast isn't on the review sheet: only today's list (or a bag you confirmed before) can say it; otherwise you pick it or scan the beans
     const roastKnown = f.roast && f.roast.v && /today|last scan/.test(f.roast.why || "") ? f.roast.v : null;
     const line = [v("roaster"), v("name"), v("origin"), v("variety"), v("process") ? PL[v("process")] : null, roastKnown ? ROAST[roastKnown].label + " roast" : null].filter(Boolean).join(", ");
-    if (!line.trim()) { $("scanMsg").textContent = "Nothing to use yet. Type the coffee, or scan again."; return; }
+    if (!line.trim()) { $("scanMsg").textContent = "Nothing to use yet. Type the coffee, or scan again."; return false; }
     // remember what you confirmed, so this bag reads better next time
     if (v("roaster") && v("name")) { const mem = scanMem(), k = norm(v("roaster")) + "|" + norm(v("name"));
       mem[k] = { origin: v("origin"), process: v("process"), variety: v("variety"), roast: roastKnown };
@@ -5639,7 +5650,8 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     const d = v("date"), dm = d && d.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
     state.scanRoasted = dm && f.date.kind !== "best" ? `${dm[3]}-${dm[2]}-${dm[1]}` : null;   // a roast date goes straight into My bags if you add it
     $("coffeeIn").value = line; saveState(); renderAllOpts(); closeReview();
-    $("scanMsg").textContent = ""; build(false); landBrewing();
+    $("scanMsg").textContent = ""; build(false); if (land) landBrewing();
+    return true;
   }
 
   // ---- 5. getting the picture: live camera when there is one, a photo otherwise ----
