@@ -99,37 +99,47 @@ CSS = """
 @media (prefers-color-scheme:dark){:root{--bg:#000;--ink:#fff;--muted:#8c8c8c;--rule:#262626;--pill:#222;--hl:#ff5a14}}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;overflow-x:clip}
-body{margin:0;background:var(--bg);color:var(--ink);font:500 15px/1.35 var(--sans);letter-spacing:-.012em}
+body{margin:0;background:var(--bg);color:var(--ink);font:500 15px/1.35 var(--sans);letter-spacing:-.011em}
 a{color:inherit;text-decoration:none}
-.top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px;border-bottom:1px solid var(--rule)}
+.top{position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;align-items:center;gap:12px;height:49px;padding:0 12px;background:var(--bg);border-bottom:1px solid var(--rule)}
 .mark{font-size:15px}
-.pill{display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:4px;background:var(--pill);transition:background-color .15s}
+.pill{display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:4px;background-color:var(--pill);color:var(--ink);font:500 15px/1 var(--sans);transition:background-color .15s ease}
 .pill:hover{background-color:color-mix(in srgb,var(--pill) 80%,var(--ink))}
-.btn{display:inline-flex;align-items:center;height:40px;padding:0 16px;border-radius:4px;background:var(--ink);color:var(--bg)}
-main{padding:24px 12px 60px}
-@media (min-width:760px){.top{padding:12px 24px}main{padding:39px 24px 63px}}
-.crumb{margin:0 0 24px;color:var(--muted)}
-.crumb a:hover,.list a:hover,.more a:hover,footer a:hover{color:var(--hl)}
-h1{margin:0;font-size:39px;line-height:1.1;letter-spacing:-.03em;font-weight:700}
-@media (min-width:760px){h1{font-size:63px}}
-h2{margin:39px 0 12px;padding-top:12px;border-top:1px solid var(--rule);font-size:24px;line-height:1.2;letter-spacing:-.02em;font-weight:700}
-.by{margin:6px 0 0;color:var(--muted)}
-dl{display:grid;grid-template-columns:max-content 1fr;gap:4px 24px;margin:24px 0 0}
-dt{color:var(--muted)}dd{margin:0;overflow-wrap:anywhere}
+.page{display:grid;gap:72px;padding:24px 12px 72px}
+@media (min-width:760px){.top{padding:0 24px}.page{padding:24px 24px 72px}}
+.sec-head{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--ink);padding-top:8px;font-size:24px;line-height:1.1;letter-spacing:-.025em}
+.sec-head .muted{color:var(--muted)}
+.crumb{margin:0 0 12px;color:var(--muted)}
+.crumb a,.r-read a,footer a{text-decoration:underline;text-decoration-color:color-mix(in srgb,currentColor 40%,transparent);text-underline-offset:2px;transition:text-decoration-color .15s ease}
+.crumb a:hover,.r-read a:hover,footer a:hover{text-decoration-color:transparent}
+.list .name{transition:color .15s ease}.list a:hover .name{color:var(--muted)}
+.specs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}
+@media (min-width:760px){.specs{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.spec{display:grid;gap:4px;align-content:start;padding:10px 0 18px;border-top:1px solid var(--rule);min-width:0}
+.spec.wide{grid-column:1/-1}
+.spec .k{color:var(--muted);font-weight:600}
+.spec b,.spec h1{margin:0;font-size:39px;line-height:1.05;letter-spacing:-.04em;font-weight:500;overflow-wrap:anywhere}
+@media (min-width:760px){.spec b,.spec h1{font-size:63px}}
+.spec small{font-size:24px;color:var(--muted);letter-spacing:0;margin-left:4px}
+.facts{display:grid;gap:4px;margin:6px 0 0}
+.facts div{display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px}
+.facts dt{color:var(--muted)}.facts dd{margin:0;overflow-wrap:anywhere}
 .notes{margin:12px 0 0}
-.method{margin:0;color:var(--muted)}
-.specs{display:flex;flex-wrap:wrap;gap:6px 24px;margin:12px 0 0;font-size:39px;line-height:1.1;letter-spacing:-.03em;font-weight:500}
-.specs small{font-size:15px;color:var(--muted);letter-spacing:-.012em;margin-left:4px}
-.pours{list-style:none;margin:24px 0 0;padding:0}
-.pours li{display:grid;grid-template-columns:48px 64px 1fr;gap:12px;padding:6px 0;border-top:1px solid var(--rule)}
-.pours span,.muted{color:var(--muted)}
-.go{display:flex;flex-wrap:wrap;gap:8px;margin:24px 0 0}
+.r-read{margin:12px 0 0}
+.pours{width:100%;border-collapse:collapse;margin:12px 0 0}
+.pours th{text-align:left;font-weight:500;color:var(--muted);padding:0 10px 8px 0;border-bottom:1px solid var(--rule)}
+.pours td{padding:11px 10px 11px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+.pours td.at{color:var(--muted);white-space:nowrap}.pours td.to{white-space:nowrap}
+.pours small{color:var(--muted);margin-left:2px}
+.muted,.note{color:var(--muted)}
+.note{margin:12px 0 0}
+.go{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 0}
 .list{list-style:none;margin:0;padding:0}
-.list li{padding:8px 0;border-top:1px solid var(--rule)}
-.list b{font-weight:500}
-.more{margin:0;padding-left:18px}
-footer{padding:24px 12px;border-top:1px solid var(--rule);color:var(--muted)}
-@media (min-width:760px){footer{padding:24px}}
+.list li{padding:12px 0;border-bottom:1px solid var(--rule)}
+.list .name{display:block;font-size:24px;line-height:1.1;letter-spacing:-.025em}
+.list .sub{display:block;margin-top:4px;color:var(--muted)}
+footer{margin:0 12px;padding:10px 0 24px;border-top:1px solid var(--rule);color:var(--muted)}
+@media (min-width:760px){footer{margin:0 24px}}
 footer p{margin:0 0 6px}
 """
 
@@ -150,13 +160,19 @@ def page(title, desc, path, body, extra_head=""):
 <style>{CSS}</style>{extra_head}
 </head><body>
 <header class="top"><a class="mark" href="/">A Bag to a Cup</a><a class="pill" href="/coffee/">Roasters</a></header>
-<main>
+<main class="page">
 {body}
 </main>
 <footer><p>Coffee details are read every day from each roaster’s own shop. Prices and stock change: check the roaster’s page before you buy.</p>
 <p><a href="/">A Bag to a Cup</a>: a recipe for any coffee, for your brewer and your grinder.</p></footer>
 </body></html>
 """
+
+
+def coffee_list(cs, cpath):
+    # like the app's coffee list: the name, then origin, process and price
+    return '<ul class="list">' + "".join(f'<li><a href="{cpath[id(c)]}"><span class="name">{e(c["name"])}</span></a><span class="sub">'
+                                         + e(", ".join(x for x in [c.get("origin"), c.get("process"), c.get("price")] if x)) + "</span></li>" for c in cs) + "</ul>"
 
 
 def write(rel, text):
@@ -208,26 +224,34 @@ def main():
                      ("Roasted for", e(cap(c["roast_for"])) if c.get("roast_for") in ("filter", "espresso") else ""),
                      ("Bag", e(" for ".join(x for x in [f'{c["bag_g"]} g' if c.get("bag_g") else "", c.get("price") or ""] if x))),
                      ("On the list since", e(ddmmyyyy(c.get("found") or c.get("published"))))]
-            dl = "".join(f"<dt>{k}</dt><dd>{v}</dd>" for k, v in facts if v)
-            body = [f'<p class="crumb"><a href="/coffee/">Roasters</a> / <a href="/coffee/{rslug[name]}/">{e(name)}</a></p>',
-                    f"<h1>{e(c['name'])}</h1>", f'<p class="by">{e(name)}{", " + e(city) if city else ""}</p>', f"<dl>{dl}</dl>"]
+            dl = "".join(f"<div><dt>{k}</dt><dd>{v}</dd></div>" for k, v in facts if v)
+            spec = lambda k, v, cls="": f'<div class="spec{(" " + cls) if cls else ""}"><span class="k">{k}</span>{v}</div>'
+            # the coffee: laid out like the app's recipe, Roastery and Coffee as big specs, then the facts
+            first = [f'<p class="crumb"><a href="/coffee/">Roasters</a> / <a href="/coffee/{rslug[name]}/">{e(name)}</a></p>',
+                     '<div class="specs">' + spec("Roastery", f"<b>{e(name)}{', ' + e(city) if city else ''}</b>", "wide")
+                     + spec("Coffee", f"<h1>{e(c['name'])}</h1>", "wide") + "</div>", f'<dl class="facts">{dl}</dl>']
             if notes:
-                body.append(f'<p class="notes">Flavour: {e(and_list(notes))} (the roaster’s notes).</p>')
+                first.append(f'<p class="notes">Flavour: {e(and_list(notes))} (the roaster’s notes).</p>')
+            body = ["<section>" + "".join(first) + "</section>"]
             brew = "/#brew=" + e(quote(c.get("url") or "", safe=""))
+            go = (f'<p class="go"><a class="pill" href="{brew}">Brew it step by step</a>'
+                  + (f'<a class="pill" href="{e(c["url"])}" rel="noopener">Buy from {e(name)}</a>' if c.get("url") else "") + "</p>")
             ld = ""
             if r and r.get("water"):
-                specs = (f'<div class="specs"><span>{r["clicks"]}<small>clicks, {GRINDER}</small></span>'
-                         f'<span>{r["dose"]} → {r["water"]}<small>g</small></span><span>{r["temp"]}<small>°C</small></span>'
-                         f'<span>{mmss(r["lo"])} – {mmss(r["hi"])}<small>total</small></span></div>')
-                pours = "".join(f'<li><span>{mmss(p["t"])}</span><b>{p["to"]} g</b><span>{e(p["note"])}</span></li>' for p in r["pours"] if p.get("to") is not None)
+                specs = ('<div class="specs">' + spec("Brewer", "<b>V60</b>", "wide") + spec(GRINDER, f'<b>{r["clicks"]}<small>clicks</small></b>')
+                         + spec("Kettle", f'<b>{r["temp"]}<small>°C</small></b>') + spec("Coffee", f'<b>{r["dose"]}<small>g</small></b>')
+                         + spec("Water", f'<b>{r["water"]}<small>g</small></b>') + spec("Total time", f'<b>{mmss(r["lo"])} – {mmss(r["hi"])}</b>', "wide") + "</div>")
+                rows = "".join(f'<tr><td class="at">{mmss(p["t"])}</td><td class="to">{p["to"]}<small>g</small></td><td>{e(p["note"])}</td></tr>' for p in r["pours"] if p.get("to") is not None)
                 miss = r["missing"]
                 hint = ""
                 if miss:
                     what = "roast or process" if len(miss) == 2 else miss[0]
-                    hint = f'<p class="muted">The roaster doesn’t state the {what}, so this starts from the middle of the range. Pick it in the app to sharpen the recipe.</p>'
-                body += ["<h2>A V60 recipe</h2>", f'<p class="method">{e(r["method"])}, {r["dose"]} g of coffee to {r["water"]} g of water (1:{r["ratio"]})</p>', specs,
-                         f'<ol class="pours">{pours}</ol>' if pours else "", hint,
-                         '<p class="muted">Another grinder or brewer (Chemex, Kalita, AeroPress, French press and more), a timer for every pour, and a journal that adjusts the next cup: all in the app.</p>']
+                    hint = f'<p class="note">The roaster doesn’t state the {what}, so this starts from the middle of the range. Pick it in the app to sharpen the recipe.</p>'
+                body.append("<section>" + '<div class="sec-head"><span>Recipe.</span></div>'
+                            + f'<p class="r-read">{e(r["method"])}, 1:{r["ratio"]}</p>' + specs
+                            + (f'<table class="pours"><thead><tr><th>At</th><th>Target</th><th>How</th></tr></thead><tbody>{rows}</tbody></table>' if rows else "") + hint
+                            + '<p class="note">Another grinder or brewer (Chemex, Kalita, AeroPress, French press and more), a timer for every pour, and a journal that adjusts the next cup: all in the app.</p>'
+                            + go + "</section>")
                 steps = [{"@type": "HowToStep", "text": f'{mmss(p["t"])}: pour to {p["to"]} g. {p["note"]}'.strip()} for p in r["pours"] if p.get("to") is not None]
                 ld = json.dumps({"@context": "https://schema.org", "@type": "Recipe", "name": f"V60 recipe for {c['name']} ({name})",
                                  "description": f"A V60 pour over recipe for {c['name']} from {name}.", "image": [BASE + "/og/card.png"],
@@ -236,12 +260,11 @@ def main():
                                  "recipeIngredient": [f'{r["dose"]} g {c["name"]} coffee, ground at {r["clicks"]} clicks on a {GRINDER}', f'{r["water"]} g water at {r["temp"]}°C'],
                                  "recipeInstructions": steps}, ensure_ascii=False).replace("</", "<\\/")
                 ld = f'\n<script type="application/ld+json">{ld}</script>'
-            body.append(f'<p class="go"><a class="btn" href="{brew}">Brew it step by step</a>'
-                        + (f'<a class="pill" href="{e(c["url"])}" rel="noopener">Buy from {e(name)}</a>' if c.get("url") else "") + "</p>")
+            else:
+                body[0] = body[0][:-len("</section>")] + go + "</section>"
             others = [o for o in cs if o is not c][:12]
             if others:
-                body.append(f"<h2>More from {e(name)}</h2>")
-                body.append('<ul class="list">' + "".join(f'<li><a href="{cpath[id(o)]}"><b>{e(o["name"])}</b></a>' + (f' <span class="muted">{e(o.get("origin"))}</span>' if o.get("origin") else "") + "</li>" for o in others) + "</ul>")
+                body.append(f'<section><div class="sec-head"><span>More from {e(name)}.</span></div>' + coffee_list(others, cpath) + "</section>")
             bits = [x for x in [(process or "").lower(), c.get("origin")] if x]
             desc = f"A V60 recipe for {c['name']} from {name}{', ' + city if city else ''}" + (f": {' '.join(bits)}" if bits else "") + "."
             if r and r.get("water"):
@@ -253,23 +276,23 @@ def main():
     for name, cs in by_roaster.items():
         city = next((c.get("roaster_city") for c in cs if c.get("roaster_city")), "")
         shop = (shops.get(name) or {}).get("shop") or ""
-        items = "".join(f'<li><a href="{cpath[id(c)]}"><b>{e(c["name"])}</b></a> <span class="muted">'
-                        + e(", ".join(x for x in [c.get("origin"), c.get("process"), c.get("price")] if x)) + "</span></li>" for c in cs)
-        body = (f'<p class="crumb"><a href="/coffee/">Roasters</a></p><h1>{e(name)}</h1>'
-                f'<p class="by">{e(city) + ", " if city else ""}{len(cs)} coffee{"s" if len(cs) != 1 else ""} on the list'
-                + (f', <a href="{e(shop)}" rel="noopener">their shop</a>' if shop else "") + "</p>"
-                f"<h2>Coffees, each with a V60 recipe</h2><ul class=\"list\">{items}</ul>")
+        body = (f'<section><p class="crumb"><a href="/coffee/">Roasters</a></p><div class="specs">'
+                f'<div class="spec wide"><span class="k">Roastery</span><h1>{e(name)}</h1></div></div>'
+                f'<p class="r-read">{e(city) + ", " if city else ""}{len(cs)} coffee{"s" if len(cs) != 1 else ""} on the list'
+                + (f', <a class="ul" href="{e(shop)}" rel="noopener">their shop</a>' if shop else "") + "</p></section>"
+                f'<section><div class="sec-head"><span>Coffees.</span><span class="muted">Each with a V60 recipe</span></div>{coffee_list(cs, cpath)}</section>')
         desc = f"{len(cs)} coffee{'s' if len(cs) != 1 else ''} from {name}{', ' + city if city else ''}, each with a V60 recipe: grind, dose, temperature and every pour."
         write(f"coffee/{rslug[name]}/index.html", page(f"{name}: coffees and V60 recipes", desc, f"/coffee/{rslug[name]}/", body))
         urls.append((f"{BASE}/coffee/{rslug[name]}/", updated))
 
     # ---------- every roaster ----------
     names = sorted(by_roaster, key=lambda n: slug(n))
-    items = "".join(f'<li><a href="/coffee/{rslug[n]}/"><b>{e(n)}</b></a> <span class="muted">'
+    items = "".join(f'<li><a href="/coffee/{rslug[n]}/"><span class="name">{e(n)}</span></a><span class="sub">'
                     + e(", ".join(x for x in [next((c.get("roaster_city") for c in by_roaster[n] if c.get("roaster_city")), ""),
                                               f"{len(by_roaster[n])} coffee{'s' if len(by_roaster[n]) != 1 else ''}"] if x)) + "</span></li>" for n in names)
-    body = (f"<h1>Roasters</h1><p class=\"by\">{len(names)} roasters, {len(coffees):,} coffees, updated {ddmmyyyy(updated)}. Every coffee has a V60 recipe.</p>"
-            f'<h2>A to Z</h2><ul class="list">{items}</ul>')
+    body = (f'<section><div class="specs"><div class="spec wide"><span class="k">Every coffee, by roaster</span><h1>Roasters</h1></div></div>'
+            f'<p class="r-read">{len(names)} roasters, {len(coffees):,} coffees, updated {ddmmyyyy(updated)}. Every coffee has a V60 recipe.</p></section>'
+            f'<section><div class="sec-head"><span>A to Z.</span></div><ul class="list">{items}</ul></section>')
     write("coffee/index.html", page("Specialty coffee roasters and V60 recipes for their coffees",
                                     f"{len(coffees):,} specialty coffees from {len(names)} roasters, updated every day, each with a V60 recipe.", "/coffee/", body))
 
