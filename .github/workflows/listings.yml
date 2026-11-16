@@ -1,0 +1,39 @@
+name: Listing requests
+
+# Every morning before the roaster scan: requests from the "Get your roastery listed" page arrive as issues labelled
+# "listing". Each shop is checked with the real scanner; the ones with coffee are added to data/roasters.json and the
+# issue is answered and closed. A shop it can't read stays open for a person to look at.
+on:
+  schedule:
+    - cron: "41 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: scan
+  cancel-in-progress: false
+
+jobs:
+  listings:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check requests
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/discover.py --listings
+      - name: Save new roasters
+        run: |
+          if ! git diff --quiet data/roasters.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+            git commit -qam "New roasters from listing requests $(date -u +%d/%m/%Y)"
+            git push -q
+          fi
