@@ -2324,8 +2324,17 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
       anaerobic: "anaerobici", decaf: "decaffeinati", "co-ferment / infused": "co-fermentati / infusi" };
       return `Ricetta fissata per questo caffè, e conta per le tue estrazioni${P[m[1].toLowerCase()] ? " di " + P[m[1].toLowerCase()] : ""}.`; }],
   ];
-  const look = (k) => { if (IT[k] != null) return IT[k];
+  const look0 = (k) => { if (IT[k] != null) return IT[k];
     for (const [rx, f] of RULES) { const m = rx.exec(k); if (m) { const r = f(m); if (r != null) return r; } } return null; };
+  // What to expect starts each line in lower case ("As it cools: acidity…"): look the sentence up as it is written
+  // in the dictionary (capital first), then give the Italian back in lower case too
+  const look = (k) => { const r = look0(k); if (r != null) return r;
+    const m = /^(: )?([a-z])(.*)$/s.exec(k); if (!m) return null;
+    const low = (t) => t.replace(/^(: )?([A-ZÀ-Ý])(?=[a-zà-ÿ’' ])/, (x, p, c) => (p || "") + c.toLowerCase());
+    const up = m[2].toUpperCase() + m[3];
+    let t = look0((m[1] || "") + up); if (t != null) return low(t);
+    if (m[1]) { t = look0(up); if (t != null) return ": " + low(t); }
+    return null; };
   // a whole text, or failing that each of its sentences
   // failing a whole match: sentence by sentence, then the pieces of a line joined by → , / or a comma
   const SPLITS = [[/([.?!])\s+(?=[A-Z«#(“"])/g, "$1\u0001", " "], [/ → /g, "\u0001", " → "], [/ \/ /g, "\u0001", " / "], [/, /g, "\u0001", ", "], [/: /g, "\u0001", ": "]];
@@ -3198,6 +3207,9 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     [/sidra/i, ["florals", "tropical fruit"]], [/wush ?wush/i, ["spice", "florals"]], [/pacamara/i, ["citrus", "a savoury-sweet depth"]], [/laurina|bourbon pointu/i, ["florals", "a soft, low-caffeine sweetness"]]];
   const BODY_W = ["very light", "light", "medium", "full", "heavy"];
   const CLAR_W = ["muddy. Flavours run together", "low. Rich rather than defined", "medium. Clear, with some blending", "high. Flavours separate cleanly", "very high. Each note distinct"];
+  // after "Acidity:" the line goes on in lower case, like the rest of the list; names keep their capital (V60, Kenya, Hoffmann)
+  const PROPER = /^(?:V60|Chemex|Kalita|AeroPress|Hario|Origami|Melitta|Clever|April|Orea|Moccamaster|Bialetti|French|Kasuya|Hoffmann|Rao|Winton|Hedrick|Onyx|CAFEC|Wendelboe|UC|SCA|Gesha|Geisha|Kenya|Ethiopia|Colombia|Brazil|Rwanda|Burundi|Panama|Costa|Guatemala|Honduras|Peru|Bolivia|Ecuador|Mexico|Yemen|India|Indonesia|Sumatra|Java|Uganda|Tanzania|Nicaragua|El|Salvador|China|Vietnam|Papua|Congo|Malawi|Zambia|Jamaica|Hawaii|Kona|Thailand|Myanmar|Laos|Taiwan|Japan|Australia|DR)\b/;
+  const lowFirst = (t) => PROPER.test(t) ? t : t.replace(/^[A-Z](?=[a-z’' ])/, (c) => c.toLowerCase());
   function expectCup(r) {
     const c = r.c, pr = c.process, ro = c.roast, out = [];
     const P = CUP[r.m] || CUP.hoffmann, fermented = ["natural", "anaerobic", "cofer"].includes(pr), darkish = ro === "mdark" || ro === "dark";
@@ -4130,7 +4142,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     if (r.goal && K !== "shot") why.push(`Strength comes from the ratio (1:${r.ratio}). In UC Davis tests, sweetness went down as strength went up (Frost et al. 2020): a lighter ratio tastes sweeter, a stronger one heavier.`);
     const rk = risks(r);
     $("why").innerHTML = rk.map((w) => `<li class="warn">${esc(w)}</li>`).join("") + cons.map((w) => `<li class="cons">${esc(w)}</li>`).join("") + why.map((w) => `<li>${esc(w)}</li>`).join("");
-    $("expect").innerHTML = expectCup(r).map((w) => { const i = w.indexOf(": "); return `<li><b>${esc(w.slice(0, i))}</b>${esc(w.slice(i))}</li>`; }).join("");
+    $("expect").innerHTML = expectCup(r).map((w) => { const i = w.indexOf(": "); return `<li><b>${esc(w.slice(0, i))}</b>${esc(": " + lowFirst(w.slice(i + 2)))}</li>`; }).join("");
     // What to expect sits right after Why this recipe, open, for every recipe
     $("whyHint").textContent = rk.length ? `${rk.length} warning${rk.length > 1 ? "s" : ""}` : ""; $("whyHint").classList.toggle("warn", rk.length > 0);
 
