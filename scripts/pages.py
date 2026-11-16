@@ -117,6 +117,10 @@ a{color:inherit;text-decoration:none}
 @media (min-width:760px){.specs{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .spec{display:grid;gap:4px;align-content:start;padding:10px 0 18px;border-top:1px solid var(--rule);min-width:0}
 .spec.wide{grid-column:1/-1}
+.spec.brewer+.spec,.spec.brewer+.spec+.spec{border-top:0}   /* no rule under the brewer's name */
+@media (min-width:760px){.spec.brewer+.spec+.spec+.spec,.spec.brewer+.spec+.spec+.spec+.spec{border-top:0}}
+.page.top-tight{padding-top:15px}   /* base of the name in the top bar to its rule = that rule to the first words */
+.top-tight > section:first-child .spec:first-child{border-top:0;padding-top:0}
 .spec .k{color:var(--muted);font-weight:600}
 .spec b,.spec h1{margin:0;font-size:39px;line-height:1.05;letter-spacing:-.04em;font-weight:500;overflow-wrap:anywhere}
 @media (min-width:760px){.spec b,.spec h1{font-size:63px}}
@@ -144,7 +148,7 @@ footer p{margin:0 0 6px}
 """
 
 
-def page(title, desc, path, body, extra_head=""):
+def page(title, desc, path, body, extra_head="", nav=True, tight=False):
     url = BASE + path
     return f"""<!doctype html>
 <html lang="en"><head>
@@ -159,8 +163,8 @@ def page(title, desc, path, body, extra_head=""):
 <link rel="icon" href="/icons/icon-192.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
 <style>{CSS}</style>{extra_head}
 </head><body>
-<header class="top"><a class="mark" href="/">A Bag to a Cup</a><a class="pill" href="/coffee/">Roasters</a></header>
-<main class="page">
+<header class="top"><a class="mark" href="/">A Bag to a Cup</a>{'<a class="pill" href="/coffee/">Roasters</a>' if nav else ''}</header>
+<main class="page{' top-tight' if tight else ''}">
 {body}
 </main>
 <footer><p>Coffee details are read every day from each roaster’s own shop. Prices and stock change: check the roaster’s page before you buy.</p>
@@ -238,7 +242,7 @@ def main():
                   + (f'<a class="pill" href="{e(c["url"])}" rel="noopener">Buy from {e(name)}</a>' if c.get("url") else "") + "</p>")
             ld = ""
             if r and r.get("water"):
-                specs = ('<div class="specs">' + spec("Brewer", "<b>V60</b>", "wide") + spec(GRINDER, f'<b>{r["clicks"]}<small>clicks</small></b>')
+                specs = ('<div class="specs">' + spec("Brewer", "<b>V60</b>", "wide brewer") + spec(GRINDER, f'<b>{r["clicks"]}<small>clicks</small></b>')
                          + spec("Kettle", f'<b>{r["temp"]}<small>°C</small></b>') + spec("Coffee", f'<b>{r["dose"]}<small>g</small></b>')
                          + spec("Water", f'<b>{r["water"]}<small>g</small></b>') + spec("Total time", f'<b>{mmss(r["lo"])} – {mmss(r["hi"])}</b>', "wide") + "</div>")
                 rows = "".join(f'<tr><td class="at">{mmss(p["t"])}</td><td class="to">{p["to"]}<small>g</small></td><td>{e(p["note"])}</td></tr>' for p in r["pours"] if p.get("to") is not None)
@@ -292,9 +296,9 @@ def main():
                                               f"{len(by_roaster[n])} coffee{'s' if len(by_roaster[n]) != 1 else ''}"] if x)) + "</span></li>" for n in names)
     body = (f'<section><div class="specs"><div class="spec wide"><span class="k">Every coffee, by roaster</span><h1>Roasters</h1></div></div>'
             f'<p class="r-read">{len(names)} roasters, {len(coffees):,} coffees, updated {ddmmyyyy(updated)}. Every coffee has a V60 recipe.</p></section>'
-            f'<section><div class="sec-head"><span>A to Z.</span></div><ul class="list">{items}</ul></section>')
+            f'<section><ul class="list">{items}</ul></section>')
     write("coffee/index.html", page("Specialty coffee roasters and V60 recipes for their coffees",
-                                    f"{len(coffees):,} specialty coffees from {len(names)} roasters, updated every day, each with a V60 recipe.", "/coffee/", body))
+                                    f"{len(coffees):,} specialty coffees from {len(names)} roasters, updated every day, each with a V60 recipe.", "/coffee/", body, nav=False, tight=True))
 
     write("sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
           + "".join(f"<url><loc>{e(u)}</loc><lastmod>{m}</lastmod></url>\n" for u, m in urls) + "</urlset>\n")
