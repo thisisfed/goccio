@@ -36,6 +36,7 @@ COUNTRIES = ["Ethiopia", "Kenya", "Colombia", "Panama", "Costa Rica", "Guatemala
              "China", "Taiwan", "India", "Myanmar", "Thailand", "Vietnam", "DR Congo", "Congo", "Malawi",
              "Zambia", "Jamaica", "Hawaii", "Dominican Republic", "Timor-Leste", "East Timor", "Laos"]
 # origin names as roasters abroad write them -> English
+GROWING_HOME = {"BR": "Brazil", "CO": "Colombia", "PE": "Peru", "EC": "Ecuador", "BO": "Bolivia", "MX": "Mexico"}
 COUNTRY_ALIASES = {
     "Etiopia": "Ethiopia", "Äthiopien": "Ethiopia", "Éthiopie": "Ethiopia", "Ethiopie": "Ethiopia", "Etiopien": "Ethiopia", "Ethiopië": "Ethiopia",
     "Colombie": "Colombia", "Kolumbien": "Colombia", "Kolumbia": "Colombia", "Colombië": "Colombia",
@@ -67,7 +68,7 @@ VARIETIES = ["Gesha", "Geisha", "Sidra", "Pink Bourbon", "Wush Wush", "Eugenioid
              "Bourbon", "Typica", "Caturra", "Catuai", "Castillo", "Pacamara", "Maragogype",
              "74110", "74112", "74158", "Heirloom", "Landrace", "Java", "Mokka", "Chiroso",
              "Tabi", "Villa Sarchi", "Parainema", "Marsellesa", "Catimor"]
-EXCLUDE = re.compile(r"subscri|abonnement|abbonamento|\babo\b|suscripci|assinatura|sach[eê]s?\b|c[aá]psulas?|filtro de papel|coador|prenumeration|geschenk|regalo|cadeau|gutschein|"
+EXCLUDE = re.compile(r"subscri|abonnement|abbonamento|\babo\b|suscripci|assinatura|\bcurso\b|introdu[cç][aã]o aos|sach[eê]s?\b|c[aá]psulas?|filtro de papel|coador|prenumeration|geschenk|regalo|cadeau|gutschein|"
                      r"\btasse\b|tazza|dip ?style|in-store|xpods?|xbloom|セット|飲み比べ|ドリップバッグ|latte art|\bpen\b|\btool\b|accessor|machine|maker|moccamaster|ticket|party|event|festival|origami|glass|server|carafe|porcelain|ceramic|brewer|filter holder|gift|voucher|capsule|\bpods?\b|nespresso|(?<!\dg )(?<!\d g )coffee bags?|drip bags?|brew bags?|immersion bags?|caf[ée] de poche|"
                      r"steep|equipment|grinder|\bmug\b|kettle|dripper|filter papers?|papers\b|\bcups?\b(?! of excellence)|"
                      r"sampler|tasting pack|taster|bundle|merch|t-?shirt|hoodie|tote|cap\b|"
@@ -1216,7 +1217,7 @@ def clean_name(title, roaster, origin):
 
 
 # title segments that are labels or shop/SEO text, not the coffee's name
-GENERIC_SEG = re.compile(r"^(?:\d{2}(?:/\d{2})?\s+new season|new season|new crop|release\s*#?\d+|\d+(?:[.,]\d+)?\s?(?:g|gr|kg)|farm|fun|classic|daily|exclusive|rare|special|limited(?: release| edition)?|new|new release|feature(?:d)?|guest|seasonal|single origin|nanolotes?|varietal|"
+GENERIC_SEG = re.compile(r"^(?:\d{2}(?:/\d{2})?\s+new season|new season|new crop|release\s*#?\d+|\d+(?:[.,]\d+)?\s?(?:g|gr|kg)|farm|fun|classic|daily|exclusive|rare|special|limited(?: release| edition)?|new|new release|feature(?:d)?|guest|seasonal|single origin|nanolotes?|varietal|blend|"
                          r"filter|omni|coffee|whole ?beans?|shop|store|"
                          r"(?:buy\b.*|.*\bonline\b.*|.*\bspecialty coffee beans?\b.*))$", re.I)
 BRAND_FILLER = re.compile(r"\b(?:the|coffee|co|company|roasters?|roastery|roasting|ltd|&|and|espresso)\b|[^\w\s]", re.I)
@@ -1449,6 +1450,9 @@ def classify(item, roaster):
                        or re.search(r"/coff?ees?/[^/?#]+/?$", item.get("url") or "", re.I)):
         # the shop's feed doesn't say where it's from (Nomad, Dak, Blossom...): read the product page
         origin = origin_from_page(item, roaster)
+    if not origin and roaster.get("country") in GROWING_HOME and COFFEE_HINT.search(full):
+        # a roaster in a growing country names the farm, not the country: Pergamino's "Lomaverde" is Colombian
+        origin = GROWING_HOME[roaster["country"]]
     blend = blend_reason(item)
     if blend:
         parts = blend_origins(item)
