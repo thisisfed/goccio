@@ -1431,7 +1431,11 @@ def classify(item, roaster):
         lvl = (m.group(1) if m.re is ROAST_LABEL else m.group(0)).lower()
         roast_level = "medium-dark" if "medium" in lvl else "dark"
     tags_txt = "\n".join(f"Roast: {t.split(':', 1)[-1].replace('roast', '')}" if re.search(r"roast", t, re.I) else "" for t in item["tags"])
-    roast = find_roast(tags_txt, f"{title}\n{item['type']}", item["body"])
+    if len({roast_word(t.split(":", 1)[-1]) for t in item["tags"] if re.search(r"roast", t, re.I)} - {None}) > 1:
+        tags_txt = ""   # tags naming two roast levels are the shop's filter menu, not this coffee
+    # the coffee's own "Roast: Medium" line first: a shop's tags can say otherwise (Danelaw tagged Polaris, a
+    # medium roast espresso, as light)
+    roast = roast_labelled(item["body"]) or find_roast(tags_txt, f"{title}\n{item['type']}", item["body"])
     origin = find_origin(title, blob, item["body"])
     if not origin and (BAG.search(f"{title} {item['type']} {' '.join(item['tags'])} {item['variants']}")
                        or re.search(r"/coff?ees?/[^/?#]+/?$", item.get("url") or "", re.I)):
