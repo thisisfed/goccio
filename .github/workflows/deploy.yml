@@ -48,10 +48,11 @@ jobs:
       - name: Publish
         if: steps.gate.outputs.go == 'yes'
         run: |
-          # only what the site serves: the page, its data and the share-image function
+          # only what the site serves: the page, its data, the share-image function and the home screen icons
           mkdir -p /tmp/site
           cp index.html CNAME /tmp/site/ 2>/dev/null || cp index.html /tmp/site/
           cp -r data /tmp/site/data
           cp -r functions /tmp/site/functions
+          cp -r icons /tmp/site/icons && cp icons/apple-touch-icon.png /tmp/site/apple-touch-icon.png   # iPhones also look at /apple-touch-icon.png
           cd /tmp/site
           npx --yes wrangler@4 pages deploy . --project-name=v60 --branch=main --commit-dirty=true
