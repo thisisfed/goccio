@@ -36,10 +36,13 @@ COUNTRIES = ["Ethiopia", "Kenya", "Colombia", "Panama", "Costa Rica", "Guatemala
              "China", "Taiwan", "India", "Myanmar", "Thailand", "Vietnam", "DR Congo", "Congo", "Malawi",
              "Zambia", "Jamaica", "Hawaii", "Dominican Republic", "Timor-Leste", "East Timor", "Laos"]
 # origin names as roasters abroad write them -> English
+GROWING_HOME = {"BR": "Brazil", "CO": "Colombia", "PE": "Peru", "EC": "Ecuador", "BO": "Bolivia", "MX": "Mexico"}
 COUNTRY_ALIASES = {
     "Etiopia": "Ethiopia", "Äthiopien": "Ethiopia", "Éthiopie": "Ethiopia", "Ethiopie": "Ethiopia", "Etiopien": "Ethiopia", "Ethiopië": "Ethiopia",
     "Colombie": "Colombia", "Kolumbien": "Colombia", "Kolumbia": "Colombia", "Colombië": "Colombia",
     "Kenia": "Kenya", "Brasile": "Brazil", "Brasilien": "Brazil", "Brésil": "Brazil", "Brasil": "Brazil", "Brazylia": "Brazil",
+    "Canastra": "Brazil", "Mantiqueira": "Brazil", "Cerrado Mineiro": "Brazil", "Sul de Minas": "Brazil", "Mogiana": "Brazil",
+    "Chapada Diamantina": "Brazil", "Caparaó": "Brazil", "Matas de Minas": "Brazil",
     "Perù": "Peru", "Pérou": "Peru", "Perú": "Peru", "Panamá": "Panama", "Ruanda": "Rwanda", "Messico": "Mexico", "Mexiko": "Mexico",
     "Mexique": "Mexico", "México": "Mexico", "Indonesien": "Indonesia", "Indonésie": "Indonesia", "Équateur": "Ecuador",
     "Ouganda": "Uganda", "Tansania": "Tanzania", "Tanzanie": "Tanzania", "Jemen": "Yemen", "Yémen": "Yemen", "Salvador": "El Salvador",
@@ -54,18 +57,19 @@ COUNTRY_ALIASES = {
     "Perù": "Peru", "Honduras": "Honduras", "Jemen": "Yemen", "Kongo": "DR Congo", "Kenija": "Kenya", "Ugandzie": "Uganda",
 }
 SYMBOL = {"GBP": "£", "EUR": "€", "USD": "$", "CAD": "CA$", "AUD": "A$", "NZD": "NZ$", "JPY": "¥", "DKK": " kr", "SEK": " kr", "NOK": " kr",
-          "PLN": " zł", "CZK": " Kč", "CHF": "CHF "}
+          "PLN": " zł", "CZK": " Kč", "CHF": "CHF ", "BRL": "R$", "COP": "COL$", "PEN": "S/", "ARS": "AR$", "CLP": "CLP$", "MXN": "MX$"}
 COUNTRY_CCY = {"GB": "GBP", "US": "USD", "CA": "CAD", "AU": "AUD", "NZ": "NZD", "JP": "JPY", "DK": "DKK", "SE": "SEK", "NO": "NOK",
                "PL": "PLN", "CZ": "CZK", "CH": "CHF", "CN": "CNY", "HK": "HKD", "TW": "TWD", "KR": "KRW", "SG": "SGD", "MY": "MYR",
-               "TH": "THB", "PH": "PHP", "ID": "IDR"}
+               "TH": "THB", "PH": "PHP", "ID": "IDR", "BR": "BRL", "CO": "COP", "PE": "PEN", "AR": "ARS", "CL": "CLP", "EC": "USD",
+               "MX": "MXN", "UY": "UYU"}
 
 VARIETIES = ["Gesha", "Geisha", "Sidra", "Pink Bourbon", "Wush Wush", "Eugenioides", "Laurina",
              "Sudan Rume", "SL28", "SL34", "Ruiru 11", "Batian", "Red Bourbon", "Yellow Bourbon",
              "Bourbon", "Typica", "Caturra", "Catuai", "Castillo", "Pacamara", "Maragogype",
              "74110", "74112", "74158", "Heirloom", "Landrace", "Java", "Mokka", "Chiroso",
              "Tabi", "Villa Sarchi", "Parainema", "Marsellesa", "Catimor"]
-EXCLUDE = re.compile(r"subscri|abonnement|abbonamento|\babo\b|suscripci|prenumeration|geschenk|regalo|cadeau|gutschein|"
-                     r"\btasse\b|tazza|dip ?style|in-store|xpods?|xbloom|セット|飲み比べ|ドリップバッグ|latte art|\bpen\b|\btool\b|accessor|machine|maker|moccamaster|ticket|party|event|festival|origami|glass|server|carafe|porcelain|ceramic|brewer|filter holder|gift|voucher|capsule|\bpods?\b|nespresso|coffee bags?|drip bags?|brew bags?|immersion bags?|caf[ée] de poche|"
+EXCLUDE = re.compile(r"subscri|abonnement|abbonamento|\babo\b|suscripci|assinatura|\bcurso\b|introdu[cç][aã]o aos|sach[eê]s?\b|c[aá]psulas?|filtro de papel|coador|prenumeration|geschenk|regalo|cadeau|gutschein|"
+                     r"\btasse\b|tazza|dip ?style|in-store|xpods?|xbloom|セット|飲み比べ|ドリップバッグ|latte art|\bpen\b|\btool\b|accessor|machine|maker|moccamaster|ticket|party|event|festival|origami|glass|server|carafe|porcelain|ceramic|brewer|filter holder|gift|voucher|capsule|\bpods?\b|nespresso|(?<!\dg )(?<!\d g )coffee bags?|drip bags?|brew bags?|immersion bags?|caf[ée] de poche|"
                      r"steep|equipment|grinder|\bmug\b|kettle|dripper|filter papers?|papers\b|\bcups?\b(?! of excellence)|"
                      r"sampler|tasting pack|taster|bundle|merch|t-?shirt|hoodie|tote|cap\b|"
                      r"cold brew|concentrate|instant|\btea\b|chocolate bar|chocolate\b|cascara|"
@@ -74,13 +78,14 @@ EXCLUDE = re.compile(r"subscri|abonnement|abbonamento|\babo\b|suscripci|prenumer
                      r"\b\d+(?:[.,]\d+)?\s?kg\b|\btin\b|longjing|sencha|oolong|rooibos|darjeeling|\bassam\b|earl grey|bai hao|jasmine (?:green|tea|pearl)|"
                      r"sticker|socks?\b|bandana|poster|\binsert\b|screw|basket|portafilter|gasket|spout|tablets?\b|cleaner|\bpin\b|scoop|\bjar\b|"
                      r"\bcake\b|bread\b|sandwich|tumbler|calendar|kalender|shipping\b|postcard|\bpaper\b|filtry|\bfilters\b|\bcards?\b|\bhoney (?:jar|mini)|"
-                     r"coffee blossom honey|surprise|we choose|filter cone|\bcone\b|\boffice\b|\bgreen\s*$|\bsample\b|cupping|atelier|d[ée]gustation", re.I)
+                     r"coffee blossom honey|surprise|super jolly|\bkony\b|\bphilos\b|we choose|filter cone|\bcone\b|\boffice\b|\bgreen\s*$|\bsample\b|cupping|atelier|d[ée]gustation", re.I)
 FILTERY = re.compile(r"\bfilter\b|\bomni\b|pour[- ]?over|\bv60\b|chemex|batch brew|filter roast|\bfiltro\b|\bfiltre\b|"
                      r"filterröst|filterkaffe|handfilter|brew roast", re.I)
 ESPRESSO = re.compile(r"\bespresso\b", re.I)
 COFFEE_HINT = re.compile(r"single origin|single-origin|altitude|masl|variet|process|tasting notes|"
                          r"flavour notes|flavor notes|producer|washing station|farm|finca|estate|"
-                         r"proces\b|vari[eë]teit|hoogte|smaak|producent|boerderij|koffiebonen", re.I)
+                         r"proces\b|vari[eë]teit|hoogte|smaak|producent|boerderij|koffiebonen|"
+                         r"fazenda|s[ií]tio|gr[aã]os?\b|torra\b|torrado|tostad[oa]|tueste|grano|variedade?s?|processo|proceso|colheita|cosecha", re.I)
 NOTES_RE = re.compile(r"(?:tasting notes|flavour notes|flavor notes|flavour profile|in the cup|tastes like|we taste|cup notes|"
                       r"note di degustazione|note aromatiche|note|geschmacksnoten|geschmack|aromen|notes de dégustation|"
                       r"smaksnoter|smagsnoter|smaksnotater|notas de cata|notas|notes)\s*[:\-–]\s*([^\n.]{3,120})", re.I)
@@ -224,7 +229,7 @@ NOT_ONE_COFFEE = re.compile(r"\ball[- ]?\d\b|\b\d\s?x\s?\d{2,3}\s?g\b|roaster'?s
                             # prepaid plans: "Jones Prepaid Weekly 12 months", "Coffee of the Month (6 month Prepaid)",
                             # "Uphill Espresso - 6 months", "Seasonal Special Coffee Plan" ("Plan Vivo" is a coffee)
                             r"pre-?paid|(?<!aged )(?<!rested )\b\d{1,2}\s?months?\b|\bof the month\b|\bcoffee plan\b|"
-                            r"\b(?:weekly|fortnightly|monthly|quarterly)\b", re.I)
+                            r"\b(?:weekly|fortnightly|monthly|quarterly)\b|assinatura|por m[eê]s|al mes\b", re.I)
 BLEND_TITLE = re.compile(r"(?<!field )\bblends?\b|low[- ]caff?\b|house[- ](?:roast|coffee|blend|espresso)|signature[- ](?:roast|blend|coffee)|"
                          r"seasonal[- ](?:filter|espresso|blend|roast)|half[- ]caff|miscela|m[ée]lange|mezcla|mischung", re.I)
 # "a blend of harvests / lots / varieties / producers" is still one origin, and so is a "field blend"
@@ -973,7 +978,7 @@ def woo_variation_price(shop, variations):
         raw = pr.get("price")
         if raw in (None, "", "0"):
             continue
-        val = int(raw) / (10 ** int(pr.get("currency_minor_unit", 2) or 2))
+        val = int(raw) / (10 ** int(pr["currency_minor_unit"] if pr.get("currency_minor_unit") not in (None, "") else 2))
         if val < 1:
             continue
         label = " ".join(str(a.get("value", "")) for a in (v.get("attributes") or [])) + " " + d.get("name", "")
@@ -992,7 +997,7 @@ def fetch_woo(shop):
             break
         for p in data:
             pr = p.get("prices") or {}
-            minor = int(pr.get("currency_minor_unit", 2) or 2)
+            minor = int(pr["currency_minor_unit"] if pr.get("currency_minor_unit") not in (None, "") else 2)
             raw = pr.get("price")
             if raw in (None, "", "0"):   # variable products (sizes) put the price in a range
                 raw = (pr.get("price_range") or {}).get("min_amount") or raw
@@ -1150,6 +1155,7 @@ def clean_name(title, roaster, origin):
     title = re.sub(r"<[^>]+>", "", title)
     title = re.sub(r"^\s*\d{1,2}/\d{1,2}\s+\d{1,2}:\d{2}\s*[~〜～]\s*", "", title)   # Philocoffea: "11/16 10:00~" release stamp
     title = re.sub(r"\s*/\s*$", "", title)   # Fuglen Tokyo: "Arbegona /"
+    title = re.sub(r"\s*\(\s*\d+\s?(?:g|gr|kg)\b[^)]*\)\s*$", "", title, flags=re.I)   # Pergamino: "Lomaverde (500g coffee bag)"
     m = re.match(r"^\s*\d{3}\s+(\S.*)$", title)   # Philocoffea: "467 Ethiopia Bombe Washed", a lot number in front of the origin
     if m and (find_origin(m.group(1)[:25]) or re.match(r"[A-Z]", m.group(1))):
         title = m.group(1)
@@ -1212,7 +1218,7 @@ def clean_name(title, roaster, origin):
 
 
 # title segments that are labels or shop/SEO text, not the coffee's name
-GENERIC_SEG = re.compile(r"^(?:\d{2}(?:/\d{2})?\s+new season|new season|new crop|release\s*#?\d+|\d+(?:[.,]\d+)?\s?(?:g|gr|kg)|farm|fun|classic|daily|exclusive|rare|special|limited(?: release| edition)?|new|new release|feature(?:d)?|guest|seasonal|single origin|"
+GENERIC_SEG = re.compile(r"^(?:\d{2}(?:/\d{2})?\s+new season|new season|new crop|release\s*#?\d+|\d+(?:[.,]\d+)?\s?(?:g|gr|kg)|farm|fun|classic|daily|exclusive|rare|special|limited(?: release| edition)?|new|new release|feature(?:d)?|guest|seasonal|single origin|nanolotes?|varietal|blend|"
                          r"filter|omni|coffee|whole ?beans?|shop|store|"
                          r"(?:buy\b.*|.*\bonline\b.*|.*\bspecialty coffee beans?\b.*))$", re.I)
 BRAND_FILLER = re.compile(r"\b(?:the|coffee|co|company|roasters?|roastery|roasting|ltd|&|and|espresso)\b|[^\w\s]", re.I)
@@ -1358,7 +1364,7 @@ def bag_grams(item):
 
 def money(v, ccy):
     sym = SYMBOL.get(ccy, ccy + " ")
-    amount = f"{v:.0f}" if ccy in ("JPY", "DKK", "SEK", "NOK", "CZK") else f"{v:.2f}"
+    amount = f"{v:,.0f}" if ccy in ("COP", "CLP", "ARS") else f"{v:.0f}" if ccy in ("JPY", "DKK", "SEK", "NOK", "CZK") else f"{v:.2f}"
     return amount + sym if sym.startswith(" ") else sym + amount
 
 
@@ -1445,6 +1451,10 @@ def classify(item, roaster):
                        or re.search(r"/coff?ees?/[^/?#]+/?$", item.get("url") or "", re.I)):
         # the shop's feed doesn't say where it's from (Nomad, Dak, Blossom...): read the product page
         origin = origin_from_page(item, roaster)
+    if not origin and roaster.get("country") in GROWING_HOME and COFFEE_HINT.search(full) \
+            and re.search(r"\b\d{2,4}\s?g\b|gr[aã]os|grano|mo[ií]do|molido|whole bean|ground", f"{title} {item['variants']}", re.I):
+        # a roaster in a growing country names the farm, not the country: Pergamino's "Lomaverde" is Colombian
+        origin = GROWING_HOME[roaster["country"]]
     blend = blend_reason(item)
     if blend:
         parts = blend_origins(item)
