@@ -48,16 +48,37 @@ def nation(place):
 
 
 def directory():
-    """(name, place, roaster page) for every roaster in the directory's A to Z."""
-    page = scan.get_text(f"{DIR}/uk-coffee-roasters/", tries=2, limit=2_000_000)
+    """(name, roaster page) for every roaster in the directory: its JSON-LD list if it has one, else every link to a roaster page."""
+    page = scan.get_text(f"{DIR}/uk-coffee-roasters/", tries=2, limit=3_000_000)
     out, seen = [], set()
-    for m in re.finditer(r'<a[^>]+href="(?:https://roasterlist\.pages\.dev)?(/roaster/[^"#?]+/?)"[^>]*>(.*?)</a>', page, re.S | re.I):
-        link, inner = m.group(1), m.group(2)
-        name = html.unescape(re.sub(r"<[^>]+>|\s+", " ", inner)).strip()
-        if not name or link in seen or len(name) > 60:
+    def add(name, link):
+        link = re.sub(r"^https?://[^/]+", "", link)
+        if not re.match(r"^/roaster/[^/]+/?$", link) or link in seen:
+            return
+        name = html.unescape(re.sub(r"<[^>]+>|\s+", " ", name or "")).strip()
+        if not name or len(name) > 60:
+            return
+        seen.add(link); out.append({"name": name, "page": DIR + link.rstrip("/") + "/"})
+    for blob in re.findall(r'<script type="application/ld\+json">(.*?)</script>', page, re.S):
+        try:
+            data = json.loads(blob)
+        except Exception:  # noqa: BLE001
             continue
-        seen.add(link)
-        out.append({"name": name, "page": DIR + link})
+        stack = [data]
+        while stack:
+            x = stack.pop()
+            if isinstance(x, dict):
+                u = x.get("url") or (x.get("item") or {}).get("@id") if isinstance(x.get("item"), dict) else x.get("url")
+                if isinstance(u, str) and "/roaster/" in u:
+                    add(x.get("name") or (x.get("item") or {}).get("name"), u)
+                stack.extend(x.values())
+            elif isinstance(x, list):
+                stack.extend(x)
+    for m in re.finditer(r'<a[^>]+href="([^"]*/roaster/[^"#?]+)"[^>]*>(.*?)</a>', page, re.S | re.I):
+        add(m.group(2), m.group(1))
+    if not out:
+        for m in list(re.finditer(r"/roaster/", page))[:5]:
+            print("CONTEXT:", page[max(0, m.start() - 300): m.end() + 200].replace("\n", " "))
     return out
 
 
