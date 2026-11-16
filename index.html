@@ -4766,7 +4766,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
   // roast, as the roaster states it (shop page or listing): light keeps very light and light, nothing guessed
   const isLight = (r) => r.roast === "light" || r.roast === "vlight";
   // ---------- roaster page: one roaster's coffees, where it roasts, and its shop. Lives in the address (#roaster=…) so it can be shared
-  let roShops = new Map(), roAddr = null;   // roaster name -> shop address, from the scan
+  let roShops = new Map();   // roaster name -> shop address, from the scan
   const roParam = () => { const m = location.hash.match(/^#roaster=(.+)$/); return m ? decodeURIComponent(m[1]) : ""; };
   function openRoaster(name) {
     shelfRo = name; shelfAll = false;
@@ -4787,11 +4787,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     let country = r0.roaster_country || "";
     try { country = country ? new Intl.DisplayNames([LANG === "it" ? "it" : "en"], { type: "region" }).of(country) : ""; } catch (e) {}
     $("roName").textContent = shelfRo + ".";
-    // the full address as the roaster publishes it (data/addresses.json, read once), else the city
-    const addr = (roAddr && roAddr[shelfRo] || {}).address;
-    $("roWhere").textContent = addr ? (country && !addr.toLowerCase().includes(country.toLowerCase()) ? `${addr}, ${country}` : addr)
-      : [r0.roaster_city, country].filter(Boolean).join(", ");
-    if (roAddr === null) { roAddr = {}; fetch("data/addresses.json", { cache: "no-cache" }).then((x) => x.ok ? x.json() : {}).then((j) => { roAddr = j || {}; if (shelfRo) renderRoHead(); }).catch(() => {}); }
+    $("roWhere").textContent = [r0.roaster_city, country].filter(Boolean).join(", ");
     $("roCount").textContent = mine.length === 1 ? "1 coffee" : `${mine.length} coffees`;
     const shop = roShops.get(shelfRo) || (() => { try { return new URL(r0.url).origin; } catch (e) { return ""; } })();
     $("roShop").hidden = !shop; if (shop) $("roShop").href = shop;
