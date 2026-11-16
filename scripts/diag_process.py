@@ -33,7 +33,7 @@ def main():
         start = max(0, text.lower().find(rec["name"].lower()[:30]))
         cur = scan.labelled(text, "process", start) or scan.labelled(text, "process") or scan.raw_labelled(raw, "process") or scan.from_json(raw, "process") \
             or scan.class_labelled(raw, "process") or scan.suffix_labelled(text, "process", start) or scan.process_from_text(text[start:start + 4000])
-        new = scan.process_phrase(text[start:start + 6000], why=True) if not cur else None
+        new = scan.process_phrase(scan.description_window(text, start), why=True) if not cur else None
         anyw = [m for m in WORD.finditer(text[start:start + 6000])]
         if cur:
             stats["current readers find it"] += 1
