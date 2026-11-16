@@ -6191,8 +6191,8 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     rs.forEach((r) => { r.style.maxWidth = "0px"; }); chs.forEach((c) => { c.style.transition = "none"; c.style.opacity = "0"; }); void el.offsetWidth;
     // 1. the gaps open: A, B and C move apart (1 s)
     rs.forEach((r, i) => { r.style.transition = "max-width 1s cubic-bezier(.65,0,.35,1) .45s"; r.style.maxWidth = ws[i] + "px"; });
-    // 2. then the letters, in order, 45 ms apart
-    chs.forEach((c, i) => { c.style.transition = `opacity .35s ease ${1.5 + i * 0.045}s`; c.style.opacity = "1"; });
+    // 2. a breath with A, B and C in place (.5 s), then the letters, in order, 45 ms apart
+    chs.forEach((c, i) => { c.style.transition = `opacity .35s ease ${1.95 + i * 0.045}s`; c.style.opacity = "1"; });
     el._abcT = setTimeout(() => rs.forEach((r) => { r.style.maxWidth = "none"; r.style.overflow = "visible"; }), 1500);   // whole again: nothing clipped (the p of Cup), and a resize keeps it right
   }
   (function abcMark() {
@@ -6202,11 +6202,12 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     let seen = true;
     if ("IntersectionObserver" in window) new IntersectionObserver((es) => { const v = es[0].isIntersecting; if (v && !seen) abcOpen(w); seen = v; }).observe(w);
     go();
-    // the header's name: open as it fades into the bar, shut again once it has gone
-    let was = document.body.classList.contains("mark-on");
-    new MutationObserver(() => { const on = document.body.classList.contains("mark-on"); if (on === was) return; was = on;
-      if (on) abcOpen(m); else setTimeout(() => { if (!document.body.classList.contains("mark-on")) abcShut(m); }, 260); }).observe(document.body, { attributes: true, attributeFilter: ["class"] });
-    if (was) abcOpen(m);
+    // the header's name stays ABC; a tap opens it to A Bag to a Cup. Back to ABC when it leaves the bar
+    if (m) { m.style.cursor = "pointer"; m.setAttribute("role", "button"); m.tabIndex = 0;
+      const tap = () => { if (!m._open) { m._open = true; abcOpen(m); } };
+      m.addEventListener("click", tap); m.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); tap(); } });
+      new MutationObserver(() => { if (!document.body.classList.contains("mark-on")) setTimeout(() => { if (!document.body.classList.contains("mark-on")) { m._open = false; abcShut(m); } }, 260); })
+        .observe(document.body, { attributes: true, attributeFilter: ["class"] }); }
   })();
   (function heroLoop() {
     const scenes = [...document.querySelectorAll("#stage .scene")];
