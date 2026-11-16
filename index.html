@@ -2015,7 +2015,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     <div class="gear-tools">
       <div class="opt"><span id="labGB">Brewers</span><div class="chips" id="gearB" role="group" aria-labelledby="labGB"></div></div>
       <div class="opt"><span id="labGG">Grinders</span><div class="chips" id="gearG" role="group" aria-labelledby="labGG"></div></div>
-      <div class="opt"><span></span><div class="gear-go"><button type="button" class="gear-btn" id="surprise">Surprise me</button>
+      <div class="opt" id="surpriseRow"><span></span><div class="gear-go"><button type="button" class="gear-btn" id="surprise">Surprise me</button>
         <p class="gear-note" id="gearNote">A random recipe from your equipment and your bags.</p></div></div>
     </div>
   </section>
@@ -2109,7 +2109,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
 
   <footer>
     <div class="fcol">
-    <details class="foot-x" open><summary class="foot-note refs-h">Disclaimer</summary>
+    <details class="foot-x disc" open><summary class="foot-note refs-h">Disclaimer</summary>
     <p class="foot-note">Coffees come from roasters’ own shop listings, checked every day. Not affiliated with any roaster. Your journal, bags, equipment, scan photos and settings never leave this device.</p>
     </details>
     <details class="foot-x" open><summary class="foot-note refs-h">Methods</summary>
@@ -2191,8 +2191,8 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     </div>
   </footer>
   <script>
-    // on a phone the footer opens folded: Disclaimer, Methods and Sources one tap each
-    if (matchMedia("(max-width: 760px)").matches) document.querySelectorAll("footer details.foot-x").forEach((d) => d.removeAttribute("open"));
+    // on a phone Methods and Sources open folded, one tap each; the Disclaimer stays open
+    if (matchMedia("(max-width: 760px)").matches) document.querySelectorAll("footer details.foot-x:not(.disc)").forEach((d) => d.removeAttribute("open"));
   </script>
 </main>
 
@@ -5387,6 +5387,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     row("gearB", gear.brewers, Object.fromEntries(Object.entries(BREWERS).filter(([k]) => k !== "cold")), (B) => B.name);
     row("gearG", gear.grinders, GRINDERS, (G) => G.name);
     gearWait();
+    $("surpriseRow").style.display = gear.brewers.length && gear.grinders.length ? "" : "none";   // Surprise me once there's a brewer and a grinder to pick from
     const n = bags.filter((b) => !b.frozen).length;
     $("gearNote").textContent = !gear.brewers.length ? "Tick the brewers you own, then a random recipe from them and your bags."
       : n ? "A random recipe from your equipment and your bags." : "A random recipe from your equipment and the newest coffees.";
@@ -6216,9 +6217,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     const w = $("wm"), m = document.querySelector(".mark.abc"); if (!w || ABC_STILL) return;
     abcShut(w); abcShut(m);   // start shut, so the first thing seen is ABC
     const go = () => { if (document.documentElement.classList.contains("wait")) return setTimeout(go, 80); abcOpen(w); };
-    let seen = true;
-    if ("IntersectionObserver" in window) new IntersectionObserver((es) => { const v = es[0].isIntersecting; if (v && !seen) abcOpen(w); seen = v; }).observe(w);
-    go();
+    go();   // once a visit: back at the top later, the name is simply there in full
     // the header's name stays ABC; a tap opens it to A Bag to a Cup. Back to ABC when it leaves the bar
     if (m) { m.style.cursor = "pointer"; m.setAttribute("role", "button"); m.tabIndex = 0;
       const tap = () => { if (!m._open) { m._open = true; abcOpen(m); } };
