@@ -1259,6 +1259,9 @@ def tidy_name(name, roaster):
         # "Gem Forest Coffee - Double Ferment Washed [Syrina]", "Black Moon Chiroso — Natural": the tail is tags
         if len(keep) == 2 and details_only(keep[1]):
             name = keep[0]
+        # "Fruity & Floral - Nicaragua Santa Isabel" (Kaffa Roastery): the shop's flavour style first, the coffee after
+        if len(keep) == 2 and re.fullmatch(r"[A-Za-z]+ & [A-Za-z]+", keep[0]):
+            name = keep[1]
     elif not keep:
         name = ""
     if ", " in name:
