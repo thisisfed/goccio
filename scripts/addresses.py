@@ -105,6 +105,7 @@ def tidy(addr, name):
     segs, out = [p.strip(" .") for p in re.split(r"\s*[,;]\s*", addr)], []
     for seg in segs:
         seg = re.sub(r"^(?:roastery|location|address|visit us|find us|[A-Za-z]+(?: [A-Za-z]+)?)\s*:\s*", "", seg, flags=re.I).strip()
+        seg = re.sub(r"^.*\baddress\s*:\s*", "", seg, flags=re.I).strip()   # "Need Help ? Address: Unit 18 …"
         short = re.sub(r"\s+(?:coffee|roasters?|roastery|roasting|company|co\.?)\b.*$", "", name, flags=re.I) or name
         seg = re.sub(r"^(?:" + re.escape(name) + "|" + re.escape(short) + r")\s+(?=\d)", "", seg, flags=re.I)
         seg = re.sub(r"^20\d\d\s+(?=\D)", "", seg)   # a copyright year run into the street   # "Ginger Monkey 31 Christleton Rd" -> "31 Christleton Rd"
