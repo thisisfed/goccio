@@ -29,3 +29,4 @@ def probe(c):
 with ThreadPoolExecutor(8) as pool:
     out = list(pool.map(probe, C))
 Path("data/probe_sa.txt").write_text("\n".join(out))
+# rerun
