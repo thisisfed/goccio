@@ -1666,6 +1666,12 @@ footer #credit a{color:var(--ink);text-decoration:underline;text-decoration-colo
 .scene.one-line { font-size: min(24px, 7.4cqi) !important; }
 @container (min-width: 527px) { .scene.one-line { font-size: 39px !important; } }
 @media (min-width: 1000px) { @container (min-width: 852px) { .scene.one-line { font-size: 63px !important; } } }
+/* desktop: every scene of the hero in the one big size; the roasters run on as lines of text so they still fit */
+@media (min-width: 1000px) {
+  .scene.roasters, .scene.just { font-size: var(--hs) !important; line-height: 1.05; }
+  .scene.one-line { font-size: var(--hs) !important; flex-wrap: wrap; white-space: normal; }
+  .scene.roasters { flex-direction: row !important; flex-wrap: wrap !important; align-content: flex-start; gap: 0 .3em !important; }
+}
 .spec.time b { font-size: 24px !important; }
 @container (min-width: 300px) { .spec.time b { font-size: 39px !important; } }
 @media (min-width: 1000px) { .spec.time b { font-size: 39px !important; } @container (min-width: 420px) { .spec.time b { font-size: 63px !important; } } }
@@ -1828,7 +1834,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
 .curfew{margin:-2px 0 0;padding:0 0 13px}
 .curfew .cf-h{font:500 var(--fs-s)/1.35 var(--sans);color:var(--hl);margin:0}   /* small and all in the accent, the reason on the very next line */
 .curfew .cf-t{font:500 var(--fs-s)/1.35 var(--sans);color:var(--muted);margin:0}
-.curfew .ro-acts{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0}
+.curfew .ro-acts{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 0}   /* the text sits as far above the pills as one pill from the next */
 .curfew .ro-pill:hover{background:color-mix(in srgb, var(--pill) 80%, var(--ink))}   /* the grey pills' hover */
 .curfew .ro-pill{display:inline-flex;align-items:center;height:var(--pill-h);padding:0 12px;border:0;border-radius:var(--r);background:var(--pill);color:var(--ink);
   font:500 var(--fs-s)/1 var(--sans);letter-spacing:inherit;cursor:pointer}
@@ -6048,6 +6054,9 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
           .filter((c) => !seen.has(c.roaster) && seen.add(c.roaster)).slice(0, 3);
         $("justLn").innerHTML = (three.length ? three : [{ name: "Fresh every day", roaster: "" }]).map((c, k) =>
           `<span class="ln">${`${calm(c.name)}${c.roaster ? ", " + c.roaster : ""}.`.split(/\s+/).map((w, j) => `<span class="w" style="--i:${4 + k * 6 + j * 0.4}">${esc(w)}</span>`).join(" ")}</span>`).join("");
+        // the big desktop size: keep as many of the three as fit the stage, newest first
+        { const lns = () => [...$("justLn").querySelectorAll(".ln")]; const over = () => { const l = lns().pop(); if (!l) return false; const b = l.getBoundingClientRect(), e = el.getBoundingClientRect(); return b.bottom > e.bottom + 1 || b.right > e.right + 1; };   // past the foot, or wrapped into a second column
+          while (lns().length > 1 && over()) lns().pop().remove(); }
       }
       if (el.id === "sceneIsland") {
         // the five newest, one per roaster so the stack shows five different shops
