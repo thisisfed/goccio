@@ -918,6 +918,11 @@ def fetch_squarespace(shop):
         urls = re.findall(r"<loc>([^<]+)</loc>", sm)
     except Exception:  # noqa: BLE001
         pass
+    # shop pages first: one "?format=json" of a shop page lists all its products (Bean Brothers' /coffee-shop sat past
+    # the 60th address, behind blog tags), and their product pages are then not needed
+    roots = list(dict.fromkeys(m.group(1) for u in urls for m in [re.match(r"(.+)/p/[^/]+/?$", u)] if m))
+    shopish = [u for u in urls if u not in roots and re.search(r"shop|store|coffee|beans|kaffe|caf", u, re.I) and "/p/" not in u]
+    urls = roots + shopish + [u for u in urls if u not in roots and u not in shopish and not any(u.startswith(r + "/p/") for r in roots)]
     seen, items, tried = set(), [], 0
     for u in urls:
         if tried >= 60 or SKIP_URL.search(u) or re.search(r"/(blog|news|journal|event|events|testimonials?)/", u, re.I):
@@ -1406,7 +1411,9 @@ def classify(item, roaster):
     full = blob + "\n" + item["body"]
     if not item["available"]:
         return _drop(roaster, "sold out", title)
-    m = EXCLUDE.search(title) or EXCLUDE.search(item["type"])
+    # a product type that is just the shop's name for bagged coffee ("Coffee Bags", Kaffa Roastery) is not a steeping bag
+    ptype = "" if re.fullmatch(r"\s*(?:coffee|kahvi|kaffe)\s*bags?\s*", item["type"] or "", re.I) else item["type"]
+    m = EXCLUDE.search(title) or EXCLUDE.search(ptype)
     if m:
         return _drop(roaster, f"not coffee ({m.group(0)})", title)
     why = not_coffee(item) or not_beans(item) or not_one_coffee(item)
