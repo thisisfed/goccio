@@ -878,9 +878,7 @@ body, .lede, .ask label, .need h3, .log h3, .sec-head .cap:first-child, .mark, .
 .mark-on .mark { opacity: 1; transform: none; }
 /* A Bag to a Cup: ABC first, then the letters in between open out */
 .mark.abc { gap: 0 !important; }
-.mark.abc .r { display: inline-block; max-width: 0; overflow: hidden; white-space: pre; vertical-align: bottom; padding-bottom: .26em; margin-bottom: -.26em; opacity: 0; transition: max-width .25s ease, opacity .2s ease; }
-.mark-on .mark.abc .r { max-width: 5em; opacity: 1; transition: max-width 1.1s cubic-bezier(.2,.8,.2,1) .55s, opacity .6s ease .6s; }
-@media (prefers-reduced-motion: reduce) { .mark.abc .r { max-width: none; opacity: 1; transition: none; } }
+.mark.abc .r { display: inline-block; overflow: hidden; white-space: pre; vertical-align: bottom; padding-bottom: .26em; margin-bottom: -.26em; }   /* opened by abcOpen(), the same as the big wordmark */
 
 /* hero: words and intro on top, the big name sitting on the bottom of the first screen */
 /* the first screen is empty white with the big name resting on its bottom edge; the rest follows below */
@@ -6165,23 +6163,32 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
       rs.forEach((r, i) => r.style.maxWidth = was[i]); };
     fit(); addEventListener("resize", fit); if (document.fonts) document.fonts.ready.then(fit);
   })();
-  // A Bag to a Cup: the wordmark opens from ABC once the page shows, and again each time you scroll back up to it
+  // A Bag to a Cup: ABC first, then the letters in between open out. One animation for the big wordmark and the header's name,
+  // the same timing and curve, each to its exact width. The wordmark plays once the page shows and each time you scroll back
+  // up to it; the header's name each time it appears in the bar
+  const ABC_STILL = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const abcShut = (el) => { if (!el || ABC_STILL) return; el.querySelectorAll(".r").forEach((r) => { r.style.transition = "none"; r.style.maxWidth = "0px"; r.style.opacity = "0"; }); };
+  function abcOpen(el) {
+    if (!el || ABC_STILL) return; const rs = [...el.querySelectorAll(".r")];
+    rs.forEach((r) => { r.style.transition = "none"; r.style.maxWidth = "none"; });
+    const ws = rs.map((r) => r.getBoundingClientRect().width);
+    if (!ws.some(Boolean)) { rs.forEach((r) => { r.style.maxWidth = "none"; r.style.opacity = "1"; }); return; }   // not on screen (a very small phone hides the header's name)
+    rs.forEach((r) => { r.style.maxWidth = "0px"; r.style.opacity = "0"; }); void el.offsetWidth;
+    rs.forEach((r, i) => { r.style.transition = "max-width 1.1s cubic-bezier(.2,.8,.2,1) .55s, opacity .6s ease .6s"; r.style.maxWidth = ws[i] + "px"; r.style.opacity = "1"; });
+  }
+  document.querySelectorAll("#wm .r, .mark.abc .r").forEach((r) => r.addEventListener("transitionend", (e) => { if (e.propertyName === "max-width" && r.style.opacity === "1") r.style.maxWidth = "none"; }));   // a resize later keeps it whole
   (function abcMark() {
-    const w = $("wm"); if (!w || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const rs = [...w.querySelectorAll(".r")];
-    const open = () => {
-      rs.forEach((r) => { r.style.transition = "none"; r.style.maxWidth = "none"; });
-      const ws = rs.map((r) => r.getBoundingClientRect().width);
-      rs.forEach((r) => { r.style.maxWidth = "0px"; r.style.opacity = "0"; }); void w.offsetWidth;
-      rs.forEach((r, i) => { r.style.transition = "max-width 1.2s cubic-bezier(.2,.8,.2,1) .5s, opacity .6s ease .6s"; r.style.maxWidth = ws[i] + "px"; r.style.opacity = "1"; });
-    };
-    rs.forEach((r) => r.addEventListener("transitionend", (e) => { if (e.propertyName === "max-width") r.style.maxWidth = "none"; }));   // a resize later keeps it whole
-    // start shut, so the first thing seen is ABC
-    rs.forEach((r) => { r.style.maxWidth = "0px"; r.style.opacity = "0"; });
-    const go = () => { if (document.documentElement.classList.contains("wait")) return setTimeout(go, 80); open(); };
+    const w = $("wm"), m = document.querySelector(".mark.abc"); if (!w || ABC_STILL) return;
+    abcShut(w); abcShut(m);   // start shut, so the first thing seen is ABC
+    const go = () => { if (document.documentElement.classList.contains("wait")) return setTimeout(go, 80); abcOpen(w); };
     let seen = true;
-    if ("IntersectionObserver" in window) new IntersectionObserver((es) => { const v = es[0].isIntersecting; if (v && !seen) open(); seen = v; }).observe(w);
+    if ("IntersectionObserver" in window) new IntersectionObserver((es) => { const v = es[0].isIntersecting; if (v && !seen) abcOpen(w); seen = v; }).observe(w);
     go();
+    // the header's name: open as it fades into the bar, shut again once it has gone
+    let was = document.body.classList.contains("mark-on");
+    new MutationObserver(() => { const on = document.body.classList.contains("mark-on"); if (on === was) return; was = on;
+      if (on) abcOpen(m); else setTimeout(() => { if (!document.body.classList.contains("mark-on")) abcShut(m); }, 260); }).observe(document.body, { attributes: true, attributeFilter: ["class"] });
+    if (was) abcOpen(m);
   })();
   (function heroLoop() {
     const scenes = [...document.querySelectorAll("#stage .scene")];
