@@ -1,0 +1,21 @@
+name: Find roaster addresses (one-off)
+on:
+  push:
+    branches: [addresses]
+    paths: ["scripts/addresses.py"]
+permissions:
+  contents: write
+jobs:
+  find:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python3 scripts/addresses.py
+      - run: |
+          git config user.name "v60-scan-bot"
+          git config user.email "v60-scan-bot@users.noreply.github.com"
+          git add data/addresses.json && git commit -m "Roaster addresses" && git pull --rebase -q && git push || true
