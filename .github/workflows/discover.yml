@@ -9,6 +9,10 @@ on:
         description: "Only check these shops (comma-separated links). Leave empty for the whole directory."
         required: false
         default: ""
+      diag:
+        description: "Instead: read the pages of coffees with no process and report why (nothing saved). Type yes."
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -25,7 +29,9 @@ jobs:
       - name: Find and check
         env:
           URLS: ${{ github.event.inputs.urls }}
+          DIAG: ${{ github.event.inputs.diag }}
         run: |
+          if [ "$DIAG" = "yes" ]; then python scripts/diag_process.py; exit 0; fi
           if [ -n "$URLS" ]; then python scripts/discover.py --urls "$URLS"; else python scripts/discover.py; fi
       - uses: actions/upload-artifact@v4
         if: always()

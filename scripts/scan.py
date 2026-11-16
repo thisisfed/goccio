@@ -1123,6 +1123,26 @@ def process_from_text(body):
     return None
 
 
+# "processed using Giling Basah", "it went through a washed process", "Process - Natural", "honey processing": the process
+# word sits right next to "process"/"processed"/"method", so the sentence can talk about flavour too and still be read.
+PROC_AFTER = re.compile(r"\bprocess(?:ed|ing)?\b\s*(?:[:\-–]|\bis\b|\bwas\b|\busing\b|\bby\b|\bwith\b|\bas\b|\bvia\b|\bthrough\b)?\s*(?:(?:the|a|an|their|its|traditional|classic)\s+)?([A-Za-z][\w\-]*(?:\s[\w\-]+){0,2})", re.I)
+PROC_BEFORE = re.compile(r"\b([A-Za-z][\w\-]*(?:\s[A-Za-z][\w\-]*)?)\s+(?:process(?:ed|ing)?|method|processing method)\b", re.I)
+NOT_PROC = re.compile(r"brew|filter|espresso|roast|grind|order|payment|cookie|data|checkout|shipping|delivery|decaffeinat|cafeti", re.I)
+
+
+def process_phrase(text):
+    """A process named right next to the word 'process' (or 'method'), anywhere in the text."""
+    for rx in (PROC_AFTER, PROC_BEFORE):
+        for m in rx.finditer(text or ""):
+            bit = m.group(1)
+            if NOT_PROC.search(bit) or NOT_PROC.search(text[max(0, m.start() - 30):m.end() + 10]):
+                continue
+            got = find_process(bit)
+            if got and got != "Decaf":
+                return got
+    return None
+
+
 def find_notes(item):
     text = item["body"]
     m = NOTES_RE.search(text)
@@ -1469,7 +1489,7 @@ def classify(item, roaster):
     # espresso-only coffees stay in (the site brews espresso and moka too); they're marked as espresso roasts
     espresso_only = (bool(ESPRESSO.search(title + " " + item["type"])) and not filtery) \
         or (not filtery and bool(ESPRESSO.search(" ".join(item["tags"]))) and not FILTERY.search(item["body"]))
-    process = find_process(title + " " + " ".join(item["tags"])) or process_from_text(item["body"])
+    process = find_process(title + " " + " ".join(item["tags"])) or process_from_text(item["body"]) or process_phrase(item["body"])
     variety = first(VARIETIES, title + " " + " ".join(item["tags"])) or first(VARIETIES, item["body"])
     rec = {
         "roaster": roaster["name"],
@@ -1787,7 +1807,7 @@ def add_page_details(recs, roaster, old):
             v = labelled(text, k, start) or (labelled(text, k) if start else None) or raw_labelled(raw, k) or from_json(raw, k) \
                 or class_labelled(raw, k) or suffix_labelled(text, k, start)
             if not v and k == "process" and not rec.get("blend"):   # a sentence about processing in the description
-                v = process_from_text(text[start:start + 4000])
+                v = process_from_text(text[start:start + 4000]) or process_phrase(text[start:start + 6000])
             if v:
                 rec[k], rec[k + "_from"] = v, "page"
                 got = True
