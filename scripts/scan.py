@@ -40,6 +40,8 @@ COUNTRY_ALIASES = {
     "Etiopia": "Ethiopia", "Äthiopien": "Ethiopia", "Éthiopie": "Ethiopia", "Ethiopie": "Ethiopia", "Etiopien": "Ethiopia", "Ethiopië": "Ethiopia",
     "Colombie": "Colombia", "Kolumbien": "Colombia", "Kolumbia": "Colombia", "Colombië": "Colombia",
     "Kenia": "Kenya", "Brasile": "Brazil", "Brasilien": "Brazil", "Brésil": "Brazil", "Brasil": "Brazil", "Brazylia": "Brazil",
+    "Canastra": "Brazil", "Mantiqueira": "Brazil", "Cerrado Mineiro": "Brazil", "Sul de Minas": "Brazil", "Mogiana": "Brazil",
+    "Chapada Diamantina": "Brazil", "Caparaó": "Brazil", "Matas de Minas": "Brazil",
     "Perù": "Peru", "Pérou": "Peru", "Perú": "Peru", "Panamá": "Panama", "Ruanda": "Rwanda", "Messico": "Mexico", "Mexiko": "Mexico",
     "Mexique": "Mexico", "México": "Mexico", "Indonesien": "Indonesia", "Indonésie": "Indonesia", "Équateur": "Ecuador",
     "Ouganda": "Uganda", "Tansania": "Tanzania", "Tanzanie": "Tanzania", "Jemen": "Yemen", "Yémen": "Yemen", "Salvador": "El Salvador",
@@ -65,8 +67,8 @@ VARIETIES = ["Gesha", "Geisha", "Sidra", "Pink Bourbon", "Wush Wush", "Eugenioid
              "Bourbon", "Typica", "Caturra", "Catuai", "Castillo", "Pacamara", "Maragogype",
              "74110", "74112", "74158", "Heirloom", "Landrace", "Java", "Mokka", "Chiroso",
              "Tabi", "Villa Sarchi", "Parainema", "Marsellesa", "Catimor"]
-EXCLUDE = re.compile(r"subscri|abonnement|abbonamento|\babo\b|suscripci|prenumeration|geschenk|regalo|cadeau|gutschein|"
-                     r"\btasse\b|tazza|dip ?style|in-store|xpods?|xbloom|セット|飲み比べ|ドリップバッグ|latte art|\bpen\b|\btool\b|accessor|machine|maker|moccamaster|ticket|party|event|festival|origami|glass|server|carafe|porcelain|ceramic|brewer|filter holder|gift|voucher|capsule|\bpods?\b|nespresso|coffee bags?|drip bags?|brew bags?|immersion bags?|caf[ée] de poche|"
+EXCLUDE = re.compile(r"subscri|abonnement|abbonamento|\babo\b|suscripci|assinatura|sach[eê]s?\b|c[aá]psulas?|filtro de papel|coador|prenumeration|geschenk|regalo|cadeau|gutschein|"
+                     r"\btasse\b|tazza|dip ?style|in-store|xpods?|xbloom|セット|飲み比べ|ドリップバッグ|latte art|\bpen\b|\btool\b|accessor|machine|maker|moccamaster|ticket|party|event|festival|origami|glass|server|carafe|porcelain|ceramic|brewer|filter holder|gift|voucher|capsule|\bpods?\b|nespresso|(?<!\dg )(?<!\d g )coffee bags?|drip bags?|brew bags?|immersion bags?|caf[ée] de poche|"
                      r"steep|equipment|grinder|\bmug\b|kettle|dripper|filter papers?|papers\b|\bcups?\b(?! of excellence)|"
                      r"sampler|tasting pack|taster|bundle|merch|t-?shirt|hoodie|tote|cap\b|"
                      r"cold brew|concentrate|instant|\btea\b|chocolate bar|chocolate\b|cascara|"
@@ -81,7 +83,8 @@ FILTERY = re.compile(r"\bfilter\b|\bomni\b|pour[- ]?over|\bv60\b|chemex|batch br
 ESPRESSO = re.compile(r"\bespresso\b", re.I)
 COFFEE_HINT = re.compile(r"single origin|single-origin|altitude|masl|variet|process|tasting notes|"
                          r"flavour notes|flavor notes|producer|washing station|farm|finca|estate|"
-                         r"proces\b|vari[eë]teit|hoogte|smaak|producent|boerderij|koffiebonen", re.I)
+                         r"proces\b|vari[eë]teit|hoogte|smaak|producent|boerderij|koffiebonen|"
+                         r"fazenda|s[ií]tio|gr[aã]os?\b|torra\b|torrado|tostad[oa]|tueste|grano|variedade?s?|processo|proceso|colheita|cosecha", re.I)
 NOTES_RE = re.compile(r"(?:tasting notes|flavour notes|flavor notes|flavour profile|in the cup|tastes like|we taste|cup notes|"
                       r"note di degustazione|note aromatiche|note|geschmacksnoten|geschmack|aromen|notes de dégustation|"
                       r"smaksnoter|smagsnoter|smaksnotater|notas de cata|notas|notes)\s*[:\-–]\s*([^\n.]{3,120})", re.I)
@@ -225,7 +228,7 @@ NOT_ONE_COFFEE = re.compile(r"\ball[- ]?\d\b|\b\d\s?x\s?\d{2,3}\s?g\b|roaster'?s
                             # prepaid plans: "Jones Prepaid Weekly 12 months", "Coffee of the Month (6 month Prepaid)",
                             # "Uphill Espresso - 6 months", "Seasonal Special Coffee Plan" ("Plan Vivo" is a coffee)
                             r"pre-?paid|(?<!aged )(?<!rested )\b\d{1,2}\s?months?\b|\bof the month\b|\bcoffee plan\b|"
-                            r"\b(?:weekly|fortnightly|monthly|quarterly)\b", re.I)
+                            r"\b(?:weekly|fortnightly|monthly|quarterly)\b|assinatura|por m[eê]s|al mes\b", re.I)
 BLEND_TITLE = re.compile(r"(?<!field )\bblends?\b|low[- ]caff?\b|house[- ](?:roast|coffee|blend|espresso)|signature[- ](?:roast|blend|coffee)|"
                          r"seasonal[- ](?:filter|espresso|blend|roast)|half[- ]caff|miscela|m[ée]lange|mezcla|mischung", re.I)
 # "a blend of harvests / lots / varieties / producers" is still one origin, and so is a "field blend"
@@ -974,7 +977,7 @@ def woo_variation_price(shop, variations):
         raw = pr.get("price")
         if raw in (None, "", "0"):
             continue
-        val = int(raw) / (10 ** int(pr.get("currency_minor_unit", 2) or 2))
+        val = int(raw) / (10 ** int(pr["currency_minor_unit"] if pr.get("currency_minor_unit") not in (None, "") else 2))
         if val < 1:
             continue
         label = " ".join(str(a.get("value", "")) for a in (v.get("attributes") or [])) + " " + d.get("name", "")
@@ -993,7 +996,7 @@ def fetch_woo(shop):
             break
         for p in data:
             pr = p.get("prices") or {}
-            minor = int(pr.get("currency_minor_unit", 2) or 2)
+            minor = int(pr["currency_minor_unit"] if pr.get("currency_minor_unit") not in (None, "") else 2)
             raw = pr.get("price")
             if raw in (None, "", "0"):   # variable products (sizes) put the price in a range
                 raw = (pr.get("price_range") or {}).get("min_amount") or raw
@@ -1213,7 +1216,7 @@ def clean_name(title, roaster, origin):
 
 
 # title segments that are labels or shop/SEO text, not the coffee's name
-GENERIC_SEG = re.compile(r"^(?:\d{2}(?:/\d{2})?\s+new season|new season|new crop|release\s*#?\d+|\d+(?:[.,]\d+)?\s?(?:g|gr|kg)|farm|fun|classic|daily|exclusive|rare|special|limited(?: release| edition)?|new|new release|feature(?:d)?|guest|seasonal|single origin|"
+GENERIC_SEG = re.compile(r"^(?:\d{2}(?:/\d{2})?\s+new season|new season|new crop|release\s*#?\d+|\d+(?:[.,]\d+)?\s?(?:g|gr|kg)|farm|fun|classic|daily|exclusive|rare|special|limited(?: release| edition)?|new|new release|feature(?:d)?|guest|seasonal|single origin|nanolotes?|varietal|"
                          r"filter|omni|coffee|whole ?beans?|shop|store|"
                          r"(?:buy\b.*|.*\bonline\b.*|.*\bspecialty coffee beans?\b.*))$", re.I)
 BRAND_FILLER = re.compile(r"\b(?:the|coffee|co|company|roasters?|roastery|roasting|ltd|&|and|espresso)\b|[^\w\s]", re.I)
