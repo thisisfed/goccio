@@ -1879,8 +1879,12 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
 .heart path { stroke-dasharray: 1 1; stroke-dashoffset: 0; }
 .hw { display: inline-flex; align-items: flex-end; vertical-align: -.1em; }
 .scene .w.hw, .stat-n .hw { display: inline-flex; align-items: center; white-space: nowrap; }
+.heart.inf { width: 1.6em; height: 1.02em; stroke-width: 1.9; }   /* 14 brewers, ∞ possibilities: the infinity draws itself like the heart */
 .doodle { width: 1.12em !important; height: 1.12em !important; stroke-width: 2.1 !important; }
 .hw .doodle { margin-bottom: -.06em; }
+/* the timer's hands turn with the time on screen: the long one a turn a minute, the short one a turn an hour */
+.doodle .hm, .doodle .hs { transform-box: view-box; transform-origin: 12px 13.5px; transition: rotate .4s cubic-bezier(.3,1.3,.5,1); }
+.doodle .hm { rotate: var(--m, 0deg); } .doodle .hs { rotate: var(--s, 0deg); }
 .scene .w.q { margin-left: -.2em; }
 .stat-n .hw { vertical-align: -.08em; }
 @media (prefers-reduced-motion: no-preference) {
@@ -1916,8 +1920,8 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
         <div class="scene stat" aria-hidden="true" id="sceneStat"><span class="stat-n"><span id="statN">0</span> coffees.</span><span class="stat-s" id="statS">From near and far.</span></div>
         <p class="scene words two just" aria-hidden="true" id="sceneJust"><span class="ln"><span class="w" style="--i:0">Just</span> <span class="w" style="--i:1">in.</span></span><span id="justLn"></span></p>
         <p class="scene words roasters" aria-hidden="true"><span class="w rs" style="--i:0">Square Mile&nbsp;<span class="cc">UK</span></span> <span class="w rs" style="--i:1">Tim Wendelboe&nbsp;<span class="cc">NO</span></span> <span class="w rs" style="--i:2">La Cabra&nbsp;<span class="cc">DK</span></span> <span class="w rs" style="--i:3">Sey&nbsp;<span class="cc">US</span></span> <span class="w rs" style="--i:4">Onyx&nbsp;<span class="cc">US</span></span> <span class="w rs" style="--i:5">Glitch&nbsp;<span class="cc">JP</span></span></p>
-        <p class="scene words two" aria-hidden="true"><span class="ln"><span class="w" style="--i:0" id="brN">Fourteen</span> <span class="w" style="--i:1">brewers.</span></span><span class="ln"><span class="w" style="--i:2">Infinite</span> <span class="w" style="--i:3">possibilities.</span></span></p>
-        <div class="scene stat" aria-hidden="true" id="sceneGrind"><span class="stat-k" id="gB">V60</span><span class="stat-n">Got <span class="hw"><svg class="heart doodle" viewBox="0 0 24 24" role="img" aria-label="timer"><path pathLength="1" style="--p:0" d="M12 21.5a8 8 0 1 0 0-16 8 8 0 0 0 0 16z"/><path pathLength="1" style="--p:1" d="M12 9.5v4l2.6 1.6"/><path pathLength="1" style="--p:2" d="M10 2.5h4"/><path pathLength="1" style="--p:3" d="M12 2.5v3"/></svg></span> <span id="gT">3:15</span>?</span><span class="stat-s">It’s all it takes.</span></div>
+        <p class="scene words two" aria-hidden="true"><span class="ln"><span class="w" style="--i:0">14</span> <span class="w" style="--i:1">brewers.</span></span><span class="ln"><span class="w hw" style="--i:2"><svg class="heart inf" viewBox="1 5 22 14" role="img" aria-label="infinite"><path pathLength="1" d="M12 12C14 9.4 16 8 18 8a4 4 0 0 1 0 8C16 16 14 14.6 12 12C10 9.4 8 8 6 8a4 4 0 0 0 0 8C8 16 10 14.6 12 12z"/></svg></span> <span class="w" style="--i:3">possibilities.</span></span></p>
+        <div class="scene stat" aria-hidden="true" id="sceneGrind"><span class="stat-k" id="gB">V60</span><span class="stat-n">Got <span class="hw"><svg class="heart doodle" viewBox="0 0 24 24" role="img" aria-label="timer"><path pathLength="1" style="--p:0" d="M12 21.5a8 8 0 1 0 0-16 8 8 0 0 0 0 16z"/><path class="hm" pathLength="1" style="--p:1" d="M12 13.5V10"/><path class="hs" pathLength="1" style="--p:1.4" d="M12 13.5V7.8"/><path pathLength="1" style="--p:2" d="M10 2.5h4"/><path pathLength="1" style="--p:3" d="M12 2.5v3"/></svg></span> <span id="gT">3:15</span>?</span><span class="stat-s">It’s all it takes.</span></div>
         <p class="scene words one-line" aria-hidden="true"><span class="w" style="--i:0">Pour.</span> <span class="w" style="--i:1">Taste.</span> <span class="w" style="--i:2">Tweak.</span> <span class="w" style="--i:3">Nail</span> <span class="w hw" style="--i:4">it.&nbsp;<svg class="heart doodle" viewBox="0 0 24 24" role="img" aria-label="done"><path pathLength="1" style="--p:0" d="M4 12.5l5 5L20 6.5"/></svg></span></p>
         <div class="scene final on"><h1 id="h1">New coffees. <span class="serif">The recipe for each bag.</span></h1></div>
       </div>
@@ -2142,7 +2146,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     </div>
     <div class="fcol f-cred">
     <p class="foot-note refs-h foot-credits">Credits</p>
-    <p class="foot-note" id="credit">Made by <a href="https://thisisfed.xyz/" target="_blank" rel="noopener">Federico Ferrari</a>, enjoying it? <a href="https://buymeacoffee.com/thisisfed" target="_blank" rel="noopener">Buy me a beer</a>.</p>
+    <p class="foot-note" id="credit">Made by <a href="https://thisisfed.xyz/" target="_blank" rel="noopener">Federico R. T. Ferrari</a>, enjoying it? <a href="https://buymeacoffee.com/thisisfed" target="_blank" rel="noopener">Buy me a beer</a>.</p>
     </div>
   </footer>
 </main>
@@ -2287,7 +2291,8 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     if (sc[1]) sc[1].innerHTML = W(["Ogni", "tazza,", "un"]) + ` <span class="w hw" style="--i:3">${hLove}</span>`;
     const sn = sc[2] && sc[2].querySelector(".stat-n"); if (sn) sn.lastChild.textContent = " caffè.";
     const ju = sc[3] && sc[3].querySelector(".ln"); if (ju) ju.innerHTML = W(["Appena", "arrivati."]);
-    if (sc[5]) sc[5].innerHTML = `<span class="ln">${W(["Quattordici", "metodi."])}</span><span class="ln">${W(["Infinite", "possibilità."], 2)}</span>`;
+    if (sc[5]) { const inf = sc[5].querySelector("svg.inf").outerHTML.replace('aria-label="infinite"', 'aria-label="infinite"');
+      sc[5].innerHTML = `<span class="ln">${W(["14", "metodi."])}</span><span class="ln"><span class="w hw" style="--i:2">${inf}</span> <span class="w" style="--i:3">possibilità.</span></span>`; }
     const gn = sc[6] && sc[6].querySelector(".stat-n"); if (gn && gn.firstChild) gn.firstChild.textContent = "Hai ";
     if (sc[7]) sc[7].innerHTML = W(["Versa.", "Assaggia.", "Correggi.", "Ci"]) + ` <span class="w hw" style="--i:4">sei.&nbsp;${hDone}</span>`;
     const h1 = document.getElementById("h1"); if (h1) h1.innerHTML = `Caffè nuovi. <span class="serif">La ricetta per ogni busta.</span>`;
@@ -6081,14 +6086,21 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
       }
       if (el.id === "sceneGrind") {   // the clock runs up to a V60's 3:15, then flips through the other brewers' times
         const T = 195, t0 = performance.now(), mm = (x) => `${Math.floor(x / 60)}:${String(x % 60).padStart(2, "0")}`;
+        // the clock's hands follow the time shown: 3:15 puts the long hand at a quarter turn past three full turns
+        // always forward, never more than a turn per change, so a jump to 18 h doesn't spin it wildly
+        let hs = 0, hm = 0;
+        const fwd = (cur, to) => cur + (((to - cur) % 360) + 360) % 360;
+        const hands = () => { const x = $("gT").textContent.trim(), h = /h$/.test(x) ? parseFloat(x) * 3600 : x.split(":").reduce((a, v) => a * 60 + Number(v), 0);
+          const svg = el.querySelector(".doodle"); if (!svg || !isFinite(h)) return;
+          hs = fwd(hs, h * 6); hm = fwd(hm, h / 10); svg.style.setProperty("--s", hs + "deg"); svg.style.setProperty("--m", hm + "deg"); };
         const LAP = [["AeroPress", "3:00"], ["Origami", "2:40"], ["Kalita Wave", "3:30"], ["Clever Dripper", "4:00"], ["Chemex", "4:30"], ["Bialetti Moka Express", "5:00"], ["French Press", "12:00"], ["Cold brew", "18 h"]];
         const step = (t) => { const b = Math.min(1, Math.max(0, (t - t0 - 250) / 1300)), e = 1 - Math.pow(1 - b, 3);
           if (!el.classList.contains("on")) return;
-          if (b < 1) { $("gT").textContent = mm(Math.round(T * e)); requestAnimationFrame(step); return; }
+          if (b < 1) { $("gT").textContent = mm(Math.round(T * e)); hands(); requestAnimationFrame(step); return; }
           const k = Math.floor((t - t0 - 1850) / 450);
-          if (k >= 0 && k < LAP.length) { $("gB").textContent = LAP[k][0]; $("gT").textContent = LAP[k][1]; }
+          if (k >= 0 && k < LAP.length) { $("gB").textContent = LAP[k][0]; $("gT").textContent = LAP[k][1]; hands(); }
           if (k < LAP.length) requestAnimationFrame(step); };
-        $("gB").textContent = "V60"; $("gT").textContent = "0:00"; requestAnimationFrame(step);
+        $("gB").textContent = "V60"; $("gT").textContent = "0:00"; { const svg = el.querySelector(".doodle"); if (svg) { svg.style.setProperty("--s", "0deg"); svg.style.setProperty("--m", "0deg"); } } requestAnimationFrame(step);
       }
       if (el.id === "sceneJust") {   // only the newest coffee on the list, word by word like the other lines
         // the three newest, one roaster each, each line coming in after the one before
