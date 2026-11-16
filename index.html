@@ -5194,7 +5194,12 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     state.listProc = state.process;   // came from the roaster's listing, not from you
     state.roast = r.roast_level === "dark" ? "dark" : r.roast_level === "medium-dark" ? "mdark" : "auto";
     $("coffeeIn").value = state.text; saveState(); renderAllOpts(); render();
-    if (jump) jumpTo($("coffee"));   // land on What’s brewing?, with the coffee filled in
+    if (jump) landBrewing();
+  }
+  // land on What’s brewing?, with the coffee filled in and nothing selected: no text highlighted, no field or button holding focus
+  function landBrewing() {
+    try { const a = document.activeElement; if (a && a !== document.body) a.blur(); const sel = getSelection(); if (sel) sel.removeAllRanges(); } catch (e) {}
+    jumpTo($("coffee"));
   }
 
   // ---------- scan the bag: read the label on this device (Tesseract OCR, loaded only when used) ----------
@@ -5634,7 +5639,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     const d = v("date"), dm = d && d.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
     state.scanRoasted = dm && f.date.kind !== "best" ? `${dm[3]}-${dm[2]}-${dm[1]}` : null;   // a roast date goes straight into My bags if you add it
     $("coffeeIn").value = line; saveState(); renderAllOpts(); closeReview();
-    $("scanMsg").textContent = ""; build(false); jumpTo($("coffee"));   // land on What’s brewing?, with the coffee filled in
+    $("scanMsg").textContent = ""; build(false); landBrewing();
   }
 
   // ---- 5. getting the picture: live camera when there is one, a photo otherwise ----
