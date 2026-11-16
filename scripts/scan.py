@@ -1817,7 +1817,9 @@ def add_page_details(recs, roaster, old):
         want_roast = not rec.get("roast") and not rec.get("roast_checked") and rec.get("roast_for") != "espresso"
         if not rec.get("notes") and prev.get("notes") and prev.get("notes_from") == "page":
             rec["notes"], rec["notes_from"] = prev["notes"], "page"
-        need = [k for k in ("process", "variety", "notes") if not rec.get(k)]
+        if prev.get("notes_checked"):
+            rec["notes_checked"] = 1
+        need = [k for k in ("process", "variety", "notes") if not rec.get(k) and not (k == "notes" and rec.get("notes_checked"))]
         # every coffee the shop doesn't label filter or espresso gets its page read once for the brewers it names
         want_methods = not rec.get("roast_for") and not rec.get("methods") and not rec.get("methods_none")
         if not need and not want_methods and not want_roast:
@@ -1859,6 +1861,8 @@ def add_page_details(recs, roaster, old):
             if ns:
                 rec["notes"], rec["notes_from"] = ns, "page"
                 got = True
+            else:
+                rec["notes_checked"] = 1   # read once and the page names none: don't fetch it again just for notes
             need = [k for k in need if k != "notes"]
         for k in need:
             v = labelled(text, k, start) or (labelled(text, k) if start else None) or raw_labelled(raw, k) or from_json(raw, k) \
