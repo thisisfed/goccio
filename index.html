@@ -5490,7 +5490,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
   // ---- 4. review sheet: every field editable, with how sure the reader is; nothing is applied until you say so ----
   const PROC_OPTS = [["", "Unknown"], ["washed", "Washed"], ["natural", "Natural"], ["honey", "Honey"], ["anaerobic", "Anaerobic"], ["cofer", "Co-ferment / Infused"], ["decaf", "Decaf"]];
   const ROAST_OPTS = [["", "Unknown"], ["vlight", "Very light"], ["light", "Light"], ["medium", "Medium"], ["mdark", "Medium-dark"], ["dark", "Dark"]];
-  const FIELD_ROWS = [["name", "Coffee"], ["roaster", "Roaster"], ["origin", "Origin"], ["process", "Process"], ["variety", "Variety"], ["roast", "Roast"], ["notes", "Notes"], ["date", "Roasted"]];
+  const FIELD_ROWS = [["name", "Coffee"], ["roaster", "Roaster"], ["origin", "Origin"], ["process", "Process"], ["variety", "Variety"], ["roast", "Roast"], ["date", "Roasted"]];   // no tasting notes: the site never shows or uses them
   let review = null;
   function showReview(fields, raw) {
     review = { fields, raw, match: shelfMatch(fields) };
@@ -5499,7 +5499,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     const box = $("scanReview"), dot = (c) => `<i class="sc-dot ${c || "none"}" title="${c ? c + " confidence" : "not found"}"></i>`;
     const input = (k, f) => k === "process" || k === "roast"
       ? `<select data-f="${k}">${(k === "process" ? PROC_OPTS : ROAST_OPTS).map(([v, t]) => `<option value="${v}"${(f.v || "") === v ? " selected" : ""}>${t}</option>`).join("")}</select>`
-      : `<input data-f="${k}" value="${esc(f.v || "")}" placeholder="${k === "date" ? "DD/MM/YYYY" : "Not found"}"${k === "notes" ? "" : ' autocapitalize="words"'}>`;
+      : `<input data-f="${k}" value="${esc(f.v || "")}" placeholder="${k === "date" ? "DD/MM/YYYY" : "Not found"}"${' autocapitalize="words"'}>`;
     const m = review.match;
     box.innerHTML = `${m ? `<div class="sc-match"><span>Looks like <b>${esc(m.roaster)}, ${esc(calm(m.name))}</b> from today’s coffees.</span><button type="button" class="pill" id="scUseListing">Use the listing</button></div>` : ""}
       <div class="sc-rows">${FIELD_ROWS.map(([k, lbl]) => { const f = fields[k] || { v: null }; return `<label class="sc-row"><span class="sc-l">${k === "date" && f.kind === "best" ? "Best before" : lbl}</span>
@@ -5519,11 +5519,11 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
   function closeReview() { const b = $("scanReview"); b.hidden = true; b.innerHTML = ""; review = null; }
   function applyReview() {
     const f = review.fields, v = (k) => (f[k] && f[k].v) || null, PL = { washed: "washed", natural: "natural", honey: "honey", anaerobic: "anaerobic", cofer: "co-fermented", decaf: "decaf" };
-    const line = [v("roaster"), v("name"), v("origin"), v("variety"), v("process") ? PL[v("process")] : null, v("roast") ? ROAST[v("roast")].label + " roast" : null].filter(Boolean).join(", ") + (v("notes") ? ". Notes: " + v("notes") : "");
+    const line = [v("roaster"), v("name"), v("origin"), v("variety"), v("process") ? PL[v("process")] : null, v("roast") ? ROAST[v("roast")].label + " roast" : null].filter(Boolean).join(", ");
     if (!line.trim()) { $("scanMsg").textContent = "Nothing to use yet. Type the coffee, or scan again."; return; }
     // remember what you confirmed, so this bag reads better next time
     if (v("roaster") && v("name")) { const mem = scanMem(), k = norm(v("roaster")) + "|" + norm(v("name"));
-      mem[k] = { origin: v("origin"), process: v("process"), variety: v("variety"), roast: v("roast"), notes: v("notes") };
+      mem[k] = { origin: v("origin"), process: v("process"), variety: v("variety"), roast: v("roast") };
       try { const keys = Object.keys(mem); if (keys.length > 60) delete mem[keys[0]]; localStorage.setItem(SCAN_MEM, JSON.stringify(mem)); } catch (e) {} }
     state.text = line; state.bag = null; state.roastPhoto = null;
     state.process = v("process") || "auto"; state.listProc = null; state.roast = v("roast") || "auto";
@@ -5548,7 +5548,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
   }
   function liveTicks(f) {
     const PL = { washed: "Washed", natural: "Natural", honey: "Honey", anaerobic: "Anaerobic", cofer: "Co-ferment", decaf: "Decaf" };
-    const items = !f ? [] : [f.roaster.v, f.name.v, f.origin.v, f.variety.v, f.process.v ? PL[f.process.v] : null, f.roast.v ? titleCase(ROAST[f.roast.v].label) : null, f.notes.v ? "Notes" : null].filter(Boolean);
+    const items = !f ? [] : [f.roaster.v, f.name.v, f.origin.v, f.variety.v, f.process.v ? PL[f.process.v] : null, f.roast.v ? titleCase(ROAST[f.roast.v].label) : null].filter(Boolean);
     $("camFound").innerHTML = items.map((t) => `<span class="cam-tick">${esc(t)}</span>`).join("");
   }
   function grabFrame(v, guide) {   // the part of the picture inside the frame on screen, as the reader sees it
@@ -5597,7 +5597,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
           me.other = notCoffee(mergeReads(me.reads), f) ? (me.other || 0) + 1 : 0; if (me.other >= 2) return finish(null);
           // done when the read stops changing for two frames and it has the name plus two more things
           const key = JSON.stringify(Object.values(f).map((x) => x && x.v)); me.same = key === me.last ? me.same + 1 : 0; me.last = key;
-          const n = ["origin", "process", "roast", "variety", "notes"].filter((k) => f[k].v).length;
+          const n = ["origin", "process", "roast", "variety"].filter((k) => f[k].v).length;
           if (f.name.v && n >= 2 && me.same >= 2) return finish(f);
           if (Date.now() - me.start > 25000) return finish(f);
         } catch (e) { /* a bad frame: try the next one */ }
