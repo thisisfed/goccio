@@ -65,7 +65,8 @@ def maps_address(raw):
 
 def text_address(raw, country):
     """UK / Irish: the lines just before a postcode or Eircode, as long as they read like an address."""
-    text = scan._visible(raw) if hasattr(scan, "_visible") else scan.strip_html(raw)
+    # the footer is where most shops print their address, so only scripts and styles are dropped (scan._visible drops footers)
+    text = scan.strip_html(re.sub(r"<(script|style|noscript|svg|template)(?=[\s>]).*?</\1>", " ", raw, flags=re.I | re.S))
     lines = [re.sub(r"\s+", " ", l).strip(" ,|·•") for l in text.split("\n")]
     lines = [l for l in lines if l]
     rx = EIRCODE if country == "IE" else UK_PC
@@ -78,6 +79,8 @@ def text_address(raw, country):
             if len(prev) > 60 or JUNK.search(prev) or prev.endswith(":"):
                 break
             before.insert(0, prev)
+        while before and not STREETY.search(before[0]):   # "Visit us", the shop's own name: the address starts at its street
+            before.pop(0)
         parts = [p for p in before + [line] if p]
         joined = ", ".join(parts)
         joined = re.sub(r",\s*,", ",", joined)
