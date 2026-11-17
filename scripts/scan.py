@@ -1997,11 +1997,18 @@ def inspect(urls):
     can be supported without guessing. Run from the workflow with the 'inspect' input; nothing is saved."""
     for url in urls:
         dump = url.startswith("raw:")   # raw:<url> prints the page source itself, for writing a reader for a custom shop
-        url = url[4:] if dump else url
+        words = url.startswith("text:")   # text:<url> prints only the page's visible words (a long policy page, say)
+        url = url[4:] if dump else url[5:] if words else url
         try:
             raw = get_text(url, tries=1)
         except Exception as e:  # noqa: BLE001
             print(f"INSPECT {url}: {e}"); continue
+        if words:
+            text = strip_html(re.sub(r"<script\b.*?</script>|<style\b.*?</style>|<noscript\b.*?</noscript>", " ", raw, flags=re.S | re.I))
+            print(f"\nTEXT {url}  ({len(text)} characters)")
+            for i in range(0, min(len(text), 60000), 1000):
+                print("  |", text[i:i + 1000])
+            continue
         if dump:
             print(f"\nRAW {url}  ({len(raw)} bytes)")
             for line in re.sub(r"<style\b.*?</style>", "", raw, flags=re.S | re.I)[:120000].splitlines():
