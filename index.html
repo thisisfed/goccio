@@ -1495,6 +1495,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 /* the changing word: a pill like every other on the site, sitting in the big line; a tap brings another */
 .litext .verb-pill{display:inline-flex;align-items:center;height:var(--pill-h);padding:0 10px;margin:0 .1em;vertical-align:.18em;border:0;border-radius:var(--r);
   background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans)!important;letter-spacing:0!important;cursor:pointer;transition:background-color .15s ease}
+.litext .verb-pill{text-transform:capitalize;vertical-align:var(--vp-y,.18em)}   /* Pour, not pour; its middle on the middle of the big capitals (set by verbAlign) */
 .litext .verb-pill:hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))}
 /* the credit closes the page: after the footer, right at the bottom with a small margin */
 .page > .credit{padding:0 0 0!important;margin:-24px 0 0}
@@ -1980,10 +1981,10 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
 #shelves.ro-on .shelf-tools,#shelves.ro-on #shelfMeta,#shelves.ro-on .curfew{display:none!important}
 /* decaf after 2 pm: a note over the list, its first line in the accent, the same grey pills as a roaster page */
 .curfew{margin:-15px 0 0;padding:0 0 13px}
-/* after 14:00 the decaf line rides in the sticky filter bar; while the bar is stuck, only its first line (the time, Decaf only) */
+/* after 14:00 the whole decaf notice (time, reason, Show all coffees, Never do this) rides in the sticky filter bar */
 .shelf-tools .curfew{margin:0!important;padding:0!important}
 .shelf-tools .curfew .cf-h{text-box:trim-start cap alphabetic}
-.shelf-tools.stuck .curfew .cf-t, .shelf-tools.stuck .curfew .ro-acts{display:none}   /* 12 px under Light roast, the same as between the menu rows */
+   /* 12 px under Light roast, the same as between the menu rows */
 .fy-note{margin:-15px 0 0;padding:0 0 13px;font-size:var(--fs-s);color:var(--muted)}   /* For you: how it picked, or what it needs, small and grey under the menu rows */
 .curfew .cf-h{font:500 var(--fs-s)/1.35 var(--sans);color:var(--hl);margin:0}   /* small and all in the accent, the reason on the very next line */
 .curfew .cf-t{font:500 var(--fs-s)/1.35 var(--sans);color:var(--muted);margin:0}
@@ -6758,8 +6759,14 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       : ["pour", "brew", "bloom", "swirl", "steep", "stir", "press", "plunge", "grind", "tweak", "sip", "taste", "rinse", "weigh", "shot", "cup", "dial",
         "drip", "drawdown", "slurp", "sniff", "recipe", "click", "tamp", "pull", "spin", "extraction", "agitation", "pulse", "decant"];
     let last = "";
-    const pick = () => { let w; do w = V[Math.floor(Math.random() * V.length)]; while (w === last && V.length > 1); last = w; box.textContent = w; };
-    pick(); box.addEventListener("click", pick); })();
+    const pick = () => { let w; do w = V[Math.floor(Math.random() * V.length)]; while (w === last && V.length > 1); last = w; box.textContent = w.charAt(0).toUpperCase() + w.slice(1); };
+    pick(); box.addEventListener("click", pick);
+    // the pill's middle on the middle of the big letters' capitals, whatever size the line is set in
+    // the pill's own word sits in its middle, so raising its baseline by half the difference of the two cap heights puts both
+    // middles level (ALT Riviera's capitals stand about 0.71 em)
+    const align = () => { const fs = parseFloat(getComputedStyle(box.parentElement).fontSize), ps = parseFloat(getComputedStyle(box).fontSize);
+      if (fs && ps) box.style.setProperty("--vp-y", (0.355 * (fs - ps)).toFixed(1) + "px"); };
+    align(); addEventListener("resize", align); if (document.fonts) document.fonts.ready.then(align); })();
   (function outro() {
     const words = [...document.querySelectorAll("#litext > span:not(.outro-end)")], end = document.querySelector(".outro-end");
     if (!words.length) return;
