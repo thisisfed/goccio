@@ -175,6 +175,10 @@ CASES = [
     ("Climpson La Plata: 'Flavour profile:' alone on its line, the notes on the next",
      lambda: scan.page_notes("Decaf: La Plata, Colombia\nFlavour profile:\nDark Chocolate, Caramel, Orange Rind\n\nCoffee:\nLa Plata\n\nOrigin:\nColombia\n", "The Decaf: La Plata")
              == ["Dark Chocolate", "Caramel", "Orange Rind"]),
+    ("Climpson's real page: 'Flavour profile:' comes after a 'you might also want' upsell, and is still read",
+     lambda: scan.page_notes(" Decaf: La Plata, Colombia\n £12.50 \n Add to cart\n Since you are buying this, you might also want\n Midnight Oil Decaf Espresso Martini 700ml \n £36.00 \n + Add \n"
+                             " The ultimate placebo effect; our decaf was selected for its quality of flavour.\n Flavour profile:\n Dark Chocolate, Caramel, Orange Rind\n Coffee:\n La Plata\n Origin:\n Colombia\n", "The Decaf: La Plata")
+             == ["Dark Chocolate", "Caramel", "Orange Rind"]),
     ("Harmony Bombe: 'Notas de cata … fruta de la pasión y kiwi amarillo' splits on the Spanish 'y' and keeps all four",
      lambda: scan.page_notes("Bombe, Etiopía\nOrigen Etiopía\nProceso Lavado\nVariedad Heirloom\nNotas de cata Té verde, manzanilla, fruta de la pasión y kiwi amarillo\n\nRecomendado para Espresso y Filtro\n", "Bombe, Etiopía")
              == ["Té verde", "Manzanilla", "Fruta de la pasión", "Kiwi amarillo"]),
