@@ -20,6 +20,9 @@ from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import quote
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import scan  # noqa: E402  (tidy_note: tasting notes without the sentence around them)
+
 SITE = os.path.abspath(sys.argv[1] if len(sys.argv) > 1 else ".")
 HOST = "bagtocup.thisisfed.xyz"
 try:
@@ -221,7 +224,7 @@ def main():
         for c in cs:
             r = rec.get(id(c))
             path = cpath[id(c)]
-            notes = [re.sub(r"\b[A-Z](?=[a-z])", lambda m: m.group(0).lower(), n) for n in (c.get("notes") or []) if isinstance(n, str) and n.strip() and len(n) < 40][:5]
+            notes = [re.sub(r"\b[A-Z](?=[a-z])", lambda m: m.group(0).lower(), n) for n in (scan.tidy_note(x) for x in (c.get("notes") or []) if isinstance(x, str) and len(x) < 40) if n][:5]
             process = c.get("process") or (cap(r["processLabel"]) if r and "process" not in r["missing"] else "")
             facts = [("Origin", e(c.get("origin"))), ("Process", e(process)), ("Variety", e(c.get("variety"))),
                      ("Roast", e(cap(r["roastLabel"])) if r and "roast" not in r["missing"] else ""),
