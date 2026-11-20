@@ -1813,6 +1813,10 @@ PAGE_LABEL = {
     "variety": re.compile(r"\b(?:variet(?:y|ies|al|als)|cultivars?|variedad(?:es)?|variet[àa]|sorte[n]?|vari[ée]t[ée]s?|vari[eë]teit(?:\(?en\)?)?|odmian[ay]?)\s*(?::|\n)", re.I),
 }
 PAGE_FETCHES_PER_ROASTER = 60   # product pages read per shop per day, on top of its product list (the rest wait for tomorrow)
+# product pages are read only for the first 100 minutes of a run, so a day with a lot to re-read (new rules) still ends
+# well inside the workflow's 150-minute limit and saves what it found; the rest is read the next day
+SCAN_T0 = time.monotonic()
+PAGE_MINUTES = 100
 # a coffee's page is read for its roast once per version of the roast reader: when the reader learns a new
 # way shops write it, every coffee still without a roast gets one more look, and never again after that
 ROAST_CHECK = 3
@@ -2075,7 +2079,7 @@ def add_page_details(recs, roaster, old):
             if ok and prev.get(k + "_from") == "page":
                 rec[k], rec[k + "_from"] = prev[k].strip(" \xa0"), "page"
         need = [k for k in need if not rec.get(k) or (k == "notes" and short_old)]
-        if (not need and not want_methods and not want_roast) or fetched >= PAGE_FETCHES_PER_ROASTER:
+        if (not need and not want_methods and not want_roast) or fetched >= PAGE_FETCHES_PER_ROASTER or time.monotonic() - SCAN_T0 > PAGE_MINUTES * 60:
             continue
         fetched += 1
         try:
