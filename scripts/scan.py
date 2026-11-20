@@ -145,7 +145,7 @@ NOTES_NEXT = re.compile(r"^[ \t\xa0]*(?:tasting notes|flavou?r notes|notes? de d
                         r"sensory profile|cup(?:ping)? notes|tastes like|smaksnoter|smagsnoter|smaksnotater|geschmacksnoten|flavou?rs?|aromas?|notes)[ \t\xa0]*:?[ \t\xa0]*\n[ \t\xa0]*"
                         r"(?!(?:of|are|is|include|from|with|that|we|you|and|the|a|an)\b)(?![^\n]*\b(?:coffee|roasters?|roastery|caf[ée])\b)"
                         r"([^\n.:]{3,120}?(?:,|&|\band\b|\s[-–•·]\s)[^\n.:]{2,160}?)[ \t\xa0]*$", re.I | re.M)
-NOTES_CHECK = 6   # pages read for notes with these rules; a coffee checked under older rules gets one more read
+NOTES_CHECK = 7   # pages read for notes with these rules; a coffee checked under older rules gets one more read
 NOTES_V = 2       # page notes read under these list rules; a short list (two or fewer) read under older ones is read once more
 
 
@@ -1360,6 +1360,17 @@ def page_notes(text, name, meta=""):
         ns = find_notes({"body": description_window(text, st), "title": name, "tags": []})
         if ns:
             return ns
+    # a labelled notes line further down, past an upsell that looks like the end of the product ("Since you are buying
+    # this, you might also want…" then "Flavour profile:"; Climpson): only the strict label-and-list rules, so a related
+    # product's sentence is never taken
+    for st in starts:
+        w = text[st:st + 8000]
+        for rx in (NOTES_CELL, NOTES_NEXT):
+            m = rx.search(w)
+            if m:
+                ns = find_notes({"body": w[m.start():m.end() + 1], "title": name, "tags": []})
+                if ns:
+                    return ns
     return find_notes({"body": meta, "title": name, "tags": []}) if meta else []
 
 
