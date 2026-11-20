@@ -1619,7 +1619,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
   transition:transform .25s ease}
 .glimpse figcaption button.g-tag[aria-expanded="true"]::after{transform:rotate(180deg)}
 /* on a phone Coffees' top rule sits as close under the example as the example is under its own rule (13px), open or folded */
-@media (max-width: 760px){ #shelves{margin-top:-59px} }
+@media (max-width: 760px){ #shelves{margin-top:-64px} html.ex-fold #shelves{margin-top:-56px} }
 .g-ex{border-top:1px solid var(--line);padding-top:12px}
 .g-ex > .glimpse{margin-top:0!important}
 .glimpse figcaption .g-tag{flex:none;color:var(--muted);font-size:var(--fs-s);font-weight:500}   /* Example: grey, on the right, like Stored on this device only */
@@ -5598,9 +5598,6 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       const r = n.getBoundingClientRect(), bar = document.querySelector(".top"), tb = bar ? bar.getBoundingClientRect().bottom : 0;
       if (!document.hidden && r.height && r.top >= tb - 1 && r.bottom <= innerHeight + 1) fySeen += dt;
       const need = Math.max(5000, 1500 + n.textContent.split(/\s+/).length * 300);
-      // For you is about to switch itself off: count it down on its pill, 5 4 3 2 1
-      if (shelfY && !fyProfile()) { const chip = $("shelfX") && $("shelfX").querySelector('[data-v="foryou"]'), left = Math.ceil((need - fySeen) / 1000);
-        if (chip && left <= 5 && left > 0) cdShow(chip, left); }
       if (fySeen < need) return;
       fyStop(); if (shelfY && !fyProfile()) { shelfY = false; fyHold = null; fySave(); renderShelfO(); renderShelf(); } }, 200); };
   function forYou() {
@@ -6742,7 +6739,8 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     if (tb.top <= h + 1 && st.top < tb.bottom - 0.5) { const y = Math.max(0, window.scrollY - (tb.bottom - st.top)), html = document.documentElement, sb = html.style.scrollBehavior;
       html.style.scrollBehavior = "auto"; window.scrollTo(0, y); html.style.scrollBehavior = sb; } };   // plain two-number scrollTo: instant in every browser
   // ---------- a pill about to go back or go away: for its last three seconds it shrinks to a circle with the seconds left in it ----------
-  function cdShow(el, n) {
+  // no countdowns any more: pills keep their words until they change (kept as no-ops so their callers stay simple)
+  function cdShow(el, n) { return;
     if (!el.classList.contains("cd")) { el._cdHtml = el.innerHTML; el.style.width = el.offsetWidth + "px"; void el.offsetWidth; el.classList.add("cd"); el.style.width = ""; }
     el.textContent = n;
   }
@@ -6758,7 +6756,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   // shrinks to a circle with 3 2 1 in it; where several or none are picked (My equipment, Extras) a circle at the end counts
   function cdRestore(box) { box.querySelectorAll("button.chip.cd").forEach((c) => cdStop(c)); box.querySelectorAll(":scope > .cd-tail").forEach((t) => t.remove()); }
   function cdTail(box, ms) {
-    clearInterval(box._cdT); cdRestore(box); const until = performance.now() + ms;
+    clearInterval(box._cdT); cdRestore(box); return; const until = performance.now() + ms;
     box._cdT = setInterval(() => { const left = Math.ceil((until - performance.now()) / 1000);
       if (left <= 0 || !box.isConnected) { clearInterval(box._cdT); box.querySelectorAll(":scope > .cd-tail").forEach((t) => t.remove()); return; }
       if (left > 3) return;
