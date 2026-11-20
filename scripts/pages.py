@@ -165,7 +165,7 @@ a.ro-n{justify-self:start;text-decoration:underline;text-decoration-color:color-
 .list .sub{display:block;margin-top:4px;color:var(--muted)}
 footer{margin:0 12px;padding:10px 0 24px;border-top:1px solid var(--line);color:var(--muted)}
 @media (min-width:760px){footer{margin:0 24px}}
-footer p{margin:0 0 6px}
+footer p{margin:0 0 1.35em}footer p:last-child{margin-bottom:0}
 /* the main page's look: its Dark / Light (dark unless you pick light), its type drawn the same (thin smoothing, no extra tracking) */
 :root[data-theme="light"]{--bg:#fff;--ink:#000;--muted:#808080;--rule:#e3e3e3;--line:#a6a6a6;--pill:#e6e6e6;--hl:#ff4f00}
 :root[data-theme="dark"]{--bg:#000;--ink:#fff;--muted:#8c8c8c;--rule:#262626;--line:#595959;--pill:#222;--hl:#ff5a14}
@@ -194,7 +194,7 @@ def page(title, desc, path, body, extra_head="", nav=True, tight=False):
 <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png?v=3"><link rel="apple-touch-icon" href="/apple-touch-icon.png?v=3"><meta name="apple-mobile-web-app-title" content="Goccio">
 <style>{CSS}</style>{extra_head}
 </head><body>
-<header class="top"><a class="mark" href="/">Goccio</a><span class="tr">{'<a class="pill" href="/coffee/">Roasters</a>' if nav else ''}<button type="button" class="pill sq" id="themeBtn" aria-label="Appearance"></button></span></header>
+<header class="top"><a class="mark" href="/">Goccio</a><span class="tr">{'<a class="pill" href="/coffee/">Roasters</a>' if nav else '<a class="pill" href="/">Back to homepage</a>'}<button type="button" class="pill sq" id="themeBtn" aria-label="Appearance"></button></span></header>
 <main class="page{' top-tight' if tight else ''}">
 {body}
 </main>
@@ -346,12 +346,15 @@ def main():
             f'<p class="r-read">{len(names)} roasters, {len(coffees):,} coffees, updated {ddmmyyyy(updated)}. Every coffee has a V60 recipe.</p></section>'
             f'<section class="az-sec">{az}<ul class="list">{items}</ul></section>'
             # the letter in view lights up in the bar, and slides into it when the bar is wider than the screen
-            '<script>(function(){var bar=document.querySelector(".az");if(!bar)return;var hs=[].slice.call(document.querySelectorAll(".az-h")),cur="";'
+            '<script>(function(){var bar=document.querySelector(".az");if(!bar)return;var hs=[].slice.call(document.querySelectorAll(".az-h")),cur="",pick=null;'
             'function sync(){var line=bar.getBoundingClientRect().bottom+40,a=hs.length?hs[0].id:"";hs.forEach(function(h){if(h.getBoundingClientRect().top<=line)a=h.id;});'
+            'if(pick&&Date.now()-pick.t<1500)a=pick.id;else if(innerHeight+scrollY>=document.documentElement.scrollHeight-2&&hs.length&&!pick)a=hs[hs.length-1].id;'
+            'if(pick&&Date.now()-pick.t>=1500&&innerHeight+scrollY>=document.documentElement.scrollHeight-2)a=pick.id;'
             'if(a===cur)return;cur=a;[].forEach.call(bar.querySelectorAll("a"),function(x){var on=x.getAttribute("href")==="#"+a;if(on){x.setAttribute("aria-current","true");'
             'var l=x.offsetLeft-bar.offsetLeft;if(l<bar.scrollLeft+12||l+x.offsetWidth>bar.scrollLeft+bar.clientWidth-12)bar.scrollTo({left:Math.max(0,l-bar.clientWidth/2),behavior:"smooth"});}'
             'else x.removeAttribute("aria-current");});}var raf=0;addEventListener("scroll",function(){if(!raf)raf=requestAnimationFrame(function(){raf=0;sync();});},{passive:true});sync();'
-            '[].forEach.call(bar.querySelectorAll("a"),function(x){x.addEventListener("click",function(ev){var t=document.querySelector(x.getAttribute("href"));if(!t)return;ev.preventDefault();'
+            '[].forEach.call(bar.querySelectorAll("a"),function(x){x.addEventListener("click",function(ev){var t=document.querySelector(x.getAttribute("href"));if(!t)return;ev.preventDefault();pick={id:t.id,t:Date.now()};'
+            'addEventListener("wheel",function(){pick=null;},{once:true,passive:true});addEventListener("touchmove",function(){pick=null;},{once:true,passive:true});'
             'var top=document.querySelector(".top"),y=t.getBoundingClientRect().top+scrollY-(top?top.offsetHeight:49)-bar.offsetHeight+1;'
             'window.scrollTo({top:y,behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});history.replaceState(null,"",x.getAttribute("href"));});});})();</script>')   # inside the list's section, so it stays stuck all the way down
     write("coffee/index.html", page("Specialty coffee roasters and V60 recipes for their coffees",
