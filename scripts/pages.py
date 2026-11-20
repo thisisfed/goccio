@@ -130,6 +130,9 @@ a{color:inherit;text-decoration:none}
 @media (min-width:760px){.spec b,.spec h1{font-size:63px}}
 .spec small{font-size:24px;color:var(--muted);letter-spacing:0;margin-left:4px}
 .facts{display:grid;gap:4px;margin:6px 0 0}
+.spec.ro{padding-bottom:0}
+.spec .ro-n{display:block}
+a.ro-n{justify-self:start;text-decoration:underline;text-decoration-color:color-mix(in srgb,currentColor 40%,transparent);text-underline-offset:2px}
 .facts div{display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px}
 .facts dt{color:var(--muted)}.facts dd{margin:0;overflow-wrap:anywhere}
 .notes{margin:12px 0 0}
@@ -178,9 +181,9 @@ def page(title, desc, path, body, extra_head="", nav=True, tight=False):
 
 
 def coffee_list(cs, cpath):
-    # like the app's coffee list: the name, then origin, process and price
+    # like the app's coffee list: the name, then origin and process (no prices: they change, the roaster's shop has them)
     return '<ul class="list">' + "".join(f'<li><a href="{cpath[id(c)]}"><span class="name">{e(c["name"])}</span></a><span class="sub">'
-                                         + e(", ".join(x for x in [c.get("origin"), c.get("process"), c.get("price")] if x)) + "</span></li>" for c in cs) + "</ul>"
+                                         + e(", ".join(x for x in [c.get("origin"), c.get("process")] if x)) + "</span></li>" for c in cs) + "</ul>"
 
 
 def write(rel, text):
@@ -284,13 +287,15 @@ def main():
     for name, cs in by_roaster.items():
         city = next((c.get("roaster_city") for c in cs if c.get("roaster_city")), "")
         shop = (shops.get(name) or {}).get("shop") or ""
-        body = (f'<section><p class="crumb"><a href="/coffee/">Roasters</a></p><div class="specs">'
-                f'<div class="spec wide"><span class="k">Roastery</span><h1>{e(name)}</h1></div></div>'
-                f'<p class="r-read">{e(city) + ", " if city else ""}{len(cs)} coffee{"s" if len(cs) != 1 else ""} on the list'
-                + (f', <a class="ul" href="{e(shop)}" rel="noopener">their shop</a>' if shop else "") + "</p></section>"
+        # like the recipe's Roastery on the main site: the name and its town big, then how many coffees and the shop, as close
+        # under it as Roastery is above it. No Roasters link here: the top bar has it
+        body = (f'<section><div class="specs">'
+                f'<div class="spec wide ro"><span class="k">Roastery</span><h1>{e(name)}{", " + e(city) if city else ""}</h1>'
+                f'<span class="ro-n">{len(cs)} coffee{"s" if len(cs) != 1 else ""} on the list</span>'
+                + (f'<a class="ro-n ul" href="{e(shop)}" rel="noopener">Their shop</a>' if shop else "") + "</div></div></section>"
                 f'<section><div class="sec-head"><span>Coffees.</span><span class="muted">Each with a V60 recipe</span></div>{coffee_list(cs, cpath)}</section>')
         desc = f"{len(cs)} coffee{'s' if len(cs) != 1 else ''} from {name}{', ' + city if city else ''}, each with a V60 recipe: grind, dose, temperature and every pour."
-        write(f"coffee/{rslug[name]}/index.html", page(f"{name}: coffees and V60 recipes", desc, f"/coffee/{rslug[name]}/", body))
+        write(f"coffee/{rslug[name]}/index.html", page(f"{name}: coffees and V60 recipes", desc, f"/coffee/{rslug[name]}/", body, tight=True))
         urls.append((f"{BASE}/coffee/{rslug[name]}/", updated))
 
     # ---------- every roaster ----------
