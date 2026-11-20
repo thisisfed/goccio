@@ -135,6 +135,12 @@ CASES = [
      lambda: name("Nestor Lasso - (72hr Advanced Washed", "Kobean", "") == "Nestor Lasso"),
     ("An unclosed bracket around a name keeps the name: 'Uganda (Bukonzo Dream'",
      lambda: scan.close_brackets("Uganda (Bukonzo Dream") == "Uganda Bukonzo Dream"),
+    ("Standout's Shoondhisa had no notes: they sit on their own line between middle dots",
+     lambda: scan.find_notes({"body": "Gibirinna 74110 & Serto 74112 · Anoxic Natural · Ethiopia\nStrawberry · Blueberry · Nectarine · Passion Fruit · Lavender\nWhy we selected it",
+                              "title": "Shoondhisa", "tags": []}) == ["Strawberry", "Blueberry", "Nectarine", "Passion Fruit", "Lavender"]),
+    ("A 'Tasting notes' label with the notes on the next line (no colon) was missed",
+     lambda: scan.find_notes({"body": "Altitude\n2,200 m\nTasting notes\nStrawberry, blueberry, nectarine, passion fruit and lavender\nBrewing FAQ",
+                              "title": "Shoondhisa", "tags": []})[:3] == ["Strawberry", "Blueberry", "Nectarine"]),
 ]
 
 
