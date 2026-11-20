@@ -120,6 +120,11 @@ CASES = [
      lambda: name("Amecafe Blend from Brazil", "Bosk Coffee Roasters", "Brazil") == "Amecafe Blend"),
     ("Herbert and Ward's 'Charlie and the MIlkshake factory 500g bags' was named '… factory bags' (the size taken off left 'bags')",
      lambda: name("Charlie and the MIlkshake factory 500g bags", "Herbert and Ward", "Brazil") == "Charlie and the MIlkshake factory"),
+    ("Square Mile's Don Cayito was dropped: its page names Dota, Tarrazú but never Costa Rica",
+     lambda: scan.find_origin("Don Cayito", "Coffee coffee filter 175g / 1kg",
+                              "This natural process Typica variety from Don Cayito in Dota, Tarrazú creates an idealised version of Arabica’s original cup profile.") == "Costa Rica"),
+    ("data/roasters.json with a comma after the last roaster (a hand edit on GitHub) stopped the scan",
+     lambda: len(scan.load_roasters()) > 500),
 ]
 
 

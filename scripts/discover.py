@@ -184,7 +184,7 @@ def removals():
     """Requests from the "Ask to be removed" form (issues labelled "removal"). When the email is at the shop's own
     domain the shop comes off data/roasters.json and goes on data/removed.json at once; otherwise the issue stays
     open for a person to check, so nobody can take a rival off the site."""
-    roasters = json.loads((ROOT / "data" / "roasters.json").read_text())
+    roasters = scan.load_roasters()
     gone, out = removed(), []
     for iss in gh("GET", "/issues?labels=removal&state=open&per_page=50"):
         m = re.search(r"```json\s*(\{.*?\})\s*```", iss.get("body") or "", re.S)
@@ -209,7 +209,7 @@ def removals():
 def listings():
     """Requests from the Get your roastery listed page (issues labelled "listing"): check each shop with the real scanner,
     add the ones with coffees to data/roasters.json, and answer the issue. A request it can't read stays open for a person."""
-    roasters = json.loads((ROOT / "data" / "roasters.json").read_text())
+    roasters = scan.load_roasters()
     have = {host(r["shop"]) for r in roasters}
     added = []
     for iss in gh("GET", "/issues?labels=listing&state=open&per_page=50"):
@@ -269,7 +269,7 @@ def main():
             for c in pool.map(contacts, shops):
                 print("CONTACT " + json.dumps(c))
         return
-    roasters = json.loads((ROOT / "data" / "roasters.json").read_text())
+    roasters = scan.load_roasters()
     have_hosts = {host(r["shop"]) for r in roasters} | {host(r["feed"]) for r in roasters if r.get("feed")} | removed()
     have_names = {norm(r["name"]) for r in roasters}
     args = sys.argv[1:]
