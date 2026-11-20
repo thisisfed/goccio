@@ -6,7 +6,7 @@
 //    The "Find new roasters" workflow picks those up, checks them with the real scanner and adds the ones it can read.
 // The roaster's email is used only to reply about the listing; it goes into that private issue and nowhere else.
 
-const UA = "BagToCup/1.0 (+https://bagtocup.thisisfed.xyz/list/; checking a shop that asked to be listed)";
+const UA = "BagToCup/1.0 (+https://www.goccio.co.uk/list/; checking a shop that asked to be listed)";
 const REPO = "thisisfed/v60";
 
 const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } });
@@ -47,7 +47,7 @@ export async function onRequestPost({ request, env }) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ ok: false, msg: "That email address doesn't look right." }, 400);
   if (!/^https?:\/\//i.test(shop)) shop = "https://" + shop;
   let u; try { u = new URL(shop); } catch (e) { return json({ ok: false, msg: "That shop address doesn't look right." }, 400); }
-  if (!/\./.test(u.hostname) || /bagtocup|thisisfed|localhost/.test(u.hostname)) return json({ ok: false, msg: "That shop address doesn't look right." }, 400);
+  if (!/\./.test(u.hostname) || /bagtocup|thisisfed|goccio|localhost/.test(u.hostname)) return json({ ok: false, msg: "That shop address doesn't look right." }, 400);
   shop = `${u.protocol}//${u.hostname}`;
   if (!name) name = await shopName(shop);
   if (want === "remove") {

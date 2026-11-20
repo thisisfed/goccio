@@ -41,7 +41,7 @@ def load_roasters():
     return out
 OUT = ROOT / "data" / "releases.json"
 SEEN = ROOT / "data" / "seen.json"   # when each coffee page was first seen, including ones the list leaves out as duplicates
-UA = "V60BrewCard/1.0 (+https://bagtocup.thisisfed.xyz; once-a-day coffee list, follows robots.txt)"
+UA = "V60BrewCard/1.0 (+https://www.goccio.co.uk; once-a-day coffee list, follows robots.txt)"
 NEW_DAYS = 21
 MAX_ITEMS = 12000   # a safety cap only; the list is ~5,000 coffees
 PER_ROASTER = 100   # was 8, which hid most of a big roaster's range

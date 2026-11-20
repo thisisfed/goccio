@@ -8,12 +8,12 @@ document.documentElement.classList.add("wait");
 setTimeout(() => document.documentElement.classList.remove("wait"), 6000);
 </script>
 <script>
-/* The site moved from v60.thisisfed.xyz to bagtocup.thisisfed.xyz. Browser storage belongs to one address, so the old
-   address packs this device's journal, preferences and recipe into the link and the new one unpacks them. */
+/* The site moved from v60.thisisfed.xyz, then bagtocup.thisisfed.xyz, to www.goccio.co.uk. Browser storage belongs to one
+   address, so an old address packs this device's journal, preferences and recipe into the link and the new one unpacks them. */
 (() => {
   try {
-    const OLD = "v60.thisisfed.xyz", NEW = "bagtocup.thisisfed.xyz";
-    if (location.hostname === OLD) {
+    const OLD = ["v60.thisisfed.xyz", "bagtocup.thisisfed.xyz", "goccio.co.uk"], NEW = "www.goccio.co.uk";
+    if (OLD.includes(location.hostname)) {
       const carry = {};
       for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith("v60.")) carry[k] = localStorage.getItem(k); }
       const tail = Object.keys(carry).length ? "#carry=" + encodeURIComponent(JSON.stringify(carry)) : location.hash;
@@ -34,18 +34,18 @@ if (/iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIn
 <title>A Bag to a Cup</title>
 <meta name="description" content="A recipe for the coffee in front of you, on V60, Kalita Wave, April Brewer, Orea, Melitta, Chemex, AeroPress, French Press, cold brew or moka pot: the grind for your grinder, ratio, temperature, every step, a full-screen brew timer and a private brew journal. Plus new filter coffees from roasters in the UK, Europe and beyond, updated every day.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://bagtocup.thisisfed.xyz/">
+<meta property="og:url" content="https://www.goccio.co.uk/">
 <meta property="og:site_name" content="Bag to Cup">
 <meta property="og:title" content="Bag to Cup: new coffees, the recipe for each bag">
 <meta property="og:description" content="Grind for your grinder, ratio, temperature and every step, for fourteen brewers. New coffees from 100+ roasters, checked every day.">
-<meta property="og:image" content="https://bagtocup.thisisfed.xyz/og/card-5.png">
+<meta property="og:image" content="https://www.goccio.co.uk/og/card-5.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Bag to Cup: an example recipe card with dose, water, temperature and the pour timeline">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Bag to Cup: new coffees, the recipe for each bag">
 <meta name="twitter:description" content="Grind for your grinder, ratio, temperature and every step, for fourteen brewers. New coffees from 100+ roasters, checked every day.">
-<meta name="twitter:image" content="https://bagtocup.thisisfed.xyz/og/card-5.png">
+<meta name="twitter:image" content="https://www.goccio.co.uk/og/card-5.png">
 <!-- home screen icon: a white G in ALT Riviera on black (iPhone rounds the corners itself) -->
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png?v=3">
 <meta name="apple-mobile-web-app-title" content="Goccio">
@@ -5255,7 +5255,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
 
   // ---------- share ----------
   // plain text, aligned for a monospace notes app but still readable in a chat bubble
-  const SITE = () => /thisisfed\.xyz$/.test(location.hostname) ? location.hostname : "bagtocup.thisisfed.xyz";
+  const SITE = () => "www.goccio.co.uk";
   function recipeText() {
     const r = recipe, c = r.c, K = r.kind;
     const who = [c.roaster ? titleCase(c.roaster) : (state.bag && state.bag.roaster) || "", c.origin, PROCESS[c.process].label, roastLabel(c.roast)].filter(Boolean).join(", ");
@@ -5290,7 +5290,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     const title = tr("Strain the cold brew"), what = coffeeTitle(state, r);
     const esc2 = (t) => String(t).replace(/[\\;,]/g, (m) => "\\" + m).replace(/\n/g, "\\n");
     const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Bag to Cup//Cold brew//EN", "BEGIN:VEVENT",
-      `UID:${now.getTime()}-cold@bagtocup.thisisfed.xyz`, `DTSTAMP:${z(now)}`, `DTSTART:${z(a)}`, `DTEND:${z(b)}`,
+      `UID:${now.getTime()}-cold@goccio.co.uk`, `DTSTAMP:${z(now)}`, `DTSTART:${z(a)}`, `DTEND:${z(b)}`,
       `SUMMARY:${esc2(title)}`, `DESCRIPTION:${esc2(what + ". " + tr("Strain any time in the next 6 hours: through a paper filter or a fine sieve. Serve over ice, topped up with about 0.4 × its weight in water, or with milk."))}`,
       "BEGIN:VALARM", "ACTION:DISPLAY", `DESCRIPTION:${esc2(title)}`, "TRIGGER:PT0M", "END:VALARM",
       "BEGIN:VALARM", "ACTION:DISPLAY", `DESCRIPTION:${esc2(title + tr(", last call"))}`, "TRIGGER;RELATED=END:-PT30M", "END:VALARM",
@@ -5384,7 +5384,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       ${pours.length ? `<table class="ps-pours"><thead><tr><th>Time</th><th>Scale</th><th>Do</th></tr></thead><tbody>${pours.map((q) => `<tr><td>${fmt(q.t)}</td><td>${q.to != null ? q.to + " g" : ""}</td><td>${esc(q.note || "")}</td></tr>`).join("")}</tbody></table>` : ""}
       ${d.prep ? `<p class="ps-prep">${esc(d.prep)}</p>` : ""}
       ${d.note ? `<p class="ps-note">${esc(d.note)}</p>` : ""}
-      <div class="ps-foot"><span>Brew something good.</span><span>bagtocup.thisisfed.xyz</span></div></div>`;
+      <div class="ps-foot"><span>Brew something good.</span><span>goccio.co.uk</span></div></div>`;
     document.body.classList.add("printing");
     const done = () => { document.body.classList.remove("printing"); window.removeEventListener("afterprint", done); };
     window.addEventListener("afterprint", done);
