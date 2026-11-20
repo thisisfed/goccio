@@ -501,7 +501,7 @@ footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: var(--
 @media (max-width: 760px) { .dock { display: block; } }
 /* the sticky Start brewing slides away while the one in the recipe is on screen */
 .dock { transition: transform .35s ease, opacity .35s ease; }
-.dock.off { transform: translateY(110%); opacity: 0; pointer-events: none; }
+.dock.off, .dock.up { transform: translateY(110%); opacity: 0; pointer-events: none; }
 
 
 /* BREW MODE: fixed slots. Every zone keeps its place and size from pouring to waiting to drawdown;
@@ -2435,6 +2435,27 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const cap1 = (s) => s ? s[0].toUpperCase() + s.slice(1) : s;
   // no shouting: a whole word in capitals becomes "Word"; short codes without two vowels (AA, SL28, CGLE) stay
+  // the name in the coffee list without what the tags under it already say: the origin (and region) and Decaf
+  const shortName = (r) => {
+  const name = String(r.name || "").replace(/[\u200b\ufeff]/g, "").trim();
+  const drop = [...(r.origin || "").split(" / "), (r.origin || "").includes(" / ") ? "" : r.region || "", ...(/decaf/i.test(r.process || "") ? ["Decaffeinated", "Decaf"] : [])]
+    .map((w) => w.trim()).filter((w) => w.length > 2).sort((a, b) => b.length - a.length);
+  if (!drop.length) return name;
+  let s = name;
+  for (const w of drop) s = s.replace(new RegExp(`(?<![\\p{L}\\d])${reEsc(w)}(?![\\p{L}\\d])`, "giu"), (m, at, str) =>
+    // part of a blend (Brazil & Costa Rica): leave it, the name means the mix
+    /(?:&|\+|\/|\band)\s*$/i.test(str.slice(0, at)) || /^\s*(?:&|\+|\/|and\b)/i.test(str.slice(at + m.length)) ? m : "\u0000");
+  if (s === name) return name;
+  const SEP = "[,:;~\\-–—|]";
+  s = s.replace(/\u0000(?:\s*\u0000)+/g, "\u0000")
+    .replace(new RegExp(`\\s*(${SEP})\\s*\\u0000\\s*(${SEP})\\s*`, "g"), (m, a, b) => (b === "," ? ", " : ` ${b} `))   // separators both sides: keep one
+    .replace(new RegExp(`\\s*${SEP}?\\s*\\u0000\\s*${SEP}?\\s*`, "g"), " ")                                           // one side: it goes with the word
+    .replace(/\(\s*\)|\[\s*\]/g, " ").replace(/\s+([,.:;!)\]])/g, "$1").replace(/([(\[])\s+/g, "$1")
+    .replace(/^[\s\-–—|,:;/&+.~]+|[\s\-–—|,:;/&+(~]+$/g, "").trim()
+    .replace(/^\(([^()]*)\)/, "$1").replace(/\(([^()]*)$/, "$1").replace(/^([^()]*)\)/, "$1")   // a bracket left open or alone at the start
+    .replace(/^[\s\-–—|,:;/&+.~]+|[\s\-–—|,:;/&+(~]+$/g, "").replace(/\s{2,}/g, " ").trim();
+  return /\p{L}{2,}/u.test(s) && !/^(and|the|de|la|el|of|coffee|single origin|espresso|filter)$/i.test(s) ? s : name;
+  };
   const calm = (s) => String(s || "").replace(/\b[A-ZÀ-Ý]{4,}\b/g, (w) => (w.match(/[AEIOUYÀ-Ý]/g) || []).length >= 2 ? w[0] + w.slice(1).toLowerCase() : w);
   const titleCase = (s) => s ? String(s).replace(/\b\w/g, (m) => m.toUpperCase()).replace(/\bSl(\d)/g, "SL$1") : s;
   const dmy = (d) => { const x = d instanceof Date ? d : new Date(d); if (isNaN(x)) return ""; return `${String(x.getDate()).padStart(2, "0")}/${String(x.getMonth() + 1).padStart(2, "0")}/${x.getFullYear()}`; };
@@ -4877,6 +4898,9 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
   { const vis = new Set();   // entries only report what changed, so keep track of every target still on screen
     const io = new IntersectionObserver((es) => { es.forEach((e) => e.isIntersecting ? vis.add(e.target) : vis.delete(e.target)); $("dock").classList.toggle("end", vis.size > 0); });
     io.observe($("credit")); io.observe(document.querySelector("footer")); }
+  { // and while you're back up above Coffees (the top of the page), as at the footer
+    const upd = () => $("dock").classList.toggle("up", $("sh").getBoundingClientRect().top > (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--top-h")) || 49));
+    addEventListener("scroll", upd, { passive: true }); addEventListener("resize", upd); upd(); }
   $("bvClose").onclick = closeBrew; $("bvGo").onclick = toggleBrew; $("bvReset").onclick = resetBrew; $("bvDrain").onclick = drained;
   document.addEventListener("keydown", (e) => {
     if ($("bv").hidden) return;
@@ -5319,7 +5343,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
       return `${head}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
         <div class="l">
           <span class="who">${!isSp && fyOn ? `<span class="ji">${LANG === "it" ? "Per te" : "For you"}</span> ` : !isSp && r.just_in ? '<span class="ji">Just in</span> ' : ""}<a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(r.roaster)}</a>${r.roaster_city ? ` <span class="rcity">${esc(r.roaster_city)}</span>` : ""} <span class="day">${day}</span></span>
-          <span class="name">${esc(calm(r.name))}</span>
+          <span class="name">${esc(calm(shortName(r)))}</span>
           <p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p>
         </div>
         <div class="r">
