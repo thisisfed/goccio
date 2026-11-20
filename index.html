@@ -5628,7 +5628,6 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       const r = n.getBoundingClientRect(), bar = document.querySelector(".top"), tb = bar ? bar.getBoundingClientRect().bottom : 0;
       if (!document.hidden && r.height && r.top >= tb - 1 && r.bottom <= innerHeight + 1) fySeen += dt;
       const need = Math.max(5000, 1500 + n.textContent.split(/\s+/).length * 300);
-      if (shelfY && !fyProfile()) fyCount(Math.max(1, Math.ceil((need - fySeen) / 1000)), Math.min(1, fySeen / need));
       if (fySeen < need) return;
       fyStop(); if (shelfY && !fyProfile()) { shelfY = false; fyHold = null; fySave(); renderShelfO(); renderShelf(); } }, 200); };
   // For you, with nothing yet to learn from, switches itself off once you've read why. From the first moment its pill
@@ -6328,6 +6327,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   // roasters we know, by the words that tell them apart: "Climpson & Sons" is "climpson", "Square Mile Coffee Roasters" is "square mile"
   const ROASTER_GEN = /\b(coffee|roasters?|roastery|roasting|roast|co|company|the|and|sons?|bros|brothers|cafe|caffe|kaffee|torrefazione|tostadores|lab|ltd)\b/g;
   const roasterKey = (n) => norm(n).replace(ROASTER_GEN, " ").replace(/\s+/g, " ").trim();
+  const PLACE_NEAR = ["london", "bristol", "brighton", "leeds", "glasgow", "dublin", "paris", "berlin", "oslo", "york", "manchester", "edinburgh", "cardiff", "belfast", "hackney", "camden", "brixton", "ethiopia", "kenya", "colombia", "brazil", "rwanda", "burundi", "panama", "honduras", "peru"];
   const GEO_WORDS = new Set([...Object.values(V.country).flat(), ...V.variety, ...V.process.flatMap(([, t]) => t)]);
   const EVERYDAY_ROASTER = /^(origin|notes|april|curve|rave|ozone|assembly|workshop|nomad|kaffa|heart|module|catalyst|alchemy|ritual|subtext|mellow|leaves|scenery|passenger|volcano|union|plot|standout|extract|grind|red|bay|broadway|common|good|blue|black|white|little|north|south|east|west|house|home|lucky|wild|fire|bloom|craft|daily|field|forest|ground|harbour|harbor|island|mountain|ocean|river|rose|sea|smith|square|stone|story|street|sun|sunday|tide|true|village|estate|signature|classic|placebo|baron)$/;
   // a roaster's web address (squaremilecoffee.com, www.climpsonandsons.com) or handle (@standoutcoffee) read off the bag:
@@ -6362,7 +6362,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   }
   const FLAVOUR = /\b(berr|straw|rasp|blue|black ?curr|currant|cherr|plum|peach|apricot|nectar|mango|lychee|passion|pineapple|citrus|lemon|lime|orange|grapefruit|mandarin|bergamot|apple|pear|grape|fig|date|raisin|jasmine|rose|floral|hibiscus|lavender|tea|earl|chocolate|cacao|cocoa|caramel|toffee|honey|molasses|sugar|vanilla|nut|almond|hazelnut|walnut|spice|cinnamon|clove|cardamom|wine|rum|whisk|cream|milk|butter|syrup|tamarind|rhubarb|kiwi|melon|watermelon|cola|mint|ginger|stone fruit|tropical|myrtille|cassis|framboise|fraise|jazmin|albaricoque|johannisbeere|zitrus|solbaer|grapefrugt)/;
   const NOTES_KEY = /^(?:tasting notes?|notes?|notas?(?: de cata)?|notes de degustation|geschmack|aromen|aroma|smaksnoter|smagsnoter|flavou?r(?: notes)?|cup(?: profile| notes)?|tastes?(?: like| of)?|we taste|in the cup|profile)\b\s*[:\-–]?\s*/i;
-  const BOILER = /\b(whole ?bean|ground|net ?(wt|weight)?|\d+\s?(g|gr|kg|oz)\b|altitude|masl|m a s l|elevation|producer|harvest|importer|recyclable|compostable|roasted (in|on)|roast date|best before|bbe|www|http|instagram)\b|\d{1,2}[.\/-]\d{1,2}[.\/-]\d{2,4}|@|\.com/;
+  const BOILER = /\b(whole ?bean|ground|net ?(wt|weight)?|\d+\s?(g|gr|kg|oz)\b|altitude|masl|m a s l|elevation|producer|harvest|importer|recyclable|compostable|roasted (in|on)|roast date|best before|bbe|www|http|instagram|arabica|meet the|storage|store (coffee|sealed|in)|airtight|grind|stovetop|cafetiere|cafetière|aeropress|french press|certified|b corp|corporation|since \d{4}|unit \d+|business park)\b|\d{1,2}[.\/-]\d{1,2}[.\/-]\d{2,4}|@|\.com/;
   /* Is this a coffee bag at all? A beer, wine or spirits label says so in its own words (beer, lager, brewery, 5.2% vol).
      One clear word is enough when nothing on the label speaks of coffee; two are needed when something does (a coffee
      stout names both, and it's still a beer). Tea and soft drinks need care, because "black tea", "jasmine", "cola" and
@@ -6399,7 +6399,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     L.forEach((l, i) => { if (notes) return; const m = l.text.match(NOTES_KEY); if (m && m[0].trim().length > 3) {
       let t = l.text.slice(m[0].length).trim(); if (t.length < 3 && L[i + 1]) { t = L[i + 1].text; used.add(i + 1); }
       if (t.length >= 3) { notes = { v: t, c: cf(1, l.conf, 0.1), why: "after “" + m[0].replace(/[:\-–\s]+$/, "") + "”" }; nIdx = i; used.add(i); } } });
-    if (!notes) { const fl = L.map((l, i) => ({ l, i, k: (l.n.match(new RegExp(FLAVOUR.source, "g")) || []).length })).filter((x) => x.k >= 2 && x.l.n.split(" ").length <= 9).sort((a, b) => b.k - a.k)[0];
+    if (!notes) { const fl = L.map((l, i) => ({ l, i, k: (l.n.match(new RegExp(FLAVOUR.source, "g")) || []).length })).filter((x) => x.k >= 2 && x.l.n.split(" ").length <= 9).sort((a, b) => b.k - a.k || b.l.n.length - a.l.n.length || (b.l.conf || 0) - (a.l.conf || 0))[0];
       if (fl) { notes = { v: fl.l.text, c: cf(0.8, fl.l.conf), why: "a line of flavour words" }; used.add(fl.i); nIdx = fl.i; } }
     out.notes = notes ? { ...notes, v: notes.v.replace(/\s*[\/·•|-]\s*|\s{2,}/g, ", ").replace(/,\s*,/g, ",").replace(/^,|,$/g, "").trim() } : { v: null, why: "No tasting notes on this side" };
     const scan = (pick) => { let best = null; L.forEach((l, i) => { if ((used.has(i) && i === nIdx) || l.conf < 45) return; const r = pick(l, i); if (r && (!best || r.s > best.s)) best = { ...r, i, l }; }); return best; };
@@ -6414,6 +6414,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
         terms.forEach((t) => { const f = findTerm(l.n, t); if (f && (t.includes(" ") || short || lab)) s = Math.max(s, f * (t.includes(" ") || lab ? 1 : 0.85)); }); return s ? { s, lab } : null; });
       if (hit && (!roast || hit.s > roast.s)) roast = { key, ...hit }; }
     if (roast && /omni/.test(roast.l.n)) roast = null;
+    if (roast && !roast.lab && L.filter((l) => /\b(espresso|stovetop|omni|cafetiere|cafetiere|aeropress|filter|moka|french press|whole ?bean)\b/.test(l.n) && l.n.split(" ").length <= 3).length >= 3) roast = null;   // the grind tick boxes on the back
     out.roast = roast ? { v: roast.key, c: cf(roast.s, roast.l.conf, roast.lab ? 0.1 : 0), why: "“" + roast.l.text + "”" } : { v: null, why: "Roast level not stated" };
     // origin: every country named, in order (a blend reads Colombia / Ethiopia); a region alone gives its country, at lower confidence
     const found = [];
@@ -6433,9 +6434,9 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     out.variety = vClean.length ? { v: vClean.map((v) => v.name).join(", "), c: cf(Math.min(...vClean.map((v) => v.s)), Math.min(...vClean.map((v) => v.l.conf)), /variet|cultivar|varietal|variedad|sorte/.test(vClean[0].l.n) ? 0.1 : 0), why: "“" + vClean[0].l.text + "”" }
       : { v: null, why: "Variety not printed on this side" };
     // dates: roasted on, or best before. Day first, the European way; two-digit years read as 20xx
-    const DT = /(\d{1,2})[.\/\- ](\d{1,2}|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[.\/\- ](\d{2,4})/i, MON = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
+    const DT = /(\d{1,2})[.\/\- ](\d{1,2}|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[.\/\- ](\d{2,4})/i, MNUM = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
     out.date = { v: null, why: "No roast date on this side" };
-    for (const l of ocr.lines) { const m = l.text.match(DT); if (!m) continue; const d = +m[1], mo = isNaN(+m[2]) ? MON[m[2].slice(0, 3).toLowerCase()] : +m[2], y = +m[3] < 100 ? 2000 + +m[3] : +m[3];
+    for (const l of ocr.lines) { const m = l.text.match(DT); if (!m) continue; const d = +m[1], mo = isNaN(+m[2]) ? MNUM[m[2].slice(0, 3).toLowerCase()] : +m[2], y = +m[3] < 100 ? 2000 + +m[3] : +m[3];
       if (!(d >= 1 && d <= 31 && mo >= 1 && mo <= 12 && y >= 2020 && y <= 2035)) continue;
       const kind = /best|bbe|bb\b|use by|mhd|consumir|a consommer|da consumarsi|exp/i.test(l.text) ? "best" : "roasted";
       out.date = { v: `${+d} ${MON.en[mo - 1]} ${y}`, kind, c: cf(1, l.conf, /roast|best|bbe|geroestet|tostado/i.test(l.text) ? 0.1 : 0), why: kind === "best" ? "best before" : "roast date" }; break; }
@@ -6451,11 +6452,17 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     { const web = webRoaster([...ocr.lines, ...(ocr.rot || [])].filter((l) => (l.conf == null || l.conf >= 35)).map((l) => l.text).join("\n"));
       if (web) roaster = { name: web.name, s: 1.2, l: { text: web.seen, conf: 95 }, i: -1, web: web.how }; }
     if (!roaster) (ocr.rot || []).forEach((l) => { const n = norm(l.text); if ((l.conf || 0) < 40 || n.length < 4) return;
-      known.forEach((r) => { if (!r.long.length) return; const sc = Math.max(...r.long.map((t) => findTerm(n, t))); if (sc < 0.8) return;
+      if (n.split(" ").length > 5 || /,\s*\S/.test(l.text)) return;   // a sentence read sideways ("…specialty coffee revolution, we have…"), not the name
+      // two of its rare words when the name has two: "East London since 2002" is not London Calling Coffee
+      known.forEach((r) => { if (!r.long.length) return; const hits = r.long.map((t) => findTerm(n, t)).filter((x) => x >= 0.8);
+        if (hits.length < Math.min(2, r.long.length)) return; const sc = Math.max(...hits);
+        // a near miss on a place name is the place: "London" read sideways is not Lonton Coffee Co
+        if (sc < 1 && r.long.some((t) => PLACE_NEAR.some((g) => g !== t && lev(g, t) <= 1) && findTerm(n, t) < 1)) return;
         if (!roaster || sc > roaster.s) roaster = { name: r.name, s: sc, l: { text: l.text, conf: l.conf }, i: -1, side: true }; }); });
     if (!roaster) L.forEach((l, i) => { if (i === nIdx || l.conf < 55) return; known.forEach((r) => { if (r.geo) return;
       const sc0 = findTerm(l.n, r.k); if (sc0 < 0.85) return;
       const own = roasterKey(l.text) === r.k, suffix = SUFFIX.test(l.n);
+      if (!own && (l.n.split(" ").length > 5 || /,\s*\S/.test(l.text) || /^(of|the|we|our|and|in|a)\b/.test(l.n))) return;   // a sentence, not a name
       if (isTitle(l) && !suffix) return;
       if ((r.k.length <= 4 || r.everyday) && !suffix) return;
       const sc = sc0 + (own ? 0.1 : 0) + (suffix ? 0.1 : 0);
@@ -6492,14 +6499,17 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       return hi - lo + 1 >= 4; };
     const cands = L.map((l, i) => ({ l, i })).filter(({ l, i }) => !taken.has(i) && !fieldLine(l) && !geoOnly(l) && !flavours(l) && l.n.length >= 2 && /[a-z]{2}/.test(l.n)
       && !HEAD.test(l.n) && !underHead(l) && !/,\s*$/.test(l.text) && !/[a-z]{3}\.\s*$/i.test(l.text) && !para(l));
-    const filler = (l) => l.n.split(" ").every((w) => /^(coffee|coffees|roasters?|roastery|the|and|of|for|to|a|our|shop|good|with|from|by|in)$/.test(w));   // "COFFEE" alone is never the name (THE can sit over one)   // "Mango Sorbet," is one of a list, "for good." the end of a sentence
+    const filler = (l) => l.n.split(" ").every((w) => /^(coffee|coffees|roasters?|roastery|the|and|of|for|to|a|our|shop|good|with|from|by|in|beans?|whole|filter|espresso|bag|net|weight|arabica|speciality|specialty|single|origin|blend)$/.test(w));   // "COFFEE" alone is never the name (THE can sit over one)   // "Mango Sorbet," is one of a list, "for good." the end of a sentence
     const good = cands.filter(({ l }) => l.conf >= 60 && /^[\p{L}\p{N} '’&.,\-]+$/u.test(l.text) && /[a-z]{3}/i.test(l.text)), pool = good.length ? good : cands.filter(({ l }) => l.conf >= 45 && /[a-z]{3}/.test(l.n));
-    const top = pool.filter(({ l }) => !kicker(l) && !filler(l)).sort((a, b) => b.l.h - a.l.h)[0] || pool.slice().sort((a, b) => b.l.h - a.l.h)[0];
+    // big print that starts with an everyday verb or a pronoun is a slogan or a heading (MEET THE CLIMPSONS, WHO WE ARE, ENJOY), not the name
+    const VERBY = /^(is|are|was|were|be|been|am|do|does|did|have|has|had|get|got|go|goes|make|made|makes|meet|met|enjoy|enjoyed|brewed|brewing|try|tried|tasted|drink|drinking|keep|kept|store|stored|grind|ground|use|used|open|opened|reseal|recycle|recycled|discover|explore|find|found|see|say|said|know|knew|let|lets|let’s|let's|come|came|take|took|give|gave|think|feel|need|want|join|visit|follow|scan|order|buy|bought|share|help|thank|thanks|who|what|why|how|when|where|which|we|us|you|your|yours|i|me|he|she|they|them|their|please|once|ever|after|before|since|until|while|if|because|into|onto|about|each|both|even|still|than|then|also|just)$/;
+    const verby = (l) => VERBY.test(l.n.split(" ")[0]);
+    const top = pool.filter(({ l }) => !kicker(l) && !filler(l) && !verby(l)).sort((a, b) => b.l.h - a.l.h)[0] || pool.filter(({ l }) => !verby(l)).sort((a, b) => b.l.h - a.l.h)[0];
     if (top) {
       const H = top.l.h, group = [top], near = (a, b) => Math.abs(a.l.x - b.l.x) < H * 1.6 && Math.abs(a.l.y - b.l.y) < H * 1.9;
       let grew = true;
       while (grew && group.length < 3) { grew = false;
-        for (const c of pool) { if (group.includes(c) || kicker(c.l, H) || c.l.h < H * 0.55 || c.l.n.split(" ").length > 3 || /[,.]\s/.test(c.l.text) || !group.some((g) => near(g, c))) continue; group.push(c); grew = true; } }
+        for (const c of pool) { if (group.includes(c) || kicker(c.l, H) || verby(c.l) || c.l.h < H * 0.55 || c.l.n.split(" ").length > 3 || /[,.]\s/.test(c.l.text) || !group.some((g) => near(g, c))) continue; group.push(c); grew = true; } }
       group.sort((a, b) => a.l.y - b.l.y);
       let text = group.map(({ l }) => l.text.replace(/[^\p{L}\p{N} '’&.\-]/gu, "").trim()).join(" ").replace(/\s+/g, " ");
       // the country set in the title (URAGA / ETHIOPIA) is the origin, not part of the name; so is its first half, read cut short
@@ -6508,6 +6518,12 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       const conf = Math.min(...group.map(({ l }) => l.conf));
       const nice = /[a-z]/.test(text) && text.split(" ").some((w) => /[a-z]/.test(w)) ? text.replace(/\b([A-Z])([A-Z]+)\b/g, (m, a, b) => a + b.toLowerCase()) : titleCase(text.toLowerCase());   // THE BARON → The Baron
       out.name = { v: calm(nice), c: conf >= 80 && clear ? "high" : conf >= 60 ? "medium" : "low", why: clear ? "the biggest print on the label" : "large print, but not clearly the title" };
+      // three letters or fewer is a misread logo or a fragment (WAR, Who, Ons), not a coffee's name; a country alone (or its
+      // second half: HIOPIA) is the origin set as a title
+      const nn = norm(out.name.v);
+      const land = Object.entries(V.country).find(([, ts]) => ts.some((t) => nn === t || (t.length >= 6 && lev(nn, t) <= Math.floor(t.length / 4)) || (nn.length >= 5 && t.endsWith(nn))));
+      if (nn.replace(/[^a-z]/g, "").length <= 3) out.name = { v: null, why: "The big print didn’t read clearly: type the name" };
+      else if (land) { if (!out.origin || !out.origin.v) out.origin = { v: land[0], c: "medium", why: "set as the title" }; out.name = { v: null, why: "The title is the country: type the coffee’s name" }; }
     } else out.name = { v: null, why: "Couldn’t pick out the coffee’s name" };
     // every word the reader is fairly sure of, for finding this coffee on today's list
     Object.defineProperty(out, "words", { value: [...new Set(L.filter((l) => l.conf >= 45).flatMap((l) => l.n.split(" ")).filter((w) => w.length >= 3))], enumerable: false });
