@@ -180,6 +180,11 @@ CASES = [
     ("People Possession: '[RED]' is part of the name ('Industrial Supply Series Red'), '[Catuai 3125]' is a variety tag and goes",
      lambda: (scan.clean_name("Industrial Supply Series [RED]{Filter}", "People Possession", ""), scan.clean_name("Abu [Catuai 3125]{Filter}", "People Possession", "Costa Rica"))
              == ("Industrial Supply Series Red", "Abu")),
+    ("Round Hill: a 'Taste' row ('Taste Strawberry Pavlova, Blueberry Jam, Panettone'), on one line or two",
+     lambda: [scan.page_notes(t, "Santa Claude") for t in ("Santa Claude\nAbout this coffee\nTaste Strawberry Pavlova, Blueberry Jam, Panettone\nOrigin Ethiopia\n",
+              "Santa Claude\nAbout this coffee\nTaste\nStrawberry Pavlova, Blueberry Jam, Panettone\nOrigin\nEthiopia\n")] == [["Strawberry Pavlova", "Blueberry Jam", "Panettone"]] * 2),
+    ("'Taste the difference, and the care' is a sentence, not a Taste row",
+     lambda: scan.NOTES_CELL.search("Taste the difference that care makes, and enjoy") is None),
     ("People Possession: 'FLAVOR COMPOSITION CHERRY YOGURT // STRAWBERRY MILKSHAKE //LIME CANDY', label and list split by //, not shouted",
      lambda: [scan.page_notes(t, "Industrial Supply Series: Red Filter") for t in ("Industrial Supply Series: Red Filter\nFLAVOR COMPOSITION CHERRY YOGURT // STRAWBERRY MILKSHAKE //LIME CANDY\n",
               "Industrial Supply Series: Red Filter\nFLAVOR COMPOSITION\nCHERRY YOGURT // STRAWBERRY MILKSHAKE //LIME CANDY\n")] == [["Cherry yogurt", "Strawberry milkshake", "Lime candy"]] * 2),
