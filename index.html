@@ -1633,21 +1633,16 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
   @media (max-width: 370px){ .top-scan .ts-t, .top-scan .beta{display:none} .top-scan{width:var(--pill-h);padding:0;justify-content:center;border-radius:50%} }
 }
 /* For you's countdown: the pill squeezes into a circle on a spring, the words blur away, each second drops in, and an
-   accent ring round it empties with the time */
+   the pill turns grey as it shrinks */
 #shelfX .chip{transition:width .6s cubic-bezier(.34,1.56,.64,1), border-radius .6s cubic-bezier(.34,1.56,.64,1), padding .6s cubic-bezier(.34,1.56,.64,1)}
-#shelfX .chip.fy-cd{position:relative;width:var(--pill-h)!important;min-width:0!important;padding:0!important;border-radius:50%!important;
+#shelfX .chip.fy-cd{background:var(--pill)!important;color:var(--ink)!important;transition:width .6s cubic-bezier(.34,1.56,.64,1), border-radius .6s cubic-bezier(.34,1.56,.64,1), padding .6s cubic-bezier(.34,1.56,.64,1), background-color .3s ease, color .3s ease;position:relative;width:var(--pill-h)!important;min-width:0!important;padding:0!important;border-radius:50%!important;
   display:inline-flex!important;align-items:center;justify-content:center;overflow:visible;font-variant-numeric:tabular-nums;flex:none}
-#shelfX .chip.fy-cd::after{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;
-  background:conic-gradient(var(--hl) calc(var(--fy-p,1) * 1turn), transparent 0);
-  -webkit-mask:radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2.5px));mask:radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2.5px));
-  transition:--fy-p .2s linear;animation:fyRing .45s .15s cubic-bezier(.2,.7,.2,1) both}
 .fy-old{display:inline-block;animation:fyOut .26s ease-in both;white-space:nowrap}
 .fy-n{display:inline-block;animation:fyIn .4s cubic-bezier(.34,1.56,.64,1) both}
 @keyframes fyOut{to{opacity:0;filter:blur(6px);transform:scale(.6)}}
 @keyframes fyIn{0%{opacity:0;filter:blur(6px);transform:translateY(-70%) scale(.5)}60%{opacity:1;filter:blur(0)}100%{opacity:1;transform:none}}
-@keyframes fyRing{from{opacity:0;transform:scale(.6) rotate(-90deg)}to{opacity:1;transform:none}}
 @property --fy-p{syntax:"<number>";inherits:true;initial-value:1}
-@media (prefers-reduced-motion: reduce){ #shelfX .chip, .fy-n, .fy-old, #shelfX .chip.fy-cd::after{transition:none!important;animation:none!important} }
+@media (prefers-reduced-motion: reduce){ #shelfX .chip, .fy-n, .fy-old {transition:none!important;animation:none!important} }
 /* Load 10 more: halfway between the last coffee's pills and the next section's rule (55px each side) */
 #shelfMore{margin-top:29px!important}
 #shelves{margin-bottom:-72px} #shelves::after{content:"";display:block;height:41px}   /* the section runs to the next rule, so the sticky menu is pushed away only when that rule reaches the menu's own bottom rule */   /* What's brewing: the next rule as close under its last row as its own rule is above its heading */
@@ -5638,7 +5633,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       fyStop(); if (shelfY && !fyProfile()) { shelfY = false; fyHold = null; fySave(); renderShelfO(); renderShelf(); } }, 200); };
   // For you, with nothing yet to learn from, switches itself off once you've read why. From the first moment its pill
   // morphs into a circle (a springy squeeze, the words blurring out), counts down with each number dropping in,
-  // and an accent ring round it runs out with the time
+  // the pill turning grey as it shrinks
   function fyCount(n, p) {
     const c = $("shelfX") && $("shelfX").querySelector('[data-v="foryou"]'); if (!c) return;
     c.style.setProperty("--fy-p", (1 - p).toFixed(3));
