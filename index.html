@@ -1026,7 +1026,7 @@ details.clk > summary .muted { margin-left: auto; overflow: hidden; text-overflo
 .sec-head .cap:first-child b { font-weight: 500; }
 /* custom water: same type and heights as the pills around it */
 .w-custom { gap: 8px 12px; }
-.w-custom label { font: 400 var(--fs-s)/1.2 var(--sans); color: var(--muted); gap: 6px; }
+.w-custom label { font: 500 var(--fs-s)/1.35 var(--sans); color: var(--muted); gap: 6px; }
 .w-custom input { height: var(--pill-h); padding: 0 10px; font: 500 var(--fs-s)/1 var(--sans); width: 110px; box-sizing: border-box; }
 .w-sca { font-size: var(--fs-s); padding: 10px 12px; gap: 4px 12px; }
 .w-sca b { font-weight: 500; }
@@ -1634,8 +1634,8 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 #waterCard{justify-self:start;width:fit-content;max-width:100%}
 .opt:has(> #waterNow){align-items:start}
 .opt:has(> #waterNow) > span{padding-top:8px}
-#waterNow{justify-self:start;width:fit-content;max-width:100%}
-#waterNow .w-adv{width:0;min-width:100%;box-sizing:border-box}
+#waterNow{justify-self:stretch;width:100%;max-width:100%}
+#waterNow .w-adv{width:auto;min-width:0;box-sizing:border-box}
 /* Surprise me landed on a coffee that doesn't say its roast or process: that row asks, in the accent */
 .opt.ask > span{color:var(--hl)}
 .opt.ask .chip:not([aria-pressed="true"]):not(.rp-go){box-shadow:inset 0 0 0 1px var(--hl)!important}
@@ -1896,20 +1896,19 @@ body{transition:opacity .3s ease}
   font:500 var(--fs-s)/1 var(--sans);letter-spacing:inherit;cursor:pointer}   /* the same grey pill as Brew and Save */
 /* Surprise me: a moving glow of colour, like Siri. A slow spinning ring of hues, blurred soft, behind white text.
    Nothing about the text or the pill's size changes on hover: the colours just brighten. Still for reduced motion */
-.gear-tools #surprise, .chip.siri[aria-pressed="true"]{position:relative;isolation:isolate;overflow:hidden;color:#fff;background:#140b2e;text-shadow:0 1px 6px rgba(20,8,50,.45)}
-.gear-tools #surprise::before, .chip.siri[aria-pressed="true"]::before{content:"";position:absolute;left:50%;top:50%;width:max(260%,220px);aspect-ratio:1;z-index:-1;translate:-50% -50%;
+.gear-tools #surprise{position:relative;isolation:isolate;overflow:hidden;color:#fff;background:#140b2e;text-shadow:0 1px 6px rgba(20,8,50,.45)}
+.gear-tools #surprise::before{content:"";position:absolute;left:50%;top:50%;width:max(260%,220px);aspect-ratio:1;z-index:-1;translate:-50% -50%;
   background:conic-gradient(from 0deg,#ff375f,#ff9f0a,#ff2d95,#bf5af2,#5e5ce6,#0a84ff,#64d2ff,#bf5af2,#ff375f);filter:blur(12px) saturate(1.25);
   animation:siriSpin 7s linear infinite}
-.gear-tools #surprise::after, .chip.siri[aria-pressed="true"]::after{content:"";position:absolute;inset:-30%;z-index:-1;
+.gear-tools #surprise::after{content:"";position:absolute;inset:-30%;z-index:-1;
   background:radial-gradient(90% 120% at 25% 30%,rgba(255,255,255,.28),transparent 55%),radial-gradient(80% 120% at 80% 80%,rgba(20,8,50,.35),transparent 60%);
   animation:siriDrift 4.5s ease-in-out infinite alternate}
 /* bright at rest, softer under the pointer */
-.gear-tools #surprise, .chip.siri[aria-pressed="true"]{filter:brightness(1.12) saturate(1.2)}
-.gear-tools #surprise:hover, .chip.siri[aria-pressed="true"]:hover{background:#140b2e!important;filter:none}
-.chip.siri[aria-pressed="true"]{background:#140b2e!important;color:#fff!important}
+.gear-tools #surprise{filter:brightness(1.12) saturate(1.2)}
+.gear-tools #surprise:hover{background:#140b2e!important;filter:none}
 @keyframes siriSpin{to{rotate:1turn}}
 @keyframes siriDrift{from{transform:translateX(-12%)}to{transform:translateX(12%)}}
-@media (prefers-reduced-motion: reduce){.gear-tools #surprise::before,.gear-tools #surprise::after,.chip.siri[aria-pressed="true"]::before,.chip.siri[aria-pressed="true"]::after{animation:none}}
+@media (prefers-reduced-motion: reduce){.gear-tools #surprise::before,.gear-tools #surprise::after{animation:none}}
 /* Surprise me: the roastery (name, city) and the coffee it picked, each on a line of its own above the brewer; long names wrap, never cut */
 .specs .spec.roastery, .specs .spec.pick{grid-column:1 / -1!important;min-width:0}
 .specs .spec.roastery{order:-2!important;border-top:0!important}
@@ -2022,6 +2021,8 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
 .shelf-tools.compact .opt.xrow:not(.xall) .chips button[aria-pressed="false"]{display:none}
 .shelf-tools.compact .opt.xrow.xall .x-more{display:none!important}
 .shelf-tools:not(.compact) .x-more{display:none!important}
+/* Set your water lands with the water pills 15px under the top bar, not touching it */
+.opt:has(> #waterCard){scroll-margin-top:15px}
 </style>
 </head>
 <body>
@@ -4501,7 +4502,8 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
       }
     }
     const aim = () => { const top = document.querySelector(".top"), h = top ? top.getBoundingClientRect().height : 49, r = el.getBoundingClientRect();
-      return Math.max(0, Math.min(html.scrollHeight - innerHeight, Math.round(center ? r.top + scrollY - (innerHeight - r.height) / 2 : r.top + scrollY - (h - 3)))); };
+      const gap = parseFloat(getComputedStyle(el).scrollMarginTop) || 0;   // a target can ask for room under the bar (scroll-margin-top)
+      return Math.max(0, Math.min(html.scrollHeight - innerHeight, Math.round(center ? r.top + scrollY - (innerHeight - r.height) / 2 : r.top + scrollY - (h - 3) - gap))); };
     const put = (y) => { const sb = html.style.scrollBehavior; html.style.scrollBehavior = "auto"; window.scrollTo(0, y); html.style.scrollBehavior = sb; };
     const land = () => { if (gen !== jumpGen) return; endJump(); if (Math.abs(aim() - scrollY) > 1) put(aim());
       setTimeout(() => { if (gen === jumpGen && Math.abs(aim() - scrollY) > 1) put(aim()); }, 250); };
@@ -5374,6 +5376,7 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
     return { P, total, have: new Set(seen.keys()), nBags, nBrews: seen.size - nBags };
   }
   // today's coffees, best match first: the top 30 that share something with what you like
+  let fyHold = null;
   function forYou() {
     const pr = fyProfile(); if (!pr) return null;
     const out = new Map();
@@ -5414,7 +5417,7 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
     // Top lots and Good value are opposites: one on turns the other off. On a phone the row works like My equipment:
     // what's ticked stays out, with a + for the rest (all of them while nothing is ticked); the rest folds back by itself
     const anyX = xs.some(([v]) => extraOn(v));
-    $("shelfX").innerHTML = xs.map(([v, t]) => `<button type="button" class="chip${v === "foryou" ? " siri" : ""}" data-v="${v}" aria-pressed="${extraOn(v)}">${t}</button>`).join("")
+    $("shelfX").innerHTML = xs.map(([v, t]) => `<button type="button" class="chip" data-v="${v}" aria-pressed="${extraOn(v)}">${t}</button>`).join("")
       + (anyX ? `<button type="button" class="chip gear-more x-more" aria-label="See all" aria-expanded="false"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>` : "");
     const xrow = $("shelfX").closest(".opt"); xrow.classList.add("xrow"); xrow.classList.toggle("xall", !anyX || xOpen);
     const more = $("shelfX").querySelector(".x-more"); if (more) more.onclick = (e) => { e.stopPropagation(); xOpen = true; renderShelfO(); xWait(); };
@@ -5511,7 +5514,7 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
     if (shelfD && !curfewOn()) list = list.filter(isDecaf);
     if (renderCurfew()) list = list.filter(isDecaf);   // after 2 pm: decaf only, until you say otherwise
     }
-    const fy = shelfY && !shelfRo ? forYou() : null;
+    const fy = shelfY && !shelfRo ? (fyHold = fyHold || forYou()) : (fyHold = null);   // picked once when For you goes on: saving one doesn't reshuffle them
     if (fy) list = list.filter((r) => fy.has(r)).sort((a, b) => fy.get(b) - fy.get(a));   // For you: best match first
     const fyOn = !!fy;   // each pick carries For you where Just in would be
     // For you ticked: under the menu, why these (or, before it knows three coffees, what it needs; the list stays as it was)
