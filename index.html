@@ -1883,7 +1883,7 @@ html[lang="it"] .bag-d.empty::before{content:"Aggiungi"}
 /* the roaster line: one even gap between Just in, the roaster, the city and the date */
 /* a real space between each (screen readers and copy keep the words apart) plus the same small margin */
 .item .who .ji{margin-right:.25em!important}
-.item .who .rcity{margin-left:.25em!important}
+.item .who .rcity{margin-left:0!important}   /* Grind, London 19 Nov: the comma straight after the name */
 /* the date starts with a digit, and the iPhone font's figures carry their own space on the left: a little less margin so the gap looks the same */
 .item .who .day{margin-left:.1em!important}
 /* roaster page: tap a roaster's name for all its coffees, where it roasts and its shop */
@@ -5669,7 +5669,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       tagBits.push(...coffeeLabels(r, shown).map((l) => `<span class="tg lbl" style="--vc:${LABEL_DOT[l] || "#8e8e93"}">${l}</span>`));
       return `${head}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
         <div class="l">
-          <span class="who">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span> ` : !isSp && r.just_in ? `<span class="ji">${LANG === "it" ? "Nuovo" : "New"}</span> ` : ""}<a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(r.roaster)}</a>${r.roaster_city ? ` <span class="rcity">${esc(r.roaster_city)}</span>` : ""} <span class="day">${day}</span></span>
+          <span class="who">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span> ` : !isSp && r.just_in ? `<span class="ji">${LANG === "it" ? "Nuovo" : "New"}</span> ` : ""}<a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(r.roaster)}</a>${r.roaster_city ? `<span class="rcity">, ${esc(r.roaster_city)}</span>` : ""} <span class="day">${day}</span></span>
           <span class="name">${esc(calm(shown))}</span>
           <p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p>
         </div>
@@ -5835,7 +5835,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
         rk ? `<span class="tg rdot" style="--vc:${ROAST_SW[rk]}">${esc(cap1(ROAST[rk].label))} roast</span>` : ""].join("");
       return `<article class="item bag">
         <div class="l">
-          <span class="who">${b.roaster ? `<span class="rn">${esc(b.roaster)}</span>${bagCity(b) ? ` <span class="rcity">${esc(bagCity(b))}</span>` : ""}` : "Your coffee"}</span>
+          <span class="who">${b.roaster ? `<span class="rn">${esc(b.roaster)}</span>${bagCity(b) ? `<span class="rcity">, ${esc(bagCity(b))}</span>` : ""}` : "Your coffee"}</span>
           <span class="name">${esc(calm(b.roaster ? listName(b) : (b.name || b.text || "Coffee")))}</span>
           ${tags ? `<p class="tags">${tags}</p>` : ""}
           <div class="bag-f">${bagNeedsRoast(b) ? `<div class="bag-rorow"><span>Roast</span><span class="bag-ro"><button type="button" class="ro-dd" data-rodd="${i}" aria-expanded="false">Pick one</button>${PHOTO_CHIP.replace('class="chip rp-go"', `class="chip rp-go" data-scan="${i}"`)}<span class="ro-chips" hidden>${OPTS_MORE[1].items.filter(([k]) => k !== "unsure").map(([k, t]) => `<button type="button" class="chip" data-ro="${i}" data-k="${k}"><i class="bean-dot" style="--c:${ROAST_SW[k]}"></i>${t}</button>`).join("")}</span></span></div>` : ""}<label>Roasted<span class="bag-d${b.roasted ? "" : " empty"}"><input type="date" data-k="roasted" data-i="${i}" value="${esc(b.roasted || "")}"></span></label>
