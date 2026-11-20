@@ -8,7 +8,7 @@ document.documentElement.classList.add("wait");
 setTimeout(() => document.documentElement.classList.remove("wait"), 6000);
 </script>
 <script>
-/* The site moved from v60.thisisfed.xyz, then bagtocup.thisisfed.xyz, to www.goccio.co.uk. Browser storage belongs to one
+/* The site used to live at two older addresses (below) and now lives at www.goccio.co.uk. Browser storage belongs to one
    address, so an old address packs this device's journal, preferences and recipe into the link and the new one unpacks them. */
 (() => {
   try {
@@ -891,7 +891,7 @@ body, .lede, .ask label, .need h3, .log h3, .sec-head .cap:first-child, .mark, .
 /* header: only the buttons until the big name has scrolled away */
 .mark { opacity: 0; transform: translateY(4px); transition: opacity .25s ease, transform .25s ease; }
 .mark-on .mark { opacity: 1; transform: none; }
-/* A Bag to a Cup: ABC first, then the letters in between open out */
+/* the wordmark animation */
 .mark.abc { gap: 0 !important; }
 .mark.abc .k { white-space: pre; }   /* the header reads A B to a C until tapped */
 .mark.abc .r { display: inline-block; overflow: hidden; white-space: pre; vertical-align: bottom; padding-bottom: .26em; margin-bottom: -.26em; }   /* opened by abcOpen(), the same as the big wordmark */
@@ -1365,7 +1365,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 .rp-go + .beta { align-self: center; }
 /* Brew something good. is part of the closing text: same size */
 .litext .outro-end, .litext .outro-end * { font-size: inherit !important; }
-/* the coffee names and the opening A Bag to a Cup: the same size as the closing text (39, 63 on big screens) */
+/* the coffee names and the opening wordmark: the same size as the closing text (39, 63 on big screens) */
 .item .name { font-size: 39px !important; }
 /* the opening screen: the drop photo edge to edge, Goccio in white on it, still */
 .wm-screen { margin-inline: calc(50% - 50vw); padding-inline: calc(50vw - 50%); margin-top: -10px; min-height: calc(100svh - var(--top-h, 49px)) !important;
@@ -6952,7 +6952,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     fit(); addEventListener("resize", fit);
     if (document.fonts) { document.fonts.load('100px "ALT Riviera Regular"').then(fit).catch(() => {}); document.fonts.ready.then(fit); }
   })();
-  // A Bag to a Cup: ABC first, then the letters in between open out. One animation for the big wordmark and the header's name,
+  // the wordmark animation. One animation for the big wordmark and the header's name,
   // the same timing and curve, each to its exact width. The wordmark plays once the page shows and each time you scroll back
   // up to it; the header's name each time it appears in the bar
   const ABC_STILL = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -6988,7 +6988,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     abcShut(w); abcShut(m);   // start shut, so the first thing seen is ABC
     const go = () => { if (document.documentElement.classList.contains("wait")) return setTimeout(go, 80); abcOpen(w); };
     go();   // once a visit: back at the top later, the name is simply there in full
-    // the header's name stays ABC; a tap opens it to A Bag to a Cup. Back to ABC when it leaves the bar
+    // the header's short name; a tap opens it out. Back when it leaves the bar
     if (m) { m.style.cursor = "pointer"; m.setAttribute("role", "button"); m.tabIndex = 0;
       const tap = () => { if (!m._open) { m._open = true; abcOpen(m); } };
       m.addEventListener("click", tap); m.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); tap(); } });

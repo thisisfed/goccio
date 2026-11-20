@@ -154,7 +154,7 @@ def gh(method, path, body=None):
     req = urllib.request.Request(f"https://api.github.com/repos/{os.environ['GITHUB_REPOSITORY']}{path}", method=method,
                                  data=json.dumps(body).encode() if body is not None else None,
                                  headers={"Authorization": f"Bearer {os.environ['GH_TOKEN']}", "Accept": "application/vnd.github+json",
-                                          "User-Agent": "bagtocup-listings", "Content-Type": "application/json"})
+                                          "User-Agent": "goccio-listings", "Content-Type": "application/json"})
     with urllib.request.urlopen(req, timeout=30) as r:
         return json.loads(r.read() or b"null")
 

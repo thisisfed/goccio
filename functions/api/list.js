@@ -6,7 +6,7 @@
 //    The "Find new roasters" workflow picks those up, checks them with the real scanner and adds the ones it can read.
 // The roaster's email is used only to reply about the listing; it goes into that private issue and nowhere else.
 
-const UA = "BagToCup/1.0 (+https://www.goccio.co.uk/list/; checking a shop that asked to be listed)";
+const UA = "Goccio/1.0 (+https://www.goccio.co.uk/list/; checking a shop that asked to be listed)";
 const REPO = "thisisfed/v60";
 
 const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } });
@@ -47,7 +47,7 @@ export async function onRequestPost({ request, env }) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ ok: false, msg: "That email address doesn't look right." }, 400);
   if (!/^https?:\/\//i.test(shop)) shop = "https://" + shop;
   let u; try { u = new URL(shop); } catch (e) { return json({ ok: false, msg: "That shop address doesn't look right." }, 400); }
-  if (!/\./.test(u.hostname) || /bagtocup|thisisfed|goccio|localhost/.test(u.hostname)) return json({ ok: false, msg: "That shop address doesn't look right." }, 400);
+  if (!/\./.test(u.hostname) || /thisisfed|goccio|localhost/.test(u.hostname)) return json({ ok: false, msg: "That shop address doesn't look right." }, 400);
   shop = `${u.protocol}//${u.hostname}`;
   if (!name) name = await shopName(shop);
   if (want === "remove") {
@@ -65,7 +65,7 @@ export async function onRequestPost({ request, env }) {
   const body = ["```json", JSON.stringify({ name, shop, town, email, note, platform: p.platform, products: p.products, at: new Date().toISOString() }, null, 1), "```"].join("\n");
   const gh = await fetch(`https://api.github.com/repos/${REPO}/issues`, {
     method: "POST",
-    headers: { Authorization: `Bearer ${env.LISTING_TOKEN}`, Accept: "application/vnd.github+json", "User-Agent": "bagtocup-listing", "content-type": "application/json" },
+    headers: { Authorization: `Bearer ${env.LISTING_TOKEN}`, Accept: "application/vnd.github+json", "User-Agent": "goccio-listing", "content-type": "application/json" },
     body: JSON.stringify({ title: `Listing: ${name}`, body, labels: ["listing"] }),
   }).catch(() => null);
   if (!gh || !gh.ok) return json({ ok: false, msg: `${seen} Something went wrong on our side saving your request. Please try again later.` }, 502);
@@ -88,7 +88,7 @@ async function file(env, title, data, label) {
   const body = ["```json", JSON.stringify(data, null, 1), "```"].join("\n");
   const gh = await fetch(`https://api.github.com/repos/${REPO}/issues`, {
     method: "POST",
-    headers: { Authorization: `Bearer ${env.LISTING_TOKEN}`, Accept: "application/vnd.github+json", "User-Agent": "bagtocup-listing", "content-type": "application/json" },
+    headers: { Authorization: `Bearer ${env.LISTING_TOKEN}`, Accept: "application/vnd.github+json", "User-Agent": "goccio-listing", "content-type": "application/json" },
     body: JSON.stringify({ title, body, labels: [label] }),
   }).catch(() => null);
   return !!(gh && gh.ok);
