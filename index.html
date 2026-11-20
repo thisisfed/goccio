@@ -2060,7 +2060,6 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
 /* See all: a + in a square pill, the same height as the pills beside it */
 .chip.gear-more{width:var(--pill-h)!important;min-width:var(--pill-h);padding:0!important;display:inline-flex!important;align-items:center;justify-content:center;flex:none}
 .chip.gear-more svg{width:10px;height:10px;display:block}
-.opt.mrow:not(.mall) .chips button[id^="o-method-"][aria-pressed="false"]{display:none}   /* Method: the one in use, + for the rest */
 /* Extras on a phone: pills like My equipment, not a dropdown. What's ticked and the +; all of them while nothing is ticked or after the + */
 .shelf-tools.compact .opt.xrow > .chips{display:flex!important;flex-wrap:wrap}
 .shelf-tools.compact .opt.xrow:not(.xnone) > .shelf-dd, .shelf-tools.compact .opt.xrow.xnone.open > .shelf-dd{display:none!important}
@@ -4577,10 +4576,6 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     if (state.goal === "tea" && !teaAvail(brewerOf(state))) { state.goal = "light"; saveState(); renderAllOpts(); } ["process", "roast"].forEach((k) => { const v = pickedOf(k);
     document.querySelectorAll(`[id^="o-${k}-"]`).forEach((b) => { if (!b.classList.contains("rp-go")) b.setAttribute("aria-pressed", String(b.id === `o-${k}-${v}`)); }); });
     const rr = $("lab-roast"), sc = rr && rr.parentNode.querySelector(".rp-go"); if (sc) sc.classList.toggle("off", pickedOf("roast") !== "unsure"); }
-  let methodOpen = false, methodT = 0;
-  const methodWait = () => { clearTimeout(methodT); methodT = setTimeout(() => { if (methodOpen) { methodOpen = false; renderAllOpts(); } }, 2000 + 9 * 150); };
-  { const fold = () => { if (methodOpen) { methodOpen = false; clearTimeout(methodT); renderAllOpts(); } };
-    addEventListener("touchmove", fold, { passive: true }); addEventListener("wheel", fold, { passive: true }); }
   function renderOpts(boxId, list) {
     const box = $(boxId); box.innerHTML = "";
     list.forEach((o) => {
@@ -4597,12 +4592,6 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
         g.appendChild(b);
       });
       if (o.key === "roast") { g.insertAdjacentHTML("beforeend", PHOTO_CHIP); const sc = g.querySelector(".rp-go"); sc.onclick = () => beanScan("rpMsgOpts"); sc.classList.toggle("off", pickedOf("roast") !== "unsure"); }   // Scan the beans only while the roast is Unknown
-      if (o.key === "method") {   // like My equipment: the method in use, and a + for the others, folding back by itself
-        row.classList.add("mrow"); row.classList.toggle("mall", methodOpen);
-        if (!methodOpen) { const more = document.createElement("button"); more.type = "button"; more.className = "chip gear-more"; more.setAttribute("aria-label", "See all");
-          more.innerHTML = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`; more.onclick = () => { methodOpen = true; renderAllOpts(); methodWait(); }; g.appendChild(more); }
-        else g.querySelectorAll("button[id^='o-method-']").forEach((b) => { const on = b.onclick; b.onclick = () => { methodOpen = false; clearTimeout(methodT); on(); }; });
-      }
       row.append(lab, g); box.appendChild(row);
       if (o.key === "roast") { const m = document.createElement("div"); m.id = "rpMsgOpts"; m.className = "rp-msg"; row.appendChild(m); paintPhoto(m); }   // in the row, under its pills
     });
@@ -4655,7 +4644,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   function build(scroll) {
     const t = $("coffeeIn").value.trim();
     const fresh = t !== state.text;
-    if (fresh) { beanCard = null; state.bag = null; state.process = "auto"; state.roast = "auto"; state.roastPhoto = null; state.listProc = null; state.method = "best"; }   // new coffee: forget old answers
+    if (fresh) { beanCard = null; state.bag = null; state.process = "auto"; state.roast = "auto"; state.roastPhoto = null; state.listProc = null; }   // new coffee: forget old answers
     state.text = t; if (fresh) renderAllOpts(); saveState(); render(); markPicked();
     if (scroll !== false) goRecipe();
   }
@@ -5967,7 +5956,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     const g = gear.grinders.length ? (gear.grinders.includes(prefs.mill) && gear.grinders.length === 1 ? prefs.mill : pickOne(gear.grinders)) : prefs.mill;
     if (g && GRINDERS[g] && g !== prefs.mill) { prefs.mill = g; savePrefs(); $("millSel").value = g; syncMill(); }
     if (b !== brewerOf(state)) setBrewer(b);
-    if (b === "v60") state.method = "best";   // the method that suits the coffee it picks
+    if (b === "v60") state.method = pickOne(V60_METHODS);
     // only your own bags: one you have open (not in the freezer), with enough left for this brewer if one has
     const all = openBags(), out = all.filter((x) => !x.frozen), open = out.length ? out : all, mine = open.filter((x) => x.left == null || x.left >= (BREWERS[b].dose || 15));
     // after 2 pm (unless you turned that off): only a decaf. None in your bags: a decaf from today's list, to buy
@@ -6020,7 +6009,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   };
   function brewThis(r, jump = true) {
     if (jump) surprisePick = null;
-    Object.assign(state, listState(r)); state.roastPhoto = null; state.method = "best";   // a new coffee: the method that suits it
+    Object.assign(state, listState(r)); state.roastPhoto = null;
     $("coffeeIn").value = state.text; saveState(); renderAllOpts(); render();
     if (jump) landBrewing();
   }
