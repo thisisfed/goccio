@@ -51,7 +51,7 @@ if (/iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIn
 <meta name="apple-mobile-web-app-title" content="Bag to Cup">
 <link rel="manifest" href="/icons/site.webmanifest">
 <link rel="preload" href="/fonts/alt-medium.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/fonts/goccio.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/alt-regular.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M4 6h24L16 27z' fill='%230b0b0b'/%3E%3C/svg%3E">
 <script>
 /* Auto appearance follows daylight where you are (light from sunrise to sunset), not the browser's own dark setting.
@@ -1364,13 +1364,15 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 .wm-screen .wordmark, .wm-screen .wordmark * { color: #fff !important; }
 /* Goccio sits as far above the bottom of the photo as it is from the left edge (12px), at any size: no room kept for descenders */
 .wm-screen .wordmark { padding-bottom: 0 !important; margin-bottom: calc(12px - .0725em) !important; }
-/* Goccio: ALT Riviera Regular (only G, o, c and i are in the file), in the top bar and big on the photo. On the photo it sits
+/* the big Goccio: ALT Riviera Regular (only G, o, c and i are in the file). On the photo it sits
    centred across by its letters' own outline (not the line box) and at the foot, as far from the bottom as from the sides, by fitMark below */
-@font-face { font-family: "Goccio"; src: url("/fonts/goccio.woff2") format("woff2"); font-weight: 400; font-display: block; }
-.mark, .wordmark #wm { font-family: "Goccio", var(--font, system-ui), sans-serif !important; font-weight: 400 !important; letter-spacing: 0 !important; font-kerning: normal; }
+@font-face { font-family: "ALT Riviera Regular"; src: url("/fonts/alt-regular.woff2") format("woff2"); font-weight: 400; font-display: block; }
+.wordmark #wm { font-family: "ALT Riviera Regular", var(--sans), sans-serif !important; font-weight: 400 !important; letter-spacing: 0 !important; font-kerning: normal; }
 /* big on the photo the letters sit closer (the font's own kerning kept, the same small step taken out between every pair),
    so the word comes out a little bigger across the same width */
 .wordmark #wm { letter-spacing: -.025em !important; }
+/* Goccio in the top bar: the menu pills' type (ALT Riviera Medium, the small size), with no pill round it */
+.top .mark { font: 500 var(--fs-s)/1 var(--sans) !important; letter-spacing: 0 !important; color: var(--ink) !important; }
 .wm-screen { align-items: center !important; justify-content: center; position: relative; overflow: hidden; }
 .wm-screen .wordmark { width: auto !important; margin: 0 !important; padding: 0 !important; line-height: 1 !important; overflow: visible !important; }
 .wm-screen .wordmark #wm { padding: 0 !important; will-change: transform; }
@@ -1587,7 +1589,9 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 #bagList .item > .r{width:92px;flex:none}
 /* the example folds away under See an example; the brew clock counts up with the playhead */
 .g-ex{width:100%;max-width:520px}
-.g-ex > .glimpse{margin-top:10px;border-top:0;padding-top:0}
+.g-ex > .glimpse{margin-top:10px;border-top:0;padding-top:0;transition:opacity .3s ease}
+.g-ex > .glimpse.swap{opacity:0}
+.g-ex-h{margin:0;padding-top:12px;border-top:1px solid var(--line);font-weight:500;font-size:var(--fs-s)}   /* Example: a plain heading, nothing to open */
 .g-clock{font-variant-numeric:tabular-nums;min-width:2.6em;display:inline-block}
 @media print{
   .ps.dense .ps-pours{font-size:10pt} .ps.dense .ps-pours td{padding:1.4mm 0} .ps.dense .ps-title{font-size:44pt} .ps.dense .ps-nums b{font-size:32pt} .ps.dense .ps-nums > div{padding-bottom:4mm}
@@ -2137,7 +2141,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       <div class="hero-side">
       <p class="hero-kick">Updated every day<span class="hero-live" id="heroLive" hidden><i class="live-dot" aria-hidden="true"></i><span id="heroLiveT"></span></span></p>
       <p class="lede">New coffees from roasters in the UK, Europe and beyond, updated every day. Pick one or type your own, choose your brewer, and get the grind for your grinder, the temperature and every step. Or brew it your way: change any number or step, write how you pour, and share your recipe with a link. Brew full screen, log how it tasted, and it adjusts next time. <span class="yours">Brewed your way.</span></p>
-      <details class="clk xp g-ex"><summary>See an example</summary>
+      <div class="g-ex"><p class="g-ex-h">Example</p>
       <figure class="glimpse" aria-label="Example recipe: washed Ethiopia, light roast. 15 g coffee to 255 g water, 99°C, about 3:15. Pours at 0:00 to 51 g, 0:45 to 102 g, 1:10 to 153 g, 1:30 to 204 g, 1:50 to 255 g.">
         <figcaption><span class="g-name">Washed Ethiopia, light roast</span></figcaption>
         <div class="g-specs num" aria-hidden="true"><span><b>15</b><svg class="arr" viewBox="0 0 18 10" aria-hidden="true"><path d="M1 5h15M12 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><b>255</b> g</span><span><b>99</b>°C</span></div>
@@ -2145,7 +2149,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
           <li style="--t:0"><span>0:00</span><b>51</b></li><li style="--t:45"><span>0:45</span><b>102</b></li><li style="--t:70"><span>1:10</span><b>153</b></li><li style="--t:90"><span>1:30</span><b>204</b></li><li style="--t:110"><span>1:50</span><b>255</b></li><li class="end"><span>3:15</span><i>Done</i></li>
         </ol>
       </figure>
-      </details>
+      </div>
       </div>
       </div>
     </div>
@@ -5721,7 +5725,13 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     { text: "Natural Brazil, medium-dark roast", brewer: "press", dose: 30 },
     { text: "Washed Burundi, light roast", brewer: "v60", dose: 30 },
   ];
-  { const gx = document.querySelector(".g-ex"); if (gx) gx.addEventListener("toggle", () => { if (gx.open) renderExample(); }); }   // each opening shows another example
+  // always on show: a new example every few seconds, all of them in a shuffled order before any comes round again
+  let exQ = [], exLast = -1, exH = 0;
+  const exNext = () => { if (!exQ.length) { exQ = EXAMPLES.map((_, i) => i).sort(() => Math.random() - 0.5); if (exQ[0] === exLast && exQ.length > 1) exQ.push(exQ.shift()); }
+    return (exLast = exQ.shift()); };
+  setInterval(() => { const fig = document.querySelector(".glimpse"); if (!fig || document.hidden) return;
+    const r = fig.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;   // only while you can see it
+    fig.classList.add("swap"); setTimeout(() => { try { renderExample(); } catch (e) {} fig.classList.remove("swap"); }, 300); }, 7000);
   // the labels under the example's bar, on one line: each at its step's time. One that would touch the label before it
   // moves right a little (up to 16px) if that's enough; otherwise it's left out (its segment still shows). Done holds the right end.
   function layGlimpse() {
@@ -5740,10 +5750,10 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     }
     ul.style.height = (rowH + 6) + "px";
   }
-  addEventListener("resize", () => { if (document.querySelector(".g-ex[open]")) layGlimpse(); });
+  addEventListener("resize", () => { if (document.querySelector(".g-ex")) layGlimpse(); });
   function renderExample() {
     const fig = document.querySelector(".glimpse"); if (!fig) return;
-    const ex = EXAMPLES[Math.floor(Math.random() * EXAMPLES.length)];
+    const ex = EXAMPLES[exNext()];
     let r; try { r = engine({ ...DEFAULTS, doses: {}, text: ex.text, brewer: ex.brewer, dose: ex.dose, method: ex.method || "best", goal: "light", roast: "auto", process: "auto", bag: null }, { noPrefs: true }); } catch (e) { return; }
     const brewer = ex.brewer === "v60" ? (METHOD_REF[r.m] ? "V60, " + METHOD_REF[r.m] : "V60") : BREWERS[ex.brewer].name;
     const P = r.pours || [], end = r.hi || r.lo || (P.length ? P[P.length - 1].t + 60 : 180), T = end + 20;   // the same scale as brew mode's bar
@@ -5763,6 +5773,8 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       P.map((p) => `<div class="seg${p.act ? " act" : ""}" style="left:${(p.t / T) * 100}%;width:${Math.max(1.2, ((p.dur || 6) / T) * 100)}%"></div>`).join("");
     const w0 = bar.querySelector(".win"); if (w0) w0.classList.add("lit");   // a still picture of the whole brew: nothing moves
     layGlimpse();
+    // the page below never jumps as the examples change: the box keeps the height of the tallest one shown so far
+    fig.style.minHeight = ""; exH = Math.max(exH, fig.offsetHeight); fig.style.minHeight = exH + "px";
     fig.setAttribute("aria-label", `Example recipe: ${ex.text} on the ${brewer}. ${r.clicks} C40 clicks, ${r.dose} g coffee to ${r.water} g water${r.temp != null ? ", " + r.temp + "°C" : ""}, done by about ${mmss(end)}.`);
   }
 
@@ -6733,7 +6745,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       const gap = (sr.width - (R - L)) / 2;   // the room left and right of the letters: the same room under them, at the foot of the photo
       w.style.transform = `translate(${(sr.left + sr.width / 2 - (L + R) / 2).toFixed(2)}px, ${(sr.bottom - gap - B).toFixed(2)}px)`; };
     fit(); addEventListener("resize", fit);
-    if (document.fonts) { document.fonts.load('100px "Goccio"').then(fit).catch(() => {}); document.fonts.ready.then(fit); }
+    if (document.fonts) { document.fonts.load('100px "ALT Riviera Regular"').then(fit).catch(() => {}); document.fonts.ready.then(fit); }
   })();
   // A Bag to a Cup: ABC first, then the letters in between open out. One animation for the big wordmark and the header's name,
   // the same timing and curve, each to its exact width. The wordmark plays once the page shows and each time you scroll back
