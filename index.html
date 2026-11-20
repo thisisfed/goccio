@@ -1620,6 +1620,18 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 .glimpse figcaption button.g-tag[aria-expanded="true"]::after{transform:rotate(180deg)}
 /* on a phone Coffees' top rule sits as close under the example as the example is under its own rule (13px), open or folded */
 #coffee{margin-bottom:-56px}
+/* phones: Scan the bag waits in the top bar's empty left until the name Goccio scrolls in and takes its place */
+.top-in{position:relative}
+.top-scan{display:none}
+@media (pointer: coarse){
+  .top-scan{position:absolute;left:22px;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;gap:6px;height:var(--pill-h);padding:0 12px;
+    border:0;border-radius:var(--r);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);white-space:nowrap;cursor:pointer;
+    transition:opacity .25s ease, transform .25s ease}
+  .top-scan svg{width:16px;height:16px;flex:none}
+  .mark-on .top-scan{opacity:0;transform:translateY(calc(-50% - 4px));pointer-events:none}
+  @media (max-width: 400px){ .top-scan{left:12px} }
+  @media (max-width: 370px){ .top-scan .ts-t, .top-scan .beta{display:none} .top-scan{width:var(--pill-h);padding:0;justify-content:center;border-radius:50%} }
+}
 /* For you's countdown: the pill squeezes into a circle on a spring, the words blur away, each second drops in, and an
    accent ring round it empties with the time */
 #shelfX .chip{transition:width .6s cubic-bezier(.34,1.56,.64,1), border-radius .6s cubic-bezier(.34,1.56,.64,1), padding .6s cubic-bezier(.34,1.56,.64,1)}
@@ -2183,6 +2195,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
 <header class="top">
   <div class="top-in">
     <div class="mark" translate="no">Goccio</div>
+    <button type="button" class="top-scan" id="topScan"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span class="ts-t">Scan the bag</span><span class="beta">Beta</span></button>
     <nav class="nav" aria-label="Sections">
       <div class="sec-inline"><button type="button" class="sec-p" data-jump="shelves" data-sec="shelves">Coffees</button><button type="button" class="sec-p" data-jump="bags" data-sec="bags"><span class="sl">My bags</span><span class="ss">Bags</span></button><button type="button" class="sec-p" data-jump="gear" data-sec="gear"><span class="sl">My equipment</span><span class="ss">Gear</span></button><button type="button" class="sec-p" data-jump="coffee" data-sec="coffee"><span class="sl">What’s brewing?</span><span class="ss">Brewing</span></button><button type="button" class="sec-p" data-jump="recipe" data-sec="recipe">Recipe</button><button type="button" class="sec-p" data-jump="journal" data-sec="journal">Journal</button></div>
       <button type="button" class="sec-dd" id="secDd" aria-expanded="false" aria-controls="secList"><span id="secCur">Coffees</span></button>
@@ -6617,6 +6630,8 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   const pickPhoto = () => { const i = $("scanIn"); i.value = ""; i.click(); };
   const startScan = () => (navigator.mediaDevices && navigator.mediaDevices.getUserMedia ? liveScan() : pickPhoto());
   $("scanBtn").onclick = () => { closeReview(); startScan(); };
+  // the same scan from the top bar: What's brewing comes into view under the camera, so the result is there when it closes
+  if ($("topScan")) $("topScan").onclick = () => { jumpTo($("coffee")); closeReview(); startScan(); };
   // a computer has no camera to scan with: the scan pills show a QR code that opens this page, this recipe, on the phone
   const DESK = matchMedia("(hover: hover) and (pointer: fine)").matches;
   function showQR() {
