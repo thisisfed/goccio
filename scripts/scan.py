@@ -23,6 +23,20 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 ROASTERS = ROOT / "data" / "roasters.json"
+
+
+def load_roasters():
+    """data/roasters.json, forgiving the two slips a hand edit on GitHub makes: a comma after the last roaster,
+    and a roaster added twice (the first one stays). A broken file would otherwise stop the whole daily scan."""
+    text = re.sub(r",\s*([\]}])", r"\1", ROASTERS.read_text())
+    seen, out = set(), []
+    for r in json.loads(text):
+        key = urllib.parse.urlparse(r.get("shop", "")).netloc.lower().removeprefix("www.") or r.get("name")
+        if key in seen:
+            print(f"roasters.json: {r.get('name')} is listed twice; the first one is kept")
+            continue
+        seen.add(key); out.append(r)
+    return out
 OUT = ROOT / "data" / "releases.json"
 SEEN = ROOT / "data" / "seen.json"   # when each coffee page was first seen, including ones the list leaves out as duplicates
 UA = "V60BrewCard/1.0 (+https://v60.thisisfed.xyz; daily filter-coffee list)"
@@ -55,6 +69,25 @@ COUNTRY_ALIASES = {
     "Meksyk": "Mexico", "Mexiko": "Mexico", "Indonezja": "Indonesia", "Indonésie": "Indonesia", "Brazílie": "Brazil",
     "Brazilië": "Brazil", "Ruandzie": "Rwanda", "Rwandy": "Rwanda", "Tanzánie": "Tanzania", "Tanzania": "Tanzania",
     "Perù": "Peru", "Honduras": "Honduras", "Jemen": "Yemen", "Kongo": "DR Congo", "Kenija": "Kenya", "Ugandzie": "Uganda",
+}
+
+# well-known growing regions that belong to one country only, for pages that name the region but never the country
+# (Square Mile's Don Cayito: "from Don Cayito in Dota, Tarrazú"). Names shared with other places (Antigua, Java, Kivu) stay out
+# only a last resort: a country named anywhere on the page wins (a Guji variety grown in Nicaragua stays Nicaragua)
+REGION_COUNTRY = {
+    "Tarrazú": "Costa Rica", "Tarrazu": "Costa Rica", "West Valley": "Costa Rica", "Valle Occidental": "Costa Rica", "Tres Ríos": "Costa Rica", "Brunca": "Costa Rica",
+    "Huila": "Colombia", "Nariño": "Colombia", "Narino": "Colombia", "Tolima": "Colombia", "Quindío": "Colombia", "Quindio": "Colombia",
+    "Risaralda": "Colombia", "Antioquia": "Colombia",
+    "Yirgacheffe": "Ethiopia", "Yirgachefe": "Ethiopia", "Sidama": "Ethiopia", "Sidamo": "Ethiopia", "Guji": "Ethiopia", "Gedeo": "Ethiopia",
+    "Bench Maji": "Ethiopia", "West Arsi": "Ethiopia", "Jimma": "Ethiopia", "Harrar": "Ethiopia",
+    "Nyeri": "Kenya", "Kirinyaga": "Kenya", "Kiambu": "Kenya", "Murang'a": "Kenya", "Muranga": "Kenya",
+    "Huehuetenango": "Guatemala", "Acatenango": "Guatemala", "Atitlán": "Guatemala", "Atitlan": "Guatemala", "Fraijanes": "Guatemala",
+    "Boquete": "Panama", "Chiriquí": "Panama", "Chiriqui": "Panama",
+    "Cajamarca": "Peru", "Marcala": "Honduras", "Ocotepeque": "Honduras", "Comayagua": "Honduras",
+    "Jinotega": "Nicaragua", "Matagalpa": "Nicaragua", "Nueva Segovia": "Nicaragua", "Chiapas": "Mexico", "Oaxaca": "Mexico", "Veracruz": "Mexico",
+    "Chalatenango": "El Salvador", "Apaneca": "El Salvador", "Yunnan": "China", "Sumatra": "Indonesia", "Aceh": "Indonesia", "Sulawesi": "Indonesia",
+    "Toraja": "Indonesia", "Kayanza": "Burundi", "Ngozi": "Burundi", "Nyamasheke": "Rwanda", "Gakenke": "Rwanda", "Bugisu": "Uganda",
+    "Mount Elgon": "Uganda", "Rwenzori": "Uganda", "Kilimanjaro": "Tanzania", "Mbeya": "Tanzania", "Chikmagalur": "India", "Karnataka": "India",
 }
 SYMBOL = {"GBP": "£", "EUR": "€", "USD": "$", "CAD": "CA$", "AUD": "A$", "NZD": "NZ$", "JPY": "¥", "DKK": " kr", "SEK": " kr", "NOK": " kr",
           "PLN": " zł", "CZK": " Kč", "CHF": "CHF ", "BRL": "R$", "COP": "COL$", "PEN": "S/", "ARS": "AR$", "CLP": "CLP$", "MXN": "MX$"}
@@ -1094,7 +1127,11 @@ def find_origin(title, blob="", body=""):
     m = ORIGIN_LABEL.search(body or "")
     if m and direct(m.group(1)):
         return direct(m.group(1))
-    return direct(blob) or (count_origin(body) if body else None)
+    o = direct(blob) or (count_origin(body) if body else None)
+    if o:
+        return o
+    r = first(list(REGION_COUNTRY), " ".join([title, blob or "", body or ""]))
+    return REGION_COUNTRY[r] if r else None
 
 
 def find_process(text):
@@ -2065,7 +2102,7 @@ def main():
             print("skipped:", line)
         return
 
-    roasters = json.loads(ROASTERS.read_text())
+    roasters = load_roasters()
     only = None
     if "--only" in args:   # rescan just these roasters (comma-separated names), keep everyone else as is
         only = {n.strip().lower() for n in args[args.index("--only") + 1].split(",") if n.strip()}
@@ -2141,7 +2178,7 @@ def main():
     # keep last week's coffees from roasters that failed this time (temporary outages),
     # but never from a roaster that has left data/roasters.json (one that asked to be removed goes at once)
     urls = {x["url"] for x in found}
-    listed = {r["name"] for r in json.loads(ROASTERS.read_text())}
+    listed = {r["name"] for r in load_roasters()}
     for u, x in old.items():
         if x["roaster"] not in scanned_ok and u not in urls and x["roaster"] in listed:
             found.append(x)
