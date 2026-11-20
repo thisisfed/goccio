@@ -3026,6 +3026,10 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
      - Moka pot: Hoffmann's moka technique (boiled water to just under the valve, basket full and level, no tamp,
        lid open, off the heat as it turns pale). Finer than filter, far coarser than espresso → 15. Our estimate. */
   const BREWERS = {
+    // cupping, after the SCA protocol: 8.25 g to 150 ml (1:18.18) at 93°C, the same grind for every coffee, broken at 4:00,
+    // skimmed, tasted from a spoon as it cools. A way to taste and compare coffees, not a cup to drink. The recipe is for one cup:
+    // each coffee gets its own (a bigger bowl takes 11 g to 200 ml, the same ratio)
+    cupping: { name: "Cupping", kind: "imm", cup: true, doses: [[8.25, "150 ml cup"], [11, "200 ml cup"]], dose: 8.25, base: 27, dA: {}, range: [22, 32], fixed: 18.18, dT: 0 },
     v60:    { name: "V60", kind: "pour", doses: [[12, "12 g"], [15, "15 g"], [18, "18 g"], [20, "20 g"], [25, "25 g"], [30, "30 g"]], dose: 15 },
     kalita: { name: "Kalita Wave", kind: "pour", doses: [[12, "12 g"], [15, "15 g"], [18, "18 g"], [20, "20 g"], [25, "25 g"], [30, "30 g"]], dose: 15,
               base: 24, dA: { 12: -1, 15: 0, 18: 1, 20: 1, 25: 2, 30: 3 }, range: [18, 36], ratio: { light: 17, balanced: 16, syrupy: 15, tea: 20 }, dT: 1, ey: [20, 22] },
@@ -3047,10 +3051,6 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
               base: 18, dA: { 11: 0, 13: 0, 15: 1 }, range: [12, 30], ratio: { light: 18, balanced: 16.5, syrupy: 15, tea: 19.5 }, dT: 4, cap: 250, ey: [19.5, 21.5] },
     press:  { name: "French Press", kind: "imm", doses: [[15, "15 g"], [30, "30 g"], [60, "60 g"]], dose: 30,
               base: 28, dA: { 15: -1, 30: 0, 60: 1 }, range: [20, 45], ratio: { light: 17, balanced: 16, syrupy: 15 }, dT: 2, ey: [19, 21] },
-    // cupping, after the SCA protocol: 8.25 g to 150 ml (1:18.18) at 93°C, the same grind for every coffee, broken at 4:00,
-    // skimmed, tasted from a spoon as it cools. A way to taste and compare coffees, not a cup to drink. The recipe is for one cup:
-    // each coffee gets its own (a bigger bowl takes 11 g to 200 ml, the same ratio)
-    cupping: { name: "Cupping", kind: "imm", cup: true, doses: [[8.25, "150 ml cup"], [11, "200 ml cup"]], dose: 8.25, base: 27, dA: {}, range: [22, 32], fixed: 18.18, dT: 0 },
     cold:   { name: "Cold brew", kind: "steps", doses: [[50, "50 g"], [100, "100 g"]], dose: 100, base: 36, dA: {}, range: [28, 45], fixed: 8 },
     // espresso: dose in, weight out, shot time. "ratio" here is out ÷ in (1:2 = 36 g from 18 g)
     espresso: { name: "Espresso", kind: "shot", shot: true, doses: [[14, "14 g"], [16, "16 g"], [18, "18 g"], [20, "20 g"]], dose: 18,
