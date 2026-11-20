@@ -1571,7 +1571,14 @@ def tidy_name(name, roaster):
     name = re.sub(r"^\W*\d{1,2}/\d{1,2}\s+\d{1,2}:\d{2}\W*", "", name)   # Philocoffea: "11/16 10:00~" release stamp
     name = re.sub(r"^\W*\d{3}\s+(?=[A-Z])", "", name)   # and its lot number: "459 China Yunnan …"
     name = re.sub(r"^\s*(?:\d{2,4}(?:/\d{2,4})?\s+)?new (?:season|crop)\b\s*[-–—:|]?\s*", "", name, flags=re.I)   # "25/26 New Season Ethiopia …"
-    name = re.sub(r"\s*\[[^\]]{2,40}\]\s*$", "", name)   # Mellow: "… [Syrina]", the variety in square brackets is a tag
+    # a tag in square brackets at the end: a variety or lot number goes (Mellow: "… [Syrina]"); anything else is part of
+    # the name and keeps its words without the brackets (People Possession: "Industrial Supply Series [RED]" -> "… Red")
+    def _tail(m):
+        t = m.group(1).strip()
+        if any(v.lower() in t.lower() for v in VARIETIES if len(v) > 3) or re.search(r"\d", t):
+            return ""
+        return " " + (t.title() if t.isupper() else t)
+    name = re.sub(r"\s*\[([^\]]{2,40})\]\s*$", _tail, name)
     if re.search(r"\s[•·]\s", name):
         # "Honduras Finca El Puente • Geisha • Anaerobic Natural" -> "Honduras Finca El Puente, Geisha" (process shows as a tag)
         bits = [b.strip() for b in re.split(r"\s[•·]\s", name) if b.strip()]
