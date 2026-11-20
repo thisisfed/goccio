@@ -2204,7 +2204,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       <div class="col" id="cupCol"><h3 id="cupH">Likely in the cup</h3><div class="notes-list" id="cupNotes"></div><p id="cupNote"></p></div>
     </div>
     <details class="clk xp" id="whyBox"><summary>Why this recipe <span class="muted" id="whyHint"></span></summary><ul id="why"></ul></details>
-    <details class="clk xp" id="expBox"><summary>What to expect</summary><ul id="expect"></ul></details>
+    <details class="clk xp" id="expBox" open><summary>What to expect</summary><ul id="expect"></ul></details>
     <details class="clk xp" id="clkHow"><summary>How the C40 clicks were set <span class="muted" id="clkSumm" hidden></span></summary><div class="clk-body" id="clkBody"></div></details>
     <details class="clk xp"><summary>Dial it in: change one thing per brew</summary><ul id="dial"></ul></details>
     <div class="share">
@@ -3103,6 +3103,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     if (tea) temp = teaTemp(c);
     const baseTemp = clamp(temp, 82, 100);
     temp = clamp(temp + (pc.temp || 0), 82, 100);
+    if (!tea) temp = vlFloor(c, temp);
 
     // pours: t = start (s), to = scale reading, dur = suggested pour length (s)
     const P = [];
@@ -3181,6 +3182,9 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       dose, water, ratio, ratioClamped: Math.abs(ratioPre - ratio) > 0.05, clicks, temp, yieldG: Math.round(bev), bev, pours: P, lo, hi, tds, ey, body };
   }
 
+  // very light roasts (not ferments or decaf) never go below 96°C: dense Nordic roasts come out sour and thin under it.
+  // Applied last, after every method's table and your journal's nudges, so the recipe never needs the warning
+  const vlFloor = (c, t) => t != null && c.roast === "vlight" && !["anaerobic", "cofer", "decaf"].includes(c.process) ? Math.max(t, 96) : t;
   // the same roast × process temperature rules as the V60, from each brewer's own starting point
   function tempFor(c, agit, add) {
     let temp = ROAST[c.roast].T + PROCESS[c.process].dT + add;
@@ -3188,8 +3192,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     if (agit <= 1) temp = Math.min(temp, 95);
     if (T_CAP[c.process]) temp = Math.min(temp, T_CAP[c.process]);
     if (T_CAP_ROAST[c.roast]) temp = Math.min(temp, T_CAP_ROAST[c.roast]);
-    if (c.roast === "vlight" && agit >= 2) temp = Math.max(temp, 96);
-    return clamp(temp, 82, 100);
+    return clamp(vlFloor(c, temp), 82, 100);
   }
   // steps: a pour has a scale target (x, to); an action (act) is something to do at a time: swirl, press, skim
   function engineOther(st, c, agit, b, key, learn, pc, opts) {
@@ -3226,7 +3229,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     const clickParts = { base: base0, dose: doseAdj, roast: roastAdj, process: procAdj, tea: teaAdj, learn: pc.clicks || 0, zero, clamped: raw !== baseClicks, range: B.range };
 
     let temp = null, baseTemp = null;
-    if (B.dT != null) { baseTemp = tea ? teaTemp(c) : wendel ? clamp(Math.min(ROAST[c.roast].T + 2 + PROCESS[c.process].dT, T_CAP[c.process] || 99, T_CAP_ROAST[c.roast] || 99), 82, 98) : clamp(tempFor(c, agit, B.dT), 82, 100); temp = clamp(baseTemp + (pc.temp || 0), 82, 100); }
+    if (B.dT != null) { baseTemp = tea ? teaTemp(c) : wendel ? clamp(Math.min(ROAST[c.roast].T + 2 + PROCESS[c.process].dT, T_CAP[c.process] || 99, T_CAP_ROAST[c.roast] || 99), 82, 98) : clamp(tempFor(c, agit, B.dT), 82, 100); temp = clamp(baseTemp + (pc.temp || 0), 82, 100); if (!tea && !wendel) temp = vlFloor(c, temp); }
     if (B.shot) {   // the machine's brew temperature: hotter for light roasts, cooler for dark; ferments and decaf a touch cooler
       baseTemp = { vlight: 96, light: 94, medium: 93, mdark: 91, dark: 90, unsure: 93 }[c.roast] - (["anaerobic", "cofer", "decaf"].includes(c.process) ? 1 : 0);
       temp = clamp(baseTemp + (pc.temp || 0), 85, 98);
@@ -4122,7 +4125,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     if (dark && busy) w.push(`${cap1(ROAST[c.roast].label)} roast with ${METHOD_REF[r.m]}: high agitation turns it bitter fast. Pour gently with no swirl, or use Kasuya 4:6.`);
     if (dark && r.temp >= (c.roast === "dark" ? 89 : 92)) w.push(`${cap1(ROAST[c.roast].label)} roast at ${r.temp}°C: expect bitterness. ${c.roast === "dark" ? 86 : 88}°C is safer.`);
     if (c.process === "decaf" && r.temp >= 94) w.push(`Decaf at ${r.temp}°C extracts fast and can go papery and bitter. Try 90°C.`);
-    if (c.roast === "vlight" && !ferment && r.temp != null && r.temp <= 93) w.push(`Very light roast at ${r.temp}°C: likely sour and thin. These want 96°C or hotter.`);
+    if (c.roast === "vlight" && !ferment && c.process !== "decaf" && r.temp != null && r.temp <= 93) w.push(`Very light roast at ${r.temp}°C: likely sour and thin. These want 96°C or hotter.`);
     return w;
   }
 
