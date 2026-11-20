@@ -43,7 +43,7 @@ def load_roasters():
     return out
 OUT = ROOT / "data" / "releases.json"
 SEEN = ROOT / "data" / "seen.json"   # when each coffee page was first seen, including ones the list leaves out as duplicates
-UA = "V60BrewCard/1.0 (+https://www.goccio.co.uk; once-a-day coffee list, follows robots.txt)"
+UA = "Goccio/1.0 (+https://www.goccio.co.uk; once-a-day coffee list, follows robots.txt)"
 NEW_DAYS = 21
 MAX_ITEMS = 12000   # a safety cap only; the list is ~5,000 coffees
 PER_ROASTER = 100   # was 8, which hid most of a big roaster's range
@@ -497,7 +497,7 @@ def strip_html(s):
 # at most once every HOST_GAP seconds (or its Crawl-delay, if longer); the whole scan at most once every ALL_GAP seconds;
 # and a shop that answers 429 (too many requests) or 503 is left alone for the rest of the run
 HOST_GAP, ALL_GAP = 2.0, 0.34
-UA_TOKEN = "V60BrewCard"
+UA_TOKEN = "Goccio"
 _pace = threading.Lock()
 _host_next, _all_next, _robots, _resting = {}, [0.0], {}, set()
 
