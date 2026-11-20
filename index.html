@@ -1363,7 +1363,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 /* Goccio sits as far above the bottom of the photo as it is from the left edge (12px), at any size: no room kept for descenders */
 .wm-screen .wordmark { padding-bottom: 0 !important; margin-bottom: calc(12px - .0725em) !important; }
 /* Goccio: ALT Riviera Regular (only G, o, c and i are in the file), in the top bar and big on the photo. On the photo it sits
-   exactly in the middle: its letters' own outline (not the line box) centred both ways, by fitMark below */
+   centred across by its letters' own outline (not the line box) and at the foot, as far from the bottom as from the sides, by fitMark below */
 @font-face { font-family: "Goccio"; src: url("/fonts/goccio.woff2") format("woff2"); font-weight: 400; font-display: block; }
 .mark, .wordmark #wm { font-family: "Goccio", var(--font, system-ui), sans-serif !important; font-weight: 400 !important; letter-spacing: 0 !important; }
 .wm-screen { align-items: center !important; justify-content: center; position: relative; overflow: hidden; }
@@ -6675,8 +6675,8 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     new IntersectionObserver((es) => document.body.classList.toggle("mark-on", !es[0].isIntersecting), { rootMargin: "-48px 0px 0px 0px" }).observe(w);
   })();
   (function fitMark() {
-    // Goccio fills the width between the page margins with its letters' own ink, then is moved so that ink sits exactly
-    // in the middle of the photo, across and down (the font's spacing and the line box don't count)
+    // Goccio fills the width between the page margins with its letters' own ink, centred across the photo by that ink and
+    // sitting at its foot, as far above the bottom as from either side (the font's spacing and the line box don't count)
     const w = $("wm"), p = w && w.parentElement, scr = p && p.parentElement; if (!scr) return;
     const cv = document.createElement("canvas").getContext("2d");
     const fit = () => {
@@ -6689,7 +6689,8 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       const o = pr.getBoundingClientRect(); pr.remove();
       const L = o.left - m.actualBoundingBoxLeft * k, R = o.left + m.actualBoundingBoxRight * k;
       const T = o.bottom - m.actualBoundingBoxAscent * k, B = o.bottom + m.actualBoundingBoxDescent * k, sr = scr.getBoundingClientRect();
-      w.style.transform = `translate(${(sr.left + sr.width / 2 - (L + R) / 2).toFixed(2)}px, ${(sr.top + sr.height / 2 - (T + B) / 2).toFixed(2)}px)`; };
+      const gap = (sr.width - (R - L)) / 2;   // the room left and right of the letters: the same room under them, at the foot of the photo
+      w.style.transform = `translate(${(sr.left + sr.width / 2 - (L + R) / 2).toFixed(2)}px, ${(sr.bottom - gap - B).toFixed(2)}px)`; };
     fit(); addEventListener("resize", fit);
     if (document.fonts) { document.fonts.load('100px "Goccio"').then(fit).catch(() => {}); document.fonts.ready.then(fit); }
   })();
