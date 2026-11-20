@@ -149,9 +149,9 @@ def probe(c):
 
 
 def gh(method, path, body=None):
-    """GitHub's REST API with the workflow's own token (issues on this private repo only)."""
+    """GitHub's REST API on the private requests repo (REQUESTS_REPO), where the forms file their requests as issues."""
     import urllib.request
-    req = urllib.request.Request(f"https://api.github.com/repos/{os.environ['GITHUB_REPOSITORY']}{path}", method=method,
+    req = urllib.request.Request(f"https://api.github.com/repos/{os.environ.get('REQUESTS_REPO') or os.environ['GITHUB_REPOSITORY']}{path}", method=method,
                                  data=json.dumps(body).encode() if body is not None else None,
                                  headers={"Authorization": f"Bearer {os.environ['GH_TOKEN']}", "Accept": "application/vnd.github+json",
                                           "User-Agent": "goccio-listings", "Content-Type": "application/json"})
