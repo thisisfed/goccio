@@ -2060,6 +2060,7 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
 /* See all: a + in a square pill, the same height as the pills beside it */
 .chip.gear-more{width:var(--pill-h)!important;min-width:var(--pill-h);padding:0!important;display:inline-flex!important;align-items:center;justify-content:center;flex:none}
 .chip.gear-more svg{width:10px;height:10px;display:block}
+.opt.mrow:not(.mall) .chips button[id^="o-method-"][aria-pressed="false"]{display:none}   /* Method: the one in use, + for the rest */
 /* Extras on a phone: pills like My equipment, not a dropdown. What's ticked and the +; all of them while nothing is ticked or after the + */
 .shelf-tools.compact .opt.xrow > .chips{display:flex!important;flex-wrap:wrap}
 .shelf-tools.compact .opt.xrow:not(.xnone) > .shelf-dd, .shelf-tools.compact .opt.xrow.xnone.open > .shelf-dd{display:none!important}
@@ -3030,7 +3031,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
               base: 24, dA: { 12: -1, 15: 0, 18: 1, 20: 1, 25: 2, 30: 3 }, range: [18, 36], ratio: { light: 17, balanced: 16, syrupy: 15, tea: 20 }, dT: 1, ey: [20, 22] },
     april:  { name: "April Brewer", kind: "pour", doses: [[12, "12 g"], [15, "15 g"], [18, "18 g"], [20, "20 g"], [25, "25 g"]], dose: 12,
               base: 23, dA: { 12: 0, 15: 1, 18: 1, 20: 2, 25: 3 }, range: [17, 34], ratio: { light: 17, balanced: 16.7, syrupy: 15.5 }, dT: -1, ey: [19.5, 21.5] },
-    orea:   { name: "Orea", kind: "pour", doses: [[12, "12 g"], [15, "15 g"], [17, "17 g"], [20, "20 g"], [25, "25 g"]], dose: 17,
+    orea:   { name: "Orea V4", kind: "pour", doses: [[12, "12 g"], [15, "15 g"], [17, "17 g"], [20, "20 g"], [25, "25 g"]], dose: 17,
               base: 23, dA: { 12: -1, 15: 0, 17: 0, 20: 1, 25: 2 }, range: [16, 34], ratio: { light: 16.5, balanced: 15.9, syrupy: 15 }, dT: 0, ey: [19.5, 21.5] },
     melitta: { name: "Melitta", kind: "pour", doses: [[12, "12 g"], [15, "15 g"], [18, "18 g"], [20, "20 g"], [25, "25 g"], [30, "30 g"]], dose: 15,
               base: 23, dA: { 12: -1, 15: 0, 18: 1, 20: 1, 25: 2, 30: 3 }, range: [17, 34], ratio: { light: 17, balanced: 16, syrupy: 15, tea: 20 }, dT: 2, ey: [19.5, 21.5] },
@@ -4085,7 +4086,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   // ---------- how the clicks were set ----------
   const signed = (n) => (n > 0 ? "+" : n < 0 ? "−" : "±") + Math.abs(n);
   const METHOD_REF = { hoffmann: "Hoffmann 1-Cup", hoffmannU: "Hoffmann Ultimate", fourSix: "Kasuya 4:6", ten: "Kasuya 10-Pour", rao: "Rao bloom & spin", onyx: "Onyx", cafec: "CAFEC Osmotic Flow", winton: "Winton Five-Pour", hedrick: "Hedrick double bloom", tea: "Tea-like", wendelboe: "Wendelboe AeroPress",
-    kalita: "Kalita Wave", april: "April Brewer", orea: "Orea", mocca: "Moccamaster", melitta: "Melitta", chemex: "Chemex", origami: "Origami", switch: "Hario Switch", clever: "Clever Dripper", aero: "AeroPress", press: "French Press", cold: "Cold brew", moka: "Bialetti Moka Express", espresso: "Espresso" };
+    kalita: "Kalita Wave", april: "April Brewer", orea: "Orea V4", mocca: "Moccamaster", melitta: "Melitta", chemex: "Chemex", origami: "Origami", switch: "Hario Switch", clever: "Clever Dripper", aero: "AeroPress", press: "French Press", cold: "Cold brew", moka: "Bialetti Moka Express", espresso: "Espresso" };
   function renderClicks(r) {
     const p = r.clickParts, B = BASE[r.m], c = r.c;
     const rows = [[`Base: ${METHOD_REF[r.m]} at ${r.brewer === "v60" ? 15 : BREWERS[r.brewer].kind === "steps" ? doseName(r) : BREWERS[r.brewer].dose + " g"}`, String(p.base)]];
@@ -4576,6 +4577,10 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     if (state.goal === "tea" && !teaAvail(brewerOf(state))) { state.goal = "light"; saveState(); renderAllOpts(); } ["process", "roast"].forEach((k) => { const v = pickedOf(k);
     document.querySelectorAll(`[id^="o-${k}-"]`).forEach((b) => { if (!b.classList.contains("rp-go")) b.setAttribute("aria-pressed", String(b.id === `o-${k}-${v}`)); }); });
     const rr = $("lab-roast"), sc = rr && rr.parentNode.querySelector(".rp-go"); if (sc) sc.classList.toggle("off", pickedOf("roast") !== "unsure"); }
+  let methodOpen = false, methodT = 0;
+  const methodWait = () => { clearTimeout(methodT); methodT = setTimeout(() => { if (methodOpen) { methodOpen = false; renderAllOpts(); } }, 2000 + 9 * 150); };
+  { const fold = () => { if (methodOpen) { methodOpen = false; clearTimeout(methodT); renderAllOpts(); } };
+    addEventListener("touchmove", fold, { passive: true }); addEventListener("wheel", fold, { passive: true }); }
   function renderOpts(boxId, list) {
     const box = $(boxId); box.innerHTML = "";
     list.forEach((o) => {
@@ -4592,6 +4597,12 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
         g.appendChild(b);
       });
       if (o.key === "roast") { g.insertAdjacentHTML("beforeend", PHOTO_CHIP); const sc = g.querySelector(".rp-go"); sc.onclick = () => beanScan("rpMsgOpts"); sc.classList.toggle("off", pickedOf("roast") !== "unsure"); }   // Scan the beans only while the roast is Unknown
+      if (o.key === "method") {   // like My equipment: the method in use, and a + for the others, folding back by itself
+        row.classList.add("mrow"); row.classList.toggle("mall", methodOpen);
+        if (!methodOpen) { const more = document.createElement("button"); more.type = "button"; more.className = "chip gear-more"; more.setAttribute("aria-label", "See all");
+          more.innerHTML = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`; more.onclick = () => { methodOpen = true; renderAllOpts(); methodWait(); }; g.appendChild(more); }
+        else g.querySelectorAll("button[id^='o-method-']").forEach((b) => { const on = b.onclick; b.onclick = () => { methodOpen = false; clearTimeout(methodT); on(); }; });
+      }
       row.append(lab, g); box.appendChild(row);
       if (o.key === "roast") { const m = document.createElement("div"); m.id = "rpMsgOpts"; m.className = "rp-msg"; row.appendChild(m); paintPhoto(m); }   // in the row, under its pills
     });
@@ -4644,7 +4655,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   function build(scroll) {
     const t = $("coffeeIn").value.trim();
     const fresh = t !== state.text;
-    if (fresh) { beanCard = null; state.bag = null; state.process = "auto"; state.roast = "auto"; state.roastPhoto = null; state.listProc = null; }   // new coffee: forget old answers
+    if (fresh) { beanCard = null; state.bag = null; state.process = "auto"; state.roast = "auto"; state.roastPhoto = null; state.listProc = null; state.method = "best"; }   // new coffee: forget old answers
     state.text = t; if (fresh) renderAllOpts(); saveState(); render(); markPicked();
     if (scroll !== false) goRecipe();
   }
@@ -5956,7 +5967,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     const g = gear.grinders.length ? (gear.grinders.includes(prefs.mill) && gear.grinders.length === 1 ? prefs.mill : pickOne(gear.grinders)) : prefs.mill;
     if (g && GRINDERS[g] && g !== prefs.mill) { prefs.mill = g; savePrefs(); $("millSel").value = g; syncMill(); }
     if (b !== brewerOf(state)) setBrewer(b);
-    if (b === "v60") state.method = pickOne(V60_METHODS);
+    if (b === "v60") state.method = "best";   // the method that suits the coffee it picks
     // only your own bags: one you have open (not in the freezer), with enough left for this brewer if one has
     const all = openBags(), out = all.filter((x) => !x.frozen), open = out.length ? out : all, mine = open.filter((x) => x.left == null || x.left >= (BREWERS[b].dose || 15));
     // after 2 pm (unless you turned that off): only a decaf. None in your bags: a decaf from today's list, to buy
@@ -6009,7 +6020,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   };
   function brewThis(r, jump = true) {
     if (jump) surprisePick = null;
-    Object.assign(state, listState(r)); state.roastPhoto = null;
+    Object.assign(state, listState(r)); state.roastPhoto = null; state.method = "best";   // a new coffee: the method that suits it
     $("coffeeIn").value = state.text; saveState(); renderAllOpts(); render();
     if (jump) landBrewing();
   }
@@ -6762,10 +6773,10 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     const pick = () => { let w; do w = V[Math.floor(Math.random() * V.length)]; while (w === last && V.length > 1); last = w; box.textContent = w.charAt(0).toUpperCase() + w.slice(1); };
     pick(); box.addEventListener("click", pick);
     // the pill's middle on the middle of the big letters' capitals, whatever size the line is set in
-    // the pill's own word sits in its middle, so raising its baseline by half the difference of the two cap heights puts both
-    // middles level (ALT Riviera's capitals stand about 0.71 em)
+    // the pill's middle level with the middle of the big line's small letters (e, a): ALT Riviera's x-height is 0.513 em and
+    // its capitals 0.705 em, and the pill's own capital sits in the pill's middle
     const align = () => { const fs = parseFloat(getComputedStyle(box.parentElement).fontSize), ps = parseFloat(getComputedStyle(box).fontSize);
-      if (fs && ps) box.style.setProperty("--vp-y", (0.355 * (fs - ps)).toFixed(1) + "px"); };
+      if (fs && ps) box.style.setProperty("--vp-y", (0.2565 * fs - 0.3525 * ps).toFixed(1) + "px"); };
     align(); addEventListener("resize", align); if (document.fonts) document.fonts.ready.then(align); })();
   (function outro() {
     const words = [...document.querySelectorAll("#litext > span:not(.outro-end)")], end = document.querySelector(".outro-end");
