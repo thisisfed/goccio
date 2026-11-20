@@ -2538,7 +2538,7 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
     const GENERIC = /^(?:the|a|de|la|el|of|and|by|estate|blend|farm|village|house|so|coffee)$/i;   // not a name on its own
     const LABEL = "20\\d\\d|new|rare|limited|special|seasonal|competition|auction|exclusive|\\d+/\\d+";
     // "coffee" in any language, and the words a shop puts around a name
-    const FILLER = "coffee beans|beans|kaffe|kaffebønner|kaffebönor|kaffebohnen|café|cafe|caffè|caffe|káva|zrnková káva|kawa|kahve|kávé|single origin|speciality|specialty|variedad|variedade|varietà";   // marketing labels before the name
+    const FILLER = "coffee beans|beans|bags?|packs?|kaffe|kaffebønner|kaffebönor|kaffebohnen|café|cafe|caffè|caffe|káva|zrnková káva|kawa|kahve|kávé|single origin|speciality|specialty|variedad|variedade|varietà";   // marketing labels before the name
     const B = (alt) => `(?<![\\p{L}\\d])(?:${alt})(?![\\p{L}\\d])`;
     const reEsc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -2573,7 +2573,7 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
       for (const part of s.split(/\s+[-–—|~/]\s+|\s*[,:;]\s+|\s*[|]\s*|(?<=\p{L}{3})(?<!\b(?:Mrs|Sta|Sto|Oct|Nov|Dec|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept))\.\s+/u)) {
         const lead = part.replace(LEAD, "").trim();
         if (new RegExp(`^(?:(?:${[DETAIL, FILLER, GRADE, LABEL, ...variety].join("|")})[\\s\\-–—,]*)+$`, "iu").test(lead)) continue;   // Pink Bourbon: all detail
-        let t = cut(lead).replace(/[\s\-–—|,:;/&+.~*]+$/g, "").trim();
+        let t = cut(lead).replace(/\s+(?:from|of|in|with|by|for|and|&|bags?|packs?)\s*$/i, "").replace(/[\s\-–—|,:;/&+.~*]+$/g, "").trim();
         t = t.replace(/^['"‘“’”]+|['"‘“’”]+$/g, "").trim();
         if ((t.match(/["“”]/g) || []).length % 2) t = t.replace(/["“”]/g, "").trim();   // a quote left open by the cut   // 'Tropical Bahia' -> Tropical Bahia
         const words = t.match(/[\p{L}\d][\p{L}\d'’.-]*/gu) || [];
