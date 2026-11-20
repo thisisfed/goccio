@@ -2036,18 +2036,20 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
   -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E") center/10px 10px no-repeat;
   mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E") center/10px 10px no-repeat}
 .nav .sec-dd[aria-expanded="true"]::after{transform:rotate(180deg)}
-.sec-list{display:grid;grid-template-rows:0fr;transition:grid-template-rows .32s cubic-bezier(.2,.7,.2,1),box-shadow .32s ease}
-.sec-list > .sec-list-in{min-height:0;overflow:hidden;opacity:0;transition:opacity .2s ease}
-.sec-list.open{grid-template-rows:1fr;box-shadow:inset 0 1px 0 var(--rule)}   /* the line drawn, not a border: shut, the list takes no room at all */
-.sec-list.open > .sec-list-in{opacity:1;transition:opacity .25s ease .06s}
+.sec-list{position:absolute;left:0;right:0;top:calc(100% + 1px);overflow:hidden;pointer-events:none}
+.sec-list > .sec-list-in{transform:translateY(-100%);transition:transform .32s cubic-bezier(.2,.7,.2,1);background:var(--bg);border-bottom:1px solid var(--rule)}
+.sec-list.open{pointer-events:auto}   /* it slides out from behind the bar as one piece, over the page: nothing below moves */
+.sec-list.open > .sec-list-in{transform:none}
 .sec-list.instant, .sec-list.instant > .sec-list-in{transition:none!important}
-.sec-list-in{max-width:1000px;margin:0 auto;padding:0 12px;display:flex;flex-wrap:wrap;gap:5px;justify-content:flex-end}
+.sec-list-in{max-width:none;margin:0;padding:0 max(12px, calc((100% - 1000px) / 2 + 12px));display:flex;flex-wrap:wrap;gap:5px;justify-content:flex-end}
 .sec-list .sec-p{border:0;background:var(--pill);color:var(--ink);border-radius:var(--r);height:var(--pill-h);padding:0 10px;font:500 var(--fs-s)/1 var(--sans);cursor:pointer}
 @media (min-width: 900px){ .nav .sec-inline{display:flex} .nav .sec-dd, .sec-list{display:none!important} }
 @media (prefers-reduced-motion: reduce){ .sec-list, .sec-list > .sec-list-in, .nav .sec-dd::after{transition:none!important} }
 /* the pills' 12px above and below sit inside the part that grows, so it closes to nothing */
-.sec-list-in::before{content:"";flex-basis:100%;height:8px}
-.sec-list-in::after{content:"";flex-basis:100%;height:7px}
+.sec-list-in::before, .sec-list-in::after{content:"";flex-basis:100%;height:7px}
+/* the footer's links: one a line, at the footer's own line height */
+footer .foot-links{display:block!important}
+footer .foot-links a{display:block;width:fit-content;line-height:inherit}
 </style>
 </head>
 <body>
@@ -6567,8 +6569,10 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
   // no button: the recipe builds itself a moment after you stop typing, on Enter, or when you leave the box
   let buildT = null;
   $("coffeeIn").addEventListener("input", () => { $("detected").textContent = ""; clearTimeout(buildT);
-    buildT = setTimeout(() => { const n = $("coffeeIn").value.trim().length; if (n >= 3 || (!n && state.text)) build(false); }, 900); });   // emptied: back to just the question
-  $("coffeeIn").addEventListener("blur", () => { clearTimeout(buildT); if ($("coffeeIn").value.trim().length >= 3 && $("coffeeIn").value.trim() !== (state.text || "").trim()) build(false); });
+    buildT = setTimeout(() => { const n = $("coffeeIn").value.trim().length; if (n >= 3) build(false); }, 900); });   // emptied: nothing changes yet, the recipe and Start brewing stay
+  $("coffeeIn").addEventListener("blur", () => { clearTimeout(buildT);
+    if (!$("coffeeIn").value.trim() && state.text) { $("coffeeIn").value = state.text; return; }   // left empty: the coffee you were brewing goes back in
+    if ($("coffeeIn").value.trim().length >= 3 && $("coffeeIn").value.trim() !== (state.text || "").trim()) build(false); });
   $("ddIn").addEventListener("input", updateSuggest);
   $("saveLog").onclick = saveLog;
   // bottom: light the words one by one as the paragraph scrolls up through the screen
