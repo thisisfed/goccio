@@ -1,0 +1,36 @@
+name: New roasters worldwide
+
+# Every night, before the morning scans: roasteries on OpenStreetMap that aren't on the list yet are read the way the daily
+# scan reads them, and up to 10 that sell specialty coffee beans are added to data/roasters.json. None found: nothing changes.
+on:
+  schedule:
+    - cron: "17 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: scan
+  cancel-in-progress: false
+
+jobs:
+  world:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Find and check
+        run: python scripts/world.py
+      - name: Save
+        run: |
+          git add data/roasters.json data/world_seen.json 2>/dev/null || true
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+            git commit -qm "New roasters worldwide $(date -u +%d/%m/%Y)"
+            for i in 1 2 3; do git pull -q --rebase && git push -q && break; sleep 5; done
+          fi
