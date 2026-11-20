@@ -1347,13 +1347,18 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 /* Brew something good. is part of the closing text: same size */
 .litext .outro-end, .litext .outro-end * { font-size: inherit !important; }
 /* the coffee names and the opening A Bag to a Cup: the same size as the closing text (39, 63 on big screens) */
-.item .name, .wordmark { font-size: 39px !important; }
+.item .name { font-size: 39px !important; }
 /* the opening screen: the drop photo edge to edge, Goccio in white on it, still */
 .wm-screen { margin-inline: calc(50% - 50vw); padding-inline: calc(50vw - 50%); margin-top: -10px; min-height: calc(100svh - var(--top-h, 49px)) !important;
   background: #000 url("/img/goccio-drop.jpg") center / cover no-repeat; }
 .wm-screen .wordmark, .wm-screen .wordmark * { color: #fff !important; }
+/* Goccio sits as far above the bottom of the photo as it is from the left edge (12px), at any size: no room kept for descenders */
+.wm-screen .wordmark { padding-bottom: 0 !important; margin-bottom: calc(12px - .0725em) !important; }
+/* Updated every day sits as far under the photo as the text sits from the edge of the screen */
+.wm-screen + .hero-row { margin-top: calc(12px - var(--hero-gap, 24px)); }
+.hero { --hero-gap: 24px; }
 .item .name { line-height: 1.05 !important; letter-spacing: -.04em !important; }
-@media (min-width: 1000px) { .item .name, .wordmark { font-size: 63px !important; } }
+@media (min-width: 1000px) { .item .name { font-size: 63px !important; } }
 /* the coffee list: Search, Region and Process stay under the top bar while you scroll the coffees */
 .shelf-tools { position: sticky; top: var(--top-h, 49px); z-index: 5; background: var(--bg); padding: 12px 0; margin-top: -12px; border-bottom: 1px solid transparent; }
 .shelf-tools.stuck { border-bottom-color: var(--rule); }
@@ -6465,7 +6470,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     // measured with the last letter's spacing put back, so the "p" never runs past the edge
     // measured as A Bag to a Cup in full, even while it is still opening from ABC
     const fit = () => { const rs = [...w.querySelectorAll(".r")], was = rs.map((r) => r.style.maxWidth); rs.forEach((r) => r.style.maxWidth = "none");
-      p.style.fontSize = "100px"; const k = p.clientWidth / (w.getBoundingClientRect().width + 6); p.style.fontSize = (100 * k * .995).toFixed(2) + "px";
+      p.style.fontSize = "100px"; const k = p.clientWidth / w.getBoundingClientRect().width; p.style.fontSize = (100 * k * .998).toFixed(2) + "px";
       rs.forEach((r, i) => r.style.maxWidth = was[i]); };
     fit(); addEventListener("resize", fit); if (document.fonts) document.fonts.ready.then(fit);
   })();
