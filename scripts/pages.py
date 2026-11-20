@@ -235,7 +235,7 @@ def main():
                      '<div class="specs">' + spec("Roastery", f"<b>{e(name)}{', ' + e(city) if city else ''}</b>", "wide")
                      + spec("Coffee", f"<h1>{e(c['name'])}</h1>", "wide") + "</div>", f'<dl class="facts">{dl}</dl>']
             if notes:
-                first.append(f'<p class="notes">Flavour: {e(and_list(notes))} (the roaster’s notes).</p>')
+                first.append(f'<p class="notes">Flavour: {e(and_list(notes))}.</p>')
             body = ["<section>" + "".join(first) + "</section>"]
             brew = "/#brew=" + e(quote(c.get("url") or "", safe=""))
             go = (f'<p class="go"><a class="pill" href="{brew}">Brew it step by step</a>'
