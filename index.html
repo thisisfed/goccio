@@ -2964,7 +2964,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     ten:       { c: 40, pub: "40–45", note: "The 10-Pour runs very coarse so ten small pours don’t stall; C40 users publish 40–45.", url: "https://en.philocoffea.com/blogs/blog/coffee-brewing-method", src: "Philocoffea" },
     winton:    { c: 24, pub: "none published", est: true, note: "Winton says medium, and that it should take about 2:40 to drain. Five pours from height stir the bed for you, so it sits a few clicks coarser than Hoffmann’s 1-Cup. Our estimate.", url: "https://www.youtube.com/watch?v=YIC-2nFQ7vM", src: "Winton, HARIO V60 Five-Pour Recipe" },
     hedrick:   { c: 21, pub: "none published", est: true, note: "Hedrick grinds medium-fine and aims for a quick drawdown, close to Hoffmann’s 1-Cup. Our estimate.", url: "https://www.youtube.com/watch?v=wZst-D3eUm0", src: "Hedrick, The World’s Best Pourover (with my Recipes)" },
-    tea:       { c: 21, pub: "none published", est: true, note: "Tea-like starts from Hoffmann’s 1-Cup and goes coarser: big particles and few fines keep the cup clear, while the centre pulses keep the water in contact long enough to extract fully. Our recipe.", url: "", src: "Bag to Cup" },
+    tea:       { c: 21, pub: "none published", est: true, note: "Tea-like goes 7 clicks coarser than Hoffmann’s 1-Cup, close to Kasuya’s 4:6: big particles and few fines keep the cup clear and the bed from clogging, while a minute-long bloom, very hot water and four slow centre pours keep the water in contact long enough to extract fully. Our recipe.", url: "", src: "Goccio" },
     wendelboe: { c: 17, pub: "15–20 clicks", note: "Wendelboe grinds “fine filter”, 15–20 clicks on the Comandante: finer than Hoffmann’s AeroPress, because his steep is only a minute.", url: "https://aeroprecipe.com/recipes/tim-wendelboe", src: "Tim Wendelboe’s AeroPress, as brewed in his Oslo café" },
     onyx:      { c: 19, pub: "550 µm, about 18–19", est: true, note: "Onyx gives 550 µm, finer than most V60 recipes: the heavy centre pour slows the drain so a finer grind doesn’t stall. A C40 click is about 30 µm, so about 18–19 clicks; 19 at 15 g. Our conversion.", url: "https://onyxcoffeelab.com/pages/help-me-brew", src: "Onyx Coffee Lab, Help Me Brew" },
     cafec:     { c: 26, pub: "none published", est: true, note: "CAFEC says medium to coarse. The thin centre pour keeps the water in the middle of the bed, so it starts a few clicks coarser than Hoffmann’s 1-Cup. Our estimate.", url: "https://docs.google.com/presentation/d/1oreatQ-WexYioGXuNebA00bAmGm5LqlW/htmlpresent", src: "CAFEC (Sanyo Sangyo), Osmotic Flow" },
@@ -2979,32 +2979,41 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     onyx:      "Onyx Coffee Lab’s V60",
     winton:    "Matt Winton’s Five-Pour",
     hedrick:   "Lance Hedrick’s double bloom",
-    tea:       "Tea-like, centre pulses",
+    tea:       "Tea-like, coarse and slow",
     wendelboe: "AeroPress, Tim Wendelboe",
     cafec:     "CAFEC Osmotic Flow",
   };
   const GOAL = { light: "Light & sweet", balanced: "Balanced", syrupy: "Rich & syrupy", tea: "Tea-like" };
-  // Tea-like (beta): brewed the way you'd brew a good oolong. Less coffee in more water, a coarser grind, a touch cooler,
-  // nothing stirred or swirled: a thin, clear cup with every note there but quiet. Paper-filtered brewers only:
-  // a metal mesh, a moka or a shot can't make a cup this clean
+  // Tea-like (beta): very thin, very clear, and still full of flavour. Four ideas, from the people who brew this way best:
+  // 1. Grind much coarser (Kasuya's 4:6 territory): few fines, so nothing clogs or muddies the cup and the bed drains clear.
+  // 2. Make up for the big particles with time and heat, not with stirring: a long bloom (a full minute; drawn-out blooms bring
+  //    out sweetness at coarse grinds) and water as hot as the roast allows.
+  // 3. Declining agitation: one gentle stir in the bloom so every ground is wet, then only slow, low pours in the centre, never
+  //    the paper, and hands off at the end. Agitation early extracts; calm late keeps the finish long and clean.
+  // 4. Thin by strength, not by under-extraction: 1:18 (about 1.15–1.25% at 21–22% extraction). Weaker than that and flavour fades
+  //    with the body (Rao: the lower the strength, the more clarity, until the cup turns too dilute to taste).
+  // Paper-filtered brewers only: a metal mesh, a moka or a shot can't make a cup this clean
   const TEA_OK = new Set(["v60", "kalita", "melitta", "chemex", "origami", "switch", "clever", "aero"]);
-  const TEA = { clicks: 4, ratio: 20, max: 21 };
+  const TEA = { clicks: 7, ratio: 18, max: 20 };
   // where it works: clean, light to medium coffees. Heavy ferments turn thin and boozy, dark roasts thin and ashy, decaf empty
   const teaFits = (c) => ["vlight", "light", "medium", "unsure"].includes(c.roast) && ["washed", "honey", "natural", "unsure"].includes(c.process);
   // hot, not cool: a thin cup still needs a full extraction, or it tastes hollow and sour instead of delicate
-  const teaTemp = (c) => { let t = ROAST[c.roast].T + 2 + PROCESS[c.process].dT;
-    if (T_CAP[c.process]) t = Math.min(t, T_CAP[c.process]); if (T_CAP_ROAST[c.roast]) t = Math.min(t, T_CAP_ROAST[c.roast]); return clamp(t, 88, 98); };
+  const teaTemp = (c) => { let t = ROAST[c.roast].T + 3 + PROCESS[c.process].dT;   // light 97°C, very light just off the boil
+    if (T_CAP[c.process]) t = Math.min(t, T_CAP[c.process]); if (T_CAP_ROAST[c.roast]) t = Math.min(t, T_CAP_ROAST[c.roast]); return clamp(t, 88, 99); };
   // the pours: a centre-only bloom, then five small pulses into a coin-sized circle in the middle, never the paper.
   // The bed is never stirred, so fines stay put and the cup stays clear; the long contact still pulls out sweetness and depth
   // water is weighed in round numbers: every total and every pour target to the nearest 5 g (50 g, not 51; 500 g, not 501).
   // Espresso shots keep the gram (the callers leave them out), and so does anything under 20 g.
   const g5 = (v) => v < 20 ? Math.round(v) : Math.round(v / 5) * 5;
   function teaPulses(add, dose, water, t0) {
-    const bl = Math.round(dose * 2.5);
-    add(0, bl, "Bloom: spiral out from the centre, short of the paper, until it’s all wet. No swirl", 15);
-    for (let i = 1; i <= 5; i++) add(t0 + (i - 1) * 30, i === 5 ? water : Math.round(bl + ((water - bl) * i) / 5),
-      i === 5 ? "Last pulse in the centre, then let it drain untouched" : "Centre only: a coin-sized circle, low and slow", 15);
+    // a long bloom of 3× the coffee, stirred once, gently, so every ground is wet; then four slow, low pours in the centre
+    // (a coin-sized circle, never the paper), 35 s apart, and hands off to the end
+    const bl = g5(dose * 3), ts = [60, 95, 130, 165].map((t) => t + (t0 - 45));
+    add(0, bl, "Bloom: 3× the coffee, then one slow, gentle stir until every ground is wet. Leave it a full minute", 15);
+    ts.forEach((t, i) => add(t, i === 3 ? water : bl + ((water - bl) * (i + 1)) / 4,
+      i === 3 ? "Last pour, slow and low in the centre, then hands off: no swirl, let it drain" : "Slow and low, a coin-sized circle in the centre, never on the paper", 20));
   }
+
 
   /* OTHER BREWERS
      Each one starts from one published recipe, then takes the same process × roast moves as the V60
@@ -3032,23 +3041,23 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     cupping: { name: "Cupping", kind: "imm", cup: true, doses: [[8.25, "150 ml cup"], [11, "200 ml cup"]], dose: 8.25, base: 27, dA: {}, range: [22, 32], fixed: 18.18, dT: 0 },
     v60:    { name: "V60", kind: "pour", doses: [[12, "12 g"], [15, "15 g"], [18, "18 g"], [20, "20 g"], [25, "25 g"], [30, "30 g"]], dose: 15 },
     kalita: { name: "Kalita Wave", kind: "pour", doses: [[12, "12 g"], [15, "15 g"], [18, "18 g"], [20, "20 g"], [25, "25 g"], [30, "30 g"]], dose: 15,
-              base: 24, dA: { 12: -1, 15: 0, 18: 1, 20: 1, 25: 2, 30: 3 }, range: [18, 36], ratio: { light: 17, balanced: 16, syrupy: 15, tea: 20 }, dT: 1, ey: [20, 22] },
+              base: 24, dA: { 12: -1, 15: 0, 18: 1, 20: 1, 25: 2, 30: 3 }, range: [18, 36], ratio: { light: 17, balanced: 16, syrupy: 15, tea: 18 }, dT: 1, ey: [20, 22] },
     april:  { name: "April Brewer", kind: "pour", doses: [[12, "12 g"], [15, "15 g"], [18, "18 g"], [20, "20 g"], [25, "25 g"]], dose: 12,
               base: 23, dA: { 12: 0, 15: 1, 18: 1, 20: 2, 25: 3 }, range: [17, 34], ratio: { light: 17, balanced: 16.7, syrupy: 15.5 }, dT: -1, ey: [19.5, 21.5] },
     orea:   { name: "Orea V4", kind: "pour", doses: [[12, "12 g"], [15, "15 g"], [17, "17 g"], [20, "20 g"], [25, "25 g"]], dose: 17,
               base: 23, dA: { 12: -1, 15: 0, 17: 0, 20: 1, 25: 2 }, range: [16, 34], ratio: { light: 16.5, balanced: 15.9, syrupy: 15 }, dT: 0, ey: [19.5, 21.5] },
     melitta: { name: "Melitta", kind: "pour", doses: [[12, "12 g"], [15, "15 g"], [18, "18 g"], [20, "20 g"], [25, "25 g"], [30, "30 g"]], dose: 15,
-              base: 23, dA: { 12: -1, 15: 0, 18: 1, 20: 1, 25: 2, 30: 3 }, range: [17, 34], ratio: { light: 17, balanced: 16, syrupy: 15, tea: 20 }, dT: 2, ey: [19.5, 21.5] },
+              base: 23, dA: { 12: -1, 15: 0, 18: 1, 20: 1, 25: 2, 30: 3 }, range: [17, 34], ratio: { light: 17, balanced: 16, syrupy: 15, tea: 18 }, dT: 2, ey: [19.5, 21.5] },
     chemex: { name: "Chemex", kind: "pour", doses: [[20, "20 g"], [30, "30 g"], [40, "40 g"], [50, "50 g"]], dose: 30,
-              base: 30, dA: { 20: -1, 30: 0, 40: 1, 50: 2 }, range: [22, 42], ratio: { light: 17, balanced: 16, syrupy: 15, tea: 20 }, dT: 2, ey: [19.5, 21.5] },
+              base: 30, dA: { 20: -1, 30: 0, 40: 1, 50: 2 }, range: [22, 42], ratio: { light: 17, balanced: 16, syrupy: 15, tea: 18 }, dT: 2, ey: [19.5, 21.5] },
     origami: { name: "Origami", kind: "pour", doses: [[12, "12 g"], [15, "15 g"], [18, "18 g"], [20, "20 g"], [25, "25 g"], [30, "30 g"]], dose: 15,
-              base: 22, dA: { 12: -1, 15: 0, 18: 1, 20: 1, 25: 2, 30: 3 }, range: [16, 34], ratio: { light: 16.5, balanced: 16, syrupy: 15, tea: 20 }, dT: -3, ey: [19.5, 21.5] },
+              base: 22, dA: { 12: -1, 15: 0, 18: 1, 20: 1, 25: 2, 30: 3 }, range: [16, 34], ratio: { light: 16.5, balanced: 16, syrupy: 15, tea: 18 }, dT: -3, ey: [19.5, 21.5] },
     switch: { name: "Hario Switch", kind: "pour", doses: [[15, "15 g"], [20, "20 g"], [30, "30 g"]], dose: 20,
-              base: 26, dA: { 15: -1, 20: 0, 30: 2 }, range: [18, 36], ratio: { light: 15, balanced: 14.5, syrupy: 14, tea: 19 }, dT: 1, ey: [19.5, 21.5] },
+              base: 26, dA: { 15: -1, 20: 0, 30: 2 }, range: [18, 36], ratio: { light: 15, balanced: 14.5, syrupy: 14, tea: 17.5 }, dT: 1, ey: [19.5, 21.5] },
     clever: { name: "Clever Dripper", kind: "imm", doses: [[15, "15 g"], [18, "18 g"], [20, "20 g"], [25, "25 g"]], dose: 15,
-              base: 22, dA: { 15: 0, 18: 1, 20: 1, 25: 2 }, range: [14, 32], ratio: { light: 16.67, balanced: 16, syrupy: 15, tea: 19 }, dT: 5, cap: 340, capBig: 450, ey: [19.5, 21.5] },
+              base: 22, dA: { 15: 0, 18: 1, 20: 1, 25: 2 }, range: [14, 32], ratio: { light: 16.67, balanced: 16, syrupy: 15, tea: 17.5 }, dT: 5, cap: 340, capBig: 450, ey: [19.5, 21.5] },
     aero:   { name: "AeroPress", kind: "imm", doses: [[11, "11 g"], [13, "13 g"], [15, "15 g"]], dose: 11,
-              base: 18, dA: { 11: 0, 13: 0, 15: 1 }, range: [12, 30], ratio: { light: 18, balanced: 16.5, syrupy: 15, tea: 19.5 }, dT: 4, cap: 250, ey: [19.5, 21.5] },
+              base: 18, dA: { 11: 0, 13: 0, 15: 1 }, range: [12, 30], ratio: { light: 18, balanced: 16.5, syrupy: 15, tea: 18 }, dT: 4, cap: 250, ey: [19.5, 21.5] },
     press:  { name: "French Press", kind: "imm", doses: [[15, "15 g"], [30, "30 g"], [60, "60 g"]], dose: 30,
               base: 28, dA: { 15: -1, 30: 0, 60: 1 }, range: [20, 45], ratio: { light: 17, balanced: 16, syrupy: 15 }, dT: 2, ey: [19, 21] },
     cold:   { name: "Cold brew", kind: "steps", doses: [[50, "50 g"], [100, "100 g"]], dose: 100, base: 36, dA: {}, range: [28, 45], fixed: 8 },
@@ -3204,7 +3213,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       lo = 180; hi = 210;
     } else if (m === "tea") {
       teaPulses(add, dose, water, 45);
-      lo = 225; hi = 255;
+      lo = 240 + Math.max(0, dose - 15) * 4; hi = lo + 30;   // a coarse bed drains in about a minute after the last pour
     } else if (m === "winton") { // Winton: five equal pours, each when the last has nearly drained, about 30 s apart, from height, no stirring
       for (let i = 1; i <= 5; i++) add((i - 1) * 30, (water * i) / 5, i === 1 ? "Bloom: centre out to the edge and back, all of it wet" : i === 5 ? "Last pour, same circles, then let it drain. Swirl the jug, not the cone" : "Pour from a little higher: centre out and back in. No stirring", 10);
       lo = 160; hi = 180;
@@ -3298,7 +3307,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     // espresso: one click is a big step this fine, so roast moves it by one or two and process not at all
     // cupping: one grind for every coffee, so the cups can be compared; espresso: one click is a big step this fine, so roast moves it by one or two and process not at all
     const doseAdj = B.dA[dose] ?? 0, roastAdj = B.cup ? 0 : B.shot ? { vlight: -2, light: -1, medium: 0, mdark: 1, dark: 1, unsure: 0 }[c.roast] : ROAST[c.roast].dC, procAdj = B.shot || B.cup ? 0 : PROCESS[c.process].dC;
-    const teaAdj = tea ? TEA.clicks : 0;
+    const teaAdj = tea ? ({ chemex: 3, kalita: 4, melitta: 4, clever: 5, switch: 5, aero: 5, origami: 6 }[b] ?? 5) : 0;   // brewers that already run coarse or slow move less
     const base0 = wendel ? BASE.wendelboe.c : B.base;
     const raw = base0 + doseAdj + roastAdj + procAdj + teaAdj;
     const baseClicks = clamp(raw, B.range[0], B.range[1] + teaAdj);
@@ -3322,7 +3331,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     if (tea && ["kalita", "melitta", "chemex", "origami", "switch"].includes(b)) {   // tea-like: centre pulses, nothing stirred
       teaPulses(add, dose, water, 45);
       if (b === "switch") P[0].note = "Valve open, and leave it open. " + P[0].note;
-      lo = { kalita: 240, melitta: 240, chemex: 270, origami: 210, switch: 225 }[b] + Math.max(0, dose - 15) * 3; hi = lo + 30;
+      lo = { kalita: 250, melitta: 255, chemex: 285, origami: 230, switch: 240 }[b] + Math.max(0, dose - 15) * 3; hi = lo + 30;
     } else if (b === "kalita") {            // Howell: equal pulses, 15 s on, 15 s to drop
       const bl = dose * 2, n = 4;
       add(0, bl, bloomNote, 10);
@@ -3487,7 +3496,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     rao: "Highest clarity here: crisp top notes, tea-like texture.",
     winton: "Five equal pours from height, no stirring: clean, layered and aromatic.",
     hedrick: "Two blooms and two big pours: sweet, high extraction, done fast.",
-    tea: "Thin like tea, layered like a good filter: every note there, but quiet.",
+    tea: "Thin like tea, layered like a good filter: every note there, clear and long.",
     wendelboe: "A one-minute steep and a gentle press: sweet, bright and quick.",
     onyx: "A heavy centre pour and a finer grind: bright and sweet, high extraction, done quickly.",
     cafec: "Water only in the middle, nothing stirred: very clean and soft, aroma and sweetness first.",
@@ -3519,7 +3528,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     hoffmannU: { body: 3, clar: 4, acid: 0, sweet: 1, how: "A bigger dose and a deep bed extract higher and more evenly than the 1-Cup: the same clarity, with a fuller middle and more sweetness behind the acidity.", tex: "round and clean", fin: "medium and sweet" },
     winton:    { body: 2, clar: 5, acid: 1, sweet: 1, how: "Five equal pours, each poured from height when the last has nearly drained: the water does the stirring, so the bed stays even without a spoon. Clean and layered, aromatic, light in body.", tex: "light and clean", fin: "long and aromatic" },
     hedrick:   { body: 3, clar: 4, acid: 0, sweet: 2, how: "Two blooms wet every ground before the main water arrives, then two fast pours and a quick drawdown: a high, even extraction that tastes sweet rather than heavy.", tex: "juicy, round", fin: "medium and sweet" },
-    tea:       { body: 1, clar: 5, acid: 0, sweet: 1, how: "A coarse grind and water only in the middle, in small pulses: the bed is never stirred, so the cup is very clear, while the long contact pulls out the sweetness and the quieter notes. Thin like tea, but layered.", tex: "silky, tea-thin", fin: "long, clean and sweet" },
+    tea:       { body: 1, clar: 5, acid: 0, sweet: 1, how: "A very coarse grind, a minute-long bloom stirred once, then only slow pours in the centre: few fines and a calm bed make the cup very clear, while the heat and the long contact pull out the sweetness and the quieter notes. Thin like tea, but layered, and it keeps opening up as it cools.", tex: "silky, tea-thin", fin: "long, clean and sweet" },
     wendelboe: { body: 3, clar: 3, acid: 1, sweet: 1, how: "A finer grind and a one-minute steep with two short stirs: a stronger, brighter cup than Hoffmann’s AeroPress, done in 90 s.", tex: "dense, still clean", fin: "medium and bright" },
     onyx:      { body: 3, clar: 4, acid: 1, sweet: 1, how: "A heavy centre pour sets a steady drain, so it grinds finer than most V60 recipes and still finishes by 2:30: a high, even extraction, bright and sweet at once.", tex: "juicy and clean", fin: "medium and sweet" },
     cafec:     { body: 3, clar: 5, acid: -1, sweet: 1, how: "Water goes only into the middle in a thin, low stream; the outer coffee stays as a filter wall and nothing is stirred. Soft and very clean: aroma and sweetness up front, harsh edges held back.", tex: "soft and clean", fin: "clean and sweet" },
@@ -4163,7 +4172,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     onyx:      { r: 15,   txt: "Onyx’s V60 is 1:15 (20→300 g)" },
     winton:    { r: 15,   txt: "Winton’s Five-Pour is 1:15 (20→300 g), five pours of 60 g" },
     hedrick:   { r: 16,   txt: "Hedrick’s double bloom is 1:16 (20→320 g)" },
-    tea:       { r: 20,   txt: "Tea-like brews at 1:20: about 1.1–1.2% strength at a full 20–22% extraction" },
+    tea:       { r: 18,   txt: "Tea-like brews at 1:18: about 1.15–1.25% strength at a full 21–22% extraction" },
     wendelboe: { r: 14.3, txt: "Wendelboe’s AeroPress is 1:14.3 (14→200 g)" },
     cafec:     { r: 12.5, txt: "CAFEC’s Osmotic Flow is about 1:12.5 (12 g for a 150 ml cup)" },
     fourSix:   { r: 15,   txt: "Classic Kasuya 4:6 is 1:15 (20→300 g)" },
@@ -4456,7 +4465,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     if (r.m === "onyx") why.push("Onyx Coffee Lab’s V60: 2× bloom, a heavy centre pour at 0:30 that sets the drain, then three spiral pours 20 s apart. Finer than most V60 recipes, hot, done by 2:30.");
     if (r.m === "cafec") why.push("CAFEC’s Osmotic Flow, from the Japanese filter maker: wet the coffee just enough for it to dome, then a thin, low stream into the middle only. The outer coffee stays dry-ish and works as a filter; nothing is stirred. Cooler by roast: 92°C light, 90 medium, 83 dark.");
     if (r.m === "rao") why.push("Rao’s bloom & spin: 3× bloom, one continuous pour, a spin. Little late agitation, very high clarity.");
-    if (r.goal === "tea") why.push(`Tea-like, Beta: brewed the way a tea master treats a fine oolong. 1:${r.ratio}, a coarse grind, hot water (${r.temp}°C) and water only in the centre, in small pulses. Nothing is ever stirred, so fines stay put and the cup stays clear; the long, gentle contact still pulls out sweetness and the quieter notes, so it’s thin without being hollow. Made for clean coffees roasted light to medium: washed, honey and natural. If it tastes hollow or sour, go ${cl(2)} finer; if it’s drying, go ${cl(2)} coarser.`);
+    if (r.goal === "tea") why.push(`Tea-like, Beta: very thin, very clear, still full of flavour. A grind far coarser than usual keeps fines out of the cup; a minute-long bloom stirred once, very hot water (${r.temp}°C) and four slow pours in the centre give the big particles the time they need. Agitation early, calm late: the finish stays long and clean. 1:${r.ratio} keeps it light without going watery. Made for clean coffees roasted light to medium: washed, honey and natural. Hollow or sour: ${cl(2)} finer or a longer bloom. Drying: ${cl(2)} coarser.`);
     if (r.m === "fourSix") why.push(r.goal === "light" || r.goal === "tea" ? "Kasuya’s 4:6: the first 40% sets sweetness vs acidity, the last 60% sets strength. Two big pours keep the body light." : "Kasuya’s 4:6 with three strength pours: rounder and sweeter.");
     if (r.m === "ten") why.push("Kasuya’s 10-Pour: coarse grind, small pours every 15 s. Heavy and syrupy.");
     if (BLURB[r.m]) why.push(BLURB[r.m]);
