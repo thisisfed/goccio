@@ -262,9 +262,9 @@ def main():
             dl = "".join(f"<div><dt>{k}</dt><dd>{v}</dd></div>" for k, v in facts if v)
             spec = lambda k, v, cls="": f'<div class="spec{(" " + cls) if cls else ""}"><span class="k">{k}</span>{v}</div>'
             # the coffee: laid out like the app's recipe, Roastery and Coffee as big specs, then the facts
-            first = [f'<p class="crumb"><a href="/coffee/">Roasters</a> / <a href="/coffee/{rslug[name]}/">{e(name)}</a></p>',
-                     '<div class="specs">' + spec("Roastery", f"<b>{e(name)}{', ' + e(city) if city else ''}</b>", "wide")
-                     + spec("Coffee", f"<h1>{e(c['name'])}</h1>", "wide") + "</div>", f'<dl class="facts">{dl}</dl>']
+            first = [# no small labels or links over the titles: the roastery and its town (its page a tap away), then the coffee, big
+                     '<div class="specs">' + f'<div class="spec wide"><b><a href="/coffee/{rslug[name]}/">{e(name)}</a>{", " + e(city) if city else ""}</b></div>'
+                     + f'<div class="spec wide"><h1>{e(c["name"])}</h1></div>' + "</div>", f'<dl class="facts">{dl}</dl>']
             if notes:
                 first.append(f'<p class="notes">Flavour: {e(and_list(notes))}.</p>')
             body = ["<section>" + "".join(first) + "</section>"]
@@ -304,7 +304,7 @@ def main():
             desc = f"A V60 recipe for {c['name']} from {name}{', ' + city if city else ''}" + (f": {' '.join(bits)}" if bits else "") + "."
             if r and r.get("water"):
                 desc += f' {r["dose"]} g to {r["water"]} g at {r["temp"]}°C, {r["clicks"]} clicks on a {GRINDER}, about {mmss(r["hi"])} in all.'
-            write(path.strip("/") + "/index.html", page(f"{c['name']}, {name}: a V60 recipe", desc, path, "\n".join(x for x in body if x), ld))
+            write(path.strip("/") + "/index.html", page(f"{c['name']}, {name}: a V60 recipe", desc, path, "\n".join(x for x in body if x), ld, tight=True))
             urls.append((BASE + path, (c.get("found") or c.get("published") or updated)[:10]))
 
     # ---------- a page per roaster ----------
@@ -314,7 +314,7 @@ def main():
         # like the recipe's Roastery on the main site: the name and its town big, then how many coffees and the shop, as close
         # under it as Roastery is above it. No Roasters link here: the top bar has it
         body = (f'<section><div class="specs">'
-                f'<div class="spec wide ro"><span class="k">Roastery</span><h1>{e(name)}{", " + e(city) if city else ""}</h1>'
+                f'<div class="spec wide ro"><h1>{e(name)}{", " + e(city) if city else ""}</h1>'
                 f'<span class="ro-n">{len(cs)} coffee{"s" if len(cs) != 1 else ""} on the list</span>'
                 + (f'<a class="ro-n ul" href="{e(shop)}" rel="noopener">Their shop</a>' if shop else "") + "</div></div></section>"
                 f'<section><div class="sec-head"><span>Coffees.</span><span class="muted">Each with a V60 recipe</span></div>{coffee_list(cs, cpath)}</section>')
@@ -340,7 +340,7 @@ def main():
     have = {letter(n) for n in names}
     az = '<nav class="az" aria-label="Jump to a letter">' + "".join(
         f'<a href="#az-{L}">{L}</a>' if L in have else f'<span>{L}</span>' for L in ["1"] + [chr(c) for c in range(65, 91)]) + "</nav>"
-    body = (f'<section><div class="specs"><div class="spec wide"><span class="k">Every coffee, by roaster</span><h1>Roasters A to Z</h1></div></div>'
+    body = (f'<section><div class="specs"><div class="spec wide"><h1>Roasters A to Z</h1></div></div>'
             f'<p class="r-read">{len(names)} roasters, {len(coffees):,} coffees, updated {ddmmyyyy(updated)}. Every coffee has a V60 recipe.</p></section>'
             f'<section class="az-sec">{az}<ul class="list">{items}</ul></section>'
             # the letter in view lights up in the bar, and slides into it when the bar is wider than the screen
