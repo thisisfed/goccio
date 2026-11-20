@@ -152,6 +152,16 @@ a.ro-n{justify-self:start;text-decoration:underline;text-decoration-color:color-
 footer{margin:0 12px;padding:10px 0 24px;border-top:1px solid var(--line);color:var(--muted)}
 @media (min-width:760px){footer{margin:0 24px}}
 footer p{margin:0 0 6px}
+/* the main page's look: its Dark / Light (dark unless you pick light), its type drawn the same (thin smoothing, no extra tracking) */
+:root[data-theme="light"]{--bg:#fff;--ink:#000;--muted:#808080;--rule:#e3e3e3;--line:#a6a6a6;--pill:#e6e6e6;--hl:#ff4f00}
+:root[data-theme="dark"]{--bg:#000;--ink:#fff;--muted:#8c8c8c;--rule:#262626;--line:#595959;--pill:#222;--hl:#ff5a14}
+body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+*{letter-spacing:0!important}
+.spec b,.spec h1,.list .name{letter-spacing:-.01em!important}
+.spec .k{font-weight:500!important}
+.top .tr{display:flex;gap:5px}
+.pill.sq{width:32px;padding:0;justify-content:center;border:0;cursor:pointer}
+.pill.sq svg{width:17px;height:17px}
 """
 
 
@@ -159,23 +169,24 @@ def page(title, desc, path, body, extra_head="", nav=True, tight=False):
     url = BASE + path
     return f"""<!doctype html>
 <html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta charset="utf-8"><meta name="theme-color" content="#000000"><script>try{{document.documentElement.setAttribute("data-theme",localStorage.getItem("v60.theme")==="light"?"light":"dark")}}catch(e){{document.documentElement.setAttribute("data-theme","dark")}}</script><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>{e(title)}</title>
 <meta name="description" content="{e(desc)}">
 <link rel="canonical" href="{e(url)}">
-<meta property="og:type" content="website"><meta property="og:site_name" content="A Bag to a Cup">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Goccio">
 <meta property="og:title" content="{e(title)}"><meta property="og:description" content="{e(desc)}">
 <meta property="og:url" content="{e(url)}"><meta property="og:image" content="{BASE}/og/card.png">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/icons/icon-192.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
 <style>{CSS}</style>{extra_head}
 </head><body>
-<header class="top"><a class="mark" href="/">A Bag to a Cup</a>{'<a class="pill" href="/coffee/">Roasters</a>' if nav else ''}</header>
+<header class="top"><a class="mark" href="/">Goccio</a><span class="tr">{'<a class="pill" href="/coffee/">Roasters</a>' if nav else ''}<button type="button" class="pill sq" id="themeBtn" aria-label="Appearance"></button></span></header>
 <main class="page{' top-tight' if tight else ''}">
 {body}
 </main>
 <footer><p>Coffee details are read every day from each roaster’s own shop. Prices and stock change: check the roaster’s page before you buy.</p>
-<p><a href="/">A Bag to a Cup</a>: a recipe for any coffee, for your brewer and your grinder. A roaster? <a href="/list/">Get your roastery listed</a>. <a href="/privacy/">Privacy</a>.</p></footer>
+<p><a href="/">Goccio</a>: a recipe for any coffee, for your brewer and your grinder. A roaster? <a href="/list/">Get your roastery listed</a>. <a href="/privacy/">Privacy</a>.</p></footer>
+<script src="/lib/theme.js"></script>
 </body></html>
 """
 
@@ -266,7 +277,7 @@ def main():
                 steps = [{"@type": "HowToStep", "text": f'{mmss(p["t"])}: pour to {p["to"]} g. {p["note"]}'.strip()} for p in r["pours"] if p.get("to") is not None]
                 ld = json.dumps({"@context": "https://schema.org", "@type": "Recipe", "name": f"V60 recipe for {c['name']} ({name})",
                                  "description": f"A V60 pour over recipe for {c['name']} from {name}.", "image": [BASE + "/og/card.png"],
-                                 "author": {"@type": "Organization", "name": "A Bag to a Cup", "url": BASE + "/"},
+                                 "author": {"@type": "Organization", "name": "Goccio", "url": BASE + "/"},
                                  "recipeCategory": "Drink", "recipeYield": "1 cup", "totalTime": iso_dur(r["hi"]), "keywords": f"V60, pour over, {name}, {c.get('origin') or ''}".strip(", "),
                                  "recipeIngredient": [f'{r["dose"]} g {c["name"]} coffee, ground at {r["clicks"]} clicks on a {GRINDER}', f'{r["water"]} g water at {r["temp"]}°C'],
                                  "recipeInstructions": steps}, ensure_ascii=False).replace("</", "<\\/")
