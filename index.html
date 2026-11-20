@@ -2011,6 +2011,17 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
 @supports (text-box: trim-start cap alphabetic){ .shelf-tools .fy-note{margin-top:0!important;text-box:trim-start cap alphabetic} }
 /* every dot before a tag: a perfect circle, never squeezed */
 .item .tags .tg::before,.item .tags .oc::before{width:12px!important;height:12px!important;min-width:12px!important;min-height:12px!important;flex:none!important;aspect-ratio:1/1!important;border-radius:50%!important}
+/* See all: a + in a square pill, the same height as the pills beside it */
+.chip.gear-more{width:var(--pill-h)!important;min-width:var(--pill-h);padding:0!important;display:inline-flex!important;align-items:center;justify-content:center;flex:none}
+.chip.gear-more svg{width:10px;height:10px;display:block}
+/* Extras on a phone: pills like My equipment, not a dropdown. What's ticked and the +; all of them while nothing is ticked or after the + */
+.shelf-tools.compact .opt.xrow > .chips{display:flex!important;flex-wrap:wrap}
+.shelf-tools.compact .opt.xrow > .shelf-dd{display:none!important}
+.shelf-tools.compact .opt.xrow{align-items:start!important}
+.shelf-tools.compact .opt.xrow > span{align-self:start;height:var(--pill-h);display:flex;align-items:center}
+.shelf-tools.compact .opt.xrow:not(.xall) .chips button[aria-pressed="false"]{display:none}
+.shelf-tools.compact .opt.xrow.xall .x-more{display:none!important}
+.shelf-tools:not(.compact) .x-more{display:none!important}
 </style>
 </head>
 <body>
@@ -4104,7 +4115,7 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
     const pcBlock = custom ? `<div class="w-pc"><input id="wPc" autocomplete="postal-code" autocapitalize="characters" placeholder="Postcode" value="${esc(w.pc || "")}" aria-label="Your postcode"><button type="button" class="chip" id="wPcGo">Find my water</button></div>${pcNote ? `<p class="w-pcn">${pcNote}</p>` : ""}<p class="w-pcn" id="wPcErr" hidden></p>` : "";
     // like Brewers and Grinders: once picked, only yours and See all; the full list folds back by itself (gearWait)
     const open = !!(gearOpen && gearOpen.water) || !w.kind;   // gearOpen (a var) is set further down: undefined on the first render
-    $("wBody").innerHTML = `<div class="chips" role="group" aria-label="Your water">${WATER.filter(([k]) => open || k === w.kind).map(([k, t]) => `<button type="button" class="chip" data-w="${k}" aria-pressed="${w.kind === k}">${t}</button>`).join("")}${open ? "" : `<button type="button" class="chip gear-more" aria-expanded="false">See all</button>`}</div>
+    $("wBody").innerHTML = `<div class="chips" role="group" aria-label="Your water">${WATER.filter(([k]) => open || k === w.kind).map(([k, t]) => `<button type="button" class="chip" data-w="${k}" aria-pressed="${w.kind === k}">${t}</button>`).join("")}${open ? "" : `<button type="button" class="chip gear-more" aria-expanded="false" aria-label="See all"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>`}</div>
       ${open ? pcBlock : ""}${custom && open ? `<div class="w-custom"><label>Hardness<input id="wHard" inputmode="numeric" value="${esc(w.hard ?? "")}" placeholder="e.g. 80"></label><label>Alkalinity<input id="wAlk" inputmode="numeric" value="${esc(w.alk ?? "")}" placeholder="e.g. 40"></label></div>
         <p class="muted" style="font-size: var(--fs-s)">Your water company lists both by postcode. Bottled water labels give bicarbonate in mg/L: divide by 1.22 for ppm CaCO₃.</p>` : ""}
       ${custom && open ? `<div class="w-sca"><b>Hardness</b><span>50–175 ppm (calcium 17–85, aim ~68)</span><b>Alkalinity</b><span>40–75 ppm, aim ~40 (bicarbonate buffer)</span><b>TDS</b><span>75–250 ppm, aim ~150</span>
@@ -5396,11 +5407,19 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
     const list = bits.join(", ");
     return it ? `Scelti ${from}: ${list || "quello che hai"}. I più vicini per primi.` : `Picked from ${from}: ${list || "what you have"}. Closest match first.`;
   }
+  let xOpen = false, xFold = 0;
+  const xWait = () => { clearTimeout(xFold); xFold = setTimeout(() => { xOpen = false; renderShelfO(); }, 2000 + 6 * 150); };
   function renderShelfO() {
     const xs = EXTRAS.filter(([v]) => v !== "decaf" || !curfewOn());   // after 14:00 the list is decaf already: no Decaf pill
-    $("shelfX").innerHTML = xs.map(([v, t]) => `<button type="button" class="chip${v === "foryou" ? " siri" : ""}" data-v="${v}" aria-pressed="${extraOn(v)}">${t}</button>`).join("");
-    $("shelfX").querySelectorAll("button").forEach((b) => b.onclick = () => { const v = b.dataset.v;
-      if (v === "foryou") shelfY = !shelfY; else if (v === "light") shelfO = shelfO === "light" ? "all" : "light"; else if (v === "top") shelfT = !shelfT; else if (v === "value") shelfGV = !shelfGV; else if (v === "filter") shelfFi = !shelfFi; else shelfD = !shelfD;
+    // Top lots and Good value are opposites: one on turns the other off. On a phone the row works like My equipment:
+    // what's ticked stays out, with a + for the rest (all of them while nothing is ticked); the rest folds back by itself
+    const anyX = xs.some(([v]) => extraOn(v));
+    $("shelfX").innerHTML = xs.map(([v, t]) => `<button type="button" class="chip${v === "foryou" ? " siri" : ""}" data-v="${v}" aria-pressed="${extraOn(v)}">${t}</button>`).join("")
+      + (anyX ? `<button type="button" class="chip gear-more x-more" aria-label="See all" aria-expanded="false"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>` : "");
+    const xrow = $("shelfX").closest(".opt"); xrow.classList.add("xrow"); xrow.classList.toggle("xall", !anyX || xOpen);
+    const more = $("shelfX").querySelector(".x-more"); if (more) more.onclick = (e) => { e.stopPropagation(); xOpen = true; renderShelfO(); xWait(); };
+    $("shelfX").querySelectorAll("button[data-v]").forEach((b) => b.onclick = () => { const v = b.dataset.v; if (xOpen) xWait();
+      if (v === "foryou") shelfY = !shelfY; else if (v === "light") shelfO = shelfO === "light" ? "all" : "light"; else if (v === "top") { shelfT = !shelfT; if (shelfT) shelfGV = false; } else if (v === "value") { shelfGV = !shelfGV; if (shelfGV) shelfT = false; } else if (v === "filter") shelfFi = !shelfFi; else shelfD = !shelfD;
       shelfAll = false; renderShelfO(); renderShelf(); });
     const on = xs.filter(([v]) => extraOn(v)).map(([, t]) => t);
     fillSel("shelfXSel", [["", on.length ? on.join(", ") : "None"]], "", () => {});   // the folded row's pill says what's ticked
@@ -5743,7 +5762,7 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
     // once you've ticked something, the row shows only what you own and See all; an owned pill asks Remove? first, like a saved bag
     const row = (id, list, all, label) => { const open = gearOpen[id] || !list.length, keys = Object.keys(all).filter((k) => open || list.includes(k));
       $(id).innerHTML = keys.map((k) => `<button type="button" class="chip" data-k="${k}" aria-pressed="${list.includes(k)}">${esc(label(all[k]))}</button>`).join("")
-        + (list.length && !open ? `<button type="button" class="chip gear-more" aria-expanded="false">See all</button>` : "");
+        + (list.length && !open ? `<button type="button" class="chip gear-more" aria-expanded="false" aria-label="See all"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>` : "");
       // the full list folds back by itself, given time to read it (2 s plus 0.15 s a pill: about 7 s for both lists); each tap starts the wait again
       const wait = gearWait;
       $(id).querySelectorAll("button[data-k]").forEach((b) => b.onclick = () => { const k = b.dataset.k, i = list.indexOf(k);
