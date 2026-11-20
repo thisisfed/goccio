@@ -12,7 +12,7 @@ Up to 40 shops are tried a run; the first 10 that pass are added. None found: no
     python3 scripts/world.py            # one run
     python3 scripts/world.py --dry      # report only, change nothing
 """
-import json, random, re, sys, time, urllib.parse, urllib.request
+import json, random, re, sys, urllib.parse, urllib.request
 from datetime import date, timedelta
 from pathlib import Path
 
