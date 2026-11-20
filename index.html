@@ -2067,19 +2067,14 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
 .sec-list .sec-p{border:0;background:var(--pill);color:var(--ink);border-radius:var(--r);height:var(--pill-h);padding:0 10px;font:500 var(--fs-s)/1 var(--sans);cursor:pointer}
 @media (min-width: 900px){ .nav .sec-inline{display:flex} .nav .sec-dd, .sec-list{display:none!important} }
 .sec-inline .ss{display:none}
-/* phones and small screens: the same pills on one line, short names, sliding sideways under your finger; the one in view
-   is kept on screen, and the row fades out at its edges where there's more to slide to */
-@media (max-width: 899.98px){
-  .nav .sec-dd, .sec-list{display:none!important}
-  .top-in .nav{flex:1 1 auto;min-width:0;justify-content:flex-end}
-  .nav .sec-inline{display:flex;flex:0 1 auto;min-width:0;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch;
-    scroll-snap-type:x proximity;scroll-padding-inline:24px;
-    -webkit-mask:linear-gradient(90deg,transparent 0,#000 var(--fl,0px),#000 calc(100% - var(--fr,0px)),transparent 100%);
-            mask:linear-gradient(90deg,transparent 0,#000 var(--fl,0px),#000 calc(100% - var(--fr,0px)),transparent 100%)}
-  .nav .sec-inline::-webkit-scrollbar{display:none}
-  .nav .sec-inline .sec-p{flex:none;scroll-snap-align:start;white-space:nowrap}
-  .sec-inline .sl{display:none} .sec-inline .ss{display:inline}
-}
+/* phones and small screens: the pill naming the section in view slides the others down from behind the bar, all on one line;
+   when they don't fit the line slides sideways, fading at an edge only where there's more to see */
+.sec-list-in{flex-wrap:nowrap!important;justify-content:flex-start!important;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;
+  -webkit-mask:linear-gradient(90deg,transparent 0,#000 var(--fl,0px),#000 calc(100% - var(--fr,0px)),transparent 100%);
+          mask:linear-gradient(90deg,transparent 0,#000 var(--fl,0px),#000 calc(100% - var(--fr,0px)),transparent 100%)}
+.sec-list-in::-webkit-scrollbar{display:none}
+.sec-list-in > .sec-p{flex:none;white-space:nowrap}
+.sec-list-in > .sec-p:first-child{margin-left:auto}   /* right-aligned while it fits, and still reachable when it doesn't */
 @media (prefers-reduced-motion: reduce){ .sec-list, .sec-list > .sec-list-in, .nav .sec-dd::after{transition:none!important} }
 /* the pills' 12px above and below sit inside the part that grows, so it closes to nothing */
 .sec-list-in::before, .sec-list-in::after{content:"";flex-basis:100%;height:7px}
@@ -6838,7 +6833,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     const ids = Object.keys(LBL);
     const avail = (id) => { const el = $(id); return el && !el.hidden && !(id === "recipe" && document.querySelector('[data-sec="recipe"]').hidden); };
     let active = "", active0 = null;
-    const row = document.querySelector(".nav .sec-inline");
+    const row = document.querySelector("#secList .sec-list-in");
     // the row fades at an edge only where there's more to slide to
     const edges = () => { if (!row) return; const m = row.scrollWidth - row.clientWidth;
       row.style.setProperty("--fl", row.scrollLeft > 1 ? "18px" : "0px"); row.style.setProperty("--fr", m - row.scrollLeft > 1 ? "18px" : "0px"); };
@@ -6849,7 +6844,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       let a = ""; for (const id of ids) { const el = $(id); if (!avail(id)) continue; if (el.getBoundingClientRect().top <= line) a = id; }
       active = a;
       document.querySelectorAll("[data-sec]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.sec === a)));
-      if (a !== active0) { active0 = a; const row = document.querySelector(".nav .sec-inline"), on = row && row.querySelector(`[data-sec="${a}"]`);
+      if (a !== active0) { active0 = a; const on = row && row.querySelector(`[data-sec="${a}"]`);
         if (on && row.scrollWidth > row.clientWidth + 1) { const l = on.offsetLeft - row.offsetLeft, r = l + on.offsetWidth;   // the pill in view slides into the row
           if (l < row.scrollLeft + 24 || r > row.scrollLeft + row.clientWidth - 24) row.scrollTo({ left: Math.max(0, l - 24), behavior: "smooth" }); } }
       edges();
@@ -6859,7 +6854,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     // picking folds it again
     const shut = (now) => { list.classList.toggle("instant", !!now); list.classList.remove("open"); list.inert = true; list.setAttribute("aria-hidden", "true"); dd.setAttribute("aria-expanded", "false"); };
     const close = () => shut(false);
-    dd.onclick = (e) => { e.stopPropagation(); if (list.classList.contains("open")) return close(); sync();
+    dd.onclick = (e) => { e.stopPropagation(); if (list.classList.contains("open")) return close(); active0 = null; sync();
       list.classList.remove("instant"); list.inert = false; list.setAttribute("aria-hidden", "false"); list.classList.add("open"); dd.setAttribute("aria-expanded", "true"); };
     // your own scrolling folds it: a finger dragging the page or the wheel (the page shifting as the list opens is not you)
     const fold = (e) => { if (list.classList.contains("open") && !(e.target.closest && e.target.closest("#secList, #secDd"))) close(); };
