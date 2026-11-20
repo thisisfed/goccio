@@ -4395,7 +4395,9 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     if (r.goal && K !== "shot") why.push(`Strength comes from the ratio (1:${r.ratio}). In UC Davis tests, sweetness went down as strength went up (Frost et al. 2020): a lighter ratio tastes sweeter, a stronger one heavier.`);
     const rk = risks(r);
     $("why").innerHTML = rk.map((w) => `<li class="warn">${esc(w)}</li>`).join("") + cons.map((w) => `<li class="cons">${esc(w)}</li>`).join("") + why.map((w) => `<li>${esc(w)}</li>`).join("");
-    $("expect").innerHTML = expectCup(r).map((w) => { const i = w.indexOf(": "); return `<li><b>${esc(w.slice(0, i))}</b>${esc(": " + lowFirst(w.slice(i + 2)))}</li>`; }).join("");
+    // "Label: text" lines bold the label; a line with no label (the roast note) is shown as it is
+    $("expect").innerHTML = expectCup(r).map((w) => { const i = w.indexOf(": "); if (i < 1 || i > 24) return `<li>${esc(w)}</li>`;
+      return `<li><b>${esc(w.slice(0, i))}</b>${esc(": " + lowFirst(w.slice(i + 2)))}</li>`; }).join("");
     // What to expect sits right after Why this recipe, open, for every recipe
     $("whyHint").textContent = rk.length ? `${rk.length} warning${rk.length > 1 ? "s" : ""}` : ""; $("whyHint").classList.toggle("warn", rk.length > 0);
 
