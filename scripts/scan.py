@@ -1819,6 +1819,7 @@ PAGE_FETCHES_PER_ROASTER = 60   # product pages read per shop per day, on top of
 # well inside the workflow's 150-minute limit and saves what it found; the rest is read the next day
 SCAN_T0 = time.monotonic()
 PAGE_MINUTES = 100
+STOP_MINUTES = 120   # roasters not reached by then keep yesterday's coffees, so the run always saves inside the 150-minute limit
 # a coffee's page is read for its roast once per version of the roast reader: when the reader learns a new
 # way shops write it, every coffee still without a roast gets one more look, and never again after that
 ROAST_CHECK = 3
@@ -1989,7 +1990,7 @@ def add_page_prices(recs, roaster, old):
         if prev.get("price") and prev.get("price_from") == "page":
             rec["price"], rec["price_from"] = prev["price"], "page"
             continue
-        if fetched >= PRICE_FETCHES_PER_ROASTER:
+        if fetched >= PRICE_FETCHES_PER_ROASTER or time.monotonic() - SCAN_T0 > PAGE_MINUTES * 60:
             break
         fetched += 1
         try:
@@ -2390,6 +2391,8 @@ def main():
     def run(r):
         """Fetch and classify one roaster (runs in a thread pool: page look-ups made one-by-one were too slow)."""
         r["_old"] = old
+        if time.monotonic() - SCAN_T0 > STOP_MINUTES * 60:
+            return None, "out of time today: yesterday's coffees kept", []
         kind, items, err = scan_roaster(r)
         recs = []
         if kind:
