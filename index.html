@@ -5518,29 +5518,23 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     { text: "Washed Burundi, light roast", brewer: "v60", dose: 30 },
   ];
   { const gx = document.querySelector(".g-ex"); if (gx) gx.addEventListener("toggle", () => { if (gx.open) renderExample(); }); }   // each opening shows another example
-  // the labels under the example's bar: each at its step's time. One that would touch the label before it moves right a little
-  // (up to 16px) if that's enough, otherwise down to the next line; Done holds the right end. The list grows a line per extra row.
+  // the labels under the example's bar, on one line: each at its step's time. One that would touch the label before it
+  // moves right a little (up to 16px) if that's enough; otherwise it's left out (its segment still shows). Done holds the right end.
   function layGlimpse() {
     const ul = document.querySelector(".glimpse .g-pours"); if (!ul) return;
     const W = ul.clientWidth; if (!W) return;
     const lis = [...ul.children], GAP = 12, NUDGE = 16;
-    lis.forEach((li) => { li.style.top = "0px"; li.style.left = ""; });
+    lis.forEach((li) => { li.style.top = "0px"; li.style.left = ""; li.style.display = ""; });
     const rowH = Math.max(...lis.map((li) => li.offsetHeight), 0);
-    const done = lis.find((li) => li.classList.contains("end")), doneW = done ? done.offsetWidth : 0;
-    const lastEnd = [];   // where each line's last label ends
-    let rows = 1;
+    const done = lis.find((li) => li.classList.contains("end")), limit = W - (done ? done.offsetWidth + GAP : 0);
+    let lastEnd = -Infinity;
     for (const li of lis.filter((x) => x !== done)) {
       const w = li.offsetWidth, x0 = Math.min(parseFloat(li.style.getPropertyValue("--p")) * W, W - w);
-      let row = 0, x = x0;
-      for (;; row++) {
-        x = Math.max(x0, (lastEnd[row] ?? -Infinity) + GAP);
-        const limit = row === 0 && done ? W - doneW - GAP : W;
-        if (x - x0 <= NUDGE && x + w <= limit) break;
-      }
-      lastEnd[row] = x + w; rows = Math.max(rows, row + 1);
-      li.style.setProperty("left", x + "px", "important"); li.style.top = row * rowH + "px";
+      const x = Math.max(x0, lastEnd + GAP);
+      if (x - x0 > NUDGE || x + w > limit) { li.style.display = "none"; continue; }
+      lastEnd = x + w; li.style.setProperty("left", x + "px", "important");
     }
-    ul.style.height = (rows * rowH + 6) + "px";
+    ul.style.height = (rowH + 6) + "px";
   }
   addEventListener("resize", () => { if (document.querySelector(".g-ex[open]")) layGlimpse(); });
   function renderExample() {
