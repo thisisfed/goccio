@@ -72,6 +72,6 @@ jobs:
           # the listing form files requests as issues with this token, when it has been added (Settings > Secrets > Actions)
           if [ -n "$LISTING_TOKEN" ]; then printf '%s' "$LISTING_TOKEN" | npx --yes wrangler@4 pages secret put LISTING_TOKEN --project-name=v60 >/dev/null 2>&1 && echo "Listing token set" || echo "Couldn't set the listing token"; fi
           # does the token work? It makes the "listing" label (201) or finds it there (422); 401/403 = wrong token or permission
-          if [ -n "$LISTING_TOKEN" ]; then echo "Listing token check: HTTP $(curl -s -o /dev/null -w '%{http_code}' -X POST -H "Authorization: Bearer $LISTING_TOKEN" -H "Accept: application/vnd.github+json" https://api.github.com/repos/thisisfed/v60/labels -d '{"name":"listing","color":"ff4f00"}')"; else echo "No LISTING_TOKEN secret yet"; fi
+          if [ -n "$LISTING_TOKEN" ]; then echo "Listing token check: HTTP $(curl -s -o /dev/null -w '%{http_code}' -X POST -H "Authorization: Bearer $LISTING_TOKEN" -H "Accept: application/vnd.github+json" https://api.github.com/repos/thisisfed/goccio/labels -d '{"name":"listing","color":"ff4f00"}')"; else echo "No LISTING_TOKEN secret yet"; fi
           cd /tmp/site
           npx --yes wrangler@4 pages deploy . --project-name=v60 --branch=main --commit-dirty=true
