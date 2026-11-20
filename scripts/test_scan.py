@@ -125,6 +125,16 @@ CASES = [
                               "This natural process Typica variety from Don Cayito in Dota, Tarrazú creates an idealised version of Arabica’s original cup profile.") == "Costa Rica"),
     ("data/roasters.json with a comma after the last roaster (a hand edit on GitHub) stopped the scan",
      lambda: len(scan.load_roasters()) > 500),
+    ("SRW's Årets Julekaffe read 'Flavour: dried fruit, plum, spice and rounded out by' (a note ran on into the sentence)",
+     lambda: scan.find_notes({"body": "Tasting notes: dried fruit, plum, spice and rounded out by a long finish", "title": "Årets Julekaffe", "tags": []})
+             == ["Dried fruit", "Plum", "Spice"]),
+    ("Notes like 'Butterscotch followed by', 'Juicy notes of nectarine' and 'Hints of' keep only the flavour",
+     lambda: [scan.tidy_note(n) for n in ["Butterscotch followed by", "Juicy notes of nectarine", "Hints of", "Milk chocolate are"]]
+             == ["Butterscotch", "Nectarine", "", "Milk chocolate"]),
+    ("Kobean's 'Nestor Lasso - (72hr Advanced Washed' kept an unclosed bracket",
+     lambda: name("Nestor Lasso - (72hr Advanced Washed", "Kobean", "") == "Nestor Lasso"),
+    ("An unclosed bracket around a name keeps the name: 'Uganda (Bukonzo Dream'",
+     lambda: scan.close_brackets("Uganda (Bukonzo Dream") == "Uganda Bukonzo Dream"),
 ]
 
 

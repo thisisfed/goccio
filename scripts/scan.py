@@ -1225,6 +1225,36 @@ def description_window(text, start, size=2500):
     return t[:m.start()] if m else t
 
 
+# words that mean a tasting note has run on into the sentence around it ("rounded out by", "followed by the", "lead into")
+NOTE_STOP = re.compile(r"(?<![\w-])(?:by|into|onto|the|our|we|you|it|its|it[’']s|is|are|was|were|be|this|that|then|at|of|without|yet|even|simply|due|"
+                       r"followed|complement(?:ed|s)?|compliment(?:ed|s)?|soften(?:ed|s)?|lift(?:ed|s)?|round(?:ed|s)?|rounding|organi[sz]ed|"
+                       r"characteri[sz]ed|open(?:s|ing)?|before|after|lead(?:s|ing)?|carr(?:y|ies)|unfold(?:s|ing)?|greet(?:s)?|make(?:s)?|give(?:s|n)?|"
+                       r"bring(?:s|ing)?|develop(?:s|ing)?|evolv(?:e|es|ing)|leav(?:e|es|ing)|turn(?:s|ing)?)(?![\w-])", re.I)
+NOTE_LEAD = re.compile(r"^(?:with\s+)?(?:(?:a|an|some|strong|subtle|delicate|juicy|rich|bright|soft|gentle|lovely|distinct|clear|beautiful|sweet|lingering|pronounced|big|bold|little|slight)\s+)*"
+                       r"(?:notes?|hints?|flavou?rs?|tones?|touch(?:es)?|aromas?|accents?|undertones?|twist|splash|dash|whisper|suggestion|layers?|lots|loads|plenty|bursts?|waves?|"
+                       r"reminiscent|full|courtesy|zest)\s+of(?:\s+|$)", re.I)
+# words that are never a flavour on their own: what's left of a sentence, not a note
+NOTE_NOT = re.compile(r"^(?:courtesy|half|now|let|whilst|while|these|those|full|well|gradient|story|compact|orthodox|layers|lots|loads|reminiscent|so|also|"
+                      r"here|there|both|each|every|very|much|more|most|less|in the cup|cup|body|round|quality|flavou?r|flavou?rs)$", re.I)
+
+
+def tidy_note(n):
+    """One tasting note, without the sentence it was cut from: 'Juicy notes of nectarine' -> 'Nectarine', 'A hint of caramel' -> 'Caramel',
+    'Butterscotch followed by' -> 'Butterscotch', 'A caramel finish' -> 'Caramel finish', 'Rounded out by' and 'Hints of' -> '' (dropped)."""
+    n = (n or "").split("\n")[0].strip(" .;:-–")
+    n = NOTE_LEAD.sub("", n).strip()
+    n = re.sub(r"^(?:a|an|the)\s+", "", n, flags=re.I)
+    m = NOTE_STOP.search(n)
+    if m:
+        n = n[:m.start()].strip(" ,.;:-–")
+        # what's left before the run-on is a verb or an adverb, not a flavour: "Complemented by", "Beautifully complemented by"
+        if len(n.split()) == 1 and re.search(r"(?:ed|ly|ing)$", n, re.I):
+            return ""
+    if not re.search(r"[^\W\d_]{3,}", n) or len(n.split()) > 4 or NOTE_NOT.match(n):
+        return ""
+    return n[:1].upper() + n[1:]
+
+
 def find_notes(item):
     text = item["body"]
     m = NOTES_RE.search(text)
@@ -1250,7 +1280,9 @@ def find_notes(item):
         if (2 <= len(b) <= 28 and len(b.split()) <= 4 and ":" not in b
                 and not re.search(r"\d|masl|process|altitude|score|perfect|sharing|recommend|brew", b, re.I)
                 and not first(COUNTRIES, b) and not first(list(COUNTRY_ALIASES), b)):
-            out.append(b[:1].upper() + b[1:])
+            b = tidy_note(b)
+            if b and b.lower() not in (o.lower() for o in out):
+                out.append(b)
     return out[:4]
 
 
@@ -1321,7 +1353,21 @@ def clean_name(title, roaster, origin):
             keep.append(p)
         name = ", ".join(keep)
     name = tidy_name(name, roaster)
+    name = close_brackets(name)
     return name or title
+
+
+def close_brackets(name):
+    """A bracket the shop never closed: 'Nestor Lasso - (72hr Advanced Washed' -> 'Nestor Lasso' (process, variety, origin or a date
+    after it go), 'Uganda (Bukonzo Dream' -> 'Uganda Bukonzo Dream' (a name after it stays, without the bracket)."""
+    for o, c in (("(", ")"), ("[", "]")):
+        if name.count(o) > name.count(c):
+            i = name.rfind(o)
+            head, tail = name[:i].rstrip(" -–|,:"), name[i + 1:].strip()
+            detail = (find_process(tail) or find_origin(tail) or any(v.lower() in tail.lower() for v in VARIETIES)
+                      or re.search(r"\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s*\d|\b\d+\s*(?:hr|h|hours?)\b|\bjarc\b|\b74\d{3}\b", tail, re.I))
+            name = head if detail and len(head) >= 3 else f"{head} {tail}".strip()
+    return re.sub(r"\s{2,}", " ", name).strip(" -–|,:")
 
 
 # title segments that are labels or shop/SEO text, not the coffee's name
