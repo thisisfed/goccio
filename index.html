@@ -6181,6 +6181,27 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   const roasterKey = (n) => norm(n).replace(ROASTER_GEN, " ").replace(/\s+/g, " ").trim();
   const GEO_WORDS = new Set([...Object.values(V.country).flat(), ...V.variety, ...V.process.flatMap(([, t]) => t)]);
   const EVERYDAY_ROASTER = /^(origin|notes|april|curve|rave|ozone|assembly|workshop|nomad|kaffa|heart|module|catalyst|alchemy|ritual|subtext|mellow|leaves|scenery|passenger|volcano|union|plot|standout|extract|grind|red|bay|broadway|common|good|blue|black|white|little|north|south|east|west|house|home|lucky|wild|fire|bloom|craft|daily|field|forest|ground|harbour|harbor|island|mountain|ocean|river|rose|sea|smith|square|stone|story|street|sun|sunday|tide|true|village|estate|signature|classic|placebo|baron)$/;
+  // a roaster's web address (squaremilecoffee.com, www.climpsonandsons.com) or handle (@standoutcoffee) read off the bag:
+  // the address matches a shop we follow; a handle matches the shop's name in its address, with or without coffee/roasters.
+  // OCR often reads the dot as a comma or a space, so a known ending (.com, .co.uk, .coffee …) after one is taken as a dot
+  const TLD = "(?:co\\.uk|com\\.au|co\\.nz|com|coffee|co|uk|ie|it|de|fr|nl|be|es|pt|se|dk|no|fi|at|ch|cz|pl|ro|eu|jp|ca|us|nz|shop|store|cafe)";
+  const WEB_RX = new RegExp("\\b(?:www\\s?[.,]\\s?)?((?:[a-z0-9-]+ ){0,3}[a-z0-9][a-z0-9-]{1,40})\\s?[.,·]\\s?(" + TLD + ")\\b", "g");
+  let webCache = null;
+  function webRoaster(text) {
+    if (!roShops || !roShops.size) return null;
+    if (!webCache || webCache.n !== roShops.size) {
+      const list = []; roShops.forEach((shop, name) => { let h = ""; try { h = new URL(shop).hostname.toLowerCase().replace(/^(www|shop|store|eshop)\./, ""); } catch (e) {}
+        const stem = h.split(".")[0].replace(/-/g, ""); if (stem.length >= 3) list.push({ name, stem, core: stem.replace(/(coffee|roasters?|roastery|roasting|coffeeco|co)+$/g, "") }); });
+      webCache = { n: roShops.size, list }; }
+    const t = (text || "").toLowerCase(), close = (a, b) => a === b || (a.length >= 7 && b.length >= 7 && lev(a, b) <= 1);
+    for (const m of t.matchAll(WEB_RX)) { const ws = m[1].replace(/-/g, "").split(" ");   // the address may come apart into words: try the last one, two, three…
+      for (let k = 1; k <= ws.length; k++) { const w = ws.slice(-k).join(""); if (w.length < 3) continue;
+        const hit = webCache.list.find((x) => close(w, x.stem)); if (hit) return { name: hit.name, seen: (ws.slice(-k).join("") + "." + m[2]), how: "web address" }; } }
+    for (const m of t.matchAll(/@\s?([a-z0-9._]{4,30})/g)) { const h = m[1].replace(/[._]/g, "");
+      const hit = webCache.list.find((x) => close(h, x.stem) || (x.core.length >= 5 && (close(h, x.core) || h.startsWith(x.core) && /^(coffee|roasters?|roastery|coffeeroasters|coffeeco|uk|london)?$/.test(h.slice(x.core.length)))));
+      if (hit) return { name: hit.name, seen: "@" + m[1], how: "handle" }; }
+    return null;
+  }
   let knownKeysCache = null;
   function knownRoasterKeys() {
     const names = [...knownRoasters, ...shelf.map((r) => r.roaster), ...ROASTERS.map(titleCase)];
@@ -6277,7 +6298,10 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     const plain = L.filter((l) => l.conf >= 60 && /[a-z]{3}/.test(l.n)), hTop = Math.max(1, ...plain.map((l) => l.h)), isTitle = (l) => l.h >= hTop * 0.75;
     const SUFFIX = /\b(coffee|roasters?|roastery|roasting|co|company|torrefazione|tostadores|kaffeerosterei|rosterei|torrefaction)\b/;
     let roaster = null;
-    (ocr.rot || []).forEach((l) => { const n = norm(l.text); if ((l.conf || 0) < 40 || n.length < 4) return;
+    // (0) first of all, their web address or their handle, printed somewhere on most bags: matched to the shops we follow
+    { const web = webRoaster([...ocr.lines, ...(ocr.rot || [])].filter((l) => (l.conf == null || l.conf >= 35)).map((l) => l.text).join("\n"));
+      if (web) roaster = { name: web.name, s: 1.2, l: { text: web.seen, conf: 95 }, i: -1, web: web.how }; }
+    if (!roaster) (ocr.rot || []).forEach((l) => { const n = norm(l.text); if ((l.conf || 0) < 40 || n.length < 4) return;
       known.forEach((r) => { if (!r.long.length) return; const sc = Math.max(...r.long.map((t) => findTerm(n, t))); if (sc < 0.8) return;
         if (!roaster || sc > roaster.s) roaster = { name: r.name, s: sc, l: { text: l.text, conf: l.conf }, i: -1, side: true }; }); });
     if (!roaster) L.forEach((l, i) => { if (i === nIdx || l.conf < 55) return; known.forEach((r) => { if (r.geo) return;
@@ -6290,7 +6314,8 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     if (!roaster) { const i = L.findIndex((l) => l.conf >= 60 && /\b(coffee roasters?|roastery|roasting co|coffee co|kaffeerosterei|rosterei|torrefaction|tostadores|torrefazione)\b/.test(l.n) && l.n.split(" ").length <= 6);
       const nm = i >= 0 ? titleCase(L[i].n.replace(/\b(coffee roasters?|roastery|roasting co|coffee co|kaffeerosterei|rosterei|torrefaction|tostadores|torrefazione)\b/g, "").trim()) : "";
       if (nm && !GEO_WORDS.has(norm(nm))) roaster = { name: nm, s: 0.7, l: L[i], i }; }
-    out.roaster = roaster && roaster.name ? { v: roaster.name, c: roaster.side ? "high" : cf(Math.min(1, roaster.s), roaster.l.conf), why: roaster.side ? "the name down the side of the bag" : "“" + roaster.l.text + "”" }
+    out.roaster = roaster && roaster.name ? { v: roaster.name, c: roaster.side || roaster.web ? "high" : cf(Math.min(1, roaster.s), roaster.l.conf),
+        why: roaster.web ? `their ${roaster.web} “${roaster.l.text}”` : roaster.side ? "the name down the side of the bag" : "“" + roaster.l.text + "”" }
       : { v: null, why: "No roaster name found: it’s often a logo, or on the back" };
     // coffee name: the biggest print, with the short lines it's set in (THE / ESTATE, BROADWAY / BLEND). Never the small line
     // over it (THE SIGNATURE, SINGLE ORIGIN), a line of flavours, a place, boilerplate or the roaster. A title can be a process
@@ -6391,7 +6416,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   // ---- 4. review sheet: every field editable, with how sure the reader is; nothing is applied until you say so ----
   const PROC_OPTS = [["", "Unknown"], ["washed", "Washed"], ["natural", "Natural"], ["honey", "Honey"], ["anaerobic", "Anaerobic"], ["cofer", "Co-ferment / Infused"], ["decaf", "Decaf"]];
   const ROAST_OPTS = [["", "Unknown"], ["vlight", "Very light"], ["light", "Light"], ["medium", "Medium"], ["mdark", "Medium-dark"], ["dark", "Dark"]];
-  const FIELD_ROWS = [["name", "Coffee"], ["roaster", "Roaster"], ["origin", "Origin"], ["process", "Process"], ["variety", "Variety"]];   // no roast or roast date here: the Roast row in What’s brewing? has the roast   // no tasting notes: the site never shows or uses them
+  const FIELD_ROWS = [["roaster", "Roaster"], ["name", "Coffee"], ["origin", "Origin"], ["process", "Process"], ["variety", "Variety"]];   // no roast or roast date here: the Roast row in What’s brewing? has the roast   // no tasting notes: the site never shows or uses them
   let review = null;
   function showReview(fields, raw) {
     const sm = shelfMatch(fields);
