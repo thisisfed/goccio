@@ -2435,6 +2435,103 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const cap1 = (s) => s ? s[0].toUpperCase() + s.slice(1) : s;
   // no shouting: a whole word in capitals becomes "Word"; short codes without two vowels (AA, SL28, CGLE) stay
+  // the name shown in the coffee list (its own scope: these lists are only for names)
+  const coffeeName = (() => {
+    // The coffee's own name: what's left once the facts the tags show (and the lot detail after them) are taken off.
+    // Uganda Mukuru Natural -> Mukuru; Alirio Ortega Washed Sidra Oct. 21st -> Alirio Ortega; Bombe, Etiopía -> Bombe.
+    const COUNTRIES = {
+      Ethiopia: "Ethiopia|Ethiopian|Etiopía|Etiopia|Etiope|Etíope|Äthiopien|Éthiopie|Ethiopië|Etiopien|Etiópia|Etiopie|Etiopija|Etiyopya|Etiópia",
+      Kenya: "Kenya|Kenyan|Kenia|Keňa|Kenija|Quênia|Quenia|Kenyaans",
+      Colombia: "Colombia|Colombian|Columbia|Columbian|Colombie|Kolumbien|Colômbia|Kolumbia|Colombië|Kolumbie|Colombiano|Colombiana|Kolombiya",
+      Brazil: "Brazil|Brazilian|Brasil|Brasile|Brésil|Brasilien|Brazilië|Brazílie|Brazylia|Brasileiro|Brasiliano|Brazília|Brezilya",
+      Peru: "Peru|Peruvian|Perú|Pérou|Peruano",
+      Rwanda: "Rwanda|Rwandan|Ruanda",
+      Burundi: "Burundi|Burundian",
+      Uganda: "Uganda|Ugandan|Ouganda",
+      Tanzania: "Tanzania|Tanzanian|Tansania|Tanzanie|Tanzânia",
+      Mexico: "Mexico|Mexican|México|Messico|Mexique|Mexiko|Mexicano|Meksyk|Meksika",
+      Guatemala: "Guatemala|Guatemalan|Guatemalteco|Gwatemala|Gvatemala",
+      Honduras: "Honduras|Honduran|Hondureño",
+      Nicaragua: "Nicaragua|Nicaraguan|Nikaragua",
+      "El Salvador": "El Salvador|Salvadoran|Salvadorean|Salwador",
+      "Costa Rica": "Costa Rica|Costa Rican|Kostarika|Kostaryka|Costarricense",
+      Panama: "Panama|Panamanian|Panamá|Panameño",
+      Ecuador: "Ecuador|Ecuadorian|Équateur|Equador|Ekvádor",
+      Bolivia: "Bolivia|Bolivian|Bolivie|Bolívia|Bolivien",
+      Indonesia: "Indonesia|Indonesian|Indonésie|Indonesien|Indonésia",
+      Yemen: "Yemen|Yemeni|Jemen|Yémen|Iêmen",
+      India: "India|Indian|Inde|Indien|Índia",
+      Vietnam: "Vietnam|Vietnamese|Viet Nam|Việt Nam",
+      China: "China|Chinese|Chine|Yunnan",
+      "Papua New Guinea": "Papua New Guinea|PNG|Papouasie|Papua-Neuguinea|Papua Nová Guinea",
+      Congo: "Congo|Congolese|DRC|DR Congo|Kongo",
+      Malawi: "Malawi|Malawian", Zambia: "Zambia|Zambian|Sambia|Zambie", Zimbabwe: "Zimbabwe",
+      Myanmar: "Myanmar|Burma", Thailand: "Thailand|Thai|Thaïlande|Tailandia",
+      Taiwan: "Taiwan|Taiwanese", Jamaica: "Jamaica|Jamaican|Jamaïque|Jamaika",
+      "Dominican Republic": "Dominican Republic|Dominican|República Dominicana",
+      Haiti: "Haiti|Haitian", Cuba: "Cuba|Cuban", "Timor-Leste": "Timor-Leste|East Timor|Timor|Timorese",
+      Laos: "Laos|Lao", Philippines: "Philippines|Filipino", Nepal: "Nepal|Nepali", Hawaii: "Hawaii|Hawaiian|Kona",
+      Venezuela: "Venezuela|Venezuelan", Cameroon: "Cameroon|Cameroun", Madagascar: "Madagascar", "Saint Helena": "Saint Helena|St Helena",
+      Australia: "Australia|Australian", "Puerto Rico": "Puerto Rico|Puerto Rican", Sumatra: "Sumatra|Sumatran", Java: "Java|Javan", Sulawesi: "Sulawesi|Toraja", Bali: "Bali|Balinese", Flores: "Flores", Aceh: "Aceh|Gayo",
+    };
+    const ALL_COUNTRIES = Object.values(COUNTRIES).join("|");
+    // the lot detail that follows a coffee's name: process, variety, grade, dates, formats
+    const DETAIL = [
+      // process
+      "washed|fully washed|semi[- ]washed|natural|naturals|honey|red honey|yellow honey|black honey|white honey|anaerobic|anaerobico|anaeróbico|carbonic|carbonic maceration|maceration|macération|fermented|fermentation|ferment|co[- ]?ferment(?:ed)?|infused|thermal shock|slow[- ]dried|sun[- ]dried|dried|oxidation|oxydation|oxidised|oxidized|wet[- ]hulled|giling basah|pulped|lavado|lavé|nature|nx|wx|hx|experimental|extended|yeast|koji|double|process|processed|decaf|decaffeinated|swiss[- ]?water|sugar ?cane|mountain water|ethyl acetate|ea|co2|kombucha|lactic|aerobic|cold|hydro|dark room|drd",
+      // variety
+      "geisha|gesha|sidra|bourbon|pink bourbon|red bourbon|yellow bourbon|typica|caturra|catuai|catuaí|catuay|castillo|pacamara|pacas|maragogype|maragogipe|sl ?-?28|sl ?-?34|ruiru|ruiru ?11|batian|heirloom|landrace|741\\d\\d|wush ?wush|laurina|eugenioides|mokka|mocha|mundo novo|chiroso|tabi|parainema|catimor|sarchimor|obata|arara|marsellesa|villa sarchi|kent|robusta|liberica|excelsa|ethiosar|centroamericano|starmaya|mibirizi|sudan ?rume|rume ?sudan|jarc|kurume|dega|wolisho|bourbon pointu|caturron|maracaturra|pacamara|java|field blend|mixed varietals|varietal|varietals|variety|cultivar",
+      // grade, lot and format
+      "arabica|light roast|medium roast|dark roast|medium-dark roast|aa|ab|pb|aa\\+|top|g1|g2|g3|g4|grade ?\\d|gr\\.? ?\\d|shg|shb|ep|lot|lots|microlots?|micro[- ]lots?|nanolot|nano[- ]lot|lote|n[ºo°]\\.? ?\\d+|#\\d+|espresso|filter|omni|omniroast|whole ?bean|beans|ground|coffee|bag|pack|b2b|retail|subscription|organic|fairtrade|fair trade|rainforest|bird friendly|single origin|single estate|limited|limited edition|edition|new|back in stock|pre[- ]?order|competition|auction|reserve lot|\\d+ ?(?:g|kg|gr|oz|lb)",
+      // dates
+      "(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\\.? ?\\d{1,2}(?:st|nd|rd|th)?|\\d{1,2}(?:st|nd|rd|th)? (?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*|\\d{1,2}[./]\\d{1,2}[./]\\d{2,4}|20\\d\\d|harvest|crop|roast date|roasted",
+    ].join("|");
+    const GRADE = "aa|ab|pb|aa\\+|g1|g2|g3|g4|grade ?\\d|gr\\.? ?\\d|shg|shb|decaf|decaffeinated";
+    const GENERIC = /^(?:the|a|de|la|el|of|and|by|estate|blend|farm|village|house|so|coffee)$/i;   // not a name on its own
+    const LABEL = "20\\d\\d|new|rare|limited|special|seasonal|competition|auction|exclusive|\\d+/\\d+";
+    // "coffee" in any language, and the words a shop puts around a name
+    const FILLER = "coffee beans|beans|kaffe|kaffebønner|kaffebönor|kaffebohnen|café|cafe|caffè|caffe|káva|zrnková káva|kawa|kahve|kávé|single origin|speciality|specialty|variedad|variedade|varietà";   // marketing labels before the name
+    const B = (alt) => `(?<![\\p{L}\\d])(?:${alt})(?![\\p{L}\\d])`;
+    const reEsc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+    function coffeeName(r) {
+      const full = String(r.name || "").replace(/[\u200b\ufeff]/g, "").replace(/[\s\u2028\u2029]+/g, " ").trim();
+      if (!full) return full;
+      // a blend that names two countries (Brazil & Costa Rica 80/20): the countries are the name
+      if (new RegExp(`${B(ALL_COUNTRIES)}\\s*(?:&|\\+|/|\\band\\b|,)\\s*${B(ALL_COUNTRIES)}`, "iu").test(full)) return full;
+      const keep = (a) => a.filter((w) => w && w.length > 2).map(reEsc);
+      const region = keep([r.region]), variety = keep(r.variety ? String(r.variety).split(/\s*[,/&]\s*/) : []);
+      const ONLY_DETAIL = new RegExp(`^(?:${[DETAIL, FILLER, GRADE, LABEL, ...variety].join("|")})$`, "iu");
+      // before the name: countries, the region, grades and labels (a process or variety word can start a real name: Gesha Village, Honey Mountain)
+      const LEAD = new RegExp(`^(?:[\\s\\-–—|,:;/&+.~*]|${B([ALL_COUNTRIES, GRADE, LABEL, FILLER, ...region].join("|"))})+`, "iu");
+      const CUTWORDS = [ALL_COUNTRIES, DETAIL, FILLER, "coffee", ...region, ...variety].join("|");
+      // after the name's first word: anything from a country, process, variety, grade or date on is lot detail
+      // (not a country after from/of/with: From Brazil with Love is a name)
+      const CUTG = new RegExp(`(?<!\\b(?:from|of|de|del|da|do|in|to|with)\\s)${B(CUTWORDS)}`, "giu");
+      const HEAD = new RegExp(`^(?:${B(DETAIL)}|\\S+)`, "iu");   // a name can open with a two-word variety: Pink Bourbon La Riviera
+      const cut = (t) => {
+        t = t.replace(/\sby\s[\s\S]*$/, "");   // Afterglow by Jamison Savage (a lower-case by only: Fed By Fear is a name)
+        const h = t.match(HEAD), start = h ? h[0].length : 0;
+        CUTG.lastIndex = start; const m = CUTG.exec(t);
+        return m ? t.slice(0, m.index) : t;
+      };
+      // brackets and *starred* bits hold lot detail: take them out (but a name that is only a bracket keeps its words)
+      let s = full.replace(/\*[^*]*\*/g, " ").replace(/\{[^}]*\}?/g, " ").replace(/\[[^\]]*\]?|\([^)]*\)?/g, " ").replace(/\s{2,}/g, " ").trim();
+      if (!/\p{L}{2,}/u.test(s)) s = full.replace(/[\[\]()*]/g, " ");
+      // the first part (before " - ", ", ", ": " and the like) that still has a name in it
+      for (const part of s.split(/\s+[-–—|~/]\s+|\s*[,:;]\s+|\s*[|]\s*|(?<=\p{L}{3})(?<!\b(?:Mrs|Sta|Sto|Oct|Nov|Dec|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept))\.\s+/u)) {
+        const lead = part.replace(LEAD, "").trim();
+        if (new RegExp(`^(?:(?:${[DETAIL, FILLER, GRADE, LABEL, ...variety].join("|")})[\\s\\-–—,]*)+$`, "iu").test(lead)) continue;   // Pink Bourbon: all detail
+        let t = cut(lead).replace(/[\s\-–—|,:;/&+.~*]+$/g, "").trim();
+        t = t.replace(/^['"‘“’”]+|['"‘“’”]+$/g, "").trim();
+        if ((t.match(/["“”]/g) || []).length % 2) t = t.replace(/["“”]/g, "").trim();   // a quote left open by the cut   // 'Tropical Bahia' -> Tropical Bahia
+        const words = t.match(/[\p{L}\d][\p{L}\d'’.-]*/gu) || [];
+        if (/\p{L}{3,}/u.test(t) && !GENERIC.test(t) && !words.every((w) => ONLY_DETAIL.test(w.replace(/\.$/, "")) || /^\d+$/.test(w))) return t;
+      }
+      return null;   // nothing but detail: the caller falls back
+    }
+    return coffeeName;
+  })();
   // the name in the coffee list without what the tags under it already say: the origin (and region) and Decaf
   const shortName = (r) => {
   const name = String(r.name || "").replace(/[\u200b\ufeff]/g, "").trim();
@@ -5343,7 +5440,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
       return `${head}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
         <div class="l">
           <span class="who">${!isSp && fyOn ? `<span class="ji">${LANG === "it" ? "Per te" : "For you"}</span> ` : !isSp && r.just_in ? '<span class="ji">Just in</span> ' : ""}<a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(r.roaster)}</a>${r.roaster_city ? ` <span class="rcity">${esc(r.roaster_city)}</span>` : ""} <span class="day">${day}</span></span>
-          <span class="name">${esc(calm(shortName(r)))}</span>
+          <span class="name">${esc(calm(coffeeName(r) ?? shortName(r)))}</span>
           <p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p>
         </div>
         <div class="r">
