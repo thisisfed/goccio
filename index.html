@@ -1259,6 +1259,8 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
 :root[data-theme="dark"] .item.sponsored .pills .pill, :root[data-theme="dark"] .item.sponsored .pills .oc { background: rgba(255, 255, 255, .07); }
 :root[data-theme="dark"] .item.sponsored { background: linear-gradient(150deg, #2d261f 0%, #261f18 55%, #1f1913 100%); box-shadow: inset 0 0 0 1px rgba(214, 170, 120, .14); }
 .item.sponsored + .grp, .item.sponsored + .item { border-top-color: transparent; }
+.g-specs .gk { font-style: normal; color: var(--muted); margin-right: 5px; }   /* C40, C, H2O: small and grey before each number */
+.g-specs .gk sub { font-size: .7em; vertical-align: -.15em; line-height: 0; }
 .g-specs .arr { display: inline-block; width: 18px; height: 10px; margin: 0 6px; color: var(--ink); vertical-align: 4px; }
 /* the + sits right under the grinder pill's arrow: both centred 15 px from the right edge */
 .kit-mill .step button { width: 30px !important; min-width: 30px !important; padding: 0 !important; }
@@ -5774,7 +5776,8 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     let eg = fig.querySelector(".g-brewer"); if (!eg) { eg = document.createElement("span"); eg.className = "g-brewer"; fig.querySelector("figcaption").after(eg); }
     eg.textContent = brewer;
     const ARR = '<svg class="arr" viewBox="0 0 18 10" aria-hidden="true"><path d="M1 5h15M12 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-    fig.querySelector(".g-specs").innerHTML = `<span><b>${r.clicks}</b> clicks</span><span><b>${r.dose}</b>${ARR}<b>${r.water}</b> g</span>${r.temp != null ? `<span><b>${r.temp}</b>°C</span>` : ""}`;
+    // each number says what it is: the grinder (C40), the coffee (C, then the water it goes to) and the water's heat (H2O)
+    fig.querySelector(".g-specs").innerHTML = `<span><i class="gk">C40</i><b>${r.clicks}</b> clicks</span><span><i class="gk">C</i><b>${r.dose}</b>${ARR}<b>${r.water}</b> g</span>${r.temp != null ? `<span><i class="gk">H<sub>2</sub>O</i><b>${r.temp}</b>°C</span>` : ""}`;
     // every step under the bar at its own time; where two would touch, layGlimpse() drops the later one to the next line
     const items = P.map((p) => { const pos = p.t / T;
       return `<li style="--p:${pos.toFixed(3)}"><span>${mmss(p.t)}</span>${p.act ? `<i>${esc(p.lbl)}</i>` : `<b>${p.to}</b>`}</li>`; }).join("");
