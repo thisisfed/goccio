@@ -177,6 +177,9 @@ CASES = [
              == ["Dark Chocolate", "Caramel", "Orange Rind"]),
     ("People Possession names drop the brewer in braces: 'Abu [Catuai 3125]{Filter}' has no '{Filter}'",
      lambda: "{" not in scan.clean_name("Abu [Catuai 3125]{Filter}", "People Possession", "Costa Rica") and "{" not in scan.clean_name("Industrial Supply Series [RED]{Filter}", "People Possession", "")),
+    ("People Possession: '[RED]' is part of the name ('Industrial Supply Series Red'), '[Catuai 3125]' is a variety tag and goes",
+     lambda: (scan.clean_name("Industrial Supply Series [RED]{Filter}", "People Possession", ""), scan.clean_name("Abu [Catuai 3125]{Filter}", "People Possession", "Costa Rica"))
+             == ("Industrial Supply Series Red", "Abu")),
     ("People Possession: 'FLAVOR COMPOSITION CHERRY YOGURT // STRAWBERRY MILKSHAKE //LIME CANDY', label and list split by //, not shouted",
      lambda: [scan.page_notes(t, "Industrial Supply Series: Red Filter") for t in ("Industrial Supply Series: Red Filter\nFLAVOR COMPOSITION CHERRY YOGURT // STRAWBERRY MILKSHAKE //LIME CANDY\n",
               "Industrial Supply Series: Red Filter\nFLAVOR COMPOSITION\nCHERRY YOGURT // STRAWBERRY MILKSHAKE //LIME CANDY\n")] == [["Cherry yogurt", "Strawberry milkshake", "Lime candy"]] * 2),
