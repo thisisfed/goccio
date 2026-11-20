@@ -1459,6 +1459,7 @@ def clean_name(title, roaster, origin):
     title = re.sub(r"<[^>]+>", "", title)
     title = re.sub(r"^\s*\d{1,2}/\d{1,2}\s+\d{1,2}:\d{2}\s*[~〜～]\s*", "", title)   # Philocoffea: "11/16 10:00~" release stamp
     title = re.sub(r"\s*/\s*$", "", title)   # Fuglen Tokyo: "Arbegona /"
+    title = re.sub(r"\s*\{(?:filter|espresso|blend|omni)\}\s*$", "", title, flags=re.I)   # People Possession: "Abu [Catuai 3125]{Filter}"
     title = re.sub(r"\s*\(\s*\d+\s?(?:g|gr|kg)\b[^)]*\)\s*$", "", title, flags=re.I)   # Pergamino: "Lomaverde (500g coffee bag)"
     m = re.match(r"^\s*\d{3}\s+(\S.*)$", title)   # Philocoffea: "467 Ethiopia Bombe Washed", a lot number in front of the origin
     if m and (find_origin(m.group(1)[:25]) or re.match(r"[A-Z]", m.group(1))):
