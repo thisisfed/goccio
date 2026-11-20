@@ -6,7 +6,7 @@ New specialty coffees from roasters in the UK, Europe and beyond, read every day
 your brewer and your grinder: grind setting, dose, water, temperature and every step, with a brew-along screen, a journal
 that learns, My bags and a bag scanner. No accounts, no tracking, no API keys; everything you save stays on your device.
 
-Everything below is done from GitHub: open the **v60** repo, tap **Actions**, pick the workflow on the left, then
+Everything below is done from GitHub: open the **goccio** repo, tap **Actions**, pick the workflow on the left, then
 **Run workflow**. In the GitHub phone app: repo, **Actions**, workflow, **Run workflow**.
 
 ## Promote a roaster (paid placement)
