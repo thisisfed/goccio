@@ -1618,8 +1618,8 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
   mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E") center / 10px 10px no-repeat;
   transition:transform .25s ease}
 .glimpse figcaption button.g-tag[aria-expanded="true"]::after{transform:rotate(180deg)}
-/* folded on a phone: Coffees' top rule sits as close under Example as the rule above it (13px), not the usual 72px between sections */
-@media (max-width: 760px){ html.ex-fold #shelves{margin-top:-59px} }
+/* on a phone Coffees' top rule sits as close under the example as the example is under its own rule (13px), open or folded */
+@media (max-width: 760px){ #shelves{margin-top:-59px} }
 .g-ex{border-top:1px solid var(--line);padding-top:12px}
 .g-ex > .glimpse{margin-top:0!important}
 .glimpse figcaption .g-tag{flex:none;color:var(--muted);font-size:var(--fs-s);font-weight:500}   /* Example: grey, on the right, like Stored on this device only */
@@ -5703,7 +5703,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     const box = row.querySelector(".chips"); if (box) cdTail(box, 2000 + n * 150); };   // Region and Process count down too, 3 2 1, before they fold
   { const fold = (e) => { if (document.querySelector(".shelf-tools .opt.open") && !(e.target.closest && e.target.closest(".shelf-tools .opt.open"))) closeShelfRows(); };
     addEventListener("touchmove", fold, { passive: true }); addEventListener("wheel", fold, { passive: true }); }
-  function closeShelfRows() { clearTimeout(rowT); document.querySelectorAll(".shelf-tools .opt.open").forEach((r) => { const c = r.querySelector(".chips"); if (c) { clearInterval(c._cdT); c.querySelectorAll(":scope > .cd-tail").forEach((t) => t.remove()); } r.classList.remove("open"); const b = r.querySelector(".shelf-dd"); if (b) b.setAttribute("aria-expanded", "false"); }); }
+  function closeShelfRows() { clearTimeout(rowT); document.querySelectorAll(".shelf-tools .opt.open").forEach((r) => { const c = r.querySelector(".chips"); if (c) { clearInterval(c._cdT); cdRestore(c); } r.classList.remove("open"); const b = r.querySelector(".shelf-dd"); if (b) b.setAttribute("aria-expanded", "false"); }); }
   { const tools = document.querySelector(".shelf-tools");
     // a pill picked in an unfolded row: fold it back and keep the list starting right under the bar
     tools.addEventListener("click", (e) => { const row = e.target.closest(".opt.open"); if (row && e.target.closest(".chips button")) { setTimeout(() => { const f = document.activeElement && row.contains(document.activeElement); closeShelfRows(); if (f) { const b = row.querySelector(".shelf-dd"); if (b) b.focus(); } keepShelfTop(); }, 0); } }, true);   // capture: the row is found before the pick re-draws the pills
@@ -5881,7 +5881,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     const w0 = bar.querySelector(".win"); if (w0) w0.classList.add("lit");   // a still picture of the whole brew: nothing moves
     layGlimpse();
     // the page below never jumps as the examples change: the box keeps the height of the tallest one shown so far
-    fig.style.minHeight = ""; exH = Math.max(exH, fig.offsetHeight); fig.style.minHeight = exH + "px";
+    fig.style.minHeight = "";   // no room kept for a taller example: Coffees follows right under it
     fig.setAttribute("aria-label", `Example recipe: ${ex.text} on the ${brewer}. ${r.clicks} C40 clicks, ${r.dose} g coffee to ${r.water} g water${r.temp != null ? ", " + r.temp + "°C" : ""}, done by about ${mmss(end)}.`);
   }
 
@@ -6754,13 +6754,18 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       const left = Math.ceil((until - performance.now()) / 1000);
       if (left <= 0) { cdStop(el); if (end) end(); } else if (left <= 3) cdShow(el, left); }, 100);
   }
-  // an open list that folds back by itself: a circle at its end counts down the last three seconds
+  // an open list that folds back by itself counts down its last three seconds: the one picked pill (Everywhere, All)
+  // shrinks to a circle with 3 2 1 in it; where several or none are picked (My equipment, Extras) a circle at the end counts
+  function cdRestore(box) { box.querySelectorAll("button.chip.cd").forEach((c) => cdStop(c)); box.querySelectorAll(":scope > .cd-tail").forEach((t) => t.remove()); }
   function cdTail(box, ms) {
-    clearInterval(box._cdT); const until = performance.now() + ms;
+    clearInterval(box._cdT); cdRestore(box); const until = performance.now() + ms;
     box._cdT = setInterval(() => { const left = Math.ceil((until - performance.now()) / 1000);
+      if (left <= 0 || !box.isConnected) { clearInterval(box._cdT); box.querySelectorAll(":scope > .cd-tail").forEach((t) => t.remove()); return; }
+      if (left > 3) return;
+      const on = [...box.querySelectorAll('button.chip[aria-pressed="true"]:not(.gear-more)')];
+      if (on.length === 1) { cdShow(on[0], left); return; }
       let t = box.querySelector(":scope > .cd-tail");
-      if (left <= 0 || !box.isConnected) { clearInterval(box._cdT); if (t) t.remove(); return; }
-      if (left <= 3) { if (!t) { t = document.createElement("span"); t.className = "chip cd cd-tail"; t.setAttribute("aria-hidden", "true"); box.appendChild(t); } t.textContent = left; } }, 100);
+      if (!t) { t = document.createElement("span"); t.className = "chip cd cd-tail"; t.setAttribute("aria-hidden", "true"); box.appendChild(t); } t.textContent = left; }, 100);
   }
   const keepShelfTop = () => { requestAnimationFrame(fitShelf); setTimeout(fitShelf, 120); setTimeout(fitShelf, 350); };
   // the price first; a tap shows Buy?, a second tap goes to the shop
