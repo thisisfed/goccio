@@ -72,7 +72,7 @@ try{var t=localStorage.getItem("v60.theme");document.documentElement.setAttribut
   --card: #fffdf9;        /* warm white */
   --ink: #231b15;         /* roasted near-black */
   --muted: #776a5f;
-  --rule: #e3d9cd;
+  --rule: #e3d9cd; --line: #a6a6a6;
   --wash: #f2ebe2;
   --blue: #0071e3;        /* actions only */
   --accent: #c4521f;      /* terracotta */
@@ -85,7 +85,7 @@ try{var t=localStorage.getItem("v60.theme");document.documentElement.setAttribut
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #14100d; --card: #201a16; --ink: #f4ede4; --muted: #a89a8c; --rule: #3a3029; --wash: #2a221d; --blue: #2997ff; --accent: #f08a4b; --coffee: #d9a273;
+    --bg: #14100d; --card: #201a16; --ink: #f4ede4; --muted: #a89a8c; --rule: #3a3029; --line: #595959; --wash: #2a221d; --blue: #2997ff; --accent: #f08a4b; --coffee: #d9a273;
     --lift: inset 0 1px 0 rgba(255, 235, 215, .05), 0 14px 32px -20px rgba(0, 0, 0, .9);
     --lift-hi: inset 0 1px 0 rgba(255, 235, 215, .07), 0 18px 40px -20px rgba(0, 0, 0, .95);
     --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .92 0 0 0 0 .84 .14 0 0 0 -.05'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
@@ -93,7 +93,7 @@ try{var t=localStorage.getItem("v60.theme");document.documentElement.setAttribut
   }
 }
 :root[data-theme="dark"] {
-  --bg: #14100d; --card: #201a16; --ink: #f4ede4; --muted: #a89a8c; --rule: #3a3029; --wash: #2a221d; --blue: #2997ff; --accent: #f08a4b; --coffee: #d9a273;
+  --bg: #14100d; --card: #201a16; --ink: #f4ede4; --muted: #a89a8c; --rule: #3a3029; --line: #595959; --wash: #2a221d; --blue: #2997ff; --accent: #f08a4b; --coffee: #d9a273;
     --lift: inset 0 1px 0 rgba(255, 235, 215, .05), 0 14px 32px -20px rgba(0, 0, 0, .9);
     --lift-hi: inset 0 1px 0 rgba(255, 235, 215, .07), 0 18px 40px -20px rgba(0, 0, 0, .95);
     --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .92 0 0 0 0 .84 .14 0 0 0 -.05'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
@@ -338,7 +338,7 @@ details.clk > summary .muted { font-weight: 400; font-size: var(--fs-s); flex: 1
 .clk-body p { margin: 0; }
 .clk-sum { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 0; font-variant-numeric: tabular-nums; background: var(--wash); border-radius: 14px; padding: 12px 14px; }
 .clk-sum span:nth-child(even) { text-align: right; font-weight: 600; padding-left: 14px; }
-.clk-sum .tot { border-top: 1px solid var(--rule); padding-top: 6px; font-weight: 700 !important; font-size: 17px; }
+.clk-sum .tot { border-top: 1px solid var(--line); padding-top: 6px; font-weight: 700 !important; font-size: 17px; }
 .clk-zero { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 .step { display: inline-flex; align-items: center; background: color-mix(in srgb, var(--ink) 7%, transparent); border-radius: 10px; }
 .step button { background: none; border: 0; width: 44px; height: 40px; font-size: 20px; }
@@ -397,8 +397,8 @@ details.water[open] .w-head::after { transform: rotate(90deg); }
 @media (max-width: 340px) { .go-big .num, .dock .num { display: none; } .go-big, .dock .btn { justify-content: center; } }
 
 table.pours { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--card); border-radius: 20px; padding: 8px 20px; font-variant-numeric: tabular-nums; }
-.pours th { text-align: left; font-size: var(--fs-s); font-weight: 600; color: var(--muted); padding: 12px 10px 10px 0; border-bottom: 1px solid var(--rule); }
-.pours td { padding: 13px 10px 13px 0; border-bottom: 1px solid var(--rule); vertical-align: baseline; }
+.pours th { text-align: left; font-size: var(--fs-s); font-weight: 600; color: var(--muted); padding: 12px 10px 10px 0; border-bottom: 1px solid var(--line); }
+.pours td { padding: 13px 10px 13px 0; border-bottom: 1px solid var(--line); vertical-align: baseline; }
 .pours td.m { font-size: 15px; color: var(--muted); white-space: nowrap; }
 .pours td.to { font-size: 26px; font-weight: 600; letter-spacing: -.03em; white-space: nowrap; }
 .pours td.to small { font-size: var(--fs-s); color: var(--muted); font-weight: 400; margin-left: 2px; }
@@ -439,7 +439,7 @@ table.pours { width: 100%; border-collapse: separate; border-spacing: 0; backgro
 .suggest b { font-weight: 600; }
 .journal { display: grid; background: var(--card); border-radius: 22px; padding: 4px 20px; }
 .journal > p { padding: 16px 0; }
-.entry { display: grid; grid-template-columns: 92px 1fr auto; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--rule); align-items: baseline; }
+.entry { display: grid; grid-template-columns: 92px 1fr auto; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
 .entry:last-child { border-bottom: 0; }
 .entry .when { font-size: var(--fs-s); color: var(--muted); font-variant-numeric: tabular-nums; }
 .entry .what { display: grid; gap: 2px; }
@@ -484,7 +484,7 @@ table.pours { width: 100%; border-collapse: separate; border-spacing: 0; backgro
 .more-btn { justify-self: center; }
 .mail-me { color: var(--blue); font-weight: 600; }
 
-footer { border-top: 1px solid var(--rule); padding: 18px 0 0; font-size: var(--fs-s); color: var(--muted); display: grid; gap: 6px; }
+footer { border-top: 1px solid var(--line); padding: 18px 0 0; font-size: var(--fs-s); color: var(--muted); display: grid; gap: 6px; }
 .bmc { font-size: var(--fs-s); color: var(--ink); padding-top: 6px; }
 .bmc a { color: var(--coffee); font-weight: 600; }
 .bmc { justify-self: center; text-align: center; font-size: 17px; font-weight: 600; line-height: 1.25; padding: 18px 0 6px; }
@@ -679,16 +679,16 @@ table.pours { padding: 10px 24px; }
    as wide as the screen, grey square-ish buttons, hairline rules instead of cards, colour only in small dots.
    Everything above stays for layout; this block sets the look. */
 :root {
-  --bg: #fff; --card: #fff; --ink: #000; --muted: #808080; --rule: #e3e3e3; --wash: #ededed; --pill: #e6e6e6;
+  --bg: #fff; --card: #fff; --ink: #000; --muted: #808080; --rule: #e3e3e3; --line: #a6a6a6; --wash: #ededed; --pill: #e6e6e6;
   --blue: #000; --accent: #000; --coffee: #000; --lift: none; --lift-hi: none; --grain: none;
   --sans: "Helvetica Neue", Helvetica, Arial, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --big: clamp(26px, 3.4vw, 40px); --r: 4px;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #000; --card: #000; --ink: #fff; --muted: #8c8c8c; --rule: #262626; --wash: #1a1a1a; --pill: #222;
+  --bg: #000; --card: #000; --ink: #fff; --muted: #8c8c8c; --rule: #262626; --line: #595959; --wash: #1a1a1a; --pill: #222;
   --blue: #fff; --accent: #fff; --coffee: #fff; --lift: none; --lift-hi: none; --grain: none; } }
 :root[data-theme="dark"] {
-  --bg: #000; --card: #000; --ink: #fff; --muted: #8c8c8c; --rule: #262626; --wash: #1a1a1a; --pill: #222;
+  --bg: #000; --card: #000; --ink: #fff; --muted: #8c8c8c; --rule: #262626; --line: #595959; --wash: #1a1a1a; --pill: #222;
   --blue: #fff; --accent: #fff; --coffee: #fff; --lift: none; --lift-hi: none; --grain: none; }
 body { background: var(--bg); font: 500 15px/1.35 var(--sans); letter-spacing: -.012em; }
 a { color: var(--ink); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--ink) 30%, transparent); text-underline-offset: 2px; }
@@ -698,7 +698,7 @@ h1, h2, h3, b, strong { font-weight: 500; }
 .cap { font-size: var(--fs-s); font-weight: 500; }
 
 /* header: the name small on the left, grey buttons on the right, the theme button black like Module's basket */
-.top { background: var(--bg); backdrop-filter: none; -webkit-backdrop-filter: none; border-bottom: 1px solid var(--rule); }
+.top { background: var(--bg); backdrop-filter: none; -webkit-backdrop-filter: none; border-bottom: 1px solid var(--line); }
 .top-in, .page { max-width: 1440px; padding-left: 12px; padding-right: 12px; }
 .top-in { min-height: 48px; padding-top: 8px; padding-bottom: 8px; }
 .mark, .mark .serif { font-size: 15px; font-weight: 500; line-height: 1.3; letter-spacing: -.01em; color: var(--ink); }
@@ -713,7 +713,7 @@ h1, h2, h3, b, strong { font-weight: 500; }
 .page { gap: 72px; padding-bottom: 140px; }
 section.sec { gap: 14px; scroll-margin-top: 56px; }
 /* section titles: a black rule, a small label, the way Module labels "Specs" */
-.sec-head { border-top: 1px solid var(--ink); padding-top: 8px; }
+.sec-head { border-top: 1px solid var(--line); padding-top: 8px; }
 .sec-head .cap:first-child { font-size: 15px; font-weight: 500; letter-spacing: -.01em; }
 .sec-head .cap { font-size: var(--fs-s); }
 
@@ -749,7 +749,7 @@ section.sec { gap: 14px; scroll-margin-top: 56px; }
 .btn.ghost:hover { background: color-mix(in srgb, var(--pill) 80%, var(--ink)); opacity: 1; }
 
 /* the example recipe as a spec table */
-.glimpse { width: 100%; max-width: 520px; background: none; border-radius: 0; box-shadow: none; padding: 10px 0 0; border-top: 1px solid var(--rule); gap: 10px; }
+.glimpse { width: 100%; max-width: 520px; background: none; border-radius: 0; box-shadow: none; padding: 10px 0 0; border-top: 1px solid var(--line); gap: 10px; }
 .g-name { font: 500 15px/1.2 var(--sans); }
 .g-eg { font-size: var(--fs-s); font-weight: 500; text-transform: none; letter-spacing: 0; }
 .g-specs b { font-size: 22px; font-weight: 500; }
@@ -759,7 +759,7 @@ section.sec { gap: 14px; scroll-margin-top: 56px; }
 
 /* panels become rows: no fills, no shadows, a hairline on top */
 .tile, .ask, .need, .log, .pours-wrap, .note-tile, .journal, .spec, details.clk, details.water, .zero-row, .tech, table.pours, .col, .item, .adjusted {
-  background: none; border-radius: 0; box-shadow: none; border-top: 1px solid var(--rule); }
+  background: none; border-radius: 0; box-shadow: none; border-top: 1px solid var(--line); }
 .ask, .need, .log, .tech, .adjusted { padding: 12px 0 0; }
 details.clk, details.water { padding: 0; }
 .zero-row { padding: 12px 0 0; }
@@ -827,7 +827,7 @@ table.pours { padding: 0; }
 .item .name { font-size: 17px; font-weight: 500; letter-spacing: -.02em; }
 .item .who, .item .tn { font-size: var(--fs-s); }
 .item .price { font-weight: 500; }
-.grp { font-size: var(--fs-s); font-weight: 500; padding: 22px 0 6px; border-bottom: 1px solid var(--ink); }
+.grp { font-size: var(--fs-s); font-weight: 500; padding: 22px 0 6px; border-bottom: 1px solid var(--line); }
 .pill, .pill.p-nat, .pill.p-wash, .pill.p-honey, .pill.p-exp { background: var(--pill); color: var(--ink) !important; border-radius: var(--r); font-weight: 500; }
 .pill.p-nat::before, .pill.p-wash::before, .pill.p-honey::before, .pill.p-exp::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 5px; vertical-align: 1px; }
 .pill.p-nat::before { background: #af52de; } .pill.p-wash::before { background: #30b0c7; } .pill.p-honey::before { background: #ff9f0a; } .pill.p-exp::before { background: #ff2d55; }
@@ -846,13 +846,13 @@ table.pours { padding: 0; }
 .entry button.del.armed { background: var(--hl); color: var(--on-hl); box-shadow: none; }
 
 /* the end: same small type, left aligned */
-.outro { justify-items: start; text-align: left; border-top: 1px solid var(--ink); padding-top: 10px; }
+.outro { justify-items: start; text-align: left; border-top: 1px solid var(--line); padding-top: 10px; }
 .litext { font-weight: 500; letter-spacing: -.045em; max-width: 26ch; }
 .outro-end { font-weight: 500; letter-spacing: -.045em; }
-footer { border-top: 1px solid var(--ink); padding-top: 10px; font-size: var(--fs-s); grid-template-columns: minmax(0, 1fr); }
+footer { border-top: 1px solid var(--line); padding-top: 10px; font-size: var(--fs-s); grid-template-columns: minmax(0, 1fr); }
 .bmc { justify-self: start; text-align: left; font-weight: 500; }
 .bmc .sheen-text { background: linear-gradient(100deg, #8b4a22 0%, #c96f2a 18%, #e9a94f 32%, #d9705f 48%, #a8653a 64%, #e0a252 80%, #8b4a22 100%); background-size: 100% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; }
-.dock { background: var(--bg); backdrop-filter: none; -webkit-backdrop-filter: none; border-top: 1px solid var(--rule); }
+.dock { background: var(--bg); backdrop-filter: none; -webkit-backdrop-filter: none; border-top: 1px solid var(--line); }
 .dock .btn { min-height: 48px; font-size: 15px; font-weight: 500; padding: 0 14px; }
 .bv-x, .bv-go, .bv-reset, .bv-drain, .bv-opt { border-radius: var(--r) !important; }
 .spec .sub2, .col h3, .cap, .pours th, .g-eg { text-transform: none; letter-spacing: 0; }
@@ -901,7 +901,7 @@ body, .lede, .ask label, .need h3, .log h3, .sec-head .cap:first-child, .mark, .
 }
 
 /* your kit: brewer, grinder and water as one block */
-.kit { display: grid; gap: 12px; padding-bottom: 16px; margin-bottom: 4px; border-bottom: 1px solid var(--rule); }
+.kit { display: grid; gap: 12px; padding-bottom: 16px; margin-bottom: 4px; border-bottom: 1px solid var(--line); }
 .kit-mill { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; min-width: 0; }
 .kit-mill select, .kit-mill .mill-btn { flex: 1 1 220px; min-width: 0; font: 500 var(--fs)/1.2 var(--sans); color: var(--ink); background: var(--pill); border: 0; border-radius: var(--r); padding: 9px 10px; -webkit-appearance: none; appearance: none; }
 .zr-ctl { display: flex; align-items: center; gap: 10px; }
@@ -993,7 +993,7 @@ details.clk > summary .muted { margin-left: auto; overflow: hidden; text-overflo
 .btn, .hero-pill, .share .btn, .more-btn { display: inline-flex; align-items: center; justify-content: center; height: var(--btn-h); min-height: var(--btn-h); padding: 0 14px; font: 500 var(--fs-s)/1 var(--sans); border-radius: var(--r); }
 .go-big, .dock .btn { height: 48px; min-height: 48px; justify-content: space-between; }
 /* the kit sits under the question */
-.kit { padding: 14px 0 0; margin: 0; border-bottom: 0; border-top: 1px solid var(--rule); }
+.kit { padding: 14px 0 0; margin: 0; border-bottom: 0; border-top: 1px solid var(--line); }
 .w-row { display: grid; gap: 6px; min-width: 0; }
 .w-row .w-body { padding: 0; gap: 8px; }
 .w-row .chips { flex-wrap: wrap; gap: 4px; }
@@ -1052,7 +1052,7 @@ details.clk > summary .muted { margin-left: auto; overflow: hidden; text-overflo
 /* the question, the size of a section title */
 .ask label { font-size: var(--fs-m); font-weight: 500; line-height: 1.1; }
 /* the missing-info questions now sit under the coffee box */
-#coffee .need { padding: 14px 0 0; border-top: 1px solid var(--rule); background: none; border-radius: 0; }
+#coffee .need { padding: 14px 0 0; border-top: 1px solid var(--line); background: none; border-radius: 0; }
 /* custom numbers: a row of pills under the title, and an editor in the same type as the rest */
 .mine-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .mine-bar:empty { display: none; }
@@ -1068,14 +1068,14 @@ details.clk > summary .muted { margin-left: auto; overflow: hidden; text-overflo
 #eGv { min-width: 56px; display: inline-flex; align-items: center; justify-content: center; font: 500 var(--fs-s)/1 var(--sans); }
 .ed-pours { width: 100%; border-collapse: collapse; font-size: var(--fs-s); }
 .ed-pours th { text-align: left; font-weight: 400; color: var(--muted); padding: 0 8px 6px 0; }
-.ed-pours td { padding: 4px 8px 4px 0; border-top: 1px solid var(--rule); vertical-align: middle; white-space: nowrap; }
+.ed-pours td { padding: 4px 8px 4px 0; border-top: 1px solid var(--line); vertical-align: middle; white-space: nowrap; }
 .ed-pours td:first-child .ed-in { width: 64px; }
 .ed-pours td:nth-child(2) .ed-in { width: 72px; margin-right: 4px; }
 .ed-pours td.how { white-space: normal; color: var(--muted); width: 100%; }
 .ed-err { margin: 0; color: var(--ink); font-weight: 500; font-size: var(--fs-s); }
 .ed-note { margin: 0; font-size: var(--fs-s); }
 .ed-steps { display: grid; gap: 0; }
-.ed-step { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; gap: 6px 8px; align-items: center; padding: 8px 0; border-top: 1px solid var(--rule); }
+.ed-step { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; gap: 6px 8px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
 .ed-step .ed-how { grid-column: 1 / -1; }
 .ed-step .ed-g { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-s); }
 .ed-step .ed-g .ed-in { width: 80px; }
@@ -1381,7 +1381,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 /* the coffee box builds the recipe on its own: no Build recipe button */
 #go { display: none !important; }
 /* coffees and bags: the hairline sits under each one, not above */
-.shelf .item { border-top: 0 !important; border-bottom: 1px solid var(--rule); }
+.shelf .item { border-top: 0 !important; border-bottom: 1px solid var(--line); }
 .shelf .item.sponsored { border-bottom-color: transparent; }
 .chip .beta { margin-left: 6px; }
 /* phones: no animated headline, the page opens on the intro and the example */
@@ -1457,7 +1457,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 .bag-fz{border:0;cursor:pointer;font:500 var(--fs-s)/1 var(--sans);height:var(--pill-h);padding:0 10px;border-radius:var(--r);background:var(--pill)!important;color:var(--ink)}
 .bag-fz.in{background:var(--ink)!important;color:var(--bg)!important}
 /* What are you brewing? opens its section with the same black rule as every other section */
-#coffee .ask{border-top-color:var(--ink)!important}
+#coffee .ask{border-top-color:var(--line)!important}
 /* closing text in short paragraphs: a gap of half a line between them */
 .litext .pb{display:block;height:.5em}
 /* the credit closes the page: after the footer, right at the bottom with a small margin */
@@ -1913,9 +1913,9 @@ body{transition:opacity .3s ease}
 .specs .spec.roastery, .specs .spec.pick{grid-column:1 / -1!important;min-width:0}
 .specs .spec.roastery{order:-2!important;border-top:0!important}
 .specs .spec.pick{order:-1!important;border-top:0!important}
-.specs .spec.roastery ~ .spec.pick{border-top:1px solid var(--rule)!important}
+.specs .spec.roastery ~ .spec.pick{border-top:1px solid var(--line)!important}
 .specs .spec.roastery b, .specs .spec.pick b{display:block;max-width:100%;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.05;padding-bottom:.04em;text-wrap:balance}
-.specs .spec.pick ~ .spec.brewer{border-top:1px solid var(--rule)!important}
+.specs .spec.pick ~ .spec.brewer{border-top:1px solid var(--line)!important}
 .gear-tools .gear-note{margin:0;font:500 var(--fs-s)/1.35 var(--sans);color:var(--muted)}
 /* Light roast: the freezer's square tick pill, its name in the label column */
 .shelf-tools .opt > span{white-space:nowrap}   /* "Light roast" is 2 px wider than the column: it runs into the gap, not onto two lines */
@@ -1930,7 +1930,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
    then its buttons and a black rule, as under a group's name; the coffees follow newest first */
 #sh .ro-title, #shelves.ro-on #sh .sh-t{display:none}
 #shelves.ro-on #sh .ro-title{display:inline}
-.ro-head{padding:0 0 13px;border-bottom:1px solid var(--ink);margin:-10px 0 -14px}   /* the section's 14 px row gap: lines straight under the name, coffees straight under the rule */
+.ro-head{padding:0 0 13px;border-bottom:1px solid var(--line);margin:-10px 0 -14px}   /* the section's 14 px row gap: lines straight under the name, coffees straight under the rule */
 .ro-head .ro-v{font:500 var(--fs-s)/1.35 var(--sans);color:var(--muted);margin:0}
 .ro-head .ro-acts{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0}
 .ro-head .ro-pill{display:inline-flex;align-items:center;height:var(--pill-h);padding:0 12px;border:0;border-radius:var(--r);background:var(--pill);color:var(--ink);
@@ -2039,7 +2039,7 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
   mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E") center/10px 10px no-repeat}
 .nav .sec-dd[aria-expanded="true"]::after{transform:rotate(180deg)}
 .sec-list{position:absolute;left:0;right:0;top:calc(100% + 1px);overflow:hidden;pointer-events:none}
-.sec-list > .sec-list-in{transform:translateY(-100%);transition:transform .32s cubic-bezier(.2,.7,.2,1);background:var(--bg);border-bottom:1px solid var(--rule)}
+.sec-list > .sec-list-in{transform:translateY(-100%);transition:transform .32s cubic-bezier(.2,.7,.2,1);background:var(--bg);border-bottom:1px solid var(--line)}
 .sec-list.open{pointer-events:auto}   /* it slides out from behind the bar as one piece, over the page: nothing below moves */
 .sec-list.open > .sec-list-in{transform:none}
 .sec-list.instant, .sec-list.instant > .sec-list-in{transition:none!important}
