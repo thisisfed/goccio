@@ -61,7 +61,7 @@ n=Math.floor((now-new Date(y,0,0))/864e5),r=Math.PI/180,d=-23.44*Math.cos(2*Math
 B=2*Math.PI*(n-81)/364,eot=9.87*Math.sin(2*B)-7.53*Math.cos(B)-1.5*Math.sin(B),
 h=Math.acos(Math.max(-1,Math.min(1,(Math.sin(-.833*r)-Math.sin(lat*r)*Math.sin(d))/(Math.cos(lat*r)*Math.cos(d)))))/r,noon=12-lon/15-eot/60,u=now.getUTCHours()+now.getUTCMinutes()/60;
 return u<noon-h/15||u>noon+h/15;};
-try{var t=localStorage.getItem("v60.theme");document.documentElement.setAttribute("data-theme",t==="light"||t==="dark"?t:(window.__autoDark()?"dark":"light"));}catch(e){}
+try{var t=localStorage.getItem("v60.theme");document.documentElement.setAttribute("data-theme",t==="light"?"light":"dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}
 </script>
 <style>
 /* Layout idea: Apple product page, warmed up. Cream paper canvas, warm-white rounded tiles, system type set
@@ -665,6 +665,13 @@ table.pours { padding: 10px 24px; }
 .rp-go { display: inline-flex; align-items: center; gap: 6px; color: var(--blue); }
 .rp-go svg { width: 18px; height: 18px; }
 .rp-go.off { display: none !important; }
+/* the last fold (Dial it in) closes with a rule of its own, like the folds above it open with one */
+details.clk:has(> #dial){border-bottom:1px solid var(--line)!important}
+/* Start brewing sits as far from the text above it as from the rule below: the text's line box ends at its baseline */
+#tech{margin-bottom:-.35em}
+/* the For you note: as far from the rule under it as from the pills above it */
+.shelf-tools .fy-note{text-box:trim-both cap alphabetic}
+#fyNote{margin-bottom:-2px!important}
 .rp-msg { margin: 0; font-size: var(--fs-s); color: var(--muted); display: grid; gap: 10px; }
 .rp-msg p { margin: 0; }
 .rp-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
@@ -4623,6 +4630,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   }
   function renderMine(r) {
     const bar = $("mineBar"), ed = $("mineEd"), k = mineKey(r);
+    $("whyBox").hidden = !!k && (editing || !!r.mine);   // your own numbers: the reasons were for the suggested recipe
     if (!k) { bar.innerHTML = ""; ed.hidden = true; return; }
     bar.innerHTML = editing ? "" : r.mine
       ? `<span class="mine-tag">Custom numbers</span><button type="button" class="chip" id="mEdit">Edit</button><button type="button" class="chip" id="mReset">Use the suggested recipe</button>`
@@ -5466,7 +5474,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     const list = bits.join(", ");
     return it ? `Scelti ${from}: ${list || "quello che hai"}. I più vicini per primi.` : `Picked from ${from}: ${list || "what you have"}. Closest match first.`;
   }
-  let xOpen = false, xFold = 0;
+  let xOpen = false, xFold = 0, xTap = { v: "", t: 0 };
   const xWait = () => { clearTimeout(xFold); xFold = setTimeout(() => { xOpen = false; renderShelfO(); }, 2000 + 6 * 150); };
   function renderShelfO() {
     const xs = EXTRAS;   // after 14:00 Decaf shows ticked: the list is decaf only (untick it, Show all coffees or Never do this to lift it)
@@ -5477,7 +5485,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       + (anyX ? `<button type="button" class="chip gear-more x-more" aria-label="See all" aria-expanded="false"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>` : "");
     const xrow = $("shelfX").closest(".opt"); xrow.classList.add("xrow"); xrow.classList.toggle("xall", xOpen); xrow.classList.toggle("xnone", !anyX);   // nothing ticked: a dropdown like Region
     const more = $("shelfX").querySelector(".x-more"); if (more) more.onclick = (e) => { e.stopPropagation(); xOpen = true; renderShelfO(); xWait(); };
-    $("shelfX").querySelectorAll("button[data-v]").forEach((b) => b.onclick = () => { const v = b.dataset.v; if (xOpen) xWait();
+    $("shelfX").querySelectorAll("button[data-v]").forEach((b) => b.onclick = () => { const v = b.dataset.v; if (xTap.v === v && performance.now() - xTap.t < 700) return; xTap = { v, t: performance.now() }; if (xOpen) xWait();
       if (v === "foryou") { shelfY = !shelfY; fySave(); } else if (v === "light") shelfO = shelfO === "light" ? "all" : "light"; else if (v === "top") { shelfT = !shelfT; if (shelfT) shelfGV = false; } else if (v === "value") { shelfGV = !shelfGV; if (shelfGV) shelfT = false; } else if (v === "filter") shelfFi = !shelfFi; else if (curfewOn()) { shelfD = false; cfSet("skip:" + nightOf()); return; } else shelfD = !shelfD;   // unticking the evening's Decaf = Show all coffees tonight
       shelfAll = false; renderShelfO(); renderShelf(); });
     const on = xs.filter(([v]) => extraOn(v)).map(([, t]) => t);
@@ -5602,7 +5610,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       const tg = (t, c = "") => `<span class="tg${c ? " " + c : ""}">${t}</span>`;
       const tagBits = [
         r.process ? tg(esc(r.process), procTone(r.process)) : tg("Process not listed", "miss"),
-        r.variety ? varietyTag(r.variety) : "",
+        r.variety && !/^\s*\d+\s?(?:g|gr|kg|oz|lb)\b/i.test(r.variety) ? varietyTag(r.variety) : "",   // a bag size read as the variety ("250g") is not shown
       ];
       const origins = originTag(r.origin, r.region);
       const place = origins;
@@ -5770,7 +5778,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       return `<article class="item bag">
         <div class="l">
           <span class="who">${b.roaster ? `<span class="rn">${esc(b.roaster)}</span>${bagCity(b) ? ` <span class="rcity">${esc(bagCity(b))}</span>` : ""}` : "Your coffee"}</span>
-          <span class="name">${esc(calm(b.roaster ? (coffeeName(b) ?? shortName(b)) : (b.name || b.text || "Coffee")))}</span>
+          <span class="name">${esc(calm(b.roaster ? listName(b) : (b.name || b.text || "Coffee")))}</span>
           ${tags ? `<p class="tags">${tags}</p>` : ""}
           <div class="bag-f">${bagNeedsRoast(b) ? `<div class="bag-rorow"><span>Roast</span><span class="bag-ro"><button type="button" class="ro-dd" data-rodd="${i}" aria-expanded="false">Pick one</button>${PHOTO_CHIP.replace('class="chip rp-go"', `class="chip rp-go" data-scan="${i}"`)}<span class="ro-chips" hidden>${OPTS_MORE[1].items.filter(([k]) => k !== "unsure").map(([k, t]) => `<button type="button" class="chip" data-ro="${i}" data-k="${k}"><i class="bean-dot" style="--c:${ROAST_SW[k]}"></i>${t}</button>`).join("")}</span></span></div>` : ""}<label>Roasted<span class="bag-d${b.roasted ? "" : " empty"}"><input type="date" data-k="roasted" data-i="${i}" value="${esc(b.roasted || "")}"></span></label>
             <label>Opened<span class="bag-d${b.opened ? "" : " empty"}"><input type="date" data-k="opened" data-i="${i}" value="${esc(b.opened || "")}"></span></label>
@@ -5915,9 +5923,12 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   }
   // the coffee in the recipe: Surprise me's pick, a coffee from the list or your bags, or what's typed ("Intermission, Sundial, …")
   const cityOf = (n) => (shelf.find((r) => r.roaster === n) || {}).roaster_city || "";
+  // the coffee's name as the list shows it (M26, not M26 Aquiares Estate): the same in the list, the recipe and My bags
+  const listName = (x) => { const s = x && x.roaster ? shelf.find((r) => r.roaster === x.roaster && r.name === x.name) : null;
+    try { return (s ? coffeeName(s) ?? shortName(s) : x.roaster ? coffeeName(x) ?? shortName(x) : x.name) || x.name; } catch (e) { return x.name; } };
   function recipeCoffee() {
-    if (surprisePick) return { roaster: surprisePick.roaster, place: surprisePick.place || cityOf(surprisePick.roaster), name: surprisePick.name };
-    const b = state.bag; if (b && b.name) return { roaster: b.roaster || "", place: b.place || cityOf(b.roaster), name: b.name };
+    if (surprisePick) return { roaster: surprisePick.roaster, place: surprisePick.place || cityOf(surprisePick.roaster), name: listName(surprisePick) };
+    const b = state.bag; if (b && b.name) return { roaster: b.roaster || "", place: b.place || cityOf(b.roaster), name: listName(b) };
     const t = String(state.text || "").replace(/\.\s*Notes:.*$/i, "").trim(); if (!t) return null;
     const nt = norm(t), ro = (knownRoasters || []).filter((n) => { const k = norm(n); return k && (nt === k || nt.startsWith(k + " ")); }).sort((a, z) => z.length - a.length)[0];
     if (ro) { const rest = t.split(/,\s*/).slice(1); return { roaster: ro, place: cityOf(ro), name: rest[0] || "" }; }
@@ -6566,8 +6577,8 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     finally { $("shelf").classList.remove("loading"); $("shelf").removeAttribute("aria-busy"); }
   }
 
-  // ---------- appearance: Auto follows daylight (sunrise to sunset), or pick Light or Dark ----------
-  const THEMES = ["auto", "light", "dark"], THEME_LBL = { auto: "Auto", light: "Light", dark: "Dark" };
+  // ---------- appearance: Dark, or Light if you pick it ----------
+  const THEMES = ["dark", "light"], THEME_LBL = { light: "Light", dark: "Dark" };   // dark unless you pick light
   // one icon each: half-filled circle for Auto (follows the sun), a sun for Light, a moon for Dark
   const IC = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
   const THEME_IC = {
@@ -6577,18 +6588,16 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   };
   function applyTheme(t) {
     const root = document.documentElement;
-    const dark = t === "dark" || (t === "auto" && window.__autoDark());
+    const dark = t !== "light";
     root.setAttribute("data-theme", dark ? "dark" : "light");
     document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute("content", dark ? "#14100d" : "#f6f1ea"));
-    if ($("themeBtn")) $("themeBtn").innerHTML = THEME_IC[t]; if ($("themeBtn")) $("themeBtn").setAttribute("aria-label", t === "auto" ? `Appearance: Auto, light from sunrise to sunset. Tap to change.` : `Appearance: ${THEME_LBL[t]}. Tap to change.`);
+    if ($("themeBtn")) $("themeBtn").innerHTML = THEME_IC[t]; if ($("themeBtn")) $("themeBtn").setAttribute("aria-label", `Appearance: ${THEME_LBL[t]}. Tap to change.`);
   }
-  let theme = (() => { try { return localStorage.getItem("v60.theme") || "auto"; } catch (e) { return "auto"; } })();
-  if (!THEMES.includes(theme)) theme = "auto";
+  let theme = (() => { try { return localStorage.getItem("v60.theme") === "light" ? "light" : "dark"; } catch (e) { return "dark"; } })();
   // IT / EN: kept on this device, and the page reloads in the other language
   if ($("langBtn")) { const b = $("langBtn"); if (LANG === "it") { b.textContent = "EN"; b.lang = "en"; b.setAttribute("aria-label", "English"); }
     b.onclick = () => { try { localStorage.setItem("v60.lang", LANG === "it" ? "en" : "it"); } catch (e) {} location.reload(); }; }
-  if ($("themeBtn")) $("themeBtn").onclick = () => { theme = THEMES[(THEMES.indexOf(theme) + 1) % 3]; try { theme === "auto" ? localStorage.removeItem("v60.theme") : localStorage.setItem("v60.theme", theme); } catch (e) {} applyTheme(theme); };
-  setInterval(() => theme === "auto" && applyTheme(theme), 60000);   // turns at sunset and sunrise while the page is open
+  if ($("themeBtn")) $("themeBtn").onclick = () => { theme = theme === "dark" ? "light" : "dark"; try { localStorage.setItem("v60.theme", theme); } catch (e) {} applyTheme(theme); };
 
   // ---------- stay current: a tab left open for days picks up a new version when you come back to it ----------
   // (phones keep tabs alive, so a new grinder or fix would otherwise not show until a manual refresh).
@@ -6612,9 +6621,10 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   // no button: the recipe builds itself a moment after you stop typing, on Enter, or when you leave the box
   let buildT = null;
   $("coffeeIn").addEventListener("input", () => { $("detected").textContent = ""; clearTimeout(buildT);
-    buildT = setTimeout(() => { const n = $("coffeeIn").value.trim().length; if (n >= 3) build(false); }, 900); });   // emptied: nothing changes yet, the recipe and Start brewing stay
+    buildT = setTimeout(() => { const n = $("coffeeIn").value.trim().length; if (n >= 3) build(false); else if (!n && state.text) clearCoffee(); }, 900); });   // emptied: back to no coffee picked
+  const clearCoffee = () => { surprisePick = null; build(false); };
   $("coffeeIn").addEventListener("blur", () => { clearTimeout(buildT);
-    if (!$("coffeeIn").value.trim() && state.text) { $("coffeeIn").value = state.text; return; }   // left empty: the coffee you were brewing goes back in
+    if (!$("coffeeIn").value.trim() && state.text) { clearCoffee(); return; }   // left empty: no coffee picked, as when you first came
     if ($("coffeeIn").value.trim().length >= 3 && $("coffeeIn").value.trim() !== (state.text || "").trim()) build(false); });
   $("ddIn").addEventListener("input", updateSuggest);
   $("saveLog").onclick = saveLog;
@@ -6779,7 +6789,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       let a = ""; for (const id of ids) { const el = $(id); if (!avail(id)) continue; if (el.getBoundingClientRect().top <= line) a = id; }
       active = a;
       document.querySelectorAll("[data-sec]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.sec === a)));
-      cur.textContent = LBL[a || "shelves"][LANG === "it" ? 1 : 0]; dd.classList.toggle("on", !!a);
+      cur.textContent = a ? LBL[a][LANG === "it" ? 1 : 0] : "Menu"; dd.classList.toggle("on", !!a);   // over the photo: no section yet, just Menu
     };
     // opens and folds with one smooth glide (the row's height animates from nothing to its pills); scrolling the page without
     // picking folds it again
