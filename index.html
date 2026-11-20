@@ -1348,6 +1348,10 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 .litext .outro-end, .litext .outro-end * { font-size: inherit !important; }
 /* the coffee names and the opening A Bag to a Cup: the same size as the closing text (39, 63 on big screens) */
 .item .name, .wordmark { font-size: 39px !important; }
+/* the opening screen: the drop photo edge to edge, Goccio in white on it, still */
+.wm-screen { margin-inline: calc(50% - 50vw); padding-inline: calc(50vw - 50%); margin-top: -10px; min-height: calc(100svh - var(--top-h, 49px)) !important;
+  background: #000 url("/img/goccio-drop.jpg") center / cover no-repeat; }
+.wm-screen .wordmark, .wm-screen .wordmark * { color: #fff !important; }
 .item .name { line-height: 1.05 !important; letter-spacing: -.04em !important; }
 @media (min-width: 1000px) { .item .name, .wordmark { font-size: 63px !important; } }
 /* the coffee list: Search, Region and Process stay under the top bar while you scroll the coffees */
@@ -1979,7 +1983,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
   <section class="sec hero-sec" aria-labelledby="h1">
     <div class="hero">
       <div class="wm-screen">
-        <p class="wordmark" aria-hidden="true"><span id="wm"><span class="i">A</span><span class="r"> </span><span class="i">B</span><span class="r">ag to a </span><span class="i">C</span><span class="r">up</span></span></p>
+        <p class="wordmark" aria-hidden="true" translate="no"><span id="wm">Goccio</span></p>
       </div>
       <div class="hero-row">
       <div class="stage" id="stage">
@@ -2482,11 +2486,11 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
       // variety
       "geisha|gesha|sidra|bourbon|pink bourbon|red bourbon|yellow bourbon|typica|caturra|catuai|catuaí|catuay|castillo|pacamara|pacas|maragogype|maragogipe|sl ?-?28|sl ?-?34|ruiru|ruiru ?11|batian|heirloom|landrace|741\\d\\d|wush ?wush|laurina|eugenioides|mokka|mocha|mundo novo|chiroso|tabi|parainema|catimor|sarchimor|obata|arara|marsellesa|villa sarchi|kent|robusta|liberica|excelsa|ethiosar|centroamericano|starmaya|mibirizi|sudan ?rume|rume ?sudan|jarc|kurume|dega|wolisho|bourbon pointu|caturron|maracaturra|pacamara|java|field blend|mixed varietals|varietal|varietals|variety|cultivar",
       // grade, lot and format
-      "arabica|light roast|medium roast|dark roast|medium-dark roast|aa|ab|pb|aa\\+|top|g1|g2|g3|g4|grade ?\\d|gr\\.? ?\\d|shg|shb|ep|lot|lots|microlots?|micro[- ]lots?|nanolot|nano[- ]lot|lote|n[ºo°]\\.? ?\\d+|#\\d+|espresso|filter|omni|omniroast|whole ?bean|beans|ground|coffee|bag|pack|b2b|retail|subscription|organic|fairtrade|fair trade|rainforest|bird friendly|single origin|single estate|limited|limited edition|edition|new|back in stock|pre[- ]?order|competition|auction|reserve lot|\\d+ ?(?:g|kg|gr|oz|lb)",
+      "arabica|light roast|medium roast|dark roast|medium-dark roast|peaberry|aa|ab|pb|aa\\+|top|g1|g2|g3|g4|grade ?\\d|gr\\.? ?\\d|shg|shb|ep|lot|lots|microlots?|micro[- ]lots?|nanolot|nano[- ]lot|lote|n[ºo°]\\.? ?\\d+|#\\d+|espresso|filter|omni|omniroast|whole ?bean|beans|ground|coffee|bag|pack|b2b|retail|subscription|organic|fairtrade|fair trade|rainforest|bird friendly|single origin|single estate|limited|limited edition|edition|new|back in stock|pre[- ]?order|competition|auction|reserve lot|\\d+ ?(?:g|kg|gr|oz|lb)",
       // dates
       "(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\\.? ?\\d{1,2}(?:st|nd|rd|th)?|\\d{1,2}(?:st|nd|rd|th)? (?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*|\\d{1,2}[./]\\d{1,2}[./]\\d{2,4}|20\\d\\d|harvest|crop|roast date|roasted",
     ].join("|");
-    const GRADE = "aa|ab|pb|aa\\+|g1|g2|g3|g4|grade ?\\d|gr\\.? ?\\d|shg|shb|decaf|decaffeinated";
+    const GRADE = "peaberry|aa|ab|pb|aa\\+|g1|g2|g3|g4|grade ?\\d|gr\\.? ?\\d|shg|shb|decaf|decaffeinated";
     const GENERIC = /^(?:the|a|de|la|el|of|and|by|estate|blend|farm|village|house|so|coffee)$/i;   // not a name on its own
     const LABEL = "20\\d\\d|new|rare|limited|special|seasonal|competition|auction|exclusive|\\d+/\\d+";
     // "coffee" in any language, and the words a shop puts around a name
@@ -2513,7 +2517,10 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
         t = t.replace(/\sby\s[\s\S]*$/, "");   // Afterglow by Jamison Savage (a lower-case by only: Fed By Fear is a name)
         const h = t.match(HEAD), start = h ? h[0].length : 0;
         CUTG.lastIndex = start; const m = CUTG.exec(t);
-        return m ? t.slice(0, m.index) : t;
+        if (m) t = t.slice(0, m.index);
+        // a lot code before the farm: the code is the name (M26 Aquiares Estate -> M26). Otherwise the estate is the name (The Estate, Acacia Hills Estate)
+        if (!/\d/.test(t.slice(0, start))) return t;
+        return t.slice(0, start) + t.slice(start).replace(/\s+[\p{Lu}][\p{L}'’-]*\s+Estate(?![\p{L}])[\s\S]*$/u, "");
       };
       // brackets and *starred* bits hold lot detail: take them out (but a name that is only a bracket keeps its words)
       let s = full.replace(/\*[^*]*\*/g, " ").replace(/\{[^}]*\}?/g, " ").replace(/\[[^\]]*\]?|\([^)]*\)?/g, " ").replace(/\s{2,}/g, " ").trim();
@@ -2526,7 +2533,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
         t = t.replace(/^['"‘“’”]+|['"‘“’”]+$/g, "").trim();
         if ((t.match(/["“”]/g) || []).length % 2) t = t.replace(/["“”]/g, "").trim();   // a quote left open by the cut   // 'Tropical Bahia' -> Tropical Bahia
         const words = t.match(/[\p{L}\d][\p{L}\d'’.-]*/gu) || [];
-        if (/\p{L}{3,}/u.test(t) && !GENERIC.test(t) && !words.every((w) => ONLY_DETAIL.test(w.replace(/\.$/, "")) || /^\d+$/.test(w))) return t;
+        if ((/\p{L}{3,}/u.test(t) || /^(?=.*\p{L})(?=.*\d)[\p{L}\d-]{3,}$/u.test(t)) && !GENERIC.test(t) && !words.every((w) => ONLY_DETAIL.test(w.replace(/\.$/, "")) || /^\d+$/.test(w))) return t;
       }
       return null;   // nothing but detail: the caller falls back
     }
