@@ -37,7 +37,7 @@ jobs:
         id: guard
         if: github.event_name == 'schedule'
         run: |
-          if git log --format=%s | grep -qx "Roaster scan $(date -u +%d/%m/%Y)"; then
+          if git log --format=%s | grep -qx "Roaster scan $(date -u +'%d %b %Y')"; then
             echo "Today's scan is already in, nothing to do"; echo "skip=1" >> "$GITHUB_OUTPUT"
           fi
       - uses: actions/setup-python@v5
@@ -68,7 +68,7 @@ jobs:
             echo "No changes"
           else
             # a partial rescan is labelled differently so it never counts as the day's full scan
-            if [ -n "$ONLY" ]; then git commit -m "Roaster rescan ($ONLY) $(date -u +%d/%m/%Y)"; else git commit -m "Roaster scan $(date -u +%d/%m/%Y)"; fi
+            if [ -n "$ONLY" ]; then git commit -m "Roaster rescan ($ONLY) $(date -u +'%d %b %Y')"; else git commit -m "Roaster scan $(date -u +'%d %b %Y')"; fi
             # main may have moved while the scan ran (a site change merged meanwhile)
             git pull --rebase -q && git push
           fi

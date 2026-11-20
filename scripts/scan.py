@@ -144,6 +144,7 @@ NOTES_NEXT = re.compile(r"^[ \t\xa0]*(?:tasting notes|flavou?r notes|notes? de d
                         r"(?!(?:of|are|is|include|from|with|that|we|you|and|the|a|an)\b)(?![^\n]*\b(?:coffee|roasters?|roastery|caf[ée])\b)"
                         r"([^\n.:]{3,120}?(?:,|&|\band\b|\s[-–•·]\s)[^\n.:]{2,160}?)[ \t\xa0]*$", re.I | re.M)
 NOTES_CHECK = 6   # pages read for notes with these rules; a coffee checked under older rules gets one more read
+NOTES_V = 2       # page notes read under these list rules; a short list (two or fewer) read under older ones is read once more
 
 
 def dot_notes(text):
@@ -1424,7 +1425,8 @@ def find_notes(item):
         if len(ds) >= 3 and all(len(x.split()) == 1 for x in ds[:-1]) and len(ds[-1].split()) > 2:
             ds[-1] = ds[-1].split()[0]   # single-word notes, then the sentence runs on: keep the note
         raw = " - ".join(ds)
-    bits = re.split(r",|&|\band\b|/|·|•|\|| [-–] ", raw)
+    # and the word for "and" in the shop's language, once the line is already a comma list: "Té verde, manzanilla, fruta de la pasión y kiwi amarillo" (Harmony)
+    bits = re.split(r",|&|\band\b|/|·|•|\|| [-–] " + (r"|\s(?:y|e|et|und|och|og|ja|i)\s" if "," in raw else ""), raw)
     out = []
     for b in bits:
         b = b.strip(" .;:-–").strip()
@@ -2052,11 +2054,18 @@ def add_page_details(recs, roaster, old):
         if prev.get("roast_checked") == ROAST_CHECK:
             rec["roast_checked"] = ROAST_CHECK
         want_roast = not rec.get("roast") and not rec.get("roast_checked") and rec.get("roast_for") != "espresso"
+        # page notes are kept. A list of two or fewer read under older rules may have been cut short ("Té verde, manzanilla,
+        # fruta de la pasión y kiwi amarillo" kept only the first two), so its page is read once more; the old list stays if that finds nothing
+        short_old = prev.get("notes_from") == "page" and len(prev.get("notes") or []) <= 2 and (prev.get("notes_v") or 0) < NOTES_V
         if not rec.get("notes") and prev.get("notes") and prev.get("notes_from") == "page":
             rec["notes"], rec["notes_from"] = prev["notes"], "page"
+            if prev.get("notes_v"):
+                rec["notes_v"] = prev["notes_v"]
         if (prev.get("notes_checked") or 0) >= NOTES_CHECK:
             rec["notes_checked"] = NOTES_CHECK
         need = [k for k in ("process", "variety", "notes") if not rec.get(k) and not (k == "notes" and rec.get("notes_checked"))]
+        if short_old and rec.get("notes_from") == "page" and "notes" not in need:
+            need.append("notes")
         # every coffee the shop doesn't label filter or espresso gets its page read once for the brewers it names
         want_methods = not rec.get("roast_for") and not rec.get("methods") and not rec.get("methods_none")
         if not need and not want_methods and not want_roast:
@@ -2065,7 +2074,7 @@ def add_page_details(recs, roaster, old):
             ok = prev.get(k) and (labelled(f"Variety:\n{prev[k]}\n", "variety") if k == "variety" else find_process(prev[k]))
             if ok and prev.get(k + "_from") == "page":
                 rec[k], rec[k + "_from"] = prev[k].strip(" \xa0"), "page"
-        need = [k for k in need if not rec.get(k)]
+        need = [k for k in need if not rec.get(k) or (k == "notes" and short_old)]
         if (not need and not want_methods and not want_roast) or fetched >= PAGE_FETCHES_PER_ROASTER:
             continue
         fetched += 1
@@ -2095,8 +2104,10 @@ def add_page_details(recs, roaster, old):
             meta = re.search(r'<meta[^>]+(?:name|property)=["\'](?:og:)?description["\'][^>]+content=["\']([^"\']+)', raw, re.I)
             ns = page_notes(text, rec["name"], html.unescape(meta.group(1)) if meta else "")
             if ns:
-                rec["notes"], rec["notes_from"] = ns, "page"
+                rec["notes"], rec["notes_from"], rec["notes_v"] = ns, "page", NOTES_V
                 got = True
+            elif rec.get("notes"):
+                rec["notes_v"] = NOTES_V   # the short list read again and nothing better: keep it, don't read it again
             else:
                 rec["notes_checked"] = NOTES_CHECK   # read once and the page names none: don't fetch it again just for notes (until the rules change)
             need = [k for k in need if k != "notes"]

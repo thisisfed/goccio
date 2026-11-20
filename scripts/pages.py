@@ -43,7 +43,7 @@ def slug(s):
 
 def ddmmyyyy(iso):
     m = re.match(r"(\d{4})-(\d{2})-(\d{2})", iso or "")
-    return f"{m[3]}/{m[2]}/{m[1]}" if m else ""
+    return f"{int(m[3])} {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][int(m[2]) - 1]} {m[1]}" if m else ""   # 19 Nov 2026, never slashes
 
 
 def mmss(s):
