@@ -2085,6 +2085,8 @@ def add_page_details(recs, roaster, old):
         for k in need:
             v = labelled(text, k, start) or (labelled(text, k) if start else None) or raw_labelled(raw, k) or from_json(raw, k) \
                 or class_labelled(raw, k) or suffix_labelled(text, k, start)
+            if v and k == "variety" and re.match(r"\s*\d+\s?(?:g|gr|kg|oz|lb)\b", v, re.I):
+                v = None   # a bag size read as the variety ("250g", Notes' Black Label)
             if not v and k == "process" and not rec.get("blend"):   # a sentence about processing in the description
                 v = process_from_text(text[start:start + 4000]) or process_phrase(description_window(text, start))
             if v:
