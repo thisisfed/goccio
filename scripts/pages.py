@@ -130,6 +130,18 @@ a{color:inherit;text-decoration:none}
 @media (min-width:760px){.spec b,.spec h1{font-size:63px}}
 .spec small{font-size:24px;color:var(--muted);letter-spacing:0;margin-left:4px}
 .facts{display:grid;gap:4px;margin:6px 0 0}
+/* Roasters A to Z: the letter bar sticks under the top bar; one size of type, sliding sideways when it doesn't fit */
+.az{position:sticky;top:49px;z-index:1;display:flex;gap:4px;justify-content:space-between;overflow-x:auto;scrollbar-width:none;margin:12px -12px 0;padding:12px;background:var(--bg);border-bottom:1px solid var(--line)}
+.az::-webkit-scrollbar{display:none}
+.az a,.az span{flex:none;min-width:24px;height:32px;display:inline-flex;align-items:center;justify-content:center;border-radius:4px;font-size:15px}
+.az a{background:var(--pill)}.az span{color:var(--muted);opacity:.5}
+.az a:hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))}
+@media (min-width:760px){.az{margin:12px -24px 0;padding:12px 24px}}
+.list .az-h{font-size:24px;line-height:1.1;color:var(--muted);padding:24px 0 8px;scroll-margin-top:107px}
+.list .az-h:first-child{padding-top:12px}
+.page > section{min-width:0}   /* a long row inside slides on its own; the page never gets wider than the screen */
+.page > .az-sec{margin-top:-72px}   /* right under the intro, not a section's gap away */
+.az{margin-top:0!important}
 .spec.ro{padding-bottom:0}
 .spec .ro-n{display:block}
 a.ro-n{justify-self:start;text-decoration:underline;text-decoration-color:color-mix(in srgb,currentColor 40%,transparent);text-underline-offset:2px}
@@ -177,7 +189,7 @@ def page(title, desc, path, body, extra_head="", nav=True, tight=False):
 <meta property="og:title" content="{e(title)}"><meta property="og:description" content="{e(desc)}">
 <meta property="og:url" content="{e(url)}"><meta property="og:image" content="{BASE}/og/card.png">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="icon" href="/icons/icon-192.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png?v=3"><link rel="apple-touch-icon" href="/apple-touch-icon.png?v=3"><meta name="apple-mobile-web-app-title" content="Goccio">
 <style>{CSS}</style>{extra_head}
 </head><body>
 <header class="top"><a class="mark" href="/">Goccio</a><span class="tr">{'<a class="pill" href="/coffee/">Roasters</a>' if nav else ''}<button type="button" class="pill sq" id="themeBtn" aria-label="Appearance"></button></span></header>
@@ -311,12 +323,25 @@ def main():
 
     # ---------- every roaster ----------
     names = sorted(by_roaster, key=lambda n: slug(n))
-    items = "".join(f'<li><a href="/coffee/{rslug[n]}/"><span class="name">{e(n)}</span></a><span class="sub">'
-                    + e(", ".join(x for x in [next((c.get("roaster_city") for c in by_roaster[n] if c.get("roaster_city")), ""),
-                                              f"{len(by_roaster[n])} coffee{'s' if len(by_roaster[n]) != 1 else ''}"] if x)) + "</span></li>" for n in names)
+    # a heading where the first letter changes, and a 1 A B … Z bar to jump to one (1 for names that start with a number)
+    def letter(n):
+        c = (slug(n)[:1] or "#").upper()
+        return "1" if c.isdigit() else c if "A" <= c <= "Z" else "1"
+    items, last = [], None
+    for n in names:
+        L = letter(n)
+        if L != last:
+            items.append(f'<li class="az-h" id="az-{L}">{L}</li>'); last = L
+        items.append(f'<li><a href="/coffee/{rslug[n]}/"><span class="name">{e(n)}</span></a><span class="sub">'
+                     + e(", ".join(x for x in [next((c.get("roaster_city") for c in by_roaster[n] if c.get("roaster_city")), ""),
+                                               f"{len(by_roaster[n])} coffee{'s' if len(by_roaster[n]) != 1 else ''}"] if x)) + "</span></li>")
+    items = "".join(items)
+    have = {letter(n) for n in names}
+    az = '<nav class="az" aria-label="Jump to a letter">' + "".join(
+        f'<a href="#az-{L}">{L}</a>' if L in have else f'<span>{L}</span>' for L in ["1"] + [chr(c) for c in range(65, 91)]) + "</nav>"
     body = (f'<section><div class="specs"><div class="spec wide"><span class="k">Every coffee, by roaster</span><h1>Roasters A to Z</h1></div></div>'
             f'<p class="r-read">{len(names)} roasters, {len(coffees):,} coffees, updated {ddmmyyyy(updated)}. Every coffee has a V60 recipe.</p></section>'
-            f'<section><ul class="list">{items}</ul></section>')
+            f'<section class="az-sec">{az}<ul class="list">{items}</ul></section>')   # inside the list's section, so it stays stuck all the way down
     write("coffee/index.html", page("Specialty coffee roasters and V60 recipes for their coffees",
                                     f"{len(coffees):,} specialty coffees from {len(names)} roasters, updated every day, each with a V60 recipe.", "/coffee/", body, nav=False, tight=True))
 
