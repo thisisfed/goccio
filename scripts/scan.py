@@ -13,10 +13,12 @@ import json
 from concurrent.futures import ThreadPoolExecutor
 import re
 import sys
+import threading
 import time
 import urllib.error
 import urllib.parse
 import urllib.request
+import urllib.robotparser
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -39,7 +41,7 @@ def load_roasters():
     return out
 OUT = ROOT / "data" / "releases.json"
 SEEN = ROOT / "data" / "seen.json"   # when each coffee page was first seen, including ones the list leaves out as duplicates
-UA = "V60BrewCard/1.0 (+https://v60.thisisfed.xyz; daily filter-coffee list)"
+UA = "V60BrewCard/1.0 (+https://bagtocup.thisisfed.xyz; once-a-day coffee list, follows robots.txt)"
 NEW_DAYS = 21
 MAX_ITEMS = 12000   # a safety cap only; the list is ~5,000 coffees
 PER_ROASTER = 100   # was 8, which hid most of a big roaster's range
@@ -471,10 +473,77 @@ def strip_html(s):
     return re.sub(r"\n\s*\n+", "\n", s).strip()
 
 
+# ---------- manners: every request the scanner makes goes through polite() first ----------
+# robots.txt is read once per shop and obeyed (Disallow and Crawl-delay, for our name and for *); the same shop is asked
+# at most once every HOST_GAP seconds (or its Crawl-delay, if longer); the whole scan at most once every ALL_GAP seconds;
+# and a shop that answers 429 (too many requests) or 503 is left alone for the rest of the run
+HOST_GAP, ALL_GAP = 2.0, 0.34
+UA_TOKEN = "V60BrewCard"
+_pace = threading.Lock()
+_host_next, _all_next, _robots, _resting = {}, [0.0], {}, set()
+
+
+class Refused(urllib.error.HTTPError):
+    def __init__(self, url, why):
+        super().__init__(url, 403, why, None, None)
+
+
+def _wait_turn(host, gap):
+    with _pace:
+        now = time.monotonic()
+        t = max(now, _host_next.get(host, 0.0), _all_next[0])
+        _host_next[host] = t + gap
+        _all_next[0] = t + ALL_GAP
+    if t > now:
+        time.sleep(t - now)
+
+
+def _robots_for(scheme, host):
+    """The shop's robots.txt, parsed once per run; None when it has none (everything allowed)."""
+    key = f"{scheme}://{host}"
+    if key in _robots:
+        return _robots[key]
+    rp = None
+    try:
+        _wait_turn(host, HOST_GAP)
+        req = urllib.request.Request(key + "/robots.txt", headers={"User-Agent": UA, "Accept": "text/plain"})
+        with urllib.request.urlopen(req, timeout=20) as r:
+            text = r.read(500_000).decode(r.headers.get_content_charset() or "utf-8", "replace")
+        rp = urllib.robotparser.RobotFileParser()
+        rp.parse(text.splitlines())
+    except urllib.error.HTTPError as e:
+        if e.code in (401, 403):   # a shop that won't even show its robots.txt: treat it as "don't"
+            rp = urllib.robotparser.RobotFileParser(); rp.parse(["User-agent: *", "Disallow: /"])
+    except Exception:  # noqa: BLE001   no robots.txt reachable: nothing is disallowed
+        rp = None
+    _robots[key] = rp
+    return rp
+
+
+def polite(url):
+    """Wait for this shop's turn, after checking its robots.txt allows the page. Raises Refused when it doesn't."""
+    u = urllib.parse.urlsplit(url)
+    host = u.netloc.lower()
+    if host in _resting:
+        raise Refused(url, "this shop asked us to slow down: left alone until tomorrow")
+    rp = None if u.path == "/robots.txt" else _robots_for(u.scheme or "https", host)
+    if rp is not None and not (rp.can_fetch(UA_TOKEN, url) and rp.can_fetch("*", url)):
+        raise Refused(url, "disallowed by robots.txt")
+    delay = rp.crawl_delay(UA_TOKEN) or rp.crawl_delay("*") if rp is not None else None
+    _wait_turn(host, max(HOST_GAP, float(delay or 0)))
+
+
+def _rest(url, e):
+    if isinstance(e, urllib.error.HTTPError) and e.code in (429, 503) and not isinstance(e, Refused):
+        _resting.add(urllib.parse.urlsplit(url).netloc.lower())
+        print(f"  {urllib.parse.urlsplit(url).netloc}: answered {e.code}, no more requests to it this run")
+
+
 def get_json(url, tries=2):
     for i in range(tries):
         try:
             url = urllib.parse.quote(url, safe=":/?&=%#+,;@!$'()*~")   # accented paths (Dayglow) broke the request
+            polite(url)
             req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/json"})
             with urllib.request.urlopen(req, timeout=25) as r:
                 ctype = r.headers.get("Content-Type", "")
@@ -483,7 +552,8 @@ def get_json(url, tries=2):
                     raise ValueError("not json")
                 return json.loads(body)
         except urllib.error.HTTPError as e:
-            if e.code in (401, 403, 404):
+            _rest(url, e)
+            if e.code in (401, 403, 404, 429, 503):
                 raise
             if i == tries - 1:
                 raise
@@ -601,13 +671,15 @@ def get_text(url, tries=2, limit=2_000_000):
     for i in range(tries):
         try:
             url = urllib.parse.quote(url, safe=":/?&=%#+,;@!$'()*~")   # accented paths (Dayglow) broke the request
+            polite(url)
             req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "text/html,application/xml;q=0.9,*/*;q=0.8"})
             with urllib.request.urlopen(req, timeout=25) as r:
                 raw = r.read(limit)
                 enc = r.headers.get_content_charset() or "utf-8"
                 return raw.decode(enc, "replace")
         except urllib.error.HTTPError as e:
-            if e.code in (401, 403, 404, 410) or i == tries - 1:
+            _rest(url, e)
+            if e.code in (401, 403, 404, 410, 429, 503) or i == tries - 1:
                 raise
         except Exception:
             if i == tries - 1:
@@ -1683,7 +1755,7 @@ PAGE_LABEL = {
     "process": re.compile(r"\b(?:process(?:ing)?(?: method)?|processo|proceso|prozess|aufbereitung|proc[ée]d[ée]|bearbetning|prosess|proces|zpracov[aá]n[ií]|obr[oó]bka|verwerking(?: na oogst)?|verwerkingsmethode)\s*(?::|\n)", re.I),
     "variety": re.compile(r"\b(?:variet(?:y|ies|al|als)|cultivars?|variedad(?:es)?|variet[àa]|sorte[n]?|vari[ée]t[ée]s?|vari[eë]teit(?:\(?en\)?)?|odmian[ay]?)\s*(?::|\n)", re.I),
 }
-PAGE_FETCHES_PER_ROASTER = 300
+PAGE_FETCHES_PER_ROASTER = 60   # product pages read per shop per day, on top of its product list (the rest wait for tomorrow)
 # a coffee's page is read for its roast once per version of the roast reader: when the reader learns a new
 # way shops write it, every coffee still without a roast gets one more look, and never again after that
 ROAST_CHECK = 3
