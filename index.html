@@ -2011,7 +2011,11 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
 .shelf-tools #fyNote:has(+ .curfew:not([hidden])){margin-bottom:0!important;line-height:1.35!important;text-box:trim-start cap alphabetic}
 .shelf-tools #fyNote:not([hidden]) + .curfew:not([hidden]){margin-top:-12px!important}
 .shelf-tools #fyNote:not([hidden]) + .curfew .cf-h{text-box:none}
-#shelfX .chip .cd{font-variant-numeric:tabular-nums}   /* For you's countdown before it switches off */
+/* the countdown: the pill shrinks to a circle, the seconds left in the middle, centred where the pill was */
+.cd{justify-self:center!important;width:var(--pill-h)!important;min-width:0!important;max-width:var(--pill-h)!important;height:var(--pill-h)!important;padding:0!important;border-radius:50%!important;
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;font-variant-numeric:tabular-nums;overflow:hidden;white-space:nowrap;flex:none!important;
+  transition:width .25s ease, max-width .25s ease, border-radius .25s ease}
+.cd-tail{background:var(--pill);color:var(--ink);pointer-events:none}   /* For you's countdown before it switches off */
 .curfew .ro-acts{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 0}   /* the text sits as far above the pills as one pill from the next */
 .curfew .ro-pill:hover{background:color-mix(in srgb, var(--pill) 80%, var(--ink))}   /* the grey pills' hover */
 .curfew .ro-pill{display:inline-flex;align-items:center;height:var(--pill-h);padding:0 12px;border:0;border-radius:var(--r);background:var(--pill);color:var(--ink);
@@ -5076,7 +5080,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     box.querySelectorAll("button[data-del]").forEach((b) => b.onclick = () => {
       if (b.dataset.armed) return deleteEntry(+b.dataset.del);
       b.dataset.armed = "1"; b.dataset.was = b.textContent; b.textContent = "Sure?"; b.classList.add("armed");
-      setTimeout(() => { if (b.isConnected) { delete b.dataset.armed; b.textContent = "Delete"; b.classList.remove("armed"); } }, 3000);
+      cdRun(b, 5000, () => { delete b.dataset.armed; b.textContent = "Delete"; b.classList.remove("armed"); });
     });
     box.querySelectorAll("button[data-pdf]").forEach((b) => b.onclick = () => { const e = journal[+b.dataset.pdf];
       printSheet({ title: e.title, brewer: (BREWERS[e.brewer] || BREWERS.v60).name, method: e.method, date: e.at, clicks: e.clicks, dose: e.dose, water: e.water, ice: e.ice,
@@ -5596,7 +5600,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       const need = Math.max(5000, 1500 + n.textContent.split(/\s+/).length * 300);
       // For you is about to switch itself off: count it down on its pill, 5 4 3 2 1
       if (shelfY && !fyProfile()) { const chip = $("shelfX") && $("shelfX").querySelector('[data-v="foryou"]'), left = Math.ceil((need - fySeen) / 1000);
-        if (chip && left <= 5 && left > 0) { chip.style.minWidth = chip.style.minWidth || chip.offsetWidth + "px"; chip.innerHTML = `<span class="cd">${left}</span>`; /* the number in place of the words, the pill keeping its width */ } }
+        if (chip && left <= 5 && left > 0) cdShow(chip, left); }
       if (fySeen < need) return;
       fyStop(); if (shelfY && !fyProfile()) { shelfY = false; fyHold = null; fySave(); renderShelfO(); renderShelf(); } }, 200); };
   function forYou() {
@@ -5633,7 +5637,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     return it ? `Scelti ${from}: ${list || "quello che hai"}. I più vicini per primi.` : `Picked from ${from}: ${list || "what you have"}. Closest match first.`;
   }
   let xOpen = false, xFold = 0, xTap = { v: "", t: 0 };
-  const xWait = () => { clearTimeout(xFold); xFold = setTimeout(() => { xOpen = false; renderShelfO(); }, 2000 + 6 * 150); };
+  const xWait = () => { clearTimeout(xFold); xFold = setTimeout(() => { xOpen = false; renderShelfO(); }, 2000 + 6 * 150); cdTail($("shelfX"), 2000 + 6 * 150); };
   function renderShelfO() {
     const xs = EXTRAS;   // after 14:00 Decaf shows ticked: the list is decaf only (untick it, Show all coffees or Never do this to lift it)
     // Top lots and Good value are opposites: one on turns the other off. On a phone the row works like My equipment:
@@ -5799,7 +5803,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     $("shelf").querySelectorAll("button[data-b]").forEach((b) => b.onclick = () => { const r = shelf[+b.dataset.b];
       if (!hasBag(r) || b.dataset.armed) { toggleBag(r); renderShelf(); return; }
       b.dataset.armed = "1"; b.textContent = "Remove?"; b.classList.add("armed");
-      setTimeout(() => { if (b.isConnected && b.dataset.armed) { delete b.dataset.armed; b.textContent = LANG === "it" ? "Salvato" : "My bags"; b.classList.remove("armed"); } }, 3000); });
+      cdRun(b, 5000, () => { if (b.dataset.armed) { delete b.dataset.armed; b.textContent = LANG === "it" ? "Salvato" : "My bags"; b.classList.remove("armed"); } }); });
   }
 
 
@@ -5961,7 +5965,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     $("bagList").querySelectorAll("[data-rm]").forEach((x) => x.onclick = () => {
       if (x.dataset.armed) { bags.splice(+x.dataset.rm, 1); saveBags(); renderBags(); renderShelf(); return; }
       x.dataset.armed = "1"; x.dataset.was = x.textContent; x.textContent = "Sure?"; x.classList.add("armed");
-      setTimeout(() => { if (x.isConnected) { delete x.dataset.armed; x.textContent = "Remove"; x.classList.remove("armed"); } }, 3000); });
+      cdRun(x, 5000, () => { delete x.dataset.armed; x.textContent = "Remove"; x.classList.remove("armed"); }); });
     $("bagList").querySelectorAll("[data-brew]").forEach((x) => x.onclick = () => { const b = bags[+x.dataset.brew];
       if (b.text && !b.roaster) { state.text = b.text; state.bag = null; state.roastPhoto = null; $("coffeeIn").value = b.text; saveState(); renderAllOpts(); render(); jumpTo($("coffee")); }
       else brewThis(b); });
@@ -5994,7 +5998,8 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   let gearFold = 0;
   const gearWait = () => { clearTimeout(gearFold); const n = $("gear").querySelectorAll(".chips button").length;
     if (Object.values(gearOpen).some(Boolean)) gearFold = setTimeout(() => { if ($("wBody").contains(document.activeElement)) return gearWait();   // typing your postcode or numbers: wait
-      gearOpen.gearB = gearOpen.gearG = gearOpen.water = false; renderGear(); renderWaterBody(); }, 2000 + n * 150); };   // See all: the rest of the list, to add something
+      gearOpen.gearB = gearOpen.gearG = gearOpen.water = false; renderGear(); renderWaterBody(); }, 2000 + n * 150);
+    [["gearB", $("gearB")], ["gearG", $("gearG")], ["water", $("wBody").querySelector(".chips")]].forEach(([k, box]) => { if (box && gearOpen[k]) cdTail(box, 2000 + n * 150); }); };   // See all: the rest of the list, to add something
   function renderGear() {
     // once you've ticked something, the row shows only what you own and See all; an owned pill asks Remove? first, like a saved bag
     const row = (id, list, all, label) => { const open = gearOpen[id] || !list.length, keys = Object.keys(all).filter((k) => open || list.includes(k));
@@ -6008,7 +6013,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
         if (i < 0) { if (!list.length) gearOpen[id] = true; list.push(k); saveGear(); renderGear(); return; }   // ticking from the full list keeps it open a while
         if (b.dataset.armed) { list.splice(i, 1); saveGear(); renderGear(); return; }
         b.dataset.armed = "1"; b.textContent = "Remove?"; b.classList.add("armed"); wait();
-        setTimeout(() => { if (b.isConnected && b.dataset.armed) { delete b.dataset.armed; b.textContent = label(all[k]); b.classList.remove("armed"); } }, 3000); });
+        cdRun(b, 5000, () => { if (b.dataset.armed) { delete b.dataset.armed; b.textContent = label(all[k]); b.classList.remove("armed"); } }); });
       const more = $(id).querySelector(".gear-more"); if (more) more.onclick = () => { gearOpen[id] = true; renderGear(); }; };
     row("gearB", gear.brewers, Object.fromEntries(Object.entries(BREWERS).filter(([k, B]) => k !== "cold" && !B.cup)), (B) => B.name);   // cupping needs no kit: everyone can cup
     row("gearG", gear.grinders, GRINDERS, (G) => G.name);
@@ -6735,12 +6740,33 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     const h = top ? top.getBoundingClientRect().height : 0, tb = t.getBoundingClientRect(), st = $("shelf").getBoundingClientRect();   // For you's line rides in the bar now
     if (tb.top <= h + 1 && st.top < tb.bottom - 0.5) { const y = Math.max(0, window.scrollY - (tb.bottom - st.top)), html = document.documentElement, sb = html.style.scrollBehavior;
       html.style.scrollBehavior = "auto"; window.scrollTo(0, y); html.style.scrollBehavior = sb; } };   // plain two-number scrollTo: instant in every browser
+  // ---------- a pill about to go back or go away: for its last three seconds it shrinks to a circle with the seconds left in it ----------
+  function cdShow(el, n) {
+    if (!el.classList.contains("cd")) { el._cdHtml = el.innerHTML; el.style.width = el.offsetWidth + "px"; void el.offsetWidth; el.classList.add("cd"); el.style.width = ""; }
+    el.textContent = n;
+  }
+  function cdStop(el) { clearInterval(el._cdT); el._cdT = 0;
+    if (el.classList.contains("cd")) { el.classList.remove("cd"); if (el._cdHtml != null) el.innerHTML = el._cdHtml; el._cdHtml = null; } }
+  function cdRun(el, ms, end) {   // end() once the time is up; the pill is itself again before it runs
+    cdStop(el); const until = performance.now() + ms;
+    el._cdT = setInterval(() => { if (!el.isConnected) return cdStop(el);
+      const left = Math.ceil((until - performance.now()) / 1000);
+      if (left <= 0) { cdStop(el); if (end) end(); } else if (left <= 3) cdShow(el, left); }, 100);
+  }
+  // an open list that folds back by itself: a circle at its end counts down the last three seconds
+  function cdTail(box, ms) {
+    clearInterval(box._cdT); const until = performance.now() + ms;
+    box._cdT = setInterval(() => { const left = Math.ceil((until - performance.now()) / 1000);
+      let t = box.querySelector(":scope > .cd-tail");
+      if (left <= 0 || !box.isConnected) { clearInterval(box._cdT); if (t) t.remove(); return; }
+      if (left <= 3) { if (!t) { t = document.createElement("span"); t.className = "chip cd cd-tail"; t.setAttribute("aria-hidden", "true"); box.appendChild(t); } t.textContent = left; } }, 100);
+  }
   const keepShelfTop = () => { requestAnimationFrame(fitShelf); setTimeout(fitShelf, 120); setTimeout(fitShelf, 350); };
   // the price first; a tap shows Buy?, a second tap goes to the shop
   document.addEventListener("click", (e) => { const a = e.target.closest && e.target.closest(".buy-pill[data-price]"); if (!a || a.classList.contains("armed")) return;
-    e.preventDefault(); document.querySelectorAll(".buy-pill.armed").forEach((o) => { o.classList.remove("armed"); o.textContent = o.dataset.price; });
-    a.classList.add("armed"); a.textContent = "Buy?"; clearTimeout(a._t);
-    a._t = setTimeout(() => { if (a.isConnected) { a.classList.remove("armed"); a.textContent = a.dataset.price; } }, 3000); });
+    e.preventDefault(); document.querySelectorAll(".buy-pill.armed").forEach((o) => { cdStop(o); o.classList.remove("armed"); o.textContent = o.dataset.price; });
+    a.classList.add("armed"); a.textContent = "Buy?";
+    cdRun(a, 5000, () => { a.classList.remove("armed"); a.textContent = a.dataset.price; }); });
   ["shelfR", "shelfF", "shelfX"].forEach((id) => $(id).addEventListener("click", keepShelfTop));
   async function loadShelf() {
     try {
