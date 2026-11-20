@@ -178,6 +178,11 @@ CASES = [
     ("Harmony Bombe: 'Notas de cata … fruta de la pasión y kiwi amarillo' splits on the Spanish 'y' and keeps all four",
      lambda: scan.page_notes("Bombe, Etiopía\nOrigen Etiopía\nProceso Lavado\nVariedad Heirloom\nNotas de cata Té verde, manzanilla, fruta de la pasión y kiwi amarillo\n\nRecomendado para Espresso y Filtro\n", "Bombe, Etiopía")
              == ["Té verde", "Manzanilla", "Fruta de la pasión", "Kiwi amarillo"]),
+    ("Harmony Bombe's notes in English: Green tea, Chamomile, Passion fruit, Yellow kiwi",
+     lambda: __import__("flavours").english_notes(["Té verde", "Manzanilla", "Fruta de la pasión", "Kiwi amarillo"])
+             == ["Green tea", "Chamomile", "Passion fruit", "Yellow kiwi"]),
+    ("English notes are left as written ('Tropical fruits', 'Clementine', 'Mango yogurt')",
+     lambda: __import__("flavours").english_notes(["Tropical fruits", "Clementine", "Mango yogurt"]) == ["Tropical fruits", "Clementine", "Mango yogurt"]),
     ("A sentence 'Tasting notes of this lot change, and so does…' is not a notes row",
      lambda: scan.NOTES_CELL.search("Tasting notes of this lot change every harvest, and so does the roast") is None),
 ]
