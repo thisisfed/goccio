@@ -116,6 +116,10 @@ CASES = [
      lambda: scan.find_notes({"body": "Expect notes of pineapple, red apple and hazelnut in a layered, sweet cup.", "title": "Ratnagiri Hydro", "tags": []}) == ["Pineapple", "Red apple", "Hazelnut"]),
     ("'hints of the terroir and the farm's history' is not tasting notes",
      lambda: scan.find_notes({"body": "You can taste hints of the terroir and the farm's history.", "title": "X", "tags": []}) == []),
+    ("Bosk's 'Amecafe Blend from Brazil' was named 'Amecafe Blend from' (the origin taken off left 'from')",
+     lambda: name("Amecafe Blend from Brazil", "Bosk Coffee Roasters", "Brazil") == "Amecafe Blend"),
+    ("Herbert and Ward's 'Charlie and the MIlkshake factory 500g bags' was named '… factory bags' (the size taken off left 'bags')",
+     lambda: name("Charlie and the MIlkshake factory 500g bags", "Herbert and Ward", "Brazil") == "Charlie and the MIlkshake factory"),
 ]
 
 
