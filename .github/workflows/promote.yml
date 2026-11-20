@@ -1,0 +1,49 @@
+name: Promote a roaster
+
+# A roaster paid to be at the top of the coffee list: type its name (as on the list), the number of days and how many of
+# its coffees to pin (1 to 3). To end a promotion early, type stop as the days. The site shows it labelled Paid promotion.
+on:
+  workflow_dispatch:
+    inputs:
+      roaster:
+        description: "Roaster name, as on the list (e.g. Square Mile)"
+        required: true
+      days:
+        description: "How many days (or stop to end it now)"
+        required: true
+        default: "30"
+      coffees:
+        description: "How many of its coffees at the top (1 to 3)"
+        required: false
+        default: "1"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: scan
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Update the promotions
+        env:
+          ROASTER: ${{ github.event.inputs.roaster }}
+          DAYS: ${{ github.event.inputs.days }}
+          COFFEES: ${{ github.event.inputs.coffees }}
+        run: python scripts/promote.py "$ROASTER" "$DAYS" "$COFFEES"
+      - name: Save
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add data/promoted.json
+          git diff --cached --quiet || { git commit -qm "Promotion: $ROASTER ($DAYS)"; for i in 1 2 3; do git pull -q --rebase && git push -q && break; sleep 5; done; }
+        env:
+          ROASTER: ${{ github.event.inputs.roaster }}
+          DAYS: ${{ github.event.inputs.days }}
