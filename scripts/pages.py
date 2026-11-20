@@ -24,7 +24,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import scan  # noqa: E402  (tidy_note: tasting notes without the sentence around them)
 
 SITE = os.path.abspath(sys.argv[1] if len(sys.argv) > 1 else ".")
-HOST = "bagtocup.thisisfed.xyz"
+HOST = "www.goccio.co.uk"
 try:
     HOST = open(os.path.join(SITE, "CNAME")).read().strip() or HOST
 except OSError:

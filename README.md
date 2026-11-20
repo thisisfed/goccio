@@ -1,6 +1,6 @@
 # Goccio
 
-**Live at [bagtocup.thisisfed.xyz](https://bagtocup.thisisfed.xyz)** (v60.thisisfed.xyz forwards there). Moving to goccio.co.uk later.
+**Live at [www.goccio.co.uk](https://www.goccio.co.uk)**. goccio.co.uk, bagtocup.thisisfed.xyz and v60.thisisfed.xyz all forward there, to the same page, and the main page carries each visitor's saved coffees and settings across.
 
 New specialty coffees from roasters in the UK, Europe and beyond, read every day from their own shops, each with a recipe for
 your brewer and your grinder: grind setting, dose, water, temperature and every step, with a brew-along screen, a journal
@@ -84,8 +84,15 @@ the site, the data, the coffee and roaster pages (`scripts/pages.py`), fonts, ic
 
 ## Domain
 
-DNS at Spaceship: `CNAME` records `bagtocup` and `v60` pointing to `v60-auq.pages.dev`, both added as custom domains on
-the Pages project. For goccio.co.uk: add it as a custom domain on the Pages project and point its records there.
+DNS at Spaceship (it stays there, so the Spacemail mailbox for un@goccio.co.uk is untouched):
+
+- `www.goccio.co.uk`: `CNAME` to `v60-auq.pages.dev`, added as a custom domain on the Pages project. This is the site.
+- `goccio.co.uk`: Spaceship URL redirect to `https://www.goccio.co.uk`. Cloudflare Pages can serve a bare domain only if
+  its DNS moves to Cloudflare, so the bare domain forwards instead.
+- `bagtocup.thisisfed.xyz` and `v60.thisisfed.xyz`: `CNAME` to `v60-auq.pages.dev`, still custom domains on the Pages
+  project. The pages see the old address and forward to the same page on www.goccio.co.uk (the main page packs the
+  visitor's saved data into the link, since browser storage belongs to one address). Keep them attached.
+- `CNAME` in the repo holds the main address; `scripts/pages.py` builds the sitemap and links from it.
 
 ## Contact
 
