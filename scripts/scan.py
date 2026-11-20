@@ -125,6 +125,28 @@ NOTES_RE = re.compile(r"(?:tasting notes|flavour notes|flavor notes|flavour prof
 # notes said in a sentence: "Expect notes of pineapple, red apple and hazelnut in a layered, sweet cup"
 NOTES_SENT = re.compile(r"(?:notes? of|flavou?rs? of|tastes? of|hints? of|aromas? of|we(?:'re| are)? (?:getting|tasting)|expect(?:ing)?(?! notes)|tasting like)\s+"
                         r"((?:[A-Za-z][\w'’\-]*(?:\s(?!and\b)[A-Za-z][\w'’\-]*){0,2})(?:\s*(?:,|&|\band\b)\s*[A-Za-z][\w'’\-]*(?:\s(?!and\b)[A-Za-z][\w'’\-]*){0,2}){1,5})", re.I)
+# a label on a line of its own with the notes on the next ("Tasting notes\nStrawberry, blueberry, nectarine"; Standout)
+NOTES_LINE = re.compile(r"(?:tasting notes|flavou?r notes|cup(?:ping)? notes|in the cup|smaksnoter|smagsnoter|smaksnotater|geschmacksnoten|"
+                        r"notas de cata|note di degustazione|notes de d[ée]gustation)[ \t]*(?:\n|\s{2,})\s*([^\n.]{3,120})", re.I)
+NOTES_CHECK = 2   # pages read for notes with these rules; a coffee checked under older rules gets one more read
+
+
+def dot_notes(text):
+    """A line of flavours on its own, split by middle dots or bars: 'Strawberry · Blueberry · Nectarine · Passion Fruit · Lavender'
+    (Standout). Every part a word or three, no numbers, origin, process or variety, so the line above it
+    ('Gibirinna 74110 & Serto 74112 · Anoxic Natural · Ethiopia') is not taken."""
+    for line in (text or "").splitlines():
+        parts = [x.strip() for x in re.split(r"\s*[·•|]\s*", line.strip()) if x.strip()]
+        if len(parts) < 3 or len(parts) > 8:
+            continue
+        if all(re.fullmatch(r"[^\W\d_][^\W\d_'’\- ]*(?:\s[^\W\d_][^\W\d_'’\-]*){0,2}", x) and not find_process(x) and not find_origin(x)
+               and not any(v.lower() == x.lower() for v in VARIETIES)
+               and not re.search(r"\b(?:filter|espresso|omni|whole ?beans?|ground|roast|light|medium|dark|decaf|organic|fair ?trade|new|limited|"
+                                 r"single origin|blend|subscription|gift|home|shop|cart|menu|about|contact|wholesale)\b", x, re.I) for x in parts):
+            return ", ".join(parts)
+    return None
+
+
 NOTES_TAIL = re.compile(r"\s(?:in|with|for|that|which|on|to|from|giving|making|alongside|plus|throughout|backed|balanced|layered|all|as|when|while)\b.*$", re.I)
 
 
@@ -1257,8 +1279,10 @@ def tidy_note(n):
 
 def find_notes(item):
     text = item["body"]
-    m = NOTES_RE.search(text)
+    m = NOTES_RE.search(text) or NOTES_LINE.search(text)
     raw = m.group(1) if m else None
+    if not raw:
+        raw = dot_notes(text)
     if not raw:
         raw = notes_from_text(text)
     if not raw:
@@ -1283,7 +1307,7 @@ def find_notes(item):
             b = tidy_note(b)
             if b and b.lower() not in (o.lower() for o in out):
                 out.append(b)
-    return out[:4]
+    return out[:5]
 
 
 def clean_name(title, roaster, origin):
@@ -1903,8 +1927,8 @@ def add_page_details(recs, roaster, old):
         want_roast = not rec.get("roast") and not rec.get("roast_checked") and rec.get("roast_for") != "espresso"
         if not rec.get("notes") and prev.get("notes") and prev.get("notes_from") == "page":
             rec["notes"], rec["notes_from"] = prev["notes"], "page"
-        if prev.get("notes_checked"):
-            rec["notes_checked"] = 1
+        if (prev.get("notes_checked") or 0) >= NOTES_CHECK:
+            rec["notes_checked"] = NOTES_CHECK
         need = [k for k in ("process", "variety", "notes") if not rec.get(k) and not (k == "notes" and rec.get("notes_checked"))]
         # every coffee the shop doesn't label filter or espresso gets its page read once for the brewers it names
         want_methods = not rec.get("roast_for") and not rec.get("methods") and not rec.get("methods_none")
@@ -1948,7 +1972,7 @@ def add_page_details(recs, roaster, old):
                 rec["notes"], rec["notes_from"] = ns, "page"
                 got = True
             else:
-                rec["notes_checked"] = 1   # read once and the page names none: don't fetch it again just for notes
+                rec["notes_checked"] = NOTES_CHECK   # read once and the page names none: don't fetch it again just for notes (until the rules change)
             need = [k for k in need if k != "notes"]
         for k in need:
             v = labelled(text, k, start) or (labelled(text, k) if start else None) or raw_labelled(raw, k) or from_json(raw, k) \
