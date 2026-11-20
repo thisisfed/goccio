@@ -133,9 +133,10 @@ a{color:inherit;text-decoration:none}
 /* Roasters A to Z: the letter bar sticks under the top bar; one size of type, sliding sideways when it doesn't fit */
 .az{position:sticky;top:49px;z-index:1;display:flex;gap:4px;justify-content:space-between;overflow-x:auto;scrollbar-width:none;margin:12px -12px 0;padding:12px;background:var(--bg);border-bottom:1px solid var(--line)}
 .az::-webkit-scrollbar{display:none}
-.az a,.az span{flex:none;min-width:24px;height:32px;display:inline-flex;align-items:center;justify-content:center;border-radius:4px;font-size:15px}
+.az a,.az span{flex:none;width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border-radius:4px;font-size:15px}
 .az a{background:var(--pill)}.az span{color:var(--muted);opacity:.5}
 .az a:hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))}
+.az a[aria-current]{background:var(--ink);color:var(--bg)}   /* the letter you're reading, as the main page marks the section in view */
 @media (min-width:760px){.az{margin:12px -24px 0;padding:12px 24px}}
 .list .az-h{font-size:24px;line-height:1.1;color:var(--muted);padding:24px 0 8px;scroll-margin-top:107px}
 .list .az-h:first-child{padding-top:12px}
@@ -341,7 +342,13 @@ def main():
         f'<a href="#az-{L}">{L}</a>' if L in have else f'<span>{L}</span>' for L in ["1"] + [chr(c) for c in range(65, 91)]) + "</nav>"
     body = (f'<section><div class="specs"><div class="spec wide"><span class="k">Every coffee, by roaster</span><h1>Roasters A to Z</h1></div></div>'
             f'<p class="r-read">{len(names)} roasters, {len(coffees):,} coffees, updated {ddmmyyyy(updated)}. Every coffee has a V60 recipe.</p></section>'
-            f'<section class="az-sec">{az}<ul class="list">{items}</ul></section>')   # inside the list's section, so it stays stuck all the way down
+            f'<section class="az-sec">{az}<ul class="list">{items}</ul></section>'
+            # the letter in view lights up in the bar, and slides into it when the bar is wider than the screen
+            '<script>(function(){var bar=document.querySelector(".az");if(!bar)return;var hs=[].slice.call(document.querySelectorAll(".az-h")),cur="";'
+            'function sync(){var line=bar.getBoundingClientRect().bottom+40,a=hs.length?hs[0].id:"";hs.forEach(function(h){if(h.getBoundingClientRect().top<=line)a=h.id;});'
+            'if(a===cur)return;cur=a;[].forEach.call(bar.querySelectorAll("a"),function(x){var on=x.getAttribute("href")==="#"+a;if(on){x.setAttribute("aria-current","true");'
+            'var l=x.offsetLeft-bar.offsetLeft;if(l<bar.scrollLeft+12||l+x.offsetWidth>bar.scrollLeft+bar.clientWidth-12)bar.scrollTo({left:Math.max(0,l-bar.clientWidth/2),behavior:"smooth"});}'
+            'else x.removeAttribute("aria-current");});}var raf=0;addEventListener("scroll",function(){if(!raf)raf=requestAnimationFrame(function(){raf=0;sync();});},{passive:true});sync();})();</script>')   # inside the list's section, so it stays stuck all the way down
     write("coffee/index.html", page("Specialty coffee roasters and V60 recipes for their coffees",
                                     f"{len(coffees):,} specialty coffees from {len(names)} roasters, updated every day, each with a V60 recipe.", "/coffee/", body, nav=False, tight=True))
 
