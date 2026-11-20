@@ -5342,7 +5342,7 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
   // Good value: the cheapest fifth (above). For filter: leaves out what the roaster sells as an espresso roast
   let shelfD = false, shelfY = false, shelfGV = false, shelfFi = false;
   const EXTRAS = [["foryou", "For you"], ["light", "Light roast"], ["filter", "For filter"], ["value", "Good value"], ["top", "Top lots"], ["decaf", "Decaf"]];
-  const extraOn = (v) => v === "foryou" ? shelfY : v === "light" ? shelfO === "light" : v === "top" ? shelfT : v === "value" ? shelfGV : v === "filter" ? shelfFi : shelfD;
+  const extraOn = (v) => v === "foryou" ? shelfY : v === "light" ? shelfO === "light" : v === "top" ? shelfT : v === "value" ? shelfGV : v === "filter" ? shelfFi : shelfD || curfewOn();
 
   /* For you: your taste, learnt on this device only, from the coffees you save to My bags and the ones you log in the journal.
      Each coffee is a handful of features (process, origin, variety, roaster, roast, the roaster's flavour notes). A bag counts
@@ -5413,7 +5413,7 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
   let xOpen = false, xFold = 0;
   const xWait = () => { clearTimeout(xFold); xFold = setTimeout(() => { xOpen = false; renderShelfO(); }, 2000 + 6 * 150); };
   function renderShelfO() {
-    const xs = EXTRAS.filter(([v]) => v !== "decaf" || !curfewOn());   // after 14:00 the list is decaf already: no Decaf pill
+    const xs = EXTRAS;   // after 14:00 Decaf shows ticked: the list is decaf only (untick it, Show all coffees or Never do this to lift it)
     // Top lots and Good value are opposites: one on turns the other off. On a phone the row works like My equipment:
     // what's ticked stays out, with a + for the rest (all of them while nothing is ticked); the rest folds back by itself
     const anyX = xs.some(([v]) => extraOn(v));
@@ -5422,7 +5422,7 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
     const xrow = $("shelfX").closest(".opt"); xrow.classList.add("xrow"); xrow.classList.toggle("xall", !anyX || xOpen);
     const more = $("shelfX").querySelector(".x-more"); if (more) more.onclick = (e) => { e.stopPropagation(); xOpen = true; renderShelfO(); xWait(); };
     $("shelfX").querySelectorAll("button[data-v]").forEach((b) => b.onclick = () => { const v = b.dataset.v; if (xOpen) xWait();
-      if (v === "foryou") shelfY = !shelfY; else if (v === "light") shelfO = shelfO === "light" ? "all" : "light"; else if (v === "top") { shelfT = !shelfT; if (shelfT) shelfGV = false; } else if (v === "value") { shelfGV = !shelfGV; if (shelfGV) shelfT = false; } else if (v === "filter") shelfFi = !shelfFi; else shelfD = !shelfD;
+      if (v === "foryou") shelfY = !shelfY; else if (v === "light") shelfO = shelfO === "light" ? "all" : "light"; else if (v === "top") { shelfT = !shelfT; if (shelfT) shelfGV = false; } else if (v === "value") { shelfGV = !shelfGV; if (shelfGV) shelfT = false; } else if (v === "filter") shelfFi = !shelfFi; else if (curfewOn()) { shelfD = false; cfSet("skip:" + nightOf()); return; } else shelfD = !shelfD;   // unticking the evening's Decaf = Show all coffees tonight
       shelfAll = false; renderShelfO(); renderShelf(); });
     const on = xs.filter(([v]) => extraOn(v)).map(([, t]) => t);
     fillSel("shelfXSel", [["", on.length ? on.join(", ") : "None"]], "", () => {});   // the folded row's pill says what's ticked
@@ -5707,7 +5707,7 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
       return `<article class="item bag">
         <div class="l">
           <span class="who">${b.roaster ? `<span class="rn">${esc(b.roaster)}</span>${bagCity(b) ? ` <span class="rcity">${esc(bagCity(b))}</span>` : ""}` : "Your coffee"}</span>
-          <span class="name">${esc(calm(b.name || b.text || "Coffee"))}</span>
+          <span class="name">${esc(calm(b.roaster ? (coffeeName(b) ?? shortName(b)) : (b.name || b.text || "Coffee")))}</span>
           ${tags ? `<p class="tags">${tags}</p>` : ""}
           <div class="bag-f">${bagNeedsRoast(b) ? `<div class="bag-rorow"><span>Roast</span><span class="bag-ro"><button type="button" class="ro-dd" data-rodd="${i}" aria-expanded="false">Pick one</button>${PHOTO_CHIP.replace('class="chip rp-go"', `class="chip rp-go" data-scan="${i}"`)}<span class="ro-chips" hidden>${OPTS_MORE[1].items.filter(([k]) => k !== "unsure").map(([k, t]) => `<button type="button" class="chip" data-ro="${i}" data-k="${k}"><i class="bean-dot" style="--c:${ROAST_SW[k]}"></i>${t}</button>`).join("")}</span></span></div>` : ""}<label>Roasted<span class="bag-d${b.roasted ? "" : " empty"}"><input type="date" data-k="roasted" data-i="${i}" value="${esc(b.roasted || "")}"></span></label>
             <label>Opened<span class="bag-d${b.opened ? "" : " empty"}"><input type="date" data-k="opened" data-i="${i}" value="${esc(b.opened || "")}"></span></label>
@@ -6456,7 +6456,9 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
   $("cfOff").onclick = () => cfSet("off");
   // the clock moves on while the page is open: at 2 pm the list turns decaf, at 5 am it comes back
   const cfTick = () => { const on = curfewOn(); if (cfWas !== null && on !== cfWas && shelf.length) { shelfAll = false; renderShelfO(); renderShelf(); } else renderCurfew(); cfWas = on; };
-  setInterval(cfTick, 30000); document.addEventListener("visibilitychange", () => { if (!document.hidden) cfTick(); });
+  // on the minute, so the time at the top of the alert is always now
+  const cfEvery = () => { cfTick(); setTimeout(cfEvery, 60000 - (Date.now() % 60000) + 50); };
+  setTimeout(cfEvery, 60000 - (Date.now() % 60000) + 50); document.addEventListener("visibilitychange", () => { if (!document.hidden) cfTick(); });
   // a filter tapped while the bar is stuck: keep the list starting right under it
   // after a search or a filter: if the bar is stuck and the list now starts behind it, scroll back so the first
   // coffee sits right under the bar. Measured after layout, and again once the bar has settled (it can change height)
