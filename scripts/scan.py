@@ -135,7 +135,7 @@ NOTES_LINE = re.compile(r"(?:tasting notes|flavou?r notes|cup(?:ping)? notes|in 
 NOTES_CELL = re.compile(r"^[ \t]*(?:tasting notes|flavou?r notes|cup(?:ping)? notes|smaksnoter|smagsnoter|smaksnotater|geschmacksnoten|"
                         r"notas de cata|note di degustazione|notes de d[ée]gustation)[ \t]+(?!(?:of|are|is|include|from|with|that|we|you)\b)"
                         r"([^\n.:]{3,120}?(?:,|&|\band\b)[^\n.:]{2,120}?)[ \t]*$", re.I | re.M)
-NOTES_CHECK = 3   # pages read for notes with these rules; a coffee checked under older rules gets one more read
+NOTES_CHECK = 4   # pages read for notes with these rules; a coffee checked under older rules gets one more read
 
 
 def dot_notes(text):
@@ -143,13 +143,13 @@ def dot_notes(text):
     (Standout). Every part a word or three, no numbers, origin, process or variety, so the line above it
     ('Gibirinna 74110 & Serto 74112 · Anoxic Natural · Ethiopia') is not taken."""
     for line in (text or "").splitlines():
-        parts = [x.strip() for x in re.split(r"\s*[·•|]\s*", line.strip()) if x.strip()]
+        parts = [x.strip() for x in re.split(r"\s*[·•|]\s*|\s+/\s+", line.strip()) if x.strip()]   # or slashes: 'Apple Crumble / Almond / Brown Sugar' (Square Mile)
         if len(parts) < 3 or len(parts) > 8:
             continue
         if all(re.fullmatch(r"[^\W\d_][^\W\d_'’\- ]*(?:\s[^\W\d_][^\W\d_'’\-]*){0,2}", x) and not find_process(x) and not find_origin(x)
                and not any(v.lower() == x.lower() for v in VARIETIES)
                and not re.search(r"\b(?:filter|espresso|omni|whole ?beans?|ground|roast|light|medium|dark|decaf|organic|fair ?trade|new|limited|"
-                                 r"single origin|blend|subscription|gift|home|shop|cart|menu|about|contact|wholesale)\b", x, re.I) for x in parts):
+                                 r"single origin|blend|subscription|gift|home|shop|cart|menu|about|contact|wholesale|coffees?|beans?|products?|collections?|all|equipment|merch)\b", x, re.I) for x in parts):
             return ", ".join(parts)
     return None
 
@@ -1317,6 +1317,38 @@ def process_phrase(text, why=False):
     return None
 
 
+def name_at(text, name):
+    """Where the product's own words start: its name, but not the copy in the page title (the first line of the text,
+    "Pic n Mix | Colombia ... – Apricity Coffee"), which is followed by the whole menu and never the description."""
+    low, key = text.lower(), name.lower()[:30]
+    i = low.find(key)
+    if i < 0:
+        return 0
+    head = text.find("\n", len(text) - len(text.lstrip()))
+    if 0 <= i < head:
+        j = low.find(key, head)
+        if j >= 0:
+            return j
+    return i
+
+
+def page_notes(text, name, meta=""):
+    """The shop's notes on the product page: tried from each place the name appears (title, heading, breadcrumb,
+    description) so a long menu after the first one doesn't hide them, then the page's description tag."""
+    low, key = text.lower(), name.lower()[:30]
+    starts = [name_at(text, name)]
+    i = low.find(key)
+    while i >= 0 and len(starts) < 8:
+        if i not in starts:
+            starts.append(i)
+        i = low.find(key, i + 1)
+    for st in starts:
+        ns = find_notes({"body": description_window(text, st), "title": name, "tags": []})
+        if ns:
+            return ns
+    return find_notes({"body": meta, "title": name, "tags": []}) if meta else []
+
+
 def description_window(text, start, size=2500):
     """The product's own words on its page: from its name on, up to the related products or reviews."""
     t = text[start:start + size]
@@ -2032,7 +2064,7 @@ def add_page_details(recs, roaster, old):
             rec["roast_for"] = "filter" if "filter" in ms else "espresso"
         else:
             rec["methods_none"] = True
-        start = max(0, text.lower().find(rec["name"].lower()[:30]))
+        start = name_at(text, rec["name"])
         rec["roast_checked"] = ROAST_CHECK
         if not rec.get("roast"):
             r_ = roast_labelled(text[start:start + 6000]) or roast_from_raw(raw) or roast_from_agtron(text)
@@ -2043,8 +2075,7 @@ def add_page_details(recs, roaster, old):
         got = False
         if "notes" in need:   # the shop's own tasting notes: a labelled line, a sentence, or the page's description tag
             meta = re.search(r'<meta[^>]+(?:name|property)=["\'](?:og:)?description["\'][^>]+content=["\']([^"\']+)', raw, re.I)
-            src = description_window(text, start) + "\n" + (html.unescape(meta.group(1)) if meta else "")
-            ns = find_notes({"body": src, "title": rec["name"], "tags": []})
+            ns = page_notes(text, rec["name"], html.unescape(meta.group(1)) if meta else "")
             if ns:
                 rec["notes"], rec["notes_from"] = ns, "page"
                 got = True
@@ -2179,10 +2210,41 @@ def probe_site(shop):
 INSPECT_WORDS = r"obr[óo]bk|odmian|metod|zaparz|przelew|kawiark|ekspres|proces|verwerk|vari[eë]t|bereid|zetmethode|espresso|filter|drip|v60|chemex|aeropress|moka|french|cold ?brew|process|variet|brew"
 
 
+def notes_audit(n):
+    """For coffees whose page was read and gave no notes: one per roaster (the roasters missing most first), read the page
+    and print what the reader sees near words like 'notes', 'flavour', 'taste' or 'cup', so a missed layout shows up
+    without opening every coffee by hand. Run from the workflow as inspect 'audit:N'; nothing is saved."""
+    rel = json.load(open(OUT))
+    rel = rel.get("releases", rel) if isinstance(rel, dict) else rel
+    by = {}
+    for r in rel:
+        by.setdefault(r["roaster"], []).append(r)
+    rank = sorted(by, key=lambda k: -sum(not r.get("notes") for r in by[k]) / len(by[k]) * min(len(by[k]), 20))
+    done = 0
+    for k in rank:
+        miss = [r for r in by[k] if not r.get("notes") and r.get("url") and r.get("notes_checked")]
+        if not miss or done >= n:
+            continue
+        r = miss[0]; done += 1
+        try:
+            raw, text = cached_page(r["url"])
+        except Exception as e:  # noqa: BLE001
+            print(f"\nAUDIT {k}: {r['url']}  {type(e).__name__}"); continue
+        meta = re.search(r'<meta[^>]+(?:name|property)=["\'](?:og:)?description["\'][^>]+content=["\']([^"\']+)', raw, re.I)
+        got = page_notes(text, r["name"], html.unescape(meta.group(1)) if meta else "")
+        print(f"\nAUDIT {k} ({sum(not x.get('notes') for x in by[k])}/{len(by[k])} without notes): {r['name']}  {r['url']}  -> {got}")
+        st, shown = name_at(text, r["name"]), 0
+        for m in re.finditer(r"[^\n]*\b(?:notes?|flavou?rs?|taste[sd]?|tasting|cup|profile|aroma|we get|expect)\b[^\n]*(?:\n[^\n]{0,160})?", text[st:st + 6000], re.I):
+            if shown < 6:
+                shown += 1; print("   |", re.sub(r"\s+", " ", m.group(0))[:240])
+
+
 def inspect(urls):
     """Print what a product page says about process, variety and brew methods (labels, icons), so new page layouts
     can be supported without guessing. Run from the workflow with the 'inspect' input; nothing is saved."""
     for url in urls:
+        if url.startswith("audit:"):
+            notes_audit(int(url[6:] or 40)); continue
         dump = url.startswith("raw:")   # raw:<url> prints the page source itself, for writing a reader for a custom shop
         words = url.startswith("text:")   # text:<url> prints only the page's visible words (a long policy page, say)
         url = url[4:] if dump else url[5:] if words else url

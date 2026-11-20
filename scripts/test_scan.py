@@ -144,6 +144,14 @@ CASES = [
     ("Dak's Lemon Spritz had no notes: a table row 'Tasting notes Citrus, Lemon Peel, White Florals' (no colon, one space)",
      lambda: scan.find_notes({"body": " Region Gedeb \n Producer / Farm Produced by Lalesa Washing Station \n Tasting notes Citrus, Lemon Peel, White Florals \n Altitude 2150masl ",
                               "title": "Lemon Spritz", "tags": []}) == ["Citrus", "Lemon Peel", "White Florals"]),
+    ("Square Mile's Huabal had no notes: a line 'Apple Crumble / Almond / Brown Sugar' split by slashes",
+     lambda: scan.find_notes({"body": " Filter\n Apple Crumble / Almond / Brown Sugar\n Peru \n £6.07/100g \n", "title": "Huabal", "tags": []})
+             == ["Apple Crumble", "Almond", "Brown Sugar"]),
+    ("A slash line of sizes, methods or a breadcrumb is not notes ('350g / Whole Bean / NA', 'Home / Coffee / Huabal')",
+     lambda: scan.dot_notes("150g (tin) / Whole Bean / NA\nHome / Coffee / Huabal\nFilter / Espresso / Omni") is None),
+    ("Apricity's Pic n Mix had no notes: the reader started at the page title and read only the menu",
+     lambda: scan.page_notes("Pic n Mix | Colombia – Apricity Coffee\n" + " Shop\n Coffee\n" * 400 + " Pic n Mix\n Process: Advanced Natural\n Tasting Notes\n Refreshers, pink bubblegum, pineapple sweets\n The Story\n", "Pic n Mix")
+             == ["Refreshers", "Pink bubblegum", "Pineapple sweets"]),
     ("A sentence 'Tasting notes of this lot change, and so does…' is not a notes row",
      lambda: scan.NOTES_CELL.search("Tasting notes of this lot change every harvest, and so does the roast") is None),
 ]
