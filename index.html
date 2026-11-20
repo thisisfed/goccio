@@ -1259,7 +1259,9 @@ footer .refs a { color: inherit; text-decoration: underline; text-decoration-col
 :root[data-theme="dark"] .item.sponsored .pills .pill, :root[data-theme="dark"] .item.sponsored .pills .oc { background: rgba(255, 255, 255, .07); }
 :root[data-theme="dark"] .item.sponsored { background: linear-gradient(150deg, #2d261f 0%, #261f18 55%, #1f1913 100%); box-shadow: inset 0 0 0 1px rgba(214, 170, 120, .14); }
 .item.sponsored + .grp, .item.sponsored + .item { border-top-color: transparent; }
-.g-specs .gk { font-style: normal; color: var(--muted); margin-right: 5px; }   /* C40, C, H2O: small and grey before each number */
+.g-specs .gk { font-style: normal; color: var(--muted); margin-right: 5px; }
+.glimpse .g-specs { gap: 6px 10px !important; }   /* the three numbers on one line on a phone */
+.glimpse .g-specs .arr { margin: 0 3px !important; }   /* C40, C, H2O: small and grey before each number */
 .g-specs .gk sub { font-size: .7em; vertical-align: -.15em; line-height: 0; }
 .g-specs .arr { display: inline-block; width: 18px; height: 10px; margin: 0 6px; color: var(--ink); vertical-align: 4px; }
 /* the + sits right under the grinder pill's arrow: both centred 15 px from the right edge */
@@ -1485,6 +1487,10 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 #coffee .ask{border-top-color:var(--line)!important}
 /* closing text in short paragraphs: a gap of half a line between them */
 .litext .pb{display:block;height:.5em}
+/* the changing word: a pill like every other on the site, sitting in the big line; a tap brings another */
+.litext .verb-pill{display:inline-flex;align-items:center;height:var(--pill-h);padding:0 10px;margin:0 .1em;vertical-align:.18em;border:0;border-radius:var(--r);
+  background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans)!important;letter-spacing:0!important;cursor:pointer;transition:background-color .15s ease}
+.litext .verb-pill:hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))}
 /* the credit closes the page: after the footer, right at the bottom with a small margin */
 .page > .credit{padding:0 0 0!important;margin:-24px 0 0}
 .page{padding-bottom:20px!important}
@@ -1594,7 +1600,9 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 .g-ex{width:100%;max-width:520px}
 .g-ex > .glimpse{margin-top:10px;border-top:0;padding-top:0;transition:opacity .3s ease}
 .g-ex > .glimpse.swap{opacity:0}
-.g-ex-h{margin:0;padding-top:12px;border-top:1px solid var(--line);font-weight:500;font-size:var(--fs-s)}   /* Example: a plain heading, nothing to open */
+.g-ex{border-top:1px solid var(--line);padding-top:12px}
+.g-ex > .glimpse{margin-top:0!important}
+.glimpse figcaption .g-tag{flex:none;color:var(--muted);font-size:var(--fs-s);font-weight:500}   /* Example: grey, on the right, like Stored on this device only */
 .g-clock{font-variant-numeric:tabular-nums;min-width:2.6em;display:inline-block}
 @media print{
   .ps.dense .ps-pours{font-size:10pt} .ps.dense .ps-pours td{padding:1.4mm 0} .ps.dense .ps-title{font-size:44pt} .ps.dense .ps-nums b{font-size:32pt} .ps.dense .ps-nums > div{padding-bottom:4mm}
@@ -2150,9 +2158,9 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       <div class="hero-side">
       <p class="hero-kick">Updated every day<span class="hero-live" id="heroLive" hidden><i class="live-dot" aria-hidden="true"></i><span id="heroLiveT"></span></span></p>
       <p class="lede">New coffees from roasters in the UK, Europe and beyond, updated every day. Pick one or type your own, choose your brewer, and get the grind for your grinder, the temperature and every step. Or brew it your way: change any number or step, write how you pour, and share your recipe with a link. Brew full screen, log how it tasted, and it adjusts next time. <span class="yours">Brewed your way.</span></p>
-      <div class="g-ex"><p class="g-ex-h">Example</p>
+      <div class="g-ex">
       <figure class="glimpse" aria-label="Example recipe: washed Ethiopia, light roast. 15 g coffee to 255 g water, 99°C, about 3:15. Pours at 0:00 to 51 g, 0:45 to 102 g, 1:10 to 153 g, 1:30 to 204 g, 1:50 to 255 g.">
-        <figcaption><span class="g-name">Washed Ethiopia, light roast</span></figcaption>
+        <figcaption><span class="g-name">Washed Ethiopia, light roast</span><span class="g-tag">Example</span></figcaption>
         <div class="g-specs num" aria-hidden="true"><span><b>15</b><svg class="arr" viewBox="0 0 18 10" aria-hidden="true"><path d="M1 5h15M12 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><b>255</b> g</span><span><b>99</b>°C</span></div>
         <ol class="g-pours num" aria-hidden="true">
           <li style="--t:0"><span>0:00</span><b>51</b></li><li style="--t:45"><span>0:45</span><b>102</b></li><li style="--t:70"><span>1:10</span><b>153</b></li><li style="--t:90"><span>1:30</span><b>204</b></li><li style="--t:110"><span>1:50</span><b>255</b></li><li class="end"><span>3:15</span><i>Done</i></li>
@@ -2287,7 +2295,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
 
 
   <section class="sec outro" aria-label="How it learns">
-    <p class="litext" id="litext"><span>Every</span> <span>bag</span> <span>is</span> <span>different,</span> <span>and</span> <span>so</span> <span>is</span> <span>every</span> <span>brew.</span> <span>The</span> <span>roast,</span> <span>the</span> <span>grind,</span> <span>the</span> <span>water,</span> <span>your</span> <span>mood,</span> <span>your</span> <span>nose,</span> <span>the</span> <span>pour;</span> <span>none</span> <span>of</span> <span>it</span> <span>sits</span> <span>still.</span> <span>That’s</span> <span>the</span> <span>fun</span> <span>of</span> <span>it.</span> <i class="pb" aria-hidden="true"></i> <span>So</span> <span>keep</span> <span>a</span> <span>record.</span> <span>Dose,</span> <span>ratio,</span> <span>grinder</span> <span>setting,</span> <span>kettle</span> <span>temperature,</span> <span>drawdown.</span> <span>Change</span> <span>one</span> <span>variable</span> <span>at</span> <span>a</span> <span>time,</span> <span>keep</span> <span>what</span> <span>works,</span> <span>and</span> <span>repeat</span> <span>it</span> <span>to</span> <span>the</span> <span>gram</span> <span>and</span> <span>the</span> <span>second.</span> <span>Dialled</span> <span>in</span> <span>once,</span> <span>dialled</span> <span>in</span> <span>again.</span> <i class="pb" aria-hidden="true"></i> <span>This</span> <span>is</span> <span>a</span> <span>starting</span> <span>point,</span> <span>not</span> <span>a</span> <span>finish</span> <span>line.</span> <span>Brew</span> <span>it,</span> <span>taste</span> <span>it,</span> <span>write</span> <span>down</span> <span>what</span> <span>you</span> <span>got.</span> <span>The</span> <span>best</span> <span>cup</span> <span>you’ve</span> <span>ever</span> <span>tasted</span> <span>might</span> <span>still</span> <span>be</span> <span>one</span> <span id="verb">pour</span> <span>away.</span> <span class="outro-end">Brew something good.</span></p>
+    <p class="litext" id="litext"><span>Every</span> <span>bag</span> <span>is</span> <span>different,</span> <span>and</span> <span>so</span> <span>is</span> <span>every</span> <span>brew.</span> <span>The</span> <span>roast,</span> <span>the</span> <span>grind,</span> <span>the</span> <span>water,</span> <span>your</span> <span>mood,</span> <span>your</span> <span>nose,</span> <span>the</span> <span>pour;</span> <span>none</span> <span>of</span> <span>it</span> <span>sits</span> <span>still.</span> <span>That’s</span> <span>the</span> <span>fun</span> <span>of</span> <span>it.</span> <i class="pb" aria-hidden="true"></i> <span>So</span> <span>keep</span> <span>a</span> <span>record.</span> <span>Dose,</span> <span>ratio,</span> <span>grinder</span> <span>setting,</span> <span>kettle</span> <span>temperature,</span> <span>drawdown.</span> <span>Change</span> <span>one</span> <span>variable</span> <span>at</span> <span>a</span> <span>time,</span> <span>keep</span> <span>what</span> <span>works,</span> <span>and</span> <span>repeat</span> <span>it</span> <span>to</span> <span>the</span> <span>gram</span> <span>and</span> <span>the</span> <span>second.</span> <span>Dialled</span> <span>in</span> <span>once,</span> <span>dialled</span> <span>in</span> <span>again.</span> <i class="pb" aria-hidden="true"></i> <span>This</span> <span>is</span> <span>a</span> <span>starting</span> <span>point,</span> <span>not</span> <span>a</span> <span>finish</span> <span>line.</span> <span>Brew</span> <span>it,</span> <span>taste</span> <span>it,</span> <span>write</span> <span>down</span> <span>what</span> <span>you</span> <span>got.</span> <span>The</span> <span>best</span> <span>cup</span> <span>you’ve</span> <span>ever</span> <span>tasted</span> <span>might</span> <span>still</span> <span>be</span> <span>one</span> <button type="button" class="verb-pill" id="verb" aria-label="Another word">pour</button> <span>away.</span> <span class="outro-end">Brew something good.</span></p>
     <button type="button" class="hero-pill" data-jump="recipe">Back to recipe</button>
   </section>
 
@@ -2371,7 +2379,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     </div>
     <div class="fcol f-cred">
     <p class="foot-note refs-h foot-credits">Credits</p>
-    <p class="foot-note" id="credit">Made by <a href="https://thisisfed.xyz/" target="_blank" rel="noopener">Federico R. T. Ferrari</a>. Set in ALT Riviera, with thanks to <a href="https://alt-tf.com/" target="_blank" rel="noopener">Alt Type Foundry</a>.</p>
+    <p class="foot-note" id="credit">Made by <a href="https://thisisfed.xyz/" target="_blank" rel="noopener">Federico R. T. Ferrari</a>.<br>Set in ALT Riviera, with thanks to <a href="https://alt-tf.com/" target="_blank" rel="noopener">Alt Type Foundry</a>.</p>
     <p class="foot-note foot-all foot-links"><a href="/coffee/">Every coffee, by roaster</a><a href="/list/">Get your roastery listed / removed</a><a href="/privacy/">Privacy</a><a class="mail" href="#" data-m="ku.oc.oiccog@nu">Email us</a></p>
     </div>
   </footer>
@@ -2556,7 +2564,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       li.innerHTML = S("Ogni busta è diversa, e così ogni estrazione. La tostatura, la macinatura, l’acqua, il tuo umore, il tuo naso, la versata: niente sta fermo. Ed è questo il bello.")
         + ` <i class="pb" aria-hidden="true"></i> ` + S("Quindi tieni traccia. Dose, rapporto, impostazione del macinino, temperatura del bollitore, drenaggio. Cambia una variabile alla volta, tieni ciò che funziona e ripetilo al grammo e al secondo. Regolato una volta, regolato di nuovo.")
         + ` <i class="pb" aria-hidden="true"></i> ` + S("Questo è un punto di partenza, non un traguardo. Preparalo, assaggialo, scrivi cosa hai sentito. La tazza migliore che tu abbia mai bevuto potrebbe essere ancora a una")
-        + ` <span id="verb">versata</span> <span>di</span> <span>distanza.</span> <span class="outro-end">Prepara qualcosa di buono.</span>`;
+        + ` <button type="button" class="verb-pill" id="verb" aria-label="Un’altra parola">versata</button> <span>di</span> <span>distanza.</span> <span class="outro-end">Prepara qualcosa di buono.</span>`;
     }
     const ATTRS = ["placeholder", "aria-label", "title"];
     const trAttrs = (el) => ATTRS.forEach((a) => { const v = el.getAttribute && el.getAttribute(a); if (v) { const x = tr(v); if (x !== v) el.setAttribute(a, x); } });
@@ -5775,7 +5783,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     eg.textContent = brewer;
     const ARR = '<svg class="arr" viewBox="0 0 18 10" aria-hidden="true"><path d="M1 5h15M12 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     // each number says what it is: the grinder (C40), the coffee (and the water it goes to) and the water's heat (H2O)
-    fig.querySelector(".g-specs").innerHTML = `<span><i class="gk">C40</i><b>${r.clicks}</b> clicks</span><span><i class="gk">Coffee</i><b>${r.dose}</b>${ARR}<b>${r.water}</b> g</span>${r.temp != null ? `<span><i class="gk">H<sub>2</sub>O</i><b>${r.temp}</b>°C</span>` : ""}`;
+    fig.querySelector(".g-specs").innerHTML = `<span><i class="gk">C40</i><b>${r.clicks}</b> clk</span><span><i class="gk">Coffee</i><b>${r.dose}</b>${ARR}<b>${r.water}</b> g</span>${r.temp != null ? `<span><i class="gk">H<sub>2</sub>O</i><b>${r.temp}</b>°C</span>` : ""}`;
     // every step under the bar at its own time; where two would touch, layGlimpse() drops the later one to the next line
     const items = P.map((p) => { const pos = p.t / T;
       return `<li style="--p:${pos.toFixed(3)}"><span>${mmss(p.t)}</span>${p.act ? `<i>${esc(p.lbl)}</i>` : `<b>${p.to}</b>`}</li>`; }).join("");
@@ -6731,9 +6739,15 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   $("saveLog").onclick = saveLog;
   // bottom: light the words one by one as the paragraph scrolls up through the screen
   // "one brew away": each visit, the brew is one of the things a brewer asks of you. No animation.
+  // the word in the closing line: a different one each visit, and another each tap, all of them things you do brewing coffee
   (function verb() { const box = $("verb"); if (!box) return;
-    const V = LANG === "it" ? ["estrazione", "versata", "infusione", "mescolata", "pressata"] : ["brew", "pour", "bloom", "swirl", "steep", "stir", "press", "plunge"];
-    box.textContent = V[Math.floor(Math.random() * V.length)]; })();
+    const V = LANG === "it" ? ["estrazione", "versata", "infusione", "mescolata", "pressata", "fioritura", "macinatura", "pesata", "regolazione", "correzione",
+        "prova", "ricetta", "tazza", "assaggio", "sorso", "risciacquo", "rotazione", "filtrata", "spremuta", "colata", "tostatura", "annusata", "carica", "percolazione"]
+      : ["pour", "brew", "bloom", "swirl", "steep", "stir", "press", "plunge", "grind", "tweak", "sip", "taste", "rinse", "weigh", "shot", "cup", "dial",
+        "drip", "drawdown", "slurp", "sniff", "recipe", "click", "tamp", "pull", "spin", "extraction", "agitation", "pulse", "decant"];
+    let last = "";
+    const pick = () => { let w; do w = V[Math.floor(Math.random() * V.length)]; while (w === last && V.length > 1); last = w; box.textContent = w; };
+    pick(); box.addEventListener("click", pick); })();
   (function outro() {
     const words = [...document.querySelectorAll("#litext > span:not(.outro-end)")], end = document.querySelector(".outro-end");
     if (!words.length) return;
