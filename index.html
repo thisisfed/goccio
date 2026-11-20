@@ -1896,20 +1896,20 @@ body{transition:opacity .3s ease}
   font:500 var(--fs-s)/1 var(--sans);letter-spacing:inherit;cursor:pointer}   /* the same grey pill as Brew and Save */
 /* Surprise me: a moving glow of colour, like Siri. A slow spinning ring of hues, blurred soft, behind white text.
    Nothing about the text or the pill's size changes on hover: the colours just brighten. Still for reduced motion */
-.gear-tools #surprise, .chip.siri{position:relative;isolation:isolate;overflow:hidden;color:#fff;background:#140b2e;text-shadow:0 1px 6px rgba(20,8,50,.45)}
-.gear-tools #surprise::before, .chip.siri::before{content:"";position:absolute;left:50%;top:50%;width:max(260%,220px);aspect-ratio:1;z-index:-1;translate:-50% -50%;
+.gear-tools #surprise, .chip.siri[aria-pressed="true"]{position:relative;isolation:isolate;overflow:hidden;color:#fff;background:#140b2e;text-shadow:0 1px 6px rgba(20,8,50,.45)}
+.gear-tools #surprise::before, .chip.siri[aria-pressed="true"]::before{content:"";position:absolute;left:50%;top:50%;width:max(260%,220px);aspect-ratio:1;z-index:-1;translate:-50% -50%;
   background:conic-gradient(from 0deg,#ff375f,#ff9f0a,#ff2d95,#bf5af2,#5e5ce6,#0a84ff,#64d2ff,#bf5af2,#ff375f);filter:blur(12px) saturate(1.25);
   animation:siriSpin 7s linear infinite}
-.gear-tools #surprise::after, .chip.siri::after{content:"";position:absolute;inset:-30%;z-index:-1;
+.gear-tools #surprise::after, .chip.siri[aria-pressed="true"]::after{content:"";position:absolute;inset:-30%;z-index:-1;
   background:radial-gradient(90% 120% at 25% 30%,rgba(255,255,255,.28),transparent 55%),radial-gradient(80% 120% at 80% 80%,rgba(20,8,50,.35),transparent 60%);
   animation:siriDrift 4.5s ease-in-out infinite alternate}
 /* bright at rest, softer under the pointer */
-.gear-tools #surprise, .chip.siri{filter:brightness(1.12) saturate(1.2)}
-.gear-tools #surprise:hover, .chip.siri:hover{background:#140b2e!important;filter:none}
-.chip.siri[aria-pressed="true"]{box-shadow:inset 0 0 0 2px #fff!important;background:#140b2e!important;color:#fff!important}
+.gear-tools #surprise, .chip.siri[aria-pressed="true"]{filter:brightness(1.12) saturate(1.2)}
+.gear-tools #surprise:hover, .chip.siri[aria-pressed="true"]:hover{background:#140b2e!important;filter:none}
+.chip.siri[aria-pressed="true"]{background:#140b2e!important;color:#fff!important}
 @keyframes siriSpin{to{rotate:1turn}}
 @keyframes siriDrift{from{transform:translateX(-12%)}to{transform:translateX(12%)}}
-@media (prefers-reduced-motion: reduce){.gear-tools #surprise::before,.gear-tools #surprise::after,.chip.siri::before,.chip.siri::after{animation:none}}
+@media (prefers-reduced-motion: reduce){.gear-tools #surprise::before,.gear-tools #surprise::after,.chip.siri[aria-pressed="true"]::before,.chip.siri[aria-pressed="true"]::after{animation:none}}
 /* Surprise me: the roastery (name, city) and the coffee it picked, each on a line of its own above the brewer; long names wrap, never cut */
 .specs .spec.roastery, .specs .spec.pick{grid-column:1 / -1!important;min-width:0}
 .specs .spec.roastery{order:-2!important;border-top:0!important}
@@ -2001,11 +2001,12 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
   footer .f-cred { break-inside: avoid; }
 }
 /* every tag has its dot: the rarer processes (wet-hulled and the like) olive, Process not listed grey */
-.item .tags .tg.p-other::before,.item .tags .tg.miss::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:.12em}
 .item .tags .tg.p-other::before{background:#8a9a1b}
 .item .tags .tg.miss::before{background:#8e8e93}
 /* For you's line sits in the sticky bar with the filters, so it stays while you scroll the picks */
-.shelf-tools .fy-note{margin:2px 0 0!important;padding:0!important}
+.shelf-tools .fy-note{margin:0!important;padding:0!important;line-height:1.3}   /* the same 12px under the pills as between them */
+/* every dot before a tag: a perfect circle, never squeezed */
+.item .tags .tg::before,.item .tags .oc::before{width:12px!important;height:12px!important;min-width:12px!important;min-height:12px!important;flex:none!important;aspect-ratio:1/1!important;border-radius:50%!important}
 </style>
 </head>
 <body>
