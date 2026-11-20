@@ -2036,12 +2036,18 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
   -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E") center/10px 10px no-repeat;
   mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E") center/10px 10px no-repeat}
 .nav .sec-dd[aria-expanded="true"]::after{transform:rotate(180deg)}
-.sec-list{overflow:hidden;max-height:0;transition:max-height .22s ease;border-top:1px solid transparent}
-.sec-list.open{max-height:200px;border-top-color:var(--rule)}
-.sec-list-in{max-width:1000px;margin:0 auto;padding:12px;display:flex;flex-wrap:wrap;gap:5px;justify-content:flex-end}
+.sec-list{display:grid;grid-template-rows:0fr;transition:grid-template-rows .32s cubic-bezier(.2,.7,.2,1),box-shadow .32s ease}
+.sec-list > .sec-list-in{min-height:0;overflow:hidden;opacity:0;transition:opacity .2s ease}
+.sec-list.open{grid-template-rows:1fr;box-shadow:inset 0 1px 0 var(--rule)}   /* the line drawn, not a border: shut, the list takes no room at all */
+.sec-list.open > .sec-list-in{opacity:1;transition:opacity .25s ease .06s}
+.sec-list.instant, .sec-list.instant > .sec-list-in{transition:none!important}
+.sec-list-in{max-width:1000px;margin:0 auto;padding:0 12px;display:flex;flex-wrap:wrap;gap:5px;justify-content:flex-end}
 .sec-list .sec-p{border:0;background:var(--pill);color:var(--ink);border-radius:var(--r);height:var(--pill-h);padding:0 10px;font:500 var(--fs-s)/1 var(--sans);cursor:pointer}
 @media (min-width: 900px){ .nav .sec-inline{display:flex} .nav .sec-dd, .sec-list{display:none!important} }
-@media (prefers-reduced-motion: reduce){ .sec-list, .nav .sec-dd::after{transition:none} }
+@media (prefers-reduced-motion: reduce){ .sec-list, .sec-list > .sec-list-in, .nav .sec-dd::after{transition:none!important} }
+/* the pills' 12px above and below sit inside the part that grows, so it closes to nothing */
+.sec-list-in::before{content:"";flex-basis:100%;height:8px}
+.sec-list-in::after{content:"";flex-basis:100%;height:7px}
 </style>
 </head>
 <body>
@@ -2055,7 +2061,7 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
       <button type="button" class="theme-btn theme-ic" id="themeBtn" aria-label="Appearance"></button>
     </nav>
   </div>
-  <div class="sec-list" id="secList" hidden><div class="sec-list-in"><button type="button" class="sec-p" data-jump="shelves" data-sec="shelves">Coffees</button><button type="button" class="sec-p" data-jump="bags" data-sec="bags">My bags</button><button type="button" class="sec-p" data-jump="gear" data-sec="gear">My equipment</button><button type="button" class="sec-p" data-jump="coffee" data-sec="coffee">What’s brewing?</button><button type="button" class="sec-p" data-jump="recipe" data-sec="recipe">Recipe</button><button type="button" class="sec-p" data-jump="journal" data-sec="journal">Journal</button></div></div>
+  <div class="sec-list" id="secList" inert aria-hidden="true"><div class="sec-list-in"><button type="button" class="sec-p" data-jump="shelves" data-sec="shelves">Coffees</button><button type="button" class="sec-p" data-jump="bags" data-sec="bags">My bags</button><button type="button" class="sec-p" data-jump="gear" data-sec="gear">My equipment</button><button type="button" class="sec-p" data-jump="coffee" data-sec="coffee">What’s brewing?</button><button type="button" class="sec-p" data-jump="recipe" data-sec="recipe">Recipe</button><button type="button" class="sec-p" data-jump="journal" data-sec="journal">Journal</button></div></div>
 </header>
 
 <main class="page">
@@ -6728,10 +6734,18 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
       document.querySelectorAll("[data-sec]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.sec === a)));
       cur.textContent = LBL[a || "shelves"][LANG === "it" ? 1 : 0]; dd.classList.toggle("on", !!a);
     };
-    const close = () => { list.classList.remove("open"); dd.setAttribute("aria-expanded", "false"); setTimeout(() => { if (!list.classList.contains("open")) list.hidden = true; }, 220); };
-    dd.onclick = (e) => { e.stopPropagation(); if (list.classList.contains("open")) return close(); sync(); list.hidden = false; requestAnimationFrame(() => list.classList.add("open")); dd.setAttribute("aria-expanded", "true"); };
+    // opens and folds with one smooth glide (the row's height animates from nothing to its pills); scrolling the page without
+    // picking folds it again
+    const shut = (now) => { list.classList.toggle("instant", !!now); list.classList.remove("open"); list.inert = true; list.setAttribute("aria-hidden", "true"); dd.setAttribute("aria-expanded", "false"); };
+    const close = () => shut(false);
+    dd.onclick = (e) => { e.stopPropagation(); if (list.classList.contains("open")) return close(); sync();
+      list.classList.remove("instant"); list.inert = false; list.setAttribute("aria-hidden", "false"); list.classList.add("open"); dd.setAttribute("aria-expanded", "true"); };
+    // your own scrolling folds it: a finger dragging the page or the wheel (the page shifting as the list opens is not you)
+    const fold = (e) => { if (list.classList.contains("open") && !(e.target.closest && e.target.closest("#secList, #secDd"))) close(); };
+    addEventListener("touchmove", fold, { passive: true }); addEventListener("wheel", fold, { passive: true });
+    addEventListener("keydown", (e) => { if (/^(PageDown|PageUp|ArrowDown|ArrowUp|Home|End| )$/.test(e.key) && !e.target.closest("input, textarea, select")) fold(e); });
     // a pick folds the list at once (no slide), so the jump measures the bar at its usual height
-    list.addEventListener("click", (e) => { if (e.target.closest("[data-jump]")) { list.classList.remove("open"); list.hidden = true; dd.setAttribute("aria-expanded", "false"); } }, true);
+    list.addEventListener("click", (e) => { if (e.target.closest("[data-jump]")) shut(true); }, true);
     document.addEventListener("click", (e) => { if (list.classList.contains("open") && !e.target.closest("#secList, #secDd")) close(); }, true);
     document.addEventListener("keydown", (e) => { if (e.key === "Escape" && list.classList.contains("open")) { close(); dd.focus(); } });
     let raf = 0; addEventListener("scroll", () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; sync(); }); }, { passive: true });
