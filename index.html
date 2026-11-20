@@ -6796,8 +6796,11 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   // after a search or a filter: if the bar is stuck and the list now starts behind it, scroll back so the first
   // coffee sits right under the bar. Measured after layout, and again once the bar has settled (it can change height)
   const fitShelf = () => { const t = document.querySelector(".shelf-tools"), top = document.querySelector(".top");
-    const h = top ? top.getBoundingClientRect().height : 0, tb = t.getBoundingClientRect(), st = $("shelf").getBoundingClientRect();   // For you's line rides in the bar now
-    if (tb.top <= h + 1 && st.top < tb.bottom - 0.5) { const y = Math.max(0, window.scrollY - (tb.bottom - st.top)), html = document.documentElement, sb = html.style.scrollBehavior;
+    const h = top ? top.getBoundingClientRect().height : 0, tb = t.getBoundingClientRect();   // For you's line rides in the bar now
+    // the first coffee, not the list's box (its first group pulls up under the bar), and the same small gap under the rule as
+    // when the list sits in the page unstuck
+    const first = [...$("shelf").querySelectorAll("article.item")].find((e) => e.offsetHeight) || $("shelf"), st = first.getBoundingClientRect(), GAP = 4;
+    if (tb.top <= h + 1 && st.top < tb.bottom + GAP - 0.5) { const y = Math.max(0, window.scrollY - (tb.bottom + GAP - st.top)), html = document.documentElement, sb = html.style.scrollBehavior;
       html.style.scrollBehavior = "auto"; window.scrollTo(0, y); html.style.scrollBehavior = sb; } };   // plain two-number scrollTo: instant in every browser
   // ---------- a pill about to go back or go away: for its last three seconds it shrinks to a circle with the seconds left in it ----------
   // no countdowns any more: pills keep their words until they change (kept as no-ops so their callers stay simple)
@@ -6917,10 +6920,10 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   // "one brew away": each visit, the brew is one of the things a brewer asks of you. No animation.
   // the word in the closing line: a different one each visit, and another each tap, all of them things you do brewing coffee
   (function verb() { const box = $("verb"); if (!box) return;
-    const V = LANG === "it" ? ["estrazione", "versata", "infusione", "mescolata", "pressata", "fioritura", "macinatura", "pesata", "regolazione", "correzione",
+    const V = LANG === "it" ? ["versata", "infusione", "mescolata", "pressata", "fioritura", "macinatura", "pesata", "regolazione", "correzione",
         "prova", "ricetta", "tazza", "assaggio", "sorso", "risciacquo", "rotazione", "filtrata", "spremuta", "colata", "tostatura", "annusata", "carica", "percolazione"]
       : ["pour", "brew", "bloom", "swirl", "steep", "stir", "press", "plunge", "grind", "tweak", "sip", "taste", "rinse", "weigh", "shot", "cup", "dial",
-        "drip", "drawdown", "slurp", "sniff", "recipe", "click", "tamp", "pull", "spin", "extraction", "agitation", "pulse", "decant"];
+        "drip", "slurp", "sniff", "recipe", "click", "tamp", "pull", "spin", "agitation", "pulse", "decant"];
     let last = "";
     const pick = () => { let w; do w = V[Math.floor(Math.random() * V.length)]; while (w === last && V.length > 1); last = w; box.textContent = w.charAt(0).toUpperCase() + w.slice(1); };
     pick(); box.addEventListener("click", pick);
