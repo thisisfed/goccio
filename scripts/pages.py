@@ -165,7 +165,9 @@ a.ro-n{justify-self:start;text-decoration:underline;text-decoration-color:color-
 .list .sub{display:block;margin-top:4px;color:var(--muted)}
 footer{margin:0 12px;padding:10px 0 24px;border-top:1px solid var(--line);color:var(--muted)}
 @media (min-width:760px){footer{margin:0 24px}}
-footer p{margin:0 0 1.35em}footer p:last-child{margin-bottom:0}
+footer p{margin:0}
+.page:has(> section:last-child > .list){padding-bottom:0}   /* a page ending on a list: its last rule is the footer's rule */
+.page > section:last-child > .list > li:last-child{border-bottom:0}
 /* the main page's look: its Dark / Light (dark unless you pick light), its type drawn the same (thin smoothing, no extra tracking) */
 :root[data-theme="light"]{--bg:#fff;--ink:#000;--muted:#808080;--rule:#e3e3e3;--line:#a6a6a6;--pill:#e6e6e6;--hl:#ff4f00}
 :root[data-theme="dark"]{--bg:#000;--ink:#fff;--muted:#8c8c8c;--rule:#262626;--line:#595959;--pill:#222;--hl:#ff5a14}
