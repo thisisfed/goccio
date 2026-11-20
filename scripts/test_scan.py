@@ -152,6 +152,8 @@ CASES = [
     ("Apricity's Pic n Mix had no notes: the reader started at the page title and read only the menu",
      lambda: scan.page_notes("Pic n Mix | Colombia – Apricity Coffee\n" + " Shop\n Coffee\n" * 400 + " Pic n Mix\n Process: Advanced Natural\n Tasting Notes\n Refreshers, pink bubblegum, pineapple sweets\n The Story\n", "Pic n Mix")
              == ["Refreshers", "Pink bubblegum", "Pineapple sweets"]),
+    ("Notes' Black Label showed '250g' as its variety: a bag size is never a variety",
+     lambda: "a bag size read as the variety" in open(scan.__file__).read()),
     ("A sentence 'Tasting notes of this lot change, and so does…' is not a notes row",
      lambda: scan.NOTES_CELL.search("Tasting notes of this lot change every harvest, and so does the roast") is None),
 ]
