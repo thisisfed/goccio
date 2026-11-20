@@ -1402,7 +1402,9 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 @media (max-width: 420px) { .g-pours li:nth-child(3), .g-pours li:nth-child(4) { visibility: visible !important; } }
 /* example: brew mode's bar instead of the dotted line; the times and grams sit under their segments */
 .glimpse .g-bar { margin-top: 2px; }
-.glimpse .g-pours { padding-top: 0 !important; height: 50px; }
+.glimpse .g-pours { padding-top: 0 !important; height: 50px; transition: height .2s ease; }
+.glimpse .g-pours li { visibility: visible !important; }
+.glimpse .g-pours li > * { visibility: visible !important; white-space: nowrap; }
 .glimpse .g-pours::before, .glimpse .g-pours li::before { display: none !important; }
 .glimpse .g-pours li { padding-top: 6px !important; }
 /* the appearance switch: an icon in a pill the same height as the menu */
@@ -5513,6 +5515,31 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     { text: "Washed Burundi, light roast", brewer: "v60", dose: 30 },
   ];
   { const gx = document.querySelector(".g-ex"); if (gx) gx.addEventListener("toggle", () => { if (gx.open) renderExample(); }); }   // each opening shows another example
+  // the labels under the example's bar: each at its step's time. One that would touch the label before it moves right a little
+  // (up to 16px) if that's enough, otherwise down to the next line; Done holds the right end. The list grows a line per extra row.
+  function layGlimpse() {
+    const ul = document.querySelector(".glimpse .g-pours"); if (!ul) return;
+    const W = ul.clientWidth; if (!W) return;
+    const lis = [...ul.children], GAP = 12, NUDGE = 16;
+    lis.forEach((li) => { li.style.top = "0px"; li.style.left = ""; });
+    const rowH = Math.max(...lis.map((li) => li.offsetHeight), 0);
+    const done = lis.find((li) => li.classList.contains("end")), doneW = done ? done.offsetWidth : 0;
+    const lastEnd = [];   // where each line's last label ends
+    let rows = 1;
+    for (const li of lis.filter((x) => x !== done)) {
+      const w = li.offsetWidth, x0 = Math.min(parseFloat(li.style.getPropertyValue("--p")) * W, W - w);
+      let row = 0, x = x0;
+      for (;; row++) {
+        x = Math.max(x0, (lastEnd[row] ?? -Infinity) + GAP);
+        const limit = row === 0 && done ? W - doneW - GAP : W;
+        if (x - x0 <= NUDGE && x + w <= limit) break;
+      }
+      lastEnd[row] = x + w; rows = Math.max(rows, row + 1);
+      li.style.setProperty("left", x + "px", "important"); li.style.top = row * rowH + "px";
+    }
+    ul.style.height = (rows * rowH + 6) + "px";
+  }
+  addEventListener("resize", () => { if (document.querySelector(".g-ex[open]")) layGlimpse(); });
   function renderExample() {
     const fig = document.querySelector(".glimpse"); if (!fig) return;
     const ex = EXAMPLES[Math.floor(Math.random() * EXAMPLES.length)];
@@ -5525,17 +5552,16 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
     eg.textContent = brewer;
     const ARR = '<svg class="arr" viewBox="0 0 18 10" aria-hidden="true"><path d="M1 5h15M12 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     fig.querySelector(".g-specs").innerHTML = `<span><b>${r.clicks}</b> clicks</span><span><b>${r.dose}</b>${ARR}<b>${r.water}</b> g</span>${r.temp != null ? `<span><b>${r.temp}</b>°C</span>` : ""}`;
-    // dots for every step; labels only where there's room, so they never overlap
-    let lastShown = -1, lastDot = -1;
-    const items = P.map((p, i) => { const pos = Math.min(0.86, p.t / T); if (i && pos - lastDot < 0.03) return ""; lastDot = pos;   // two steps a few seconds apart share one dot
-      const show = i === 0 || (pos - lastShown >= 0.2 && 1 - pos >= 0.2); if (show) lastShown = pos;
-      return `<li style="--p:${pos.toFixed(3)}"${show ? "" : ' class="mute"'}><span>${mmss(p.t)}</span>${p.act ? `<i>${esc(p.lbl)}</i>` : `<b>${p.to}</b>`}</li>`; }).join("");
+    // every step under the bar at its own time; where two would touch, layGlimpse() drops the later one to the next line
+    const items = P.map((p) => { const pos = p.t / T;
+      return `<li style="--p:${pos.toFixed(3)}"><span>${mmss(p.t)}</span>${p.act ? `<i>${esc(p.lbl)}</i>` : `<b>${p.to}</b>`}</li>`; }).join("");
     fig.querySelector(".g-pours").innerHTML = items + `<li class="end"><span>${mmss(end)}</span><i><em>Done</em><svg class="ex-tick" viewBox="0 0 24 24" aria-hidden="true"><path pathLength="1" d="M4 12.5l5 5L20 6.5"/></svg></i></li>`;
     // the bar from brew mode: a segment for each pour and the green window to finish in
     let bar = fig.querySelector(".g-bar"); if (!bar) { bar = document.createElement("div"); bar.className = "bv-bar g-bar"; bar.setAttribute("aria-hidden", "true"); fig.querySelector(".g-pours").before(bar); }
     bar.innerHTML = (r.lo != null && r.hi != null ? `<div class="win" style="left:${(r.lo / T) * 100}%;width:${((r.hi - r.lo) / T) * 100}%"></div>` : "") +
       P.map((p) => `<div class="seg${p.act ? " act" : ""}" style="left:${(p.t / T) * 100}%;width:${Math.max(1.2, ((p.dur || 6) / T) * 100)}%"></div>`).join("");
     const w0 = bar.querySelector(".win"); if (w0) w0.classList.add("lit");   // a still picture of the whole brew: nothing moves
+    layGlimpse();
     fig.setAttribute("aria-label", `Example recipe: ${ex.text} on the ${brewer}. ${r.clicks} C40 clicks, ${r.dose} g coffee to ${r.water} g water${r.temp != null ? ", " + r.temp + "°C" : ""}, done by about ${mmss(end)}.`);
   }
 
