@@ -2358,6 +2358,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     <details class="foot-x" open><summary class="foot-note refs-h">Methods</summary>
     <ul class="refs meth">
       <li><span class="rt">V60:</span> James Hoffmann’s Better 1-Cup and Ultimate V60, Tetsu Kasuya’s 4:6 and 10-Pour, Scott Rao’s bloom &amp; spin, Onyx Coffee Lab’s V60, CAFEC’s Osmotic Flow, Matt Winton’s Five-Pour, Lance Hedrick’s double bloom.</li>
+      <li><span class="rt">V60 NEO:</span> every V60 method, 2 clicks finer and about 15 s shorter, because the same recipe drains about 30 s faster in the NEO (Gizmodo Japan’s side-by-side). Pours centre-out, bed kept covered, as Barista Magazine’s test drive advises. Hario publishes no NEO recipe yet: our estimate.</li>
       <li><span class="rt">Kalita Wave:</span> George Howell’s 155 guide.</li>
       <li><span class="rt">April Brewer:</span> April Coffee’s base recipe.</li>
       <li><span class="rt">Orea:</span> Martin Woelfl’s 2024 World Brewers Cup recipe.</li>
@@ -3039,7 +3040,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   // 4. Thin by strength, not by under-extraction: 1:18 (about 1.15–1.25% at 21–22% extraction). Weaker than that and flavour fades
   //    with the body (Rao: the lower the strength, the more clarity, until the cup turns too dilute to taste).
   // Paper-filtered brewers only: a metal mesh, a moka or a shot can't make a cup this clean
-  const TEA_OK = new Set(["v60", "kalita", "melitta", "chemex", "origami", "switch", "clever", "aero"]);
+  const TEA_OK = new Set(["v60", "neo", "kalita", "melitta", "chemex", "origami", "switch", "clever", "aero"]);
   const TEA = { clicks: 7, ratio: 18, max: 20 };
   // where it works: clean, light to medium coffees. Heavy ferments turn thin and boozy, dark roasts thin and ashy, decaf empty
   const teaFits = (c) => ["vlight", "light", "medium", "unsure"].includes(c.roast) && ["washed", "honey", "natural", "unsure"].includes(c.process);
@@ -3086,6 +3087,10 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     // each coffee gets its own (a bigger bowl takes 11 g to 200 ml, the same ratio)
     cupping: { name: "Cupping", kind: "imm", cup: true, doses: [[8.25, "150 ml cup"], [11, "200 ml cup"]], dose: 8.25, base: 27, dA: {}, range: [22, 32], fixed: 18.18, dT: 0 },
     v60:    { name: "V60", kind: "pour", doses: [[12, "12 g"], [15, "15 g"], [18, "18 g"], [20, "20 g"], [25, "25 g"], [30, "30 g"]], dose: 15 },
+    // Hario's V60 NEO (2025): the same cone, but 72 fine ribs meeting in 9 at the base, built for bypass. The same recipe
+    // drains about 30 s faster (Gizmodo Japan: 3:12 in a V60, 2:38 in the NEO), so every V60 method runs here 2 clicks
+    // finer with a 15 s shorter target, pours centre-out with the bed kept covered. Hario publishes no NEO recipe: our estimate
+    neo:    { name: "V60 NEO", kind: "pour", doses: [[12, "12 g"], [15, "15 g"], [18, "18 g"], [20, "20 g"], [25, "25 g"], [30, "30 g"]], dose: 15 },
     kalita: { name: "Kalita Wave", kind: "pour", doses: [[12, "12 g"], [15, "15 g"], [18, "18 g"], [20, "20 g"], [25, "25 g"], [30, "30 g"]], dose: 15,
               base: 24, dA: { 12: -1, 15: 0, 18: 1, 20: 1, 25: 2, 30: 3 }, range: [18, 36], ratio: { light: 17, balanced: 16, syrupy: 15, tea: 18 }, dT: 1, ey: [20, 22] },
     april:  { name: "April Brewer", kind: "pour", doses: [[12, "12 g"], [15, "15 g"], [18, "18 g"], [20, "20 g"], [25, "25 g"]], dose: 12,
@@ -3167,7 +3172,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
 
   // Iced (Japanese style, after Hoffmann): brew with two thirds of the water hot, onto the last third as ice in the jug.
   // Same total liquid, so the same strength once the ice melts; two clicks finer because less hot water does the extracting.
-  const ICED_OK = new Set(["v60", "kalita", "melitta", "chemex", "origami", "switch", "clever", "aero"]);
+  const ICED_OK = new Set(["v60", "neo", "kalita", "melitta", "chemex", "origami", "switch", "clever", "aero"]);
   function engine(st, opts = {}) {
     const r = engineHot(st, opts);
     if (st.serve !== "iced" || !ICED_OK.has(r.brewer) || !r.pours) return r;
@@ -3190,8 +3195,8 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     if (c.delicate) agit = Math.min(agit, 2);                        // Geisha & co: keep the florals, don't thrash the bed
     if (tea || st.method === "cafec") agit = 0;                      // tea-like and Osmotic Flow: nothing stirred, nothing swirled
     if (st.method === "winton" && !tea) agit = Math.max(agit, 2);   // Winton's pours from height do the stirring
-    const brewer = brewerOf(st);
-    const m = brewer === "v60" ? pickMethod(st, c, agit) : brewer;
+    const brewer = brewerOf(st), neo = brewer === "neo", vb = neo ? "v60" : brewer;   // the NEO brews every V60 method
+    const m = vb === "v60" ? pickMethod(st, c, agit) : brewer;
 
     const key = coffeeKey(st);
     let learn = null;
@@ -3202,7 +3207,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       if (!learn && !(own && own.optOut) && c.process !== "unsure" && c.roast !== "unsure") { const so = styleOffset(c.process, c.roast, brewer); if (so) learn = { source: "style", d: so.d, n: so.n, history: [] }; }
     }
     const pc = learn ? learn.d : { clicks: 0, temp: 0, ratio: 0 };
-    if (brewer !== "v60") return engineOther(st, c, agit, brewer, key, learn, pc, opts);
+    if (vb !== "v60") return engineOther(st, c, agit, brewer, key, learn, pc, opts);
 
     let ratio = tea ? TEA.ratio : m === "winton" ? { light: 16, balanced: 15, syrupy: 14.5 }[goal] ?? 15 : m === "hedrick" ? { light: 17, balanced: 16, syrupy: 15 }[goal] ?? 16 : m === "cafec" ? { light: 15, balanced: 13.5, syrupy: 12.5 }[goal] ?? 15
       : m === "onyx" ? { light: 16, balanced: 15, syrupy: 14.5 }[goal] ?? 16 : m === "ten" ? (goal === "syrupy" ? 15 : 16)
@@ -3216,11 +3221,12 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     const doseAdj = (m === "ten" ? { 12: -1, 15: 0, 18: 1, 20: 1 } : { 12: -1, 15: 0, 18: 1, 20: 2, 25: 3, 30: 4 })[dose] ?? 0;   // a deeper bed drains slower: coarser as the batch grows
     const roastAdj = ROAST[c.roast].dC, procAdj = PROCESS[c.process].dC;
     const teaAdj = tea ? TEA.clicks : 0;
-    const raw = B.c + doseAdj + roastAdj + procAdj + teaAdj;
+    const neoAdj = neo ? -2 : 0;   // the NEO drains about 30 s faster: 2 clicks finer keeps the contact time
+    const raw = B.c + doseAdj + roastAdj + procAdj + teaAdj + neoAdj;
     const baseClicks = clamp(raw, 16, 45);
     const zero = opts.noPrefs || !isC40() ? 0 : (prefs.zero || 0);   // the zero offset is a C40 calibration
     let clicks = clamp(baseClicks + (pc.clicks || 0) + zero, 12, 50);
-    const clickParts = { base: B.c, dose: doseAdj, roast: roastAdj, process: procAdj, tea: teaAdj, learn: pc.clicks || 0, zero, clamped: raw !== baseClicks };
+    const clickParts = { base: B.c, dose: doseAdj, roast: roastAdj, process: procAdj, tea: teaAdj, neo: neoAdj, learn: pc.clicks || 0, zero, clamped: raw !== baseClicks };
 
     // Hoffmann: freshly boiled for lighter roasts. Kasuya (Philocoffea): about 93°C light, 88°C medium, 83°C dark.
     const KASUYA_T = { vlight: 94, light: 93, medium: 88, mdark: 85, dark: 83, unsure: 90 };
@@ -3301,6 +3307,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     }
 
     if (dose >= 25 && m !== "hoffmannU") { const extra = dose >= 30 ? 30 : 15; lo += extra; hi += extra; }   // a double batch drains longer
+    if (neo) { lo -= 15; hi -= 15; }   // the NEO still runs a little quicker, finer grind and all
     const lastP = P[P.length - 1]; lastP.x = water; lastP.to = water;   // guard: the schedule ends on the total, exactly
 
     // strength estimate: beverage = water − paper/grounds retention (~2.1 × dose)
@@ -3310,7 +3317,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     const mid = (tds[0] + tds[1]) / 2;
     const body = mid < 1.25 ? "tea-like" : mid < 1.38 ? "light and clear" : mid < 1.5 ? "classic filter" : "rich";
 
-    return { m, brewer: "v60", kind: "pour", method: METHOD[m], goal, c, agit, key, pc, learn, baseClicks, clickParts, baseTemp, baseRatio,
+    return { m, brewer: neo ? "neo" : "v60", kind: "pour", method: METHOD[m], goal, c, agit, key, pc, learn, baseClicks, clickParts, baseTemp, baseRatio,
       dose, water, ratio, ratioClamped: Math.abs(ratioPre - ratio) > 0.05, clicks, temp, yieldG: Math.round(bev), bev, pours: P, lo, hi, tds, ey, body };
   }
 
@@ -4158,14 +4165,15 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   // ---------- how the clicks were set ----------
   const signed = (n) => (n > 0 ? "+" : n < 0 ? "−" : "±") + Math.abs(n);
   const METHOD_REF = { hoffmann: "Hoffmann 1-Cup", hoffmannU: "Hoffmann Ultimate", fourSix: "Kasuya 4:6", ten: "Kasuya 10-Pour", rao: "Rao bloom & spin", onyx: "Onyx", cafec: "CAFEC Osmotic Flow", winton: "Winton Five-Pour", hedrick: "Hedrick double bloom", tea: "Tea-like", wendelboe: "Wendelboe AeroPress",
-    cupping: "Cupping", kalita: "Kalita Wave", april: "April Brewer", orea: "Orea V4", mocca: "Moccamaster", melitta: "Melitta", chemex: "Chemex", origami: "Origami", switch: "Hario Switch", clever: "Clever Dripper", aero: "AeroPress", press: "French Press", cold: "Cold brew", moka: "Bialetti Moka Express", espresso: "Espresso" };
+    cupping: "Cupping", kalita: "Kalita Wave", april: "April Brewer", orea: "Orea V4", neo: "V60 NEO", mocca: "Moccamaster", melitta: "Melitta", chemex: "Chemex", origami: "Origami", switch: "Hario Switch", clever: "Clever Dripper", aero: "AeroPress", press: "French Press", cold: "Cold brew", moka: "Bialetti Moka Express", espresso: "Espresso" };
   function renderClicks(r) {
     const p = r.clickParts, B = BASE[r.m], c = r.c;
-    const rows = [[`Base: ${METHOD_REF[r.m]} at ${r.brewer === "v60" ? 15 : BREWERS[r.brewer].kind === "steps" ? doseName(r) : BREWERS[r.brewer].dose + " g"}`, String(p.base)]];
+    const rows = [[`Base: ${METHOD_REF[r.m]} at ${r.brewer === "v60" || r.brewer === "neo" ? 15 : BREWERS[r.brewer].kind === "steps" ? doseName(r) : BREWERS[r.brewer].dose + " g"}`, String(p.base)]];
     if (p.dose) rows.push([`Dose ${r.dose} g`, signed(p.dose)]);
     if (p.roast) rows.push([`Roast: ${c.roast === "unsure" ? "not sure" : ROAST[c.roast].label}`, signed(p.roast)]);
     if (p.process) rows.push([`Process: ${c.process === "unsure" ? "not stated" : PROCESS[c.process].label}`, signed(p.process)]);
     if (p.tea) rows.push(["Tea-like: coarser, gentler", signed(p.tea)]);
+    if (p.neo) rows.push(["V60 NEO: drains faster, so finer (our estimate)", signed(p.neo)]);
     if (p.learn) rows.push([r.learn && r.learn.source === "style" ? "Your nailed brews of this style" : "Your journal for this coffee", signed(p.learn)]);
     if (p.zero) rows.push(["Your C40 zero", signed(p.zero)]);
     if (p.iced) rows.push(["Iced: less hot water, so finer", signed(p.iced)]);
@@ -4358,6 +4366,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   const stepAt = (r, p, i) => r.kind === "steps" ? String(i + 1) : fmt(p.t);
   const PREP = {
     v60: "Preheat and rinse the paper. Tare with the coffee in.",
+    neo: "Rinse the paper well so it sits flat on the fine ribs, seam folded. Tare with the coffee in. Pour centre outwards and keep the bed covered between pours: the NEO drains fast.",
     kalita: "Rinse the paper with the Kalita on the cup, tip the water out, then level the coffee bed with a gentle shake. Tare.",
     orea: "Flat-bottom paper: Orea’s own, Sibarist Fast or a Kalita 185. Rinse it, tip the water out, tare with the coffee in.",
     mocca: "Size 4 paper, seams folded. Weigh the coffee; the tank’s marks are close enough for the water, or weigh that too.",
@@ -4376,6 +4385,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   };
   const SIZE_NOTE = {   // a double batch needs the bigger brewer
     v60: [25, "Use a size 02 V60: the 01 overflows above about 20 g."],
+    neo: [25, "Use the NEO 02: the 01 overflows above about 20 g."],
     kalita: [25, "Use the Wave 185: the 155 is too small above about 20 g."],
     origami: [25, "Use the Origami M with 02 papers."],
     melitta: [25, "Use the 1x4 cone and papers: the 1x2 is for one mug."],
@@ -4522,6 +4532,9 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     if (r.goal === "tea") why.push(`Tea-like, Beta: very thin, very clear, still full of flavour. A grind far coarser than usual keeps fines out of the cup; a minute-long bloom stirred once, very hot water (${r.temp}°C) and four slow pours in the centre give the big particles the time they need. Agitation early, calm late: the finish stays long and clean. 1:${r.ratio} keeps it light without going watery. Made for clean coffees roasted light to medium: washed, honey and natural. Hollow or sour: ${cl(2)} finer or a longer bloom. Drying: ${cl(2)} coarser.`);
     if (r.m === "fourSix") why.push(r.goal === "light" || r.goal === "tea" ? "Kasuya’s 4:6: the first 40% sets sweetness vs acidity, the last 60% sets strength. Two big pours keep the body light." : "Kasuya’s 4:6 with three strength pours: rounder and sweeter.");
     if (r.m === "ten") why.push("Kasuya’s 10-Pour: coarse grind, small pours every 15 s. Heavy and syrupy.");
+    if (r.brewer === "neo") why.push(["washed", "unsure"].includes(r.c.process) && ["vlight", "light"].includes(r.c.roast)
+      ? "V60 NEO: its fine ribs let water bypass and drain fast, so it brews 2 clicks finer. Testers find it rounds a coffee off: for a bright washed coffee like this, the classic V60 keeps more of the florals and acidity."
+      : "V60 NEO: its fine ribs let water bypass and drain fast, so it brews 2 clicks finer. Testers find it rounds a coffee off and brings out fruit, which suits naturals, honeys and anaerobics like this one.");
     if (BLURB[r.m]) why.push(BLURB[r.m]);
     const hasT = r.temp != null;
     const cons = [];
@@ -4529,7 +4542,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     if (c.roast === "unsure") cons.push(`Roast not sure, so it plays safe: ${hasT ? "a cooler base temperature and " : ""}${cl(1)} coarser. Less bitterness risk, maybe a little less sweetness.`);
     if (cons.length) cons.push("Tell it the process and roast under Bag details for a sharper recipe.");
     const pl = cap1(PROCESS[c.process].label), whyBase = why.length;
-    if (r.brewer === "v60") {
+    if (r.brewer === "v60" || r.brewer === "neo") {
       if (c.process === "anaerobic") why.push(`Anaerobic: long, sealed fermentation gives tropical and boozy notes that turn harsh with heat and agitation. Few gentle pours, ${r.temp}°C (93 at most), a click coarser.`);
       else if (c.process === "cofer") why.push(`Co-fermented or infused: the added fruit, yeast or spice extracts fast and dominates when pushed. No stirring, ${r.temp}°C (92 at most), 2 clicks coarser.`);
       else if (c.process === "decaf") why.push(`Decaf: the beans are more porous and extract fast, with more fines. Cooler (${r.temp}°C, 92 at most), 2 clicks coarser, gentle pours.`);
@@ -4651,7 +4664,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       (b === "press" || b === "cold") && { key: "steep", label: "Steep", items: [["hot", "Hot"], ["cold", "Cold brew"]], on: (v) => setBrewer(v === "cold" ? "cold" : "press"), cur: () => b === "cold" ? "cold" : "hot" },
       { key: "dose", label: b === "moka" ? "Pot" : "Coffee", items: B.doses },
       b === "aero" && !teaOn && { key: "aeroWay", label: "Method", items: [["standard", "Hoffmann"], ["inverted", "Hoffmann inverted"], ["wendelboe", "Wendelboe"]] },
-      b === "v60" && !teaOn && { key: "method", label: "Method", items: [["best", "Best for this coffee"], ["hoffmann", "Hoffmann"], ["fourSix", "Kasuya 4:6"], ...(Number(state.dose) >= 25 ? [] : [["ten", "Kasuya 10-Pour"]]), ["rao", "Rao"], ["onyx", "Onyx"], ["cafec", "CAFEC Osmotic Flow"], ["winton", "Winton Five-Pour"], ["hedrick", "Hedrick"]] },   // ten: 15 s pours don't scale to a double batch   // ten 15 s pours don't scale to a double batch
+      (b === "v60" || b === "neo") && !teaOn && { key: "method", label: "Method", items: [["best", "Best for this coffee"], ["hoffmann", "Hoffmann"], ["fourSix", "Kasuya 4:6"], ...(Number(state.dose) >= 25 ? [] : [["ten", "Kasuya 10-Pour"]]), ["rao", "Rao"], ["onyx", "Onyx"], ["cafec", "CAFEC Osmotic Flow"], ["winton", "Winton Five-Pour"], ["hedrick", "Hedrick"]] },   // ten: 15 s pours don't scale to a double batch   // ten 15 s pours don't scale to a double batch
     ].filter(Boolean);
   };
   const OPTS_MORE = [
@@ -4750,7 +4763,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   let editing = false;
   // keyed by the method you picked ("Best for this coffee" can switch method with the dose); pours only carry over on the same method
   const mOf = (r) => r.brewer === "aero" ? "aero-" + (state.aeroWay || "standard") : r.m;
-  const mineKey = (r) => r && r.key ? r.key + "|" + (r.brewer === "v60" ? (state.method || "best") : mOf(r)) : null;
+  const mineKey = (r) => r && r.key ? r.key + "|" + (r.brewer === "v60" || r.brewer === "neo" ? (state.method || "best") : mOf(r)) : null;
   const clicksFor = (v) => { const G = mill(); if (isC40()) return v; if (v < G.a && G.es != null) return 10 + (v - G.es) * 5 / (G.a - G.es);
     return v <= G.b || G.fp == null ? 15 + (v - G.a) * 10 / (G.b - G.a) : 25 + (v - G.b) * 15 / (G.fp - G.b); };
   function withMine(r) {
@@ -6062,7 +6075,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     const g = gear.grinders.length ? (gear.grinders.includes(prefs.mill) && gear.grinders.length === 1 ? prefs.mill : pickOne(gear.grinders)) : prefs.mill;
     if (g && GRINDERS[g] && g !== prefs.mill) { prefs.mill = g; savePrefs(); $("millSel").value = g; syncMill(); }
     if (b !== brewerOf(state)) setBrewer(b);
-    if (b === "v60") state.method = pickOne(V60_METHODS);
+    if (b === "v60" || b === "neo") state.method = pickOne(V60_METHODS);
     // only your own bags: one you have open (not in the freezer), with enough left for this brewer if one has
     const all = openBags(), out = all.filter((x) => !x.frozen), open = out.length ? out : all, mine = open.filter((x) => x.left == null || x.left >= (BREWERS[b].dose || 15));
     // after 2 pm (unless you turned that off): only a decaf. None in your bags: a decaf from today's list, to buy
