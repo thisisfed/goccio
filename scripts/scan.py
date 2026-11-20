@@ -130,7 +130,12 @@ NOTES_SENT = re.compile(r"(?:notes? of|flavou?rs? of|tastes? of|hints? of|aromas
 # a label on a line of its own with the notes on the next ("Tasting notes\nStrawberry, blueberry, nectarine"; Standout)
 NOTES_LINE = re.compile(r"(?:tasting notes|flavou?r notes|cup(?:ping)? notes|in the cup|smaksnoter|smagsnoter|smaksnotater|geschmacksnoten|"
                         r"notas de cata|note di degustazione|notes de d[ée]gustation)[ \t]*(?:\n|\s{2,})\s*([^\n.]{3,120})", re.I)
-NOTES_CHECK = 2   # pages read for notes with these rules; a coffee checked under older rules gets one more read
+# a table row read as one line, label and notes split by a single space ("Tasting notes Citrus, Lemon Peel, White Florals"; Dak).
+# The line must be the label and a list and nothing else, so a sentence ("tasting notes of ...", "tasting notes are ...") is never taken.
+NOTES_CELL = re.compile(r"^[ \t]*(?:tasting notes|flavou?r notes|cup(?:ping)? notes|smaksnoter|smagsnoter|smaksnotater|geschmacksnoten|"
+                        r"notas de cata|note di degustazione|notes de d[ée]gustation)[ \t]+(?!(?:of|are|is|include|from|with|that|we|you)\b)"
+                        r"([^\n.:]{3,120}?(?:,|&|\band\b)[^\n.:]{2,120}?)[ \t]*$", re.I | re.M)
+NOTES_CHECK = 3   # pages read for notes with these rules; a coffee checked under older rules gets one more read
 
 
 def dot_notes(text):
@@ -1351,7 +1356,7 @@ def tidy_note(n):
 
 def find_notes(item):
     text = item["body"]
-    m = NOTES_RE.search(text) or NOTES_LINE.search(text)
+    m = NOTES_RE.search(text) or NOTES_LINE.search(text) or NOTES_CELL.search(text)
     raw = m.group(1) if m else None
     if not raw:
         raw = dot_notes(text)
