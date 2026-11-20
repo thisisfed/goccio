@@ -98,7 +98,8 @@ def recipes(coffees):
 # ---------- the look: the site's own, black and white plus the accent, 15/24/39/63 ----------
 CSS = """
 :root{--bg:#fff;--ink:#000;--muted:#808080;--rule:#e3e3e3;--line:#a6a6a6;--pill:#e6e6e6;--hl:#ff4f00;
---sans:"Helvetica Neue",Helvetica,Arial,-apple-system,BlinkMacSystemFont,system-ui,sans-serif}
+--sans:"ALT Riviera","Helvetica Neue",Helvetica,Arial,-apple-system,BlinkMacSystemFont,system-ui,sans-serif}
+@font-face{font-family:"ALT Riviera";src:url("/fonts/alt-medium.woff2") format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
 @media (prefers-color-scheme:dark){:root{--bg:#000;--ink:#fff;--muted:#8c8c8c;--rule:#262626;--line:#595959;--pill:#222;--hl:#ff5a14}}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;overflow-x:clip}

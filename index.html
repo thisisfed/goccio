@@ -50,6 +50,8 @@ if (/iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIn
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png?v=2">
 <meta name="apple-mobile-web-app-title" content="Bag to Cup">
 <link rel="manifest" href="/icons/site.webmanifest">
+<link rel="preload" href="/fonts/alt-medium.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/goccio.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M4 6h24L16 27z' fill='%230b0b0b'/%3E%3C/svg%3E">
 <script>
 /* Auto appearance follows daylight where you are (light from sunrise to sunset), not the browser's own dark setting.
@@ -1052,7 +1054,7 @@ details.clk > summary .muted { margin-left: auto; overflow: hidden; text-overflo
 .item .name, .r-title h2, .pours td.to, .sec-head .cap:first-child, .col .big, .ask label, .bmc, .bmc * { letter-spacing: -.025em !important; }
 .litext, .litext *, .outro-end, .outro-end *, .scene, .scene *, .hero h1, .spec b, .bv-big, .bv-big span { letter-spacing: -.04em !important; }
 .bv-big small, .spec b small { letter-spacing: -.025em !important; }   /* clicks, g, °C: tightened like the rest of the type */
-.wordmark, .wordmark * { letter-spacing: -.055em !important; }
+.wordmark, .wordmark * { letter-spacing: -.025em !important; }
 /* the big wordmark, like the header: ABC first, then the letters in between open out to fill the width */
 .wordmark #wm .i, .wordmark #wm .r { padding-right: 0; }
 .wordmark #wm .r { white-space: pre; overflow: hidden; vertical-align: bottom; padding-bottom: .26em; margin-bottom: -.26em; }   /* room for the g's tail */
@@ -1365,7 +1367,10 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 /* Goccio: ALT Riviera Regular (only G, o, c and i are in the file), in the top bar and big on the photo. On the photo it sits
    centred across by its letters' own outline (not the line box) and at the foot, as far from the bottom as from the sides, by fitMark below */
 @font-face { font-family: "Goccio"; src: url("/fonts/goccio.woff2") format("woff2"); font-weight: 400; font-display: block; }
-.mark, .wordmark #wm { font-family: "Goccio", var(--font, system-ui), sans-serif !important; font-weight: 400 !important; letter-spacing: 0 !important; }
+.mark, .wordmark #wm { font-family: "Goccio", var(--font, system-ui), sans-serif !important; font-weight: 400 !important; letter-spacing: 0 !important; font-kerning: normal; }
+/* big on the photo the letters sit closer (the font's own kerning kept, the same small step taken out between every pair),
+   so the word comes out a little bigger across the same width */
+.wordmark #wm { letter-spacing: -.025em !important; }
 .wm-screen { align-items: center !important; justify-content: center; position: relative; overflow: hidden; }
 .wm-screen .wordmark { width: auto !important; margin: 0 !important; padding: 0 !important; line-height: 1 !important; overflow: visible !important; }
 .wm-screen .wordmark #wm { padding: 0 !important; will-change: transform; }
@@ -2074,6 +2079,13 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
 .chips:has(> .gear-dd:only-child){display:block!important;width:100%;justify-self:stretch;flex:1 1 auto}
 .opt:has(.gear-dd) > :not(span){justify-self:stretch;width:100%;min-width:0}
 #waterCard:has(.gear-dd), #waterCard:has(.gear-dd) .w-body{width:100%;justify-self:stretch}
+/* one typeface for the whole site: ALT Riviera Medium (one file, Latin letters only, every weight drawn from it) */
+@font-face{font-family:"ALT Riviera";src:url("/fonts/alt-medium.woff2") format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
+:root{--sans:"ALT Riviera","Helvetica Neue",Helvetica,Arial,-apple-system,BlinkMacSystemFont,system-ui,sans-serif}
+/* ALT Riviera is drawn tighter than Helvetica: the same three steps of tracking, each eased off so letters never touch */
+* { letter-spacing: 0 !important; }
+.litext, .litext *, .outro-end, .outro-end *, .scene, .scene *, .hero h1, .spec b, .bv-big, .bv-big span, .item .name, .r-title h2, .col .big { letter-spacing: -.01em !important; }
+.bv-big small, .spec b small { letter-spacing: 0 !important; }
 </style>
 </head>
 <body>
@@ -5447,7 +5459,14 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     return { P, total, have: new Set(seen.keys()), nBags, nBrews: seen.size - nBags };
   }
   // today's coffees, best match first: the top 30 that share something with what you like
-  let fyHold = null, fyOffT = 0;
+  let fyHold = null, fyT = 0, fySeen = 0;
+  const fyStop = () => { clearInterval(fyT); fyT = 0; fySeen = 0; };
+  const fyRead = (n) => { if (fyT) return; let last = performance.now();
+    fyT = setInterval(() => { const now = performance.now(), dt = now - last; last = now;
+      const r = n.getBoundingClientRect(), bar = document.querySelector(".top"), tb = bar ? bar.getBoundingClientRect().bottom : 0;
+      if (!document.hidden && r.height && r.top >= tb - 1 && r.bottom <= innerHeight + 1) fySeen += dt;
+      if (fySeen < Math.max(5000, 1500 + n.textContent.split(/\s+/).length * 300)) return;
+      fyStop(); if (shelfY && !fyProfile()) { shelfY = false; fyHold = null; fySave(); renderShelfO(); renderShelf(); } }, 200); };
   function forYou() {
     const pr = fyProfile(); if (!pr) return null;
     const out = new Map();
@@ -5597,10 +5616,9 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     const fyOn = !!fy;   // each pick carries For you where Just in would be
     // For you ticked: under the menu, why these (or, before it knows three coffees, what it needs; the list stays as it was)
     { const n = $("fyNote"); n.hidden = !(shelfY && !shelfRo); if (!n.hidden) n.textContent = fyWhy();
-      // nothing to learn from yet: the note stays as long as it takes to read, then For you switches itself off
-      clearTimeout(fyOffT);
-      if (!n.hidden && !fy) fyOffT = setTimeout(() => { if (shelfY && !fyProfile()) { shelfY = false; fyHold = null; fySave(); renderShelfO(); renderShelf(); } },
-        Math.max(5000, 1500 + n.textContent.split(/\s+/).length * 300)); }
+      // nothing to learn from yet: the note stays for as long as it takes to read it ON SCREEN (time scrolled away or with the
+      // tab hidden doesn't count, so a scroll never cuts it short), then For you switches itself off and the note goes
+      if (!n.hidden && !fy) fyRead(n); else fyStop(); }
     list = shelfRo ? [...list].sort((a, b) => shelfDate(b).localeCompare(shelfDate(a))) : fy ? list
       : shelfT ? [...list].sort((a, b) => (b._p100 ?? -1) - (a._p100 ?? -1)) : shelfGV ? [...list].sort((a, b) => a._p100 - b._p100) : interleave(list);   // good value: cheapest first   // top lots: dearest first
     if (!shelfAll) shelfN = 10;   // a new filter or search starts again from the ten newest
@@ -6683,11 +6701,12 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       w.style.transform = ""; const cs = getComputedStyle(w), ss = getComputedStyle(scr);
       cv.font = `${cs.fontWeight} 100px ${cs.fontFamily}`; const m = cv.measureText(w.textContent);
       const room = scr.clientWidth - parseFloat(ss.paddingLeft) - parseFloat(ss.paddingRight);
-      const ink = m.actualBoundingBoxLeft + m.actualBoundingBoxRight; if (!ink || !room) return;
+      const ls = parseFloat(cs.letterSpacing) / parseFloat(cs.fontSize) || 0, gaps = w.textContent.length - 1;   // the tracking, as a share of the size
+      const ink = m.actualBoundingBoxLeft + m.actualBoundingBoxRight + ls * 100 * gaps; if (!ink || !room) return;
       const size = 100 * room / ink, k = size / 100; p.style.fontSize = size.toFixed(2) + "px";
       const pr = document.createElement("span"); pr.style.cssText = "display:inline-block;width:0;height:0;vertical-align:baseline"; w.prepend(pr);
       const o = pr.getBoundingClientRect(); pr.remove();
-      const L = o.left - m.actualBoundingBoxLeft * k, R = o.left + m.actualBoundingBoxRight * k;
+      const L = o.left - m.actualBoundingBoxLeft * k, R = o.left + (m.actualBoundingBoxRight + ls * 100 * gaps) * k;
       const T = o.bottom - m.actualBoundingBoxAscent * k, B = o.bottom + m.actualBoundingBoxDescent * k, sr = scr.getBoundingClientRect();
       const gap = (sr.width - (R - L)) / 2;   // the room left and right of the letters: the same room under them, at the foot of the photo
       w.style.transform = `translate(${(sr.left + sr.width / 2 - (L + R) / 2).toFixed(2)}px, ${(sr.bottom - gap - B).toFixed(2)}px)`; };
