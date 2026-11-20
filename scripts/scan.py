@@ -132,10 +132,13 @@ NOTES_LINE = re.compile(r"(?:tasting notes|flavou?r notes|cup(?:ping)? notes|in 
                         r"notas de cata|note di degustazione|notes de d[ée]gustation)[ \t]*(?:\n|\s{2,})\s*([^\n.]{3,120})", re.I)
 # a table row read as one line, label and notes split by a single space ("Tasting notes Citrus, Lemon Peel, White Florals"; Dak).
 # The line must be the label and a list and nothing else, so a sentence ("tasting notes of ...", "tasting notes are ...") is never taken.
-NOTES_CELL = re.compile(r"^[ \t]*(?:tasting notes|flavou?r notes|cup(?:ping)? notes|smaksnoter|smagsnoter|smaksnotater|geschmacksnoten|"
-                        r"notas de cata|note di degustazione|notes de d[ée]gustation)[ \t]+(?!(?:of|are|is|include|from|with|that|we|you)\b)"
-                        r"([^\n.:]{3,120}?(?:,|&|\band\b)[^\n.:]{2,120}?)[ \t]*$", re.I | re.M)
-NOTES_CHECK = 4   # pages read for notes with these rules; a coffee checked under older rules gets one more read
+# Also a bare label ("Notes", "Flavor", "Aroma", "Tastes like") and other languages ("Note de degustare", "NOTES DE DÉGUSTATIONS"),
+# with the list split by commas, spaced dashes or bullets ("Fraise - Myrtille - Mûre - Figue"; Tanat, Mabó, Dropshot, Coffea Circulor)
+NOTES_CELL = re.compile(r"^[ \t]*(?:tasting notes|flavou?r notes|notes? de d[ée]gustations?|note de degustare|note di degustazione|notas de cata|"
+                        r"sensory profile|cup(?:ping)? notes|tastes like|smaksnoter|smagsnoter|smaksnotater|geschmacksnoten|flavou?rs?|aromas?|notes)[ \t]*:?[ \t]+"
+                        r"(?!(?:of|are|is|include|from|with|that|we|you|and|the|a|an)\b)(?![^\n]*\b(?:coffee|roasters?|roastery|caf[ée])\b)"
+                        r"([^\n.:]{3,120}?(?:,|&|\band\b|\s[-–•·]\s)[^\n.:]{2,160}?)[ \t]*$", re.I | re.M)
+NOTES_CHECK = 5   # pages read for notes with these rules; a coffee checked under older rules gets one more read
 
 
 def dot_notes(text):
@@ -163,8 +166,11 @@ def notes_from_text(text):
         raw = m.group(1)
         parts = [NOTES_TAIL.sub("", p).strip() for p in re.split(r",|&|\band\b", raw)]
         parts = [p for p in parts if p]
-        if any(re.match(r"(?:the|a|an|its|this|their|our|your|his|her|every|each|all|some|more|great|good|nice)\b", p, re.I) for p in parts):
+        story = [bool(re.match(r"(?:the|a|an|its|this|their|our|your|his|her|every|each|all|some|more|great|good|nice)\b", p, re.I)) for p in parts]
+        if story and story[0]:
             continue   # "hints of the terroir and the farm's history" is a story, not tasting notes
+        if True in story:   # "notes of chocolate cherries, strawberry cake, crisp apple and a rich, candy-like sweetness": the list ends where the story starts
+            parts = parts[:story.index(True)]
         if len(parts) >= 2:
             return ", ".join(parts)
     return None
@@ -1388,7 +1394,7 @@ def tidy_note(n):
 
 def find_notes(item):
     text = item["body"]
-    m = NOTES_RE.search(text) or NOTES_LINE.search(text) or NOTES_CELL.search(text)
+    m = NOTES_CELL.search(text) or NOTES_RE.search(text) or NOTES_LINE.search(text)   # a line that is only the label and its list is the surest
     raw = m.group(1) if m else None
     if not raw:
         raw = dot_notes(text)
@@ -1406,7 +1412,14 @@ def find_notes(item):
                 raw = (raw + ", " if raw else "") + mm.group(1)
     if not raw:
         return []
-    bits = re.split(r",|&|\band\b|/|·|\|", raw)
+    raw = re.split(r"\s(?:[A-Z][\w]+(?:\s[a-z]+)?):\s", raw)[0]   # "Lychee • Peach • Candied Cherry Roast: Omni — …": the list ends at the next label
+    if re.search(r" [-–] ", raw) and "," in raw:   # a dash list ends at a comma: "Fraise - Myrtille - Figue Direction le Panama, à la…" (Tanat)
+        raw = raw.split(",")[0]
+        ds = [x.strip() for x in re.split(r" [-–] ", raw)]
+        if len(ds) >= 3 and all(len(x.split()) == 1 for x in ds[:-1]) and len(ds[-1].split()) > 2:
+            ds[-1] = ds[-1].split()[0]   # single-word notes, then the sentence runs on: keep the note
+        raw = " - ".join(ds)
+    bits = re.split(r",|&|\band\b|/|·|•|\|| [-–] ", raw)
     out = []
     for b in bits:
         b = b.strip(" .;:-–").strip()

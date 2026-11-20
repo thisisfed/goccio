@@ -154,6 +154,21 @@ CASES = [
              == ["Refreshers", "Pink bubblegum", "Pineapple sweets"]),
     ("Notes' Black Label showed '250g' as its variety: a bag size is never a variety",
      lambda: "a bag size read as the variety" in open(scan.__file__).read()),
+    ("Notes audit 20/11: bare and foreign labels on a line with the list (Dropshot, Coffea Circulor, Mabó, Inverness)",
+     lambda: [scan.find_notes({"body": t, "title": "x", "tags": []})[:2] for t in (" Notes Gem de fragi, Mar rosu, Stafide, Cirese \n",
+              " Flavor Blackberry, Cherry, Pear \n", " Note de degustare Floral, Piersici, Cireșe \n", " Tastes Like Seville orange zest, maple syrup, jasmine\n")]
+             == [["Gem de fragi", "Mar rosu"], ["Blackberry", "Cherry"], ["Floral", "Piersici"], ["Seville orange zest", "Maple syrup"]]),
+    ("Tanat: 'Note de dégustation : Fraise - Myrtille - Mûre - Figue Direction le Panama, à la découverte' is four notes",
+     lambda: scan.find_notes({"body": "Note de dégustation : Fraise - Myrtille - Mûre - Figue Direction le Panama, à la découverte\n", "title": "x", "tags": []})
+             == ["Fraise", "Myrtille", "Mûre", "Figue"]),
+    ("Blind Monkey: 'Tasting notes: Lychee • Peach • Candied Cherry Roast: Omni — … espresso' stops at Roast:",
+     lambda: scan.find_notes({"body": " Tasting notes: Lychee • Peach • Candied Cherry Roast: Omni — suitable for both filter and espresso.", "title": "x", "tags": []})
+             == ["Lychee", "Peach", "Candied Cherry"]),
+    ("Cafēn: 'notes of chocolate cherries, strawberry cake, crisp apple and a rich, candy-like sweetness' keeps the three notes",
+     lambda: scan.find_notes({"body": "with indulgent notes of chocolate cherries, strawberry cake, crisp apple and a rich, candy-like sweetness. selected", "title": "x", "tags": []})
+             == ["Chocolate cherries", "Strawberry cake", "Crisp apple"]),
+    ("A line naming the shop ('Aroma Coffee Roasters - London') is not notes",
+     lambda: scan.find_notes({"body": " Aroma Coffee Roasters - London - since 2010 \n", "title": "x", "tags": []}) == []),
     ("A sentence 'Tasting notes of this lot change, and so does…' is not a notes row",
      lambda: scan.NOTES_CELL.search("Tasting notes of this lot change every harvest, and so does the roast") is None),
 ]
