@@ -1375,9 +1375,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 .wordmark #wm { letter-spacing: -.025em !important; }
 /* Goccio in the top bar: the menu pills' type (ALT Riviera Medium, the small size), with no pill round it */
 .top .mark { font: 500 var(--fs-s)/1 var(--sans) !important; letter-spacing: 0 !important; color: var(--ink) !important; }
-/* the rule under the top bar shows only once Goccio is in the bar (over the photo there's no rule) */
-.top { border-bottom-color: transparent !important; transition: border-color .25s ease; }
-.mark-on .top { border-bottom-color: var(--line) !important; }
+
 .wm-screen { align-items: center !important; justify-content: center; position: relative; overflow: hidden; }
 .wm-screen .wordmark { width: auto !important; margin: 0 !important; padding: 0 !important; line-height: 1 !important; overflow: visible !important; }
 .wm-screen .wordmark #wm { padding: 0 !important; will-change: transform; }
@@ -5776,8 +5774,8 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     let eg = fig.querySelector(".g-brewer"); if (!eg) { eg = document.createElement("span"); eg.className = "g-brewer"; fig.querySelector("figcaption").after(eg); }
     eg.textContent = brewer;
     const ARR = '<svg class="arr" viewBox="0 0 18 10" aria-hidden="true"><path d="M1 5h15M12 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-    // each number says what it is: the grinder (C40), the coffee (C, then the water it goes to) and the water's heat (H2O)
-    fig.querySelector(".g-specs").innerHTML = `<span><i class="gk">C40</i><b>${r.clicks}</b> clicks</span><span><i class="gk">C</i><b>${r.dose}</b>${ARR}<b>${r.water}</b> g</span>${r.temp != null ? `<span><i class="gk">H<sub>2</sub>O</i><b>${r.temp}</b>°C</span>` : ""}`;
+    // each number says what it is: the grinder (C40), the coffee (and the water it goes to) and the water's heat (H2O)
+    fig.querySelector(".g-specs").innerHTML = `<span><i class="gk">C40</i><b>${r.clicks}</b> clicks</span><span><i class="gk">Coffee</i><b>${r.dose}</b>${ARR}<b>${r.water}</b> g</span>${r.temp != null ? `<span><i class="gk">H<sub>2</sub>O</i><b>${r.temp}</b>°C</span>` : ""}`;
     // every step under the bar at its own time; where two would touch, layGlimpse() drops the later one to the next line
     const items = P.map((p) => { const pos = p.t / T;
       return `<li style="--p:${pos.toFixed(3)}"><span>${mmss(p.t)}</span>${p.act ? `<i>${esc(p.lbl)}</i>` : `<b>${p.to}</b>`}</li>`; }).join("");
