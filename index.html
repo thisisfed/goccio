@@ -1957,6 +1957,8 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
 .ro-head{padding:0 0 13px;border-bottom:1px solid var(--line);margin:-10px 0 -14px}   /* the section's 14 px row gap: lines straight under the name, coffees straight under the rule */
 .ro-head .ro-v{font:500 var(--fs-s)/1.35 var(--sans);color:var(--muted);margin:0}
 .ro-head .ro-acts{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0}
+#roBack{background:var(--hl)!important;color:var(--on-hl,#000)!important}   /* Back to all coffees: the accent, the way out */
+#roBack:hover{background:color-mix(in srgb,var(--hl) 85%,var(--ink))!important}
 .ro-head .ro-pill{display:inline-flex;align-items:center;height:var(--pill-h);padding:0 12px;border:0;border-radius:var(--r);background:var(--pill);color:var(--ink);
   font:500 var(--fs-s)/1 var(--sans);letter-spacing:inherit;text-decoration:none;cursor:pointer}   /* the same grey buttons as Brew and Save */
 #shelves.ro-on .shelf-tools,#shelves.ro-on #shelfMeta,#shelves.ro-on .curfew{display:none!important}
@@ -2363,7 +2365,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     <div class="fcol f-cred">
     <p class="foot-note refs-h foot-credits">Credits</p>
     <p class="foot-note" id="credit">Made by <a href="https://thisisfed.xyz/" target="_blank" rel="noopener">Federico R. T. Ferrari</a>.</p>
-    <p class="foot-note foot-all foot-links"><a href="/coffee/">Every coffee, by roaster</a><a href="/list/">Get your roastery listed / removed</a><a href="/privacy/">Privacy</a></p>
+    <p class="foot-note foot-all foot-links"><a href="/coffee/">Every coffee, by roaster</a><a href="/list/">Get your roastery listed / removed</a><a href="/privacy/">Privacy</a><a class="mail" href="#" data-m="ku.oc.oiccog@nu">Email us</a></p>
     </div>
   </footer>
   <script>
@@ -5669,7 +5671,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       tagBits.push(...coffeeLabels(r, shown).map((l) => `<span class="tg lbl" style="--vc:${LABEL_DOT[l] || "#8e8e93"}">${l}</span>`));
       return `${head}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
         <div class="l">
-          <span class="who">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span> ` : !isSp && r.just_in ? `<span class="ji">${LANG === "it" ? "Nuovo" : "New"}</span> ` : ""}<a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(r.roaster)}</a>${r.roaster_city ? `<span class="rcity">, ${esc(r.roaster_city)}</span>` : ""} <span class="day">${day}</span></span>
+          <span class="who">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span> ` : !isSp && r.just_in ? `<span class="ji">${LANG === "it" ? "Nuovo" : "New"}</span> ` : ""}<a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(r.roaster)}</a>${r.roaster_city ? `<span class="rcity">, ${esc(r.roaster_city)}</span>` : ""} <span class="day">(${day})</span></span>
           <span class="name">${esc(calm(shown))}</span>
           <p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p>
         </div>
@@ -6952,5 +6954,6 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
 })();
 </script>
 <div id="printSheet" aria-hidden="true"></div>
+<script>document.querySelectorAll("a.mail").forEach(function(a){var go=function(){a.href="mailto:"+a.dataset.m.split("").reverse().join("");};a.addEventListener("pointerdown",go);a.addEventListener("focus",go);a.addEventListener("click",function(){go();});});</script>
 </body>
 </html>

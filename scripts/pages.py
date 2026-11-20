@@ -145,6 +145,7 @@ a{color:inherit;text-decoration:none}
 .az{margin-top:0!important}
 .spec.ro{padding-bottom:0}
 .spec .ro-n{display:block}
+.spec .ro-shop{justify-self:start;margin-top:8px}
 a.ro-n{justify-self:start;text-decoration:underline;text-decoration-color:color-mix(in srgb,currentColor 40%,transparent);text-underline-offset:2px}
 .facts div{display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px}
 .facts dt{color:var(--muted)}.facts dd{margin:0;overflow-wrap:anywhere}
@@ -198,8 +199,8 @@ def page(title, desc, path, body, extra_head="", nav=True, tight=False):
 {body}
 </main>
 <footer><p>Coffee details are read every day from each roaster’s own shop. Prices and stock change: check the roaster’s page before you buy.</p>
-<p><a href="/">Goccio</a>: a recipe for any coffee, for your brewer and your grinder. A roaster? <a href="/list/">Get your roastery listed</a>. <a href="/privacy/">Privacy</a>.</p></footer>
-<script src="/lib/theme.js"></script>
+<p><a href="/">Goccio</a>: a recipe for any coffee, for your brewer and your grinder. A roaster? <a href="/list/">Get your roastery listed</a>. <a href="/privacy/">Privacy</a>. <a class="mail" href="#" data-m="ku.oc.oiccog@nu">Email us</a>.</p></footer>
+<script src="/lib/theme.js"></script><script>document.querySelectorAll("a.mail").forEach(function(a){{var go=function(){{a.href="mailto:"+a.dataset.m.split("").reverse().join("");}};a.addEventListener("pointerdown",go);a.addEventListener("focus",go);a.addEventListener("click",function(){{go();}});}});</script>
 </body></html>
 """
 
@@ -262,14 +263,15 @@ def main():
             dl = "".join(f"<div><dt>{k}</dt><dd>{v}</dd></div>" for k, v in facts if v)
             spec = lambda k, v, cls="": f'<div class="spec{(" " + cls) if cls else ""}"><span class="k">{k}</span>{v}</div>'
             # the coffee: laid out like the app's recipe, Roastery and Coffee as big specs, then the facts
-            first = [# no small labels or links over the titles: the roastery and its town (its page a tap away), then the coffee, big
-                     '<div class="specs">' + f'<div class="spec wide"><b><a href="/coffee/{rslug[name]}/">{e(name)}</a>{", " + e(city) if city else ""}</b></div>'
-                     + f'<div class="spec wide"><h1>{e(c["name"])}</h1></div>' + "</div>", f'<dl class="facts">{dl}</dl>']
+            first = [
+                     # like the recipe on the main page: Roastery (name, town) then Coffee, each a small label over big type
+                     '<div class="specs">' + f'<div class="spec wide"><span class="k">Roastery</span><b><a href="/coffee/{rslug[name]}/">{e(name)}</a>{", " + e(city) if city else ""}</b></div>'
+                     + f'<div class="spec wide"><span class="k">Coffee</span><h1>{e(c["name"])}</h1></div>' + "</div>", f'<dl class="facts">{dl}</dl>']
             if notes:
                 first.append(f'<p class="notes">Flavour: {e(and_list(notes))}.</p>')
             body = ["<section>" + "".join(first) + "</section>"]
             brew = "/#brew=" + e(quote(c.get("url") or "", safe=""))
-            go = (f'<p class="go"><a class="pill" href="{brew}">Brew it step by step</a>'
+            go = (f'<p class="go"><a class="pill" href="{brew}">Brew it in the app</a>'
                   + (f'<a class="pill" href="{e(c["url"])}" rel="noopener">Buy from {e(name)}</a>' if c.get("url") else "") + "</p>")
             ld = ""
             if r and r.get("water"):
@@ -316,7 +318,7 @@ def main():
         body = (f'<section><div class="specs">'
                 f'<div class="spec wide ro"><h1>{e(name)}{", " + e(city) if city else ""}</h1>'
                 f'<span class="ro-n">{len(cs)} coffee{"s" if len(cs) != 1 else ""} on the list</span>'
-                + (f'<a class="ro-n ul" href="{e(shop)}" rel="noopener">Their shop</a>' if shop else "") + "</div></div></section>"
+                + (f'<a class="pill ro-shop" href="{e(shop)}" rel="noopener">Their shop</a>' if shop else "") + "</div></div></section>"
                 f'<section><div class="sec-head"><span>Coffees.</span><span class="muted">Each with a V60 recipe</span></div>{coffee_list(cs, cpath)}</section>')
         desc = f"{len(cs)} coffee{'s' if len(cs) != 1 else ''} from {name}{', ' + city if city else ''}, each with a V60 recipe: grind, dose, temperature and every pour."
         write(f"coffee/{rslug[name]}/index.html", page(f"{name}: coffees and V60 recipes", desc, f"/coffee/{rslug[name]}/", body, tight=True))
@@ -348,7 +350,10 @@ def main():
             'function sync(){var line=bar.getBoundingClientRect().bottom+40,a=hs.length?hs[0].id:"";hs.forEach(function(h){if(h.getBoundingClientRect().top<=line)a=h.id;});'
             'if(a===cur)return;cur=a;[].forEach.call(bar.querySelectorAll("a"),function(x){var on=x.getAttribute("href")==="#"+a;if(on){x.setAttribute("aria-current","true");'
             'var l=x.offsetLeft-bar.offsetLeft;if(l<bar.scrollLeft+12||l+x.offsetWidth>bar.scrollLeft+bar.clientWidth-12)bar.scrollTo({left:Math.max(0,l-bar.clientWidth/2),behavior:"smooth"});}'
-            'else x.removeAttribute("aria-current");});}var raf=0;addEventListener("scroll",function(){if(!raf)raf=requestAnimationFrame(function(){raf=0;sync();});},{passive:true});sync();})();</script>')   # inside the list's section, so it stays stuck all the way down
+            'else x.removeAttribute("aria-current");});}var raf=0;addEventListener("scroll",function(){if(!raf)raf=requestAnimationFrame(function(){raf=0;sync();});},{passive:true});sync();'
+            '[].forEach.call(bar.querySelectorAll("a"),function(x){x.addEventListener("click",function(ev){var t=document.querySelector(x.getAttribute("href"));if(!t)return;ev.preventDefault();'
+            'var top=document.querySelector(".top"),y=t.getBoundingClientRect().top+scrollY-(top?top.offsetHeight:49)-bar.offsetHeight+1;'
+            'window.scrollTo({top:y,behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});history.replaceState(null,"",x.getAttribute("href"));});});})();</script>')   # inside the list's section, so it stays stuck all the way down
     write("coffee/index.html", page("Specialty coffee roasters and V60 recipes for their coffees",
                                     f"{len(coffees):,} specialty coffees from {len(names)} roasters, updated every day, each with a V60 recipe.", "/coffee/", body, nav=False, tight=True))
 
