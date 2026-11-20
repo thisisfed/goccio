@@ -7,7 +7,7 @@
 // The roaster's email is used only to reply about the listing; it goes into that private issue and nowhere else.
 
 const UA = "Goccio/1.0 (+https://www.goccio.co.uk/list/; checking a shop that asked to be listed)";
-const REPO = "thisisfed/goccio";
+const REPO = "thisisfed/goccio-requests";   // a small private repo: roasters' emails never sit in the public one
 
 const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } });
 

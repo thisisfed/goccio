@@ -1,6 +1,7 @@
 name: Listing requests
 
-# Every morning before the roaster scan: requests from the "Get your roastery listed" page arrive as issues labelled
+# Every morning before the roaster scan: requests from the "Get your roastery listed" page arrive as issues (in the private
+# thisisfed/goccio-requests repo, so roasters' emails never sit in this public one) labelled
 # "listing". Each shop is checked with the real scanner; the ones with coffee are added to data/roasters.json and the
 # issue is answered and closed. A shop it can't read stays open for a person to look at.
 on:
@@ -27,7 +28,8 @@ jobs:
           python-version: "3.12"
       - name: Check requests
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.LISTING_TOKEN }}   # it reaches the private requests repo; the workflow's own token can't
+          REQUESTS_REPO: thisisfed/goccio-requests
         run: python scripts/discover.py --listings
       - name: Save new roasters
         run: |

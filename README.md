@@ -30,8 +30,10 @@ Where it's kept: `data/promoted.json` (roaster, from, until, coffees). You can a
 
 The **Get your roastery listed** page (`/list/`) asks for the shop's address and an email, nothing else.
 
-- **Where requests arrive:** each one becomes an issue in this repo (**Issues** tab), labelled `listing`, `removal` or
-  `question` (from the privacy page). Only you can see them. To get an email for each, tap **Watch → Custom → Issues**.
+- **Where requests arrive:** each one becomes an issue in the private **thisisfed/goccio-requests** repo (**Issues** tab),
+  labelled `listing`, `removal` or `question` (from the privacy page). This repo is public, so roasters' emails are kept
+  there, where only you can see them. To get an email for each, open goccio-requests and tap **Watch → Custom → Issues**.
+  The `LISTING_TOKEN` secret must be allowed to read and write Issues on goccio-requests.
 - **What happens on its own** (every morning at 04:41 UTC, workflow **Listing requests**):
   - a listing whose email is at the shop's own domain and whose shop the scanner can read is added and the issue closed,
     with a note to reply and to add the roaster's town;
