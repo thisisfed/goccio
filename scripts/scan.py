@@ -24,6 +24,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import flavours  # noqa: E402  (tasting notes in English)
 ROASTERS = ROOT / "data" / "roasters.json"
 
 
@@ -2491,6 +2493,13 @@ def main():
         per_roaster[x["roaster"]] = per_roaster.get(x["roaster"], 0) + 1
         deduped.append(x)
     found = deduped[:MAX_ITEMS]
+    # tasting notes in English (the Italian page translates the English); the roaster's own words kept beside them
+    for x in found:
+        if x.get("notes"):
+            en = flavours.english_notes(x["notes"])
+            if en and en != x["notes"]:
+                x.setdefault("notes_orig", x["notes"])
+                x["notes"] = en
 
     OUT.write_text(json.dumps({"updated": today, "new_window_days": NEW_DAYS, "roasters": status,
                                "releases": found}, ensure_ascii=False, indent=1) + "\n")
