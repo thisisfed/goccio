@@ -1271,6 +1271,9 @@ def clean_name(title, roaster, origin):
     if origin:
         name = re.sub(r"[,\s\-–|]+" + re.escape(origin) + r"\s*$", "", name, flags=re.I)
     name = re.sub(r"\(?\b\d{2,4}\s?g\b\)?", "", name, flags=re.I).strip(" -–|,")
+    # what taking the origin or the bag size off can leave hanging: "Amecafe Blend from (Brazil)", "… factory (500g) bags"
+    for _ in range(2):
+        name = re.sub(r"\s+(?:from|of|in|with|by|for|and|&|bags?|packs?|pouch(?:es)?)\s*$", "", name, flags=re.I).strip(" -–|,")
     # "Kamwangi AA, Fully Washed, Batian, SL-28" -> "Kamwangi AA": stop at the first comma part that's only process or variety
     segs = [p.strip() for p in name.split(",")]
     if len(segs) >= 2:
