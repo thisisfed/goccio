@@ -1607,19 +1607,19 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 .g-ex > .glimpse > :not(figcaption), .g-ex > .glimpse .g-name{transition:opacity .3s ease}
 .g-ex > .glimpse.swap > :not(figcaption), .g-ex > .glimpse.swap .g-name{opacity:0}
 /* folded: only Example and its arrow, on the right */
-/* Example: a heading on the left, the fold's handle; the example itself under it */
-.g-ex-h{margin:0 0 10px;font-size:var(--fs-s);font-weight:500;line-height:1.2}
-.g-ex.fold > .glimpse{display:none}
-.g-ex.fold > .g-ex-h{margin-bottom:0}
-/* folded on a phone: Coffees' top rule sits as close under Example as the rule above it (13px), not the usual 72px between sections */
-@media (max-width: 760px){ html.ex-fold #shelves{margin-top:-59px} }
-.g-ex-h button.g-tag{background:none;border:0;padding:0;cursor:pointer;font:inherit;color:var(--muted);display:inline-flex;gap:8px;align-items:center}
+/* Example: grey, on the right of the coffee's name, the fold's handle */
+.g-ex.fold > .glimpse > :not(figcaption), .g-ex.fold .g-name{display:none}
+.g-ex.fold > .glimpse{min-height:0!important;gap:0}
+.g-ex.fold figcaption{justify-content:flex-end}
+.glimpse figcaption button.g-tag{background:none;border:0;padding:0;cursor:pointer;font:inherit;font-size:var(--fs-s);font-weight:500;color:var(--muted);display:inline-flex;gap:8px;align-items:center;margin-left:auto;flex:none}
 /* the fold arrow every other fold wears (the Region / Process select's): down when shut, up when open */
-.g-ex-h button.g-tag::after{content:"";width:10px;height:10px;flex:none;background:currentColor;
+.glimpse figcaption button.g-tag::after{content:"";width:10px;height:10px;flex:none;background:currentColor;
   -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E") center / 10px 10px no-repeat;
   mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E") center / 10px 10px no-repeat;
   transition:transform .25s ease}
-.g-ex-h button.g-tag[aria-expanded="true"]::after{transform:rotate(180deg)}
+.glimpse figcaption button.g-tag[aria-expanded="true"]::after{transform:rotate(180deg)}
+/* folded on a phone: Coffees' top rule sits as close under Example as the rule above it (13px), not the usual 72px between sections */
+@media (max-width: 760px){ html.ex-fold #shelves{margin-top:-59px} }
 .g-ex{border-top:1px solid var(--line);padding-top:12px}
 .g-ex > .glimpse{margin-top:0!important}
 .glimpse figcaption .g-tag{flex:none;color:var(--muted);font-size:var(--fs-s);font-weight:500}   /* Example: grey, on the right, like Stored on this device only */
@@ -2184,9 +2184,8 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       <p class="hero-kick">Updated every day<span class="hero-live" id="heroLive" hidden><i class="live-dot" aria-hidden="true"></i><span id="heroLiveT"></span></span></p>
       <p class="lede">Daily new coffees from UK, European and global roasters. Pick one or add your own, choose your brewer, and get the right grind, temperature and steps. Customise anything, describe your pour and share the recipe. Brew full screen, log the taste, and it adapts next time. <span class="yours">Brewed your way.</span></p>
       <div class="g-ex">
-      <p class="g-ex-h"><button type="button" class="g-tag" id="exTog" aria-expanded="true" aria-label="Hide the example">Example</button></p>
       <figure class="glimpse" aria-label="Example recipe: washed Ethiopia, light roast. 15 g coffee to 255 g water, 99°C, about 3:15. Pours at 0:00 to 51 g, 0:45 to 102 g, 1:10 to 153 g, 1:30 to 204 g, 1:50 to 255 g.">
-        <figcaption><span class="g-name">Washed Ethiopia, light roast</span></figcaption>
+        <figcaption><span class="g-name">Washed Ethiopia, light roast</span><button type="button" class="g-tag" id="exTog" aria-expanded="true" aria-label="Hide the example">Example</button></figcaption>
         <div class="g-specs num" aria-hidden="true"><span><b>15</b><span class="arr">→</span><b>255</b> g</span><span><b>99</b>°C</span></div>
         <ol class="g-pours num" aria-hidden="true">
           <li style="--t:0"><span>0:00</span><b>51</b></li><li style="--t:45"><span>0:45</span><b>102</b></li><li style="--t:70"><span>1:10</span><b>153</b></li><li style="--t:90"><span>1:30</span><b>204</b></li><li style="--t:110"><span>1:50</span><b>255</b></li><li class="end"><span>3:15</span><i>Done</i></li>
