@@ -172,6 +172,12 @@ CASES = [
     ("Notes audit 2: the label alone on its line, the list alone on the next (Dropshot 'Notes', Mabó, Inverness 'Tastes Like')",
      lambda: [scan.find_notes({"body": t, "title": "x", "tags": []})[:2] for t in (" Notes \n Gem de fragi, Mar rosu, Stafide \n", " Tastes Like\n Seville orange zest, maple syrup\n",
               " Notes\n Our story began in 2010, and we roast daily\n")] == [["Gem de fragi", "Mar rosu"], ["Seville orange zest", "Maple syrup"], []]),
+    ("Climpson La Plata: 'Flavour profile:' alone on its line, the notes on the next",
+     lambda: scan.page_notes("Decaf: La Plata, Colombia\nFlavour profile:\nDark Chocolate, Caramel, Orange Rind\n\nCoffee:\nLa Plata\n\nOrigin:\nColombia\n", "The Decaf: La Plata")
+             == ["Dark Chocolate", "Caramel", "Orange Rind"]),
+    ("Harmony Bombe: 'Notas de cata … fruta de la pasión y kiwi amarillo' splits on the Spanish 'y' and keeps all four",
+     lambda: scan.page_notes("Bombe, Etiopía\nOrigen Etiopía\nProceso Lavado\nVariedad Heirloom\nNotas de cata Té verde, manzanilla, fruta de la pasión y kiwi amarillo\n\nRecomendado para Espresso y Filtro\n", "Bombe, Etiopía")
+             == ["Té verde", "Manzanilla", "Fruta de la pasión", "Kiwi amarillo"]),
     ("A sentence 'Tasting notes of this lot change, and so does…' is not a notes row",
      lambda: scan.NOTES_CELL.search("Tasting notes of this lot change every harvest, and so does the roast") is None),
 ]
