@@ -134,11 +134,16 @@ NOTES_LINE = re.compile(r"(?:tasting notes|flavou?r notes|cup(?:ping)? notes|in 
 # The line must be the label and a list and nothing else, so a sentence ("tasting notes of ...", "tasting notes are ...") is never taken.
 # Also a bare label ("Notes", "Flavor", "Aroma", "Tastes like") and other languages ("Note de degustare", "NOTES DE DÉGUSTATIONS"),
 # with the list split by commas, spaced dashes or bullets ("Fraise - Myrtille - Mûre - Figue"; Tanat, Mabó, Dropshot, Coffea Circulor)
-NOTES_CELL = re.compile(r"^[ \t]*(?:tasting notes|flavou?r notes|notes? de d[ée]gustations?|note de degustare|note di degustazione|notas de cata|"
-                        r"sensory profile|cup(?:ping)? notes|tastes like|smaksnoter|smagsnoter|smaksnotater|geschmacksnoten|flavou?rs?|aromas?|notes)[ \t]*:?[ \t]+"
+NOTES_CELL = re.compile(r"^[ \t\xa0]*(?:tasting notes|flavou?r notes|notes? de d[ée]gustations?|note de degustare|note di degustazione|notas de cata|"
+                        r"sensory profile|cup(?:ping)? notes|tastes like|smaksnoter|smagsnoter|smaksnotater|geschmacksnoten|flavou?rs?|aromas?|notes)[ \t\xa0]*:?[ \t\xa0]+"
                         r"(?!(?:of|are|is|include|from|with|that|we|you|and|the|a|an)\b)(?![^\n]*\b(?:coffee|roasters?|roastery|caf[ée])\b)"
-                        r"([^\n.:]{3,120}?(?:,|&|\band\b|\s[-–•·]\s)[^\n.:]{2,160}?)[ \t]*$", re.I | re.M)
-NOTES_CHECK = 5   # pages read for notes with these rules; a coffee checked under older rules gets one more read
+                        r"([^\n.:]{3,120}?(?:,|&|\band\b|\s[-–•·]\s)[^\n.:]{2,160}?)[ \t\xa0]*$", re.I | re.M)
+# the same label alone on its line and the list alone on the next ("Notes\nGem de fragi, Mar rosu, Stafide"; Dropshot, Mabó, Inverness)
+NOTES_NEXT = re.compile(r"^[ \t\xa0]*(?:tasting notes|flavou?r notes|notes? de d[ée]gustations?|note de degustare|note di degustazione|notas de cata|"
+                        r"sensory profile|cup(?:ping)? notes|tastes like|smaksnoter|smagsnoter|smaksnotater|geschmacksnoten|flavou?rs?|aromas?|notes)[ \t\xa0]*:?[ \t\xa0]*\n[ \t\xa0]*"
+                        r"(?!(?:of|are|is|include|from|with|that|we|you|and|the|a|an)\b)(?![^\n]*\b(?:coffee|roasters?|roastery|caf[ée])\b)"
+                        r"([^\n.:]{3,120}?(?:,|&|\band\b|\s[-–•·]\s)[^\n.:]{2,160}?)[ \t\xa0]*$", re.I | re.M)
+NOTES_CHECK = 6   # pages read for notes with these rules; a coffee checked under older rules gets one more read
 
 
 def dot_notes(text):
@@ -1394,7 +1399,7 @@ def tidy_note(n):
 
 def find_notes(item):
     text = item["body"]
-    m = NOTES_CELL.search(text) or NOTES_RE.search(text) or NOTES_LINE.search(text)   # a line that is only the label and its list is the surest
+    m = NOTES_CELL.search(text) or NOTES_NEXT.search(text) or NOTES_RE.search(text) or NOTES_LINE.search(text)   # a line that is only the label and its list is the surest
     raw = m.group(1) if m else None
     if not raw:
         raw = dot_notes(text)

@@ -169,6 +169,9 @@ CASES = [
              == ["Chocolate cherries", "Strawberry cake", "Crisp apple"]),
     ("A line naming the shop ('Aroma Coffee Roasters - London') is not notes",
      lambda: scan.find_notes({"body": " Aroma Coffee Roasters - London - since 2010 \n", "title": "x", "tags": []}) == []),
+    ("Notes audit 2: the label alone on its line, the list alone on the next (Dropshot 'Notes', Mabó, Inverness 'Tastes Like')",
+     lambda: [scan.find_notes({"body": t, "title": "x", "tags": []})[:2] for t in (" Notes \n Gem de fragi, Mar rosu, Stafide \n", " Tastes Like\n Seville orange zest, maple syrup\n",
+              " Notes\n Our story began in 2010, and we roast daily\n")] == [["Gem de fragi", "Mar rosu"], ["Seville orange zest", "Maple syrup"], []]),
     ("A sentence 'Tasting notes of this lot change, and so does…' is not a notes row",
      lambda: scan.NOTES_CELL.search("Tasting notes of this lot change every harvest, and so does the roast") is None),
 ]
