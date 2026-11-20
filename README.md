@@ -1,6 +1,6 @@
 # Goccio
 
-**Live at [www.goccio.co.uk](https://www.goccio.co.uk)**. goccio.co.uk, bagtocup.thisisfed.xyz and v60.thisisfed.xyz all forward there, to the same page, and the main page carries each visitor's saved coffees and settings across.
+**Live at [www.goccio.co.uk](https://www.goccio.co.uk)**., to the same page, and the main page carries each visitor's saved coffees and settings across.
 
 New specialty coffees from roasters in the UK, Europe and beyond, read every day from their own shops, each with a recipe for
 your brewer and your grinder: grind setting, dose, water, temperature and every step, with a brew-along screen, a journal
