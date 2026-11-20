@@ -38,24 +38,25 @@ export async function onRequestPost({ request, env }) {
   if ((f.get("website2") || "").toString().trim()) return json({ ok: true, msg: "Thanks." });   // honeypot: a person never fills this
   const want = (f.get("want") || "list").toString();
   if (want === "ask") return ask(f, env);
-  const name = (f.get("name") || "").toString().trim().slice(0, 80);
+  let name = (f.get("name") || "").toString().trim().slice(0, 80);   // the form asks only for the shop and an email: the name comes from the shop
   const town = (f.get("town") || "").toString().trim().slice(0, 60);
   const email = (f.get("email") || "").toString().trim().slice(0, 120);
   const note = (f.get("note") || "").toString().trim().slice(0, 600);
   let shop = (f.get("shop") || "").toString().trim();
-  if (!name || !shop || !email) return json({ ok: false, msg: "Please fill in your roastery's name, its shop and an email address." }, 400);
+  if (!shop || !email) return json({ ok: false, msg: "Please fill in your shop's address and an email." }, 400);
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ ok: false, msg: "That email address doesn't look right." }, 400);
   if (!/^https?:\/\//i.test(shop)) shop = "https://" + shop;
   let u; try { u = new URL(shop); } catch (e) { return json({ ok: false, msg: "That shop address doesn't look right." }, 400); }
   if (!/\./.test(u.hostname) || /bagtocup|thisisfed|localhost/.test(u.hostname)) return json({ ok: false, msg: "That shop address doesn't look right." }, 400);
   shop = `${u.protocol}//${u.hostname}`;
+  if (!name) name = await shopName(shop);
   if (want === "remove") {
     // no shop check and no consent box: a removal request is filed for the morning run, which takes the shop off the list
     const ok = await file(env, `Removal: ${name}`, { name, shop, email, at: new Date().toISOString() }, "removal");
     return ok ? json({ ok: true, msg: "Thanks. Your coffees come off the site within a day, and we'll email you when they have." })
               : json({ ok: false, msg: "Something went wrong on our side. Please try again later." }, 502);
   }
-  if (f.get("consent") !== "yes") return json({ ok: false, msg: "Please tick the box that says we may read your shop once a day." }, 400);
+  // no tick box: sending the form is the permission (the sentence above the button says what it allows)
 
   const p = await probe(shop);
   const seen = p.platform ? `We can read your shop (${p.platform}, ${p.products} product${p.products === 1 ? "" : "s"} visible).` : "We couldn't read your shop automatically, so a person will look at it.";
@@ -69,6 +70,16 @@ export async function onRequestPost({ request, env }) {
   }).catch(() => null);
   if (!gh || !gh.ok) return json({ ok: false, msg: `${seen} Something went wrong on our side saving your request. Please try again later.` }, 502);
   return json({ ok: true, msg: p.platform ? `${seen} Your coffees should appear within two days. We'll email you if anything needs checking.` : `${seen} We'll email you within a week.` });
+}
+
+// the shop's own name, from its home page (og:site_name, else the page title before any " | " or " – "), else its address
+async function shopName(shop) {
+  const host = new URL(shop).hostname.replace(/^www\./, "");
+  const r = await get(shop, "text/html"); if (!r) return host;
+  const t = (await r.text()).slice(0, 60000);
+  const m = t.match(/<meta[^>]+property=["']og:site_name["'][^>]+content=["']([^"']{2,80})/i) || t.match(/<title[^>]*>([^<]{2,120})<\/title>/i);
+  const n = m ? m[1].replace(/&amp;/g, "&").replace(/&#0?39;|&rsquo;/g, "’").split(/\s[|–—-]\s/)[0].trim() : "";
+  return n || host;
 }
 
 // files a request as an issue in the private repo; false when the token is missing or GitHub says no

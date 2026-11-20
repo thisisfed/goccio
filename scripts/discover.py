@@ -220,6 +220,10 @@ def listings():
         shop = req["shop"].rstrip("/")
         if host(shop) in have:
             gh("POST", f"/issues/{iss['number']}/comments", {"body": "Already on the list."}); gh("PATCH", f"/issues/{iss['number']}", {"state": "closed"}); continue
+        if not same_owner(req.get("email"), shop):   # permission counts only from the roastery itself
+            if not any("isn't at" in (x.get("body") or "") for x in gh("GET", f"/issues/{iss['number']}/comments")):
+                gh("POST", f"/issues/{iss['number']}/comments", {"body": f"Not added yet: {req.get('email')} isn't at {host(shop)}. Check it's the roaster, then add it to data/roasters.json by hand."})
+            continue
         c = probe({"name": req["name"], "shop": shop})
         if c["coffees"]:
             ie = host(shop).endswith(".ie")
@@ -227,7 +231,7 @@ def listings():
             if not ie:
                 r["nation"] = nation(req.get("town") or "")
             roasters.append(r); have.add(host(shop)); added.append(r["name"])
-            gh("POST", f"/issues/{iss['number']}/comments", {"body": f"Added: the scanner reads {c['coffees']} coffees ({c['platform']}), e.g. {', '.join(c['sample'][:3])}. They appear after the next daily scan. Reply to {req.get('email')} to say so."})
+            gh("POST", f"/issues/{iss['number']}/comments", {"body": f"Added: the scanner reads {c['coffees']} coffees ({c['platform']}), e.g. {', '.join(c['sample'][:3])}. They appear after the next daily scan.{'' if req.get('town') else ' Add its town to data/roasters.json (city).'} Reply to {req.get('email')} to say so."})
             gh("PATCH", f"/issues/{iss['number']}", {"state": "closed"})
         else:
             gh("POST", f"/issues/{iss['number']}/comments", {"body": f"Not added: the scanner {'reads the shop (' + c['platform'] + ') but finds no coffee beans in it' if c['platform'] else 'cannot read the shop'}. {(c.get('error') or '')[:300]}"})
