@@ -2011,7 +2011,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
 .shelf-tools #fyNote:has(+ .curfew:not([hidden])){margin-bottom:0!important;line-height:1.35!important;text-box:trim-start cap alphabetic}
 .shelf-tools #fyNote:not([hidden]) + .curfew:not([hidden]){margin-top:-12px!important}
 .shelf-tools #fyNote:not([hidden]) + .curfew .cf-h{text-box:none}
-#shelfX .chip .cd{font-variant-numeric:tabular-nums;color:var(--hl);margin-left:2px}   /* For you's countdown before it switches off */
+#shelfX .chip .cd{font-variant-numeric:tabular-nums}   /* For you's countdown before it switches off */
 .curfew .ro-acts{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 0}   /* the text sits as far above the pills as one pill from the next */
 .curfew .ro-pill:hover{background:color-mix(in srgb, var(--pill) 80%, var(--ink))}   /* the grey pills' hover */
 .curfew .ro-pill{display:inline-flex;align-items:center;height:var(--pill-h);padding:0 12px;border:0;border-radius:var(--r);background:var(--pill);color:var(--ink);
@@ -5596,7 +5596,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       const need = Math.max(5000, 1500 + n.textContent.split(/\s+/).length * 300);
       // For you is about to switch itself off: count it down on its pill, 5 4 3 2 1
       if (shelfY && !fyProfile()) { const chip = $("shelfX") && $("shelfX").querySelector('[data-v="foryou"]'), left = Math.ceil((need - fySeen) / 1000);
-        if (chip && left <= 5 && left > 0) chip.innerHTML = `${LANG === "it" ? "Per te" : "For you"} <span class="cd">${left}</span>`; }
+        if (chip && left <= 5 && left > 0) { chip.style.minWidth = chip.style.minWidth || chip.offsetWidth + "px"; chip.innerHTML = `<span class="cd">${left}</span>`; }   // the number in place of the words, the pill keeping its width }
       if (fySeen < need) return;
       fyStop(); if (shelfY && !fyProfile()) { shelfY = false; fyHold = null; fySave(); renderShelfO(); renderShelf(); } }, 200); };
   function forYou() {
