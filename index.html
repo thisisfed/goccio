@@ -5699,10 +5699,11 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   // or as soon as you scroll the page yourself (a finger drag or the wheel)
   let rowT = 0;
   const rowWait = (row) => { clearTimeout(rowT); const n = row.querySelectorAll(".chips button").length;
-    rowT = setTimeout(() => { if (row.classList.contains("open") && !row.contains(document.activeElement)) closeShelfRows(); else if (row.classList.contains("open")) rowWait(row); }, 2000 + n * 150); };
+    rowT = setTimeout(() => { if (row.classList.contains("open") && !row.contains(document.activeElement)) closeShelfRows(); else if (row.classList.contains("open")) rowWait(row); }, 2000 + n * 150);
+    const box = row.querySelector(".chips"); if (box) cdTail(box, 2000 + n * 150); };   // Region and Process count down too, 3 2 1, before they fold
   { const fold = (e) => { if (document.querySelector(".shelf-tools .opt.open") && !(e.target.closest && e.target.closest(".shelf-tools .opt.open"))) closeShelfRows(); };
     addEventListener("touchmove", fold, { passive: true }); addEventListener("wheel", fold, { passive: true }); }
-  function closeShelfRows() { clearTimeout(rowT); document.querySelectorAll(".shelf-tools .opt.open").forEach((r) => { r.classList.remove("open"); const b = r.querySelector(".shelf-dd"); if (b) b.setAttribute("aria-expanded", "false"); }); }
+  function closeShelfRows() { clearTimeout(rowT); document.querySelectorAll(".shelf-tools .opt.open").forEach((r) => { const c = r.querySelector(".chips"); if (c) { clearInterval(c._cdT); c.querySelectorAll(":scope > .cd-tail").forEach((t) => t.remove()); } r.classList.remove("open"); const b = r.querySelector(".shelf-dd"); if (b) b.setAttribute("aria-expanded", "false"); }); }
   { const tools = document.querySelector(".shelf-tools");
     // a pill picked in an unfolded row: fold it back and keep the list starting right under the bar
     tools.addEventListener("click", (e) => { const row = e.target.closest(".opt.open"); if (row && e.target.closest(".chips button")) { setTimeout(() => { const f = document.activeElement && row.contains(document.activeElement); closeShelfRows(); if (f) { const b = row.querySelector(".shelf-dd"); if (b) b.focus(); } keepShelfTop(); }, 0); } }, true);   // capture: the row is found before the pick re-draws the pills
