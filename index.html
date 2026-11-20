@@ -2231,6 +2231,9 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   <div class="opt scan-opt"><span>Coffee</span><div class="scan-row"><button type="button" class="chip" id="scanBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>Scan the bag<span class="beta">Beta</span></button><span class="scan-msg" id="scanMsg" aria-live="polite"></span>
         <input type="file" accept="image/*" capture="environment" id="scanIn" hidden></div></div>
         <div class="scan-review" id="scanReview" hidden></div>
+        <div class="more" id="moreOpts">
+          <div class="opts" id="opts-more"></div>
+        </div>
         <div class="opts" id="opts-kit"></div>
         <div class="opt" id="millOpt"><span>Grinder</span><div class="mill-cell"><div class="kit-mill">
           <select id="millSel" aria-label="Your grinder"></select><button type="button" id="millBtn" class="mill-btn" aria-expanded="false" aria-controls="millChips"></button>
@@ -2241,9 +2244,6 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       </div>
       <div class="opts" id="opts-main"></div>
       <input type="file" accept="image/*" capture="environment" id="roastPhotoIn" hidden>
-      <div class="more" id="moreOpts">
-        <div class="opts" id="opts-more"></div>
-      </div>
     </div>
   </section>
 
@@ -4591,9 +4591,9 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   const optsMain = () => {
     const b = brewerOf(state), B = BREWERS[b], teaOn = state.goal === "tea" && teaAvail(b);
     return [
+      ICED_OK.has(b) && { key: "serve", label: "Serve", items: [["hot", "Hot"], ["iced", "Iced"]] },
       (B.kind !== "steps" || b === "mocca") && !B.cup && { key: "goal", label: "Cup", items: [["light", "Light & sweet"], ["balanced", "Balanced"], ["syrupy", "Rich & syrupy"],
         ...(teaAvail(b) ? [["tea", "Tea-like"]] : [])] },
-      ICED_OK.has(b) && { key: "serve", label: "Serve", items: [["hot", "Hot"], ["iced", "Iced"]] },
       (b === "press" || b === "cold") && { key: "steep", label: "Steep", items: [["hot", "Hot"], ["cold", "Cold brew"]], on: (v) => setBrewer(v === "cold" ? "cold" : "press"), cur: () => b === "cold" ? "cold" : "hot" },
       { key: "dose", label: b === "moka" ? "Pot" : "Coffee", items: B.doses },
       b === "aero" && !teaOn && { key: "aeroWay", label: "Method", items: [["standard", "Hoffmann"], ["inverted", "Hoffmann inverted"], ["wendelboe", "Wendelboe"]] },
