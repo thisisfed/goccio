@@ -6392,7 +6392,7 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
     if (i >= 0) bags.splice(i, 1);
     else bags.unshift({ id, roaster: r.roaster || "", city: r.roaster_city || "", name: r.name || "", origin: r.origin || "", region: r.region || "", variety: r.variety || "", process: r.process || "",
       roast: r.roast || null, roast_level: r.roast_level || null, url: r.url || null, price: r.price || null, text: r.text || null, added: new Date().toISOString().slice(0, 10), roasted: "", left: r.bag_g || 250, size: r.bag_g || null });   // the shop listing's bag size when the scan found one
-    saveBags(); renderBags();
+    saveBags(); renderBags(); try { syncBagBtn(); } catch (e) {}   // the recipe's Save follows the card's bookmark
   }
   const addDays = (iso, n) => { const d = new Date(iso + "T12:00:00"); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
   const daysBetween = (a, z) => Math.max(0, Math.round((new Date(z + "T12:00:00") - new Date(a + "T12:00:00")) / 864e5));
