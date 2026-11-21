@@ -6985,9 +6985,18 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     const phone = () => matchMedia("(max-width:760px)").matches;
     // a fresh order each visit; on a phone the question shows once, first, and never comes back
     for (let k = EX.length - 1; k > 0; k--) { const j = Math.floor(Math.random() * (k + 1)); [EX[k], EX[j]] = [EX[j], EX[k]]; }
-    let i = -1; const show = (t, q) => { a.placeholder = t; a.classList.toggle("ph-q", !!q); };
-    const tick = () => { if (!a.value && document.activeElement !== a) { i = (i + 1) % EX.length; show(EX[i]); } setTimeout(tick, 1600); };
-    if (phone()) { show(Q, true); setTimeout(tick, 4500); } else tick(); }
+    // typed out letter by letter, held, then taken back, the next one typed in its place. Italian types the Italian
+    const T = (t) => (LANG === "it" && typeof IT !== "undefined" && IT[t]) || t;
+    const still = matchMedia("(prefers-reduced-motion: reduce)").matches, idle = () => !a.value && document.activeElement !== a;
+    let i = -1;
+    const type = (t, q, done) => { a.classList.toggle("ph-q", !!q); if (still) { a.placeholder = t; return setTimeout(done, 1800); }
+      let n = 0; const add = () => { if (!idle()) return setTimeout(add, 400); a.placeholder = t.slice(0, ++n) || " ";
+        if (n < t.length) setTimeout(add, 38 + Math.random() * 40); else setTimeout(back, q ? 3200 : 1500); };
+      const back = () => { if (!idle()) return setTimeout(back, 400); n = Math.max(0, n - 2); a.placeholder = t.slice(0, n) || " ";
+        if (n > 0) setTimeout(back, 18); else setTimeout(done, 220); };
+      add(); };
+    const next = () => { i = (i + 1) % EX.length; type(T(EX[i]), false, next); };
+    if (phone()) type(T(Q), true, next); else next(); }
   // the ask line: its words go into the search (which reads them as an ask), the brewer it names becomes the brewer, and the page goes to the list
   const askBrewer = (q) => { if (!isAsk(q)) return; const w = readAsk(q); if (w.brewer && BREWERS[w.brewer] && w.brewer !== brewerOf(state)) { setBrewer(w.brewer); saveState(); renderAllOpts(); render(); } };
   $("askForm").addEventListener("submit", (e) => { e.preventDefault(); const t = $("askIn").value.trim(); if (!t) { $("askIn").focus(); return; }
