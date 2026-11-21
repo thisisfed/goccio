@@ -88,6 +88,15 @@ CASES = [
     ("Coffee++ sachets are not beans", lambda: scan.EXCLUDE.search("Café Intenso| Drip Coffee - 10 Sachês") is not None),
     ("Um Coffee Co's Kony and Super Jolly grinders are not coffee",
      lambda: scan.EXCLUDE.search("Kony SG") is not None and scan.EXCLUDE.search("Super Jolly V Up Pro") is not None),
+    ("Dear Green's '12 Days of Coffee' box is not one coffee", lambda: scan.EXCLUDE.search("Pre-order: 12 Days of Coffee") is not None),
+    ("Arlo's 'Calendrier de l'Avent' is not one coffee", lambda: scan.EXCLUDE.search("Calendrier de l'Avent 2026") is not None),
+    ("Industra's gift pack (Dárkový balíček) is not one coffee", lambda: scan.EXCLUDE.search("Dárkový balíček FILTR") is not None),
+    ("Coffeelab's 'Zestaw ... + brelok' set is not one coffee", lambda: scan.EXCLUDE.search("Zestaw Brewlab Daily + brelok") is not None),
+    ("Kafferäven's '2 x Brasilien' is two bags", lambda: scan.EXCLUDE.search("2 x Brasilien") is not None),
+    ("Coffee sacks, a milk frother, a pallet and a chocolate bar are not coffee", lambda: all(scan.EXCLUDE.search(t) for t in
+        ["Jute Coffee Sacks", "Alessi Mousseur à lait Pulcina", "Halvpalle med kaffe", "Malmö Chokladfabrik x Gringo – Kaffekross 55% chokladkaka", "SCA Introduction to coffee", "30 ks", "Čaj Yunnan Green Superior", "Brazil Natural - Greens"])),
+    ("'Santa's Sack - Christmas Blend', 'jute Blend', 'Alt + Tab' and 'Rhubarb Fizz' are coffees", lambda: not any(scan.EXCLUDE.search(t) for t in
+        ["Santa's Sack - Christmas Blend", "jute Blend", "Alt + Tab", "Rhubarb Fizz", "Costa Rica: Tarrazú - Washed + Regenified", "Christmas Special", "02 Brazil + Rwanda (Espresso)"])),
     ("Lucca's barista course is not coffee", lambda: scan.EXCLUDE.search("Introdução aos Cafés Especiais") is not None),
     ("'Gesha da Canastra' is from Brazil", lambda: scan.find_origin("Edição especial: Gesha da Canastra") == "Brazil"),
     ("A Colombian roaster's farm-named bag is Colombian",
