@@ -1393,12 +1393,12 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 /* the tagline right under Goccio, centred across the photo like the word, in white; the line, count and buttons under it */
 .wm-more { max-width: none !important; }
 .wm-more > :not(.wm-tagline) { max-width: 640px; }
-.wm-more .wm-tagline { text-box: trim-both cap alphabetic; margin: 0 0 14px; text-align: center; color: #fff; font: 500 var(--fs-s)/1.3 var(--sans); }
+.wm-more .wm-tagline { text-box: trim-both cap alphabetic; margin: 0 0 calc(1.3em - 1cap); text-align: center; color: #fff; font: 500 var(--fs-s)/1.3 var(--sans); }
 .wm-more .wm-live { margin: 0; color: var(--hl); font-size: var(--fs-s); line-height: 1.3; display: flex; align-items: center; gap: 8px; }
 /* the buttons exactly 16 px from the letters over and under them: the count's line box trimmed to its baseline, the text
    under the photo trimmed to its capitals (iPhone and desktop browsers alike) */
 .wm-more .wm-live { text-box: trim-end cap alphabetic; }
-.wm-more .wm-lead { text-box: trim-start cap alphabetic; }   /* Goccio, the tagline and this line 14 px apart, letter to letter */
+.wm-more .wm-lead { text-box: trim-start cap alphabetic; }   /* the tagline and this line one line break apart, and Goccio as far over the tagline */
 .wm-screen + .hero-row .lede { text-box: trim-start cap alphabetic; }
 .wm-more .wm-ctas { margin: 16px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; max-width: 420px; }
 .wm-more .wm-ctas .btn { height: 46px; min-height: 46px; font-size: var(--fs-s); border-radius: 8px; }
@@ -7433,7 +7433,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       const L = o.left - m.actualBoundingBoxLeft * k, R = o.left + (m.actualBoundingBoxRight + ls * 100 * gaps) * k;
       const T = o.bottom - m.actualBoundingBoxAscent * k, B = o.bottom + m.actualBoundingBoxDescent * k, sr = scr.getBoundingClientRect();
       const gap = (sr.width - (R - L)) / 2;   // the room left and right of the letters: the same room under them, at the foot of the photo
-      const more = scr.querySelector(".wm-more"), foot = more ? more.getBoundingClientRect().top - 14 : sr.bottom - gap;   // over the line and buttons
+      const more = scr.querySelector(".wm-more"), tg = more && more.querySelector(".wm-tagline"), lb = tg ? parseFloat(getComputedStyle(tg).marginBottom) || 14 : 14, foot = more ? more.getBoundingClientRect().top - lb : sr.bottom - gap;   // as far over the tagline as a line break   // over the line and buttons
       w.style.transform = `translate(${(sr.left + sr.width / 2 - (L + R) / 2).toFixed(2)}px, ${(foot - B).toFixed(2)}px)`; };
     fit(); addEventListener("resize", fit);
     { const more = scr.querySelector(".wm-more"); if (more && "ResizeObserver" in window) new ResizeObserver(() => fit()).observe(more); }   // the count arrives late
