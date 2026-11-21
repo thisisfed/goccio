@@ -97,6 +97,8 @@ CASES = [
     ("Industra's gift pack (Dárkový balíček) is not one coffee", lambda: scan.EXCLUDE.search("Dárkový balíček FILTR") is not None),
     ("Coffeelab's 'Zestaw ... + brelok' set is not one coffee", lambda: scan.EXCLUDE.search("Zestaw Brewlab Daily + brelok") is not None),
     ("Kafferäven's '2 x Brasilien' is two bags", lambda: scan.EXCLUDE.search("2 x Brasilien") is not None),
+    ("Kaffa's Christmas brewing kits are not coffees", lambda: all(scan.EXCLUDE.search(x) for x in ["Håndbrygg i oliventre – med kontroll på oppskriften", "Fellow håndbrygg til jul", "Premium presskanne og skikkelig god julekaffe.", "Suiren-julepakken", "Enkel julekaffe med Pegasus", "Switch – julekaffe med to bryggemåter", "Fruity Berries Newby"])),
+    ("Kaffa's own coffees still count", lambda: not any(scan.EXCLUDE.search(x) for x in ["Kaffebønner Kenya Kagere", "Kaffebønner Honduras El Guaco", "Kaffebønner Klassisk Julekaffe fra", "Switch Up Charity Coffee"])),
     ("Coffee sacks, a milk frother, a pallet and a chocolate bar are not coffee", lambda: all(scan.EXCLUDE.search(t) for t in
         ["Jute Coffee Sacks", "Alessi Mousseur à lait Pulcina", "Halvpalle med kaffe", "Malmö Chokladfabrik x Gringo – Kaffekross 55% chokladkaka", "SCA Introduction to coffee", "30 ks", "Čaj Yunnan Green Superior", "Brazil Natural - Greens"])),
     ("'Santa's Sack - Christmas Blend', 'jute Blend', 'Alt + Tab' and 'Rhubarb Fizz' are coffees", lambda: not any(scan.EXCLUDE.search(t) for t in
