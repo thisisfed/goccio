@@ -7342,9 +7342,12 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
   $("askIn").addEventListener("input", () => { clearTimeout(askLive); const v = $("askIn").value.trim();
     if (shelfY && v !== $("askIn").dataset.fy) { shelfY = false; fyHold = null; delete $("askIn").dataset.fy; if (!v) { shelfAll = false; renderShelf(); } }   // leaving For you
     if (!v) { askLive = setTimeout(() => { if (!$("askIn").value.trim() && $("shelfQ").value) { $("shelfQ").value = ""; $("shelfQ").dispatchEvent(new Event("input")); } }, 120); return; }   // emptied: the full list comes back a beat later, not mid-keystroke
-    const sh = $("shelves").getBoundingClientRect(), topH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--top-h")) || 49;
-    if (sh.top > innerHeight * 0.6 || sh.bottom < topH + 80) return;   // elsewhere on the page: Enter or the lens, as before
-    askLive = setTimeout(() => { const sq = $("shelfQ"); if (sq.value === v) return; sq.value = v; sq.dispatchEvent(new Event("input")); }, 280); });
+    // results as you type, from anywhere: after a short pause the list filters, and if Coffees isn't on screen the page glides
+    // there once (the box keeps the keyboard; later keys just refine the list)
+    askLive = setTimeout(() => { const sq = $("shelfQ");
+      if (sq.value !== v) { sq.value = v; $("shelfQx").hidden = !v; shelfAll = false; renderShelf(); }
+      const sh = $("shelves").getBoundingClientRect(), topH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--top-h")) || 49;
+      if (sh.top > topH + 8 || sh.bottom < topH + 80) jumpTo($("shelves")); }, 350); });
   $("askForm").addEventListener("submit", (e) => { e.preventDefault(); const t = $("askIn").value.trim(); if (!t) { $("askIn").focus(); return; }
     if (shelfY && t === $("askIn").dataset.fy) { $("askIn").blur(); jumpTo($("shelves")); return; }
     // the list is filtered first, in place (no scroll fixes while it changes); then, with a phone keyboard open, wait for it to
