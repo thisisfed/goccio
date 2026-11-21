@@ -1400,7 +1400,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 .wm-more .wm-live { text-box: trim-end cap alphabetic; }
 .wm-more .wm-lead { text-box: trim-start cap alphabetic; }   /* the tagline and this line a double line break apart, and Goccio as far over the tagline */
 .wm-screen + .hero-row .lede { text-box: trim-start cap alphabetic; }
-.wm-more .wm-ctas { margin: 16px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; max-width: 420px; }
+.wm-more .wm-ctas { margin: 20px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; max-width: 420px; }
 .wm-more .wm-ctas .btn { height: 46px; min-height: 46px; font-size: var(--fs-s); border-radius: 8px; }
 .wm-more .wm-go { background: var(--hl) !important; color: #000 !important; }
 .wm-more .wm-bag { background: #222 !important; color: #fff !important; }
@@ -6252,7 +6252,7 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
       // nothing to learn from yet: the note stays for as long as it takes to read it ON SCREEN (time scrolled away or with the
       // tab hidden doesn't count, so a scroll never cuts it short), then For you switches itself off and the note goes
       if (!n.hidden && !fy) fyRead(n); else fyStop(); }
-    { const n = $("askNote"), t = shelfRo ? "" : askWant ? askLine(askWant) : q ? (LANG === "it" ? `Ricerca: “${$("shelfQ").value.trim()}”.` : `Searching for “${$("shelfQ").value.trim()}”.`) : ""; const f = $("fyNote");   // with For you's line showing, the two read as one paragraph
+    { const n = $("askNote"), t = ""; const f = $("fyNote");   // no grey "Searching for" / "Looking for" line under Coffees: the results speak for themselves   // with For you's line showing, the two read as one paragraph
       if (t && !f.hidden) { f.textContent = f.textContent.trim() + " " + t; n.hidden = true; n.textContent = ""; } else { n.hidden = !t; n.textContent = t; } }
     list = shelfRo ? [...list].sort((a, b) => shelfDate(b).localeCompare(shelfDate(a))) : fy ? list : askRank ? [...list].sort((a, b) => (askRank.get(b) - askRank.get(a))
         || (askWant.dear ? (b._p100 ?? -1) - (a._p100 ?? -1) : askWant.cheap ? (a._p100 ?? 1e9) - (b._p100 ?? 1e9) : 0) || shelfDate(b).localeCompare(shelfDate(a)))
@@ -7281,7 +7281,13 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
     $("askForm").addEventListener("submit", () => { shut(); const t = a.value.trim(); if (!t) return;
       try { localStorage.setItem("v60.askRecent", JSON.stringify([t, ...recent().filter((x) => x.toLowerCase() !== t.toLowerCase())].slice(0, 6))); } catch (e) {} });
     document.addEventListener("pointerdown", (e) => { if (!box.hidden && !e.target.closest(".ask-line")) shut(); }); }
-  $("askIn").addEventListener("input", () => { if (!$("askIn").value && $("shelfQ").value) { $("shelfQ").value = ""; $("shelfQ").dispatchEvent(new Event("input")); } });
+  // with the coffee list on screen, the results follow as you type (a short pause after the last key), no Enter or lens needed
+  let askLive = 0;
+  $("askIn").addEventListener("input", () => { clearTimeout(askLive); const v = $("askIn").value.trim();
+    if (!v) { if ($("shelfQ").value) { $("shelfQ").value = ""; $("shelfQ").dispatchEvent(new Event("input")); } return; }
+    const sh = $("shelves").getBoundingClientRect(), topH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--top-h")) || 49;
+    if (sh.top > innerHeight * 0.6 || sh.bottom < topH + 80) return;   // elsewhere on the page: Enter or the lens, as before
+    askLive = setTimeout(() => { const sq = $("shelfQ"); if (sq.value === v) return; sq.value = v; sq.dispatchEvent(new Event("input")); }, 280); });
   $("askForm").addEventListener("submit", (e) => { e.preventDefault(); const t = $("askIn").value.trim(); if (!t) { $("askIn").focus(); return; }
     $("askIn").blur(); const sq = $("shelfQ"); sq.value = t; sq.dispatchEvent(new Event("input")); askBrewer(t.toLowerCase()); jumpTo($("shelves")); });
   $("shelfQ").addEventListener("change", () => askBrewer($("shelfQ").value.trim().toLowerCase()));
