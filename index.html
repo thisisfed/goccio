@@ -1667,7 +1667,7 @@ body:has(#recipe:not([hidden])):not(:has(#journal:not([hidden]))) .ex-sec{margin
   .ps.dense .ps-pours{font-size:10pt} .ps.dense .ps-pours td{padding:1.4mm 0} .ps.dense .ps-title{font-size:44pt} .ps.dense .ps-nums b{font-size:32pt} .ps.dense .ps-nums > div{padding-bottom:4mm}
   .ps.xdense .ps-pours{font-size:9pt} .ps.xdense .ps-pours td{padding:.9mm 0} .ps.xdense .ps-kick{margin-top:6mm} .ps.xdense .ps-nums{margin-top:7mm}
 }
-#bagBtn[hidden], #buyBtn[hidden], #calBtn[hidden]{display:none!important}
+#bagBtn[hidden], #buyBtn[hidden], #calBtn[hidden], #mUse[hidden]{display:none!important}
 #buyBtn{text-decoration:none}   /* the pill-size rule sets display with !important, so hidden needs its own */
 /* coffee list: Brew, Save and Buy share one fixed width, so Save turning into Saved moves nothing */
 .shelf .item > .r{width:84px;min-width:84px!important;flex:none}
@@ -2392,6 +2392,17 @@ html:not(.bn-off) .dock{display:none!important}
 .chips{overflow-y:hidden}   /* the pills' bigger tap areas reach past the row: the row never scrolls up and down for them */
 /* pill rows never scroll inside themselves: they wrap (the invisible 44 px tap areas reached past the row and made it scrollable) */
 .chips{overflow:visible!important}
+.shelf .item > .r{margin-top:12px!important}
+.shelf .item .c-price, .shelf .item .c-notes{margin-bottom:0!important}
+/* the recipe's header: roastery and coffee side by side, a size down, the brewer under them; the numbers come up */
+.specs .spec.roastery, .specs .spec.pick{grid-column:span 3!important}
+.specs .spec.roastery b, .specs .spec.pick b, .specs .spec.brewer b{font-size:min(30px,7.6vw)!important;line-height:1.08!important}
+.specs .spec.roastery ~ .spec.pick{border-top:0!important}
+/* the late nudge: one button, the other two as quiet words after it */
+#cfNudge .cf-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px}
+#cfNudge .cf-lnk{background:none;border:0;padding:0;font:500 var(--fs-s)/1.3 var(--sans);color:var(--muted);text-decoration:underline;text-underline-offset:2px;text-decoration-color:color-mix(in srgb,currentColor 40%,transparent);cursor:pointer}
+/* Use your own recipe sits with Copy recipe and Share link */
+#mineBar:empty{display:none}
 </style>
 </head>
 <body>
@@ -2527,7 +2538,7 @@ html:not(.bn-off) .dock{display:none!important}
     </div>
     <div class="cf-nudge" id="cfNudge" role="status" hidden>
       <p class="cf-h">It’s after 2 pm. Fine for some, but it may keep you up. Got a decaf?</p>
-      <p class="ro-acts"><button type="button" class="ro-pill" id="cfDecafs">Show decafs</button><button type="button" class="ro-pill" id="cfFine">Brew anyway</button><button type="button" class="ro-pill" id="cfNever">Don’t ask again</button></p>
+      <p class="ro-acts cf-row"><button type="button" class="ro-pill" id="cfDecafs">Show decafs</button><button type="button" class="cf-lnk" id="cfFine">Brew anyway</button><button type="button" class="cf-lnk" id="cfNever">Don’t ask again</button></p>
     </div>
     <div class="rbody" id="rbody">
     <div class="adjusted" id="adjusted" hidden></div>
@@ -5080,10 +5091,14 @@ html:not(.bn-off) .dock{display:none!important}
   function renderMine(r) {
     const bar = $("mineBar"), ed = $("mineEd"), k = mineKey(r);
     $("whyBox").hidden = !!k && (editing || !!r.mine);   // your own numbers: the reasons were for the suggested recipe
-    if (!k) { bar.innerHTML = ""; ed.hidden = true; return; }
+    if (!k) { bar.innerHTML = ""; ed.hidden = true; if ($("mUse")) $("mUse").hidden = true; return; }
     bar.innerHTML = editing ? "" : r.mine
       ? `<span class="mine-tag">Custom numbers</span><button type="button" class="chip" id="mEdit">Edit</button><button type="button" class="chip" id="mReset">Use the suggested recipe</button>`
-      : `<button type="button" class="chip" id="mEdit">Use your own recipe</button>`;
+      : "";
+    { const sh = document.querySelector("#recipe .share"); let ub = $("mUse");   // not customised: the way in sits with Copy recipe and Share link
+      if (!ub && sh) { sh.insertAdjacentHTML("beforeend", `<button class="btn" id="mUse" type="button">Use your own recipe</button>`); ub = $("mUse"); }
+      if (ub) { ub.hidden = editing || !!r.mine; ub.onclick = () => { editing = true; render(); requestAnimationFrame(() => { const top = document.querySelector(".top"), h = top ? top.getBoundingClientRect().height : 0;
+        window.scrollTo({ top: $("mineEd").getBoundingClientRect().top + scrollY - h - 12, behavior: "smooth" }); }); }; } }
     if ($("mEdit")) $("mEdit").onclick = () => { editing = true; render(); requestAnimationFrame(() => { const top = document.querySelector(".top"), h = top ? top.getBoundingClientRect().height : 0;
       window.scrollTo({ top: $("mineEd").getBoundingClientRect().top + scrollY - h - 12, behavior: "smooth" }); }); };
     if ($("mReset")) $("mReset").onclick = () => { delete prefs.mine[k]; savePrefs(); render(); };
@@ -6283,7 +6298,7 @@ html:not(.bn-off) .dock{display:none!important}
   const cardPrice = (r) => { if (!r.url) return ""; const it = LANG === "it", p = r.price ? esc(r.price.replace(/^From\s+/i, "")) : "";
     const g = r.bag_g && r.bag_g >= 50 && r.bag_g <= 1000 ? r.bag_g : null, per = r._p100 != null && r._p100 >= 2 ? `£${r._p100.toFixed(2)} ${it ? "ogni" : "per"} 100 g` : "";
     const shop = p && !/£/.test(p) ? p : "";   // the shop's own price, when it isn't in pounds
-    const rest = p ? [g ? `${g} g` : "", shop, per].filter(Boolean).join(", ") : "";
+    const rest = p && (g || per) ? [g ? `${g} g` : "", shop, per].filter(Boolean).join(", ") : "";   // the shop's price alone only repeats Buy
     return rest ? `<p class="c-price c-per">${rest}</p>` : ""; };
   // Buy is a pill with the price in it, in the card's one row of actions: Brew, Buy, and Save at the end
   const cardBuy = (r) => { if (!r.url) return ""; const it = LANG === "it", own = r.price ? esc(r.price.replace(/^From\s+/i, "")) : "";
