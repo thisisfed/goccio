@@ -2362,16 +2362,6 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
 .shelf .item > .r > .btn{background:var(--ink)!important;color:var(--bg)!important}
 .shelf .item > .r > .btn:hover{background:color-mix(in srgb,var(--ink) 85%,var(--bg))!important}
 #cfNudge{margin:12px 0 0}
-/* a coffee picked from the list: one line, not the box (the box comes back to type, paste or fix a scan) */
-.picked-c{display:inline-flex;align-items:center;gap:6px;justify-self:start;max-width:100%;height:var(--pill-h);padding:0 4px 0 12px;border-radius:var(--r);background:var(--pill);color:var(--ink)}
-.picked-c[hidden], .ask.is-picked .field{display:none}
-.pk-t{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:500 var(--fs-s)/1 var(--sans)}
-.pk-ro{color:var(--ink)}
-.pk-nm{color:var(--ink)}
-.pk-x{flex:none;width:28px;height:28px;border-radius:50%;border:0;background:none;color:var(--muted);display:grid;place-items:center;cursor:pointer;padding:0;position:relative}
-.pk-x::before{content:"";position:absolute;inset:-8px}
-.pk-x svg{width:14px;height:14px}
-.pk-x:hover{color:var(--ink)}
 #cfNudge .cf-h{font:500 var(--fs-s)/1.35 var(--sans);color:var(--hl);margin:0 0 10px}
 #cfNudge[hidden]{display:none}
 #cfNudge .ro-acts{display:flex;flex-wrap:wrap;gap:4px;margin:0}
@@ -2508,7 +2498,6 @@ html:not(.bn-off) .dock{display:none!important}
   <section class="sec" id="coffee" aria-labelledby="askLbl">
     <div class="ask">
       <label for="coffeeIn" id="askLbl">What’s brewing?</label>
-      <div class="picked-c" id="pickedC" hidden><div class="pk-t"><span class="pk-ro" id="pkRo"></span><span class="pk-nm" id="pkNm"></span></div><button type="button" class="pk-x" id="pkX" aria-label="Clear this coffee"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
       <div class="field">
         <textarea id="coffeeIn" rows="2" placeholder="Roaster, coffee, origin, process, notes…"></textarea>
         <button class="btn" id="go" type="button">Build recipe</button>
@@ -4687,20 +4676,12 @@ html:not(.bn-off) .dock{display:none!important}
     espresso: "The modern espresso: 18 g in, about 36 g out in 25–30 s. Stop on weight, fix the time with the grind, and taste: sour means finer or longer, bitter means coarser or shorter.",
     moka: "Hoffmann’s moka pot technique: boiled water in the base, a full level basket, lid open so you can stop it the moment it turns pale.",
   };
-  // a coffee from the list, the journal or your bags, untouched: its name on one line instead of the box
-  function syncPickedC() {
-    const b = state.bag, t = $("coffeeIn"), ask = document.querySelector(".ask"), box = $("pickedC");
-    const on = !!(b && b.roaster && b.name && state.text && t.value.trim() === state.text.trim() && document.activeElement !== t);
-    ask.classList.toggle("is-picked", on); box.hidden = !on;
-    if (on) { $("pkRo").textContent = b.roaster + ", "; $("pkNm").textContent = b.name; }
-  }
   function render() {
     if (typeof syncBagBtn === "function") try { syncBagBtn(); } catch (e) {}
     // Surprise me's question (roast or process, marked in What's brewing) goes once it has an answer
     try { const miss = (engine(state, { noPrefs: true }).c || {}).missing || [];
       ["roast", "process"].forEach((k) => { const row = ($("lab-" + k) || {}).parentNode; if (row && row.classList && !miss.includes(k)) row.classList.remove("ask"); }); } catch (e) {}
     try { markPicked(); } catch (e) {}
-    try { syncPickedC(); } catch (e) {}
     { const so = document.querySelector(".scan-opt"); if (so) so.hidden = !!(state.bag && state.bag.name); }
     const r = recipe = withMine(engine(state));
     if ($("calBtn")) $("calBtn").hidden = !(r && r.brewer === "cold");
@@ -7700,8 +7681,6 @@ html:not(.bn-off) .dock{display:none!important}
   $("coffeeIn").addEventListener("input", () => { $("detected").textContent = ""; clearTimeout(buildT);
     buildT = setTimeout(() => { const n = $("coffeeIn").value.trim().length; if (n >= 3) build(false); else if (!n && state.text) clearCoffee(); }, 900); });   // emptied: back to no coffee picked
   const clearCoffee = () => { surprisePick = null; build(false); };
-  $("pkX").onclick = () => { const t = $("coffeeIn"); t.value = ""; $("detected").textContent = ""; clearCoffee();
-    document.querySelector(".ask").classList.remove("is-picked"); $("pickedC").hidden = true; t.focus(); };
   $("coffeeIn").addEventListener("blur", () => { clearTimeout(buildT);
     if (!$("coffeeIn").value.trim() && state.text) { clearCoffee(); return; }   // left empty: no coffee picked, as when you first came
     if ($("coffeeIn").value.trim().length >= 3 && $("coffeeIn").value.trim() !== (state.text || "").trim()) build(false); });
