@@ -2118,18 +2118,24 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
 .top:has(.ask-line){border-bottom:0!important}
 .ask-line{position:relative;z-index:1;background:var(--bg);border-bottom:1px solid var(--line);display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:16px;
   padding:0 12px 8px;transition:transform .32s cubic-bezier(.2,.7,.2,1)}
-.mark-on .top:has(.sec-list.open) .ask-line{transform:translateY(var(--menu-h,0px))}
-/* until Goccio shows in the bar (the big wordmark still on screen) the line sits in the bar's own row, where Goccio will be */
-body:not(.mark-on) .top{border-bottom:1px solid var(--line)!important}
-body:not(.mark-on) .ask-line{position:absolute;top:0;left:0;right:var(--nav-w,200px);height:var(--row-h,48px);padding:0 0 0 12px;border:0;background:none;transform:none}
+/* it sits in the bar's own row, where Goccio will be, while the big wordmark is on screen; when Goccio shows in the bar it
+   slides up and away (the bar stays one row) */
+.top{border-bottom:1px solid var(--line)!important}
+.ask-line{position:absolute!important;top:0;left:0;right:var(--nav-w,200px);height:var(--row-h,48px);padding:0 0 0 12px!important;border:0!important;background:none!important;
+  transition:opacity .25s ease, transform .25s ease, visibility 0s linear 0s}
+.mark-on .ask-line{opacity:0;transform:translateY(-10px)!important;visibility:hidden;pointer-events:none;transition:opacity .25s ease, transform .25s ease, visibility 0s linear .25s}
 .top:has(.sec-list.instant) .ask-line{transition:none}
 .ask-line .ask-q{font-size:var(--fs-s);font-weight:600;color:var(--ink);white-space:nowrap}
-.ask-line .ask-box{position:relative;min-width:0}
+.ask-line .ask-box{position:relative;min-width:0;display:flex;gap:4px;align-items:center}
 .ask-line #askIn{width:100%;box-sizing:border-box;height:var(--pill-h);border:0;border-radius:var(--r);background:var(--pill);color:var(--ink);
-  font:500 var(--fs-s)/1 var(--sans);padding:0 40px 0 10px;outline:none;box-shadow:none;-webkit-appearance:none;appearance:none;caret-color:var(--hl)}
-.ask-line #askIn::placeholder{color:color-mix(in srgb,var(--ink) 45%,transparent)}
+  font:500 var(--fs-s)/1 var(--sans);padding:0 10px;outline:none;box-shadow:none;-webkit-appearance:none;appearance:none;caret-color:var(--hl)}
+.ask-line #askIn::placeholder{color:color-mix(in srgb,var(--ink) 45%,transparent);opacity:1;transition:opacity .25s ease}
+/* tapped: the hint fades away, and the accent ring the Coffees search has */
+.ask-line #askIn:focus::placeholder{opacity:0}
+.ask-line #askIn:focus{outline:2px solid var(--hl)!important;outline-offset:2px}
 .ask-line #askIn::-webkit-search-cancel-button,.ask-line #askIn::-webkit-search-decoration{-webkit-appearance:none;display:none}
-.ask-line .ask-go{position:absolute;top:4px;right:4px;height:calc(var(--pill-h) - 8px);width:calc(var(--pill-h) - 8px);border:0;border-radius:50%;background:var(--ink);color:var(--card);
+.ask-line #askIn{flex:1 1 auto;min-width:0;width:auto}
+.ask-line .ask-go{position:static;flex:none;height:var(--pill-h);width:var(--pill-h);border:0;border-radius:50%;background:var(--ink);color:var(--card);
   display:flex;align-items:center;justify-content:center;font-size:var(--fs-s);cursor:pointer;padding:0}
 /* the menu slides out under the bar's row, over the question line */
 .top .sec-list{top:var(--row-h,48px)!important;z-index:2}
@@ -6914,7 +6920,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   // the cross clears what you typed and leaves the cursor in the box
   // the hint in the ask box: the question (on a phone, where there's no room for it beside the box), then examples in quick succession
   { const a = $("askIn"), EX = ["Fruity, under £15", "Floral Ethiopian", "Decaf for my V60", "Something chocolatey", "New naturals", "A special treat", "Light and juicy", "Strong, for espresso", "Cheap washed Colombia", "Jasmine and peach", "Nutty for my AeroPress", "Berries, light roast"];
-    let i = -1; const tick = () => { if (!a.value) { const phone = matchMedia("(max-width:760px)").matches, q = document.body.classList.contains("mark-on") ? "How do you want your coffee today?" : "Your coffee today?";
+    let i = -1; const tick = () => { if (!a.value && document.activeElement !== a) { const phone = matchMedia("(max-width:760px)").matches, q = document.body.classList.contains("mark-on") ? "How do you want your coffee today?" : "Your coffee today?";
         i = (i + 1) % (EX.length + 1); a.placeholder = i === EX.length ? (phone ? q : EX[0]) : EX[i]; }
       setTimeout(tick, i === EX.length ? 2600 : 1600); };
     a.placeholder = matchMedia("(max-width:760px)").matches ? "Your coffee today?" : EX[0]; setTimeout(tick, 2600); }
