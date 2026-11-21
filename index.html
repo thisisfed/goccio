@@ -2384,6 +2384,7 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
 :is(.chip:not(.gear-dd), .shelf .item > .r > *, .share .btn, .share a.btn, #bagBtn, .botnav .chip, #toolsBtn, #langBtn, #themeBtn, .ro-pill, .sec-p, .hero-pill, .step button)::before{
   content:"";position:absolute;left:0;right:0;top:50%;height:max(100%,44px);transform:translateY(-50%);background:none;pointer-events:auto}
 #askNote:not([hidden]){transform:translateY(10px)}   /* Searching for …: as far under Coffees as over the first coffee (moved, not reflowed: the list's sticky bar stays as it is) */
+#askNote .an-lens{width:13px;height:13px;vertical-align:-1px;margin-right:6px}
 </style>
 </head>
 <body>
@@ -5876,7 +5877,7 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
   const fzLev = (a, b) => { if (Math.abs(a.length - b.length) > 2) return 9; let p = Array.from({ length: b.length + 1 }, (_, j) => j);
     for (let i = 1; i <= a.length; i++) { const c = [i]; for (let j = 1; j <= b.length; j++) c[j] = Math.min(p[j] + 1, c[j - 1] + 1, p[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); p = c; } return p[b.length]; };
   const fzWords = (t) => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/['’]s\b/g, "").split(/[^a-z0-9]+/).filter((w) => w && !FZ_STOP.test(w));
-  const fzWord = (t, hw) => hw.some((h) => h === t || (t.length >= 3 && h.startsWith(t)) || (h.length >= 4 && t.startsWith(h) && t.length - h.length <= 2)
+  const fzWord = (t, hw) => hw.some((h) => h === t || (t.length >= 4 && h.startsWith(t)) || (h.length >= 4 && t.startsWith(h) && t.length - h.length <= 2)
     || (t.length >= 6 && h.length >= 5 && fzLev(t, h) <= (t.length >= 8 ? 2 : 1)));
   const fzHas = (hay, t) => { const ws = fzWords(t); return ws.length > 0 && ws.every((w) => fzWord(w, fzWords(hay))); };
   const searchFit = (q) => {
@@ -5884,12 +5885,15 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
     // no commas: each word on its own too (ethiopia floral), so long as the whole text isn't a family (frutti di bosco)
     if (parts.length === 1 && /\s/.test(parts[0]) && !tasteWords(parts[0])) parts = parts[0].split(/\s+/).filter((w) => !/^(with|con|di|of|the|a)$/.test(w));
     const tests = parts.map((t) => { const fam = tasteWords(t), stem = t.length > 4 ? t.replace(/(ies|y|s)$/, "") : t, nw = noteWord(stem);
-      return (hay, notes) => hay.includes(t) || (fam ? fam.some((w) => notes.includes(w)) : nw.test(notes)) || FZ_STOP.test(t) || fzHas(hay, t); });
-    const nq = noteWord(q);
+      const hw = wordAt(t);
+      return (hay, notes) => hw.test(hay) || (fam ? fam.some((w) => notes.includes(w)) : nw.test(notes)) || FZ_STOP.test(t) || fzHas(hay, t); });
+    const nq = noteWord(q), hq = wordAt(q);
     return (r) => { const notes = tasteText(r), hay = [r.roaster, r.roaster_city, r.name, r.origin, r.region, r.process, r.variety].join(" ").toLowerCase();
-      return hay.includes(q) || nq.test(notes) || tests.every((ok) => ok(hay, notes)) || fzHas([r.roaster, r.name].join(" "), q); }; };
+      return hq.test(hay) || nq.test(notes) || tests.every((ok) => ok(hay, notes)) || fzHas([r.roaster, r.name].join(" "), q); }; };
   // a word typed against the tasting notes: from the start of a word, and a short one (3 letters or fewer) only as a whole
   // word, so "van" doesn't find vanilla, while "vanil" (on the way to vanilla) does
+  // a word typed against roaster, name, origin…: from the start of a word ("ken" finds Kenya, "van" no longer finds AdVANced)
+  const wordAt = (t) => new RegExp(`(?<![\\p{L}\\d])${t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}${t.trim().length >= 4 ? "" : "(?![\\p{L}\\d])"}`, "iu");   // 3 letters or fewer: the whole word only
   const noteWord = (t) => new RegExp(`(?<![a-z])${t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}${t.length >= 4 ? "" : "(?![a-z])"}`, "i");
   const EXTRAS = [["foryou", "For you"], ["light", "Light roast"], ["filter", "For filter"], ["value", "Good value"], ["top", "Top lots"], ["decaf", "Decaf"]];
   const extraOn = (v) => v === "foryou" ? shelfY : v === "light" ? shelfO === "light" : v === "top" ? shelfT : v === "value" ? shelfGV : v === "filter" ? shelfFi : shelfD;
@@ -6296,8 +6300,8 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
       // nothing to learn from yet: the note stays for as long as it takes to read it ON SCREEN (time scrolled away or with the
       // tab hidden doesn't count, so a scroll never cuts it short), then For you switches itself off and the note goes
       if (!n.hidden && !fy) fyRead(n); else fyStop(); }
-    { const n = $("askNote"), t = shelfRo ? "" : askWant ? askLine(askWant) : q ? (LANG === "it" ? `Ricerca: “${$("shelfQ").value.trim()}”.` : `Searching for “${$("shelfQ").value.trim()}”.`) : ""; const f = $("fyNote");   // what the list is showing, in grey under Coffees (and read out to screen readers)   // with For you's line showing, the two read as one paragraph
-      if (t && !f.hidden) { f.textContent = f.textContent.trim() + " " + t; n.hidden = true; n.textContent = ""; } else { n.hidden = !t; n.textContent = t; } }
+    { const n = $("askNote"), t = shelfRo ? "" : askWant ? askLine(askWant) : q ? (LANG === "it" ? `Ricerca: “${$("shelfQ").value.trim()}”` : `Searching for “${$("shelfQ").value.trim()}”`) : ""; const f = $("fyNote");   // what the list is showing, in grey under Coffees (and read out to screen readers)   // with For you's line showing, the two read as one paragraph
+      if (t && !f.hidden) { f.textContent = f.textContent.trim() + " " + t; n.hidden = true; n.textContent = ""; } else { n.hidden = !t; n.innerHTML = t ? `<svg class="an-lens" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10.4 10.4l3.6 3.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>${esc(t)}` : ""; } }   // the search's lens in front, as in the box
     list = shelfRo ? [...list].sort((a, b) => shelfDate(b).localeCompare(shelfDate(a))) : fy ? list : askRank ? [...list].sort((a, b) => (askRank.get(b) - askRank.get(a))
         || (askWant.dear ? (b._p100 ?? -1) - (a._p100 ?? -1) : askWant.cheap ? (a._p100 ?? 1e9) - (b._p100 ?? 1e9) : 0) || shelfDate(b).localeCompare(shelfDate(a)))
       : shelfT ? [...list].sort((a, b) => (b._p100 ?? -1) - (a._p100 ?? -1)) : shelfGV ? [...list].sort((a, b) => a._p100 - b._p100) : interleave(list);   // good value: cheapest first   // top lots: dearest first
