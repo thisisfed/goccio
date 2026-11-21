@@ -2119,6 +2119,9 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
 .shelf-tools.compact .opt.xrow:not(.xall) .chips button[aria-pressed="false"]{display:none}
 .shelf-tools.compact .opt.xrow.xall .x-more{display:none!important}
 .shelf-tools:not(.compact) .x-more{display:none!important}
+/* the search at the top reads region, process and extras from words now: the three filter rows stay out of sight */
+.shelf-tools .opt[hidden]{display:none!important}
+.shelf-tools{position:static!important}   /* nothing left to keep in view while scrolling: the notes scroll with the list */
 /* How do you want your coffee today? part of the top bar, under its row: the question, then a pill to type in that runs to the
    right edge, and the bar's line under it. On a phone the Menu slides down between the two and pushes it down with it */
 .ask-line{position:relative;z-index:1;background:var(--bg);border-bottom:1px solid var(--line);display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:16px;
@@ -2283,9 +2286,9 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     <p class="shelf-meta" id="shelfMeta" hidden></p>
     <div class="shelf-tools">
       <div class="opt q-row" hidden><label for="shelfQ">Search</label><div class="q-wrap"><input type="search" id="shelfQ" placeholder="Roaster, origin, flavour…"><button type="button" class="q-x" id="shelfQx" aria-label="Clear the search" hidden></button></div></div>
-      <div class="opt"><span id="labR">Region</span><div class="chips" id="shelfR" role="group" aria-labelledby="labR"></div><select class="shelf-sel" id="shelfRSel" aria-label="Region"></select></div>
-      <div class="opt"><span id="labF">Process</span><div class="chips" id="shelfF" role="group" aria-labelledby="labF"></div><select class="shelf-sel" id="shelfFSel" aria-label="Process"></select></div>
-      <div class="opt"><span id="labX">Extras</span><div class="chips" id="shelfX" role="group" aria-labelledby="labX"></div><select class="shelf-sel" id="shelfXSel" aria-label="Extras"></select></div>
+      <div class="opt f-row" hidden><span id="labR">Region</span><div class="chips" id="shelfR" role="group" aria-labelledby="labR"></div><select class="shelf-sel" id="shelfRSel" aria-label="Region"></select></div>
+      <div class="opt f-row" hidden><span id="labF">Process</span><div class="chips" id="shelfF" role="group" aria-labelledby="labF"></div><select class="shelf-sel" id="shelfFSel" aria-label="Process"></select></div>
+      <div class="opt f-row" hidden><span id="labX">Extras</span><div class="chips" id="shelfX" role="group" aria-labelledby="labX"></div><select class="shelf-sel" id="shelfXSel" aria-label="Extras"></select></div>
       <p class="fy-note" id="fyNote" role="status" hidden></p>
       <p class="fy-note" id="askNote" role="status" hidden></p>
       <div class="curfew" id="curfew" role="status" hidden>
@@ -5652,7 +5655,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   // Extras: pills you can tick together. For you, Light roast, For filter, Good value, Top lots, Decaf. On a phone they fold into one dropdown like the other rows
   // Good value: the cheapest fifth (above). For filter: leaves out what the roaster sells as an espresso roast
   let shelfD = false, shelfY = false, shelfGV = false, shelfFi = false;
-  const FY_KEY = "v60.foryou"; try { shelfY = localStorage.getItem(FY_KEY) === "1"; } catch (e) {}   // For you stays ticked until you untick it, visit after visit
+  const FY_KEY = "v60.foryou";   // For you has no switch while the filter rows are hidden: off, whatever an earlier visit left   // For you stays ticked until you untick it, visit after visit
   const fySave = () => { try { localStorage.setItem(FY_KEY, shelfY ? "1" : ""); } catch (e) {} };
   // the search reads tasting notes too: a word for a family (fruity, floral, chocolatey…) finds every note in it
   const TASTE_FAM = [
