@@ -2173,8 +2173,12 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
   display:flex;align-items:center;justify-content:center;padding:0 8px;box-shadow:none;white-space:nowrap;cursor:pointer}
 .botnav .chip[hidden]{display:none}
 .botnav .chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);font-weight:500;box-shadow:none}
-body{padding-bottom:calc(var(--pill-h) + 17px + env(safe-area-inset-bottom))}
-.dock{bottom:calc(var(--pill-h) + 17px + env(safe-area-inset-bottom)) !important;padding-bottom:10px !important}
+:root{--bot-h:calc(var(--pill-h) + 17px + env(safe-area-inset-bottom))}
+body{padding-bottom:var(--bot-h)}
+.dock{bottom:var(--bot-h) !important;padding-bottom:10px !important}
+html{scroll-padding-bottom:var(--bot-h)}
+/* the first screen fits between the two bars: the buttons never sit under the bottom one */
+.wm-screen{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h)) !important}
 .ask-line .ask-box.nudge #askIn{animation:askNudge .9s ease-in-out 2}
 @keyframes askNudge{0%,100%{box-shadow:0 0 0 0 transparent}45%{box-shadow:0 0 0 2px var(--hl)}}
 @media (prefers-reduced-motion: reduce){ .ask-line .ask-box.nudge #askIn{animation:none;box-shadow:0 0 0 2px var(--hl)} }
@@ -2566,7 +2570,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   <div class="cam-top"><p class="cam-status" id="camStatus"></p><div class="cam-found" id="camFound"></div></div>
   <div class="cam-ctrls"><button type="button" class="chip" id="camClose">Cancel</button><button type="button" class="chip" id="camPhoto">Take a photo instead</button><button type="button" class="chip on" id="camDone">Use what it read</button></div>
 </div>
-<nav class="botnav" aria-label="Sections"><button type="button" class="chip" data-bn="shelves">Coffees</button><button type="button" class="chip" data-bn="bags">My bags</button><button type="button" class="chip" data-bn="coffee">Brew</button><button type="button" class="chip" data-bn="journal">Journal</button></nav>
+<nav class="botnav" aria-label="Sections"><button type="button" class="chip" data-bn="shelves">Coffees</button><button type="button" class="chip" data-bn="bags" hidden>My bags</button><button type="button" class="chip" data-bn="coffee">Brew</button><button type="button" class="chip" data-bn="journal" hidden>Journal</button></nav>
 <div class="dock" id="dock"><button class="btn" id="dockGo" type="button"><span>Start brewing</span><span class="num" id="dockSum"></span></button></div>
 
 <!-- Brew mode -->
@@ -5213,7 +5217,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   function journalOn() { const untimed = !$("recipe").hidden && $("startBrew").hidden;   // moka and cold brew have no timer to start
     const on = journal.length > 0 || brewDone || untimed;
     $("journal").hidden = !on; document.querySelectorAll('[data-sec="journal"]').forEach((b) => b.hidden = !on); if (window.syncSecs) syncSecs(); }
-  function renderJournal() {
+  function renderJournal() { setTimeout(() => window.syncSecs && syncSecs(), 0);
     try { renderShelfO(); } catch (e) {}   // a logged brew teaches For you too
     journalOn();
     const box = $("journalList");
@@ -6290,7 +6294,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   const bagNeedsRoast = (b) => !!(b.roaster || b.name) && !bagRoastKey(b);   // once picked (or stated), the dropdown goes: the roast shows under the coffee
   const bagRoastKey = (b) => b.roast && ROAST[b.roast] ? b.roast : b.roast_level === "dark" ? "dark" : b.roast_level === "medium-dark" ? "mdark" : "";
   function renderBags() {
-    $("bags").hidden = !bags.length;
+    $("bags").hidden = !bags.length; setTimeout(() => window.syncSecs && syncSecs(), 0);
     try { renderShelfO(); } catch (e) {}   // For you appears once it knows three of your coffees
     if (typeof renderGear === "function" && $("gearNote")) try { renderGear(); } catch (e) {}
     $("bagList").innerHTML = bags.map((b, i) => {
@@ -7509,8 +7513,10 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       let a = ""; for (const id of ids) { const el = $(id); if (!avail(id)) continue; if (el.getBoundingClientRect().top <= line) a = id; }
       active = a;
       document.querySelectorAll("[data-sec]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.sec === a)));
-      // the bottom bar: Brew lights for What's brewing and the recipe both
-      document.querySelectorAll(".botnav [data-bn]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.bn === a || (b.dataset.bn === "coffee" && (a === "recipe" || a === "gear")))));
+      // the bottom bar: My bags and Journal only once there's something in them; Brew lights for What's brewing and the recipe both
+      document.querySelectorAll(".botnav [data-bn]").forEach((b) => { b.setAttribute("aria-pressed", String(b.dataset.bn === a || (b.dataset.bn === "coffee" && (a === "recipe" || a === "gear"))));
+        if (b.dataset.bn === "bags") b.hidden = !(typeof bags !== "undefined" && bags.length);
+        if (b.dataset.bn === "journal") b.hidden = !(typeof journal !== "undefined" && journal.length); });
       if (a !== active0) { active0 = a; const on = row && row.querySelector(`[data-sec="${a}"]`);
         if (on && row.scrollWidth > row.clientWidth + 1) { const l = on.offsetLeft - row.offsetLeft, r = l + on.offsetWidth;   // the pill in view slides into the row
           if (l < row.scrollLeft + 24 || r > row.scrollLeft + row.clientWidth - 24) row.scrollTo({ left: Math.max(0, l - 24), behavior: "smooth" }); } }
