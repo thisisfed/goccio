@@ -42,6 +42,7 @@ def load_roasters():
         seen.add(key); out.append(r)
     return out
 OUT = ROOT / "data" / "releases.json"
+REPORT_FILE = ROOT / "data" / "scan_report.json"   # what the last scan couldn't finish (limits hit), for the morning check and the run page
 SEEN = ROOT / "data" / "seen.json"   # when each coffee page was first seen, including ones the list leaves out as duplicates
 UA = "Goccio/1.0 (+https://www.goccio.co.uk; once-a-day coffee list, follows robots.txt)"
 NEW_DAYS = 21
@@ -1880,6 +1881,16 @@ PAGE_LABEL = {
     "process": re.compile(r"\b(?:process(?:ing)?(?: method)?|processo|proceso|prozess|aufbereitung|proc[ée]d[ée]|bearbetning|prosess|proces|zpracov[aá]n[ií]|obr[oó]bka|verwerking(?: na oogst)?|verwerkingsmethode)\s*(?::|\n)", re.I),
     "variety": re.compile(r"\b(?:variet(?:y|ies|al|als)|cultivars?|variedad(?:es)?|variet[àa]|sorte[n]?|vari[ée]t[ée]s?|vari[eë]teit(?:\(?en\)?)?|odmian[ay]?)\s*(?::|\n)", re.I),
 }
+# what each run had to leave for another day, by shop: pages not read (the time budget or the shop's daily cap), roasters not reached
+REPORT = {"page_time": {}, "page_cap": {}, "price_time": {}, "price_cap": {}, "not_reached": []}
+REPORT_LOCK = threading.Lock()
+
+
+def report_skip(kind, shop):
+    with REPORT_LOCK:
+        REPORT[kind][shop] = REPORT[kind].get(shop, 0) + 1
+
+
 PAGE_FETCHES_PER_ROASTER = 60   # product pages read per shop per day, on top of its product list (the rest wait for tomorrow)
 # product pages are read only for the first 100 minutes of a run, so a day with a lot to re-read (new rules) still ends
 # well inside the workflow's 150-minute limit and saves what it found; the rest is read the next day
@@ -2057,6 +2068,9 @@ def add_page_prices(recs, roaster, old):
             rec["price"], rec["price_from"] = prev["price"], "page"
             continue
         if fetched >= PRICE_FETCHES_PER_ROASTER or time.monotonic() - SCAN_T0 > PAGE_MINUTES * 60:
+            left = sum(1 for x in recs[recs.index(rec):] if not x.get("price"))
+            for _ in range(left):
+                report_skip("price_cap" if fetched >= PRICE_FETCHES_PER_ROASTER else "price_time", roaster["name"])
             break
         fetched += 1
         try:
@@ -2115,7 +2129,10 @@ def brew_methods(raw, text=""):
 def add_page_details(recs, roaster, old):
     """Fill missing process / variety from the product page (or last week's answer for the same URL)."""
     fetched, filled, errs = 0, 0, []
-    for rec in recs:
+    today = datetime.now(timezone.utc).date().isoformat()
+    # pages left unread on an earlier day go first, oldest wait first, so no coffee stays at the back of the queue
+    order = sorted(recs, key=lambda r_: old.get(r_["url"], {}).get("page_wait") or "9999")
+    for rec in order:
         prev = old.get(rec["url"], {})
         if prev.get("methods") and not rec.get("roast_for"):
             rec["methods"] = prev["methods"]
@@ -2148,7 +2165,11 @@ def add_page_details(recs, roaster, old):
             if ok and prev.get(k + "_from") == "page":
                 rec[k], rec[k + "_from"] = prev[k].strip(" \xa0"), "page"
         need = [k for k in need if not rec.get(k) or (k == "notes" and short_old)]
-        if (not need and not want_methods and not want_roast) or fetched >= PAGE_FETCHES_PER_ROASTER or time.monotonic() - SCAN_T0 > PAGE_MINUTES * 60:
+        if not need and not want_methods and not want_roast:
+            continue
+        if fetched >= PAGE_FETCHES_PER_ROASTER or time.monotonic() - SCAN_T0 > PAGE_MINUTES * 60:
+            report_skip("page_cap" if fetched >= PAGE_FETCHES_PER_ROASTER else "page_time", roaster["name"])
+            rec["page_wait"] = prev.get("page_wait") or today   # waiting since: read first next time
             continue
         fetched += 1
         try:
@@ -2391,6 +2412,46 @@ def inspect(urls):
             seen.add(snip); hits += 1; print("  text:", snip)
 
 
+def write_report(today, only, found, ok, total):
+    """What this run left for another day, in data/scan_report.json and on the run's page (GitHub step summary)."""
+    mins = round((time.monotonic() - SCAN_T0) / 60)
+    pages = {}
+    for k in ("page_time", "page_cap"):
+        for shop, n in REPORT[k].items():
+            pages[shop] = pages.get(shop, 0) + n
+    waiting = sorted(pages.items(), key=lambda kv: -kv[1])
+    rep_ = {"date": today, "scope": "full" if not only else "only: " + ", ".join(sorted(only)), "minutes": mins,
+            "limits": {"page_time_hit": bool(REPORT["page_time"]), "shop_cap_hit": bool(REPORT["page_cap"]),
+                       "run_time_hit": bool(REPORT["not_reached"]), "page_minutes": PAGE_MINUTES, "stop_minutes": STOP_MINUTES,
+                       "pages_per_shop": PAGE_FETCHES_PER_ROASTER},
+            "pages_waiting": sum(pages.values()), "pages_waiting_by_shop": dict(waiting),
+            "prices_waiting": sum(REPORT["price_time"].values()) + sum(REPORT["price_cap"].values()),
+            "roasters_not_reached": sorted(REPORT["not_reached"]), "roasters_ok": ok, "roasters": total,
+            "coffees": len(found), "with_notes": sum(1 for x in found if x.get("notes"))}
+    if only and REPORT_FILE.exists():   # a rescan of a few shops: keep the full scan's report, add this one under it
+        try:
+            full = json.loads(REPORT_FILE.read_text())
+            full["last_rescan"] = rep_
+            rep_ = full
+        except Exception:  # noqa: BLE001
+            pass
+    REPORT_FILE.write_text(json.dumps(rep_, ensure_ascii=False, indent=1) + "\n")
+    r0 = rep_.get("last_rescan") if only else rep_
+    hit = [w for w, k in (("page time (" + str(PAGE_MINUTES) + " min)", "page_time_hit"), ("pages per shop (" + str(PAGE_FETCHES_PER_ROASTER) + ")", "shop_cap_hit"),
+                          ("run time (" + str(STOP_MINUTES) + " min)", "run_time_hit")) if r0["limits"][k]]
+    lines = [f"## Scan {today} ({r0['scope']}), {r0['minutes']} min",
+             f"**Limits hit:** {', '.join(hit) if hit else 'none, everything was read'}",
+             f"**Pages left for tomorrow:** {r0['pages_waiting']}" + (" (" + ", ".join(f"{k} {v}" for k, v in list(r0['pages_waiting_by_shop'].items())[:12]) + ")" if r0['pages_waiting'] else ""),
+             f"**Prices left for tomorrow:** {r0['prices_waiting']}",
+             f"**Roasters not reached** (kept yesterday's coffees): {', '.join(r0['roasters_not_reached']) or 'none'}",
+             f"**Coffees:** {r0['coffees']}, {r0['with_notes']} with tasting notes"]
+    print("\n" + "\n".join(lines))
+    import os
+    if os.environ.get("GITHUB_STEP_SUMMARY"):
+        with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+            f.write("\n".join(lines) + "\n")
+
+
 def main():
     today = datetime.now(timezone.utc).date().isoformat()
     args = sys.argv[1:]
@@ -2453,11 +2514,20 @@ def main():
             found = [x for x in prev.get("releases", []) if x["roaster"].lower() not in only]
         except Exception:  # noqa: BLE001
             pass
+    # shops with the most pages left waiting last time start first, so the time budget doesn't fall on them again
+    try:
+        last = json.loads(REPORT_FILE.read_text()) if REPORT_FILE.exists() else {}
+        waiting = {k: v for k, v in (last.get("pages_waiting_by_shop") or {}).items()}
+        roasters.sort(key=lambda r_: -waiting.get(r_["name"], 0))
+    except Exception:  # noqa: BLE001
+        pass
     scanned_ok = set()
     def run(r):
         """Fetch and classify one roaster (runs in a thread pool: page look-ups made one-by-one were too slow)."""
         r["_old"] = old
         if time.monotonic() - SCAN_T0 > STOP_MINUTES * 60:
+            with REPORT_LOCK:
+                REPORT["not_reached"].append(r["name"])
             return None, "out of time today: yesterday's coffees kept", []
         kind, items, err = scan_roaster(r)
         recs = []
@@ -2573,6 +2643,7 @@ def main():
     OUT.write_text(json.dumps({"updated": today, "new_window_days": NEW_DAYS, "roasters": status,
                                "releases": found}, ensure_ascii=False, indent=1) + "\n")
     print(f"\n{len(found)} coffees from {len(scanned_ok)}/{len(roasters)} roasters -> {OUT.relative_to(ROOT)}")
+    write_report(today, only, found, len(scanned_ok), len(roasters))
     miss = {}
     for x in found:
         miss.setdefault(x["roaster"], [0, 0])[0 if x.get("price") else 1] += 1
