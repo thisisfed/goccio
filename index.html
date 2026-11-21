@@ -1859,7 +1859,8 @@ footer .fcol > p + .foot-x{margin-top:14px}
 .item .who .ji.fy{color:var(--hl)!important}                                                        /* For you: the accent */
 .beta, :root[data-theme="dark"] .beta{color:var(--hl)!important}                         /* Beta tags, the accent */
 .litext .outro-end.on{color:var(--hl)!important}                                         /* Brew something good. */
-:focus-visible{outline-color:var(--hl)!important}
+/* no accent ring on focus: a field you type in shows its cursor, nothing round it; keys still get the plain ring on buttons */
+input:focus, input:focus-visible, textarea:focus, textarea:focus-visible, select:focus, select:focus-visible{outline:none!important}
 /* grinder: a pill like the old dropdown; a tap unfolds every grinder as pills in its place */
 #millSel{display:none!important}
 #millBtn{display:block;text-align:left;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:0;color:var(--ink)}
@@ -2126,13 +2127,13 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
 .mark-on .ask-line{opacity:0;transform:translateY(-10px)!important;visibility:hidden;pointer-events:none;transition:opacity .25s ease, transform .25s ease, visibility 0s linear .25s}
 .top:has(.sec-list.instant) .ask-line{transition:none}
 .ask-line .ask-q{font-size:var(--fs-s);font-weight:600;color:var(--ink);white-space:nowrap}
-.ask-line .ask-box{position:relative;min-width:0;display:flex;gap:4px;align-items:center}
+.ask-line .ask-box{position:relative;min-width:0;display:flex;gap:var(--nav-gap,4px);align-items:center}
 .ask-line #askIn{width:100%;box-sizing:border-box;height:var(--pill-h);border:0;border-radius:var(--r);background:var(--pill);color:var(--ink);
   font:500 var(--fs-s)/1 var(--sans);padding:0 10px;outline:none;box-shadow:none;-webkit-appearance:none;appearance:none;caret-color:var(--hl)}
 .ask-line #askIn::placeholder{color:color-mix(in srgb,var(--ink) 45%,transparent);opacity:1;transition:opacity .25s ease}
 /* tapped: the hint fades away, and the accent ring the Coffees search has */
 .ask-line #askIn:focus::placeholder{opacity:0}
-.ask-line #askIn:focus{outline:2px solid var(--hl)!important;outline-offset:2px}
+
 .ask-line #askIn::-webkit-search-cancel-button,.ask-line #askIn::-webkit-search-decoration{-webkit-appearance:none;display:none}
 .ask-line #askIn{flex:1 1 auto;min-width:0;width:auto}
 .ask-line .ask-go{position:static;flex:none;height:var(--pill-h);width:var(--pill-h);border:0;border-radius:50%;background:var(--ink);color:var(--card);
@@ -5833,13 +5834,22 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   // ---------- How do you want your coffee today? A sentence read for what it asks: tastes, process, roast, origin, price, decaf,
   // new, a treat or a bargain, and a brewer. Nothing is sent anywhere: it's word matching in the page. The coffees are ranked,
   // best match first, not cut down to an exact match, so a loose ask never ends on an empty list. Decaf and a price cap are firm
-  const ASK_INTENT = /\b(something|anything|want|like|looking|fancy|i'?d|for my|for an?|under|below|less than|max|cheap|cheaper|budget|value|affordable|treat|special|rare|fancy|splurge|light|lighter|bright|dark|darker|strong|stronger|bold|intense|medium|decaf|decaffeinated|caffeine|evening|night|new|fresh|just in|today|qualcosa|vorrei|voglio|per la mia|per il mio|sotto|meno di|economico|chiaro|leggero|scuro|forte|deca|decaffeinato|nuovo)\b/i;
+  const ASK_INTENT = /\b(from|roasted|roasters?|roastery|based in|dal|dalla|dall'|torrefatto|torrefazione|something|anything|want|like|looking|fancy|i'?d|for my|for an?|under|below|less than|max|cheap|cheaper|budget|value|affordable|treat|special|rare|fancy|splurge|light|lighter|bright|dark|darker|strong|stronger|bold|intense|medium|decaf|decaffeinated|caffeine|evening|night|new|fresh|just in|today|qualcosa|vorrei|voglio|per la mia|per il mio|sotto|meno di|economico|chiaro|leggero|scuro|forte|deca|decaffeinato|nuovo)\b/i;
   const ASK_BREWER = [[/\bv60 ?neo\b|\bneo\b/, "neo"], [/\bv-?60\b|hario/, "v60"], [/kalita|wave\b/, "kalita"], [/\bapril\b/, "april"], [/\borea\b/, "orea"], [/melitta/, "melitta"],
     [/chemex/, "chemex"], [/origami/, "origami"], [/aero ?press/, "aero"], [/french ?press|cafeti[eè]re|plunger|pressa francese/, "press"], [/cold ?brew/, "cold"],
     [/\bmoka\b|stovetop|bialetti/, "mocca"], [/clever/, "clever"], [/switch/, "switch"], [/espresso machine|\bespresso\b/, "espresso"], [/cupping/, "cupping"]];
   const askBrewerKey = (k) => { if (BREWERS[k]) return k; const hit = Object.keys(BREWERS).find((x) => x.startsWith(k.slice(0, 4))); return hit || null; };
+  // where it's roasted: "from the UK", "roasted in Amsterdam", "Dutch roasters", "from Europe". A country that grows coffee
+  // (from Kenya) is the origin, unless it's said as roasted in or as roasters. Firm, like decaf: only coffees roasted there
+  const ASK_PLACES = [[/(?:^| )(?:uk|u\.k\.|united kingdom|great britain|britain|british|england|english|scotland|scottish|wales|welsh|regno unito|inghilterra|inglese|britannico|scozia)(?= |$)/, { cc: "GB".split(" ") }, "the UK"],[/(?:^| )(?:ireland|irish|irlanda|irlandese)(?= |$)/, { cc: "IE".split(" ") }, "Ireland"],[/(?:^| )(?:usa|the us|the states|united states|america|american|stati uniti|americano)(?= |$)/, { cc: "US".split(" ") }, "the US"],[/(?:^| )(?:canada|canadian|canadese)(?= |$)/, { cc: "CA".split(" ") }, "Canada"],[/(?:^| )(?:germany|german|germania|tedesco)(?= |$)/, { cc: "DE".split(" ") }, "Germany"],[/(?:^| )(?:france|french|francia|francese)(?= |$)/, { cc: "FR".split(" ") }, "France"],[/(?:^| )(?:spain|spanish|spagna|spagnolo)(?= |$)/, { cc: "ES".split(" ") }, "Spain"],[/(?:^| )(?:netherlands|the netherlands|holland|dutch|olanda|paesi bassi|olandese)(?= |$)/, { cc: "NL".split(" ") }, "the Netherlands"],[/(?:^| )(?:czech republic|czechia|czech|repubblica ceca|ceco)(?= |$)/, { cc: "CZ".split(" ") }, "Czechia"],[/(?:^| )(?:sweden|swedish|svezia|svedese)(?= |$)/, { cc: "SE".split(" ") }, "Sweden"],[/(?:^| )(?:belgium|belgian|belgio|belga)(?= |$)/, { cc: "BE".split(" ") }, "Belgium"],[/(?:^| )(?:italy|italian|italia|italiano)(?= |$)/, { cc: "IT".split(" ") }, "Italy"],[/(?:^| )(?:denmark|danish|danimarca|danese)(?= |$)/, { cc: "DK".split(" ") }, "Denmark"],[/(?:^| )(?:japan|japanese|giappone|giapponese)(?= |$)/, { cc: "JP".split(" ") }, "Japan"],[/(?:^| )(?:switzerland|swiss|svizzera|svizzero)(?= |$)/, { cc: "CH".split(" ") }, "Switzerland"],[/(?:^| )(?:norway|norwegian|norvegia|norvegese)(?= |$)/, { cc: "NO".split(" ") }, "Norway"],[/(?:^| )(?:australia|australian|australiano)(?= |$)/, { cc: "AU".split(" ") }, "Australia"],[/(?:^| )(?:poland|polish|polonia|polacco)(?= |$)/, { cc: "PL".split(" ") }, "Poland"],[/(?:^| )(?:romania|romanian|rumeno)(?= |$)/, { cc: "RO".split(" ") }, "Romania"],[/(?:^| )(?:finland|finnish|finlandia|finlandese)(?= |$)/, { cc: "FI".split(" ") }, "Finland"],[/(?:^| )(?:slovakia|slovak|slovacchia)(?= |$)/, { cc: "SK".split(" ") }, "Slovakia"],[/(?:^| )(?:china|chinese|cina|cinese)(?= |$)/, { cc: "CN".split(" ") }, "China"],[/(?:^| )(?:singapore)(?= |$)/, { cc: "SG".split(" ") }, "Singapore"],[/(?:^| )(?:austria|austrian|austriaco)(?= |$)/, { cc: "AT".split(" ") }, "Austria"],[/(?:^| )(?:portugal|portuguese|portogallo|portoghese)(?= |$)/, { cc: "PT".split(" ") }, "Portugal"],[/(?:^| )(?:new zealand|nuova zelanda)(?= |$)/, { cc: "NZ".split(" ") }, "New Zealand"],[/(?:^| )(?:greece|greek|grecia|greco)(?= |$)/, { cc: "GR".split(" ") }, "Greece"],[/(?:^| )(?:nordic|nordics|scandinavia|scandinavian|scandi|nordico|scandinavo)(?= |$)/, { cc: "DK SE NO FI IS".split(" ") }, "the Nordics"],[/(?:^| )(?:europe|european|the eu|eu|europa|europeo)(?= |$)/, { reg: "europe ukie".split(" ") }, "Europe"],[/(?:^| )(?:north america|nord america)(?= |$)/, { reg: "na".split(" ") }, "North America"],[/(?:^| )(?:asia|asian|asiatico)(?= |$)/, { reg: "asia".split(" ") }, "Asia"],[/(?:^| )(?:oceania)(?= |$)/, { reg: "oceania".split(" ") }, "Australia / New Zealand"]];
+  let askCities = null, askCitiesN = -1;
+  const askCityList = () => { if (askCities && askCitiesN === shelf.length) return askCities; const m = new Map();
+    shelf.forEach((r) => { const c = String(r.roaster_city || "").trim(); if (c.length >= 4) m.set(c.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""), c); });
+    askCitiesN = shelf.length; return (askCities = [...m].sort((a, b) => b[0].length - a[0].length)); };
+  const askPlaceFit = (pl) => (r) => pl.cc ? pl.cc.includes(r.roaster_country || "GB") : pl.reg ? pl.reg.includes(shelfRegion(r))
+    : String(r.roaster_city || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === pl.city;
   function readAsk(raw) {
-    const it = LANG === "it", q = " " + raw.toLowerCase().replace(/[“”"]/g, " ").replace(/\s+/g, " ") + " ";
+    const it = LANG === "it", q = " " + raw.toLowerCase().replace(/[“”"]/g, " ").replace(/\b(dall|dell|nell|sull|all|l|d|un)['’]/g, "$1 ").replace(/\s+/g, " ") + " ";
     const want = { tastes: [], proc: null, roast: null, lands: [], max: null, decaf: false, nodecaf: false, fresh: false, treat: false, cheap: false, brewer: null, filter: null, words: [] };
     const used = new Set(), use = (re) => { const m = q.match(re); if (m) [...q.matchAll(new RegExp(re.source, "g"))].forEach((x) => x[0].trim().split(" ").forEach((w) => used.add(w))); return m; };
     // price: under £15, below 20, less than €12, max 15, sotto i 15 €
@@ -5850,7 +5860,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     if (use(/\b(no decaf|not decaf|with caffeine|caffeinated|full caf)\b/)) want.nodecaf = true;
     else if (use(/\b(decaf|decaffeinated|no caffeine|caffeine[- ]free|deca|decaffeinato|senza caffeina)\b/)) want.decaf = true;
     if (use(/\b(new|newest|fresh|freshest|just in|latest|nuov[oi]|appena arrivat[oi])\b/)) want.fresh = true;
-    if (use(/\b(very light|nordic|lightest)\b/)) want.roast = "vlight";
+    if (use(/\b(very light|lightest)\b/)) want.roast = "vlight";
     else if (use(/\b(light|lighter|bright|brighter|delicate|chiar[oa]|leggero)\b/)) want.roast = "light";
     else if (use(/\b(dark|darker|strong|stronger|bold|intense|robust|scur[oa]|forte|intenso)\b/)) want.roast = "dark";
     else if (use(/\b(medium|balanced|middle|medio|equilibrato)\b/)) want.roast = "medium";
@@ -5860,11 +5870,22 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     else if (use(/\b(honey|miele)\b/)) want.proc = "honey";
     if (use(/\b(for espresso|espresso roast)\b/)) want.filter = "espresso"; else if (use(/\b(for filter|filter roast|pour ?over|filtro)\b/)) want.filter = "filter";
     for (const [re, k] of ASK_BREWER) { if (use(new RegExp(re.source))) { want.brewer = askBrewerKey(k); if (k === "espresso" && !want.filter) want.filter = "espresso"; break; } }
+    want.places = [];
+    { const plain = " " + q.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\p{L}\p{N}\s'.-]/gu, " ").replace(/\s+/g, " ").trim() + " ";
+      let grows = {}; try { grows = V.country; } catch (e) {}
+      const growing = (t) => Object.values(grows).flat().includes(t);
+      const take = (name, pl, label) => { const said = new RegExp(`(?:roasted|roaster|roasters|roastery|roasteries|based|torrefatto|torrefazione|torrefazioni) (?:in |a |from )?(?:the )?${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?= )| ${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} (?:roasters?|roastery|roasteries)(?= )`).test(plain);
+        const from = new RegExp(`(?:from|in|out of|da|dal|dalla|dall|in) (?:the )?${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?= )`).test(plain);
+        if (growing(name) && !said) return false;   // from Kenya: the coffee's origin
+        if (!said && !from && !pl.cc && !pl.reg) return false;   // a city on its own could be a coffee's name: needs from / in
+        want.places.push({ ...pl, label }); name.split(" ").forEach((w) => used.add(w)); return true; };
+      ASK_PLACES.forEach(([re, pl, label]) => { const m = plain.match(re); if (m) take(m[0].trim(), pl, label); });
+      askCityList().forEach(([k, c]) => { if (want.places.some((x) => x.city === k)) return; if (plain.includes(" " + k + " ")) take(k, { city: k }, c); }); }
     let lands = {}; try { lands = V.country; } catch (e) {}
-    Object.entries(lands).forEach(([name, ts]) => { if (ts.some((t) => q.includes(" " + t + " ") || q.includes(" " + t + ","))) { want.lands.push(name); ts.forEach((t) => used.add(t)); } });
+    Object.entries(lands).forEach(([name, ts]) => { if (ts.some((t) => !used.has(t) && q.includes(" " + t + " ") || q.includes(" " + t + ","))) { want.lands.push(name); ts.forEach((t) => used.add(t)); } });
     // tastes: a family (fruity) or a note word that some coffee's notes really have (peach, jasmine)
     const words = q.replace(/[^\p{L}\p{N}\s'-]/gu, " ").split(/\s+/).filter(Boolean);
-    const STOP = /^(i|i'?d|id|im|a|an|the|and|or|with|some|something|anything|that|which|is|are|be|for|my|me|today|please|want|like|looking|love|would|could|can|get|give|find|cup|coffee|coffees|bag|bean|beans|brew|brewer|of|to|in|on|not|too|very|really|bit|little|more|less|but|e|o|un|una|uno|il|la|lo|per|mio|mia|con|di|da|del|della|qualcosa|vorrei|voglio|caffè|caffe|oggi|che|sia|ma|non|molto|poco|più|meno|tasting|taste|tastes|notes?|roast|roasted|process|processed|machine|maker|pour|over|under|below|than|max|up|no|from|origin|country|one|ones|it)$/;
+    const STOP = /^(i|i'?d|id|im|a|an|the|and|or|with|some|something|anything|that|which|is|are|be|for|my|me|today|please|want|like|looking|love|would|could|can|get|give|find|cup|coffee|coffees|bag|bean|beans|brew|brewer|of|to|in|on|not|too|very|really|bit|little|more|less|but|e|o|un|una|uno|il|la|lo|per|mio|mia|con|di|da|del|della|qualcosa|vorrei|voglio|caffè|caffe|oggi|che|sia|ma|non|molto|poco|più|meno|tasting|taste|tastes|notes?|roast|roasted|roaster|roasters|roastery|roasteries|based|dal|dalla|dall|torrefatto|torrefazione|process|processed|machine|maker|pour|over|under|below|than|max|up|no|from|origin|country|one|ones|it)$/;
     const allNotes = askNoteWords();
     words.forEach((w) => { if (STOP.test(w) || used.has(w) || /^\d/.test(w)) return;
       const fam = tasteWords(w); if (fam) { want.tastes.push({ w, list: fam }); return; }
@@ -5890,6 +5911,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     const W = { taste: 3, proc: 2, roast: 2, land: 2.5, word: 2.5, fresh: 1, treat: 1.5, cheap: 1.5, filter: 1 };
     return (r) => {
       if (want.decaf && !isDecaf(r)) return 0;
+      if (want.places.length && !want.places.some((pl) => askPlaceFit(pl)(r))) return 0;
       if (want.nodecaf && isDecaf(r)) return 0;
       if (want.max != null) { const p = bagGBP(r); if (p == null || p > want.max * (LANG === "it" || /€/.test(String(r.price)) ? 1 : 1)) return 0; }
       let s = 0.01, asked = 0;
@@ -5918,6 +5940,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     want.lands.forEach((l) => bits.push(l));
     want.words.forEach((w) => bits.push(`“${w}”`));
     if (want.filter) bits.push(want.filter === "espresso" ? (it ? "per espresso" : "for espresso") : (it ? "per filtro" : "for filter"));
+    if (want.places.length) bits.push((it ? "torrefatto in " : "roasted in ") + want.places.map((pl) => pl.label).join(it ? " o " : " or "));
     if (want.decaf) bits.push("decaf"); if (want.nodecaf) bits.push(it ? "con caffeina" : "with caffeine");
     if (want.fresh) bits.push(it ? "nuovi" : "new in");
     if (want.treat) bits.push(it ? "un lotto speciale" : "a special lot");
@@ -6935,7 +6958,10 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   { const setTop = () => { const t = document.querySelector(".top"), r = document.querySelector(".top-in"); if (t) document.documentElement.style.setProperty("--top-h", t.getBoundingClientRect().height + "px");
       if (r) document.documentElement.style.setProperty("--row-h", r.getBoundingClientRect().height + "px");
       // on a phone the question is the hint in the box (there's no room for both)
-      const n = document.querySelector(".top .nav"); if (n) document.documentElement.style.setProperty("--nav-w", (innerWidth - n.getBoundingClientRect().left + 10) + "px");
+      // the box, its →, and the bar's buttons all the same distance apart: the gap the buttons already keep between them
+      const n = document.querySelector(".top .nav"); if (n) { const vis = [...n.querySelectorAll(":scope > *, :scope > .sec-inline > *")].filter((x) => x.offsetWidth && !x.classList.contains("sec-inline")).map((x) => x.getBoundingClientRect()).sort((a, b) => a.left - b.left);
+        const gap = vis.length > 1 ? Math.max(0, Math.round(vis[1].left - vis[0].right)) : 4, left = vis.length ? vis[0].left : n.getBoundingClientRect().left;
+        document.documentElement.style.setProperty("--nav-gap", gap + "px"); document.documentElement.style.setProperty("--nav-w", (innerWidth - left + gap) + "px"); }
     };
     new MutationObserver(setTop).observe(document.body, { attributes: true, attributeFilter: ["class"] });
     if ("ResizeObserver" in window) new ResizeObserver(setTop).observe(document.querySelector(".top"));
