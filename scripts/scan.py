@@ -116,6 +116,9 @@ EXCLUDE = re.compile(r"subscri|abonnement|abbonamento|\babo\b|suscripci|assinatu
                      r"\b\d+(?:[.,]\d+)?\s?kg\b|\btin\b|longjing|sencha|oolong|rooibos|darjeeling|\bassam\b|earl grey|bai hao|jasmine (?:green|tea|pearl)|"
                      r"sticker|socks?\b|bandana|poster|\binsert\b|screw|basket|portafilter|gasket|spout|tablets?\b|cleaner|\bpin\b|scoop|\bjar\b|"
                      r"\bcake\b|bread\b|sandwich|tumbler|calendar|kalender|shipping\b|postcard|\bpaper\b|filtry|\bfilters\b|\bcards?\b|\bhoney (?:jar|mini)|"
+                     r"\b\d{1,2} days of\b|\bavent\b|adventn|julkalender|d[áa]rkov|bal[íi][čc]ek|\bzestaw\b|brelok|abonament|palle med|\bpallets?\b|"
+                     r"mousseur|frother|coffee sacks?|jute sack|hessian|\b\d+\s?(?:ks|szt|stk)\b|choklad|\b[čc]aj\b|yunnan green|- greens\b|"
+                     r"introduction to coffee|^\d\s?x\s|babygrow|\+ protein|"
                      r"coffee blossom honey|demerara|muscovado|\bjaggery\b|surprise|super jolly|cometeer|\bkony\b|\bphilos\b|we choose|filter cone|\bcone\b|\boffice\b|\bgreen\s*$|\bsample\b|cupping|atelier|d[ée]gustation", re.I)
 FILTERY = re.compile(r"\bfilter\b|\bomni\b|pour[- ]?over|\bv60\b|chemex|batch brew|filter roast|\bfiltro\b|\bfiltre\b|"
                      r"filterröst|filterkaffe|handfilter|brew roast", re.I)
