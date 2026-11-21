@@ -232,7 +232,7 @@ body { overflow-x: clip; }
 /* bottom: words light up as you scroll past (apple.com product-page style), then a closing line with the crema sheen */
 .outro { justify-items: center; text-align: center; gap: 26px; padding: clamp(24px, 6vw, 72px) 0 8px; }
 .litext { margin: 0; max-width: 24ch; font-size: var(--big); font-weight: 700; line-height: 1.12; letter-spacing: -.035em; text-wrap: balance; }
-.litext span { color: var(--muted); transition: color .35s ease; }
+.litext span { color: color-mix(in srgb, var(--ink) 18%, var(--bg)); transition: color .35s ease; }
 .litext span.lit { color: var(--ink); }
 .outro-end { margin: 0; font-size: var(--big); font-weight: 700; letter-spacing: -.035em; line-height: 1.1; }
 .sheen-text { background: linear-gradient(100deg, #8b4a22 0%, #c96f2a 18%, #e9a94f 32%, #d9705f 48%, #a8653a 64%, #e0a252 80%, #8b4a22 100%);
@@ -700,10 +700,10 @@ details.clk:has(> #dial){border-bottom:1px solid var(--line)!important}
   --big: clamp(26px, 3.4vw, 40px); --r: 4px;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #000; --card: #000; --ink: #fff; --muted: #a6a6a6; --rule: #262626; --line: #595959; --wash: #1a1a1a; --pill: #222;
+  --bg: #000; --card: #000; --ink: #fff; --muted: #8c8c8c; --rule: #262626; --line: #595959; --wash: #1a1a1a; --pill: #222;
   --blue: #fff; --accent: #fff; --coffee: #fff; --lift: none; --lift-hi: none; --grain: none; } }
 :root[data-theme="dark"] {
-  --bg: #000; --card: #000; --ink: #fff; --muted: #a6a6a6; --rule: #262626; --line: #595959; --wash: #1a1a1a; --pill: #222;
+  --bg: #000; --card: #000; --ink: #fff; --muted: #8c8c8c; --rule: #262626; --line: #595959; --wash: #1a1a1a; --pill: #222;
   --blue: #fff; --accent: #fff; --coffee: #fff; --lift: none; --lift-hi: none; --grain: none; }
 body { background: var(--bg); font: 500 15px/1.35 var(--sans); letter-spacing: -.012em; }
 a { color: var(--ink); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--ink) 30%, transparent); text-underline-offset: 2px; }
@@ -1141,7 +1141,7 @@ details.clk > summary .muted { margin-left: auto; overflow: hidden; text-overflo
 .more { padding: 0; border: 0; display: grid; gap: 0; }
 .more-h { margin: 0; font: 500 var(--fs)/1.35 var(--sans); color: var(--ink); }
 .more .opts { padding-top: 0 !important; }
-.litext .outro-end { display: inline; font: inherit; color: var(--muted); transition: color .35s ease; }
+.litext .outro-end { display: inline; font: inherit; color: color-mix(in srgb, var(--ink) 18%, var(--bg)); transition: color .35s ease; }
 .litext .outro-end.on { color: var(--ink); }
 @media (prefers-reduced-motion: reduce) { .litext .outro-end { color: var(--ink); } }
 /* Pour. Taste. Tweak. Nail it. ✓ always on one line: the type shrinks on narrow phones rather than wrap */
@@ -2110,10 +2110,10 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
 
 /* every fold (See an example, Why this recipe, the footer's headings) wears the Region / Process select's arrow:
    the same drawing, size and colour, 10px in from the right edge as on the select; down when shut, up when open */
-details.clk > summary::after, .foot-x > summary::after { content: "" !important; width: 10px !important; height: 10px !important; flex: none; border: 0 !important;
+details.clk > summary::after, .foot-x > summary::after, #adjOpts > summary::after { content: "" !important; width: 10px !important; height: 10px !important; flex: none; border: 0 !important;
   margin: 0 10px 0 0 !important; background: var(--ink) !important; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E") center / 10px 10px no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E") center / 10px 10px no-repeat;
   transform: none !important; font-size: 0 !important; line-height: 0 !important; transition: transform .25s ease !important; }
-details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: rotate(180deg) !important; }
+details.clk[open] > summary::after, .foot-x[open] > summary::after, #adjOpts[open] > summary::after { transform: rotate(180deg) !important; }
 /* phones: the footer's headings an even step apart, open or shut */
 @media (max-width: 759px) {
   footer { display: flex !important; flex-direction: column; gap: 14px; }
@@ -4491,7 +4491,8 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       ${custom && open ? `<div class="w-sca"><b>Hardness</b><span>50–175 ppm (calcium 17–85, aim ~68)</span><b>Alkalinity</b><span>40–75 ppm, aim ~40 (bicarbonate buffer)</span><b>TDS</b><span>75–250 ppm, aim ~150</span>
         <b>London tap</b><span>~250–350 hardness, ~200+ alkalinity</span></div>
       <p class="muted" style="font-size: var(--fs-s)">SCA water standard, all as CaCO₃. A jug filter, or tap cut with low-mineral bottled water, brings hard tap much closer.</p>` : ""}`;
-    $("wBody").querySelectorAll("button[data-w]").forEach((b) => b.onclick = () => { if (prefs.water && prefs.water.kind === b.dataset.w && b.dataset.w !== "custom") return;
+    $("wBody").querySelectorAll("button[data-w]").forEach((b) => b.onclick = () => { if (prefs.water && prefs.water.kind === b.dataset.w) {   // your water tapped again: taken off, back to None
+        prefs.water = {}; gearOpen.water = false; savePrefs(); render(); renderWaterBody(); try { renderGear(); } catch (e) {} return; }
       gearOpen.water = true; prefs.water = { ...(prefs.water || {}), kind: b.dataset.w }; savePrefs(); render(); gearWait(); });
     const more = $("wBody").querySelector(".gear-more"); if (more) more.onclick = () => { gearOpen.water = true; renderWaterBody(); gearWait(); };
     const inp = (id, k) => { const el = $(id); if (!el) return; el.onchange = () => { const v = el.value.trim(); prefs.water = { ...(prefs.water || {}), src: null, [k]: v === "" ? null : Math.max(0, Math.round(Number(v) || 0)) }; savePrefs(); render(); }; };
@@ -6231,9 +6232,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     $("shelf").querySelectorAll("a[data-ro]").forEach((b) => b.onclick = (e) => { e.preventDefault(); openRoaster(b.dataset.ro); });
     // Save saves straight away; Saved asks first: one tap shows a red Remove?, a second takes it out of your bags. Back to Saved after 3 s
     $("shelf").querySelectorAll("button[data-b]").forEach((b) => b.onclick = () => { const r = shelf[+b.dataset.b];
-      if (!hasBag(r) || b.dataset.armed) { toggleBag(r); renderShelf(); return; }
-      b.dataset.armed = "1"; b.classList.add("armed"); b.setAttribute("aria-label", LANG === "it" ? "Togliere? Tocca di nuovo" : "Remove? Tap again");
-      setTimeout(() => { if (b.dataset.armed) { delete b.dataset.armed; b.classList.remove("armed"); b.setAttribute("aria-label", LANG === "it" ? "Nei miei sacchetti" : "In my bags"); } }, 3000); });
+      toggleBag(r); renderShelf(); });   // a tap saves, a second tap takes it out again, at once
   }
 
 
