@@ -2371,6 +2371,12 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
 .ask-sug .fy-pill{background:var(--ink)!important;color:var(--bg)!important}   /* the one suggestion that's about you */
 .ask-sug .sug-fy:has(.sug-fy-t) .sug-h{line-height:1.3}   /* For you's label level with the first line of its sentence */
 .ask-sug .sug-fy .sug-fy-t{align-self:start}
+/* the suggestions: full width from edge to edge, fading into the page at the foot instead of a hard edge */
+.ask-sug{left:calc(-1 * var(--sug-l,12px))!important;right:calc(-1 * var(--sug-r,90px))!important;padding:12px 12px 44px var(--sug-l,12px)!important;
+  box-shadow:none!important;clip-path:none!important;background:linear-gradient(to bottom,var(--bg) calc(100% - 36px),color-mix(in srgb,var(--bg) 0%,transparent))!important;overscroll-behavior:contain}
+/* Recent: one line, the last three searches, a long one cut short */
+.ask-sug .sug-rec .sug-xs{flex-wrap:nowrap;overflow:hidden}
+.ask-sug .sug-rec .chip{min-width:0;max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto}
 </style>
 </head>
 <body>
@@ -7300,11 +7306,19 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
       return `<div class="sug-row sug-fy"><span class="sug-h">${it ? "Per te" : "For you"}</span><span class="sug-xs">${ok
         ? `<button type="button" class="chip fy-pill" data-fy="1">${it ? "Scelti per te" : "Picked for you"}</button>`
         : `<span class="sug-fy-t">${it ? "Salva 3 caffè o registra 3 preparazioni e scelgo io." : "Save 3 coffees or log 3 brews and I’ll pick for you."}</span>`}</span></div>`; };
-    const draw = () => { const r = recent().slice(0, 4);
+    const draw = () => { const r = recent().slice(0, 3);
       box.innerHTML = fyRow() + (r.length ? [[T("Recent"), r, true]] : []).concat(SUG.map(([h, xs]) => [T(h), xs.map(T)])).map(([h, xs]) =>
-        `<div class="sug-row"><span class="sug-h">${esc(h)}</span><span class="sug-xs">${xs.map((x) => `<button type="button" class="chip" data-q="${esc(x)}">${esc(x)}</button>`).join("")}</span></div>`).join(""); };
-    const open = () => { if (a.value.trim()) return; draw(); box.hidden = false; };
-    const shut = () => { box.hidden = true; };
+        `<div class="sug-row${h === T("Recent") ? " sug-rec" : ""}"><span class="sug-h">${esc(h)}</span><span class="sug-xs">${xs.map((x) => `<button type="button" class="chip" data-q="${esc(x)}">${esc(x)}</button>`).join("")}</span></div>`).join(""); };
+    // open: spans the whole width (measured from the box), fades out at its foot, and the page behind it holds still so the
+    // search box stays where it is; the suggestions scroll on their own if they're taller than what's left above the keyboard
+    const fit = () => { const r = a.closest(".ask-box").getBoundingClientRect(), vv = window.visualViewport, H = vv ? vv.height : innerHeight;
+      box.style.setProperty("--sug-l", r.left + "px"); box.style.setProperty("--sug-r", (innerWidth - r.right) + "px");
+      box.style.maxHeight = Math.max(160, H - r.bottom - 8) + "px"; };
+    const open = () => { if (a.value.trim()) return; draw(); box.hidden = false; fit(); document.documentElement.classList.add("sug-open"); };
+    const shut = () => { box.hidden = true; document.documentElement.classList.remove("sug-open"); };
+    if (window.visualViewport) visualViewport.addEventListener("resize", () => { if (!box.hidden) fit(); });
+    const hold = (e) => { if (!box.hidden && !e.target.closest(".ask-sug")) e.preventDefault(); };   // the page holds still behind them (touch and wheel)
+    document.addEventListener("touchmove", hold, { passive: false }); document.addEventListener("wheel", hold, { passive: false });
     a.addEventListener("focus", open); a.addEventListener("click", open);
     a.addEventListener("input", () => { setTimeout(() => { a.value.trim() ? shut() : open(); }, 0); });   // after the key has landed: nothing redrawn mid-keystroke
     a.addEventListener("keydown", (e) => { if (e.key === "Escape") { shut(); a.blur(); } });
