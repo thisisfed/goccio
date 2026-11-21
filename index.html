@@ -2136,7 +2136,7 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
 .ask-line #askIn::placeholder{color:color-mix(in srgb,var(--ink) 45%,transparent);opacity:1;transition:opacity .25s ease}
 /* tapped: the hint fades away, and the accent ring the Coffees search has */
 .ask-line #askIn:focus::placeholder{opacity:0}
-.ask-line #askIn.ph-q::placeholder{color:var(--ink)}
+.ask-line #askIn.ph-q::placeholder{color:var(--ink);font-size:var(--q-fs,inherit)}   /* the question, made small enough to fit the box whole */
 
 .ask-line #askIn::-webkit-search-cancel-button,.ask-line #askIn::-webkit-search-decoration{-webkit-appearance:none;display:none}
 .ask-line #askIn{flex:1 1 auto;min-width:0;width:auto}
@@ -7000,8 +7000,11 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     const next = () => { i = (i + 1) % EX.length; type(T(EX[i]), false, next); };
     // a cup in plain type after the question: c[_]
     const CUP = "  c[_]";
-    // on a phone the box shares the bar with IT and the theme: the question cut to fit
-    if (phone()) type(T("How do you want it?") + CUP, true, next);
+    // on a phone the box shares the bar with IT and the theme: the whole question, its type made small enough to fit
+    const fitQ = (t) => { const cs = getComputedStyle(a), c = document.createElement("canvas").getContext("2d"), fs = parseFloat(cs.fontSize);
+      c.font = `${cs.fontWeight} ${fs}px ${cs.fontFamily}`; const w = c.measureText(t).width, room = a.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - 2;
+      a.style.setProperty("--q-fs", w > room ? Math.max(10, Math.floor(fs * room / w * 10) / 10) + "px" : fs + "px"); };
+    if (phone()) { fitQ(T(Q) + CUP); type(T(Q) + CUP, true, next); }
     else { next(); const c = document.querySelector(".ask-cup"); if (c) { let k = 0; const put = () => { c.textContent = CUP.slice(0, ++k); if (k < CUP.length) setTimeout(put, still ? 0 : 140); }; setTimeout(put, still ? 0 : 500); } } }
   // the ask line: its words go into the search (which reads them as an ask), the brewer it names becomes the brewer, and the page goes to the list
   const askBrewer = (q) => { if (!isAsk(q)) return; const w = readAsk(q); if (w.brewer && BREWERS[w.brewer] && w.brewer !== brewerOf(state)) { setBrewer(w.brewer); saveState(); renderAllOpts(); render(); } };
