@@ -1619,7 +1619,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 #bagList .item > .r{width:92px;flex:none}
 /* the example folds away under See an example; the brew clock counts up with the playhead */
 .g-ex{width:100%;max-width:520px}
-.ex-sec{margin-bottom:0;align-self:start}
+.ex-sec{margin-bottom:0;align-self:start;margin-top:-48px}   /* right under the recipe's Copy recipe row, its rule 24 px below the pills */
 .ex-sec + .outro{margin-top:-63px}   /* the Example centred between the two rules, open or folded */
 .ex-sec:has(.g-ex.fold) + .outro{margin-top:-57px}
 #shelf > .grp.bare:first-child{display:none}
@@ -2352,6 +2352,10 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
 .tech-lbl{margin:0;padding:12px 0 6px;border-top:1px solid var(--line);color:var(--muted);font-size:var(--fs-s);line-height:1.3}
 #techLbl + #tech{border-top:0!important;padding-top:0!important}   /* the rule above the title, the steps right under it */
 .tech-lbl:has(+ #tech[hidden]), .tech-lbl:has(+ #tech:empty){display:none}
+/* Example: white like Why this recipe, the same size and weight */
+.glimpse figcaption button.g-tag, .glimpse figcaption .g-tag{color:var(--ink)!important;font-size:15px!important;font-weight:500!important}
+.g-ex.fold .glimpse figcaption button.g-tag{margin-left:0;width:100%;justify-content:space-between}   /* folded: Example on the left, its arrow on the right, like the folds above */
+.glimpse figcaption button.g-tag::after{margin-right:10px}
 </style>
 </head>
 <body>
@@ -4636,12 +4640,15 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
     const c = r.c, K = r.kind;
     kitState();
     if (renderNeed(r)) {
+      window.__exAuto = false;
       renderWater({});
       $("detected").innerHTML = "";
       if (state.text || state.bag) { $("rtitle").textContent = coffeeTitle(state, r); $("rmethod").textContent = ""; $("rgoal").textContent = ""; $("rread").textContent = ""; }
       return;
     }
     const timed = K !== "steps";
+    // a recipe with Start brewing on screen: the Example folds away (once; open it again and it stays open)
+    if (timed && !window.__exAuto) { window.__exAuto = true; try { exFold(true); } catch (e) { window.__exAuto = false; } }
     $("startBrew").hidden = !timed; $("dock").hidden = !timed; journalOn();
     $("rmethod").textContent = r.method;
     $("rgoal").innerHTML = [r.goal ? GOAL[r.goal] : "", doseName(r)].filter(Boolean).map((t) => `<span>${esc(t)}</span>`).join("");
