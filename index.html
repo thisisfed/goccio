@@ -2364,7 +2364,7 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
 #cfNudge{margin:12px 0 0}
 #cfNudge .cf-h{font:500 var(--fs-s)/1.35 var(--sans);color:var(--hl);margin:0 0 10px}
 #cfNudge[hidden]{display:none}
-#cfNudge .ro-acts{display:flex;flex-wrap:wrap;gap:6px;margin:0}
+#cfNudge .ro-acts{display:flex;flex-wrap:wrap;gap:10px;margin:0}
 #cfNudge .ro-pill{display:inline-flex;align-items:center;height:var(--pill-h);padding:0 12px;border:0;border-radius:var(--r);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);cursor:pointer}
 #cfNudge .ro-pill:hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))}
 .ask-sug .sug-fy .sug-fy-t{color:var(--muted);font-size:var(--fs-s);line-height:1.3;align-self:center}
@@ -2395,13 +2395,10 @@ html:not(.bn-off) .dock{display:none!important}
 .shelf .item > .r{margin-top:12px!important}
 .shelf .item .c-price, .shelf .item .c-notes{margin-bottom:0!important}
 /* the late nudge: one button, the other two as quiet words after it */
-#cfNudge .cf-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px}
+#cfNudge .cf-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
 #cfNudge .cf-lnk{background:none;border:0;padding:0;font:500 var(--fs-s)/1.3 var(--sans);color:var(--muted);text-decoration:underline;text-underline-offset:2px;text-decoration-color:color-mix(in srgb,currentColor 40%,transparent);cursor:pointer}
 /* Use your own recipe sits with Copy recipe and Share link */
 #mineBar:empty{display:none}
-/* the Example only until there's a recipe of your own: then it's gone, not folded */
-body:has(#recipe:not([hidden])) .ex-sec{display:none!important}
-body:has(#recipe:not([hidden])) .ex-sec + .outro{margin-top:0!important}
 </style>
 </head>
 <body>
@@ -4701,7 +4698,7 @@ body:has(#recipe:not([hidden])) .ex-sec + .outro{margin-top:0!important}
     try { cfNudge(); } catch (e) {}
     requestAnimationFrame(() => { try { window.exAlign && exAlign(); } catch (e) {} });
     // a recipe with Start brewing on screen: the Example folds away (once; open it again and it stays open)
-
+    if (timed && !window.__exAuto) { window.__exAuto = true; try { exFold(true); } catch (e) { window.__exAuto = false; } }
     $("startBrew").hidden = !timed; $("dock").hidden = !timed; journalOn();
     $("rmethod").textContent = r.method;
     $("rgoal").innerHTML = [r.goal ? GOAL[r.goal] : "", doseName(r)].filter(Boolean).map((t) => `<span>${esc(t)}</span>`).join("");
