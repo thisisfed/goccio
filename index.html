@@ -2309,6 +2309,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
 #gearIntro { display: none; }
 #gear.bare #gearIntro { display: block; width: 100%; }
 #gear.bare .gear-tools { display: none; }
+footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last, under Email us */
 </style>
 </head>
 <body>
@@ -2397,6 +2398,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     <div class="gear-tools">
       <div class="opt"><span id="labGB">Brewers</span><div class="chips" id="gearB" role="group" aria-labelledby="labGB"></div></div>
       <div class="opt"><span id="labGG">Grinders</span><div class="chips" id="gearG" role="group" aria-labelledby="labGG"></div></div>
+      <div class="opt zr-opt" id="zrCtl"><span id="zrLbl">Clicks</span><div><div class="step" role="group" aria-labelledby="zrLbl"><button type="button" id="zMinus" aria-label="Zero offset one click lower">−</button><span id="zVal">0</span><button type="button" id="zPlus" aria-label="Zero offset one click higher">+</button></div></div></div>
       <div class="opt"><span>Water</span><div class="w-row" id="waterCard"><div class="w-body" id="wBody"></div></div></div>
       <div class="opt" id="surpriseRow"><span></span><div class="gear-go"><button type="button" class="gear-btn" id="surprise">Surprise me</button>
         <p class="gear-note" id="gearNote">A random recipe from your equipment and your bags.</p></div></div>
@@ -2428,7 +2430,6 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       <details class="adj" id="adjOpts"><summary><span class="adj-l">Adjust</span><span class="adj-s" id="adjSum"></span></summary>
         <div class="opt"><span>Water</span><div class="w-row" id="waterNow"><div class="chips"><button type="button" class="chip" id="wNow"></button></div><p class="w-adv" id="wAdv"></p></div></div>
       <div class="opts" id="opts-main"></div>
-        <div class="opt zr-opt" id="zrCtl"><span id="zrLbl">Clicks</span><div><div class="step" role="group" aria-labelledby="zrLbl"><button type="button" id="zMinus" aria-label="Zero offset one click lower">−</button><span id="zVal">0</span><button type="button" id="zPlus" aria-label="Zero offset one click higher">+</button></div></div></div>
       </details>
       <input type="file" accept="image/*" capture="environment" id="roastPhotoIn" hidden>
     </div>
@@ -2458,8 +2459,8 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       <div class="col" id="tdsCol"><h3>Expected strength</h3><div class="big" id="tds"></div><p id="tdsNote"></p></div>
       <div class="col" id="cupCol"><h3 id="cupH">Likely in the cup</h3><div class="notes-list" id="cupNotes"></div><p id="cupNote"></p></div>
     </div>
-    <details class="clk xp" id="whyBox"><summary>Why this recipe <span class="muted" id="whyHint"></span></summary><ul id="why"></ul></details>
     <details class="clk xp" id="expBox" open><summary>What to expect</summary><ul id="expect"></ul></details>
+    <details class="clk xp" id="whyBox"><summary>Why this recipe <span class="muted" id="whyHint"></span></summary><ul id="why"></ul></details>
     <details class="clk xp" id="clkHow"><summary>How the C40 clicks were set <span class="muted" id="clkSumm" hidden></span></summary><div class="clk-body" id="clkBody"></div></details>
     <details class="clk xp"><summary>Dial it in: change one thing per brew</summary><ul id="dial"></ul></details>
     <div class="share">
@@ -2586,9 +2587,10 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     </div>
     <div class="fcol f-cred">
     <p class="foot-note refs-h foot-credits">Credits</p>
-    <p class="foot-note" id="credit">Made by <a href="https://thisisfed.xyz/" target="_blank" rel="noopener">Federico R. T. Ferrari</a>.<br>Set in ALT Riviera, with thanks to <a href="https://alt-tf.com/" target="_blank" rel="noopener">Alt Type Foundry</a>.<br>Hosted on <a href="https://pages.cloudflare.com/" target="_blank" rel="noopener">Cloudflare</a>, domain by <a href="https://www.spaceship.com/" target="_blank" rel="noopener">Spaceship</a>.<br>© <span id="cYear">2026</span> Federico R. T. Ferrari. Coffee names and tasting notes belong to their roasters.</p>
-    <script>try { document.getElementById("cYear").textContent = new Date().getFullYear(); } catch (e) {}</script>
+    <p class="foot-note" id="credit">Made by <a href="https://thisisfed.xyz/" target="_blank" rel="noopener">Federico R. T. Ferrari</a>.<br>Set in ALT Riviera, with thanks to <a href="https://alt-tf.com/" target="_blank" rel="noopener">Alt Type Foundry</a>.<br>Hosted on <a href="https://pages.cloudflare.com/" target="_blank" rel="noopener">Cloudflare</a>, domain by <a href="https://www.spaceship.com/" target="_blank" rel="noopener">Spaceship</a>.</p>
     <p class="foot-note foot-all foot-links"><a href="/coffee/">Every coffee, by roaster</a><a href="/list/">Get your roastery listed / removed</a><a href="/privacy/">Privacy</a><a class="mail" href="#" data-m="ku.oc.oiccog@nu">Email us</a></p>
+    <p class="foot-note foot-copy">© <span id="cYear">2026</span> Federico R. T. Ferrari. Coffee names and tasting notes belong to their roasters.</p>
+    <script>try { document.getElementById("cYear").textContent = new Date().getFullYear(); } catch (e) {}</script>
     </div>
   </footer>
   <script>
@@ -4352,9 +4354,10 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       + (isC40() ? ` = <b>${r.clicks} clicks</b>` : mill().words ? ` = ${r.clicks} C40 clicks → <b>${esc(g.txt.toLowerCase())}, about ${microns(r.clicks)} µm</b>` : ` = ${r.clicks} C40 clicks → <b>${esc(g.txt)} on the ${esc(mill().short)}</b>`);
     kitState();
   }
+  const gearHasC40 = () => { try { return gear.grinders.includes("c40"); } catch (e) { return false; } };
   // grinder and zero controls sit above the questions, so they update even before there's a full recipe
   function kitState() {
-    $("zrCtl").hidden = !isC40();
+    $("zrCtl").hidden = !gearHasC40();   // the Comandante's clicks: set once in My equipment, under Grinders
     $("millSel").value = GRINDERS[prefs.mill] ? prefs.mill : "c40"; syncMill();
     $("zVal").textContent = String(prefs.zero || 0).replace("-", "−").replace(/^−/, "−");   // no "+" in front
     $("zeroRow").classList.toggle("on", !!prefs.zero);
@@ -4879,7 +4882,6 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   function adjSum() { const box = $("adjOpts"), out = $("adjSum"); if (!box || !out) return;
     const picks = [...box.querySelectorAll(".opts .chip[aria-pressed=true]")].map((b) => b.textContent.replace(/Beta$/, "").trim());
     const w = $("wNow") && $("wNow").textContent.trim(); if (w) picks.push(/^set your water$/i.test(w) || /^imposta/i.test(w) ? (LANG === "it" ? "acqua da impostare" : "water not set") : w);
-    if (isC40() && prefs.zero) picks.push(`${prefs.zero > 0 ? "+" : "−"}${Math.abs(prefs.zero)} ${LANG === "it" ? "scatti" : Math.abs(prefs.zero) === 1 ? "click" : "clicks"}`);
     out.textContent = picks.join(", "); }
   const renderAllOpts = () => { renderOpts("opts-kit", [{ key: "brewer", label: "Brewer", items: brewerItems(), on: setBrewer, cur: () => brewerOf(state) === "cold" ? "press" : brewerOf(state) }]); renderOpts("opts-main", optsMain()); { const b = brewerOf(state), B = BREWERS[b]; renderOpts("opts-dose", [{ key: "dose", label: b === "moka" ? "Pot" : "Coffee", items: B.doses }]); } adjSum(); renderOpts("opts-more", OPTS_MORE); };
 
@@ -6449,6 +6451,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     $("gear").classList.toggle("bare", !gearIntro && !gear.brewers.length && !gear.grinders.length && !(prefs.water || {}).kind);
     row("gearB", gear.brewers, Object.fromEntries(Object.entries(BREWERS).filter(([k, B]) => k !== "cold" && !B.cup)), (B) => B.name);   // cupping needs no kit: everyone can cup
     row("gearG", gear.grinders, GRINDERS, (G) => G.name);
+    $("zrCtl").hidden = !gearHasC40();
     gearWait();
     // Surprise me only works from your own things: a brewer, a grinder and a bag with coffee in it (in the freezer or not)
     $("surpriseRow").style.display = gear.brewers.length && gear.grinders.length && openBags().length ? "" : "none";
