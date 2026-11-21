@@ -1389,7 +1389,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 .wm-screen .wordmark, .wm-more { position: relative; z-index: 1; }
 .wm-more { position: absolute; left: 12px; right: 12px; bottom: 16px; display: grid; gap: 4px; max-width: 640px; }
 .hero-kick { display: none !important; }   /* Updated every day and the count now sit on the first screen: not repeated under it */
-.wm-more .wm-lead { margin: 0; font: 500 var(--fs-s)/1.3 var(--sans); color: #fff; }   /* the page's own text size, as the count, the notes and the prices */
+.wm-more .wm-lead { margin: 0; font: 500 var(--fs-s)/1.3 var(--sans); color: #fff; text-wrap: pretty; }   /* flows the full width, not balanced into a block */   /* the page's own text size, as the count, the notes and the prices */
 .wm-more .wm-live { margin: 0; color: var(--hl); font-size: var(--fs-s); display: flex; align-items: center; gap: 8px; }
 .wm-more .wm-ctas { margin: 12px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; max-width: 420px; }
 .wm-more .wm-ctas .btn { height: 46px; min-height: 46px; font-size: var(--fs-s); border-radius: 8px; }
@@ -1399,7 +1399,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 .wm-screen .wordmark { width: auto !important; margin: 0 !important; padding: 0 !important; line-height: 1 !important; overflow: visible !important; }
 .wm-screen .wordmark #wm { padding: 0 !important; will-change: transform; }
 /* Updated every day sits as far under the photo as the text sits from the edge of the screen */
-.wm-screen + .hero-row { margin-top: calc(12px - var(--hero-gap, 24px)); }
+.wm-screen + .hero-row { margin-top: calc(-2px - var(--hero-gap, 24px)); }   /* the text under the photo starts as far under the buttons as the count sits over them */
 .hero { --hero-gap: 24px; }
 .item .name { line-height: 1.05 !important; letter-spacing: -.04em !important; }
 @media (min-width: 1000px) { .item .name { font-size: 63px !important; } }
@@ -1614,7 +1614,9 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 #bagList .item > .r{width:92px;flex:none}
 /* the example folds away under See an example; the brew clock counts up with the playhead */
 .g-ex{width:100%;max-width:520px}
-.ex-sec{margin-bottom:-64px}   /* 16 px of space over its first line and under its last: centred between the two rules */
+.ex-sec{margin-bottom:0;align-self:start}
+.ex-sec + .outro{margin-top:-63px}   /* the Example centred between the two rules, open or folded */
+.ex-sec:has(.g-ex.fold) + .outro{margin-top:-57px}
 #shelf > .grp.bare:first-child{display:none}
 .shelf-tools:not(:has(> :not([hidden]))){display:none}   /* nothing to say under the heading: no empty block   /* the first coffee opens under the Coffees heading with no rule of its own */   /* the Example sits between What's brewing and the closing text, its last line as close to the rule as the rows above */
 .g-ex > .glimpse{margin-top:10px;border-top:0;padding-top:0}
@@ -5905,7 +5907,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   const ASK_INTENT = /\b(from|roasted|roasters?|roastery|based in|dal|dalla|dall'|torrefatto|torrefazione|something|anything|want|like|looking|fancy|i'?d|for my|for an?|under|below|less than|max|cheap|cheaper|budget|value|affordable|expensive|pricey|premium|luxury|posh|over|above|more than|treat|special|rare|fancy|splurge|light|lighter|bright|dark|darker|strong|stronger|bold|intense|medium|decaf|decaffeinated|caffeine|evening|night|new|fresh|just in|today|qualcosa|vorrei|voglio|per la mia|per il mio|sotto|meno di|economico|chiaro|leggero|scuro|forte|deca|decaffeinato|nuovo)\b/i;
   const ASK_BREWER = [[/\bv60 ?neo\b|\bneo\b/, "neo"], [/\bv-?60\b|hario/, "v60"], [/kalita|wave\b/, "kalita"], [/\bapril\b/, "april"], [/\borea\b/, "orea"], [/melitta/, "melitta"],
     [/chemex/, "chemex"], [/origami/, "origami"], [/aero ?press/, "aero"], [/french ?press|cafeti[eè]re|plunger|pressa francese/, "press"], [/cold ?brew/, "cold"],
-    [/\bmoka\b|stovetop|bialetti/, "mocca"], [/clever/, "clever"], [/switch/, "switch"], [/espresso machine|\bespresso\b/, "espresso"], [/cupping/, "cupping"]];
+    [/mocca ?master|technivorm/, "mocca"], [/\bmoka\b|stovetop|bialetti|caffettiera/, "moka"], [/clever/, "clever"], [/switch/, "switch"], [/espresso machine|\bespresso\b/, "espresso"], [/cupping/, "cupping"]];
   const askBrewerKey = (k) => { if (BREWERS[k]) return k; const hit = Object.keys(BREWERS).find((x) => x.startsWith(k.slice(0, 4))); return hit || null; };
   // where it's roasted: "from the UK", "roasted in Amsterdam", "Dutch roasters", "from Europe". A country that grows coffee
   // (from Kenya) is the origin, unless it's said as roasted in or as roasters. Firm, like decaf: only coffees roasted there
@@ -5996,7 +5998,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     askNotesN = shelf.length; return (askNotesSet = s);
   }
   // is it an ask (a sentence with a want in it) rather than a plain search? A roaster's name or "ethiopia floral" stays a search
-  const isAsk = (q) => { if (ASK_INTENT.test(q) || q.split(/\s+/).length >= 4) return true; if (!/[\s,]/.test(q.trim())) return false;
+  const isAsk = (q) => { if (ASK_INTENT.test(q) || q.split(/\s+/).length >= 4 || ASK_BREWER.some(([re]) => re.test(q))) return true; if (!/[\s,]/.test(q.trim())) return false;
     const w = readAsk(q); return [w.tastes.length, w.proc, w.roast, w.lands.length, (w.places || []).length, (w.roasters || []).length, w.decaf, w.brewer].filter(Boolean).length >= 2; };
   const roastRank = (r) => { const k = r.roast && ROAST[r.roast] ? r.roast : r.roast_level === "dark" ? "dark" : r.roast_level === "medium-dark" ? "mdark" : r.roast_level === "medium" ? "medium" : r.roast_level === "light" ? "light" : "";
     return { vlight: 0, light: 1, medium: 2, mdark: 3, dark: 4 }[k]; };
@@ -7092,7 +7094,12 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     else if (phone()) { roll(T(Q), true); setTimeout(next, 2600); }
     else { roll(T(EX[0])); i = 0; setTimeout(next, 1700); } show(); }
   // the ask line: its words go into the search (which reads them as an ask), the brewer it names becomes the brewer, and the page goes to the list
-  const askBrewer = (q) => { if (!isAsk(q)) return; const w = readAsk(q); if (w.brewer && BREWERS[w.brewer] && w.brewer !== brewerOf(state)) { setBrewer(w.brewer); saveState(); renderAllOpts(); render(); } };
+  // the brewer the ask names becomes the brewer; "6 cup" (or 3-cup, 1 cup) picks that size where the brewer has one
+  const askBrewer = (q) => { if (!isAsk(q)) return; const w = readAsk(q); if (!w.brewer || !BREWERS[w.brewer]) return;
+    if (w.brewer !== brewerOf(state)) setBrewer(w.brewer);
+    const cm = q.match(/\b(\d{1,2})[- ]?(?:cups?|tazze?)\b/), B = BREWERS[w.brewer];
+    if (cm) { const hit = B.doses.find(([, l]) => new RegExp(`^${cm[1]}-cup`).test(l)); if (hit) state.dose = hit[0]; }
+    saveState(); renderAllOpts(); render(); };
   // tapping the box opens suggestions under it: what can be asked, a tap each, and the last few searches
   { const SUG = [["Taste", ["Fruity", "Floral", "Chocolatey", "Nutty", "Citrusy"]], ["Where from", ["Ethiopia", "Kenya", "Colombia", "Roasted in London", "From Italy"]],
       ["Price", ["Under £15", "Good value", "A treat"]], ["More", ["Decaf", "New in", "Light roast", "For espresso", "For my V60"]]];
