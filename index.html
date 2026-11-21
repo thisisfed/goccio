@@ -2129,6 +2129,7 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
 body:not(.mark-on) .top .nav{opacity:0;transform:translateY(4px);visibility:hidden;pointer-events:none;transition:opacity .25s ease, transform .25s ease, visibility 0s linear .25s}
 .mark-on .ask-line{opacity:0;transform:translateY(-10px)!important;visibility:hidden;pointer-events:none;transition:opacity .25s ease, transform .25s ease, visibility 0s linear .25s}
 .top:has(.sec-list.instant) .ask-line{transition:none}
+.ask-line .ask-q .ask-cup{white-space:pre}
 .ask-line .ask-q{font-size:var(--fs-s);font-weight:600;color:var(--ink);white-space:nowrap}
 .ask-line .ask-box{position:relative;min-width:0;display:flex;gap:var(--nav-gap,4px);align-items:center}
 .ask-line #askIn{width:100%;box-sizing:border-box;height:var(--pill-h);border:0;border-radius:var(--r);background:var(--pill);color:var(--ink);
@@ -2220,7 +2221,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     </nav>
   </div>
   <form class="ask-line" id="askForm" role="search" autocomplete="off">
-    <label for="askIn" class="ask-q">How do you want your coffee today?</label>
+    <label for="askIn" class="ask-q">How do you want your coffee today?<span class="ask-cup" aria-hidden="true" translate="no"></span></label>
     <div class="ask-box"><input type="search" id="askIn" placeholder="Fruity, under £15" enterkeyhint="search"><button type="submit" class="ask-go" aria-label="Find my coffee"><span class="arr">→</span></button></div>
   </form>
   <div class="sec-list" id="secList" inert aria-hidden="true"><div class="sec-list-in"><button type="button" class="sec-p" data-jump="shelves" data-sec="shelves">Coffees</button><button type="button" class="sec-p" data-jump="bags" data-sec="bags">My bags</button><button type="button" class="sec-p" data-jump="gear" data-sec="gear">My equipment</button><button type="button" class="sec-p" data-jump="coffee" data-sec="coffee">What’s brewing?</button><button type="button" class="sec-p" data-jump="recipe" data-sec="recipe">Recipe</button><button type="button" class="sec-p" data-jump="journal" data-sec="journal">Journal</button></div></div>
@@ -6998,7 +6999,10 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
         if (n > 0) setTimeout(back, 18); else setTimeout(done, 220); };
       add(); };
     const next = () => { i = (i + 1) % EX.length; type(T(EX[i]), false, next); };
-    if (phone()) type(T(Q), true, next); else next(); }
+    // a cup in plain type after the question: c[_]
+    const CUP = "  c[_]";
+    if (phone()) type(T(Q) + CUP, true, next);
+    else { next(); const c = document.querySelector(".ask-cup"); if (c) { let k = 0; const put = () => { c.textContent = CUP.slice(0, ++k); if (k < CUP.length) setTimeout(put, still ? 0 : 140); }; setTimeout(put, still ? 0 : 500); } } }
   // the ask line: its words go into the search (which reads them as an ask), the brewer it names becomes the brewer, and the page goes to the list
   const askBrewer = (q) => { if (!isAsk(q)) return; const w = readAsk(q); if (w.brewer && BREWERS[w.brewer] && w.brewer !== brewerOf(state)) { setBrewer(w.brewer); saveState(); renderAllOpts(); render(); } };
   $("askForm").addEventListener("submit", (e) => { e.preventDefault(); const t = $("askIn").value.trim(); if (!t) { $("askIn").focus(); return; }
