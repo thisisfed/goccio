@@ -2122,8 +2122,11 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
 /* it sits in the bar's own row, where Goccio will be, while the big wordmark is on screen; when Goccio shows in the bar it
    slides up and away (the bar stays one row) */
 .top{border-bottom:1px solid var(--line)!important}
-.ask-line{position:absolute!important;top:0;left:0;right:var(--nav-w,200px);height:var(--row-h,48px);padding:0 0 0 12px!important;border:0!important;background:none!important;
+.ask-line{position:absolute!important;top:0;left:0;right:0;height:var(--row-h,48px);padding:0 12px!important;border:0!important;background:none!important;
   transition:opacity .25s ease, transform .25s ease, visibility 0s linear 0s}
+/* before Goccio shows, the box is all the bar is: Menu, IT and the theme come in with Goccio */
+.top .nav{transition:opacity .25s ease, transform .25s ease, visibility 0s linear 0s}
+body:not(.mark-on) .top .nav{opacity:0;transform:translateY(4px);visibility:hidden;pointer-events:none;transition:opacity .25s ease, transform .25s ease, visibility 0s linear .25s}
 .mark-on .ask-line{opacity:0;transform:translateY(-10px)!important;visibility:hidden;pointer-events:none;transition:opacity .25s ease, transform .25s ease, visibility 0s linear .25s}
 .top:has(.sec-list.instant) .ask-line{transition:none}
 .ask-line .ask-q{font-size:var(--fs-s);font-weight:600;color:var(--ink);white-space:nowrap}
@@ -5834,7 +5837,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   // ---------- How do you want your coffee today? A sentence read for what it asks: tastes, process, roast, origin, price, decaf,
   // new, a treat or a bargain, and a brewer. Nothing is sent anywhere: it's word matching in the page. The coffees are ranked,
   // best match first, not cut down to an exact match, so a loose ask never ends on an empty list. Decaf and a price cap are firm
-  const ASK_INTENT = /\b(from|roasted|roasters?|roastery|based in|dal|dalla|dall'|torrefatto|torrefazione|something|anything|want|like|looking|fancy|i'?d|for my|for an?|under|below|less than|max|cheap|cheaper|budget|value|affordable|treat|special|rare|fancy|splurge|light|lighter|bright|dark|darker|strong|stronger|bold|intense|medium|decaf|decaffeinated|caffeine|evening|night|new|fresh|just in|today|qualcosa|vorrei|voglio|per la mia|per il mio|sotto|meno di|economico|chiaro|leggero|scuro|forte|deca|decaffeinato|nuovo)\b/i;
+  const ASK_INTENT = /\b(from|roasted|roasters?|roastery|based in|dal|dalla|dall'|torrefatto|torrefazione|something|anything|want|like|looking|fancy|i'?d|for my|for an?|under|below|less than|max|cheap|cheaper|budget|value|affordable|expensive|pricey|premium|luxury|posh|over|above|more than|treat|special|rare|fancy|splurge|light|lighter|bright|dark|darker|strong|stronger|bold|intense|medium|decaf|decaffeinated|caffeine|evening|night|new|fresh|just in|today|qualcosa|vorrei|voglio|per la mia|per il mio|sotto|meno di|economico|chiaro|leggero|scuro|forte|deca|decaffeinato|nuovo)\b/i;
   const ASK_BREWER = [[/\bv60 ?neo\b|\bneo\b/, "neo"], [/\bv-?60\b|hario/, "v60"], [/kalita|wave\b/, "kalita"], [/\bapril\b/, "april"], [/\borea\b/, "orea"], [/melitta/, "melitta"],
     [/chemex/, "chemex"], [/origami/, "origami"], [/aero ?press/, "aero"], [/french ?press|cafeti[eè]re|plunger|pressa francese/, "press"], [/cold ?brew/, "cold"],
     [/\bmoka\b|stovetop|bialetti/, "mocca"], [/clever/, "clever"], [/switch/, "switch"], [/espresso machine|\bespresso\b/, "espresso"], [/cupping/, "cupping"]];
@@ -5855,6 +5858,10 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     // price: under £15, below 20, less than €12, max 15, sotto i 15 €
     const pm = use(/(?:under|below|less than|max(?:imum)?|up to|no more than|sotto(?: i)?|meno di|massimo)\s*[£€$]?\s*(\d+(?:[.,]\d+)?)\s*(?:£|€|\$|quid|pounds?|euros?|eur|gbp)?/);
     if (pm) want.max = parseFloat(pm[1].replace(",", "."));
+    // over £20, more than 25, at least 30, sopra i 20 €
+    const pn = use(/(?:over|above|more than|at least|min(?:imum)?|from|sopra(?: i)?|più di|almeno)\s*[£€$]\s*(\d+(?:[.,]\d+)?)|(?:over|above|more than|at least|sopra(?: i)?|più di|almeno)\s*(\d+(?:[.,]\d+)?)\s*(?:£|€|\$|quid|pounds?|euros?|eur|gbp)?/);
+    if (pn) want.min = parseFloat((pn[1] || pn[2]).replace(",", "."));
+    if (use(/\b(expensive|pricey|pricy|premium|luxury|luxurious|high[- ]end|posh|costly|dear|caro|costoso|costosi|lusso)\b/)) want.dear = true;
     if (use(/\b(cheap|cheaper|budget|value|affordable|inexpensive|bargain|economic[oa]|economico|poco)\b/)) want.cheap = true;
     if (use(/\b(treat|special|rare|fancy|splurge|competition|auction|top lot|best of|speciale|raro)\b/)) want.treat = true;
     if (use(/\b(no decaf|not decaf|with caffeine|caffeinated|full caf)\b/)) want.nodecaf = true;
@@ -5895,6 +5902,10 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       want.words.push(w); });
     return want;
   }
+  // the dearest quarter, by price per 100 g
+  let askDear = null, askDearN = -1;
+  const askDearCut = () => { if (askDear != null && askDearN === shelf.length) return askDear; const v = shelf.map((r) => r._p100).filter((x) => x != null && x >= 2).sort((a, b) => a - b);
+    askDearN = shelf.length; return (askDear = v.length ? v[Math.floor(v.length * 0.75)] : Infinity); };
   let askNotesSet = null, askNotesN = -1;
   function askNoteWords() {
     if (askNotesSet && askNotesN === shelf.length) return askNotesSet;
@@ -5913,6 +5924,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       if (want.decaf && !isDecaf(r)) return 0;
       if (want.places.length && !want.places.some((pl) => askPlaceFit(pl)(r))) return 0;
       if (want.nodecaf && isDecaf(r)) return 0;
+      if (want.min != null) { const p = bagGBP(r); if (p == null || p < want.min) return 0; }
       if (want.max != null) { const p = bagGBP(r); if (p == null || p > want.max * (LANG === "it" || /€/.test(String(r.price)) ? 1 : 1)) return 0; }
       let s = 0.01, asked = 0;
       const notes = tasteText(r);
@@ -5927,6 +5939,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       if (want.fresh) { asked += W.fresh; if (r.just_in) s += W.fresh; else if (r.new) s += W.fresh / 2; }
       if (want.treat) { asked += W.treat; if (isTopLot(r)) s += W.treat; }
       if (want.cheap) { asked += W.cheap; if (isValue(r)) s += W.cheap; }
+      if (want.dear) { asked += W.cheap; if (isTopLot(r) || (r._p100 != null && r._p100 >= askDearCut())) s += W.cheap; }
       if (asked && s < asked * 0.5) return 0;   // asked for several things: at least half of them
       return s;
     };
@@ -5945,6 +5958,8 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     if (want.fresh) bits.push(it ? "nuovi" : "new in");
     if (want.treat) bits.push(it ? "un lotto speciale" : "a special lot");
     if (want.cheap) bits.push(it ? "buon prezzo" : "good value");
+    if (want.dear) bits.push(it ? "di fascia alta" : "top end");
+    if (want.min != null) bits.push(it ? `sopra ${want.min}` : `over £${want.min}`);
     if (want.max != null) bits.push(it ? `sotto ${want.max}` : `under £${want.max}`);
     const b = want.brewer && BREWERS[want.brewer] ? BREWERS[want.brewer].name : "";
     if (!bits.length && !b) return "";
@@ -5980,7 +5995,8 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       // tab hidden doesn't count, so a scroll never cuts it short), then For you switches itself off and the note goes
       if (!n.hidden && !fy) fyRead(n); else fyStop(); }
     { const n = $("askNote"), t = askWant && !shelfRo ? askLine(askWant) : ""; n.hidden = !t; n.textContent = t; }
-    list = shelfRo ? [...list].sort((a, b) => shelfDate(b).localeCompare(shelfDate(a))) : fy ? list : askRank ? [...list].sort((a, b) => (askRank.get(b) - askRank.get(a)) || shelfDate(b).localeCompare(shelfDate(a)))
+    list = shelfRo ? [...list].sort((a, b) => shelfDate(b).localeCompare(shelfDate(a))) : fy ? list : askRank ? [...list].sort((a, b) => (askRank.get(b) - askRank.get(a))
+        || (askWant.dear ? (b._p100 ?? -1) - (a._p100 ?? -1) : askWant.cheap ? (a._p100 ?? 1e9) - (b._p100 ?? 1e9) : 0) || shelfDate(b).localeCompare(shelfDate(a)))
       : shelfT ? [...list].sort((a, b) => (b._p100 ?? -1) - (a._p100 ?? -1)) : shelfGV ? [...list].sort((a, b) => a._p100 - b._p100) : interleave(list);   // good value: cheapest first   // top lots: dearest first
     if (!shelfAll) shelfN = 10;   // a new filter or search starts again from the ten newest
     shelfAll = true;
@@ -6943,10 +6959,10 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   // the cross clears what you typed and leaves the cursor in the box
   // the hint in the ask box: the question (on a phone, where there's no room for it beside the box), then examples in quick succession
   { const a = $("askIn"), EX = ["Fruity, under £15", "Floral Ethiopian", "Decaf for my V60", "Something chocolatey", "New naturals", "A special treat", "Light and juicy", "Strong, for espresso", "Cheap washed Colombia", "Jasmine and peach", "Nutty for my AeroPress", "Berries, light roast"];
-    let i = -1; const tick = () => { if (!a.value && document.activeElement !== a) { const phone = matchMedia("(max-width:760px)").matches, q = document.body.classList.contains("mark-on") ? "How do you want your coffee today?" : "Your coffee today?";
+    let i = -1; const tick = () => { if (!a.value && document.activeElement !== a) { const phone = matchMedia("(max-width:760px)").matches, q = "How do you want your coffee today?";
         i = (i + 1) % (EX.length + 1); a.placeholder = i === EX.length ? (phone ? q : EX[0]) : EX[i]; }
       setTimeout(tick, i === EX.length ? 2600 : 1600); };
-    a.placeholder = matchMedia("(max-width:760px)").matches ? "Your coffee today?" : EX[0]; setTimeout(tick, 2600); }
+    a.placeholder = matchMedia("(max-width:760px)").matches ? "How do you want your coffee today?" : EX[0]; setTimeout(tick, 2600); }
   // the ask line: its words go into the search (which reads them as an ask), the brewer it names becomes the brewer, and the page goes to the list
   const askBrewer = (q) => { if (!isAsk(q)) return; const w = readAsk(q); if (w.brewer && BREWERS[w.brewer] && w.brewer !== brewerOf(state)) { setBrewer(w.brewer); saveState(); renderAllOpts(); render(); } };
   $("askForm").addEventListener("submit", (e) => { e.preventDefault(); const t = $("askIn").value.trim(); if (!t) { $("askIn").focus(); return; }
