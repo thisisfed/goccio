@@ -7374,9 +7374,27 @@ html:not(.bn-off) .dock{display:none!important}
   document.addEventListener("visibilitychange", () => { if (document.hidden && live) stopLive(); });
   $("scanIn").addEventListener("change", async (e) => {
     const file = e.target.files && e.target.files[0]; if (!file) return;
-    const msg = $("scanMsg"), btn = $("scanBtn"); btn.disabled = true; msg.textContent = "Reading the bag…";
+    const msg = $("scanMsg"), btn = $("scanBtn"); btn.disabled = true;
+    // one steady 0 to 100%, slower than the reader itself: each step gets its own line and its own share of the bar
+    let nR = 0; try { nR = askRoasterList().length; } catch (e) {}
+    const ST = [["Cleaning up the photo", 12], ["Reading the label", 62], ["Looking for the roaster’s name", 78],
+      [nR ? `Checking ${nR.toLocaleString("en-GB")} roasters` : "Checking the roasters", 92], ["Matching the coffee", 100]];
+    // the bar never jumps: the reader's real progress only sets how far it may go, and it gets there at its own pace
+    let st = 0, pc = 0, floor = 0, done = 0, tE = 0; const t0 = Date.now();
+    const show = () => { while (st < ST.length - 1 && pc >= ST[st][1]) st++; msg.textContent = `${ST[st][0]}… ${Math.floor(pc)}%`; };
+    const tick = setInterval(() => {
+      if (done) pc = Math.min(100, pc + (100 - pc) / Math.max(1, (tE - Date.now()) / 90));
+      else { const end = ST[Math.max(st, floor)][1] - 1, base = floor ? ST[floor - 1][1] : 0;
+        pc = pc < base ? Math.min(base, pc + 0.6) : Math.min(end, pc + Math.max(0.03, (end - pc) * 0.015)); }
+      show(); }, 90);
+    const stage = (k) => { if (k > floor) floor = k; };
+    // the label's read: the rest of the bar takes at least 4 s, and the whole scan at least 10 s
+    const finishBar = () => new Promise((ok) => { done = Date.now(); tE = Math.max(t0 + 10000, done + 4000);
+      const w = setInterval(() => { if (pc >= 99.9) { clearInterval(w); clearInterval(tick); pc = 100; show(); setTimeout(ok, 300); } }, 60); });
+    show();
     try {
-      const ocr = await readPhoto(file, (t) => (msg.textContent = t));
+      const ocr = await readPhoto(file, (t) => stage(/^Cleaning/.test(t) ? 0 : /^Reading/.test(t) ? 1 : /^Looking/.test(t) ? 2 : st));
+      await finishBar();
       let f = readFields(ocr, scanMem());
       const other = notCoffee(ocr, f); if (other) { msg.textContent = notCoffeeMsg(other); return; }
       if (review && review.adding && review.fields) f = mergeFields(review.fields, f);   // the back of the bag adds to the front
@@ -7384,7 +7402,7 @@ html:not(.bn-off) .dock{display:none!important}
       showReview(f, ocr);
     } catch (err) {
       msg.textContent = err && err.message === "load" ? "Couldn’t load the reader. Check your connection and try again." : "Couldn’t read that photo. Try another, or type it.";
-    } finally { btn.disabled = false; }
+    } finally { clearInterval(tick); btn.disabled = false; }
   });
   // test hook (only with ?scantest): run the whole photo pipeline on a file and return the fields
   if (/[?&]scantest\b/.test(location.search)) { window.__prep = async (blob) => { const img = await loadImg(blob), c0 = toCanvas(img); const pre = prepare(img);
