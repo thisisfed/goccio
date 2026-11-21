@@ -2383,6 +2383,7 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
 :is(.chip:not(.gear-dd), .shelf .item > .r > *, .share .btn, .share a.btn, #bagBtn, .botnav .chip, #toolsBtn, #langBtn, #themeBtn, .ro-pill, .sec-p, .hero-pill, .step button){position:relative}
 :is(.chip:not(.gear-dd), .shelf .item > .r > *, .share .btn, .share a.btn, #bagBtn, .botnav .chip, #toolsBtn, #langBtn, #themeBtn, .ro-pill, .sec-p, .hero-pill, .step button)::before{
   content:"";position:absolute;left:0;right:0;top:50%;height:max(100%,44px);transform:translateY(-50%);background:none;pointer-events:auto}
+#askNote:not([hidden]){transform:translateY(10px)}   /* Searching for …: as far under Coffees as over the first coffee (moved, not reflowed: the list's sticky bar stays as it is) */
 </style>
 </head>
 <body>
@@ -4671,7 +4672,7 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
     const c = r.c, K = r.kind;
     kitState();
     if (renderNeed(r)) {
-      window.__exAuto = false;
+      window.__exAuto = false; requestAnimationFrame(() => { try { window.exAlign && exAlign(); } catch (e) {} });
       renderWater({});
       $("detected").innerHTML = "";
       if (state.text || state.bag) { $("rtitle").textContent = coffeeTitle(state, r); $("rmethod").textContent = ""; $("rgoal").textContent = ""; $("rread").textContent = ""; }
@@ -4679,6 +4680,7 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
     }
     const timed = K !== "steps";
     try { cfNudge(); } catch (e) {}
+    requestAnimationFrame(() => { try { window.exAlign && exAlign(); } catch (e) {} });
     // a recipe with Start brewing on screen: the Example folds away (once; open it again and it stays open)
     if (timed && !window.__exAuto) { window.__exAuto = true; try { exFold(true); } catch (e) { window.__exAuto = false; } }
     $("startBrew").hidden = !timed; $("dock").hidden = !timed; journalOn();
@@ -5881,10 +5883,14 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
     let parts = q.split(/\s*[,;]\s*|\s+and\s+|\s+e\s+/).map((t) => t.trim()).filter(Boolean);
     // no commas: each word on its own too (ethiopia floral), so long as the whole text isn't a family (frutti di bosco)
     if (parts.length === 1 && /\s/.test(parts[0]) && !tasteWords(parts[0])) parts = parts[0].split(/\s+/).filter((w) => !/^(with|con|di|of|the|a)$/.test(w));
-    const tests = parts.map((t) => { const fam = tasteWords(t), stem = t.length > 4 ? t.replace(/(ies|y|s)$/, "") : t;
-      return (hay, notes) => hay.includes(t) || (fam ? fam.some((w) => notes.includes(w)) : notes.includes(stem)) || FZ_STOP.test(t) || fzHas(hay, t); });
+    const tests = parts.map((t) => { const fam = tasteWords(t), stem = t.length > 4 ? t.replace(/(ies|y|s)$/, "") : t, nw = noteWord(stem);
+      return (hay, notes) => hay.includes(t) || (fam ? fam.some((w) => notes.includes(w)) : nw.test(notes)) || FZ_STOP.test(t) || fzHas(hay, t); });
+    const nq = noteWord(q);
     return (r) => { const notes = tasteText(r), hay = [r.roaster, r.roaster_city, r.name, r.origin, r.region, r.process, r.variety].join(" ").toLowerCase();
-      return hay.includes(q) || notes.includes(q) || tests.every((ok) => ok(hay, notes)) || fzHas([r.roaster, r.name].join(" "), q); }; };
+      return hay.includes(q) || nq.test(notes) || tests.every((ok) => ok(hay, notes)) || fzHas([r.roaster, r.name].join(" "), q); }; };
+  // a word typed against the tasting notes: from the start of a word, and a short one (3 letters or fewer) only as a whole
+  // word, so "van" doesn't find vanilla, while "vanil" (on the way to vanilla) does
+  const noteWord = (t) => new RegExp(`(?<![a-z])${t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}${t.length >= 4 ? "" : "(?![a-z])"}`, "i");
   const EXTRAS = [["foryou", "For you"], ["light", "Light roast"], ["filter", "For filter"], ["value", "Good value"], ["top", "Top lots"], ["decaf", "Decaf"]];
   const extraOn = (v) => v === "foryou" ? shelfY : v === "light" ? shelfO === "light" : v === "top" ? shelfT : v === "value" ? shelfGV : v === "filter" ? shelfFi : shelfD;
 
@@ -6232,8 +6238,8 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
   // the price per 100 g, which is a plain link to the shop; Save is an icon beside Brew
   const BAG_ICO = `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2h8v12l-4-3-4 3z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
   const cardHits = () => { const w = []; if (askWant) { askWant.tastes.forEach((t) => w.push(...t.list)); }
-    else { const q = ($("shelfQ").value || "").trim().toLowerCase(); if (q) q.split(/\s*,\s*|\s+/).filter((x) => x.length > 2).forEach((x) => { const f = tasteWords(x); w.push(...(f || [x.length > 4 ? x.replace(/(ies|y|s)$/, "") : x])); }); }
-    return w.filter((x) => x.length > 2); };
+    else { const q = ($("shelfQ").value || "").trim().toLowerCase(); if (q) q.split(/\s*,\s*|\s+/).filter((x) => x.length > 2).forEach((x) => { const f = tasteWords(x); w.push(...(f || ["\u0001" + (x.length > 4 ? x.replace(/(ies|y|s)$/, "") : x)])); }); }
+    return w.filter((x) => x.replace("\u0001", "").length > 2); };
   // no notes from the roaster: the origin's typical ones, in grey and labelled so, as in What to expect
   const cardTypical = (r) => { const o = ORIGIN_NOTES[(r.origin || "").split(" / ")[0]]; if (!o || / \/ /.test(r.origin || "")) return "";
     const b = bucket(r.process), k = b === "exp" ? (/anaerob/i.test(r.process || "") ? "anaerobic" : "") : b === "other" ? "" : b;
@@ -6242,10 +6248,17 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
     const head = it ? `Tipico di un ${proc ? proc + " " : ""}${r.origin}` : `Typical for ${/^[aeiou]/i.test(proc || r.origin) ? "an" : "a"} ${proc ? proc + " " : ""}${r.origin}`;
     const list = ns.length > 1 ? ns.slice(0, -1).join(", ") + " and " + ns[ns.length - 1] : ns[0];
     return `<p class="c-notes c-typ">${esc(head)}: ${esc(list)}</p>`; };
-  const cardNotes = (r) => { const ns = (Array.isArray(r.notes) ? r.notes : []).filter((n) => typeof n === "string" && n.trim()).slice(0, 3); if (!ns.length) return cardTypical(r);
-    const hits = cardHits(), lit = (n) => { let h = esc(n); hits.forEach((w) => { h = h.replace(new RegExp(`(${w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}[a-z]*)`, "gi"), "<mark>$1</mark>"); }); return h; };
-    // sentence case: Dark chocolate, red berries, caramel (a word in capitals, SL28 or a name like Earl Grey kept only when all of it is capitals)
-    const low = (n, k) => /^[A-Z][a-z'’-]*( [A-Za-z][a-z'’-]*)*$/.test(n) ? (k ? n.toLowerCase() : n[0] + n.slice(1).toLowerCase()) : n;
+  // a note as the roaster wrote it, tidied: stray brackets, stars and dashes at either end go ("Vanilla[" reads Vanilla)
+  const noteClean = (n) => String(n).replace(/^[\s\[\](){}*•·|:;,.\-–—"'“”]+|[\s\[\](){}*•·|:;,.\-–—"'“”]+$/g, "").replace(/\s{2,}/g, " ");
+  const cardNotes = (r) => { const ns = (Array.isArray(r.notes) ? r.notes : []).map(noteClean).filter((n) => /\p{L}/u.test(n)).slice(0, 3); if (!ns.length) return cardTypical(r);
+    const reE = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const hits = cardHits(), lit = (n) => { let h = esc(n); hits.forEach((w) => { const own = w[0] === "\u0001", t = own ? w.slice(1) : w;
+      // a word you typed lights from the start of a word (a short one only whole); a taste family's words wherever they sit
+      const rx = own ? new RegExp(`(?<![a-z])(${reE(t)}${t.length >= 4 ? "[a-z]*" : ""})(?![a-z])`, "gi") : new RegExp(`(${reE(t)}[a-z]*)`, "gi");
+      h = h.replace(rx, "<mark>$1</mark>"); }); return h; };
+    // one style for every card: the first note starts with a capital, the others in lower case; a word all in capitals or with
+    // digits (SL28, EA) and a name inside a note keep theirs only when the whole word is capitals
+    const low = (n, k) => { const t = n.split(" ").map((x) => /^[A-ZÀ-Ý][a-zà-ÿ'’-]*$/.test(x) ? x.toLowerCase() : x).join(" "); return k ? t : t.charAt(0).toUpperCase() + t.slice(1); };
     const w = ns.map((n, k) => lit(low(n, k))), and = LANG === "it" ? " e " : " and ";
     return `<p class="c-notes">${w.length > 1 ? w.slice(0, -1).join(", ") + and + w[w.length - 1] : w[0]}</p>`; };   // the last one joined with "and"
   const cardPrice = (r) => { if (!r.url) return ""; const it = LANG === "it", p = r.price ? esc(r.price.replace(/^From\s+/i, "")) : "";
@@ -6370,7 +6383,19 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
   const EX_FOLD = "v60.exFold";
   const exFold = (on) => { const ex = document.querySelector(".g-ex"), b = $("exTog"); if (!ex || !b) return;
     ex.classList.toggle("fold", on); document.documentElement.classList.toggle("ex-fold", on); b.setAttribute("aria-expanded", String(!on)); b.setAttribute("aria-label", on ? "Show the example" : "Hide the example");
-    if (!on) try { layGlimpse(); } catch (e) {} };
+    if (!on) try { layGlimpse(); } catch (e) {} requestAnimationFrame(() => { try { exAlign(); } catch (e) {} }); };
+  // the Example under the recipe's buttons: its rule as far below them as the rule above them; folded, its label as far over the
+  // next rule as under its own, like the folds above (measured, so it holds in every browser and at every size)
+  function exAlign() { const ex = document.querySelector(".ex-sec"), gx = document.querySelector(".g-ex"), lab = $("exTog"), sh = document.querySelector("#recipe .share");
+    const out = ex && ex.nextElementSibling && ex.nextElementSibling.matches(".outro") ? ex.nextElementSibling : null; if (!ex || !gx || !lab) return;
+    ex.style.marginTop = ""; if (out) out.style.marginTop = "";
+    const px = (el, k) => parseFloat(getComputedStyle(el)[k]) || 0;
+    if (!$("recipe").hidden && $("journal").hidden && sh && sh.offsetHeight) {
+      const bt = Math.max(...[...sh.children].filter((c) => c.offsetHeight).map((c) => c.getBoundingClientRect().bottom));
+      ex.style.marginTop = (px(ex, "marginTop") - (gx.getBoundingClientRect().top - bt - 14)) + "px"; }
+    if (out && gx.classList.contains("fold")) { const g = gx.getBoundingClientRect(), l = lab.getBoundingClientRect(), o = out.getBoundingClientRect();
+      out.style.marginTop = (px(out, "marginTop") - ((o.top - l.bottom) - (l.top - g.top))) + "px"; } }
+  window.exAlign = exAlign; addEventListener("resize", () => requestAnimationFrame(exAlign)); if (document.fonts) document.fonts.ready.then(exAlign);
   if ($("exTog")) { $("exTog").onclick = () => exFold(!document.querySelector(".g-ex").classList.contains("fold")); }   // open on every visit; the arrow folds it for now
   setInterval(() => { const fig = document.querySelector(".glimpse"); if (!fig || document.hidden || fig.closest(".g-ex.fold")) return;
     const r = fig.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;   // only while you can see it
