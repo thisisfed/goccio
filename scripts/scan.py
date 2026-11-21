@@ -2675,12 +2675,21 @@ def main():
                 x.setdefault("notes_orig", x["notes"])
                 x["notes"] = en
 
+    # no price, no listing: a coffee you can't see the price of is almost always sold out, or not sold on its page
+    all_found = found
+    unpriced = [x for x in found if not x.get("price")]
+    if unpriced:
+        found = [x for x in found if x.get("price")]
+        by = {}
+        for x in unpriced:
+            by[x["roaster"]] = by.get(x["roaster"], 0) + 1
+        print(f"\nNot listed, no price: {len(unpriced)} (" + ", ".join(f"{n} {c}" for n, c in sorted(by.items(), key=lambda t: -t[1])[:8]) + ")")
     OUT.write_text(json.dumps({"updated": today, "new_window_days": NEW_DAYS, "roasters": status,
                                "releases": found}, ensure_ascii=False, indent=1) + "\n")
     print(f"\n{len(found)} coffees from {len(scanned_ok)}/{len(roasters)} roasters -> {OUT.relative_to(ROOT)}")
     write_report(today, only, found, len(scanned_ok), len(roasters))
     miss = {}
-    for x in found:
+    for x in all_found:
         miss.setdefault(x["roaster"], [0, 0])[0 if x.get("price") else 1] += 1
     bad = sorted(((n, a, b) for n, (a, b) in miss.items() if b and b >= a), key=lambda t: -t[2])
     print("\nRoasters with most coffees on 'Price on site': " + (", ".join(f"{n} {b}/{a + b}" for n, a, b in bad) or "none"))
