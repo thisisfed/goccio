@@ -2113,17 +2113,25 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
 .shelf-tools.compact .opt.xrow:not(.xall) .chips button[aria-pressed="false"]{display:none}
 .shelf-tools.compact .opt.xrow.xall .x-more{display:none!important}
 .shelf-tools:not(.compact) .x-more{display:none!important}
-/* How do you want your coffee today? a line under the top bar: the question, then a pill to type in with a → to go */
-.ask-line{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:12px 20px;margin:0 0 28px;padding:14px 0 0}
+/* How do you want your coffee today? part of the top bar, under its row: the question, then a pill to type in that runs to the
+   right edge, and the bar's line under it. On a phone the Menu slides down between the two and pushes it down with it */
+.top:has(.ask-line){border-bottom:0!important}
+.ask-line{position:relative;z-index:1;background:var(--bg);border-bottom:1px solid var(--line);display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:16px;
+  padding:0 12px 8px;transition:transform .32s cubic-bezier(.2,.7,.2,1)}
+.top:has(.sec-list.open) .ask-line{transform:translateY(var(--menu-h,0px))}
+.top:has(.sec-list.instant) .ask-line{transition:none}
 .ask-line .ask-q{font-size:var(--fs-s);font-weight:600;color:var(--ink);white-space:nowrap}
-.ask-line .ask-box{position:relative;min-width:0;max-width:640px}
+.ask-line .ask-box{position:relative;min-width:0}
 .ask-line #askIn{width:100%;box-sizing:border-box;height:var(--pill-h);border:0;border-radius:var(--r);background:var(--pill);color:var(--ink);
-  font:500 var(--fs-s)/1 var(--sans);padding:0 44px 0 12px;outline:none;box-shadow:none;-webkit-appearance:none;appearance:none;caret-color:var(--hl)}
+  font:500 var(--fs-s)/1 var(--sans);padding:0 44px 0 10px;outline:none;box-shadow:none;-webkit-appearance:none;appearance:none;caret-color:var(--hl)}
 .ask-line #askIn::placeholder{color:color-mix(in srgb,var(--ink) 45%,transparent)}
 .ask-line #askIn::-webkit-search-cancel-button,.ask-line #askIn::-webkit-search-decoration{-webkit-appearance:none;display:none}
 .ask-line .ask-go{position:absolute;top:0;right:0;height:var(--pill-h);width:var(--pill-h);border:0;border-radius:var(--r);background:var(--ink);color:var(--card);
   display:flex;align-items:center;justify-content:center;font-size:var(--fs-s);cursor:pointer;padding:0}
-@media (max-width:760px){ .ask-line{grid-template-columns:1fr;gap:10px;margin-bottom:20px} .ask-line .ask-q{white-space:normal} .ask-line .ask-box{max-width:none} }
+/* the menu slides out under the bar's row, over the question line */
+.top .sec-list{top:var(--row-h,48px)!important;z-index:2}
+@media (max-width:760px){ .ask-line{grid-template-columns:minmax(0,1fr)} .ask-line .ask-q{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)} }
+@media (prefers-reduced-motion: reduce){ .ask-line{transition:none} }
 /* Set your water lands with the water pills 15px under the top bar, not touching it */
 .opt:has(> #waterCard){scroll-margin-top:15px}
 /* the recipe's big numbers: room under the line for the tail of the g, which the cell's clipping cut off on iPhone; the layout doesn't move */
@@ -2196,14 +2204,14 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       <button type="button" class="theme-btn theme-ic" id="themeBtn" aria-label="Appearance"></button>
     </nav>
   </div>
+  <form class="ask-line" id="askForm" role="search" autocomplete="off">
+    <label for="askIn" class="ask-q">How do you want your coffee today?</label>
+    <div class="ask-box"><input type="search" id="askIn" placeholder="Fruity and light for my V60, under £15" data-ph-s="How do you want your coffee today?" enterkeyhint="search"><button type="submit" class="ask-go" aria-label="Find my coffee"><span class="arr">→</span></button></div>
+  </form>
   <div class="sec-list" id="secList" inert aria-hidden="true"><div class="sec-list-in"><button type="button" class="sec-p" data-jump="shelves" data-sec="shelves">Coffees</button><button type="button" class="sec-p" data-jump="bags" data-sec="bags">My bags</button><button type="button" class="sec-p" data-jump="gear" data-sec="gear">My equipment</button><button type="button" class="sec-p" data-jump="coffee" data-sec="coffee">What’s brewing?</button><button type="button" class="sec-p" data-jump="recipe" data-sec="recipe">Recipe</button><button type="button" class="sec-p" data-jump="journal" data-sec="journal">Journal</button></div></div>
 </header>
 
 <main class="page">
-  <form class="ask-line" id="askForm" role="search" autocomplete="off">
-    <label for="askIn" class="ask-q">How do you want your coffee today?</label>
-    <div class="ask-box"><input type="search" id="askIn" placeholder="Fruity and light for my V60, under £15" enterkeyhint="search"><button type="submit" class="ask-go" aria-label="Find my coffee"><span class="arr">→</span></button></div>
-  </form>
   <section class="sec hero-sec" aria-labelledby="h1">
     <div class="hero">
       <div class="wm-screen">
@@ -6909,7 +6917,10 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   $("shelfQx").onclick = () => { const q = $("shelfQ"); q.value = ""; q.dispatchEvent(new Event("input")); q.focus(); };
   renderBags(); syncBagBtn();
   try { renderExample(); } catch (e) {}
-  { const setTop = () => { const t = document.querySelector(".top"); if (t) document.documentElement.style.setProperty("--top-h", t.getBoundingClientRect().height + "px"); };
+  { const setTop = () => { const t = document.querySelector(".top"), r = document.querySelector(".top-in"); if (t) document.documentElement.style.setProperty("--top-h", t.getBoundingClientRect().height + "px");
+      if (r) document.documentElement.style.setProperty("--row-h", r.getBoundingClientRect().height + "px");
+      // on a phone the question is the hint in the box (there's no room for both)
+      const a = $("askIn"); if (a) { a.dataset.phL = a.dataset.phL || a.placeholder; a.placeholder = matchMedia("(max-width:760px)").matches ? a.dataset.phS : a.dataset.phL; } };
     setTop(); addEventListener("resize", setTop);
     const tools = document.querySelector(".shelf-tools");
     // a couple of pixels of give: iPhone parks a sticky bar a fraction of a pixel off, which used to flip it back to the pills
@@ -7265,7 +7276,8 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     const shut = (now) => { list.classList.toggle("instant", !!now); list.classList.remove("open"); list.inert = true; list.setAttribute("aria-hidden", "true"); dd.setAttribute("aria-expanded", "false"); };
     const close = () => shut(false);
     dd.onclick = (e) => { e.stopPropagation(); if (list.classList.contains("open")) return close(); active0 = null; sync();
-      list.classList.remove("instant"); list.inert = false; list.setAttribute("aria-hidden", "false"); list.classList.add("open"); dd.setAttribute("aria-expanded", "true"); };
+      list.classList.remove("instant"); list.inert = false; list.setAttribute("aria-hidden", "false"); list.classList.add("open"); dd.setAttribute("aria-expanded", "true");
+      document.documentElement.style.setProperty("--menu-h", (list.firstElementChild ? list.firstElementChild.getBoundingClientRect().height + 1 : 0) + "px"); };
     // your own scrolling folds it: a finger dragging the page or the wheel (the page shifting as the list opens is not you)
     const fold = (e) => { if (list.classList.contains("open") && !(e.target.closest && e.target.closest("#secList, #secDd"))) close(); };
     addEventListener("touchmove", fold, { passive: true }); addEventListener("wheel", fold, { passive: true });
