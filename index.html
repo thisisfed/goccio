@@ -2182,16 +2182,21 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after, #adjOpts[ope
 .top .mark, .top .nav .sec-inline, .top .nav .sec-dd, .top .sec-list{display:none!important}
 /* beside the box only a +; a tap slides the language and the appearance in from the right, the + turns −, the box shrinks to make room */
 .top:not(.tools-open) .nav #langBtn, .top:not(.tools-open) .nav #themeBtn{display:none!important}
+/* both come out from behind the + (it stays on top) and go back behind it when closed */
+.top .nav #toolsBtn{position:relative;z-index:2}
+.top .nav #langBtn{--tb-x:calc((var(--pill-h) + var(--nav-gap,4px)) * 2)}
+.top .nav #themeBtn{--tb-x:calc(var(--pill-h) + var(--nav-gap,4px))}
 .top.tools-open .nav #langBtn, .top.tools-open .nav #themeBtn{animation:tools-in .3s cubic-bezier(.2,.7,.2,1) both}
-.top.tools-open .nav #themeBtn{animation-delay:.04s}
-@keyframes tools-in{from{transform:translateX(calc(var(--pill-h) * 2));opacity:0}to{transform:none;opacity:1}}
+.top.tools-closing .nav #langBtn, .top.tools-closing .nav #themeBtn{animation:tools-out .26s cubic-bezier(.4,0,.6,1) both}
+@keyframes tools-in{from{transform:translateX(var(--tb-x))}to{transform:none}}
+@keyframes tools-out{from{transform:none}to{transform:translateX(var(--tb-x))}}
 #toolsBtn{border:0;border-radius:50%;width:var(--pill-h);height:var(--pill-h);padding:0;display:inline-flex;align-items:center;justify-content:center;flex:none;background:var(--pill);color:var(--ink);cursor:pointer}
 #toolsBtn:hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))}
 #toolsBtn svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
 #toolsBtn .tb-v{transition:transform .25s ease;transform-origin:center}
-.top.tools-open #toolsBtn .tb-v{transform:scaleY(0)}
+.top.tools-open:not(.tools-closing) #toolsBtn .tb-v{transform:scaleY(0)}
 .ask-line{transition:opacity .25s ease, transform .25s ease, right .3s cubic-bezier(.2,.7,.2,1), visibility 0s linear 0s!important}
-@media (prefers-reduced-motion: reduce){ .top.tools-open .nav #langBtn, .top.tools-open .nav #themeBtn{animation:none} .ask-line{transition:none!important} }
+@media (prefers-reduced-motion: reduce){ .top.tools-open .nav #langBtn, .top.tools-open .nav #themeBtn, .top.tools-closing .nav #langBtn, .top.tools-closing .nav #themeBtn{animation:none} .ask-line{transition:none!important} }
 .top .top-in{justify-content:flex-end!important}
 
 .top:has(.sec-list.instant) .ask-line{transition:none}
@@ -7251,8 +7256,12 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
         document.documentElement.style.setProperty("--nav-gap", gap + "px"); document.documentElement.style.setProperty("--nav-w", (innerWidth - left + gap) + "px"); }
     };
     new MutationObserver(setTop).observe(document.body, { attributes: true, attributeFilter: ["class"] });
-    $("toolsBtn").onclick = () => { const t = document.querySelector(".top"), on = !t.classList.contains("tools-open"); t.classList.toggle("tools-open", on);
-      $("toolsBtn").setAttribute("aria-expanded", String(on)); $("toolsBtn").setAttribute("aria-label", on ? "Hide language and appearance" : "Language and appearance"); setTop(); };
+    let toolsT = 0;
+    $("toolsBtn").onclick = () => { const t = document.querySelector(".top"), on = !t.classList.contains("tools-open") || t.classList.contains("tools-closing");
+      clearTimeout(toolsT); $("toolsBtn").setAttribute("aria-expanded", String(on)); $("toolsBtn").setAttribute("aria-label", on ? "Hide language and appearance" : "Language and appearance");
+      if (on) { t.classList.remove("tools-closing"); t.classList.add("tools-open"); setTop(); return; }
+      // closing: the two slide back behind the +, then the box grows back
+      t.classList.add("tools-closing"); toolsT = setTimeout(() => { t.classList.remove("tools-open", "tools-closing"); setTop(); }, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 260); };
     if ("ResizeObserver" in window) new ResizeObserver(setTop).observe(document.querySelector(".top"));
     setTop(); addEventListener("resize", setTop);
     const tools = document.querySelector(".shelf-tools");
