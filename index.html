@@ -2179,7 +2179,19 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after, #adjOpts[ope
 .ask-line{position:absolute!important;top:0;left:0;right:var(--nav-w,90px);height:var(--row-h,48px);padding:0 0 0 12px!important;border:0!important;background:none!important;
   transition:opacity .25s ease, transform .25s ease, visibility 0s linear 0s}
 /* the bar is always the ask box, with the language and the theme on the right: no Goccio, no section menu */
-.top .mark, .top .nav .sec-inline, .top .nav .sec-dd, .top .sec-list, .top .nav #themeBtn{display:none!important}   /* only the language beside the box */
+.top .mark, .top .nav .sec-inline, .top .nav .sec-dd, .top .sec-list{display:none!important}
+/* beside the box only a +; a tap slides the language and the appearance in from the right, the + turns −, the box shrinks to make room */
+.top:not(.tools-open) .nav #langBtn, .top:not(.tools-open) .nav #themeBtn{display:none!important}
+.top.tools-open .nav #langBtn, .top.tools-open .nav #themeBtn{animation:tools-in .3s cubic-bezier(.2,.7,.2,1) both}
+.top.tools-open .nav #themeBtn{animation-delay:.04s}
+@keyframes tools-in{from{transform:translateX(calc(var(--pill-h) * 2));opacity:0}to{transform:none;opacity:1}}
+#toolsBtn{border:0;border-radius:50%;width:var(--pill-h);height:var(--pill-h);padding:0;display:inline-flex;align-items:center;justify-content:center;flex:none;background:var(--pill);color:var(--ink);cursor:pointer}
+#toolsBtn:hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))}
+#toolsBtn svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+#toolsBtn .tb-v{transition:transform .25s ease;transform-origin:center}
+.top.tools-open #toolsBtn .tb-v{transform:scaleY(0)}
+.ask-line{transition:opacity .25s ease, transform .25s ease, right .3s cubic-bezier(.2,.7,.2,1), visibility 0s linear 0s!important}
+@media (prefers-reduced-motion: reduce){ .top.tools-open .nav #langBtn, .top.tools-open .nav #themeBtn{animation:none} .ask-line{transition:none!important} }
 .top .top-in{justify-content:flex-end!important}
 
 .top:has(.sec-list.instant) .ask-line{transition:none}
@@ -2328,6 +2340,7 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
       <button type="button" class="sec-dd" id="secDd" aria-expanded="false" aria-controls="secList"><span id="secCur">Coffees</span></button>
       <button type="button" class="lang-btn" id="langBtn" translate="no" lang="it" aria-label="Italiano">IT</button>
       <button type="button" class="theme-btn theme-ic" id="themeBtn" aria-label="Appearance"></button>
+      <button type="button" class="tools-btn" id="toolsBtn" aria-expanded="false" aria-label="Language and appearance"><svg viewBox="0 0 12 12" aria-hidden="true"><path class="tb-v" d="M6 2v8"/><path d="M2 6h8"/></svg></button>
     </nav>
   </div>
   <form class="ask-line" id="askForm" role="search" autocomplete="off">
@@ -7232,11 +7245,14 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
       if (r) document.documentElement.style.setProperty("--row-h", r.getBoundingClientRect().height + "px");
       // on a phone the question is the hint in the box (there's no room for both)
       // the box, its →, and the bar's buttons all the same distance apart: the gap the buttons already keep between them
-      const n = document.querySelector(".top .nav"); if (n) { const vis = [...n.querySelectorAll(":scope > *, :scope > .sec-inline > *")].filter((x) => x.offsetWidth && !x.classList.contains("sec-inline")).map((x) => x.getBoundingClientRect()).sort((a, b) => a.left - b.left);
+      const n = document.querySelector(".top .nav"); if (n) { const vis = [...n.querySelectorAll(":scope > *, :scope > .sec-inline > *")].filter((x) => x.offsetWidth && !x.classList.contains("sec-inline")).map((x) => { const r = x.getBoundingClientRect(); let dx = 0;
+          try { dx = new DOMMatrix(getComputedStyle(x).transform).m41 || 0; } catch (e) {} return { left: r.left - dx, right: r.right - dx }; }).sort((a, b) => a.left - b.left);   // where it lands, not where its slide-in is
         const gap = vis.length > 1 ? Math.max(0, Math.round(vis[1].left - vis[0].right)) : 4, left = vis.length ? vis[0].left : n.getBoundingClientRect().left;
         document.documentElement.style.setProperty("--nav-gap", gap + "px"); document.documentElement.style.setProperty("--nav-w", (innerWidth - left + gap) + "px"); }
     };
     new MutationObserver(setTop).observe(document.body, { attributes: true, attributeFilter: ["class"] });
+    $("toolsBtn").onclick = () => { const t = document.querySelector(".top"), on = !t.classList.contains("tools-open"); t.classList.toggle("tools-open", on);
+      $("toolsBtn").setAttribute("aria-expanded", String(on)); $("toolsBtn").setAttribute("aria-label", on ? "Hide language and appearance" : "Language and appearance"); setTop(); };
     if ("ResizeObserver" in window) new ResizeObserver(setTop).observe(document.querySelector(".top"));
     setTop(); addEventListener("resize", setTop);
     const tools = document.querySelector(".shelf-tools");
