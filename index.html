@@ -6287,7 +6287,10 @@ html:not(.bn-off) .dock{display:none!important}
     return rest ? `<p class="c-price c-per">${rest}</p>` : ""; };
   // Buy is a pill with the price in it, in the card's one row of actions: Brew, Buy, and Save at the end
   const cardBuy = (r) => { if (!r.url) return ""; const it = LANG === "it", own = r.price ? esc(r.price.replace(/^From\s+/i, "")) : "";
-    const gbp = /£/.test(own) || !own || r._p100 == null || !r.bag_g ? null : r._p100 * r.bag_g / 100;   // another currency: about this much in pounds
+    // another currency: about this much in pounds, from the shop's currency (or the symbol on the price), bag weight or not
+    const ccy = roCcy.get(r.roaster) || (/€/.test(own) ? "EUR" : /CA\$/.test(own) ? "CAD" : /A\$/.test(own) ? "AUD" : /\$/.test(own) ? "USD" : /Kč/.test(own) ? "CZK" : /zł/.test(own) ? "PLN" : /¥/.test(own) ? "JPY" : /CHF/.test(own) ? "CHF" : "");
+    const n0 = priceNum(own), k0 = GBP_PER[ccy];
+    const gbp = /£/.test(own) || !own || ccy === "GBP" ? null : r._p100 != null && r.bag_g ? r._p100 * r.bag_g / 100 : n0 && k0 ? n0 * k0 : null;
     const p = gbp != null ? `≈ £${gbp >= 10 ? Math.round(gbp) : gbp.toFixed(2)}` : own;
     return `<a class="pill buy-p" href="${esc(r.url)}" target="_blank" rel="noopener" aria-label="${it ? "Compra" : "Buy"} ${esc(r.name)} ${it ? "da" : "from"} ${esc(r.roaster)}${p ? ", " + p : ""}">${it ? "Compra" : "Buy"}${p ? ` <b>${p}</b>` : ""}</a>`; };
   let askWant = null, askRank = null;
