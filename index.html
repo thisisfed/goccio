@@ -2131,7 +2131,7 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
 .ask-line .ask-q{font-size:var(--fs-s);font-weight:600;color:var(--ink);white-space:nowrap}
 .ask-line .ask-box{position:relative;min-width:0;display:flex;gap:var(--nav-gap,4px);align-items:center}
 .ask-line #askIn{width:100%;box-sizing:border-box;height:var(--pill-h);border:0;border-radius:calc(var(--pill-h) / 2);background:var(--pill);color:var(--ink);
-  font:500 var(--fs-s)/1 var(--sans);padding:0 calc(var(--pill-h) + 4px) 0 32px;outline:none;text-overflow:clip;box-shadow:none;-webkit-appearance:none;appearance:none;caret-color:var(--hl)}
+  font:500 var(--fs-s)/1 var(--sans);padding:0 calc(var(--pill-h) + 4px) 0 12px;outline:none;text-overflow:clip;box-shadow:none;-webkit-appearance:none;appearance:none;caret-color:var(--hl)}
 .ask-line #askIn::placeholder{color:color-mix(in srgb,var(--ink) 45%,transparent);opacity:1;transition:opacity .25s ease}
 /* tapped: the hint fades away, and the accent ring the Coffees search has */
 .ask-line #askIn:focus::placeholder{opacity:0}
@@ -2140,10 +2140,10 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
 .ask-line #askIn::-webkit-search-cancel-button,.ask-line #askIn::-webkit-search-decoration{-webkit-appearance:none;display:none}
 .ask-line #askIn{flex:1 1 auto;min-width:0;width:auto}
 /* the → sits in the box's round right end; the lens says it's a search */
-.ask-line .ask-lens{position:absolute;left:11px;top:50%;width:14px;height:14px;transform:translateY(-50%);color:color-mix(in srgb,var(--ink) 55%,transparent);pointer-events:none;z-index:1}
-.ask-line .ask-go{position:absolute;right:0;top:0;flex:none;height:var(--pill-h);width:var(--pill-h);border:0;border-radius:50%;background:color-mix(in srgb,var(--pill) 80%,var(--ink));color:var(--ink);
+.ask-line .ask-lens{width:15px;height:15px;display:block;pointer-events:none}
+.ask-line .ask-go{position:absolute;right:0;top:0;flex:none;height:var(--pill-h);width:var(--pill-h);border:0;border-radius:50%;background:color-mix(in srgb,var(--pill) 55%,var(--bg));color:var(--ink);transition:background-color .15s ease;
   display:flex;align-items:center;justify-content:center;font-size:var(--fs-s);cursor:pointer;padding:0}
-.ask-line .ask-go:hover{background:color-mix(in srgb,var(--pill) 62%,var(--ink))}   /* the grey pills' hover */
+.ask-line .ask-go:hover, .ask-line .ask-go:active{background:color-mix(in srgb,var(--pill) 80%,var(--ink))}   /* darker than the box, lighter under the finger */   /* the grey pills' hover */
 /* the menu slides out under the bar's row, over the question line */
 .top .sec-list{top:var(--row-h,48px)!important;z-index:2}
 @media (max-width:760px){ .ask-line{grid-template-columns:minmax(0,1fr)} .ask-line .ask-q{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)} }
@@ -2222,7 +2222,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   </div>
   <form class="ask-line" id="askForm" role="search" autocomplete="off">
     <label for="askIn" class="ask-q">How do you want your coffee today?</label>
-    <div class="ask-box"><svg class="ask-lens" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10.4 10.4l3.6 3.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><input type="search" id="askIn" placeholder="Fruity, under £15" enterkeyhint="search"><button type="submit" class="ask-go" aria-label="Find my coffee"><span class="arr">→</span></button></div>
+    <div class="ask-box"><input type="search" id="askIn" placeholder="Fruity, under £15" enterkeyhint="search"><button type="submit" class="ask-go" aria-label="Find my coffee"><svg class="ask-lens" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10.4 10.4l3.6 3.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div>
   </form>
   <div class="sec-list" id="secList" inert aria-hidden="true"><div class="sec-list-in"><button type="button" class="sec-p" data-jump="shelves" data-sec="shelves">Coffees</button><button type="button" class="sec-p" data-jump="bags" data-sec="bags">My bags</button><button type="button" class="sec-p" data-jump="gear" data-sec="gear">My equipment</button><button type="button" class="sec-p" data-jump="coffee" data-sec="coffee">What’s brewing?</button><button type="button" class="sec-p" data-jump="recipe" data-sec="recipe">Recipe</button><button type="button" class="sec-p" data-jump="journal" data-sec="journal">Journal</button></div></div>
 </header>
