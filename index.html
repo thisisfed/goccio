@@ -5726,14 +5726,23 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   const tasteWords = (t) => { const f = TASTE_FAM.find(([re]) => re.test(t)); return f ? f[1].split(" ") : null; };
   // Search: the whole text anywhere (Square Mile), or, split at commas or spaces, each part somewhere: a roaster, an origin, a
   // process, a note or a family of notes (Ethiopia, fruity). Tastes only look in the notes
+  // close is good enough for names: a word of the search matches a word of the coffee or roaster when one starts the other
+  // (Climpsons, Climp), or it is one or two letters off (Climsoon, Frieddhats); and, &, the, of are left out (Climpson and)
+  const FZ_STOP = /^(and|&|the|of|e|di|il|la|le|lo|a|an|co|y|und)$/;
+  const fzLev = (a, b) => { if (Math.abs(a.length - b.length) > 2) return 9; let p = Array.from({ length: b.length + 1 }, (_, j) => j);
+    for (let i = 1; i <= a.length; i++) { const c = [i]; for (let j = 1; j <= b.length; j++) c[j] = Math.min(p[j] + 1, c[j - 1] + 1, p[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); p = c; } return p[b.length]; };
+  const fzWords = (t) => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/['’]s\b/g, "").split(/[^a-z0-9]+/).filter((w) => w && !FZ_STOP.test(w));
+  const fzWord = (t, hw) => hw.some((h) => h === t || (t.length >= 3 && h.startsWith(t)) || (h.length >= 4 && t.startsWith(h) && t.length - h.length <= 2)
+    || (t.length >= 6 && h.length >= 5 && fzLev(t, h) <= (t.length >= 8 ? 2 : 1)));
+  const fzHas = (hay, t) => { const ws = fzWords(t); return ws.length > 0 && ws.every((w) => fzWord(w, fzWords(hay))); };
   const searchFit = (q) => {
     let parts = q.split(/\s*[,;]\s*|\s+and\s+|\s+e\s+/).map((t) => t.trim()).filter(Boolean);
     // no commas: each word on its own too (ethiopia floral), so long as the whole text isn't a family (frutti di bosco)
     if (parts.length === 1 && /\s/.test(parts[0]) && !tasteWords(parts[0])) parts = parts[0].split(/\s+/).filter((w) => !/^(with|con|di|of|the|a)$/.test(w));
     const tests = parts.map((t) => { const fam = tasteWords(t), stem = t.length > 4 ? t.replace(/(ies|y|s)$/, "") : t;
-      return (hay, notes) => hay.includes(t) || (fam ? fam.some((w) => notes.includes(w)) : notes.includes(stem)); });
+      return (hay, notes) => hay.includes(t) || (fam ? fam.some((w) => notes.includes(w)) : notes.includes(stem)) || FZ_STOP.test(t) || fzHas(hay, t); });
     return (r) => { const notes = tasteText(r), hay = [r.roaster, r.roaster_city, r.name, r.origin, r.region, r.process, r.variety].join(" ").toLowerCase();
-      return hay.includes(q) || notes.includes(q) || tests.every((ok) => ok(hay, notes)); }; };
+      return hay.includes(q) || notes.includes(q) || tests.every((ok) => ok(hay, notes)) || fzHas([r.roaster, r.name].join(" "), q); }; };
   const EXTRAS = [["foryou", "For you"], ["light", "Light roast"], ["filter", "For filter"], ["value", "Good value"], ["top", "Top lots"], ["decaf", "Decaf"]];
   const extraOn = (v) => v === "foryou" ? shelfY : v === "light" ? shelfO === "light" : v === "top" ? shelfT : v === "value" ? shelfGV : v === "filter" ? shelfFi : shelfD || curfewOn();
 
@@ -6042,7 +6051,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
         if (rr != null) s += Math.max(0, W.roast - Math.abs(rr - aim) * 0.9); else if (want.roast !== "dark" && r.roast_for !== "espresso") s += W.roast * 0.3; }
       if (want.lands.length) { asked += W.land; if (want.lands.some((l) => (r.origin || "").toLowerCase().includes(l.toLowerCase()))) s += W.land; }
       if (want.words.length) { const hay = [r.roaster, r.roaster_city, r.name, r.origin, r.region, r.variety, r.process].join(" ").toLowerCase();
-        want.words.forEach((w) => { asked += W.word; if (hay.includes(w) || (/^ge?i?sha$/.test(w) && /ge?i?sha/.test(hay))) s += W.word; }); }
+        want.words.forEach((w) => { asked += W.word; if (hay.includes(w) || (/^ge?i?sha$/.test(w) && /ge?i?sha/.test(hay)) || fzHas(hay, w)) s += W.word; }); }
       if (want.filter) { asked += W.filter; if (want.filter === "espresso" ? r.roast_for === "espresso" || r.roast_for === "omni" : r.roast_for !== "espresso") s += W.filter; }
       if (want.fresh) { asked += W.fresh; if (r.just_in) s += W.fresh; else if (r.new) s += W.fresh / 2; }
       if (want.treat) { asked += W.treat; if (isTopLot(r)) s += W.treat; }
