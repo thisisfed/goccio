@@ -2198,7 +2198,11 @@ body{padding-bottom:var(--bot-h)}
 .dock{bottom:var(--bot-h) !important;padding-bottom:10px !important}
 html{scroll-padding-bottom:var(--bot-h)}
 /* the first screen fits between the two bars: the buttons never sit under the bottom one */
-.wm-screen{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h)) !important}
+.wm-screen{min-height:calc(100svh - var(--top-h, 49px)) !important}
+/* the bottom bar comes up once Coffees is on screen; until then the first screen has the whole height */
+.botnav{transition:transform .3s ease}
+html.bn-off .botnav{transform:translateY(100%)}
+html.bn-off .dock{bottom:0 !important}
 .ask-line .ask-box.nudge #askIn{animation:askNudge .9s ease-in-out 2}
 @keyframes askNudge{0%,100%{box-shadow:0 0 0 0 transparent}45%{box-shadow:0 0 0 2px var(--hl)}}
 @media (prefers-reduced-motion: reduce){ .ask-line .ask-box.nudge #askIn{animation:none;box-shadow:0 0 0 2px var(--hl)} }
@@ -2301,8 +2305,8 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
 /* the language and Light / Dark buttons, and Freezer in My bags: circles */
 #langBtn, #themeBtn, .bag-fz{border-radius:50%!important;width:var(--pill-h)!important;min-width:var(--pill-h)!important;max-width:var(--pill-h)!important;height:var(--pill-h)!important;padding:0!important;display:inline-flex!important;align-items:center;justify-content:center;flex:none}
 #bvClose{width:var(--pill-h)!important;height:var(--pill-h)!important;min-width:0!important;padding:0!important;border-radius:50%!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:none!important}   /* the close button a circle */
-.zr-opt .step button { width: 36px !important; min-width: 36px !important; padding: 0 !important; }
-.zr-opt #zVal { min-width: 40px; padding: 0 4px; text-align: center; font-size: var(--fs-s); }
+.zr-opt .step button { width: 28px !important; min-width: 28px !important; height: var(--pill-h) !important; padding: 0 !important; }
+.zr-opt #zVal { min-width: 24px; padding: 0 2px; text-align: center; font-size: var(--fs-s); }
 .zr-opt .step { height: var(--pill-h); }
 .zr-opt[hidden] { display: none !important; }
 #startBrew { display: none !important; }   /* Start brewing lives in the bar at the bottom only */
@@ -7611,6 +7615,8 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
     let raf = 0; addEventListener("scroll", () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; sync(); }); }, { passive: true });
     addEventListener("resize", sync); setTimeout(sync, 0); setTimeout(sync, 1500);
   })();
+  { const sh = $("shelves"), sync = () => document.documentElement.classList.toggle("bn-off", !!sh && sh.getBoundingClientRect().top >= innerHeight);
+    sync(); addEventListener("scroll", sync, { passive: true }); addEventListener("resize", sync); }
   // the bottom bar: always four. My bags with nothing saved shows the list, where Save is; Journal before any brew shows What's brewing
   document.querySelectorAll(".botnav [data-bn]").forEach((b) => b.onclick = () => { const id = b.dataset.bn, el = $(id);
     if (id === "coffee") return jumpTo($("coffee"));
