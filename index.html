@@ -6913,8 +6913,10 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
   // supermarket and high-street coffee: the brand read anywhere on the bag (its name, web address or handle). Never on today's
   // list, but the recipe still works from what the bag says (roast, strength). Each needs its own word, or two where one is
   // an everyday word (Union with hand-roasted or unionroasted, Grind with grind.co.uk or craft coffee, Taylors with Harrogate)
+  // a few specialty roasters whose bags carry no name, only a blend we know ("Sweet Shop" is Square Mile's)
+  const BLEND_OF = [["Square Mile", /\bsweet\W{0,3}shop\b|\bred brick\b|\bsquare ?mile\b/]];
   const BRANDS = [["Ueshima (UCC)", /\b(?:u?eshima|ueshimacoffee\w*|ucc coffee)\b/], ["Raw Bean", /\braw ?bean\b|\bra[vw]s? bean\b|\bproper coffee\b|\bdefinitely decaf\b/], ["Sainsbury’s", /\bsainsbury|\btaste the difference\b/],
-    ["Union", /\bunionroasted|\bunion\b[\s\S]{0,60}\bhand\W{0,3}roasted|\bhand\W{0,3}roasted\b[\s\S]{0,40}\bunion\b/], ["Costa", /\bcosta coffee\b|\bcosta\b(?! rica)/],
+    ["Union", /\bunionroasted|\bunion\b[\s\S]{0,60}\bhand\W{0,3}roasted|\bhand\W{0,3}roasted\b[\s\S]{0,40}\bunion\b/], ["Costa", /\bcosta\W{0,3}coffee\b/],
     ["Taylors of Harrogate", /\btaylors\b|\bharrogate\b/], ["Grind", /\bgrind\.co\.uk|\bgrind\b[\s\S]{0,80}\bcraft coffee\b|\bcraft coffee\b[\s\S]{0,80}\bgrind\b|\bhello@grind/],
     ["Lavazza", /\blava[sz]{1,2}a\b|\blavarea\b|\bq?ualita (?:oro|rossa)\b|\btorino\W{0,3}i?talia\b/], ["illy", /\billy\b|\billy ?blend\b|\billycaffe\b|\b9 arabica\b/], ["Starbucks", /\bstarbucks\b/], ["Nescafé", /\bnescaf/], ["Kenco", /\bkenco\b/],
     ["Douwe Egberts", /\bdouwe egberts\b/], ["Carte Noire", /\bcarte noire\b/], ["Percol", /\bpercol\b/], ["Cafédirect", /\bcafedirect\b/], ["Pact", /\bpactcoffee\b|\bpact coffee\b/],
@@ -7012,6 +7014,7 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
     for (const l of dl) { const m = l.text.match(DT); if (!m) continue; const d = +m[1], mo = isNaN(+m[2]) ? MNUM[m[2].slice(0, 3).toLowerCase()] : +m[2], y = +m[3] < 100 ? 2000 + +m[3] : +m[3];
       if (!(d >= 1 && d <= 31 && mo >= 1 && mo <= 12 && y >= 2020 && y <= 2035)) continue;
       const kind = /best|bbe|bb\b|use by|mhd|consumir|a consommer|da consumarsi|exp/i.test(l.text) ? "best" : "roasted";
+      if (kind === "roasted" && new Date(y, mo - 1, d) > new Date(Date.now() + 7 * 864e5)) continue;   // a roast date can't be in the future: a misread digit ("25" read as "28")
       out.date = { v: `${+d} ${MON.en[mo - 1]} ${y}`, kind, c: cf(1, l.conf, /roast|best|bbe|geroestet|tostado/i.test(l.text) ? 0.1 : 0), why: kind === "best" ? "best before" : "roast date" }; break; }
     // roaster. Best first: (1) a roaster we know, read with the photo turned a quarter, because the name often runs up or down
     // the bag (Climpson & Sons); (2) a roaster we know on a line of the label that isn't the title; (3) a "… Coffee Roasters" line.
@@ -7024,6 +7027,8 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
     // (0) first of all, their web address or their handle, printed somewhere on most bags: matched to the shops we follow
     { const web = webRoaster([...ocr.lines, ...(ocr.rot || [])].filter((l) => (l.conf == null || l.conf >= 35)).map((l) => l.text).join("\n"));
       if (web) roaster = { name: web.name, s: 1.2, l: { text: web.seen, conf: 95 }, i: -1, web: web.how }; }
+    if (!roaster) { const all = [...ocr.lines, ...(ocr.rot || [])].map((l) => String(l.text || "").toLowerCase()).join(" "), b = BLEND_OF.find(([, re]) => re.test(all));
+      if (b) roaster = { name: b[0], s: 1.1, l: { text: b[0], conf: 90 }, i: -1, listed: true }; }
     const brand = brandOf([...ocr.lines, ...(ocr.rot || [])]);
     // Union and Grind are on our list (they sell in supermarkets too): found the same way, but not marked as supermarket coffee
     const listed = brand && (roShops && roShops.has(brand) || shelf.some((r) => r.roaster === brand));
@@ -7084,7 +7089,7 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
       return hi - lo + 1 >= 4; };
     const rkWords = out.roaster.v ? roasterKey(out.roaster.v).split(" ").concat(norm(out.roaster.v).split(" ")) : [];
     const junk = (l) => { const ws = l.text.trim().split(/\s+/), n = l.n.split(" ");
-      return ws.length > 5 || /^(or|and|one|if|to|so|but)\b/.test(l.n) || /^[^\p{Lu}\p{N}]/u.test(l.text.trim()) || /\b(remove valve|recycle|valve|notes|aromatic|flowery|full bodied|mild and|intensity|strength|japan s|founders?)\b/.test(l.n) || (l.n.replace(/[^a-z]/g, "").length < 5 && !/^(the|la|el|le|il)$/.test(l.n))
+      return ws.length > 5 || /^(in )?(london|bristol|manchester|leeds|glasgow|edinburgh|dublin|paris|berlin|amsterdam|oslo|copenhagen|stockholm|new york|tokyo|melbourne)$/.test(l.n) || /^(or|and|one|if|to|so|but)\b/.test(l.n) || /^[^\p{Lu}\p{N}]/u.test(l.text.trim()) || /\b(remove valve|recycle|valve|notes|aromatic|flowery|full bodied|mild and|intensity|strength|japan s|founders?)\b/.test(l.n) || (l.n.replace(/[^a-z]/g, "").length < 5 && !/^(the|la|el|le|il)$/.test(l.n))
         || (out.roaster.v && BRANDS.some(([b]) => b === out.roaster.v) && l.n.split(" ").length <= 3 && new RegExp(FLAVOUR.source).test(l.n)) || (l.n.split(" ").length === 1 && (l.conf || 0) < 88)
         || (n.length === 1 && L.some((m) => m !== l && m.n.split(" ").some((w) => w.length > n[0].length && w.startsWith(n[0]))))   // "Steve" of Steven, "Betty" of Bettys
         || /\bdiffer/.test(l.n) || /^(coffee|coffees)$/.test(l.n) || /\b(you|you’ll|you'll|your|we|our|is|are|and packed|packed|lov|love)\b/.test(l.n)
