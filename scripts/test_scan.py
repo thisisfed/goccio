@@ -200,6 +200,15 @@ CASES = [
              == ["Green tea", "Chamomile", "Passion fruit", "Yellow kiwi"]),
     ("English notes are left as written ('Tropical fruits', 'Clementine', 'Mango yogurt')",
      lambda: __import__("flavours").english_notes(["Tropical fruits", "Clementine", "Mango yogurt"]) == ["Tropical fruits", "Clementine", "Mango yogurt"]),
+    ("Monmouth La Divina Providencia: notes only in a block marked class='product-details__tasting-notes'; acidity, body and roast left out",
+     lambda: scan.class_notes('<h2 class="product-details__heading">La Divina Providencia</h2><span>El Salvador</span></div>'
+                              '<div class="product-details__tasting-notes"><ul class="wp-block-list"><li>Guava jam</li>\n<li>Tamarind</li>\n'
+                              '<li>Lively acidity</li>\n<li>Medium body</li>\n<li>Medium roast</li>\n</ul>\n</div>', "La Divina Providencia")
+             == ["Guava jam", "Tamarind"]),
+    ("Monmouth: 'Medium roast' in that block is the roast level",
+     lambda: scan.class_roast('<div class="product-details__tasting-notes"><ul><li>Guava jam</li><li>Medium roast</li></ul></div>') == "medium"),
+    ("A class that only mentions notes elsewhere (class='footer-notes') is not a tasting-notes block",
+     lambda: scan.class_notes('<div class="footer-notes"><p>Free delivery over £30</p></div>', "X") == []),
     ("A sentence 'Tasting notes of this lot change, and so does…' is not a notes row",
      lambda: scan.NOTES_CELL.search("Tasting notes of this lot change every harvest, and so does the roast") is None),
 ]

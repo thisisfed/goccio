@@ -145,7 +145,7 @@ NOTES_NEXT = re.compile(r"^[ \t\xa0]*(?:tasting notes|tastes?(?![ \t]+like)|flav
                         r"sensory profile|cup(?:ping)? notes|tastes like|smaksnoter|smagsnoter|smaksnotater|geschmacksnoten|flavou?rs?|aromas?|notes)[ \t\xa0]*:?[ \t\xa0]*\n[ \t\xa0]*"
                         r"(?!(?:of|are|is|include|from|with|that|we|you|and|the|a|an)\b)(?![^\n]*\b(?:coffee|roasters?|roastery|caf[ée])\b)"
                         r"([^\n.:]{3,120}?(?:,|&|\band\b|\s[-–•·]\s|\s?//\s?)[^\n.:]{2,160}?)[ \t\xa0]*$", re.I | re.M)
-NOTES_CHECK = 8   # pages read for notes with these rules; a coffee checked under older rules gets one more read
+NOTES_CHECK = 9   # pages read for notes with these rules; a coffee checked under older rules gets one more read
 NOTES_V = 2       # page notes read under these list rules; a short list (two or fewer) read under older ones is read once more
 
 
@@ -1374,6 +1374,51 @@ def page_notes(text, name, meta=""):
     return find_notes({"body": meta, "title": name, "tags": []}) if meta else []
 
 
+# notes the page labels only in its markup: a block whose class says tasting notes (Monmouth: <div class="product-details__tasting-notes">
+# <ul><li>Guava jam</li>…), so the visible text has the list but no "Tasting notes" word in front of it
+NOTES_CLASS = re.compile(r'<(div|ul|ol|section|p|dl)\b[^>]*class=["\'][^"\']*\b(?:[\w-]*?(?:tasting|flavou?r|taste|cup)[-_]?notes?|notes[-_](?:tasting|flavou?r))\b[^"\']*["\'][^>]*>', re.I)
+# what a list like that also holds that isn't a flavour: "Lively acidity", "Medium body", "Medium roast", "Long finish"
+NOTE_DESCRIPTOR = re.compile(r"\b(?:acidity|body|bodied|roast(?:ed)?|finish|mouthfeel|aftertaste|texture|clean cup|balance[d]?)\b", re.I)
+
+
+def class_notes(raw, name=""):
+    """The tasting notes in a block the page marks with a class (see NOTES_CLASS): the first such block after the coffee's
+    name in the markup, its list items (or its lines), descriptors of acidity, body or roast left out."""
+    key = html.unescape(name or "").lower()[:30]
+    low = html.unescape(raw).lower() if key else ""
+    at = low.find(key) if key else -1
+    blocks = list(NOTES_CLASS.finditer(raw))
+    if not blocks:
+        return []
+    b = next((m for m in blocks if at < 0 or m.start() >= at - 200), blocks[0])
+    tag = b.group(1).lower()
+    end = re.search(r"</%s>" % tag, raw[b.end():b.end() + 4000], re.I)
+    inner = raw[b.end():b.end() + (end.start() if end else 1500)]
+    if tag == "div" and re.search(r"<ul|<ol", inner, re.I):   # the list inside the div: take up to its own end
+        e2 = re.search(r"</(?:ul|ol)>", raw[b.end():b.end() + 4000], re.I)
+        inner = raw[b.end():b.end() + (e2.end() if e2 else 1500)]
+    items = re.findall(r"<li\b[^>]*>(.*?)</li>", inner, re.S | re.I) or re.split(r"<br\s*/?>|\n|,|\s[|/·•]\s", inner)
+    out = []
+    for it in items:
+        t = html.unescape(re.sub(r"<[^>]+>", " ", it))
+        t = re.sub(r"\s+", " ", t).strip(" .;:-–—")
+        if not t or NOTE_DESCRIPTOR.search(t):
+            continue
+        n = tidy_note(t)
+        if n and n not in out:
+            out.append(n)
+    return out[:8]
+
+
+def class_roast(raw):
+    """'Medium roast' in the same marked block: the roast level the shop states."""
+    b = NOTES_CLASS.search(raw)
+    if not b:
+        return None
+    m = re.search(r"\b(very light|light|medium[- ]dark|medium|dark)[- ]roast", re.sub(r"<[^>]+>", " ", raw[b.end():b.end() + 1500]), re.I)
+    return {"very light": "vlight", "light": "light", "medium": "medium", "medium-dark": "mdark", "medium dark": "mdark", "dark": "dark"}.get(m.group(1).lower()) if m else None
+
+
 def description_window(text, start, size=2500):
     """The product's own words on its page: from its name on, up to the related products or reviews."""
     t = text[start:start + size]
@@ -2122,7 +2167,7 @@ def add_page_details(recs, roaster, old):
         start = name_at(text, rec["name"])
         rec["roast_checked"] = ROAST_CHECK
         if not rec.get("roast"):
-            r_ = roast_labelled(text[start:start + 6000]) or roast_from_raw(raw) or roast_from_agtron(text)
+            r_ = roast_labelled(text[start:start + 6000]) or roast_from_raw(raw) or roast_from_agtron(text) or class_roast(raw)
             if r_:
                 rec["roast"], rec["roast_from"] = r_, "page"
                 if r_ in ("mdark", "dark") and not rec.get("roast_level"):
@@ -2130,7 +2175,7 @@ def add_page_details(recs, roaster, old):
         got = False
         if "notes" in need:   # the shop's own tasting notes: a labelled line, a sentence, or the page's description tag
             meta = re.search(r'<meta[^>]+(?:name|property)=["\'](?:og:)?description["\'][^>]+content=["\']([^"\']+)', raw, re.I)
-            ns = page_notes(text, rec["name"], html.unescape(meta.group(1)) if meta else "")
+            ns = class_notes(raw, rec["name"]) or page_notes(text, rec["name"], html.unescape(meta.group(1)) if meta else "")
             if ns:
                 rec["notes"], rec["notes_from"], rec["notes_v"] = ns, "page", NOTES_V
                 got = True
@@ -2290,7 +2335,7 @@ def notes_audit(n):
         except Exception as e:  # noqa: BLE001
             print(f"\nAUDIT {k}: {r['url']}  {type(e).__name__}"); continue
         meta = re.search(r'<meta[^>]+(?:name|property)=["\'](?:og:)?description["\'][^>]+content=["\']([^"\']+)', raw, re.I)
-        got = page_notes(text, r["name"], html.unescape(meta.group(1)) if meta else "")
+        got = class_notes(raw, r["name"]) or page_notes(text, r["name"], html.unescape(meta.group(1)) if meta else "")
         print(f"\nAUDIT {k} ({sum(not x.get('notes') for x in by[k])}/{len(by[k])} without notes): {r['name']}  {r['url']}  -> {got}")
         st, shown = name_at(text, r["name"]), 0
         for m in re.finditer(r"[^\n]*\b(?:notes?|flavou?rs?|taste[sd]?|tasting|cup|profile|aroma|we get|expect)\b[^\n]*(?:\n[^\n]{0,160})?", text[st:st + 6000], re.I):
