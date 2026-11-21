@@ -971,7 +971,7 @@ def spec_grid_product(page):
     m = re.search(r'<meta[^>]+name=["\']description["\'][^>]+content=["\']([^"\']+)', page, re.I)
     if m:
         body += "\n" + html.unescape(m.group(1))
-    sold = re.search(r">\s*(?:sold out|out of stock)\s*<", page, re.I) and not re.search(r"add to (?:bag|basket|cart)", page, re.I)
+    sold = re.search(r">\s*(?:sold out|out of stock|not in stock)\s*<", page, re.I) and not re.search(r"add to (?:bag|basket|cart)", page, re.I)
     return [{"@type": "Product", "name": strip_html(h1.group(1)).strip(), "description": body,
              "offers": {"price": price.group(2).replace(",", ".") if price else "", "priceCurrency": cur, "availability": "OutOfStock" if sold else "InStock"}}]
 
