@@ -2399,6 +2399,9 @@ html:not(.bn-off) .dock{display:none!important}
 #cfNudge .cf-lnk{background:none;border:0;padding:0;font:500 var(--fs-s)/1.3 var(--sans);color:var(--muted);text-decoration:underline;text-underline-offset:2px;text-decoration-color:color-mix(in srgb,currentColor 40%,transparent);cursor:pointer}
 /* Use your own recipe sits with Copy recipe and Share link */
 #mineBar:empty{display:none}
+/* the Example only until there's a recipe of your own: then it's gone, not folded */
+body:has(#recipe:not([hidden])) .ex-sec{display:none!important}
+body:has(#recipe:not([hidden])) .ex-sec + .outro{margin-top:0!important}
 </style>
 </head>
 <body>
@@ -4698,7 +4701,7 @@ html:not(.bn-off) .dock{display:none!important}
     try { cfNudge(); } catch (e) {}
     requestAnimationFrame(() => { try { window.exAlign && exAlign(); } catch (e) {} });
     // a recipe with Start brewing on screen: the Example folds away (once; open it again and it stays open)
-    if (timed && !window.__exAuto) { window.__exAuto = true; try { exFold(true); } catch (e) { window.__exAuto = false; } }
+
     $("startBrew").hidden = !timed; $("dock").hidden = !timed; journalOn();
     $("rmethod").textContent = r.method;
     $("rgoal").innerHTML = [r.goal ? GOAL[r.goal] : "", doseName(r)].filter(Boolean).map((t) => `<span>${esc(t)}</span>`).join("");
@@ -5800,7 +5803,7 @@ html:not(.bn-off) .dock{display:none!important}
   const isDecaf = (r) => DECAF_RX.test([r.name, r.process, r.text].filter(Boolean).join(" "));
   // ?decaf in the address shows it at any hour (Show all coffees still lifts it for that visit)
   const CF_FORCE = /[?&]decaf\b/.test(location.search); let cfLift = false;
-  const CF_KEY = "v60.curfew", lateNow = (d = new Date()) => CF_FORCE || d.getHours() >= 14 || d.getHours() < 5;
+  const CF_KEY = "v60.curfew2", lateNow = (d = new Date()) => CF_FORCE || d.getHours() >= 14 || d.getHours() < 5;
   const nightOf = (d = new Date()) => { const x = new Date(d); if (x.getHours() < 5) x.setDate(x.getDate() - 1); return `${x.getFullYear()}-${x.getMonth() + 1}-${x.getDate()}`; };
   const cfPref = () => { try { return localStorage.getItem(CF_KEY) || ""; } catch (e) { return ""; } };
   const curfewOn = () => CF_FORCE ? !cfLift : lateNow() && cfPref() !== "off" && cfPref() !== "skip:" + nightOf();
