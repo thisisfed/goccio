@@ -200,6 +200,8 @@ CASES = [
              == ["Green tea", "Chamomile", "Passion fruit", "Yellow kiwi"]),
     ("English notes are left as written ('Tropical fruits', 'Clementine', 'Mango yogurt')",
      lambda: __import__("flavours").english_notes(["Tropical fruits", "Clementine", "Mango yogurt"]) == ["Tropical fruits", "Clementine", "Mango yogurt"]),
+    ("Climpson: 'Broadway Blend: El Salvador & Guatemala' is called Broadway Blend",
+     lambda: scan.tidy_name("Broadway Blend: El Salvador & Guatemala", "Climpson & Sons") == "Broadway Blend"),
     ("Monmouth La Divina Providencia: notes only in a block marked class='product-details__tasting-notes'; acidity, body and roast left out",
      lambda: scan.class_notes('<h2 class="product-details__heading">La Divina Providencia</h2><span>El Salvador</span></div>'
                               '<div class="product-details__tasting-notes"><ul class="wp-block-list"><li>Guava jam</li>\n<li>Tamarind</li>\n'

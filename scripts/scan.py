@@ -1630,6 +1630,8 @@ def tidy_name(name, roaster):
             return ""
         return " " + (t.title() if t.isupper() else t)
     name = re.sub(r"\s*\[([^\]]{2,40})\]\s*$", _tail, name)
+    # a blend named, then what's in it: "Broadway Blend: El Salvador & Guatemala" -> "Broadway Blend" (the origins show as tags)
+    name = re.sub(r"^(.{2,40}?\bblend)\s*[:–—]\s+.+$", r"\1", name, flags=re.I)
     if re.search(r"\s[•·]\s", name):
         # "Honduras Finca El Puente • Geisha • Anaerobic Natural" -> "Honduras Finca El Puente, Geisha" (process shows as a tag)
         bits = [b.strip() for b in re.split(r"\s[•·]\s", name) if b.strip()]
