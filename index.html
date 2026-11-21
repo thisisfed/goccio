@@ -6019,7 +6019,8 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       // nothing to learn from yet: the note stays for as long as it takes to read it ON SCREEN (time scrolled away or with the
       // tab hidden doesn't count, so a scroll never cuts it short), then For you switches itself off and the note goes
       if (!n.hidden && !fy) fyRead(n); else fyStop(); }
-    { const n = $("askNote"), t = shelfRo ? "" : askWant ? askLine(askWant) : q ? (LANG === "it" ? `Ricerca: “${$("shelfQ").value.trim()}”.` : `Searching for “${$("shelfQ").value.trim()}”.`) : ""; n.hidden = !t; n.textContent = t; }
+    { const n = $("askNote"), t = shelfRo ? "" : askWant ? askLine(askWant) : q ? (LANG === "it" ? `Ricerca: “${$("shelfQ").value.trim()}”.` : `Searching for “${$("shelfQ").value.trim()}”.`) : ""; const f = $("fyNote");   // with For you's line showing, the two read as one paragraph
+      if (t && !f.hidden) { f.textContent = f.textContent.trim() + " " + t; n.hidden = true; n.textContent = ""; } else { n.hidden = !t; n.textContent = t; } }
     list = shelfRo ? [...list].sort((a, b) => shelfDate(b).localeCompare(shelfDate(a))) : fy ? list : askRank ? [...list].sort((a, b) => (askRank.get(b) - askRank.get(a))
         || (askWant.dear ? (b._p100 ?? -1) - (a._p100 ?? -1) : askWant.cheap ? (a._p100 ?? 1e9) - (b._p100 ?? 1e9) : 0) || shelfDate(b).localeCompare(shelfDate(a)))
       : shelfT ? [...list].sort((a, b) => (b._p100 ?? -1) - (a._p100 ?? -1)) : shelfGV ? [...list].sort((a, b) => a._p100 - b._p100) : interleave(list);   // good value: cheapest first   // top lots: dearest first
