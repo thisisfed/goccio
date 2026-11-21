@@ -2154,7 +2154,7 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after, #adjOpts[ope
 /* the search at the top reads region, process and extras from words now: the three filter rows stay out of sight */
 .shelf-tools .opt[hidden]{display:none!important}
 .shelf .item .c-notes{margin:-1px 0 0;font-size:var(--fs-s);color:color-mix(in srgb,var(--ink) 85%,transparent);line-height:20.25px}   /* notes and price lines one tag row apart */
-.shelf .item .c-notes mark{background:color-mix(in srgb,var(--hl) 28%,transparent);color:var(--ink);border-radius:3px;padding:0 2px;margin:0 -2px;-webkit-box-decoration-break:clone;box-decoration-break:clone}   /* a highlighter behind the word you searched, the word itself stays readable */
+.shelf .item .c-notes mark{background:none;color:inherit;text-decoration:underline;text-decoration-color:var(--hl);text-decoration-thickness:2px;text-underline-offset:3px}   /* the word you searched: underlined in the accent */
 .shelf .item .c-price{margin:-1px 0 0;line-height:20.25px;font-size:var(--fs-s);color:var(--muted)}
 .shelf .item .c-price a{color:inherit;text-decoration:none}
 /* the price is the link to the shop: underlined as the roaster's name is */
@@ -2356,7 +2356,6 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
 .glimpse figcaption button.g-tag, .glimpse figcaption .g-tag{color:var(--ink)!important;font-size:15px!important;font-weight:500!important}
 .g-ex.fold .glimpse figcaption button.g-tag{margin-left:0;width:100%;justify-content:space-between}   /* folded: Example on the left, its arrow on the right, like the folds above */
 .glimpse figcaption button.g-tag::after{margin-right:10px}
-:root[data-theme="dark"] .shelf .item .c-notes mark{background:color-mix(in srgb,var(--hl) 45%,transparent)}   /* a little stronger on black */
 </style>
 </head>
 <body>
@@ -7290,12 +7289,15 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
     if (sh.top > innerHeight * 0.6 || sh.bottom < topH + 80) return;   // elsewhere on the page: Enter or the lens, as before
     askLive = setTimeout(() => { const sq = $("shelfQ"); if (sq.value === v) return; sq.value = v; sq.dispatchEvent(new Event("input")); }, 280); });
   $("askForm").addEventListener("submit", (e) => { e.preventDefault(); const t = $("askIn").value.trim(); if (!t) { $("askIn").focus(); return; }
-    $("askIn").blur(); clearTimeout(askLive); const sq = $("shelfQ"); if (sq.value !== t) { sq.value = t; sq.dispatchEvent(new Event("input")); } askBrewer(t.toLowerCase());
-    // the phone's keyboard folds away as the page scrolls and the screen grows under it: aim again once it has settled, so
-    // Coffees lands right under the top bar like a tap on Coffees in the bottom bar
-    jumpTo($("shelves"));
-    const vv = window.visualViewport; if (vv) { let tt = 0; const again = () => { clearTimeout(tt); tt = setTimeout(() => { vv.removeEventListener("resize", again); jumpTo($("shelves")); }, 180); };
-      vv.addEventListener("resize", again); setTimeout(() => vv.removeEventListener("resize", again), 1500); } });
+    // the list is filtered first, in place (no scroll fixes while it changes); then, with a phone keyboard open, wait for it to
+    // fold away (the screen grows under it), and only then one glide straight to Coffees, landing right under the top bar
+    const vv = window.visualViewport, kb = !!vv && vv.height < innerHeight - 120;
+    $("askIn").blur(); clearTimeout(askLive); const sq = $("shelfQ");
+    if (sq.value !== t) { sq.value = t; $("shelfQx").hidden = !t; shelfAll = false; renderShelf(); } askBrewer(t.toLowerCase());
+    if (!kb) { jumpTo($("shelves")); return; }
+    let done = false, tt = 0; const go = () => { if (done) return; done = true; vv.removeEventListener("resize", wait); jumpTo($("shelves")); };
+    const wait = () => { clearTimeout(tt); tt = setTimeout(go, 120); };
+    vv.addEventListener("resize", wait); setTimeout(go, 700); });
   $("shelfQ").addEventListener("change", () => askBrewer($("shelfQ").value.trim().toLowerCase()));
   $("shelfQx").onclick = () => { const q = $("shelfQ"); q.value = ""; q.dispatchEvent(new Event("input")); q.focus(); };
   renderBags(); syncBagBtn();
