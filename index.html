@@ -1619,7 +1619,8 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 #bagList .item > .r{width:92px;flex:none}
 /* the example folds away under See an example; the brew clock counts up with the playhead */
 .g-ex{width:100%;max-width:520px}
-.ex-sec{margin-bottom:0;align-self:start;margin-top:-48px}   /* right under the recipe's Copy recipe row, its rule 24 px below the pills */
+.ex-sec{margin-bottom:0;align-self:start}
+body:has(#recipe:not([hidden])):not(:has(#journal:not([hidden]))) .ex-sec{margin-top:-48px}   /* pulled up under the recipe's buttons only when the recipe is there; otherwise the usual gap */   /* right under the recipe's Copy recipe row, its rule 24 px below the pills */
 .ex-sec + .outro{margin-top:-63px}   /* the Example centred between the two rules, open or folded */
 .ex-sec:has(.g-ex.fold) + .outro{margin-top:-57px}
 #shelf > .grp.bare:first-child{display:none}
@@ -6264,6 +6265,11 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
     const pins = !q && !shelfRo && !fy ? promosNow().flatMap((p) => list.filter((r) => r.roaster === p.roaster)
       .sort((a, b) => shelfDate(b).localeCompare(shelfDate(a))).slice(0, Math.max(1, Math.min(3, p.coffees || 1)))) : [];
     if (pins.length) shown = [...pins, ...shown.filter((r) => !pins.includes(r))];
+    // two of a roaster's coffees that would show the same short name (Koppi's La Lia, a Red Honey SL28 and a White Honey
+    // Catuai) keep the rest of their own name, so they read as two coffees, not one listed twice
+    const nm = (r) => coffeeName(r) ?? shortName(r), seen = new Map();
+    list.forEach((r) => { const k = r.roaster + "|" + String(nm(r)).toLowerCase(); seen.set(k, (seen.get(k) || new Set()).add(String(r.name).toLowerCase())); });
+    const fullName = (r) => String(r.name || "").replace(/^\s*(?:espresso|filter|filtro|omni)\s*[-–—:|]\s*/i, "").replace(/["“”]/g, "").replace(/\s{2,}/g, " ").trim();
     let lastGroup = null;
     $("shelf").innerHTML = shown.length ? shown.map((r) => {
       const i = shelf.indexOf(r);
@@ -6280,7 +6286,7 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
       const origins = originTag(r.origin, r.region);
       const place = origins;
       const day = isoDm(shelfDate(r));
-      const shown = coffeeName(r) ?? shortName(r);
+      const shown = (seen.get(r.roaster + "|" + String(nm(r)).toLowerCase()) || new Set()).size > 1 ? fullName(r) : nm(r);
       tagBits.push(...coffeeLabels(r, shown).map((l) => `<span class="tg lbl" style="--vc:${LABEL_DOT[l] || "#8e8e93"}">${l}</span>`));
       return `${head}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
         <div class="l">
