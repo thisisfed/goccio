@@ -1451,7 +1451,7 @@ NOTE_NOT = re.compile(r"^(?:courtesy|half|now|let|whilst|while|these|those|full|
 def tidy_note(n):
     """One tasting note, without the sentence it was cut from: 'Juicy notes of nectarine' -> 'Nectarine', 'A hint of caramel' -> 'Caramel',
     'Butterscotch followed by' -> 'Butterscotch', 'A caramel finish' -> 'Caramel finish', 'Rounded out by' and 'Hints of' -> '' (dropped)."""
-    n = (n or "").split("\n")[0].strip(" .;:-–")
+    n = (n or "").split("\n")[0].strip(" .;:-–[](){}*•|\"'“”")   # stray brackets and stars too: "Vanilla[" -> "Vanilla"
     if n.isupper() and len(n) > 3:
         n = n.lower()   # shouted notes ("CHERRY YOGURT") read as "Cherry yogurt"
     n = NOTE_LEAD.sub("", n).strip()

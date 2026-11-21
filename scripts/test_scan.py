@@ -88,6 +88,7 @@ CASES = [
     ("Coffee++ sachets are not beans", lambda: scan.EXCLUDE.search("Café Intenso| Drip Coffee - 10 Sachês") is not None),
     ("Um Coffee Co's Kony and Super Jolly grinders are not coffee",
      lambda: scan.EXCLUDE.search("Kony SG") is not None and scan.EXCLUDE.search("Super Jolly V Up Pro") is not None),
+    ("Heart & Graft: a stray bracket after a note goes ('Vanilla[' reads Vanilla)", lambda: scan.tidy_note("Vanilla[") == "Vanilla" and scan.tidy_note("(Lavender)") == "Lavender"),
     ("Dear Green's '12 Days of Coffee' box is not one coffee", lambda: scan.EXCLUDE.search("Pre-order: 12 Days of Coffee") is not None),
     ("Arlo's 'Calendrier de l'Avent' is not one coffee", lambda: scan.EXCLUDE.search("Calendrier de l'Avent 2026") is not None),
     ("Industra's gift pack (Dárkový balíček) is not one coffee", lambda: scan.EXCLUDE.search("Dárkový balíček FILTR") is not None),
