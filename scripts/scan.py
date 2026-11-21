@@ -1937,6 +1937,36 @@ def raw_labelled(raw, k):
     return None
 
 
+# Tasting notes read as the variety (Caffeine Project "Caramel, Toasts, Vanilla", Tigermoth "Blackberry, tangerine, dark brown
+# sugar"): a variety field with flavour words and no coffee variety in it is notes, not a variety.
+FLAVOUR_WORD = re.compile(r"\b(?:chocolate|cocoa|cacao|caramel|vanilla|toasts?|toasted|berry|berries|blackberry|strawberry|raspberry|blueberry|"
+                          r"cherry|cherries|citrus|lemon|lime|orange|tangerine|grapefruit|floral|flowery|nuts?|nutty|hazelnut|almond|sugar|"
+                          r"honeycomb|apple|plum|peach|apricot|toffee|fudge|jam|fruit|fruity|tea|jasmine|bergamot|grape|wine|molasses|spices?|"
+                          r"cinnamon|biscuit|malt|butter|cream|syrup|raisin|fig|melon|mango|tropical|currant|blackcurrant|earthy)\b", re.I)
+
+
+def variety_is_flavour(v):
+    """True when a 'variety' is really a list of tasting notes (no coffee variety named in it)."""
+    if not v or not FLAVOUR_WORD.search(v):
+        return False
+    return not first(VARIETIES, v) and not re.search(r"\b(?:sl ?\d+|ruiru|batian|catua[ií]|caturr|castillo|pacas|pacamara|bourbon|typica|gesha|geisha|"
+                                                     r"heirloom|landrace|74\d{3}|sidra|java|mokka|catimor|parainema|marsellesa|villa|mundo|obata|"
+                                                     r"icatu|arara|chiroso|tabi|wush|laurina|eugenioides|kent|jackson|mibirizi|tekisic|caturron|papayo)\b", v, re.I)
+
+
+def flavour_variety(x):
+    """Move tasting notes read as the variety into the notes (when the notes hold none) and clear the variety."""
+    v = x.get("variety")
+    if not variety_is_flavour(v):
+        return x
+    ns = [n for n in x.get("notes") or [] if FLAVOUR_WORD.search(n)]
+    if not ns:
+        ns = [tidy_note(p) for p in re.split(r"\s*[,|/]\s*", v)]
+        x["notes"] = [n for n in ns if n][:5] or x.get("notes")
+    x["variety"] = None
+    return x
+
+
 def tidy_variety(v):
     """A variety written in a theme block or a value-first line: no "variety" word, no process, natural capitals."""
     v = re.sub(r"\b(?:variet(?:y|ies|al|als)|cultivars?)\b", " ", v, flags=re.I)
@@ -2589,6 +2619,7 @@ def main():
     found = [x for x in found if still_beans(x)]
     for x in found:   # entries carried over from older scans get today's name clean-up too
         x["name"] = tidy_name(x["name"], x["roaster"]) or x["name"]
+        flavour_variety(x)   # tasting notes read as the variety go back to being notes
         if UI_WORD.match(x["name"]):   # a theme's button read as the title (Conscious Speciality: every coffee "Close")
             slug = re.sub(r"[-_]+", " ", x["url"].split("?")[0].rstrip("/").rsplit("/", 1)[-1]).strip()
             x["name"] = " ".join(w.capitalize() if w.islower() else w for w in slug.split()) or x["name"]
