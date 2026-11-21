@@ -64,6 +64,7 @@ jobs:
           git config user.name "v60-scan-bot"
           git config user.email "v60-scan-bot@users.noreply.github.com"
           git add data/releases.json data/seen.json
+          if [ -f data/scan_report.json ]; then git add data/scan_report.json; fi   # what the run left for tomorrow
           if git diff --cached --quiet; then
             echo "No changes"
           else
