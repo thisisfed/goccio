@@ -1602,6 +1602,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 #bagList .item > .r{width:92px;flex:none}
 /* the example folds away under See an example; the brew clock counts up with the playhead */
 .g-ex{width:100%;max-width:520px}
+.ex-sec{margin-bottom:-56px}   /* the Example sits between What's brewing and the closing text, its last line as close to the rule as the rows above */
 .g-ex > .glimpse{margin-top:10px;border-top:0;padding-top:0}
 /* a new example fades in under a steady caption: Example and its arrow never move */
 .g-ex > .glimpse > :not(figcaption), .g-ex > .glimpse .g-name{transition:opacity .3s ease}
@@ -2134,6 +2135,16 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
 .top:has(.sec-list.instant) .ask-line{transition:none}
 .ask-line .ask-q{font-size:var(--fs-s);font-weight:600;color:var(--ink);white-space:nowrap}
 .ask-line .ask-box{position:relative;min-width:0;display:flex;gap:var(--nav-gap,4px);align-items:center}
+/* the hint over the empty box: each line rolls up and out as the next rolls in from below */
+.ask-line .ask-ph{position:absolute;left:12px;right:calc(var(--pill-h) + 8px);top:0;height:var(--pill-h);overflow:hidden;pointer-events:none;z-index:1;
+  font:500 var(--fs-s)/var(--pill-h) var(--sans);color:color-mix(in srgb,var(--ink) 45%,transparent)}
+.ask-line .ask-ph[hidden]{display:none}
+.ask-line .ask-ph .ph-t{position:absolute;left:0;right:0;top:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:transform .4s cubic-bezier(.2,.7,.2,1), opacity .4s ease}
+.ask-line .ask-ph .ph-t.ph-q{color:var(--ink);letter-spacing:-.015em}
+.ask-line .ask-ph .ph-t.in{transform:translateY(100%);opacity:0;transition:none}
+.ask-line .ask-ph .ph-t.out{transform:translateY(-100%);opacity:0}
+/* the bar over everything from the first frame: on iPhones a layer lower down (the wordmark) could paint over its line until the page scrolled */
+.top{transform:translateZ(0)}
 /* suggestions under the box: what can be searched, grouped, a tap each */
 /* it lines up with the box; its background runs the width of the screen */
 .ask-sug{position:absolute;top:calc(100% + (var(--row-h,48px) - var(--pill-h)) / 2 + 1px);left:0;right:calc(-1 * var(--nav-w,90px) + 12px);background:var(--bg);padding:12px 0 14px;
@@ -2262,15 +2273,6 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       <div class="hero-side">
       <p class="hero-kick">Updated every day<span class="hero-live" id="heroLive" hidden><i class="live-dot" aria-hidden="true"></i><span id="heroLiveT"></span></span></p>
       <p class="lede">Daily new coffees from UK, EU and global roasters. Pick one or add your own, choose your brewer, and get the right grind, temperature and steps. Customise anything, describe your pour and share the recipe. Brew full screen, log the taste, and it adapts next time. <span class="yours">Brewed your way.</span></p>
-      <div class="g-ex">
-      <figure class="glimpse" aria-label="Example recipe: washed Ethiopia, light roast. 15 g coffee to 255 g water, 99°C, about 3:15. Pours at 0:00 to 51 g, 0:45 to 102 g, 1:10 to 153 g, 1:30 to 204 g, 1:50 to 255 g.">
-        <figcaption><span class="g-name">Washed Ethiopia, light roast</span><button type="button" class="g-tag" id="exTog" aria-expanded="true" aria-label="Hide the example">Example</button></figcaption>
-        <div class="g-specs num" aria-hidden="true"><span><b>15</b><span class="arr">→</span><b>255</b> g</span><span><b>99</b>°C</span></div>
-        <ol class="g-pours num" aria-hidden="true">
-          <li style="--t:0"><span>0:00</span><b>51</b></li><li style="--t:45"><span>0:45</span><b>102</b></li><li style="--t:70"><span>1:10</span><b>153</b></li><li style="--t:90"><span>1:30</span><b>204</b></li><li style="--t:110"><span>1:50</span><b>255</b></li><li class="end"><span>3:15</span><i>Done</i></li>
-        </ol>
-      </figure>
-      </div>
       </div>
       </div>
     </div>
@@ -2398,6 +2400,18 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   </section>
 
 
+
+  <section class="sec ex-sec" aria-label="Example recipe">
+      <div class="g-ex">
+      <figure class="glimpse" aria-label="Example recipe: washed Ethiopia, light roast. 15 g coffee to 255 g water, 99°C, about 3:15. Pours at 0:00 to 51 g, 0:45 to 102 g, 1:10 to 153 g, 1:30 to 204 g, 1:50 to 255 g.">
+        <figcaption><span class="g-name">Washed Ethiopia, light roast</span><button type="button" class="g-tag" id="exTog" aria-expanded="true" aria-label="Hide the example">Example</button></figcaption>
+        <div class="g-specs num" aria-hidden="true"><span><b>15</b><span class="arr">→</span><b>255</b> g</span><span><b>99</b>°C</span></div>
+        <ol class="g-pours num" aria-hidden="true">
+          <li style="--t:0"><span>0:00</span><b>51</b></li><li style="--t:45"><span>0:45</span><b>102</b></li><li style="--t:70"><span>1:10</span><b>153</b></li><li style="--t:90"><span>1:30</span><b>204</b></li><li style="--t:110"><span>1:50</span><b>255</b></li><li class="end"><span>3:15</span><i>Done</i></li>
+        </ol>
+      </figure>
+      </div>
+  </section>
 
   <section class="sec outro" aria-label="How it learns">
     <p class="litext" id="litext"><span>Every</span> <span>bag</span> <span>is</span> <span>different,</span> <span>and</span> <span>so</span> <span>is</span> <span>every</span> <span>brew.</span> <span>The</span> <span>roast,</span> <span>the</span> <span>grind,</span> <span>the</span> <span>water,</span> <span>your</span> <span>mood,</span> <span>your</span> <span>nose,</span> <span>the</span> <span>pour;</span> <span>none</span> <span>of</span> <span>it</span> <span>sits</span> <span>still.</span> <span>That’s</span> <span>the</span> <span>fun</span> <span>of</span> <span>it.</span> <i class="pb" aria-hidden="true"></i> <span>So</span> <span>keep</span> <span>a</span> <span>record.</span> <span>Dose,</span> <span>ratio,</span> <span>grinder</span> <span>setting,</span> <span>kettle</span> <span>temperature,</span> <span>drawdown.</span> <span>Change</span> <span>one</span> <span>variable</span> <span>at</span> <span>a</span> <span>time,</span> <span>keep</span> <span>what</span> <span>works,</span> <span>and</span> <span>repeat</span> <span>it</span> <span>to</span> <span>the</span> <span>gram</span> <span>and</span> <span>the</span> <span>second.</span> <span>Dialled</span> <span>in</span> <span>once,</span> <span>dialled</span> <span>in</span> <span>again.</span> <i class="pb" aria-hidden="true"></i> <span>This</span> <span>is</span> <span>a</span> <span>starting</span> <span>point,</span> <span>not</span> <span>a</span> <span>finish</span> <span>line.</span> <span>Brew</span> <span>it,</span> <span>taste</span> <span>it,</span> <span>write</span> <span>down</span> <span>what</span> <span>you</span> <span>got.</span> <span>The</span> <span>best</span> <span>cup</span> <span>you’ve</span> <span>ever</span> <span>tasted</span> <span>might</span> <span>still</span> <span>be</span> <span>one</span> <button type="button" class="verb-pill" id="verb" aria-label="Another word">pour</button> <span>away.</span> <span class="outro-end">Brew something good.</span></p>
@@ -7006,25 +7020,29 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     // typed out letter by letter, held, then taken back, the next one typed in its place. Italian types the Italian
     const T = (t) => (LANG === "it" && typeof IT !== "undefined" && IT[t]) || t;
     const still = matchMedia("(prefers-reduced-motion: reduce)").matches, idle = () => !a.value && document.activeElement !== a;
-    let i = -1;
-    let type = (t, q, done) => { a.classList.toggle("ph-q", !!q); if (still) { a.placeholder = t; return setTimeout(done, 1800); }
-      let n = 0; const add = () => { if (calm) return; if (!idle()) return setTimeout(add, 400); a.placeholder = t.slice(0, ++n) || " ";
-        if (n < t.length) setTimeout(add, 38 + Math.random() * 40); else setTimeout(back, q ? 3200 : 1500); };
-      const back = () => { if (calm) return; if (!idle()) return setTimeout(back, 400); n = Math.max(0, n - 2); a.placeholder = t.slice(0, n) || " ";
-        if (n > 0) setTimeout(back, 18); else setTimeout(done, 220); };
-      add(); };
-    // it types only at the top of the page, for the first few seconds; then (or as soon as the page is scrolled or the box is
-    // touched) it settles on a still hint saying what can be searched, and never moves again this visit
+    // the hint is a line laid over the empty box, so it can move: the question (on a phone) holds, then rolls up out of the box
+    // as the next example rolls in from below, and so on; at the top of the page, for the first few seconds only. Then (or as
+    // soon as the page is scrolled or the box is touched) it rolls to a still hint of what can be searched, and stays
     const HINT = "Taste, origin, roaster, price…";
-    let calm = false; const t0 = Date.now();
-    const settle = () => { if (calm) return; calm = true; a.classList.remove("ph-q"); a.placeholder = T(HINT); };
+    const box = a.closest(".ask-box"), ph = document.createElement("span"); ph.className = "ask-ph"; ph.setAttribute("aria-hidden", "true"); box.appendChild(ph);
+    a.setAttribute("aria-label", T(Q)); a.placeholder = "";
+    const show = () => { ph.hidden = !!a.value || document.activeElement === a; };
+    a.addEventListener("input", show); a.addEventListener("focus", show); a.addEventListener("blur", () => { a.placeholder = ""; show(); });
+    let cur = null;
+    const roll = (t, q) => { const el = document.createElement("span"); el.className = "ph-t" + (q ? " ph-q" : ""); el.textContent = t;
+      ph.appendChild(el); const old = cur; cur = el;
+      if (still || !old) { if (old) old.remove(); return; }
+      el.classList.add("in"); requestAnimationFrame(() => requestAnimationFrame(() => { el.classList.remove("in"); old.classList.add("out"); }));
+      setTimeout(() => old.remove(), 450); };
+    let calm = false, i = -1; const t0 = Date.now();
+    const settle = () => { if (calm) return; calm = true; roll(T(HINT)); };
     addEventListener("scroll", () => { if (scrollY > 80) settle(); }, { passive: true });
     a.addEventListener("focus", settle);
-    const next = () => { if (calm) return; if (Date.now() - t0 > 11000 || scrollY > 80) return settle(); i = (i + 1) % EX.length; type(T(EX[i]), false, next); };
-    const typeOn = type; type = (t, q, done) => calm ? undefined : typeOn(t, q, () => calm ? undefined : done());
+    const next = () => { if (calm) return; if (Date.now() - t0 > 11000 || scrollY > 80) return settle();
+      if (!(document.activeElement === a || a.value)) { i = (i + 1) % EX.length; roll(T(EX[i])); } setTimeout(next, 1700); };
     if (scrollY > 80 || still) settle();
-    else if (phone()) type(T(Q), true, next);
-    else next(); }
+    else if (phone()) { roll(T(Q), true); setTimeout(next, 2600); }
+    else { roll(T(EX[0])); i = 0; setTimeout(next, 1700); } show(); }
   // the ask line: its words go into the search (which reads them as an ask), the brewer it names becomes the brewer, and the page goes to the list
   const askBrewer = (q) => { if (!isAsk(q)) return; const w = readAsk(q); if (w.brewer && BREWERS[w.brewer] && w.brewer !== brewerOf(state)) { setBrewer(w.brewer); saveState(); renderAllOpts(); render(); } };
   // tapping the box opens suggestions under it: what can be asked, a tap each, and the last few searches
