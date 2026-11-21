@@ -2320,11 +2320,8 @@ def scan_roaster(r):
                         except Exception:  # noqa: BLE001
                             pass
                     r["_ccy"] = seen
-                    if seen != home:   # still geo-converted: don't show a number we can't vouch for
-                        for i in items:
-                            i["price"] = None
-                        r["_note"] = f"prices shown in {seen} to the scanner, hidden"
-                        r["_ccy"] = home
+                    if seen != home:   # still another currency: kept, in the currency the shop gave (the site shows it in pounds)
+                        r["_note"] = f"prices in {seen}, not {home}"
                 else:
                     r["_ccy"] = shop_currency(shop, kind, r)
                     home = home_currency(r)
@@ -2337,11 +2334,8 @@ def scan_roaster(r):
                                 items, r["_ccy"] = fetch_shopify(shop, extra), home
                         except Exception:  # noqa: BLE001
                             pass
-                        if r["_ccy"] != home:
-                            for i in items:
-                                i["price"] = None
-                            r["_note"] = f"prices shown in {r['_ccy']} to the scanner, hidden"
-                            r["_ccy"] = home
+                        if r["_ccy"] != home:   # kept in the currency the shop gave: the site converts every price to pounds
+                            r["_note"] = f"prices in {r['_ccy']}, not {home}"
                 return kind, items, None
         except Exception as e:  # noqa: BLE001
             errors.append(f"{kind}: {type(e).__name__}: {str(e)[:80]}")
