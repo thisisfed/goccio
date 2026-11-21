@@ -2187,7 +2187,7 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after, #adjOpts[ope
 .top .nav #langBtn{--tb-x:calc((var(--pill-h) + var(--nav-gap,4px)) * 2)}
 .top .nav #themeBtn{--tb-x:calc(var(--pill-h) + var(--nav-gap,4px))}
 .top.tools-open .nav #langBtn, .top.tools-open .nav #themeBtn{animation:tools-in .3s cubic-bezier(.2,.7,.2,1) both}
-.top.tools-closing .nav #langBtn, .top.tools-closing .nav #themeBtn{animation:tools-out .26s cubic-bezier(.4,0,.6,1) both}
+.top.tools-closing .nav #langBtn, .top.tools-closing .nav #themeBtn{animation:tools-out .3s cubic-bezier(.2,.7,.2,1) both}
 @keyframes tools-in{from{transform:translateX(var(--tb-x))}to{transform:none}}
 @keyframes tools-out{from{transform:none}to{transform:translateX(var(--tb-x))}}
 #toolsBtn{border:0;border-radius:50%;width:var(--pill-h);height:var(--pill-h);padding:0;display:inline-flex;align-items:center;justify-content:center;flex:none;background:var(--pill);color:var(--ink);cursor:pointer}
@@ -2334,6 +2334,11 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
 #gear .g-cell { display: grid; gap: 8px; justify-items: start; min-width: 0; }
 #gear .zr-ctl { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 #gear .zr-ctl .zr-lbl { color: var(--muted); font-size: var(--fs-s); white-space: nowrap; }
+.shelf .item .c-price{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;margin-top:6px!important}
+.shelf .item .c-price a.buy-p{display:inline-flex;align-items:center;gap:6px;height:var(--pill-h);padding:0 12px;border-radius:var(--r);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);text-decoration:none}
+.shelf .item .c-price a.buy-p b{text-decoration:none!important;font-weight:500}
+.shelf .item .c-price a.buy-p:hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))}
+.shelf .item .c-per{color:var(--muted)}
 </style>
 </head>
 <body>
@@ -6184,8 +6189,9 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
     return `<p class="c-notes">${ns.map((n, k) => lit(low(n, k))).join(", ")}</p>`; };
   const cardPrice = (r) => { if (!r.url) return ""; const it = LANG === "it", p = r.price ? esc(r.price.replace(/^From\s+/i, "")) : "";
     const g = r.bag_g && r.bag_g >= 50 && r.bag_g <= 1000 ? r.bag_g : null, per = r._p100 != null && r._p100 >= 2 ? `£${r._p100.toFixed(2)} ${it ? "ogni" : "per"} 100 g` : "";
-    const txt = p ? `<b>${p}</b>${g ? ` ${it ? "per" : "for"} ${g} g` : ""}${per ? `, ${per}` : ""}` : (it ? "Prezzo sul sito" : "Price on the roaster’s site");
-    return `<p class="c-price"><a href="${esc(r.url)}" target="_blank" rel="noopener" aria-label="${it ? "Compra" : "Buy"} ${esc(r.name)} ${it ? "da" : "from"} ${esc(r.roaster)}${p ? ", " + p : ""}">${txt}</a></p>`; };
+    const rest = p ? `${g ? `${it ? "per" : "for"} ${g} g` : ""}${per ? `${g ? ", " : ""}${per}` : ""}` : "";
+    // Buy is a pill again, the price in it; the weight and the price per 100 g beside it in grey
+    return `<p class="c-price"><a class="buy-p" href="${esc(r.url)}" target="_blank" rel="noopener" aria-label="${it ? "Compra" : "Buy"} ${esc(r.name)} ${it ? "da" : "from"} ${esc(r.roaster)}${p ? ", " + p : ""}">${it ? "Compra" : "Buy"}${p ? ` <b>${p}</b>` : ""}</a>${rest ? `<span class="c-per">${rest}</span>` : ""}</p>`; };
   let askWant = null, askRank = null;
   function renderShelf() {
     const q = $("shelfQ").value.trim().toLowerCase();
@@ -7261,7 +7267,10 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
       clearTimeout(toolsT); $("toolsBtn").setAttribute("aria-expanded", String(on)); $("toolsBtn").setAttribute("aria-label", on ? "Hide language and appearance" : "Language and appearance");
       if (on) { t.classList.remove("tools-closing"); t.classList.add("tools-open"); setTop(); return; }
       // closing: the two slide back behind the +, then the box grows back
-      t.classList.add("tools-closing"); toolsT = setTimeout(() => { t.classList.remove("tools-open", "tools-closing"); setTop(); }, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 260); };
+      t.classList.add("tools-closing");
+      { const b = $("toolsBtn").getBoundingClientRect(), gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--nav-gap")) || 4;
+        document.documentElement.style.setProperty("--nav-w", (innerWidth - b.left + gap) + "px"); }   // the box grows with the pills going back, not after
+      toolsT = setTimeout(() => { t.classList.remove("tools-open", "tools-closing"); setTop(); }, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 300); };
     if ("ResizeObserver" in window) new ResizeObserver(setTop).observe(document.querySelector(".top"));
     setTop(); addEventListener("resize", setTop);
     const tools = document.querySelector(".shelf-tools");
