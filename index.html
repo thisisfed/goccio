@@ -6280,8 +6280,12 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
     if (pins.length) shown = [...pins, ...shown.filter((r) => !pins.includes(r))];
     // two of a roaster's coffees that would show the same short name (Koppi's La Lia, a Red Honey SL28 and a White Honey
     // Catuai) keep the rest of their own name, so they read as two coffees, not one listed twice
-    const nm = (r) => coffeeName(r) ?? shortName(r), seen = new Map();
-    list.forEach((r) => { const k = r.roaster + "|" + String(nm(r)).toLowerCase(); seen.set(k, (seen.get(k) || new Set()).add(String(r.name).toLowerCase())); });
+    // only the coffees on screen and their roaster's others are looked at (each name worked out once and kept), so it costs nothing
+    const nm = (r) => r._nm ?? (r._nm = coffeeName(r) ?? shortName(r)), seen = new Map();
+    if (!shelf._byRo) { shelf._byRo = new Map(); shelf.forEach((r) => { const a = shelf._byRo.get(r.roaster); a ? a.push(r) : shelf._byRo.set(r.roaster, [r]); }); }
+    const inList = new Set(list);
+    shown.forEach((r) => { const k = r.roaster + "|" + String(nm(r)).toLowerCase(); if (seen.has(k)) return;
+      seen.set(k, new Set((shelf._byRo.get(r.roaster) || []).filter((o) => inList.has(o) && String(nm(o)).toLowerCase() === String(nm(r)).toLowerCase()).map((o) => String(o.name).toLowerCase()))); });
     const fullName = (r) => String(r.name || "").replace(/^\s*(?:espresso|filter|filtro|omni)\s*[-–—:|]\s*/i, "").replace(/["“”]/g, "").replace(/\s{2,}/g, " ").trim();
     let lastGroup = null;
     $("shelf").innerHTML = shown.length ? shown.map((r) => {
