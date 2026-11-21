@@ -7317,6 +7317,11 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
     const open = () => { if (a.value.trim()) return; draw(); box.hidden = false; fit(); document.documentElement.classList.add("sug-open"); };
     const shut = () => { box.hidden = true; document.documentElement.classList.remove("sug-open"); };
     if (window.visualViewport) visualViewport.addEventListener("resize", () => { if (!box.hidden) fit(); });
+    // iPhone: with the keyboard up, scrolling slides the visible part of the page under the bar's place, and the bar goes with
+    // the page. While you're in the box, the bar is held at the top of what you can see
+    { const vv = window.visualViewport, top = document.querySelector(".top");
+      if (vv && top) { const pin = () => { const y = document.activeElement === a ? Math.max(0, Math.round(vv.offsetTop)) : 0; top.style.transform = y ? `translate3d(0,${y}px,0)` : ""; };
+        vv.addEventListener("scroll", pin); vv.addEventListener("resize", pin); a.addEventListener("focus", pin); a.addEventListener("blur", () => setTimeout(pin, 0)); } }
     const hold = (e) => { if (!box.hidden && !e.target.closest(".ask-sug")) e.preventDefault(); };   // the page holds still behind them (touch and wheel)
     document.addEventListener("touchmove", hold, { passive: false }); document.addEventListener("wheel", hold, { passive: false });
     a.addEventListener("focus", open); a.addEventListener("click", open);
