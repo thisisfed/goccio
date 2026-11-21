@@ -2130,8 +2130,8 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
 .top:has(.sec-list.instant) .ask-line{transition:none}
 .ask-line .ask-q{font-size:var(--fs-s);font-weight:600;color:var(--ink);white-space:nowrap}
 .ask-line .ask-box{position:relative;min-width:0;display:flex;gap:var(--nav-gap,4px);align-items:center}
-.ask-line #askIn{width:100%;box-sizing:border-box;height:var(--pill-h);border:0;border-radius:var(--r);background:var(--pill);color:var(--ink);
-  font:500 var(--fs-s)/1 var(--sans);padding:0 4px 0 10px;outline:none;text-overflow:clip;box-shadow:none;-webkit-appearance:none;appearance:none;caret-color:var(--hl)}
+.ask-line #askIn{width:100%;box-sizing:border-box;height:var(--pill-h);border:0;border-radius:calc(var(--pill-h) / 2);background:var(--pill);color:var(--ink);
+  font:500 var(--fs-s)/1 var(--sans);padding:0 calc(var(--pill-h) + 4px) 0 32px;outline:none;text-overflow:clip;box-shadow:none;-webkit-appearance:none;appearance:none;caret-color:var(--hl)}
 .ask-line #askIn::placeholder{color:color-mix(in srgb,var(--ink) 45%,transparent);opacity:1;transition:opacity .25s ease}
 /* tapped: the hint fades away, and the accent ring the Coffees search has */
 .ask-line #askIn:focus::placeholder{opacity:0}
@@ -2139,9 +2139,11 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after { transform: 
 
 .ask-line #askIn::-webkit-search-cancel-button,.ask-line #askIn::-webkit-search-decoration{-webkit-appearance:none;display:none}
 .ask-line #askIn{flex:1 1 auto;min-width:0;width:auto}
-.ask-line .ask-go{position:static;flex:none;height:var(--pill-h);width:var(--pill-h);border:0;border-radius:50%;background:var(--pill);color:var(--ink);
+/* the → sits in the box's round right end; the lens says it's a search */
+.ask-line .ask-lens{position:absolute;left:11px;top:50%;width:14px;height:14px;transform:translateY(-50%);color:color-mix(in srgb,var(--ink) 55%,transparent);pointer-events:none;z-index:1}
+.ask-line .ask-go{position:absolute;right:0;top:0;flex:none;height:var(--pill-h);width:var(--pill-h);border:0;border-radius:50%;background:color-mix(in srgb,var(--pill) 80%,var(--ink));color:var(--ink);
   display:flex;align-items:center;justify-content:center;font-size:var(--fs-s);cursor:pointer;padding:0}
-.ask-line .ask-go:hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))}   /* the grey pills' hover */
+.ask-line .ask-go:hover{background:color-mix(in srgb,var(--pill) 62%,var(--ink))}   /* the grey pills' hover */
 /* the menu slides out under the bar's row, over the question line */
 .top .sec-list{top:var(--row-h,48px)!important;z-index:2}
 @media (max-width:760px){ .ask-line{grid-template-columns:minmax(0,1fr)} .ask-line .ask-q{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)} }
@@ -2220,7 +2222,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
   </div>
   <form class="ask-line" id="askForm" role="search" autocomplete="off">
     <label for="askIn" class="ask-q">How do you want your coffee today?</label>
-    <div class="ask-box"><input type="search" id="askIn" placeholder="Fruity, under £15" enterkeyhint="search"><button type="submit" class="ask-go" aria-label="Find my coffee"><span class="arr">→</span></button></div>
+    <div class="ask-box"><svg class="ask-lens" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10.4 10.4l3.6 3.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><input type="search" id="askIn" placeholder="Fruity, under £15" enterkeyhint="search"><button type="submit" class="ask-go" aria-label="Find my coffee"><span class="arr">→</span></button></div>
   </form>
   <div class="sec-list" id="secList" inert aria-hidden="true"><div class="sec-list-in"><button type="button" class="sec-p" data-jump="shelves" data-sec="shelves">Coffees</button><button type="button" class="sec-p" data-jump="bags" data-sec="bags">My bags</button><button type="button" class="sec-p" data-jump="gear" data-sec="gear">My equipment</button><button type="button" class="sec-p" data-jump="coffee" data-sec="coffee">What’s brewing?</button><button type="button" class="sec-p" data-jump="recipe" data-sec="recipe">Recipe</button><button type="button" class="sec-p" data-jump="journal" data-sec="journal">Journal</button></div></div>
 </header>
@@ -2264,7 +2266,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     <div class="sec-head"><span class="cap" id="sh"><b>01</b><span class="sh-t">Coffees.</span><span class="ro-title" id="roName" translate="no"></span></span></div>
     <p class="shelf-meta" id="shelfMeta" hidden></p>
     <div class="shelf-tools">
-      <div class="opt"><label for="shelfQ">Search</label><div class="q-wrap"><input type="search" id="shelfQ" placeholder="Roaster, origin, flavour…"><button type="button" class="q-x" id="shelfQx" aria-label="Clear the search" hidden></button></div></div>
+      <div class="opt q-row" hidden><label for="shelfQ">Search</label><div class="q-wrap"><input type="search" id="shelfQ" placeholder="Roaster, origin, flavour…"><button type="button" class="q-x" id="shelfQx" aria-label="Clear the search" hidden></button></div></div>
       <div class="opt"><span id="labR">Region</span><div class="chips" id="shelfR" role="group" aria-labelledby="labR"></div><select class="shelf-sel" id="shelfRSel" aria-label="Region"></select></div>
       <div class="opt"><span id="labF">Process</span><div class="chips" id="shelfF" role="group" aria-labelledby="labF"></div><select class="shelf-sel" id="shelfFSel" aria-label="Process"></select></div>
       <div class="opt"><span id="labX">Extras</span><div class="chips" id="shelfX" role="group" aria-labelledby="labX"></div><select class="shelf-sel" id="shelfXSel" aria-label="Extras"></select></div>
@@ -6017,7 +6019,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
       // nothing to learn from yet: the note stays for as long as it takes to read it ON SCREEN (time scrolled away or with the
       // tab hidden doesn't count, so a scroll never cuts it short), then For you switches itself off and the note goes
       if (!n.hidden && !fy) fyRead(n); else fyStop(); }
-    { const n = $("askNote"), t = askWant && !shelfRo ? askLine(askWant) : ""; n.hidden = !t; n.textContent = t; }
+    { const n = $("askNote"), t = shelfRo ? "" : askWant ? askLine(askWant) : q ? (LANG === "it" ? `Ricerca: “${$("shelfQ").value.trim()}”.` : `Searching for “${$("shelfQ").value.trim()}”.`) : ""; n.hidden = !t; n.textContent = t; }
     list = shelfRo ? [...list].sort((a, b) => shelfDate(b).localeCompare(shelfDate(a))) : fy ? list : askRank ? [...list].sort((a, b) => (askRank.get(b) - askRank.get(a))
         || (askWant.dear ? (b._p100 ?? -1) - (a._p100 ?? -1) : askWant.cheap ? (a._p100 ?? 1e9) - (b._p100 ?? 1e9) : 0) || shelfDate(b).localeCompare(shelfDate(a)))
       : shelfT ? [...list].sort((a, b) => (b._p100 ?? -1) - (a._p100 ?? -1)) : shelfGV ? [...list].sort((a, b) => a._p100 - b._p100) : interleave(list);   // good value: cheapest first   // top lots: dearest first
@@ -7001,6 +7003,7 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     else next(); }
   // the ask line: its words go into the search (which reads them as an ask), the brewer it names becomes the brewer, and the page goes to the list
   const askBrewer = (q) => { if (!isAsk(q)) return; const w = readAsk(q); if (w.brewer && BREWERS[w.brewer] && w.brewer !== brewerOf(state)) { setBrewer(w.brewer); saveState(); renderAllOpts(); render(); } };
+  $("askIn").addEventListener("input", () => { if (!$("askIn").value && $("shelfQ").value) { $("shelfQ").value = ""; $("shelfQ").dispatchEvent(new Event("input")); } });
   $("askForm").addEventListener("submit", (e) => { e.preventDefault(); const t = $("askIn").value.trim(); if (!t) { $("askIn").focus(); return; }
     $("askIn").blur(); const sq = $("shelfQ"); sq.value = t; sq.dispatchEvent(new Event("input")); askBrewer(t.toLowerCase()); jumpTo($("shelves")); });
   $("shelfQ").addEventListener("change", () => askBrewer($("shelfQ").value.trim().toLowerCase()));
@@ -7031,7 +7034,8 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
     // on any screen where a row of pills wouldn't fit on one line, the menu is the dropdowns all the time
     // not while the bar is hidden (a roaster's page): nothing has a position then, so every row would look like it fits
     // how far the bar sits above the top bar when stuck: the search row and the gap under it, so it sticks from Region
-    const setQ = () => { const o = tools.querySelectorAll(":scope > .opt"); if (o.length < 2) return; const qh = Math.max(0, Math.round(o[1].getBoundingClientRect().top - o[0].getBoundingClientRect().top));
+    const setQ = () => { const o = [...tools.querySelectorAll(":scope > .opt")].filter((x) => !x.hidden && x.offsetHeight);
+      if (!o.length || !o[0].querySelector("#shelfQ")) { if (tools._qh) { tools._qh = 0; document.documentElement.style.setProperty("--q-h", "0px"); } return; } if (o.length < 2) return; const qh = Math.max(0, Math.round(o[1].getBoundingClientRect().top - o[0].getBoundingClientRect().top));
       if (qh && qh !== tools._qh) { tools._qh = qh; document.documentElement.style.setProperty("--q-h", qh + "px"); } };
     const checkWrap = () => { if (!tools.getClientRects().length) return; setQ(); const was = tools.classList.contains("compact"); tools.classList.remove("compact");
       tools._always = [...tools.querySelectorAll(".opt > .chips")].some((c) => { const k = c.children; return k.length > 1 && k[k.length - 1].offsetTop > k[0].offsetTop + 2; });
