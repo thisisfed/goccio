@@ -2156,7 +2156,7 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after, #adjOpts[ope
 /* the search at the top reads region, process and extras from words now: the three filter rows stay out of sight */
 .shelf-tools .opt[hidden]{display:none!important}
 .shelf .item .c-notes{margin:-1px 0 0;font-size:var(--fs-s);color:color-mix(in srgb,var(--ink) 85%,transparent);line-height:20.25px}   /* notes and price lines one tag row apart */
-.shelf .item .c-notes mark{background:none;color:inherit;text-decoration:underline;text-decoration-color:var(--hl);text-decoration-thickness:2px;text-underline-offset:3px}   /* the word you searched: underlined in the accent */
+.shelf .item .c-notes mark{background:none;color:inherit;text-decoration:none}   /* matches aren't marked: the name, origin or roaster could be what matched too
 .shelf .item .c-price{margin:-1px 0 0;line-height:20.25px;font-size:var(--fs-s);color:var(--muted)}
 .shelf .item .c-price a{color:inherit;text-decoration:none}
 /* the price is the link to the shop: underlined as the roaster's name is */
@@ -7699,6 +7699,21 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
   if ($("wmFind")) $("wmFind").onclick = () => { jumpTo($("shelves")); const bx = document.querySelector(".ask-line .ask-box"); if (!bx) return;
     bx.classList.remove("nudge"); void bx.offsetWidth; setTimeout(() => { bx.classList.add("nudge"); setTimeout(() => bx.classList.remove("nudge"), 1800); }, 450); };
   if ($("wmBag")) $("wmBag").onclick = () => { jumpTo($("coffee")); setTimeout(() => { try { $("coffeeIn").focus({ preventScroll: true }); } catch (e) {} }, 500); };
+  // the two buttons exactly as far from the count's baseline as from the capitals of the text under the photo, in every browser:
+  // measured from the letters themselves (a probe on each baseline, the font's own cap height), not from line boxes
+  (function evenCtas() {
+    const live = $("wmLive"), ctas = document.querySelector(".wm-more .wm-ctas"), lede = document.querySelector(".wm-screen + .hero-row .lede"), row = document.querySelector(".wm-screen + .hero-row");
+    if (!live || !ctas || !lede || !row) return;
+    const cv = document.createElement("canvas").getContext("2d");
+    const base = (el, end) => { const p = document.createElement("span"); p.style.cssText = "display:inline-block;width:0;height:0;vertical-align:baseline";
+      end ? el.appendChild(p) : el.prepend(p); const y = p.getBoundingClientRect().bottom; p.remove(); return y; };
+    const fit = () => { if (live.hidden || !live.offsetHeight) return; row.style.marginTop = "";
+      const cs = getComputedStyle(lede); cv.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`; const cap = cv.measureText("H").actualBoundingBoxAscent;
+      const r = ctas.getBoundingClientRect(), above = r.top - base(live.lastElementChild || live, true), below = (base(lede, false) - cap) - r.bottom;
+      const d = Math.round((above - below) * 2) / 2; if (Math.abs(d) >= 0.5) row.style.marginTop = (parseFloat(getComputedStyle(row).marginTop) + d) + "px"; };
+    fit(); addEventListener("resize", fit); if (document.fonts) document.fonts.ready.then(fit);
+    if ("ResizeObserver" in window) new ResizeObserver(fit).observe(live);
+    [600, 1500, 3000].forEach((t) => setTimeout(fit, t)); })();   // the count arrives late (no observer on it: the probe would set it off)
   (function fitMark() {
     // Goccio fills the width between the page margins with its letters' own ink, centred across the photo by that ink and
     // sitting at its foot, as far above the bottom as from either side (the font's spacing and the line box don't count)
