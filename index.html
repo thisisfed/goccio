@@ -673,7 +673,8 @@ table.pours { padding: 10px 24px; }
 .shelf .item.sponsored { border-bottom-color: var(--line) !important; }
 .shelf .item.sponsored + .item, .shelf .item.sponsored + .grp { border-top-color: var(--line) !important; }
 /* the last fold (Dial it in) closes with a rule of its own, like the folds above it open with one */
-details.clk:has(> #dial){border-bottom:1px solid var(--line)!important}
+#moreBox{border-bottom:1px solid var(--line)!important}
+#moreBox .more-in > details.clk{margin-top:0!important}
 /* Start brewing sits as far from the text above it as from the rule below: the text's line box ends at its baseline */
 #tech{margin-bottom:-.35em}
 /* the For you note: as far from the rule under it as from the pills above it */
@@ -1870,8 +1871,6 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
   footer summary{break-after:avoid}
   footer .fcol:first-child > .foot-x{margin-top:28px}
 }
-/* Unknown picked for process or roast: the accent, so it's clear the recipe is guessing */
-#o-process-unsure[aria-pressed="true"], #o-roast-unsure[aria-pressed="true"]{background:var(--hl)!important;color:var(--on-hl)!important}
 footer .fcol > p + .foot-x{margin-top:14px}
 #o-goal-tea .beta{margin-left:12px}
 /* on a computer, Scan the bag and Scan the beans open a big QR code in the middle of the screen: scan it and carry on on the phone */
@@ -2532,13 +2531,13 @@ html:not(.bn-off) .dock{display:none!important}
       <h2 id="rtitle"></h2>
       <p class="r-read" id="rread"></p>
     </div>
+    <div class="rbody" id="rbody">
+    <div class="adjusted" id="adjusted" hidden></div>
+    <div class="specs" id="specs"></div>
     <div class="cf-nudge" id="cfNudge" role="status" hidden>
       <p class="cf-h">It’s after 2 pm. Fine for some, but it may keep you up. Got a decaf?</p>
       <p class="ro-acts cf-row"><button type="button" class="ro-pill" id="cfDecafs">Show decafs</button><button type="button" class="ro-pill" id="cfFine">Brew anyway</button><button type="button" class="ro-pill" id="cfNever">Don’t ask again</button></p>
     </div>
-    <div class="rbody" id="rbody">
-    <div class="adjusted" id="adjusted" hidden></div>
-    <div class="specs" id="specs"></div>
     <div class="mine-bar" id="mineBar"></div>
     <div class="mine-ed" id="mineEd" hidden></div>
     <div class="zero-row" id="zeroRow"><div class="zr-math num" id="zrMath" aria-label="How the clicks add up"></div></div>
@@ -2555,8 +2554,10 @@ html:not(.bn-off) .dock{display:none!important}
     </div>
     <details class="clk xp" id="expBox" open><summary>What to expect</summary><ul id="expect"></ul></details>
     <details class="clk xp" id="whyBox"><summary>Why this recipe <span class="muted" id="whyHint"></span></summary><ul id="why"></ul></details>
+    <details class="clk xp" id="moreBox"><summary>More</summary><div class="more-in">
     <details class="clk xp" id="clkHow"><summary>How the C40 clicks were set <span class="muted" id="clkSumm" hidden></span></summary><div class="clk-body" id="clkBody"></div></details>
     <details class="clk xp"><summary>Dial it in: change one thing per brew</summary><ul id="dial"></ul></details>
+    </div></details>
     <div class="share">
       <button class="btn" id="copyBtn" type="button">Copy recipe</button>
       <button class="btn" id="linkBtn" type="button">Share link</button>
@@ -4739,7 +4740,8 @@ html:not(.bn-off) .dock{display:none!important}
       // every recipe opens with whose coffee it is: Roastery (name, city), then the Coffee's own name
       ...(rc && rc.roaster ? [["roastery", esc(rc.roaster + (rc.place ? ", " + rc.place : "")), "", "roastery", ""]] : []),
       ...(rc && rc.name ? [["pick", esc(calm(rc.name)), "", "coffee", ""]] : []),
-      ["brewer", esc(BREWERS[r.brewer].name), "", "brewer", ""],   // first, on a line of its own, in the big figures' size
+      // the brewer's line only when no coffee heads the recipe: it's picked just above, in What's brewing
+      ...(rc && rc.name ? [] : [["brewer", esc(BREWERS[r.brewer].name), "", "brewer", ""]]),
       // the grinder's name on top, the setting with its unit beside the number: Comandante C40 / 29 clicks
       ["key", onMill(r.clicks).txt, keyUnit(onMill(r.clicks).txt), isC40() ? mill().name : mill().words ? `${gw(r.clicks)[2]}, about ${microns(r.clicks)} µm` : millShort(), cBadges.join(", ")],   // just the grinder's name, like Kettle and Coffee
       ["dose", r.dose, "g", r.brewer === "moka" ? `full basket, ${doseName(r)}` : K === "shot" ? "coffee in" : "coffee", ""],
@@ -4756,12 +4758,12 @@ html:not(.bn-off) .dock{display:none!important}
       r.agit === 2 ? "Swirl the bloom gently, steady pours, one soft swirl at the end." :
       r.agit === 1 ? "No stirring. Pour low and gentle so the fruit stays clean." :
       "No stirring, no swirling. Pour from close to the bed, centre-weighted.";
-    if (r.brewer === "april") $("tech").innerHTML = `<span><b>Two pours, no bloom.</b> The pours do the mixing: no stirring, no swirl.</span>
-      <span class="muted">${prepFor(r)}</span>`;   // April’s own recipe: each pour a circle, then the centre
+    if (r.brewer === "april") $("tech").innerHTML = `<span class="muted">${prepFor(r)}</span>
+      <span><b>Two pours, no bloom.</b> The pours do the mixing: no stirring, no swirl.</span>`;   // April’s own recipe: each pour a circle, then the centre
     else if (K === "pour") {
       const bloomTimes = (r.pours[0].to / r.dose).toFixed(1).replace(/\.0$/, "");
-      $("tech").innerHTML = `<span><b>Agitation: ${AGIT[r.agit]}.</b> ${agitTxt}</span>
-      <span class="muted">Bloom ${bloomTimes}× the dose. ${prepFor(r)}</span>`;
+      $("tech").innerHTML = `<span class="muted">${prepFor(r)}</span>
+      <span>Bloom ${bloomTimes}× the dose. <b>Agitation: ${AGIT[r.agit]}.</b> ${agitTxt}</span>`;
     } else $("tech").innerHTML = `<span>${esc(prepFor(r))}</span>`;
     $("techLbl").textContent = r.kind === "pour" ? "How to pour" : "How to brew";
     const sum = `${isC40() ? r.clicks + " clk" : (onMill(r.clicks).txt + " " + mill().short).trim()} / ${r.dose} → ${r.water} g${r.temp != null ? ` / ${r.temp}°` : ""}`;
@@ -4987,8 +4989,9 @@ html:not(.bn-off) .dock{display:none!important}
   // Adjust: Serve, Cup, Method and Water folded away, the line beside it saying what's set
   function adjSum() { const box = $("adjOpts"), out = $("adjSum"); if (!box || !out) return;
     const picks = [...box.querySelectorAll(".opts .chip[aria-pressed=true]")].map((b) => b.textContent.replace(/Beta$/, "").trim());
-    const w = $("wNow") && $("wNow").textContent.trim(); if (w) picks.push(/^set your water$/i.test(w) || /^imposta/i.test(w) ? (LANG === "it" ? "acqua da impostare" : "water not set") : w);
-    out.textContent = picks.join(", "); }
+    const w = $("wNow") && $("wNow").textContent.trim(); if (w && !/^set your water$/i.test(w) && !/^imposta/i.test(w)) picks.push(w);   // no water set: nothing to say
+    const SHORT = { "Best for this coffee": "Best fit", "Il migliore per questo caffè": "Il migliore" };
+    out.textContent = picks.map((t) => SHORT[t] || t).join(", "); }
   const renderAllOpts = () => { renderOpts("opts-kit", [{ key: "brewer", label: "Brewer", items: brewerItems(), on: setBrewer, cur: () => brewerOf(state) === "cold" ? "press" : brewerOf(state) }]); renderOpts("opts-main", optsMain()); { const b = brewerOf(state), B = BREWERS[b]; renderOpts("opts-dose", [{ key: "dose", label: b === "moka" ? "Pot" : "Dose", items: B.doses }]); } adjSum(); renderOpts("opts-more", OPTS_MORE); };
 
   // the recipe section only exists once there's a full recipe; until then go to the questions
@@ -7441,7 +7444,6 @@ html:not(.bn-off) .dock{display:none!important}
     const next = () => { if (calm) return; if (Date.now() - t0 > 11000 || scrollY > 80) return settle();
       if (!(document.activeElement === a || a.value)) { i = (i + 1) % EX.length; roll(T(EX[i])); } setTimeout(next, 1700); };
     if (scrollY > 80 || still) settle();
-    else if (phone()) { roll(T(Q), true); setTimeout(next, 2600); }
     else { roll(T(EX[0])); i = 0; setTimeout(next, 1700); } show(); }
   // the ask line: its words go into the search (which reads them as an ask), the brewer it names becomes the brewer, and the page goes to the list
   // the brewer the ask names becomes the brewer; "6 cup" (or 3-cup, 1 cup) picks that size where the brewer has one
