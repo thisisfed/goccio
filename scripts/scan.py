@@ -147,6 +147,11 @@ NOTES_NEXT = re.compile(r"^[ \t\xa0]*(?:tasting notes|tastes?(?![ \t]+like)|flav
                         r"(?!(?:of|are|is|include|from|with|that|we|you|and|the|a|an)\b)(?![^\n]*\b(?:coffee|roasters?|roastery|caf[ée])\b)"
                         r"([^\n.:]{3,120}?(?:,|&|\band\b|\s[-–•·]\s|\s?//\s?)[^\n.:]{2,160}?)[ \t\xa0]*$", re.I | re.M)
 NOTES_CHECK = 9   # pages read for notes with these rules; a coffee checked under older rules gets one more read
+# A fix for one shop's page layout re-reads only that shop: raise its number here (above NOTES_CHECK), not NOTES_CHECK,
+# which re-reads every coffee without notes everywhere (thousands of pages). Raise NOTES_CHECK only for a change to the
+# rules every shop goes through
+NOTES_RECHECK = {}   # e.g. {"Monmouth": 10}
+notes_ver = lambda shop: max(NOTES_CHECK, NOTES_RECHECK.get(shop, 0))
 NOTES_V = 2       # page notes read under these list rules; a short list (two or fewer) read under older ones is read once more
 
 
@@ -1895,8 +1900,8 @@ PAGE_FETCHES_PER_ROASTER = 60   # product pages read per shop per day, on top of
 # product pages are read only for the first 100 minutes of a run, so a day with a lot to re-read (new rules) still ends
 # well inside the workflow's 150-minute limit and saves what it found; the rest is read the next day
 SCAN_T0 = time.monotonic()
-PAGE_MINUTES = 100
-STOP_MINUTES = 120   # roasters not reached by then keep yesterday's coffees, so the run always saves inside the 150-minute limit
+PAGE_MINUTES = 200
+STOP_MINUTES = 240   # roasters not reached by then keep yesterday's coffees, so the run always saves inside the 270-minute limit (GitHub allows 360)
 # a coffee's page is read for its roast once per version of the roast reader: when the reader learns a new
 # way shops write it, every coffee still without a roast gets one more look, and never again after that
 ROAST_CHECK = 3
@@ -2151,8 +2156,8 @@ def add_page_details(recs, roaster, old):
             rec["notes"], rec["notes_from"] = prev["notes"], "page"
             if prev.get("notes_v"):
                 rec["notes_v"] = prev["notes_v"]
-        if (prev.get("notes_checked") or 0) >= NOTES_CHECK:
-            rec["notes_checked"] = NOTES_CHECK
+        if (prev.get("notes_checked") or 0) >= notes_ver(roaster["name"]):
+            rec["notes_checked"] = notes_ver(roaster["name"])
         need = [k for k in ("process", "variety", "notes") if not rec.get(k) and not (k == "notes" and rec.get("notes_checked"))]
         if short_old and rec.get("notes_from") == "page" and "notes" not in need:
             need.append("notes")
@@ -2203,7 +2208,7 @@ def add_page_details(recs, roaster, old):
             elif rec.get("notes"):
                 rec["notes_v"] = NOTES_V   # the short list read again and nothing better: keep it, don't read it again
             else:
-                rec["notes_checked"] = NOTES_CHECK   # read once and the page names none: don't fetch it again just for notes (until the rules change)
+                rec["notes_checked"] = notes_ver(roaster["name"])   # read once and the page names none: don't fetch it again just for notes (until the rules change)
             need = [k for k in need if k != "notes"]
         for k in need:
             v = labelled(text, k, start) or (labelled(text, k) if start else None) or raw_labelled(raw, k) or from_json(raw, k) \
