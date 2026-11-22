@@ -137,6 +137,16 @@ CASES = [
     ("A spec-grid page with one heading and a price element reads as before (Newground: 'One Time Purchase £11.00')",
      lambda: (lambda p: p["name"] == "Finca Luna" and p["offers"]["price"] == "11.00")(scan.spec_grid_product(
          '<html><head><title>Finca Luna</title></head><body><h1>Finca Luna</h1><div>One Time Purchase</div><span class="buyingOptPrice">£11.00</span><div>Country</div><div>Colombia</div><div>Process</div><div>Washed</div></body></html>')[0])),
+    ("Fandango: a roaster with no country on file keeps the currency its shop gives (its kronor were shown as '£270.00'); a set country or currency still decides",
+     lambda: scan.home_currency({"country": "", "region": "World", "_ccy": "SEK"}) == "SEK" and scan.home_currency({"country": "GB", "_ccy": "USD"}) == "GBP"
+       and scan.home_currency({"country": "", "currency": "GBP", "_ccy": "USD"}) == "GBP" and scan.home_currency({"country": "", "region": "Europe"}) == "EUR"),
+    ("A tamper, a stirring stick and bags of chocolate tablets are not coffee (Rogue Wave, Arlo's)",
+     lambda: all(scan.EXCLUDE.search(t) for t in ["MHW-3BOMBER YU Series Force Impact Tamper Flat 58.35mm", "MHW-3BOMBER Stirring Stick 22mm Walnut", "Mini Tablettes Chocolat au lait Praliné 100g", "Sachet mini tablettes praliné noir 100gr"])
+       and not any(scan.EXCLUDE.search(t) for t in ["Chocolatey & spicy Arabica", "Black Forest Roast Rich Chocolatey Coffee", "Guatemala Antigua"])),
+    ("Onibus: a Japanese title that came out as '/ [ ]' takes its name from the product link; number names and ordinary names are left alone",
+     lambda: scan.name_from_url("/ [ ]", "https://xyzroastery.example/products/el-salvador-familia-diaz-la-mina") == "El Salvador Familia Diaz La Mina"
+       and scan.name_from_url("ペルー / ブエナ・ビスタ", "https://xyzroastery.example/products/peru-buena-vista-geisha-2026") == "Peru Buena Vista Geisha"
+       and scan.name_from_url("60/40", "https://xyzroastery.example/products/60-40") == "60/40" and scan.name_from_url("Danche", "https://xyzroastery.example/products/x") == "Danche"),
     ("Kaffa's own coffees still count", lambda: not any(scan.EXCLUDE.search(x) for x in ["Kaffebønner Kenya Kagere", "Kaffebønner Honduras El Guaco", "Kaffebønner Klassisk Julekaffe fra", "Switch Up Charity Coffee"])),
     ("Coffee sacks, a milk frother, a pallet and a chocolate bar are not coffee", lambda: all(scan.EXCLUDE.search(t) for t in
         ["Jute Coffee Sacks", "Alessi Mousseur à lait Pulcina", "Halvpalle med kaffe", "Malmö Chokladfabrik x Gringo – Kaffekross 55% chokladkaka", "SCA Introduction to coffee", "30 ks", "Čaj Yunnan Green Superior", "Brazil Natural - Greens"])),
