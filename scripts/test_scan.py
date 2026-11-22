@@ -103,6 +103,10 @@ CASES = [
     ("Bag scan: white print on a small coloured sticker (lime, teal) is cut out, enlarged and read on its own", lambda: "function panel(src, gamma" in open(scan.ROOT / "index.html").read()),
     ("Bag scan: a roaster's name down the side with its first letters hidden ('IMPSON' / 'SONS') is still found", lambda: "its first letters under a thumb" in open(scan.ROOT / "index.html").read()),
     ("Bag scan: notes read as '25 Caramel. Jasmine' come out as 'Caramel, Jasmine'", lambda: "a misread first word and full stops for commas" in open(scan.ROOT / "index.html").read()),
+    ("Climpson: <h4>Flavour profile:</h4><p>Liquorice, Pear, Blackberry</p> is read from the HTML itself when the page text loses it",
+     lambda: scan.raw_notes('<div><h4>Flavour profile:</h4><p>Liquorice, Pear, Blackberry</p><h4>Coffee:</h4><p>El Witano</p><h4>Origin:</h4><p>Huehuetenango, Guatemala</p></div>', "El Witano") == ["Liquorice", "Pear", "Blackberry"]
+       and scan.raw_notes('<h4>Notes:</h4><p>Free delivery on orders over £25, and returns within 30 days of purchase for all customers everywhere in the United Kingdom and beyond</p>', "X") == []
+       and scan.raw_notes('<h4>Flavour profile:</h4><h4>Coffee:</h4><p>El Witano</p>', "El Witano") == []),
     ("Kaffa's own coffees still count", lambda: not any(scan.EXCLUDE.search(x) for x in ["Kaffebønner Kenya Kagere", "Kaffebønner Honduras El Guaco", "Kaffebønner Klassisk Julekaffe fra", "Switch Up Charity Coffee"])),
     ("Coffee sacks, a milk frother, a pallet and a chocolate bar are not coffee", lambda: all(scan.EXCLUDE.search(t) for t in
         ["Jute Coffee Sacks", "Alessi Mousseur à lait Pulcina", "Halvpalle med kaffe", "Malmö Chokladfabrik x Gringo – Kaffekross 55% chokladkaka", "SCA Introduction to coffee", "30 ks", "Čaj Yunnan Green Superior", "Brazil Natural - Greens"])),
