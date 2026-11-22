@@ -2365,6 +2365,11 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
 .su-q{margin:0;font:500 var(--fs-s)/1.3 var(--sans);color:var(--ink)}
 .setup .chips{display:flex;flex-wrap:wrap;gap:4px}
 .setup .su-skip{color:var(--muted)}
+/* Next: the folds' little arrow, turned to point on */
+.setup .su-next{display:inline-flex;align-items:center;gap:6px}
+.setup .su-next::after{content:"";width:10px;height:10px;flex:none;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E") center / 10px 10px no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E") center / 10px 10px no-repeat;transform:rotate(-90deg)}
+/* What's brewing waits until it's asked for (Brew, I have a bag, the Brew pill): scrolling past an empty box says nothing */
+#coffee[hidden]{display:none!important}
 .setup .su-done{margin:0;font:500 var(--fs-s)/1.4 var(--sans);color:var(--muted)}
 #gear.su-fin .gear-tools{padding-top:24px}
 .log-first{margin:0 0 12px;font:500 var(--fs-s)/1.4 var(--sans)}
@@ -4019,7 +4024,8 @@ html:not(.bn-off) .dock{display:none!important}
     need.hidden = !blocked; body.hidden = blocked; $("recipe").hidden = blocked;
     $("startBrew").disabled = blocked; $("dockGo").disabled = blocked;
     $("dock").hidden = blocked;
-    $("coffee").classList.toggle("empty", blocked);   // before a coffee is named: only the question and Scan the bag
+    $("coffee").classList.toggle("empty", blocked);
+    $("coffee").hidden = blocked && !wbOpen;   // no coffee yet and nobody asked for it: not on the page   // before a coffee is named: only the question and Scan the bag
     // no coffee yet, no recipe: its menu link goes too, and the button at the bottom points at the first step instead
     document.querySelectorAll('[data-sec="recipe"]').forEach((b) => b.hidden = blocked); if (window.syncSecs) syncSecs();
     document.querySelectorAll('.hero-pill[data-jump="recipe"]').forEach((b) => { b.textContent = blocked ? "Pick a coffee" : "Back to recipe"; b.dataset.pick = blocked ? "1" : ""; });
@@ -5090,7 +5096,9 @@ html:not(.bn-off) .dock{display:none!important}
   ["wheel", "touchstart", "keydown"].forEach((ev) => addEventListener(ev, () => { jumpGen++; endJump(); }, { passive: true }));
   // a smooth glide that aims at where the section is on every frame, not where it was when you tapped,
   // so the filter bar changing height halfway through only bends the path and the landing stays exact
+  var wbOpen = false;
   function jumpTo(el, center) {
+    if (el && el.id === "coffee" && el.hidden) { wbOpen = true; el.hidden = false; }   // asked for: there from now on
     if (!el) return; const gen = ++jumpGen, html = document.documentElement;
     // the coffee filter bar keeps one shape for the whole jump, so nothing changes size on the way and the target stays put.
     // Passing through the list it stays stuck under the top bar with its dropdowns, as when you scroll; it opens up again on landing
