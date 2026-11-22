@@ -7175,6 +7175,15 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
     onStep && onStep("Looking for the roaster’s name…");
     const rot = [];
     for (const dir of [-1, 1]) { const r = await timed(quarter(toCanvas(img), dir), 8000); if (r) rot.push(...(r.lines || []).map((l) => ({ text: (l.text || "").trim(), conf: l.confidence || 0 }))); }
+    // a plain bag with little to read: its details are often on a narrow tab, set sideways. Each half of the photo, turned a
+    // quarter at full size, is read on its own (small print survives); the first turn that finds words wins. Its lines join the
+    // label's, small and in order, so they fill the fields without passing for the title
+    if (reads.reduce((n, d) => n + strongN(d), 0) < 12) { const base = toCanvas(img); let got = false;
+      for (const dir of [-1, 1]) { if (got) break; for (const half of [0, 1]) { const hc = document.createElement("canvas"); hc.width = base.width; hc.height = Math.ceil(base.height / 2);
+          hc.getContext("2d").drawImage(base, 0, half * Math.floor(base.height / 2), base.width, hc.height, 0, 0, hc.width, hc.height);
+          const r = await timed(quarter(hc, dir, 2100), 12000), ls = ((r && r.lines) || []).filter((l) => l.confidence >= 70 && /[a-z]{4}/i.test(l.text) && !/[|\\<>{}=~]/.test(l.text));
+          if (!ls.length) continue; got = true; rot.push(...ls.map((l) => ({ text: l.text.trim(), conf: l.confidence })));
+          reads.push({ lines: ls.map((l, j) => ({ text: l.text, confidence: l.confidence, bbox: { x0: 0, x1: 200, y0: base.height + j * 30, y1: base.height + j * 30 + 16 } })), words: [] }); } } }
     await w.terminate();
     if (!reads.length) throw new Error("slow");
     return { ...mergeReads(reads), rot, angle: pre.angle, inverted: pre.inverted };
@@ -7394,6 +7403,7 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
     // A country is never the roaster (the Decaf's "Colombia" is not Colombia Coffee Roasters), the title isn't either (Broadway
     // Blend is Climpson's, not Broadway Coffee Roasters'), and short or everyday names (Bay, Red, Origin) need "coffee" beside them
     const known = knownRoasterKeys();
+    const HEADISH = /^(origin|notes|process|method|proper|quality|simply|smooth|balance|broadway|common|little|standout|extract|workshop|scenery|leaves|mellow)$/;   // words a label uses for itself
     const plain = L.filter((l) => l.conf >= 60 && /[a-z]{3}/.test(l.n)), hTop = Math.max(1, ...plain.map((l) => l.h)), isTitle = (l) => l.h >= hTop * 0.75;
     const SUFFIX = /\b(coffee|roasters?|roastery|roasting|co|company|torrefazione|tostadores|kaffeerosterei|rosterei|torrefaction)\b/;
     let roaster = null;
@@ -7409,7 +7419,8 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
     if (!roaster) (ocr.rot || []).forEach((l) => { const n = norm(l.text); if ((l.conf || 0) < 40 || n.length < 4) return;
       if (n.split(" ").length > 5 || /,\s*\S/.test(l.text)) return;   // a sentence read sideways ("…specialty coffee revolution, we have…"), not the name
       // two of its rare words when the name has two: "East London since 2002" is not London Calling Coffee
-      known.forEach((r) => { if (!r.long.length) return; if (n.split(" ").length > r.k.split(" ").length + 4) return;   // the name with a word or two round it, not a sentence
+      known.forEach((r) => { if (!r.long.length) { if (n === r.k && r.k.length >= 6 && !HEADISH.test(r.k) && (l.conf || 0) >= 55 && (!roaster || 1 > roaster.s)) roaster = { name: r.name, s: 1, l: { text: l.text, conf: l.conf }, i: -1, side: true }; return; }   // the logo alone down the side: an everyday word that is a roaster's whole name (Assembly)
+        if (n.split(" ").length > r.k.split(" ").length + 4) return;   // the name with a word or two round it, not a sentence
         const hits = r.long.map((t) => findTerm(n, t)).filter((x) => x >= 0.8);
         if (hits.length < Math.min(2, r.long.length)) return; const sc = Math.max(...hits);
         // a near miss on a place name is the place: "London" read sideways is not Lonton Coffee Co
@@ -7436,14 +7447,19 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
       if (sc0 < 1 && !nextTo && !own && !l.n.split(" ").some((w) => w.length >= 5 && r.k.startsWith(w))) return;   // a cut-off name (@skylar) still counts   // a near miss ("farmers" for Farrers) only right beside "coffee" or "roasters"
       if (!own && (l.n.split(" ").length > 5 || /,\s*\S/.test(l.text) || /^(of|the|we|our|and|in|a)\b/.test(l.n))) return;   // a sentence, not a name
       if (isTitle(l) && !suffix && !(frLabel && own)) return;   // with the coffee's name found on its own line, the biggest print is the roaster (a logo over a label)
-      if ((r.k.length <= 4 || r.everyday) && !suffix) return;
+      if ((r.k.length <= 4 || r.everyday) && !suffix && !(l.n.split(" ").filter((w) => !/^(decaf|decaffeinated|espresso|filter|blend|house|seasonal)$/.test(w)).join(" ") === r.k && r.k.length >= 6 && !HEADISH.test(r.k) && l.conf >= 70)) return;   // a line that is nothing but the name (the logo: "Assembly") counts, a heading word never does
       const sc = sc0 + (own ? 0.1 : 0) + (suffix ? 0.1 : 0);
       if (!roaster || sc > roaster.s) roaster = { name: r.name, s: sc, l, i, own }; }); });
     if (!roaster) { const i = L.findIndex((l) => l.conf >= 60 && /\b(coffee roasters?|roastery|roasting co|coffee co|kaffeerosterei|rosterei|torrefaction|tostadores|torrefazione)\b/.test(l.n) && l.n.split(" ").length <= 6);
       const nm = i >= 0 ? titleCase(L[i].n.replace(/\b(coffee roasters?|roastery|roasting co|coffee co|kaffeerosterei|rosterei|torrefaction|tostadores|torrefazione)\b/g, "").trim()) : "";
       if (nm && !GEO_WORDS.has(norm(nm))) roaster = { name: nm, s: 0.7, l: L[i], i }; }
+    // no name on the bag, but the coffee itself is on today's list: every word of its name is there, and only one roaster sells it
+    if (!roaster) { const ws = new Set(L.filter((l) => l.conf >= 60).flatMap((l) => l.n.split(" ")).filter((w) => w.length >= 4)), lands = new Set(Object.values(V.country).flat());
+      const hits = shelf.filter((r) => { const ts = norm(r.name || "").split(" ").filter((w) => w.length >= 4 && !lands.has(w) && !/^(coffee|natural|washed|honey|decaf|espresso|filter|blend|anaerobic|year)$/.test(w)); return ts.length >= 2 && ts.every((t) => ws.has(t)); });
+      const who = [...new Set(hits.map((r) => r.roaster))];
+      if (who.length === 1) roaster = { name: who[0], s: 0.9, l: { text: hits[0].name, conf: 80 }, i: -1, onList: true }; }
     out.roaster = roaster && roaster.name ? { v: roaster.name, c: roaster.side || roaster.web || roaster.brand || roaster.listed ? "high" : cf(Math.min(1, roaster.s), roaster.l.conf),
-        why: roaster.web ? `their ${roaster.web} “${roaster.l.text}”` : roaster.brand ? "a supermarket brand" : roaster.side ? "the name down the side of the bag" : "“" + roaster.l.text + "”" }
+        why: roaster.onList ? `“${roaster.l.text}” is on today’s list` : roaster.web ? `their ${roaster.web} “${roaster.l.text}”` : roaster.brand ? "a supermarket brand" : roaster.side ? "the name down the side of the bag" : "“" + roaster.l.text + "”" }
       : { v: null, why: "No roaster name found: it’s often a logo, or on the back" };
     if (roaster && roaster.brand) Object.defineProperty(out, "brand", { value: roaster.name, enumerable: false });
     // coffee name: the biggest print, with the short lines it's set in (THE / ESTATE, BROADWAY / BLEND). Never the small line
@@ -7511,6 +7527,7 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
       if (nn.replace(/[^a-z]/g, "").length <= 3) out.name = { v: null, why: "The big print didn’t read clearly: type the name" };
       else if (land) { if (!out.origin || !out.origin.v) out.origin = { v: land[0], c: "medium", why: "set as the title" }; out.name = { v: null, why: "The title is the country: type the coffee’s name" }; }
     } else out.name = { v: null, why: "Couldn’t pick out the coffee’s name" };
+    if (roaster && roaster.onList && !(out.name && out.name.v)) out.name = { v: calm(roaster.l.text.replace(/^[^—–-]*\s[—–-]\s+/, "")), c: "medium", why: "as it is on today’s list" };
     if (titleHit) out.name = { v: calm(titleHit.name), c: titleHit.l.conf >= 80 ? "high" : "medium", why: "after the country in “" + titleHit.l.text + "”" };
     // every word the reader is fairly sure of, for finding this coffee on today's list
     Object.defineProperty(out, "words", { value: [...new Set(L.filter((l) => l.conf >= 45).flatMap((l) => l.n.split(" ")).filter((w) => w.length >= 3))], enumerable: false });
@@ -7757,11 +7774,12 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
     } finally { clearInterval(tick); btn.disabled = false; }
   });
   // test hook (only with ?scantest): run the whole photo pipeline on a file and return the fields
+  if (/[?&]scantest\b/.test(location.search)) window.__read = async (blob) => { const T = await loadOcr(), img = await loadImg(blob), w = await newWorker(T, () => {}), r = await w.recognize(toCanvas(img)); await w.terminate(); return r.data.lines.map((l) => [l.text.trim(), Math.round(l.confidence)]); };
   if (/[?&]scantest\b/.test(location.search)) window.__wl = async (blob) => { const T = await loadOcr(), img = await loadImg(blob), pn = whiteLabel(img); if (!pn) return null; const w = await newWorker(T, () => {}), r = await w.recognize(pn.canvas); await w.terminate(); return { size: [pn.canvas.width, pn.canvas.height], lines: r.data.lines.map((l) => [l.text.trim(), Math.round(l.confidence)]) }; };
   if (/[?&]scantest\b/.test(location.search)) window.__panel = async (blob) => { const img = await loadImg(blob), pn = panel(img); return pn ? pn.canvas.toDataURL("image/jpeg", 0.8) : null; };
   if (/[?&]scantest\b/.test(location.search)) { window.__prep = async (blob) => { const img = await loadImg(blob), c0 = toCanvas(img); const pre = prepare(img);
       return { angle: pre.angle, inv: pre.inverted, gray: pre.gray.toDataURL("image/jpeg", 0.7), bin: pre.bin.toDataURL("image/png"), edge: pre.edge.toDataURL("image/png") }; }; }
-  if (/[?&]scantest\b/.test(location.search)) window.__scan = async (blob) => { const ocr = await readPhoto(blob); return { fields: readFields(ocr, null), other: notCoffee(ocr, readFields(ocr, null)), lines: ocr.lines.map((l) => [l.text, Math.round(l.conf), l.h]), rot: (ocr.rot || []).map((l) => [l.text, Math.round(l.conf)]), angle: ocr.angle, inverted: ocr.inverted, match: (() => { const m = shelfMatch(readFields(ocr, null)); return !m ? null : m.pick ? m.pick.roaster + " | " + m.pick.name + (m.sure ? "" : " (?)") : "choose: " + m.choices.map((r) => r.roaster).join(", "); })() }; };
+  if (/[?&]scantest\b/.test(location.search)) window.__scan = async (blob) => { const ocr = await readPhoto(blob); return { rot: (ocr.rot || []).map((l) => [l.text, Math.round(l.conf)]), fields: readFields(ocr, null), other: notCoffee(ocr, readFields(ocr, null)), lines: ocr.lines.map((l) => [l.text, Math.round(l.conf), l.h]), rot: (ocr.rot || []).map((l) => [l.text, Math.round(l.conf)]), angle: ocr.angle, inverted: ocr.inverted, match: (() => { const m = shelfMatch(readFields(ocr, null)); return !m ? null : m.pick ? m.pick.roaster + " | " + m.pick.name + (m.sure ? "" : " (?)") : "choose: " + m.choices.map((r) => r.roaster).join(", "); })() }; };
 
   $("shelfQ").addEventListener("input", () => { $("shelfQx").hidden = !$("shelfQ").value; shelfAll = false; renderShelf(); keepShelfTop(); });
   // the cross clears what you typed and leaves the cursor in the box
