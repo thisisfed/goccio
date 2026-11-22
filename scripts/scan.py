@@ -18,6 +18,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+import unicodedata
 import urllib.robotparser
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
@@ -806,13 +807,17 @@ def ld_products(html_text):
     return out
 
 
-def range_title(name, page):
-    """Doubleshot names its product data after the range ("Farm", "Fun") and puts the coffee in the page title:
-    "Farm • Bule Hora | doubleshot". When the title reads "<name> • <something>", the something is the coffee."""
-    m = re.search(r"(?is)<title[^>]*>(.*?)</title>", page or "")
-    t = html.unescape(strip_html(m.group(1))).strip() if m else ""
-    m = re.match(re.escape(name or "") + r"\s*[•·]\s*([^|•·]{3,60}?)\s*(?:\||$)", t, re.I) if name else None
-    return m.group(1).strip() if m else name
+def range_title(name, url):
+    """Doubleshot names its coffees "Farm • Bule Hora": the range, then the coffee. Cut at the bullet, that left "Farm" three
+    times over. When every word after the bullet is in the product's own link (…/ethiopia-bule-hora), that part is the coffee;
+    a name followed by tasting notes ("Kenya • blackcurrant") is left alone."""
+    m = re.match(r"\s*([^•·]{2,40}?)\s*[•·]\s*([^•·|]{3,60}?)\s*$", name or "")
+    if not m:
+        return name
+    fold = lambda t: unicodedata.normalize("NFD", t.lower()).encode("ascii", "ignore").decode()   # noqa: E731
+    slug = re.sub(r"[^a-z0-9]+", " ", fold(urllib.parse.unquote((url or "").rstrip("/").split("/")[-1])))
+    words = [w for w in re.split(r"[^a-z0-9]+", fold(m.group(2))) if len(w) >= 3]
+    return m.group(2).strip() if words and all(w in slug.split() for w in words) else name
 
 
 def own_url(stated, page_url):
@@ -1074,7 +1079,7 @@ def fetch_generic(shop, max_pages=45, extra="", lists=None):
         prods = ld_products(page)[:1] or next_products(page) or og_product(page) or microdata_product(page) or spec_grid_product(page) or plain_product(page, url)
         for p in prods:
             it = ld_to_item(p, url, lm)
-            it["title"] = range_title(heading_if_seo(it["title"], page), page)
+            it["title"] = range_title(heading_if_seo(it["title"], page), url)
             if it["title"]:
                 if len(it["body"]) < 60:   # thin JSON-LD: add the page's meta description
                     m = re.search(r'<meta[^>]+(?:name|property)=["\'](?:og:)?description["\'][^>]+content=["\']([^"\']+)', page, re.I)

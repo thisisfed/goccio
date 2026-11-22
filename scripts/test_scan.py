@@ -157,9 +157,11 @@ CASES = [
        and scan.price_ccy({"currency": "USD"}, {"currency": "GBP", "_ccy": "USD"}) == "GBP" and scan.price_ccy({}, {}) == "GBP"),
     ("Smith's: a 'from £3.20' price on a shop that sells 125 g, 250 g, 500 g and 1 kg is shown with its 125 g bag",
      lambda: scan.bag_grams({"variants": "125g / 250g / 500g / 1kg / Whole Bean / Cafetiere", "title": "Peru"}) == 125),
-    ("Doubleshot: 'Farm • Bule Hora | doubleshot' in the page title names the coffee Bule Hora, not the range; other titles change nothing",
-     lambda: scan.range_title("Farm", "<html><head><title>Farm • Bule Hora | doubleshot</title></head></html>") == "Bule Hora"
-       and scan.range_title("Danche", "<title>Danche | XYZ Roastery</title>") == "Danche" and scan.range_title("Farm", "<title>Shop • Farm</title>") == "Farm"),
+    ("Doubleshot: 'Farm • Bule Hora' at …/ethiopia-bule-hora is the coffee Bule Hora, not the range Farm; a name with notes after the bullet, or no bullet, is left alone",
+     lambda: scan.range_title("Farm • Bule Hora", "https://xyzroastery.example/en/products/ethiopia-bule-hora") == "Bule Hora"
+       and scan.range_title("Fun • El Paraíso Geisha", "https://xyzroastery.example/cs/products/fun-guatemala-el-paraiso-geisha") == "El Paraíso Geisha"
+       and scan.range_title("Kenya • blackcurrant, tomato", "https://xyzroastery.example/products/kenya-kagere") == "Kenya • blackcurrant, tomato"
+       and scan.range_title("Danche", "https://xyzroastery.example/products/danche") == "Danche"),
     ("Kaffa's own coffees still count", lambda: not any(scan.EXCLUDE.search(x) for x in ["Kaffebønner Kenya Kagere", "Kaffebønner Honduras El Guaco", "Kaffebønner Klassisk Julekaffe fra", "Switch Up Charity Coffee"])),
     ("Coffee sacks, a milk frother, a pallet and a chocolate bar are not coffee", lambda: all(scan.EXCLUDE.search(t) for t in
         ["Jute Coffee Sacks", "Alessi Mousseur à lait Pulcina", "Halvpalle med kaffe", "Malmö Chokladfabrik x Gringo – Kaffekross 55% chokladkaka", "SCA Introduction to coffee", "30 ks", "Čaj Yunnan Green Superior", "Brazil Natural - Greens"])),
