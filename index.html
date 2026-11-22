@@ -6710,12 +6710,13 @@ html:not(.bn-off) .dock{display:none!important}
     const it = LANG === "it", box = $("setup"), q = $("suQ"), c = $("suC"), g = $("gear");
     const bare = !gear.brewers.length && !gear.grinders.length && !(prefs.water || {}).kind;
     if (suStep === -1 || (suStep === 0 && bare)) suStep = bare ? 1 : 0;
+    if (bare) suStep = 1;   // nothing in My equipment: only ever the first question, never the next steps
     box.hidden = !suStep; g.classList.toggle("setup-on", !!suStep); g.classList.toggle("su-fin", suStep === 3);   // steps: 1 brewer, 2 grinder, 4 water, 3 done
     if (!suStep) return;
     const multi = suStep === 1 || suStep === 2;
     const pills = (keys, all, more) => keys.map((k) => `<button type="button" class="chip" data-k="${k}"${multi ? ` aria-pressed="${suSel.has(k)}"` : ""}>${esc(all[k].name)}</button>`).join("")
       + (more ? `<button type="button" class="chip gear-more" data-more="1" aria-label="${it ? "Tutti" : "See all"}"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>` : "")
-      + (multi && suSel.size ? `<button type="button" class="chip su-next" data-next="1">${it ? "Avanti" : "Next"}</button>` : `<button type="button" class="chip su-skip" data-skip="1">${it ? "Più tardi" : "Set later"}</button>`);
+      + (multi && suSel.size ? `<button type="button" class="chip su-next" data-next="1">${it ? "Avanti" : "Next"}</button>` : suStep === 1 && !suAfter ? "" : `<button type="button" class="chip su-skip" data-skip="1">${it ? "Più tardi" : "Set later"}</button>`);
     if (suStep === 1) { const all = Object.fromEntries(Object.entries(BREWERS).filter(([k, B]) => k !== "cold" && !B.cup)), keys = suAll ? Object.keys(all) : [...new Set([...SU_B, ...suSel])];
       q.textContent = it ? "Con cosa prepari il caffè? Anche più di uno." : "What do you brew with? Pick as many as you have."; c.innerHTML = pills(keys, all, !suAll); }
     else if (suStep === 2) { const keys = suAll ? Object.keys(GRINDERS) : [...new Set([...SU_G, ...suSel])];
@@ -6734,7 +6735,8 @@ html:not(.bn-off) .dock{display:none!important}
       if (x.dataset.skip || x.dataset.next) { const picked = [...suSel]; suSel.clear(); suAll = false;
         if (suStep === 1) { picked.forEach((k) => { if (!gear.brewers.includes(k)) gear.brewers.push(k); });
           if (picked.length) { saveGear(); try { if (brewerOf(state) !== picked[0]) { setBrewer(picked[0]); saveState(); renderAllOpts(); render(); } } catch (e) {} } suStep = 2;
-          if (suAfter) { suAfter = false; renderGear(); renderAllOpts(); goRecipe(); return; } }   // asked on the way to a recipe: straight on to it
+          if (suAfter) { suAfter = false; renderGear(); renderAllOpts(); goRecipe(); return; }
+          if (!picked.length) suStep = 1; }   // asked on the way to a recipe: straight on to it
         else if (suStep === 2) { picked.forEach((k) => { if (!gear.grinders.includes(k)) gear.grinders.push(k); });
           if (picked.length) { prefs.mill = picked[0]; savePrefs(); $("millSel").value = picked[0]; saveGear(); try { render(); } catch (e) {} } suStep = 4; }
         else suStep = 3;
