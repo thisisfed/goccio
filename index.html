@@ -2528,7 +2528,7 @@ html:not(.bn-off) .dock{display:none!important}
   </section>
 
   <section class="sec" id="recipe" aria-labelledby="rtitle">
-    <div class="sec-head"><span class="cap"><b>04</b>Recipe.</span><span class="cap" id="rsource"></span></div>
+    <div class="sec-head"><span class="cap"><b>04</b><span id="recTitle">Recipe.</span></span><span class="cap" id="rsource"></span></div>
     <div class="r-title">
       <div class="r-kick"><span class="method" id="rmethod"></span><span class="cap" id="rgoal"></span><span class="zero-pill" id="rzero" hidden></span></div>
       <h2 id="rtitle"></h2>
@@ -4756,6 +4756,7 @@ html:not(.bn-off) .dock{display:none!important}
     $("zeroRow").hidden = !!r.mine; $("clkHow").hidden = !!r.mine;
     renderMine(r);
     const showRet = r.tds != null;
+    { const bn = BREWERS[r.brewer].name; $("recTitle").textContent = LANG === "it" ? `Ricetta per ${bn}.` : `Recipe for ${bn}.`; }   // the brewer, in the title
     $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}${k === "key" && mill().words ? " wide" : ""}"><b>${v}${u ? `<small>${u === "-cup" ? u : " " + u}</small>` : ""}</b><span class="sub2">${l.charAt(0).toUpperCase() + l.slice(1)}${badge ? ` <span class="yr">${esc(badge)}</span>` : ""}</span>${k === "key" && isC40() && prefs.zero ? `<span class="zo">${sign(prefs.zero)} zero offset</span>` : ""}${k === "key" && K === "shot" && mill().noEsp ? `<span class="sub2">Not an espresso grinder</span>` : k === "key" && !isC40() && (onMill(r.clicks).atMax || onMill(r.clicks).atMin) ? `<span class="sub2">${onMill(r.clicks).atMax ? "Coarsest setting, may still run fast" : "Finest setting"}</span>` : ""}${k === "ratio" && showRet && false ? `<span class="ret">(${r.water} g water − 2.1 × ${r.dose} g retained). Estimate only.</span>` : ""}</div>`).join("");
     const agitTxt = r.agit >= 3 ? "Stir or swirl the bloom, pour with energy, one swirl at the end." :
       r.agit === 2 ? "Swirl the bloom gently, steady pours, one soft swirl at the end." :
@@ -5904,7 +5905,7 @@ html:not(.bn-off) .dock{display:none!important}
     for (let i = 1; i <= a.length; i++) { const c = [i]; for (let j = 1; j <= b.length; j++) c[j] = Math.min(p[j] + 1, c[j - 1] + 1, p[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); p = c; } return p[b.length]; };
   const fzWords = (t) => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/['’]s\b/g, "").split(/[^a-z0-9]+/).filter((w) => w && !FZ_STOP.test(w));
   const fzWord = (t, hw) => hw.some((h) => h === t || (t.length >= 4 && h.startsWith(t)) || (h.length >= 4 && t.startsWith(h) && t.length - h.length <= 2)
-    || (t.length >= 6 && h.length >= 5 && fzLev(t, h) <= (t.length >= 8 ? 2 : 1)));
+    || (t.length >= 6 && h.length >= 5 && t[0] === h[0] && fzLev(t, h) <= (t.length >= 8 ? 2 : 1)));   // a typo, not another word: "mellow" isn't "yellow"
   const fzHas = (hay, t) => { const ws = fzWords(t); return ws.length > 0 && ws.every((w) => fzWord(w, fzWords(hay))); };
   const searchFit = (q) => {
     let parts = q.split(/\s*[,;]\s*|\s+and\s+|\s+e\s+/).map((t) => t.trim()).filter(Boolean);
@@ -6242,7 +6243,7 @@ html:not(.bn-off) .dock{display:none!important}
     };
   }
   // what the ask was read as, in a line under the menu
-  function askLine(want) {
+  function askLine(want, found = "") {
     const it = LANG === "it", bits = [];
     want.tastes.forEach((t) => bits.push(t.w));
     if (want.proc) bits.push(it ? { natural: "naturale", washed: "lavato", honey: "honey", exp: "sperimentale" }[want.proc] : { natural: "natural", washed: "washed", honey: "honey", exp: "experimental process" }[want.proc]);
@@ -6261,7 +6262,7 @@ html:not(.bn-off) .dock{display:none!important}
     if (want.max != null) bits.push(it ? `sotto ${want.max}` : `under £${want.max}`);
     const b = want.brewer && BREWERS[want.brewer] ? BREWERS[want.brewer].name : "";
     if (!bits.length && !b) return "";
-    return (it ? "Cercato: " : "Looking for ") + (bits.join(", ") || (it ? "tutto" : "anything")) + (b ? (it ? `. Ricetta per ${b}` : `. Recipes set for ${b}`) : "") + (it ? ". I più vicini per primi." : ". Best match first.");
+    return (it ? "Cercato: " : "Looking for ") + (bits.join(", ") || (it ? "tutto" : "anything")) + found + (b ? (it ? `. Ricetta per ${b}` : `. Recipes set for ${b}`) : "") + (it ? ". I più vicini per primi." : ". Best match first.");
   }
   const justInLabel = () => scanDay === todayIso() ? "Just in today" : `Just in, ${isoDmy(scanDay)}`;
   // the card: two or three of the roaster's tasting notes (words you searched for lit), and the price with the bag's weight and
@@ -6312,6 +6313,7 @@ html:not(.bn-off) .dock{display:none!important}
     return `<a class="pill buy-p" href="${esc(r.url)}" target="_blank" rel="noopener" aria-label="${it ? "Compra" : "Buy"} ${esc(r.name)} ${it ? "da" : "from"} ${esc(r.roaster)}${p ? ", " + p : ""}">${it ? "Compra" : "Buy"}${p ? ` <b>${p}</b>` : ""}</a>`; };
   let askWant = null, askRank = null;
   function renderShelf() {
+    const t0 = performance.now();
     const q = $("shelfQ").value.trim().toLowerCase();
     let list = shelf.filter((r) => inRegion(r) && (shelfF === "all" || bucket(r.process) === shelfF));
     renderRoHead();
@@ -6338,7 +6340,10 @@ html:not(.bn-off) .dock{display:none!important}
       // nothing to learn from yet: the note stays for as long as it takes to read it ON SCREEN (time scrolled away or with the
       // tab hidden doesn't count, so a scroll never cuts it short), then For you switches itself off and the note goes
       if (!n.hidden && !fy) fyRead(n); else fyStop(); }
-    { const n = $("askNote"), t = shelfRo ? "" : askWant ? askLine(askWant) : q ? (LANG === "it" ? `Ricerca: “${$("shelfQ").value.trim()}”` : `Searching for “${$("shelfQ").value.trim()}”`) : ""; const f = $("fyNote");   // what the list is showing, in grey under Coffees (and read out to screen readers)   // with For you's line showing, the two read as one paragraph
+    { const secs = Math.max(0.01, (performance.now() - t0) / 1000), n0 = list.length;   // what it found, and how long the looking took
+      const found = LANG === "it" ? `: ${n0.toLocaleString("it-IT")} caffè in ${secs.toFixed(2).replace(".", ",")} secondi` : `: ${n0.toLocaleString("en-GB")} coffee${n0 === 1 ? "" : "s"} in ${secs.toFixed(2)} seconds`;
+      var askFound = (q || askWant) && !shelfRo ? found : ""; }
+    { const n = $("askNote"), t = shelfRo ? "" : askWant ? askLine(askWant, askFound) : q ? (LANG === "it" ? `Ricerca “${$("shelfQ").value.trim()}”${askFound}` : `Searching for “${$("shelfQ").value.trim()}”${askFound}`) : ""; const f = $("fyNote");   // what the list is showing, in grey under Coffees (and read out to screen readers)   // with For you's line showing, the two read as one paragraph
       if (t && !f.hidden) { f.textContent = f.textContent.trim() + " " + t; n.hidden = true; n.textContent = ""; } else { n.hidden = !t; n.innerHTML = t ? `<svg class="an-lens" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10.4 10.4l3.6 3.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>${esc(t)}` : ""; } }   // the search's lens in front, as in the box
     list = shelfRo ? [...list].sort((a, b) => shelfDate(b).localeCompare(shelfDate(a))) : fy ? list : askRank ? [...list].sort((a, b) => (askRank.get(b) - askRank.get(a))
         || (askWant.dear ? (b._p100 ?? -1) - (a._p100 ?? -1) : askWant.cheap ? (a._p100 ?? 1e9) - (b._p100 ?? 1e9) : 0) || shelfDate(b).localeCompare(shelfDate(a)))
