@@ -4771,7 +4771,7 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
     $("wBody").querySelectorAll("button[data-w]").forEach((b) => b.onclick = () => { if (prefs.water && prefs.water.kind === b.dataset.w) {   // your water tapped again: taken off, back to None
         prefs.water = {}; gearOpen.water = false; savePrefs(); render(); renderWaterBody(); try { renderGear(); } catch (e) {} return; }
       gearOpen.water = true; prefs.water = { ...(prefs.water || {}), kind: b.dataset.w }; savePrefs(); render(); gearWait(); });
-    const more = $("wBody").querySelector(".gear-more"); if (more) more.onclick = () => { const kn = window.dropKnow ? window.dropKnow($("wBody")) : null, r0 = more.getBoundingClientRect(); gearOpen.water = true; renderWaterBody(); gearWait(); if (kn && window.dropOut) window.dropOut($("wBody"), kn, r0); };
+    const more = $("wBody").querySelector(".gear-more"); if (more) more.onclick = () => { gearOpen.water = true; renderWaterBody(); gearWait(); };
     const inp = (id, k) => { const el = $(id); if (!el) return; el.onchange = () => { const v = el.value.trim(); prefs.water = { ...(prefs.water || {}), src: null, [k]: v === "" ? null : Math.max(0, Math.round(Number(v) || 0)) }; savePrefs(); render(); }; };
     inp("wHard", "hard"); inp("wAlk", "alk");
     const pcGo = () => { const v = $("wPc").value.trim(); const got = pcWater(v);
@@ -5162,8 +5162,7 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
       });
       if (o.key === "brewer" && (brewAll || brewerHidden())) {   // + for every brewer, − to fold back, like My equipment's See all
         g.insertAdjacentHTML("beforeend", `<button type="button" class="chip gear-more" aria-expanded="${brewAll}" aria-label="${brewAll ? "Fewer brewers" : "See all brewers"}">${brewAll ? `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>` : `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`}</button>`);
-        g.lastElementChild.onclick = (ev) => { const kn = window.dropKnow ? window.dropKnow(g) : null, r0 = ev.currentTarget.getBoundingClientRect(); brewAll = !brewAll; renderAllOpts();
-          if (brewAll && kn && window.dropOut) window.dropOut(document.querySelector("#opts-kit .chips"), kn, r0); }; }
+        g.lastElementChild.onclick = () => { brewAll = !brewAll; renderAllOpts(); }; }
       if (o.key === "roast") { g.insertAdjacentHTML("beforeend", PHOTO_CHIP); const sc = g.querySelector(".rp-go"); sc.onclick = () => beanScan("rpMsgOpts"); sc.classList.toggle("off", pickedOf("roast") !== "unsure"); }   // Scan the beans only while the roast is Unknown
       row.append(lab, g); box.appendChild(row);
       if (o.key === "roast") { const m = document.createElement("div"); m.id = "rpMsgOpts"; m.className = "rp-msg"; row.appendChild(m); paintPhoto(m); }   // in the row, under its pills
@@ -6905,7 +6904,7 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
         if (b.dataset.armed) { list.splice(i, 1); saveGear(); renderGear(); return; }
         b.dataset.armed = "1"; b.textContent = "Remove?"; b.classList.add("armed"); wait();
         cdRun(b, 5000, () => { if (b.dataset.armed) { delete b.dataset.armed; b.textContent = label(all[k]); b.classList.remove("armed"); } }); });
-      const more = $(id).querySelector(".gear-more"); if (more) more.onclick = () => { const kn = window.dropKnow ? window.dropKnow($(id)) : null, r0 = more.getBoundingClientRect(); gearOpen[id] = true; renderGear(); if (kn && window.dropOut) window.dropOut($(id), kn, r0); }; };
+      const more = $(id).querySelector(".gear-more"); if (more) more.onclick = () => { gearOpen[id] = true; renderGear(); }; };
     $("gear").classList.toggle("bare", !gearIntro && !gear.brewers.length && !gear.grinders.length && !(prefs.water || {}).kind);
     try { renderSetup(); } catch (e) {}
     row("gearB", gear.brewers, Object.fromEntries(Object.entries(BREWERS).filter(([k, B]) => k !== "cold" && !B.cup)), (B) => B.name);   // cupping needs no kit: everyone can cup
@@ -7953,34 +7952,6 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
       const d2 = Math.min(v * 2.4, Math.hypot(p1[0] - p3[0], p1[1] - p3[1]) / (r1 + r2)) * Math.min(1, d * 2 / (r1 + r2));
       const h1 = vec(p1, a1 - Math.PI / 2, r1 * d2), h2 = vec(p2, a2 + Math.PI / 2, r1 * d2), h3 = vec(p3, a3 + Math.PI / 2, r2 * d2), h4 = vec(p4, a4 - Math.PI / 2, r2 * d2), f = (p) => p[0].toFixed(2) + " " + p[1].toFixed(2);
       return `M${f(p1)}C${f(h1)} ${f(h3)} ${f(p3)}L${f(p4)}C${f(h4)} ${f(h2)} ${f(p2)}Z`; };
-    // the round + at the end of a row of pills: the pills it lets out leave from where it was as one mass of liquid, fan out to
-    // their places on a spring, and part from each other with the same thinning neck. known = the pills that were already there
-    window.dropKnow = (box) => new Set([...box.querySelectorAll(".chip:not(.gear-more), .gear-dd")].map((c) => c.textContent.trim()));
-    window.dropOut = (box, known, r0) => { try { if (!box || !r0 || !r0.width || matchMedia("(prefers-reduced-motion: reduce)").matches || !box.animate) return;
-      const wrap = box.matches(".chips") ? box : box.querySelector(".chips") || box, all = [...wrap.querySelectorAll(".chip, .gear-dd")], fresh = all.filter((c) => c.classList.contains("gear-more") || !known.has(c.textContent.trim()));
-      if (!fresh.length || fresh.length > 24) return;
-      const SPRING = "linear(0,0.071,0.228,0.411,0.59,0.742,0.858,0.943,0.998,1.028,1.042,1.045,1.041,1.033,1.025,1.017,1.01,1.005,1.002,1,0.999,0.998,0.998,0.998,1)", ok = CSS.supports("transition-timing-function", "linear(0,1)");
-      // each new pill buds off the one before it: it starts tucked behind its neighbour and slides out to its own place, one after
-      // another along the row. The first pill of a new line drops down from the line above
-      const rects = new Map(all.map((c) => [c, c.getBoundingClientRect()]));
-      fresh.forEach((c, i) => { const r = rects.get(c), prev = all[all.indexOf(c) - 1], pr = prev && rects.get(prev), same = pr && Math.abs(pr.top - r.top) < r.height * 0.6;
-        const from = same ? `translateX(${(pr.left - r.left).toFixed(1)}px)` : `translateY(${-(r.height + 4)}px)`, last = c.classList.contains("gear-more");
-        c.animate(last ? [{ opacity: 0 }, { opacity: 1 }] : [{ transform: from, opacity: 0 }, { opacity: 1, offset: 0.1 }, { transform: "none", opacity: 1 }], { duration: last ? 200 : 460, delay: i * 35, easing: last ? "ease-out" : ok ? SPRING : "cubic-bezier(.2,.9,.3,1.2)", fill: "backwards" });
-        if (!last) c.animate([{ scale: "1" }, { scale: "1.05 0.975", offset: 0.3 }, { scale: "0.975 1.01", offset: 0.6 }, { scale: "1" }], { duration: 420, delay: 250 + i * 35, easing: "ease-in-out" }); });
-      // the liquid between neighbours on the same line, behind the pills
-      wrap.style.position = wrap.style.position || "relative";
-      let sv = wrap.querySelector(":scope > svg.drop-br"); if (!sv) { sv = document.createElementNS("http://www.w3.org/2000/svg", "svg"); sv.setAttribute("class", "drop-br"); sv.setAttribute("aria-hidden", "true"); wrap.insertBefore(sv, wrap.firstChild); }
-      sv.innerHTML = ""; const first = all.indexOf(fresh[0]), chain = all.slice(Math.max(0, first - 1)), pairs = [];
-      for (let i = 0; i + 1 < chain.length; i++) { const p = document.createElementNS("http://www.w3.org/2000/svg", "path"); p.style.fill = getComputedStyle(chain[i + 1]).backgroundColor; sv.appendChild(p); pairs.push({ a: chain[i], b: chain[i + 1], p, gone: false }); }
-      chain.forEach((c, i) => { if (getComputedStyle(c).position === "static") c.style.position = "relative"; c.style.zIndex = String(60 - i); });   // each pill comes out from under the one before
-      const t0 = performance.now(), G = 3.5, step = (now) => { const o = sv.getBoundingClientRect(); let live = false;
-        pairs.forEach((q) => { if (q.gone) return; const A = q.a.getBoundingClientRect(), B = q.b.getBoundingClientRect(), sameRow = Math.abs((A.top + A.height / 2) - (B.top + B.height / 2)) < A.height * 0.6, gap = B.left - A.right; let d = "";
-          if (!sameRow) { if (now - t0 > 1500) q.gone = true; else live = true; } else if (gap >= G && q.met) q.gone = true; else if (gap >= G) { live = true; } else { const v = gap <= 0 ? 0.5 : gap >= G ? 0 : Math.max(0.06, 0.5 * Math.pow(1 - gap / G, 2 / 3)), rA = A.height / 2, rB = B.height / 2;
-            // each pill's facing end stands in as a round drop
-            if (gap < G) q.met = true; if (v > 0 && A.width && B.width) d = bridge([Math.max(A.left + rA, A.right - rA) - o.left, A.top + rA - o.top], rA, [Math.min(B.right - rB, B.left + rB) - o.left, B.top + rB - o.top], rB, v); live = true; }
-          q.p.setAttribute("d", d); });
-        if (live && now - t0 < 1800) requestAnimationFrame(step); else { sv.remove(); chain.forEach((c) => { c.style.zIndex = ""; }); } };
-      requestAnimationFrame(step); } catch (err) {} };
     let brRaf = 0;
     const runBridges = (opening) => { cancelAnimationFrame(brRaf); const sv = $("dropBr"), P = [$("dropB1"), $("dropB2")]; if (!sv || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
       const B3 = $("dropB3"), box = document.querySelector(".top .ask-box"); let met = false, gone = false; if (B3) B3.setAttribute("d", "");
