@@ -2772,7 +2772,7 @@ html:not(.bn-off) .dock{display:none!important}
   <div class="cam-top"><p class="cam-status" id="camStatus"></p><div class="cam-found" id="camFound"></div></div>
   <div class="cam-ctrls"><button type="button" class="chip" id="camClose">Cancel</button><button type="button" class="chip" id="camPhoto">Take a photo instead</button><button type="button" class="chip on" id="camDone">Use what it read</button></div>
 </div>
-<nav class="botnav" aria-label="Sections"><button type="button" class="chip" data-bn="shelves">Coffees</button><button type="button" class="chip" data-bn="bags" hidden>Bags</button><button type="button" class="chip" data-bn="gear" hidden>Equipment</button><button type="button" class="chip" data-bn="coffee">Brew</button><button type="button" class="chip" data-bn="journal" hidden>Journal</button></nav>
+<nav class="botnav" aria-label="Sections"><button type="button" class="chip" data-bn="shelves">Coffees</button><button type="button" class="chip" data-bn="bags" hidden>Bags</button><button type="button" class="chip" data-bn="gear">Equipment</button><button type="button" class="chip" data-bn="coffee">Brew</button><button type="button" class="chip" data-bn="journal" hidden>Journal</button></nav>
 <div class="dock" id="dock"><button class="btn" id="dockGo" type="button"><span>Start brewing</span><span class="num" id="dockSum"></span></button></div>
 
 <!-- Brew mode -->
@@ -5107,7 +5107,7 @@ html:not(.bn-off) .dock{display:none!important}
   // so the filter bar changing height halfway through only bends the path and the landing stays exact
   var wbOpen = false;
   function jumpTo(el, center) {
-    if (el && el.id === "coffee" && el.hidden) { wbOpen = true; el.hidden = false; }   // asked for: there from now on
+    if (el && el.id === "coffee" && el.hidden) { wbOpen = true; el.hidden = false; try { window.syncSecs && syncSecs(); } catch (e) {} }   // asked for: there from now on
     if (!el) return; const gen = ++jumpGen, html = document.documentElement;
     // the coffee filter bar keeps one shape for the whole jump, so nothing changes size on the way and the target stays put.
     // Passing through the list it stays stuck under the top bar with its dropdowns, as when you scroll; it opens up again on landing
@@ -8130,8 +8130,9 @@ html:not(.bn-off) .dock{display:none!important}
       document.querySelectorAll("[data-sec]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.sec === a)));
       // the bottom bar: My bags and Journal only once there's something in them; Brew lights for What's brewing and the recipe both
       let hasGear = false; try { hasGear = !!(gear.brewers.length || gear.grinders.length || (prefs.water || {}).kind); } catch (e) {}   // Equipment once there's something in it
-      document.querySelectorAll(".botnav [data-bn]").forEach((b) => { b.setAttribute("aria-pressed", String(b.dataset.bn === a || (b.dataset.bn === "coffee" && (a === "recipe" || (a === "gear" && !hasGear)))));
-        if (b.dataset.bn === "gear") b.hidden = !hasGear;
+      document.querySelectorAll(".botnav [data-bn]").forEach((b) => { b.setAttribute("aria-pressed", String(b.dataset.bn === a || (b.dataset.bn === "coffee" && a === "recipe")));
+        if (b.dataset.bn === "gear") b.hidden = false;   // always: with nothing in it, it's where the first question is
+        if (b.dataset.bn === "coffee") b.hidden = $("coffee").hidden && $("recipe").hidden;   // Brew once there's something to brew (or What's brewing was asked for)
         if (b.dataset.bn === "bags") b.hidden = !(typeof bags !== "undefined" && bags.length);
         if (b.dataset.bn === "journal") b.hidden = !(typeof journal !== "undefined" && journal.length); });
       if (a !== active0) { active0 = a; const on = row && row.querySelector(`[data-sec="${a}"]`);
