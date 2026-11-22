@@ -2203,11 +2203,11 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after, :is(#adjOpts
    tall, until it sits round. Closing runs it backwards */
 @keyframes tools-l{0%{transform:translateX(var(--tb-x));border-radius:var(--tb-r);scale:1;animation-timing-function:cubic-bezier(.2,.7,.2,1)}8%{border-radius:var(--tb-r) 0 0 var(--tb-r)}
   40%{transform:translateX(var(--tb-m));border-radius:var(--tb-r) 0 0 var(--tb-r);scale:1;animation-timing-function:ease-in}
-  62%{transform:none;border-radius:var(--tb-r);scale:1}72%{scale:1.13 .9}83%{scale:.95 1.05}92%{scale:1.03 .98}100%{transform:none;border-radius:var(--tb-r);scale:1}}
+  62%{transform:none;border-radius:var(--tb-r);scale:1}70%{scale:1.17 .87}80%{scale:.92 1.08}89%{scale:1.05 .96}96%{scale:.99 1.01}100%{transform:none;border-radius:var(--tb-r);scale:1}}
 @keyframes tools-t{0%{transform:translateX(var(--tb-x));border-radius:var(--tb-r);scale:1;animation-timing-function:cubic-bezier(.2,.7,.2,1)}8%{border-radius:0}
   40%{transform:translateX(var(--tb-m));border-radius:0;scale:1;animation-timing-function:ease-in}
-  62%{transform:none;border-radius:var(--tb-r);scale:1}74%{scale:1.13 .9}85%{scale:.95 1.05}94%{scale:1.03 .98}100%{transform:none;border-radius:var(--tb-r);scale:1}}
-@keyframes tools-p{0%{border-radius:var(--tb-r);scale:1}8%,40%{border-radius:0 var(--tb-r) var(--tb-r) 0;scale:1}62%{border-radius:var(--tb-r);scale:1}76%{scale:1.13 .9}87%{scale:.95 1.05}96%{scale:1.03 .98}100%{border-radius:var(--tb-r);scale:1}}
+  62%{transform:none;border-radius:var(--tb-r);scale:1}72%{scale:.9 1.13}83%{scale:1.08 .93}93%{scale:.97 1.03}100%{transform:none;border-radius:var(--tb-r);scale:1}}
+@keyframes tools-p{0%{border-radius:var(--tb-r);scale:1}8%,40%{border-radius:0 var(--tb-r) var(--tb-r) 0;scale:1}62%{border-radius:var(--tb-r);scale:1}68%{scale:1.09 .93}75%{scale:.96 1.05}82%{scale:1.03 .98}88%,100%{border-radius:var(--tb-r);scale:1}}
 /* the neck between two drops: as tall as the pills, thinning to a thread, gone at the snap */
 .top:is(.tools-open,.tools-closing) .nav :is(#langBtn,#themeBtn)::after{content:"";position:absolute;left:calc(100% - 1px);top:0;width:calc(var(--nav-gap,4px) + 2px);height:100%;background:var(--pill);pointer-events:none;transform:scaleY(0)}
 .top.tools-open .nav :is(#langBtn,#themeBtn)::after{animation:tools-neck .85s linear both}
@@ -6705,7 +6705,7 @@ html:not(.bn-off) .dock{display:none!important}
   const SU_B = ["v60", "aero", "chemex", "kalita", "press", "switch", "espresso", "moka"], SU_G = ["c40", "kultra", "c2", "encore", "ode2", "niche"];
   // nothing in My equipment: the questions are its empty state, every visit. Brewers and grinders: tick as many as you own, then
   // Next (or Set later); water: one tap. Steps: 1 brewers, 2 grinders, 4 water, 3 done; 0 = My equipment as usual
-  let suStep = -1, suAll = false; const suSel = new Set();
+  let suStep = -1, suAll = false, suAsked = false, suAfter = false; const suSel = new Set();
   function renderSetup() {
     const it = LANG === "it", box = $("setup"), q = $("suQ"), c = $("suC"), g = $("gear");
     const bare = !gear.brewers.length && !gear.grinders.length && !(prefs.water || {}).kind;
@@ -6733,7 +6733,8 @@ html:not(.bn-off) .dock{display:none!important}
       if (x.dataset.more) { suAll = true; return renderSetup(); }
       if (x.dataset.skip || x.dataset.next) { const picked = [...suSel]; suSel.clear(); suAll = false;
         if (suStep === 1) { picked.forEach((k) => { if (!gear.brewers.includes(k)) gear.brewers.push(k); });
-          if (picked.length) { saveGear(); try { if (brewerOf(state) !== picked[0]) setBrewer(picked[0]); } catch (e) {} } suStep = 2; }
+          if (picked.length) { saveGear(); try { if (brewerOf(state) !== picked[0]) { setBrewer(picked[0]); saveState(); renderAllOpts(); render(); } } catch (e) {} } suStep = 2;
+          if (suAfter) { suAfter = false; renderGear(); goRecipe(); return; } }   // asked on the way to a recipe: straight on to it
         else if (suStep === 2) { picked.forEach((k) => { if (!gear.grinders.includes(k)) gear.grinders.push(k); });
           if (picked.length) { prefs.mill = picked[0]; savePrefs(); $("millSel").value = picked[0]; saveGear(); try { render(); } catch (e) {} } suStep = 4; }
         else suStep = 3;
@@ -6854,6 +6855,8 @@ html:not(.bn-off) .dock{display:none!important}
   // land on What’s brewing?, with the coffee filled in and nothing selected: no text highlighted, no field or button holding focus
   function landBrewing() {
     try { const a = document.activeElement; if (a && a !== document.body) a.blur(); const sel = getSelection(); if (sel) sel.removeAllRanges(); } catch (e) {}
+    // no brewer saved yet: ask what you brew with first (once a visit), then on to the recipe
+    if (!gear.brewers.length && !suAsked) { suAsked = true; suAfter = true; suStep = 1; suAll = false; renderGear(); jumpTo($("gear")); return; }
     goRecipe();   // straight to the recipe; its choices sit just above
   }
 
