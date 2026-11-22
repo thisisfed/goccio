@@ -7632,12 +7632,19 @@ html:not(.bn-off) .dock{display:none!important}
       const bl = R.map((r) => { const i = document.createElement("i"); Object.assign(i.style, { left: r.l + "px", top: r.t + "px", width: r.w + "px", height: r.h + "px" }); layer.appendChild(i); return i; });
       t.insertBefore(layer, t.firstChild); t.classList.add("tools-anim");
       const gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--nav-gap")) || 4;
-      const dur = open ? 750 : 560, t0 = performance.now(), off = [R[2].l - R[0].l, R[2].l - R[1].l, 0];
-      const ease = (x) => 1 - Math.pow(1 - x, 3), sm = (a, b, x) => { const k = Math.min(1, Math.max(0, (x - a) / (b - a))); return k * k * (3 - 2 * k); };
-      const frame = (now) => { const k = Math.min(1, (now - t0) / dur), p = open ? k : 1 - k, e = ease(p);
-        [0, 1].forEach((i) => { const x = off[i] * (1 - e); els[i].style.transform = bl[i].style.transform = `translateX(${x}px)`; els[i].style.opacity = String(sm(.15, .5, p)); });
-        document.documentElement.style.setProperty("--nav-w", (innerWidth - (tr.left + R[0].l + off[0] * (1 - e)) + gap) + "px");   // the box ends a gap before the leftmost drop
-        blur.setAttribute("stdDeviation", (6 * (1 - sm(.62, 1, p))).toFixed(2));
+      // out as one pill (0 to 45%), then the split: they spread a touch past their places and settle back, each wobbling
+      // wide-and-flat then narrow-and-tall like a drop, while the blur eases off so the joins stretch thin and snap
+      const dur = open ? 900 : 650, t0 = performance.now(), off = [R[2].l - R[0].l, R[2].l - R[1].l, 0], mid = [2 * gap, gap, 0];
+      const out3 = (x) => 1 - Math.pow(1 - x, 3), sm = (a, b, x) => { const k = Math.min(1, Math.max(0, (x - a) / (b - a))); return k * k * (3 - 2 * k); };
+      const spring = (q) => 1 - Math.exp(-6 * q) * Math.cos(q * 3 * Math.PI);   // 0 to 1, past 1 and back: the spread and settle
+      const frame = (now) => { const k = Math.min(1, (now - t0) / dur), p = open ? k : 1 - k, S = .45, q = Math.max(0, (p - S) / (1 - S));
+        const wob = p > S ? Math.sin(q * 2.5 * Math.PI) * Math.exp(-3.2 * q) * .16 : 0, sx = 1 + wob, sy = 1 - wob * .75;
+        [0, 1, 2].forEach((i) => { const x = p < S ? mid[i] + (off[i] - mid[i]) * (1 - out3(p / S)) : mid[i] * (1 - spring(q));
+          const tf = `translateX(${x}px) scale(${sx.toFixed(3)},${sy.toFixed(3)})`; els[i].style.transform = bl[i].style.transform = tf;
+          if (i < 2) els[i].style.opacity = String(sm(.12, .42, p)); });
+        blur.setAttribute("stdDeviation", (p < S ? 3.5 : 3.5 * (1 - sm(0, .75, q))).toFixed(2));
+        const xl = p < S ? mid[0] + (off[0] - mid[0]) * (1 - out3(p / S)) : mid[0] * (1 - spring(q));
+        document.documentElement.style.setProperty("--nav-w", (innerWidth - (tr.left + R[0].l + xl) + gap) + "px");   // the box ends a gap before the leftmost
         if (k < 1) { gooRaf = requestAnimationFrame(frame); return; }
         layer.remove(); t.classList.remove("tools-anim"); reset(); blur.setAttribute("stdDeviation", "0"); done(); };
       gooRaf = requestAnimationFrame(frame); }
