@@ -2198,7 +2198,7 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after, :is(#adjOpts
 .top.tools-open .nav #toolsBtn{animation:tools-p 1.5s linear both}
 .top.tools-closing .nav #langBtn{animation:tools-l .6s linear reverse both}
 .top.tools-closing .nav #themeBtn{animation:tools-t .6s linear reverse both}
-.top.tools-closing .nav #toolsBtn{animation:none}   /* closing: the + stays round while the two slide back behind it */
+.top.tools-closing .nav #toolsBtn{animation:tools-pc 1.15s linear both}   /* closing: the + stays round while the two slide back behind it */
 /* out as one pill (to 40%), then it parts like water: the joins thin to a neck and snap (62%), and each drop wobbles, wide then
    tall, until it sits round. Closing runs it backwards */
 @keyframes tools-l{0%{transform:translateX(var(--tb-x));border-radius:var(--tb-r);scale:1;animation-timing-function:cubic-bezier(.2,.7,.2,1)}5%{border-radius:var(--tb-r) 0 0 var(--tb-r)}
@@ -2212,6 +2212,8 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after, :is(#adjOpts
 .top:is(.tools-open,.tools-closing) .nav :is(#langBtn,#themeBtn)::after{content:"";position:absolute;left:calc(100% - 1px);top:0;width:calc(var(--nav-gap,4px) + 2px);height:100%;background:var(--pill);pointer-events:none;transform:scaleY(0)}
 .top.tools-open .nav :is(#langBtn,#themeBtn)::after{animation:tools-neck 1.5s linear both}
 .top.tools-closing .nav :is(#langBtn,#themeBtn)::after{animation:tools-neck .6s linear reverse both}
+/* closing: the + takes the two back in and wobbles like a drop that has just swallowed them */
+@keyframes tools-pc{0%,42%{scale:1;animation-timing-function:ease-in-out}52%{scale:1.14 .89;animation-timing-function:ease-in-out}63%{scale:.93 1.07;animation-timing-function:ease-in-out}74%{scale:1.05 .96;animation-timing-function:ease-in-out}85%{scale:.98 1.02;animation-timing-function:ease-in-out}94%{scale:1.01 .99}100%{scale:1}}
 @keyframes tools-neck{0%,21%{transform:scaleY(0)}22%{transform:scaleY(1);border-radius:0;animation-timing-function:cubic-bezier(.85,0,1,.55)}44%{transform:scaleY(.08);border-radius:40%/50%}45%,100%{transform:scaleY(0)}}
 #toolsBtn{border:0;border-radius:50%;width:var(--pill-h);height:var(--pill-h);padding:0;display:inline-flex;align-items:center;justify-content:center;flex:none;background:var(--pill);color:var(--ink);cursor:pointer}
 @media (hover:hover){ #toolsBtn:hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))} }
@@ -7732,7 +7734,7 @@ html:not(.bn-off) .dock{display:none!important}
       t.classList.add("tools-closing");
       { const b = $("toolsBtn").getBoundingClientRect(), gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--nav-gap")) || 4;
         document.documentElement.style.setProperty("--nav-w", (innerWidth - b.left + gap) + "px"); }   // the box grows with the pills going back, not after
-      toolsT = setTimeout(() => { t.classList.remove("tools-open", "tools-closing"); setTop(); }, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 600); };
+      toolsT = setTimeout(() => { t.classList.remove("tools-open", "tools-closing"); setTop(); }, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 1150); };
     if ("ResizeObserver" in window) new ResizeObserver(setTop).observe(document.querySelector(".top"));
     setTop(); addEventListener("resize", setTop);
     const tools = document.querySelector(".shelf-tools");
