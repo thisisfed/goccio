@@ -100,6 +100,9 @@ CASES = [
     ("Kafferäven's '2 x Brasilien' is two bags", lambda: scan.EXCLUDE.search("2 x Brasilien") is not None),
     ("Kaffa's Christmas brewing kits are not coffees", lambda: all(scan.EXCLUDE.search(x) for x in ["Håndbrygg i oliventre – med kontroll på oppskriften", "Fellow håndbrygg til jul", "Premium presskanne og skikkelig god julekaffe.", "Suiren-julepakken", "Enkel julekaffe med Pegasus", "Switch – julekaffe med to bryggemåter", "Fruity Berries Newby"])),
     ("Conscious: the cart's 'Not in stock' line on every page doesn't make a coffee sold out", lambda: not re.search(r">\s*(?:sold out|out of stock)\s*<", "<p>Not in stock</p>", re.I)),
+    ("Bag scan: white print on a small coloured sticker (lime, teal) is cut out, enlarged and read on its own", lambda: "function panel(src, gamma" in open(scan.ROOT / "index.html").read()),
+    ("Bag scan: a roaster's name down the side with its first letters hidden ('IMPSON' / 'SONS') is still found", lambda: "its first letters under a thumb" in open(scan.ROOT / "index.html").read()),
+    ("Bag scan: notes read as '25 Caramel. Jasmine' come out as 'Caramel, Jasmine'", lambda: "a misread first word and full stops for commas" in open(scan.ROOT / "index.html").read()),
     ("Kaffa's own coffees still count", lambda: not any(scan.EXCLUDE.search(x) for x in ["Kaffebønner Kenya Kagere", "Kaffebønner Honduras El Guaco", "Kaffebønner Klassisk Julekaffe fra", "Switch Up Charity Coffee"])),
     ("Coffee sacks, a milk frother, a pallet and a chocolate bar are not coffee", lambda: all(scan.EXCLUDE.search(t) for t in
         ["Jute Coffee Sacks", "Alessi Mousseur à lait Pulcina", "Halvpalle med kaffe", "Malmö Chokladfabrik x Gringo – Kaffekross 55% chokladkaka", "SCA Introduction to coffee", "30 ks", "Čaj Yunnan Green Superior", "Brazil Natural - Greens"])),

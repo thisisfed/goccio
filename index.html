@@ -2198,7 +2198,7 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after, :is(#adjOpts
 .top.tools-open .nav #toolsBtn{animation:tools-p .85s linear both}
 .top.tools-closing .nav #langBtn{animation:tools-l .6s linear reverse both}
 .top.tools-closing .nav #themeBtn{animation:tools-t .6s linear reverse both}
-.top.tools-closing .nav #toolsBtn{animation:tools-p .6s linear reverse both}
+.top.tools-closing .nav #toolsBtn{animation:none}   /* closing: the + stays round while the two slide back behind it */
 /* out as one pill (to 40%), then it parts like water: the joins thin to a neck and snap (62%), and each drop wobbles, wide then
    tall, until it sits round. Closing runs it backwards */
 @keyframes tools-l{0%{transform:translateX(var(--tb-x));border-radius:var(--tb-r);scale:1;animation-timing-function:cubic-bezier(.2,.7,.2,1)}8%{border-radius:var(--tb-r) 0 0 var(--tb-r)}
@@ -2212,7 +2212,7 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after, :is(#adjOpts
 .top:is(.tools-open,.tools-closing) .nav :is(#langBtn,#themeBtn)::after{content:"";position:absolute;left:calc(100% - 1px);top:0;width:calc(var(--nav-gap,4px) + 2px);height:100%;background:var(--pill);pointer-events:none;transform:scaleY(0)}
 .top.tools-open .nav :is(#langBtn,#themeBtn)::after{animation:tools-neck .85s linear both}
 .top.tools-closing .nav :is(#langBtn,#themeBtn)::after{animation:tools-neck .6s linear reverse both}
-@keyframes tools-neck{0%,40%{transform:scaleY(1);border-radius:0}55%{transform:scaleY(.38);border-radius:40%/50%}61%{transform:scaleY(.1)}63%,100%{transform:scaleY(0)}}
+@keyframes tools-neck{0%,38%{transform:scaleY(0)}39%,40%{transform:scaleY(1);border-radius:0}55%{transform:scaleY(.38);border-radius:40%/50%}61%{transform:scaleY(.1)}63%,100%{transform:scaleY(0)}}
 #toolsBtn{border:0;border-radius:50%;width:var(--pill-h);height:var(--pill-h);padding:0;display:inline-flex;align-items:center;justify-content:center;flex:none;background:var(--pill);color:var(--ink);cursor:pointer}
 @media (hover:hover){ #toolsBtn:hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))} }
 #toolsBtn svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
@@ -5076,7 +5076,7 @@ html:not(.bn-off) .dock{display:none!important}
     const w = $("wNow") && $("wNow").textContent.trim(); if (w && !/^set your water$/i.test(w) && !/^imposta/i.test(w)) picks.push(w);   // no water set: nothing to say
     const SHORT = { "Best for this coffee": "Best fit", "Il migliore per questo caffè": "Il migliore" };
     out.textContent = picks.map((t) => SHORT[t] || t).join(", "); }
-  const renderAllOpts = () => { renderOpts("opts-kit", [{ key: "brewer", label: "Brewer", items: brewerItems(), on: setBrewer, cur: () => brewerOf(state) === "cold" ? "press" : brewerOf(state) }]); renderOpts("opts-main", optsMain()); { const b = brewerOf(state), B = BREWERS[b]; renderOpts("opts-dose", [{ key: "dose", label: b === "moka" ? "Pot" : "Dose", items: B.doses }]); } adjSum(); renderOpts("opts-more", OPTS_MORE); };
+  const renderAllOpts = () => { renderOpts("opts-kit", [{ key: "brewer", label: "Brewer", items: brewerItems(), on: setBrewer, cur: () => { try { if (suAfter) return ""; } catch (e) {} return brewerOf(state) === "cold" ? "press" : brewerOf(state); } }]); renderOpts("opts-main", optsMain()); { const b = brewerOf(state), B = BREWERS[b]; renderOpts("opts-dose", [{ key: "dose", label: b === "moka" ? "Pot" : "Dose", items: B.doses }]); } adjSum(); renderOpts("opts-more", OPTS_MORE); };
 
   // the recipe section only exists once there's a full recipe; until then go to the questions
   // jumping to a section: straight there, its top rule just under the top bar, then checked again while the page settles
@@ -6734,7 +6734,7 @@ html:not(.bn-off) .dock{display:none!important}
       if (x.dataset.skip || x.dataset.next) { const picked = [...suSel]; suSel.clear(); suAll = false;
         if (suStep === 1) { picked.forEach((k) => { if (!gear.brewers.includes(k)) gear.brewers.push(k); });
           if (picked.length) { saveGear(); try { if (brewerOf(state) !== picked[0]) { setBrewer(picked[0]); saveState(); renderAllOpts(); render(); } } catch (e) {} } suStep = 2;
-          if (suAfter) { suAfter = false; renderGear(); goRecipe(); return; } }   // asked on the way to a recipe: straight on to it
+          if (suAfter) { suAfter = false; renderGear(); renderAllOpts(); goRecipe(); return; } }   // asked on the way to a recipe: straight on to it
         else if (suStep === 2) { picked.forEach((k) => { if (!gear.grinders.includes(k)) gear.grinders.push(k); });
           if (picked.length) { prefs.mill = picked[0]; savePrefs(); $("millSel").value = picked[0]; saveGear(); try { render(); } catch (e) {} } suStep = 4; }
         else suStep = 3;
@@ -6856,7 +6856,7 @@ html:not(.bn-off) .dock{display:none!important}
   function landBrewing() {
     try { const a = document.activeElement; if (a && a !== document.body) a.blur(); const sel = getSelection(); if (sel) sel.removeAllRanges(); } catch (e) {}
     // no brewer saved yet: ask what you brew with first (once a visit), then on to the recipe
-    if (!gear.brewers.length && !suAsked) { suAsked = true; suAfter = true; suStep = 1; suAll = false; renderGear(); jumpTo($("gear")); return; }
+    if (!gear.brewers.length && !suAsked) { suAsked = true; suAfter = true; suStep = 1; suAll = false; renderGear(); renderAllOpts(); jumpTo($("gear")); return; }
     goRecipe();   // straight to the recipe; its choices sit just above
   }
 
@@ -6887,6 +6887,34 @@ html:not(.bn-off) .dock{display:none!important}
   // light as the print in plain luminance (white on lime is nearly invisible in grey)
   const minCh = (c) => { const d = c.getContext("2d").getImageData(0, 0, c.width, c.height).data, g = new Float32Array(c.width * c.height);
     for (let i = 0, j = 0; j < g.length; i += 4, j++) g[j] = Math.min(d[i], d[i + 1], d[i + 2]); return g; };
+  // a coloured sticker with the coffee's details (white print on lime, teal, pink…) is often a small part of the photo: find the
+  // biggest solid block of one strong colour, cut it out of the full photo, enlarge it, and turn it into dark print on white
+  // (colour strength x brightness: the label comes out light, white or black print dark). Null when there's no such block
+  function panel(src, gamma = 1.4) {
+    const w0 = src.naturalWidth || src.width, h0 = src.naturalHeight || src.height, W = 180, H = Math.max(1, Math.round(h0 * W / w0));
+    const t = document.createElement("canvas"); t.width = W; t.height = H; const tx = t.getContext("2d", { willReadFrequently: true }); tx.drawImage(src, 0, 0, W, H);
+    const d = tx.getImageData(0, 0, W, H).data, m = new Uint8Array(W * H);
+    for (let i = 0, j = 0; j < m.length; i += 4, j++) { const mx = Math.max(d[i], d[i + 1], d[i + 2]), mn = Math.min(d[i], d[i + 1], d[i + 2]); m[j] = mx > 80 && (mx - mn) / mx > 0.4 ? 1 : 0; }
+    let best = null; const seen = new Uint8Array(W * H), st = [];
+    for (let s0 = 0; s0 < m.length; s0++) { if (!m[s0] || seen[s0]) continue; let n = 0, x0 = W, x1 = 0, y0 = H, y1 = 0; st.push(s0); seen[s0] = 1;
+      while (st.length) { const q = st.pop(), x = q % W, y = (q - x) / W; n++; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+        if (x > 0 && m[q - 1] && !seen[q - 1]) { seen[q - 1] = 1; st.push(q - 1); } if (x < W - 1 && m[q + 1] && !seen[q + 1]) { seen[q + 1] = 1; st.push(q + 1); }
+        if (y > 0 && m[q - W] && !seen[q - W]) { seen[q - W] = 1; st.push(q - W); } if (y < H - 1 && m[q + W] && !seen[q + W]) { seen[q + W] = 1; st.push(q + W); } }
+      const bw = x1 - x0 + 1, bh = y1 - y0 + 1, fill = n / (bw * bh), part = bw * bh / (W * H);
+      if (part < 0.025 || part > 0.6 || fill < 0.62 || bw < 14 || bh < 14) continue;   // a sticker is a solid rectangle; leaves outside a window are not
+      if (x0 === 0 || y0 === 0 || x1 === W - 1 || y1 === H - 1) continue;              // and it sits inside the photo, not cut by its edge
+      if (!best || n * fill > best.sc) best = { sc: n * fill, x0, y0, bw, bh }; }
+    if (!best) return null;
+    const f = w0 / W, sx = best.x0 * f, sy = best.y0 * f, sw = best.bw * f, sh = best.bh * f, k = Math.min(3, 1500 / sw);
+    const c = document.createElement("canvas"); c.width = Math.round(sw * k); c.height = Math.round(sh * k);
+    const x = c.getContext("2d", { willReadFrequently: true }); x.imageSmoothingQuality = "high"; x.drawImage(src, sx, sy, sw, sh, 0, 0, c.width, c.height);
+    const im = x.getImageData(0, 0, c.width, c.height), p = im.data, v = new Float32Array(c.width * c.height); let sum = 0;
+    for (let i = 0, j = 0; j < v.length; i += 4, j++) { const mx = Math.max(p[i], p[i + 1], p[i + 2]), mn = Math.min(p[i], p[i + 1], p[i + 2]); v[j] = mx ? (mx - mn) / mx * mx : 0; sum += v[j]; }
+    const ref = Math.max(20, sum / v.length * 0.9);
+    for (let i = 0, j = 0; j < v.length; i += 4, j++) { const g = Math.round(255 * Math.pow(Math.min(1, v[j] / ref), gamma)); p[i] = p[i + 1] = p[i + 2] = g; }
+    x.putImageData(im, 0, 0);
+    return { canvas: c, sx, sy, k, w0 };
+  }
   function quarter(c, dir, long = 1300) {   // a quarter turn (dir 1 clockwise, -1 anticlockwise), for words that run up or down the bag
     const k = Math.min(1, long / Math.max(c.width, c.height)), w = Math.round(c.width * k), h = Math.round(c.height * k), o = document.createElement("canvas");
     o.width = h; o.height = w; const x = o.getContext("2d"); x.translate(h / 2, w / 2); x.rotate(dir * Math.PI / 2); x.drawImage(c, -w / 2, -h / 2, w, h); return o; }
@@ -6982,6 +7010,11 @@ html:not(.bn-off) .dock{display:none!important}
     const a = await timed(pre.gray, 20000), b = a && strongN(a) >= 25 ? null : await timed(pre.bin, 15000);   // a clear first read doesn't need the second
     const e = await timed(pre.edge, 15000);   // white print on a coloured label, which the first two can't see
     let reads = [a, b, e].filter(Boolean);
+    // a coloured sticker: read on its own, enlarged, and placed back where it sits in the photo (so print sizes still compare)
+    // twice: once soft (bold titles keep their letters apart), once hard (thin small print comes up)
+    try { const base = toCanvas(img); for (const gm of [1.4, 2.2]) { const pn = panel(img, gm); if (!pn) break; const pr = await timed(pn.canvas, 10000), q = base.width / pn.w0;
+        if (pr) { const fix = (bb) => bb && ({ x0: (pn.sx + bb.x0 / pn.k) * q, x1: (pn.sx + bb.x1 / pn.k) * q, y0: (pn.sy + bb.y0 / pn.k) * q, y1: (pn.sy + bb.y1 / pn.k) * q });
+          reads.push({ lines: (pr.lines || []).map((l) => ({ text: l.text, confidence: l.confidence, bbox: fix(l.bbox) })), words: (pr.words || []).map((w) => ({ text: w.text, confidence: w.confidence, bbox: fix(w.bbox) })) }); } } } catch (err) {}
     // a weak read (few confident words) gets a third look at the untouched photo, for labels the clean-up didn't suit
     if (reads.reduce((n, d) => n + strongN(d), 0) < 12) { const c = await timed(toCanvas(img), 15000); if (c) reads.push(c); }
     // the roaster's name often runs up or down the bag (Climpson & Sons): read it turned both ways, small and quick
@@ -7141,6 +7174,7 @@ html:not(.bn-off) .dock{display:none!important}
     if (!notes) { const fl = L.map((l, i) => ({ l, i, k: (l.n.match(new RegExp(FLAVOUR.source, "g")) || []).length })).filter((x) => x.k >= 2 && x.l.n.split(" ").length <= 9).sort((a, b) => b.k - a.k || b.l.n.length - a.l.n.length || (b.l.conf || 0) - (a.l.conf || 0))[0];
       if (fl) { notes = { v: fl.l.text, c: cf(0.8, fl.l.conf), why: "a line of flavour words" }; used.add(fl.i); nIdx = fl.i; } }
     if (notes) { const parts = notes.v.split(/\s*,\s*/).filter(Boolean); notes.v = parts.filter((p, k) => !parts.some((q, j) => j !== k && norm(q) !== norm(p) && norm(q).startsWith(norm(p).slice(0, 5)) && q.length > p.length) && parts.findIndex((q) => norm(q) === norm(p)) === k).join(", "); }
+    if (notes) notes.v = notes.v.replace(/^[^A-Za-zÀ-ÿ]+/, "").replace(/\.\s+(?=[A-ZÀ-Ý])/g, ", ");   // "25 Caramel. Jasmine": a misread first word and full stops for commas
     out.notes = notes ? { ...notes, v: notes.v.replace(/\s*[\/·•|-]\s*|\s{2,}/g, ", ").replace(/,\s*,/g, ",").replace(/^,|,$/g, "").trim() } : { v: null, why: "No tasting notes on this side" };
     const scan = (pick) => { let best = null; L.forEach((l, i) => { if ((used.has(i) && i === nIdx) || l.conf < 45) return; const r = pick(l, i); if (r && (!best || r.s > best.s)) best = { ...r, i, l }; }); return best; };
     // process: labelled lines ("Process: …", "Proceso:") are trusted more; the most specific family wins
@@ -7219,6 +7253,13 @@ html:not(.bn-off) .dock{display:none!important}
         // a near miss on a place name is the place: "London" read sideways is not Lonton Coffee Co
         if (sc < 1 && r.long.some((t) => PLACE_NEAR.some((g) => g !== t && lev(g, t) <= 1) && findTerm(n, t) < 1)) return;
         if (!roaster || sc > roaster.s) roaster = { name: r.name, s: sc, l: { text: l.text, conf: l.conf }, i: -1, side: true }; }); });
+    // a name down the side with its first letters under a thumb or off the edge, a word per line ("IMPSON" / "SONS"): every word
+    // of a two-word name is there, whole or as its ending (5+ letters, at most 3 missing), and only one roaster fits
+    if (!roaster) { const rw = [...new Set((ocr.rot || []).filter((l) => (l.conf || 0) >= 25).flatMap((l) => norm(l.text).split(" ")).filter((w) => w.length >= 4))];
+      const fits = (t) => rw.some((w) => w === t) ? 2 : rw.some((w) => w.length >= 5 && t.length - w.length >= 1 && t.length - w.length <= 3 && (t.endsWith(w) || (w.length >= 6 && lev(t.slice(-w.length), w) <= 1))) ? 1 : 0;
+      const cand = known.filter((r) => { const ws = norm(r.name).split(" ").filter((w) => w.length >= 4 && !/^(coffee|roasters?|roastery|company)$/.test(w)); if (ws.length < 2) return false;
+        const f = ws.map(fits); return f.every(Boolean) && f.some((x) => x === 2) && f.some((x) => x === 1); });
+      if (cand.length === 1) roaster = { name: cand[0].name, s: 0.9, l: { text: cand[0].name, conf: 60 }, i: -1, side: true }; }
     if (!roaster) L.forEach((l, i) => { if (i === nIdx || l.conf < 55) return; known.forEach((r) => { if (r.geo) return;
       const sc0 = findTerm(l.n, r.k); if (sc0 < 0.85) return;
       // a near miss that's the name grown into an English word ("balanced" is not Balance, "methods" not Method)
@@ -7550,9 +7591,10 @@ html:not(.bn-off) .dock{display:none!important}
     } finally { clearInterval(tick); btn.disabled = false; }
   });
   // test hook (only with ?scantest): run the whole photo pipeline on a file and return the fields
+  if (/[?&]scantest\b/.test(location.search)) window.__panel = async (blob) => { const img = await loadImg(blob), pn = panel(img); return pn ? pn.canvas.toDataURL("image/jpeg", 0.8) : null; };
   if (/[?&]scantest\b/.test(location.search)) { window.__prep = async (blob) => { const img = await loadImg(blob), c0 = toCanvas(img); const pre = prepare(img);
       return { angle: pre.angle, inv: pre.inverted, gray: pre.gray.toDataURL("image/jpeg", 0.7), bin: pre.bin.toDataURL("image/png"), edge: pre.edge.toDataURL("image/png") }; }; }
-  if (/[?&]scantest\b/.test(location.search)) window.__scan = async (blob) => { const ocr = await readPhoto(blob); return { fields: readFields(ocr, null), other: notCoffee(ocr, readFields(ocr, null)), lines: ocr.lines.map((l) => [l.text, Math.round(l.conf), l.h]), angle: ocr.angle, inverted: ocr.inverted, match: (() => { const m = shelfMatch(readFields(ocr, null)); return !m ? null : m.pick ? m.pick.roaster + " | " + m.pick.name + (m.sure ? "" : " (?)") : "choose: " + m.choices.map((r) => r.roaster).join(", "); })() }; };
+  if (/[?&]scantest\b/.test(location.search)) window.__scan = async (blob) => { const ocr = await readPhoto(blob); return { fields: readFields(ocr, null), other: notCoffee(ocr, readFields(ocr, null)), lines: ocr.lines.map((l) => [l.text, Math.round(l.conf), l.h]), rot: (ocr.rot || []).map((l) => [l.text, Math.round(l.conf)]), angle: ocr.angle, inverted: ocr.inverted, match: (() => { const m = shelfMatch(readFields(ocr, null)); return !m ? null : m.pick ? m.pick.roaster + " | " + m.pick.name + (m.sure ? "" : " (?)") : "choose: " + m.choices.map((r) => r.roaster).join(", "); })() }; };
 
   $("shelfQ").addEventListener("input", () => { $("shelfQx").hidden = !$("shelfQ").value; shelfAll = false; renderShelf(); keepShelfTop(); });
   // the cross clears what you typed and leaves the cursor in the box
