@@ -22,7 +22,7 @@ NUMBERS = "()=>{" + GRID + """
 const B={cupping:[8.25,11],v60:[12,15,18,20,25,30],neo:[12,15,18,20,25,30],kalita:[12,15,18,20,25,30],april:[12,15,18,20,25],orea:[12,15,17,20,25],melitta:[12,15,18,20,25,30],chemex:[20,30,40,50],origami:[12,15,18,20,25,30],switch:[15,20,30],clever:[15,18,20,25],aero:[11,13,15],press:[15,30,60],cold:[50,100],espresso:[14,16,18,20],mocca:[30,45,60,75],moka:[7,16,30]};
 const res=[], errs=[];
 each(B,(st,key)=>{ try { const r=__v60.engine(st); res.push({in:key,m:r.m,kind:r.kind,goal:r.goal,dose:r.dose,water:r.water,ratio:r.ratio,clicks:r.clicks,temp:r.temp,lo:r.lo,hi:r.hi,yieldG:r.yieldG,iced:!!r.iced,total:r.total,ice:r.ice,tds:r.tds,ey:r.ey,
-  pours:(r.pours||[]).map(p=>({t:p.t,x:p.x,to:p.to,act:p.act||null,dur:p.dur}))}); } catch(e){ errs.push([key,String(e)]); } });
+  dilute:r.dilute||0,pours:(r.pours||[]).map(p=>({t:p.t,x:p.x,to:p.to,act:p.act||null,dur:p.dur,after:!!p.after}))}); } catch(e){ errs.push([key,String(e)]); } });
 return {res,errs}; }"""
 ON_SCREEN = {"cupping":[11],"v60":[15,30],"neo":[15],"kalita":[15,30],"april":[12],"orea":[17],"melitta":[15],"chemex":[30],"origami":[15],"switch":[20],"clever":[15],"aero":[11,15],"press":[30],"cold":[100],"espresso":[18],"mocca":[60],"moka":[16]}
 WORDS = "(B)=>{" + GRID + """
@@ -52,7 +52,7 @@ def numbers(d):
             if not P: F("no pours", r); continue
             if r["lo"] % 5 or r["hi"] % 5: F("time not a whole 5 s", r, (r["lo"], r["hi"]))
             if r["hi"] - r["lo"] < 10: F("time window under 10 s", r, (r["lo"], r["hi"]))
-            last = r["pours"][-1]
+            last = [p for p in r["pours"] if not p.get("after")][-1]   # water added after the drain (tea-like by dilution) is not part of the brew
             if last["t"] + (last["dur"] or 10) + 10 > r["lo"]: F("finishes before the last pour can drain", r, (last["t"], last["dur"], r["lo"]))
         if P:
             xs = [p["x"] for p in P]; ts = [p["t"] for p in r["pours"]]
@@ -69,7 +69,11 @@ def numbers(d):
         if r["kind"] in ("pour", "imm") and br != "cupping":
             if abs(w - dose * r["ratio"]) > 2.6: F("water is not dose x ratio", r, (w, dose, r["ratio"]))
             if not 12 <= r["ratio"] <= 20: F("ratio outside 1:12-1:20", r, r["ratio"])
-            if not r["iced"] and r["yieldG"] is not None and not w - 2.6 * dose <= r["yieldG"] <= w - 1.5 * dose: F("cup yield off", r, (r["yieldG"], w, dose))
+            if r.get("dilute"):
+                if abs((w + r["dilute"]) / dose - 19) > 0.4: F("tea-like by dilution doesn't land near 1:19", r, (w, r["dilute"], dose))
+                aft = [p for p in r["pours"] if p.get("after")]
+                if len(aft) != 1 or aft[0]["t"] != r["hi"]: F("the added-water step isn't at the finish", r, (r["hi"],))
+            if not r["iced"] and r["yieldG"] is not None and not w - 2.6 * dose <= r["yieldG"] - r.get("dilute", 0) <= w - 1.5 * dose: F("cup yield off", r, (r["yieldG"], w, dose))
         if r["kind"] == "shot":
             if abs(r["water"] - dose * r["ratio"]) > 1: F("shot: out is not in x ratio", r)
             if not 1.3 <= r["ratio"] <= 3.2: F("shot ratio outside 1:1.3-1:3.2", r, r["ratio"])
