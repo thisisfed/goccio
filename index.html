@@ -2193,8 +2193,8 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after, :is(#adjOpts
 .top .nav #langBtn{--tb-x:calc((var(--pill-h) + var(--nav-gap,4px)) * 2);--tb-m:calc(var(--nav-gap,4px) * 2)}
 .top .nav #themeBtn{--tb-x:calc(var(--pill-h) + var(--nav-gap,4px));--tb-m:var(--nav-gap,4px)}
 .top{--tb-r:calc(var(--pill-h) / 2)}
-.top.tools-open .nav #langBtn{--tb-s:-24px;animation:tools-l 1.7s linear both}
-.top.tools-open .nav #themeBtn{--tb-s:-12px;animation:tools-t 1.7s linear both}
+.top.tools-open .nav #langBtn{--tb-s:-14px;animation:tools-l 1.7s linear both}
+.top.tools-open .nav #themeBtn{--tb-s:-7px;animation:tools-t 1.7s linear both}
 .top.tools-open .nav #toolsBtn{animation:tools-p 1.7s linear both}
 .top.tools-closing .nav :is(#langBtn,#themeBtn){animation:tools-back .32s cubic-bezier(.5,0,.9,.5) both}
 .top.tools-closing .nav #toolsBtn{animation:tools-pc .8s linear .4s both}
@@ -2211,7 +2211,7 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after, :is(#adjOpts
 @keyframes tools-back{from{transform:none}to{transform:translateX(var(--tb-x))}}
 @keyframes tools-pc{0%{scale:1;animation-timing-function:ease-in-out}14%{scale:1.14 .89;animation-timing-function:ease-in-out}30%{scale:.93 1.07;animation-timing-function:ease-in-out}46%{scale:1.05 .96;animation-timing-function:ease-in-out}62%{scale:.98 1.02;animation-timing-function:ease-in-out}80%{scale:1.01 .99}100%{scale:1}}
 /* the bridge: in the gap, its ends tucked under the two drops, waisted top and bottom; it thins as it is pulled and is gone at the snap */
-.top.tools-open .nav :is(#langBtn,#themeBtn)::after{content:"";position:absolute;left:calc(100% - 6px);top:1px;width:calc(var(--nav-gap,4px) + 24px);height:calc(100% - 2px);background:var(--pill);pointer-events:none;z-index:-1;
+.top.tools-open .nav :is(#langBtn,#themeBtn)::after{content:"";position:absolute;left:calc(100% - 6px);top:1px;width:calc(var(--nav-gap,4px) + 19px);height:calc(100% - 2px);background:var(--pill);pointer-events:none;z-index:-1;
   --ry:25%;-webkit-mask:radial-gradient(ellipse 50% var(--ry) at 50% 0,transparent 98%,#000 100%),radial-gradient(ellipse 50% var(--ry) at 50% 100%,transparent 98%,#000 100%);-webkit-mask-composite:source-in;
   mask:radial-gradient(ellipse 50% var(--ry) at 50% 0,transparent 98%,#000 100%),radial-gradient(ellipse 50% var(--ry) at 50% 100%,transparent 98%,#000 100%);mask-composite:intersect;animation:tools-neck 1.7s linear both}
 /* the bridge runs from one drop's middle to the next one's, as tall as the drops at both ends and curving in smoothly to a waist;
@@ -7745,14 +7745,14 @@ html:not(.bn-off) .dock{display:none!important}
       if (on) { t.classList.remove("tools-closing"); t.classList.add("tools-open"); setTop();
         // the drops pull 12 px past their places before the bridge snaps: the box gives them that room, then takes it back
         if (!matchMedia("(prefers-reduced-motion: reduce)").matches) { const de = document.documentElement, w = parseFloat(getComputedStyle(de).getPropertyValue("--nav-w")) || 0;
-          if (w) { de.style.setProperty("--nav-w", (w + 24) + "px"); toolsT = setTimeout(setTop, 620); } }
+          if (w) { de.style.setProperty("--nav-w", (w + 14) + "px"); toolsT = setTimeout(setTop, 620); } }
         return; }
       // closing: the two slide back behind the +, then the box grows back
       t.classList.add("tools-closing");
       { const b = $("toolsBtn").getBoundingClientRect(), gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--nav-gap")) || 4;
         const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
         // the box grows with the pills going back and runs right into the +, one shape for a moment; then it lets go and both wobble
-        document.documentElement.style.setProperty("--nav-w", (innerWidth - b.left + (calm ? gap : -2)) + "px");
+        document.documentElement.style.setProperty("--nav-w", (innerWidth - b.left + (calm ? gap : -b.width * .6)) + "px");   // well in behind the +
         if (!calm) setTimeout(() => { if (t.classList.contains("tools-closing")) document.documentElement.style.setProperty("--nav-w", (innerWidth - b.left + gap) + "px"); }, 400); }
       toolsT = setTimeout(() => { t.classList.remove("tools-open", "tools-closing"); setTop(); }, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 1250); };
     if ("ResizeObserver" in window) new ResizeObserver(setTop).observe(document.querySelector(".top"));
