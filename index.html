@@ -2197,8 +2197,10 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after, :is(#adjOpts
 .top.tools-open .nav #themeBtn{--tb-s:0px;animation:tools-t 1.7s linear both}
 .top.tools-open .nav #toolsBtn{animation:tools-p 1.7s linear both}
 .top.tools-closing .nav :is(#langBtn,#themeBtn){animation:tools-back .32s cubic-bezier(.5,0,.9,.5) both}
-.top.tools-closing .nav #toolsBtn{animation:tools-pc .8s linear .4s both}
-.top.tools-closing .ask-box{transform-origin:100% 50%;animation:tools-box .8s linear .4s both}
+.top.tools-closing .nav #toolsBtn{animation:tools-pc .8s linear .3s both}
+.top.tools-open .ask-box{transform-origin:100% 50%;animation:tools-box .8s linear .5s both}
+.top.tools-closing .ask-box{transform-origin:100% 50%;animation:tools-box2 .8s linear .3s both}
+@keyframes tools-box2{0%{scale:1;animation-timing-function:ease-in-out}14%{scale:.985 1.1;animation-timing-function:ease-in-out}30%{scale:1.008 .93;animation-timing-function:ease-in-out}46%{scale:.996 1.05;animation-timing-function:ease-in-out}62%{scale:1.002 .98;animation-timing-function:ease-in-out}80%{scale:1 1.01}100%{scale:1}}
 @keyframes tools-box{0%{scale:1;animation-timing-function:ease-in-out}14%{scale:.985 1.1;animation-timing-function:ease-in-out}30%{scale:1.008 .93;animation-timing-function:ease-in-out}46%{scale:.996 1.05;animation-timing-function:ease-in-out}62%{scale:1.002 .98;animation-timing-function:ease-in-out}80%{scale:1 1.01}100%{scale:1}}
 /* opening: the three come out as three round drops straight away, joined by a bridge of the same liquid (waisted, like two
    drops of oil about to part). They pull a little too far, the bridge tenses and thins, snaps (34%), and each drop springs back
@@ -2217,7 +2219,7 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after, :is(#adjOpts
 #toolsBtn .tb-v{transition:transform .25s ease;transform-origin:center}
 .top.tools-open:not(.tools-closing) #toolsBtn .tb-v{transform:scaleY(0)}
 .ask-line{transition:opacity .25s ease, transform .25s ease, right .3s cubic-bezier(.2,.7,.2,1), visibility 0s linear 0s!important}
-@media (prefers-reduced-motion: reduce){ .top.tools-open .nav :is(#langBtn,#themeBtn,#toolsBtn), .top.tools-closing .nav :is(#langBtn,#themeBtn,#toolsBtn), .top .nav :is(#langBtn,#themeBtn)::after, .top.tools-closing .ask-box{animation:none!important} .ask-line{transition:none!important} }
+@media (prefers-reduced-motion: reduce){ .top.tools-open .nav :is(#langBtn,#themeBtn,#toolsBtn), .top.tools-closing .nav :is(#langBtn,#themeBtn,#toolsBtn), .top .nav :is(#langBtn,#themeBtn)::after, .top:is(.tools-open,.tools-closing) .ask-box{animation:none!important} .ask-line{transition:none!important} }
 .top .top-in{justify-content:flex-end!important}
 
 .top:has(.sec-list.instant) .ask-line{transition:none}
@@ -2509,7 +2511,7 @@ html:not(.bn-off) .dock{display:none!important}
       <p class="lede-need">You’ll need a scale, and ideally a grinder.</p>
       <div class="g-ex fold">
       <figure class="glimpse" aria-label="Example recipe: washed Ethiopia, light roast. 15 g coffee to 255 g water, 99°C, about 3:15. Pours at 0:00 to 51 g, 0:45 to 102 g, 1:10 to 153 g, 1:30 to 204 g, 1:50 to 255 g.">
-        <figcaption><span class="g-name">Washed Ethiopia, light roast</span><button type="button" class="g-tag" id="exTog" aria-expanded="false" aria-label="Show the example">Example</button></figcaption>
+        <figcaption><span class="g-name">Washed Ethiopia, light roast</span><button type="button" class="g-tag" id="exTog" aria-expanded="false" aria-label="Show the example">Brewing example</button></figcaption>
         <div class="g-specs num" aria-hidden="true"><span><b>15</b><span class="arr">→</span><b>255</b> g</span><span><b>99</b>°C</span></div>
         <ol class="g-pours num" aria-hidden="true">
           <li style="--t:0"><span>0:00</span><b>51</b></li><li style="--t:45"><span>0:45</span><b>102</b></li><li style="--t:70"><span>1:10</span><b>153</b></li><li style="--t:90"><span>1:30</span><b>204</b></li><li style="--t:110"><span>1:50</span><b>255</b></li><li class="end"><span>3:15</span><i>Done</i></li>
@@ -7741,11 +7743,8 @@ html:not(.bn-off) .dock{display:none!important}
       // closing: the two slide back behind the +, then the box grows back
       t.classList.add("tools-closing");
       { const b = $("toolsBtn").getBoundingClientRect(), gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--nav-gap")) || 4;
-        const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
-        // the box grows with the pills going back and runs right into the +, one shape for a moment; then it lets go and both wobble
-        document.documentElement.style.setProperty("--nav-w", (innerWidth - b.left + (calm ? gap : -b.width * .6)) + "px");   // well in behind the +
-        if (!calm) setTimeout(() => { if (t.classList.contains("tools-closing")) document.documentElement.style.setProperty("--nav-w", (innerWidth - b.left + gap) + "px"); }, 400); }
-      toolsT = setTimeout(() => { t.classList.remove("tools-open", "tools-closing"); setTop(); }, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 1250); };
+        document.documentElement.style.setProperty("--nav-w", (innerWidth - b.left + gap) + "px"); }   // the box grows with the pills going back, to its own place
+      toolsT = setTimeout(() => { t.classList.remove("tools-open", "tools-closing"); setTop(); }, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 1150); };
     if ("ResizeObserver" in window) new ResizeObserver(setTop).observe(document.querySelector(".top"));
     setTop(); addEventListener("resize", setTop);
     const tools = document.querySelector(".shelf-tools");
