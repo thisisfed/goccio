@@ -1,0 +1,50 @@
+name: Weekly research watch
+
+# Looks once a week for new papers on brewing, new videos and posts from the people whose recipes the site uses, and
+# changes to the recipe pages the footer cites (scripts/research.py). Free: public feeds and registries, no keys.
+# It never changes the site. When it finds something it opens an issue with the digest; the digest is also kept
+# in data/research.md.
+on:
+  schedule:
+    - cron: "17 6 * * 1"   # Mondays, 06:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: research
+  cancel-in-progress: false
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check the filters
+        run: python3 scripts/research.py --selftest
+      - name: Look for new research, recipes and changed pages
+        id: watch
+        run: python3 scripts/research.py
+      - name: Save what was seen
+        run: |
+          git config user.name "v60-scan-bot"
+          git config user.email "v60-scan-bot@users.noreply.github.com"
+          git add data/research.json data/research.md
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Research watch $(date -u +'%d %b %Y')"
+            git pull --rebase -q && git push
+          fi
+      - name: Open an issue with the digest
+        if: steps.watch.outputs.found != '0' && steps.watch.outputs.found != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TITLE: ${{ steps.watch.outputs.title }}
+        run: gh issue create --title "$TITLE" --body-file data/research.md
