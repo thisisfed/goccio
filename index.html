@@ -2525,6 +2525,12 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
 .top .nav :is(#langBtn,#themeBtn){position:relative;z-index:1}
 @media (prefers-reduced-motion: reduce){ .drop-br{display:none} }
 .setup .chip.su-next{background:var(--hl)!important;color:var(--on-hl)!important}   /* Next is the step forward, not one more thing to pick: the accent, like Start brewing */
+/* something of yours in My equipment carries a little x: one tap on it takes it off */
+.chip:has(> .gx){display:inline-flex;align-items:center}
+.chip > .gx{flex:none;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;margin:0 -5px 0 6px;position:relative;opacity:.55}
+.chip > .gx::before{content:"";position:absolute;inset:-14px -10px -14px -6px}
+.chip > .gx svg{width:9px;height:9px;display:block}
+@media (hover:hover){ .chip > .gx:hover{opacity:1} }
 </style>
 </head>
 <body>
@@ -4762,13 +4768,14 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
     if (!w.kind && !(gearOpen && gearOpen.water)) {   // nothing picked yet: one dropdown pill, like Region
       $("wBody").innerHTML = `<div class="chips"><button type="button" class="gear-dd" aria-expanded="false">${LANG === "it" ? "Aggiungi la tua acqua" : "Add your water"}</button></div>`;
       $("wBody").querySelector(".gear-dd").onclick = () => { gearOpen.water = true; renderWaterBody(); gearWait(); }; return; }
-    $("wBody").innerHTML = `<div class="chips" role="group" aria-label="Your water">${WATER.filter(([k]) => open || k === w.kind).map(([k, t]) => `<button type="button" class="chip" data-w="${k}" aria-pressed="${w.kind === k}">${t}</button>`).join("")}${open ? "" : `<button type="button" class="chip gear-more" aria-expanded="false" aria-label="See all"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>`}</div>
+    $("wBody").innerHTML = `<div class="chips" role="group" aria-label="Your water">${WATER.filter(([k]) => open || k === w.kind).map(([k, t]) => `<button type="button" class="chip" data-w="${k}" aria-pressed="${w.kind === k}">${t}${w.kind === k ? `<span class="gx" role="button" aria-label="${LANG === "it" ? "Togli" : "Remove"}"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 3l6 6M9 3l-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>` : ""}</button>`).join("")}${open ? "" : `<button type="button" class="chip gear-more" aria-expanded="false" aria-label="See all"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>`}</div>
       ${open ? pcBlock : ""}${custom && open ? `<div class="w-custom"><label>Hardness<input id="wHard" inputmode="numeric" value="${esc(w.hard ?? "")}" placeholder="e.g. 80"></label><label>Alkalinity<input id="wAlk" inputmode="numeric" value="${esc(w.alk ?? "")}" placeholder="e.g. 40"></label></div>
         <p class="muted" style="font-size: var(--fs-s)">Your water company lists both by postcode. Bottled water labels give bicarbonate in mg/L: divide by 1.22 for ppm CaCO₃.</p>` : ""}
       ${custom && open ? `<div class="w-sca"><b>Hardness</b><span>50–175 ppm (calcium 17–85, aim ~68)</span><b>Alkalinity</b><span>40–75 ppm, aim ~40 (bicarbonate buffer)</span><b>TDS</b><span>75–250 ppm, aim ~150</span>
         <b>London tap</b><span>~250–350 hardness, ~200+ alkalinity</span></div>
       <p class="muted" style="font-size: var(--fs-s)">SCA water standard, all as CaCO₃. A jug filter, or tap cut with low-mineral bottled water, brings hard tap much closer.</p>` : ""}`;
-    $("wBody").querySelectorAll("button[data-w]").forEach((b) => b.onclick = () => { if (prefs.water && prefs.water.kind === b.dataset.w) {   // your water tapped again: taken off, back to None
+    $("wBody").querySelectorAll("button[data-w]").forEach((b) => b.onclick = (ev) => { if (prefs.water && prefs.water.kind === b.dataset.w) {   // your water: its little x takes it off
+        if (!ev.target.closest(".gx")) return;
         prefs.water = {}; gearOpen.water = false; savePrefs(); render(); renderWaterBody(); try { renderGear(); } catch (e) {} return; }
       gearOpen.water = true; prefs.water = { ...(prefs.water || {}), kind: b.dataset.w }; savePrefs(); render(); gearWait(); });
     const more = $("wBody").querySelector(".gear-more"); if (more) more.onclick = () => { gearOpen.water = true; renderWaterBody(); gearWait(); };
@@ -6895,15 +6902,14 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
     const row = (id, list, all, label) => { const open = gearOpen[id] || !list.length, keys = Object.keys(all).filter((k) => open || list.includes(k));
       if (!list.length && !gearOpen[id]) {   // nothing picked yet: one dropdown pill, like Region; a tap unfolds the list
         $(id).innerHTML = `<button type="button" class="gear-dd" aria-expanded="false">${LANG === "it" ? "Aggiungi" : "Add"}</button>`; $(id).querySelector(".gear-dd").onclick = () => { gearOpen[id] = true; renderGear(); gearWait(); }; return; }
-      $(id).innerHTML = keys.map((k) => `<button type="button" class="chip" data-k="${k}" aria-pressed="${list.includes(k)}">${esc(label(all[k]))}</button>`).join("")
+      $(id).innerHTML = keys.map((k) => `<button type="button" class="chip" data-k="${k}" aria-pressed="${list.includes(k)}">${esc(label(all[k]))}${list.includes(k) ? `<span class="gx" role="button" aria-label="${LANG === "it" ? "Togli" : "Remove"}"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 3l6 6M9 3l-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>` : ""}</button>`).join("")
         + (list.length && !open ? `<button type="button" class="chip gear-more" aria-expanded="false" aria-label="See all"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>` : "");
       // the full list folds back by itself, given time to read it (2 s plus 0.15 s a pill: about 7 s for both lists); each tap starts the wait again
       const wait = gearWait;
-      $(id).querySelectorAll("button[data-k]").forEach((b) => b.onclick = () => { const k = b.dataset.k, i = list.indexOf(k);
+      $(id).querySelectorAll("button[data-k]").forEach((b) => b.onclick = (ev) => { const k = b.dataset.k, i = list.indexOf(k);
         if (i < 0) { if (!list.length) gearOpen[id] = true; list.push(k); saveGear(); renderGear(); return; }   // ticking from the full list keeps it open a while
-        if (b.dataset.armed) { list.splice(i, 1); saveGear(); renderGear(); return; }
-        b.dataset.armed = "1"; b.textContent = "Remove?"; b.classList.add("armed"); wait();
-        cdRun(b, 5000, () => { if (b.dataset.armed) { delete b.dataset.armed; b.textContent = label(all[k]); b.classList.remove("armed"); } }); });
+        if (ev.target.closest(".gx")) { list.splice(i, 1); saveGear(); renderGear(); return; }   // yours: the little x takes it off, one tap
+        wait(); });
       const more = $(id).querySelector(".gear-more"); if (more) more.onclick = () => { gearOpen[id] = true; renderGear(); }; };
     $("gear").classList.toggle("bare", !gearIntro && !gear.brewers.length && !gear.grinders.length && !(prefs.water || {}).kind);
     try { renderSetup(); } catch (e) {}
