@@ -107,6 +107,14 @@ CASES = [
      lambda: scan.raw_notes('<div><h4>Flavour profile:</h4><p>Liquorice, Pear, Blackberry</p><h4>Coffee:</h4><p>El Witano</p><h4>Origin:</h4><p>Huehuetenango, Guatemala</p></div>', "El Witano") == ["Liquorice", "Pear", "Blackberry"]
        and scan.raw_notes('<h4>Notes:</h4><p>Free delivery on orders over £25, and returns within 30 days of purchase for all customers everywhere in the United Kingdom and beyond</p>', "X") == []
        and scan.raw_notes('<h4>Flavour profile:</h4><h4>Coffee:</h4><p>El Witano</p>', "El Witano") == []),
+    ("Kaffa: 'Kaffebønner Klassisk Julekaffe fra Guatemala' is Klassisk Julekaffe, 'Kaffebønner Etiopia Danche' is Danche; other shops' names are left alone",
+     lambda: name("Kaffebønner Klassisk Julekaffe fra Guatemala", "Kaffa", "Guatemala") == "Klassisk Julekaffe" and name("Kaffebønner Etiopia Danche", "Kaffa", "Ethiopia") == "Danche"
+       and name("Kaffebønner Juleespresso fra Etiopia", "Kaffa", "Ethiopia") == "Juleespresso" and name("Kaffebønner Brasil Fazenda IP", "Kaffa", "Brazil") == "Fazenda IP"
+       and name("Hacienda da Lagoa", "X", "Brazil") == "Hacienda da Lagoa" and name("Casa de Piedra", "X", "Colombia") == "Casa de Piedra"),
+    ("Conscious: no price in the page's data ($0.00), but '£ 14.00' is printed under the name; a delivery line is not a price",
+     lambda: scan.page_price("<html><body><h1>Danse</h1><p>Ethiopia</p><p>£ 14.00</p><p>250g</p><p>Free delivery over £25</p></body></html>", "Danse") == (14.0, "GBP")
+       and scan.page_price("<html><body><h1>Danse</h1><p>Free delivery on orders over £25</p><p>Ethiopia</p></body></html>", "Danse") == (None, None)
+       and scan.page_price("<html><body><p>£ 14.00</p><h1>Danse</h1></body></html>", "") == (None, None)),
     ("Kaffa's own coffees still count", lambda: not any(scan.EXCLUDE.search(x) for x in ["Kaffebønner Kenya Kagere", "Kaffebønner Honduras El Guaco", "Kaffebønner Klassisk Julekaffe fra", "Switch Up Charity Coffee"])),
     ("Coffee sacks, a milk frother, a pallet and a chocolate bar are not coffee", lambda: all(scan.EXCLUDE.search(t) for t in
         ["Jute Coffee Sacks", "Alessi Mousseur à lait Pulcina", "Halvpalle med kaffe", "Malmö Chokladfabrik x Gringo – Kaffekross 55% chokladkaka", "SCA Introduction to coffee", "30 ks", "Čaj Yunnan Green Superior", "Brazil Natural - Greens"])),
