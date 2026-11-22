@@ -6881,7 +6881,7 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
     if (!suStep) return;
     const multi = suStep === 1 || suStep === 2;
     const pills = (keys, all, more) => keys.map((k) => `<button type="button" class="chip" data-k="${k}"${multi ? ` aria-pressed="${suSel.has(k)}"` : ""}>${esc(all[k].name)}</button>`).join("")
-      + (more ? `<button type="button" class="chip" data-more="1">${it ? "Altri" : "More"}</button>` : "")
+      + (more ? `<button type="button" class="chip gear-more" data-more="1" aria-label="${it ? "Tutti" : "See all"}"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>` : "")
       + (multi && suSel.size ? `<button type="button" class="chip su-next" data-next="1">${it ? "Avanti" : "Next"}</button>` : suStep === 1 && !suAfter ? "" : `<button type="button" class="chip su-skip" data-skip="1">${it ? "Più tardi" : "Set later"}</button>`);
     if (suStep === 1) { const all = Object.fromEntries(Object.entries(BREWERS).filter(([k, B]) => k !== "cold" && !B.cup)), keys = suAll ? Object.keys(all) : [...new Set([...SU_B, ...suSel])];
       q.textContent = it ? "Con cosa prepari il caffè? Anche più di uno." : "What do you brew with? Pick as many as you have."; c.innerHTML = pills(keys, all, !suAll); }
