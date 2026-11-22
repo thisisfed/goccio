@@ -2269,6 +2269,8 @@ html.bn-off .dock{bottom:0 !important}
 .ask-line .ask-lens{width:15px;height:15px;display:block;pointer-events:none}
 .ask-line .ask-go{position:absolute;right:0;top:0;flex:none;height:var(--pill-h);width:var(--pill-h);border:0;border-radius:50%;background:var(--pill);color:var(--ink);transition:background-color .15s ease;
   display:flex;align-items:center;justify-content:center;font-size:var(--fs-s);cursor:pointer;padding:0}
+.ask-line .ask-xi{display:none;width:13px;height:13px}
+.ask-line.is-done .ask-lens{display:none} .ask-line.is-done .ask-xi{display:block}   /* the search is in: the lens becomes an x that clears it */
 .ask-line .ask-go:hover, .ask-line .ask-go:active{background:color-mix(in srgb,var(--pill) 80%,var(--ink))}   /* darker than the box, lighter under the finger */   /* the grey pills' hover */
 /* the menu slides out under the bar's row, over the question line */
 .top .sec-list{top:var(--row-h,48px)!important;z-index:2}
@@ -2445,7 +2447,7 @@ html:not(.bn-off) .dock{display:none!important}
   </div>
   <form class="ask-line" id="askForm" role="search" autocomplete="off">
     <label for="askIn" class="ask-q">How do you want your coffee today?</label>
-    <div class="ask-box"><div class="ask-sug" id="askSug" hidden></div><input type="search" id="askIn" placeholder="Fruity, under £15" enterkeyhint="search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"><button type="submit" class="ask-go" aria-label="Find my coffee"><svg class="ask-lens" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10.4 10.4l3.6 3.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div>
+    <div class="ask-box"><div class="ask-sug" id="askSug" hidden></div><input type="search" id="askIn" placeholder="Fruity, under £15" enterkeyhint="search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"><button type="submit" class="ask-go" aria-label="Find my coffee"><svg class="ask-lens" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10.4 10.4l3.6 3.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><svg class="ask-xi" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div>
   </form>
   <div class="sec-list" id="secList" inert aria-hidden="true"><div class="sec-list-in"><button type="button" class="sec-p" data-jump="shelves" data-sec="shelves">Coffees</button><button type="button" class="sec-p" data-jump="bags" data-sec="bags">My bags</button><button type="button" class="sec-p" data-jump="gear" data-sec="gear">My equipment</button><button type="button" class="sec-p" data-jump="coffee" data-sec="coffee">What’s brewing?</button><button type="button" class="sec-p" data-jump="recipe" data-sec="recipe">Recipe</button><button type="button" class="sec-p" data-jump="journal" data-sec="journal">Journal</button></div></div>
 </header>
@@ -6426,7 +6428,10 @@ html:not(.bn-off) .dock{display:none!important}
         <div class="r">
           <button class="btn" type="button" data-i="${i}">Brew</button>${cardBuy(r)}
           <button type="button" class="pill bag-add ico${hasBag(r) ? " in" : ""}" data-b="${i}" aria-pressed="${hasBag(r)}" aria-label="${hasBag(r) ? (LANG === "it" ? "Nei miei sacchetti" : "In my bags") : (LANG === "it" ? "Salva nei miei sacchetti" : "Save to my bags")}">${BAG_ICO}</button>
-        </div></article>`; }).join("") : `<p class="muted" style="padding:16px 0;margin:0">Nothing matches${shelfV !== "all" ? `. Try Everything under Made for, or` : `. Try a taste, an origin or a roaster, or <a href="#" class="mail-me scan-me">scan the bag in front of you</a>. Missing a roaster?`} <a href="#" class="mail-me" data-s="Missing coffee">${shelfV !== "all" ? "email me" : "Email me"}</a> and I’ll add it.</p>`;
+        </div></article>`; }).join("") : (() => { const msg = `Nothing matches${shelfV !== "all" ? `. Try Everything under Made for, or` : `. Try a taste, an origin or a roaster, or <a href="#" class="mail-me scan-me">scan the bag in front of you</a>. Missing a roaster?`} <a href="#" class="mail-me" data-s="Missing coffee">${shelfV !== "all" ? "email me" : "Email me"}</a> and I’ll add it.`;
+          // a search found nothing: one paragraph with the Searching line, a line break between
+          const an = $("askNote"); if (!an.hidden && an.textContent) { an.innerHTML = esc(an.textContent) + "<br>" + msg; return ""; }
+          return `<p class="muted" style="padding:16px 0;margin:0">${msg}</p>`; })();
     const left = list.length - Math.min(shelfN, list.length);
     $("shelfMore").hidden = false; $("shelfMore").removeAttribute("aria-hidden");
     $("shelfMore").textContent = left > 0 ? `Load ${Math.min(10, left)} more (${list.length} in total)` : "Back to top";   // the end of the list: a way back up
@@ -6653,7 +6658,7 @@ html:not(.bn-off) .dock{display:none!important}
   function renderSetup() {
     const it = LANG === "it", box = $("setup"), q = $("suQ"), c = $("suC"), g = $("gear");
     if (suStep === -1) suStep = !gear.brewers.length && !gear.grinders.length ? 1 : (suDone(), 0);
-    box.hidden = !suStep; g.classList.toggle("setup-on", !!suStep); g.classList.toggle("su-fin", suStep === 3);
+    box.hidden = !suStep; g.classList.toggle("setup-on", !!suStep); g.classList.toggle("su-fin", suStep === 3);   // steps: 1 brewer, 2 grinder, 4 water, 3 done
     if (!suStep) return;
     const pills = (keys, all, more) => keys.map((k) => `<button type="button" class="chip" data-k="${k}">${esc(all[k].name)}</button>`).join("")
       + (more ? `<button type="button" class="chip gear-more" data-more="1" aria-label="${it ? "Tutti" : "See all"}"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>` : "")
@@ -6661,17 +6666,20 @@ html:not(.bn-off) .dock{display:none!important}
     if (suStep === 1) { const all = Object.fromEntries(Object.entries(BREWERS).filter(([k, B]) => k !== "cold" && !B.cup));
       q.textContent = it ? "Con cosa prepari il caffè?" : "What do you brew with?"; c.innerHTML = pills(suAll ? Object.keys(all) : SU_B, all, !suAll); }
     else if (suStep === 2) { q.textContent = it ? "E il macinino?" : "And your grinder?"; c.innerHTML = pills(suAll ? Object.keys(GRINDERS) : SU_G, GRINDERS, !suAll); }
-    else { const b = gear.brewers[0], m = gear.grinders[0];
+    else if (suStep === 4) { q.textContent = it ? "E l’acqua?" : "And your water?";
+      c.innerHTML = pills(WATER.filter(([k]) => k !== "custom").map(([k]) => k), Object.fromEntries(WATER.map(([k, t]) => [k, { name: t }])), false); }
+    else { const b = gear.brewers[0], m = gear.grinders[0], wk = (prefs.water || {}).kind, wt = { soft: it ? "acqua dolce" : "soft water", hard: it ? "acqua dura" : "hard tap water" }[wk];
       q.textContent = it ? "Fatto." : "Set.";
-      c.innerHTML = `<p class="su-done">${it ? "Ogni ricetta ora è per " : "Every recipe is now for your "}${esc(BREWERS[b] ? BREWERS[b].name : "brewer")}${m && GRINDERS[m] ? (it ? " e " : " and ") + esc(GRINDERS[m].name) : ""}${it ? ". Scegli un caffè:" : ". Now pick a coffee:"}</p>`
+      c.innerHTML = `<p class="su-done">${it ? "Ogni ricetta ora è per " : "Every recipe is now for your "}${esc(BREWERS[b] ? BREWERS[b].name : "brewer")}${[m && GRINDERS[m] ? esc(GRINDERS[m].name) : "", wt || ""].filter(Boolean).map((x, i, a) => (i === a.length - 1 ? (it ? " e " : " and ") : ", ") + x).join("")}${it ? ". Scegli un caffè:" : ". Now pick a coffee:"}</p>`
         + `<div class="chips"><button type="button" class="chip" id="suFind">${it ? "Trova un caffè" : "Find a coffee"}</button><button type="button" class="chip" id="suBag">${it ? "Ho un sacchetto" : "I have a bag"}</button></div>`;
       $("suFind").onclick = () => $("wmFind").click(); $("suBag").onclick = () => $("wmBag").click(); return; }
     c.querySelectorAll("button").forEach((x) => x.onclick = () => {
       if (x.dataset.more) { suAll = true; return renderSetup(); }
-      if (x.dataset.skip) { suDone(); suAll = false; if (suStep === 1) { suStep = 0; renderGear(); return; } suStep = 3; renderGear(); return; }
+      if (x.dataset.skip) { suDone(); suAll = false; if (suStep === 1) { suStep = 0; renderGear(); return; } suStep = suStep === 2 ? 4 : 3; renderGear(); return; }
       const k = x.dataset.k; suAll = false;
       if (suStep === 1) { if (!gear.brewers.includes(k)) gear.brewers.push(k); saveGear(); try { if (brewerOf(state) !== k) setBrewer(k); } catch (e) {} suStep = 2; }
-      else { if (!gear.grinders.includes(k)) gear.grinders.push(k); prefs.mill = k; savePrefs(); $("millSel").value = k; saveGear(); try { render(); } catch (e) {} suStep = 3; suDone(); }
+      else if (suStep === 2) { if (!gear.grinders.includes(k)) gear.grinders.push(k); prefs.mill = k; savePrefs(); $("millSel").value = k; saveGear(); try { render(); } catch (e) {} suStep = 4; }
+      else { prefs.water = { ...(prefs.water || {}), kind: k }; savePrefs(); try { render(); renderWaterBody(); } catch (e) {} suStep = 3; suDone(); }
       renderGear(); });
   }
   function renderGear() {
@@ -7588,6 +7596,15 @@ html:not(.bn-off) .dock{display:none!important}
     const wait = () => { clearTimeout(tt); tt = setTimeout(go, 120); };
     vv.addEventListener("resize", wait); setTimeout(go, 700); });
   $("shelfQ").addEventListener("change", () => askBrewer($("shelfQ").value.trim().toLowerCase()));
+  { const a = $("askIn"), f = $("askForm"), go = f.querySelector(".ask-go");
+    const sync = () => { const v = a.value.trim(), on = !!v && document.activeElement !== a && $("shelfQ").value.trim() === v;
+      f.classList.toggle("is-done", on); go.setAttribute("aria-label", on ? (LANG === "it" ? "Cancella la ricerca" : "Clear the search") : (LANG === "it" ? "Cerca" : "Find my coffee")); };
+    window.syncAskGo = sync;
+    ["focus", "blur", "input"].forEach((ev) => a.addEventListener(ev, () => setTimeout(sync, 0)));
+    $("shelfQ").addEventListener("input", () => setTimeout(sync, 0));
+    go.addEventListener("click", (e) => { if (!f.classList.contains("is-done")) return; e.preventDefault(); e.stopImmediatePropagation();
+      a.value = ""; delete a.dataset.fy; const q = $("shelfQ"); q.value = ""; q.dispatchEvent(new Event("input")); sync(); }, true);
+    f.addEventListener("submit", () => setTimeout(sync, 0)); }
   $("shelfQx").onclick = () => { const q = $("shelfQ"); q.value = ""; q.dispatchEvent(new Event("input")); q.focus(); };
   renderBags(); syncBagBtn();
   try { renderExample(); } catch (e) {}
