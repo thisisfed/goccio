@@ -33,12 +33,19 @@ QUERIES = ["coffee brewing", "coffee extraction yield", "espresso extraction", "
            "coffee grinding particle size", "coffee sensory brew temperature", "brewing water coffee taste",
            "roasted coffee storage freshness", "caffeine sleep"]
 COFFEE = re.compile(r"\b(coffees?|espresso|cold brew|moka)\b", re.I)
-TOPIC = re.compile(r"brew|extract|grind|ground coffee|particle|percolat|immersion|pour|drip|filter coffee|espresso|sensory|flavou?r|aroma|"
-                   r"taste|acidity|bitter|sweet|water|temperature|roast|storage|stal|fresh|degas|crema|cupping|consumer", re.I)
-SKIP = re.compile(r"spent coffee|coffee (?:husk|pulp|silverskin|waste|by-?products?|leaf|leaves|plants?|farm\w*|berry|rust|cherr\w+|trees?)|"
-                  r"biochar|adsorb|biodiesel|biogas|compost|coffee ?shops?|coffeehouse|caf[eé]s?\b|supply chain|prices?\b|market|export|"
-                  r"agroforest|genom|cultivar|soil|irrigation|fertili[sz]|pregnan|cancer|mortality|cardiovascular|diabet|cohort|"
-                  r"\brats?\b|\bmice\b|mouse|polyphenol intake|nanoparticle|corrosion|concrete|asphalt|wastewater", re.I)
+# the title has to be about making or tasting the cup, in so many words: the first run with looser words listed dental,
+# business and waste studies, a pop song and a physics package called Quantum ESPRESSO
+CORE = re.compile(r"brew|extraction (?:yield|kinetics|dynamics|uniformity)|uneven extraction|espresso extraction|grind|particle size|percolat|"
+                  r"pour[- ]?over|\bdrip|filter coffee|french press|aeropress|moka|total dissolved solids|\bTDS\b|refractomet|"
+                  r"water (?:composition|hardness|alkalinity|quality)|(?:serving|beverage|cup|drinking) temperature|stal(?:e|ing)\b|freshness|"
+                  r"degass|storage (?:temperature|methods?|conditions?)|during storage|crema|channell?ing", re.I)
+SKIP = re.compile(r"spent coffee|coffee (?:husk|pulp|silverskin|waste|by-?products?|leaf|leaves|plants?|farm\w*|berry|rust|cherr\w+|trees?|parchment|"
+                  r"cups?\b|shops?|substitut\w+|alternatives?|packag\w+|noodles?)|biochar|adsorb|biodiesel|biogas|compost|coffeehouse|caf[eé]s?\b|"
+                  r"supply chain|prices?\b|market|export|agroforest|genom|cultivar|soil|irrigation|fertili[sz]|pregnan|cancer|mortality|"
+                  r"cardiovascular|diabet|cohort|\brats?\b|\bmice\b|mouse|nanoparticle|corrosion|concrete|asphalt|wastewater|orthodon|dental|"
+                  r"teeth|enamel|enema|probiotic|polysaccharide|customer|loyalty|satisfaction|repurchase|brand|packaging|swot|\bsongs?\b|quantum|"
+                  r"random forest|image (?:feature|classif|process)|machine learning|deep learning|antioxidant|phenolic|ferment|microbi|kombucha|"
+                  r"^correction|^erratum|^retraction|instant coffee|activated carbon|gasification|\bbeer\b|brewer(?:y|ies)|brewer'?s (?:yeast|spent)", re.I)
 GROUPS = {"ristenpart", "guinard", "batali", "frost", "liang", "yeretzian", "smrke", "hendon", "gagné", "gagne", "cotter", "moroney", "rune"}
 
 BLOGS = [("Scott Rao", "https://www.scottrao.com/blog?format=rss"), ("Coffee ad Astra", "https://coffeeadastra.com/feed/"),
@@ -57,9 +64,11 @@ def keep_paper(title):
     """A paper is listed when its title is about coffee in the cup: brewing, extraction, grinding, water, tasting, storage.
     Farming, waste, health studies and cafés are left out; caffeine and sleep is the one health topic the site cites."""
     t = title or ""
-    if re.search(r"caffeine", t, re.I) and re.search(r"\bsleep", t, re.I):
-        return True
-    return bool(COFFEE.search(t) and TOPIC.search(t) and not SKIP.search(t))
+    if SKIP.search(t):
+        return False
+    if re.search(r"caffeine", t, re.I) and re.search(r"\bsleep", t, re.I):   # the one health topic, and only trials and reviews of it
+        return bool(re.search(r"trial|meta-analysis|systematic review|\bdose|timing", t, re.I)) and not re.search(r"students?|adolescen|athlet|shift work", t, re.I)
+    return bool(COFFEE.search(t) and CORE.search(t))
 
 
 def fingerprint(text):
@@ -95,6 +104,8 @@ def new_papers(since, seen, cited, problems):
         for it in items:
             doi = (it.get("DOI") or "").lower()
             title = re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", "", (it.get("title") or [""])[0]))).strip()
+            if sum(c.isupper() for c in title) > 0.6 * max(1, sum(c.isalpha() for c in title)):
+                title = title.capitalize()   # a title shouted in capitals is set in sentence case
             if not doi or doi in seen or doi in cited or doi in found or not keep_paper(title):
                 continue
             fam = [a.get("family", "") for a in it.get("author") or [] if a.get("family")]
@@ -142,35 +153,65 @@ def feed_entries(raw):
     return out
 
 
+def jstr(x):
+    try:
+        return json.loads('"' + x + '"')
+    except ValueError:
+        return x
+
+
 def new_videos(page, since, state, problems):
+    """New videos on every channel behind a video the footer cites, and new posts on a few blogs. YouTube closes its feeds
+    to robots, so the channel's own videos page is read and its newest video ids compared with the ones seen before; the
+    first look at a channel only records what is there."""
     seen, cache = set(state.get("seen_posts", [])), state.setdefault("channels", {})
-    feeds, out, other = {}, [], 0
+    by_channel, out, other = state.setdefault("channel_seen", {}), [], 0
+    channels = []
     for vid in sorted(set(re.findall(r"youtube\.com/watch\?v=([\w-]{11})", page))):
         try:
             ch = channel_of(vid, cache)
         except Exception as e:  # noqa: BLE001
             ch = None
             problems.append(f"YouTube video {vid} ({type(e).__name__})")
-        if ch:
-            feeds[f"https://www.youtube.com/feeds/videos.xml?channel_id={ch}"] = None
-        elif not any(vid in p for p in problems):
+        if ch and ch not in channels:
+            channels.append(ch)
+        elif not ch and not any(vid in p for p in problems):
             problems.append(f"the channel behind YouTube video {vid}")
+    for ch in channels:
+        try:
+            raw = scan.get_text(f"https://www.youtube.com/channel/{ch}/videos", tries=1)
+        except Exception as e:  # noqa: BLE001
+            problems.append(f"YouTube channel {ch} ({type(e).__name__})")
+            continue
+        ids = list(dict.fromkeys(re.findall(r'"videoId":"([\w-]{11})"', raw)))[:20]
+        if not ids:
+            problems.append(f"YouTube channel {ch} (no videos readable on the page)")
+            continue
+        known = by_channel.get(ch)
+        by_channel[ch] = list(dict.fromkeys(ids + (known or [])))[:200]
+        for vid in ([] if known is None else [v for v in ids if v not in known][:6]):
+            try:
+                w = scan.get_text(f"https://www.youtube.com/watch?v={vid}", tries=1)
+            except Exception:  # noqa: BLE001
+                continue
+            title = html.unescape((re.search(r"(?is)<title>(.*?)(?: - YouTube)?</title>", w) or [None, ""])[1]).strip()
+            who = jstr((re.search(r'"ownerChannelName":"(.*?)"', w) or [None, "YouTube"])[1])
+            if title and BREWING.search(title):
+                out.append({"who": who, "title": title, "link": f"https://www.youtube.com/watch?v={vid}", "date": ""})
+            elif title:
+                other += 1
     for name, url in BLOGS:
-        feeds[url] = name
-    for url, name in feeds.items():
         try:
             raw = scan.get_text(url, tries=1)
         except Exception as e:  # noqa: BLE001
-            problems.append(f"{name or url} ({type(e).__name__})")
+            problems.append(f"{name} ({type(e).__name__})")
             continue
-        who = name or (re.search(r"(?is)<author>\s*<name>(.*?)</name>", raw) or re.search(r"(?is)<title>(.*?)</title>", raw) or [None, "YouTube"])[1]
-        who = html.unescape(who).strip()
         for key, title, link, d in feed_entries(raw):
             if d < since or key in seen:
                 continue
             seen.add(key)
             if BREWING.search(title):
-                out.append({"who": who, "title": title, "link": link, "date": d.isoformat()})
+                out.append({"who": name, "title": title, "link": link, "date": d.isoformat()})
             else:
                 other += 1
     state["seen_posts"] = sorted(seen)[-3000:]
@@ -227,7 +268,7 @@ def main():
     if videos or other:
         L += ["## New videos and posts", ""]
         for v in videos:
-            L.append(f"- {v['who']}: {v['title']}, {day(dt.date.fromisoformat(v['date']))}. {v['link']}")
+            L.append(f"- {v['who']}: {v['title']}{', ' + day(dt.date.fromisoformat(v['date'])) if v['date'] else ''}. {v['link']}")
         if other:
             L.append(f"- Plus {other} other new video{'s' if other != 1 else ''} or post{'s' if other != 1 else ''} whose titles are not about brewing.")
         L.append("")
@@ -238,12 +279,15 @@ def main():
         L.append("")
     elif first_pages:
         L += ["First run: the brewing numbers on every cited recipe page were recorded, so changes show from the next run.", ""]
-    if problems:
-        L += ["## Could not check", ""] + [f"- {p}" for p in problems[:25]] + [""]
+    known_bad = set(state.get("unreadable", []))
+    fresh = [p for p in problems if p not in known_bad]
+    state["unreadable"] = sorted(set(problems))
+    if fresh:
+        L += ["## Could not check (said once; listed in data/research.json after that)", ""] + [f"- {p}" for p in fresh[:25]] + [""]
     DIGEST.write_text("\n".join(L))
     STATE.write_text(json.dumps(state, ensure_ascii=False, indent=1, sort_keys=True))
     n = len(papers) + len(videos) + len(changes)
-    print("\n".join(L))
+    print("\n".join(L)[:6000])
     if os.environ.get("GITHUB_OUTPUT"):
         with open(os.environ["GITHUB_OUTPUT"], "a") as f:
             f.write(f"found={n}\ntitle=Research watch, {day(today)}\n")
@@ -258,6 +302,17 @@ def selftest():
         not keep_paper("Coffee consumption and cardiovascular mortality in a prospective cohort"),
         not keep_paper("Coffee leaf rust resistance in Arabica cultivars"),
         not keep_paper("Consumer loyalty in coffee shops"),
+        not keep_paper("Effect Of Coffee Temperature On Orthodontic Elastomeric Chains"),
+        not keep_paper("QEpy: Quantum ESPRESSO in python"),
+        not keep_paper("Transitivity Processes in a Singer's Songs \"Espresso\" and \"Please\""),
+        not keep_paper("Sleep hygiene, caffeine use, and academic performance among university students: A cross-sectional study"),
+        not keep_paper("Does the Right Package Color Brew Better Feelings About the Product? Emotional Congruence in Coffee Packaging"),
+        not keep_paper("External heating addition in a throatless downdraft gasification of coffee parchment"),
+        keep_paper("Portable Refractometry for Measurement-Enabled Moka Coffee Brewing: A Factorial Study of Roast Level, Grind Size and Initial Water Temperature"),
+        keep_paper("Sensory correlates of coffee acceptability: The role of bean type and brewing methods"),
+        keep_paper("The role of fines in espresso extraction dynamics"),
+        keep_paper("Impact of beverage temperature on consumer preferences for black coffee"),
+        keep_paper("Moisture-controlled triboelectrification during coffee grinding"),
         fingerprint("Use 20 g of coffee and 300 ml of water at 95 °C, 1:15, done by 3:30.") == ["1:15", "20g", "300ml", "3:30", "95°c"],
         fingerprint("Use 20g coffee, 300 ml water. 95°C. 1 : 15. 3:30!") == fingerprint("use 20 g  coffee; 300ml; 95 °C; 1:15; about 3:30"),
         footer_links('<ol class="refs"><li>Blue Bottle Coffee. <span class="rt">Chemex brew guide</span>. <a href="https://xyz.example/chemex">xyz</a></li></ol>') == [("Blue Bottle Coffee. Chemex brew guide", "https://xyz.example/chemex")],
