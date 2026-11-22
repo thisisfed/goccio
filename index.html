@@ -5454,7 +5454,7 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
   const b64d = (t) => JSON.parse(decodeURIComponent(escape(atob(t.replace(/-/g, "+").replace(/_/g, "/")))));
   function shareURL() {
     const r = recipe, b = state.bag, M = r && r.mine ? prefs.mine[mineKey(r)] : null;
-    const o = { v: 1, t: state.text, b: brewerOf(state), d: state.dose, g: state.goal, me: state.method, aw: state.aeroWay, p: state.process, ro: state.roast,
+    const o = { v: 1, t: state.text, b: brewerOf(state), d: state.dose, g: state.goal, s: state.serve, me: state.method, aw: state.aeroWay, p: state.process, ro: state.roast,
       bag: b ? { roaster: b.roaster, name: b.name, origin: b.origin, variety: b.variety, url: b.url } : null, mine: M ? { ...M, at: undefined } : null };
     return location.origin + "/#r=" + b64e(o);
   }
@@ -5470,6 +5470,7 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
     const B = BREWERS[brewerOf(state)];
     if (B.doses.some(([v]) => v === Number(o.d))) state.dose = Number(o.d);
     if (GOAL[o.g]) state.goal = o.g;
+    if (o.s === "hot" || o.s === "iced") state.serve = o.s;   // an iced recipe used to open hot on the other phone: the link never said which
     if (["best", "hoffmann", "fourSix", "ten", "rao", "onyx", "cafec", "winton", "hedrick"].includes(o.me)) state.method = o.me;
     if (["standard", "inverted", "wendelboe"].includes(o.aw)) state.aeroWay = o.aw;
     state.process = PROCESS[o.p] || o.p === "auto" ? o.p : "auto";
