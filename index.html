@@ -1021,7 +1021,7 @@ details.clk > summary .muted { margin-left: auto; overflow: hidden; text-overflo
 .item .name { font-size: var(--fs-m); letter-spacing: -.03em; line-height: 1.1; }
 /* the closing lines on the golden ratio: 39 against 24 and 15 */
 .litext, .outro-end { font-size: var(--fs-xl); line-height: 1.05; letter-spacing: -.045em; max-width: 22ch; }
-@media (max-width: 560px) { .litext, .outro-end { font-size: 30px; } }
+@media (max-width: 560px) { .litext, .outro-end { font-size: var(--fs-m); line-height: 1.15; } }
 /* buy me a coffee: plain text link */
 .bmc, .bmc a, .bmc .sheen-text { font-weight: 400; text-decoration: none; color: var(--ink); }
 .bmc a:hover .sheen-text { text-decoration: underline; }
@@ -1155,7 +1155,8 @@ details.clk > summary .muted { margin-left: auto; overflow: hidden; text-overflo
 .scene.roasters .rs { white-space: nowrap; }
 .scene.roasters .cc { color: var(--muted); }
 /* the option rows read as one list: the same 12 px between every row, across the three groups */
-#opts-main, #moreOpts { margin-top: -4px; }
+#opts-main { margin-top: -4px; }
+:is(#adjOpts,#moreOpts) > summary .adj-l{white-space:nowrap}
 /* no rule between the Journal title and the question */
 #logBox { border-top: 0 !important; }
 /* Brewer sits right under the input: no rule, no padding, and the reading line takes no room when it's empty */
@@ -1764,16 +1765,16 @@ html[lang="it"] .bag-rorow{grid-template-columns:118px auto}
 /* nothing to brew yet: only "What are you brewing?" and Scan the bag. Brewer, grinder, water and the rest appear once it's filled */
 #coffee.empty .kit > :not(.scan-opt):not(#scanReview), #coffee.empty #opts-main, #coffee.empty #moreOpts, #coffee.empty #adjOpts{display:none!important}
 /* Adjust: a row like the others, the grey title on the left, what's set on the right, folding open to its rows */
-#adjOpts{margin-top:2px}
-#adjOpts > summary{display:grid;grid-template-columns:80px minmax(0,1fr) auto;gap:12px;align-items:center;cursor:pointer;list-style:none;min-height:var(--pill-h)}
-#adjOpts > summary::-webkit-details-marker{display:none}
-#adjOpts > summary .adj-l{color:var(--muted);font-size:var(--fs-s)}
-#adjOpts > summary .adj-s{font-size:var(--fs-s);color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#adjOpts > summary::after{content:"";width:8px;height:8px;border-right:1.6px solid currentColor;border-bottom:1.6px solid currentColor;transform:rotate(45deg) translate(-2px,-2px);color:var(--muted);transition:transform .2s ease;margin-right:4px}
-#adjOpts[open] > summary::after{transform:rotate(225deg) translate(-2px,-2px)}
-#adjOpts[open] > summary .adj-s{color:var(--muted)}
-#adjOpts > .opt, #adjOpts > .opts{margin-top:12px}
-@media (max-width:640px){ #adjOpts > summary{grid-template-columns:72px minmax(0,1fr) auto;gap:10px} #adjOpts > .opt, #adjOpts > .opts{margin-top:10px} }
+:is(#adjOpts,#moreOpts){margin-top:2px}
+:is(#adjOpts,#moreOpts) > summary{display:grid;grid-template-columns:80px minmax(0,1fr) auto;gap:12px;align-items:center;cursor:pointer;list-style:none;min-height:var(--pill-h)}
+:is(#adjOpts,#moreOpts) > summary::-webkit-details-marker{display:none}
+:is(#adjOpts,#moreOpts) > summary .adj-l{color:var(--muted);font-size:var(--fs-s)}
+:is(#adjOpts,#moreOpts) > summary .adj-s{font-size:var(--fs-s);color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+:is(#adjOpts,#moreOpts) > summary::after{content:"";width:8px;height:8px;border-right:1.6px solid currentColor;border-bottom:1.6px solid currentColor;transform:rotate(45deg) translate(-2px,-2px);color:var(--muted);transition:transform .2s ease;margin-right:4px}
+:is(#adjOpts,#moreOpts)[open] > summary::after{transform:rotate(225deg) translate(-2px,-2px)}
+:is(#adjOpts,#moreOpts)[open] > summary .adj-s{color:var(--muted)}
+:is(#adjOpts,#moreOpts) > .opt, :is(#adjOpts,#moreOpts) > .opts{margin-top:12px}
+@media (max-width:640px){ :is(#adjOpts,#moreOpts) > summary{grid-template-columns:72px minmax(0,1fr) auto;gap:10px} :is(#adjOpts,#moreOpts) > .opt, :is(#adjOpts,#moreOpts) > .opts{margin-top:10px} }
 /* footer: Methods and Sources fold away; the heading is the handle, with a small chevron */
 .foot-x > summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0}
 .foot-x > summary::-webkit-details-marker{display:none}
@@ -2114,10 +2115,10 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
 
 /* every fold (See an example, Why this recipe, the footer's headings) wears the Region / Process select's arrow:
    the same drawing, size and colour, 10px in from the right edge as on the select; down when shut, up when open */
-details.clk > summary::after, .foot-x > summary::after, #adjOpts > summary::after { content: "" !important; width: 10px !important; height: 10px !important; flex: none; border: 0 !important;
+details.clk > summary::after, .foot-x > summary::after, :is(#adjOpts,#moreOpts) > summary::after { content: "" !important; width: 10px !important; height: 10px !important; flex: none; border: 0 !important;
   margin: 0 10px 0 0 !important; background: var(--ink) !important; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E") center / 10px 10px no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E") center / 10px 10px no-repeat;
   transform: none !important; font-size: 0 !important; line-height: 0 !important; transition: transform .25s ease !important; }
-details.clk[open] > summary::after, .foot-x[open] > summary::after, #adjOpts[open] > summary::after { transform: rotate(180deg) !important; }
+details.clk[open] > summary::after, .foot-x[open] > summary::after, :is(#adjOpts,#moreOpts)[open] > summary::after { transform: rotate(180deg) !important; }
 /* phones: the footer's headings an even step apart, open or shut */
 @media (max-width: 759px) {
   footer { display: flex !important; flex-direction: column; gap: 14px; }
@@ -2392,6 +2393,12 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
 /* the last big number sits as far above the next rule as every other one: the body's row gap is taken back under the numbers */
 #specs{margin-bottom:-14px}
 #cfNudge{margin:26px 0 0}
+@media (max-width:760px){ .litext, .litext .outro-end{font-size:var(--fs-m)!important;line-height:1.15!important} }   /* the closing text: one step down the scale on phones */
+.spec .add-mill{order:9;margin-top:6px}
+.lede-need{margin:8px 0 0;font:500 var(--fs-s)/1.35 var(--sans);color:var(--muted)}
+.more-num{margin:0;padding:12px 0;font:500 var(--fs-s)/1.4 var(--sans)}
+.more-num[hidden]{display:none}
+.spec .add-mill{display:block;margin-top:4px;padding:0;border:0;background:none;font:500 var(--fs-s)/1.3 var(--sans);color:var(--ink);text-decoration:underline;text-underline-offset:3px;cursor:pointer;text-align:left}
 #specs ~ #mineBar, #specs ~ #mineEd{margin-top:14px}
 #cfNudge .cf-h{font:500 var(--fs-s)/1.35 var(--sans);color:var(--hl);margin:0 0 10px}
 #cfNudge[hidden]{display:none}
@@ -2479,6 +2486,7 @@ html:not(.bn-off) .dock{display:none!important}
       <div class="hero-side">
       <p class="hero-kick">Updated every day<span class="hero-live" id="heroLive" hidden><i class="live-dot" aria-hidden="true"></i><span id="heroLiveT"></span></span></p>
       <p class="lede">Daily new coffees from UK, EU and global roasters. Pick one or add your own, choose your brewer, and get the right grind, temperature and steps. Customise anything, describe your pour and share the recipe. Brew full screen, log the taste, and it adapts next time. <span class="yours">Brewed your way.</span></p>
+      <p class="lede-need">You’ll need a scale, and ideally a grinder.</p>
       <div class="g-ex fold">
       <figure class="glimpse" aria-label="Example recipe: washed Ethiopia, light roast. 15 g coffee to 255 g water, 99°C, about 3:15. Pours at 0:00 to 51 g, 0:45 to 102 g, 1:10 to 153 g, 1:30 to 204 g, 1:50 to 255 g.">
         <figcaption><span class="g-name">Washed Ethiopia, light roast</span><button type="button" class="g-tag" id="exTog" aria-expanded="false" aria-label="Show the example">Example</button></figcaption>
@@ -2550,9 +2558,9 @@ html:not(.bn-off) .dock{display:none!important}
   <div class="opt scan-opt"><span>Coffee</span><div class="scan-row"><button type="button" class="chip" id="scanBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>Scan the bag<span class="beta">Beta</span></button><span class="scan-msg" id="scanMsg" aria-live="polite"></span>
         <input type="file" accept="image/*" capture="environment" id="scanIn" hidden></div></div>
         <div class="scan-review" id="scanReview" hidden></div>
-        <div class="more" id="moreOpts">
+        <details class="adj" id="moreOpts"><summary><span class="adj-l">Bag details</span><span class="adj-s" id="bagSum"></span></summary>
           <div class="opts" id="opts-more"></div>
-        </div>
+        </details>
         <div class="opts" id="opts-kit"></div>
         <div class="opts" id="opts-dose"></div>
         <div class="opt" id="millOpt"><span>Grinder</span><div class="mill-cell"><div class="kit-mill">
@@ -2598,6 +2606,7 @@ html:not(.bn-off) .dock{display:none!important}
     <details class="clk xp" id="expBox" open><summary>What to expect</summary><ul id="expect"></ul></details>
     <details class="clk xp" id="whyBox"><summary>Why this recipe <span class="muted" id="whyHint"></span></summary><ul id="why"></ul></details>
     <details class="clk xp" id="moreBox"><summary>More</summary><div class="more-in">
+    <p class="more-num muted" id="moreNum" hidden></p>
     <details class="clk xp" id="clkHow"><summary>How the C40 clicks were set <span class="muted" id="clkSumm" hidden></span></summary><div class="clk-body" id="clkBody"></div></details>
     <details class="clk xp"><summary>Dial it in: change one thing per brew</summary><ul id="dial"></ul></details>
     </div></details>
@@ -3098,7 +3107,7 @@ html:not(.bn-off) .dock{display:none!important}
   // a refresh starts with no coffee picked (goal, dose and method are kept); the journal and settings stay
   let state = { ...DEFAULTS, ...store.get("v60.state", {}), text: "", bag: null, process: "auto", roast: "auto" };
   // zero: permanent C40 zero offset in clicks (default 0). The old "grinder" key is ignored on purpose.
-  let prefs = { coffees: {}, zero: 0, mill: "c40", sound: true, buzz: true, keepAwake: true, water: null, ...store.get("v60.prefs", {}) };
+  let prefs = { coffees: {}, zero: 0, mill: "words", sound: true, buzz: true, keepAwake: true, water: null, ...store.get("v60.prefs", {}) };
   delete prefs.grinder;
   let journal = store.get("v60.log", []);
   const saveState = () => store.set("v60.state", state);
@@ -3937,7 +3946,7 @@ html:not(.bn-off) .dock{display:none!important}
     if (fermented || pr === "decaf") acid -= 1;
     acid += P.acid + (r.goal === "light" || r.goal === "tea" ? 0.4 : r.goal === "syrupy" ? -0.4 : 0);
     acid = Math.max(0, Math.min(4, Math.round(acid)));
-    const kind = /Kenya|Tanzania/.test(c.origin || "") ? "savoury-bright, blackcurrant and tomato" : pr === "washed" ? "citric, lemon to orange" : fermented ? "winey and fruity" : "malic like red apple";
+    const kind = /Kenya|Tanzania/.test(c.origin || "") ? "savoury-bright, blackcurrant and tomato" : pr === "washed" ? "like lemon and orange" : fermented ? "winey and fruity" : "like red apple";
     out.push(`Acidity: ${["very low, smooth", "low and soft", `medium, ${kind}`, `bright, ${kind}`, `vivid, ${kind}`][acid]}.`);
     // sweetness
     let sw = darkish ? "bittersweet, like dark chocolate" : fermented ? "high and jammy" : pr === "honey" ? "high, honey and brown sugar" : ro === "medium" ? "caramel-like" : "clean, like cane sugar";
@@ -3950,7 +3959,8 @@ html:not(.bn-off) .dock{display:none!important}
     let b = P.body + (r.goal === "syrupy" ? 1 : r.goal === "light" ? -1 : r.goal === "tea" ? -3 : 0) + (darkish ? 0.5 : 0) + (fermented ? 0.5 : 0);
     b = Math.max(1, Math.min(5, Math.round(b)));
     const tds = r.tds && r.tds.length ? ` About ${r.tds[0].toFixed(2)}–${r.tds[1].toFixed(2)}% TDS at ${r.ey[0]}–${r.ey[1]}% extraction.` : "";
-    out.push(`Body: ${BODY_W[b - 1]}, ${P.tex}.${r.m === "cold" || r.m === "moka" || r.m === "espresso" ? "" : tds}`);
+    out.push(`Body: ${BODY_W[b - 1]}, ${P.tex}.`);
+    out.tds = r.m === "cold" || r.m === "moka" || r.m === "espresso" ? "" : tds.trim();   // the lab numbers go under More
     // clarity
     let cl = P.clar - (fermented ? 0.5 : 0) - (darkish ? 1 : 0);
     cl = Math.max(1, Math.min(5, Math.round(cl)));
@@ -4487,6 +4497,7 @@ html:not(.bn-off) .dock{display:none!important}
   const zrFit = () => { const c = $("gearG") && $("gearG").querySelector('[data-k="c40"]'), z = $("zrCtl"); if (!z) return;
     z.style.width = c && !z.hidden ? Math.max(c.offsetWidth, 150) + "px" : ""; };
   addEventListener("resize", () => zrFit());
+  const gearHasAny = () => { try { return gear.grinders.length > 0; } catch (e) { return false; } };
   const gearHasC40 = () => { try { return gear.grinders.includes("c40"); } catch (e) { return false; } };
   // grinder and zero controls sit above the questions, so they update even before there's a full recipe
   function kitState() {
@@ -4748,7 +4759,8 @@ html:not(.bn-off) .dock{display:none!important}
     const pTxt = miss.includes("process") ? "<b>process not stated</b>" : `<b>${esc(PROCESS[c.process].label)}</b>${psrc}`;
     const rTxt = miss.includes("roast") ? "<b>roast not stated</b>" : `<b>${esc(roastLabel(c.roast))}</b>${rsrc}`;
     // only what's missing, in a few words: the pills below already show what was read
-    $("detected").innerHTML = state.text && miss.length ? (miss.length === 2 ? "Process and roast not stated: pick them below." : miss[0] === "roast" ? "Roast not stated: pick one below." : "Process not stated: pick one below.") : "";
+    $("detected").innerHTML = state.text && miss.length ? `${miss.length === 2 ? "Process and roast aren’t" : miss[0] === "roast" ? "The roast isn’t" : "The process isn’t"} on the listing, so the recipe plays it safe. If the bag says, set ${miss.length === 2 ? "them" : "it"} under Bag details.` : "";
+    { const bs = $("bagSum"); if (bs) bs.textContent = [miss.includes("process") ? "Process unknown" : PROCESS[c.process].label, miss.includes("roast") ? "roast unknown" : roastLabel(c.roast).toLowerCase()].join(", "); }
 
     renderLearn(r);
     const sign = (n) => (n > 0 ? "+" : "−") + Math.abs(n);
@@ -4787,7 +4799,10 @@ html:not(.bn-off) .dock{display:none!important}
     renderMine(r);
     const showRet = r.tds != null;
     { const bn = BREWERS[r.brewer].name; $("recTitle").textContent = LANG === "it" ? `Ricetta per ${bn}.` : `Recipe for ${bn}.`; }   // the brewer, in the title
+    const noMillYet = !!mill().words;
     $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}${k === "key" && mill().words ? " wide" : ""}"><b>${v}${u ? `<small>${u === "-cup" ? u : " " + u}</small>` : ""}</b><span class="sub2">${l.charAt(0).toUpperCase() + l.slice(1)}${badge ? ` <span class="yr">${esc(badge)}</span>` : ""}</span>${k === "key" && isC40() && prefs.zero ? `<span class="zo">${sign(prefs.zero)} zero offset</span>` : ""}${k === "key" && K === "shot" && mill().noEsp ? `<span class="sub2">Not an espresso grinder</span>` : k === "key" && !isC40() && (onMill(r.clicks).atMax || onMill(r.clicks).atMin) ? `<span class="sub2">${onMill(r.clicks).atMax ? "Coarsest setting, may still run fast" : "Finest setting"}</span>` : ""}${k === "ratio" && showRet && false ? `<span class="ret">(${r.water} g water − 2.1 × ${r.dose} g retained). Estimate only.</span>` : ""}</div>`).join("");
+    if (noMillYet && !gearHasAny()) { const k = $("specs").querySelector(".spec.key"); if (k) { const b = document.createElement("button"); b.type = "button"; b.className = "add-mill";
+      b.textContent = LANG === "it" ? "Aggiungi il tuo macinino per la regolazione esatta" : "Add your grinder for its exact setting"; b.onclick = () => jumpTo($("gear")); k.appendChild(b); } }
     const agitTxt = r.agit >= 3 ? "Stir or swirl the bloom, pour with energy, one swirl at the end." :
       r.agit === 2 ? "Swirl the bloom gently, steady pours, one soft swirl at the end." :
       r.agit === 1 ? "No stirring. Pour low and gentle so the fruit stays clean." :
@@ -4872,13 +4887,18 @@ html:not(.bn-off) .dock{display:none!important}
     if (["anaerobic", "cofer", "natural", "decaf"].includes(c.process) && hasT && K !== "shot") why.push(`${pl} coffees tend to extract faster, so this recipe runs a little cooler and gentler. If yours tastes thin, sour or sharply vinegary, it is under-extracted: go 2°C hotter, as the dial-in tips say.`);
     if (r.goal && K !== "shot") why.push(`Strength comes from the ratio (1:${r.ratio}). In UC Davis tests, sweetness went down as strength went up (Frost et al. 2020): a lighter ratio tastes sweeter, a stronger one heavier.`);
     if (K !== "shot" && CUP[r.m]) why.splice(Math.min(1, why.length), 0, CUP[r.m].how);   // how this brewer and method shape the cup
+    { const what = [c.roast !== "unsure" ? ROAST[c.roast].label.toLowerCase() + " roast" : "", c.process !== "unsure" ? PROCESS[c.process].label.toLowerCase() : ""].filter(Boolean).join(", ");
+      const np = K === "pour" ? r.pours.filter((x) => !x.act).length : 0;
+      const how = K === "shot" ? `${r.dose} g in, ${r.water} g out in ${r.lo}–${r.hi} s` : [`a ${gw(r.clicks)[1].toLowerCase()} grind`, hasT ? `${r.temp}°C water` : "", np ? `${np} pour${np === 1 ? "" : "s"}` : ""].filter(Boolean).join(", ").replace(/, ([^,]*)$/, " and $1");
+      why.unshift(`In short: ${how}, chosen so ${what ? `this ${what} coffee` : "this coffee"} comes out sweet, not sour or bitter. The reasons follow.`); }
     const rk = risks(r);
     $("why").innerHTML = rk.map((w) => `<li class="warn">${esc(w)}</li>`).join("") + cons.map((w) => `<li class="cons">${esc(w)}</li>`).join("") + why.map((w) => `<li>${esc(w)}</li>`).join("");
     // "Label: text" lines bold the label; a line with no label (the roast note) is shown as it is
     // the roaster's notes (or the typical ones) lead, then the rest, all in view
     const xli = (w) => { const i = w.indexOf(": "); if (i < 1 || i > 60) return `<li>${esc(w)}</li>`;
       return `<li><b>${esc(w.slice(0, i))}</b>${esc(": " + lowFirst(w.slice(i + 2)))}</li>`; };
-    $("expect").innerHTML = expectCup(r).map(xli).join("");
+    { const ex = expectCup(r); $("expect").innerHTML = ex.map(xli).join("");
+      const mn = $("moreNum"); if (mn) { mn.hidden = !ex.tds; mn.textContent = ex.tds ? "In numbers: " + lowFirst(ex.tds) : ""; } }
     // What to expect sits right after Why this recipe, open, for every recipe
     $("whyHint").textContent = rk.length ? `${rk.length} warning${rk.length > 1 ? "s" : ""}` : ""; $("whyHint").classList.toggle("warn", rk.length > 0);
 
@@ -6804,7 +6824,7 @@ html:not(.bn-off) .dock{display:none!important}
   // land on What’s brewing?, with the coffee filled in and nothing selected: no text highlighted, no field or button holding focus
   function landBrewing() {
     try { const a = document.activeElement; if (a && a !== document.body) a.blur(); const sel = getSelection(); if (sel) sel.removeAllRanges(); } catch (e) {}
-    jumpTo($("coffee"));
+    goRecipe();   // straight to the recipe; its choices sit just above
   }
 
   // ---------- scan the bag: read the label on this device (Tesseract OCR, loaded only when used) ----------
