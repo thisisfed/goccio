@@ -1066,16 +1066,22 @@ def plain_product(page, url):
         return []
     body = re.sub(r"(?is)<(script|style|noscript|svg|template)[^>]*>.*?</\1>", " ", page)
     body = re.sub(r"(?is)<(header|nav|footer)[^>]*>.*?</\1>", " ", body)
-    h1 = re.search(r"(?is)<h1[^>]*>(.*?)</h1>", body)
-    title = strip_html(h1.group(1)).strip() if h1 else ""
+    # the coffee's own heading: not a cart or menu button ("Close"), and the one the page title repeats when there are several
+    # (Conscious: three h1s, "Close", the coffee, "Overview", under the title "Shop | Arcangel")
+    h1s = [(m, strip_html(m.group(1)).strip()) for m in re.finditer(r"(?is)<h1[^>]*>(.*?)</h1>", body)]
+    h1s = [(m, t) for m, t in h1s if t and not UI_WORD.match(t)]
+    dt = re.search(r"(?is)<title[^>]*>(.*?)</title>", page)
+    dt = strip_html(dt.group(1)).lower() if dt else ""
+    h1, title = next(((m, t) for m, t in h1s if t.lower() in dt), h1s[0] if h1s else (None, ""))
     if not title:
         m = re.search(r'<meta[^>]+property=["\']og:title["\'][^>]+content=["\']([^"\']+)', page, re.I)
         title = html.unescape(m.group(1)).strip() if m else ""
     if not title:
         return []
     text = re.sub(r"\s+", " ", strip_html(body))
-    after = text[text.find(title) + len(title):] if title in text else text
-    pm = re.search(r"([£€$])\s?(\d{1,4}(?:[.,]\d{2})?)", after)
+    # what follows the heading itself, not the first place its words appear (the page title, then the cart and its "$0.00")
+    after = re.sub(r"\s+", " ", strip_html(body[h1.end():])) if h1 else (text[text.find(title) + len(title):] if title in text else text)
+    pm = next((x for x in re.finditer(r"([£€$])\s?(\d{1,4}(?:[.,]\d{2})?)", after) if float(x.group(2).replace(",", ".")) > 0), None)
     ccy = {"£": "GBP", "€": "EUR", "$": "USD"}.get(pm.group(1)) if pm else None
     i = after.find(title) if title in after else 0
     return [{"name": title, "description": after[:3500], "url": url,

@@ -121,6 +121,14 @@ CASES = [
                              '<h6 class="pro_buy_now_heading">£&nbsp;13.00&nbsp;</h6><a>Buy</a><h1 class="heading-55">Overview</h1><p>Price paid to the farm £10.60/KG</p></body></html>', "Arcangel") == (13.0, "GBP")),
     ("Prices are read from product pages for every shop, not only for roasters with a roast set in roasters.json (Conscious: 27 coffees unlisted for want of a price)",
      lambda: re.search(r"\n            add_page_details\(recs, r, old\)\n            add_page_prices\(recs, r, old\)", open(scan.ROOT / "scripts" / "scan.py").read()) is not None),
+    ("Conscious: every coffee was read as 'Close' (the cart's heading) with the free-shipping '£20' as its price; the heading the page title repeats is the coffee, and its price is the first one after it",
+     lambda: (lambda p: p["name"] == "Arcangel" and p["offers"] == [{"price": "13.00", "priceCurrency": "GBP"}])(scan.plain_product(
+         '<html><head><title>Shop | Arcangel</title></head><body><div>Free shipping over £20</div><h1 class="heading-106">Close</h1><div>$0.00</div><a>Continue to Checkout</a>'
+         '<p>Free shipping for orders £20+</p><h1 class="pro_buy_now_producer_header">Arcangel</h1><div>Size 250g 1kg</div><h6>£&nbsp;13.00&nbsp;</h6><a>Add to Bag</a><a>Buy now</a>'
+         '<h1 class="heading-55">Overview</h1><p>Origin Bolivia</p></body></html>', "https://xyzroastery.example/product/arcangel")[0])),
+    ("A plain product page with one heading still reads as before: its heading and the first price after it",
+     lambda: (lambda p: p["name"] == "Finca Luna" and p["offers"][0]["price"] == "11.50")(scan.plain_product(
+         '<html><head><title>Finca Luna | XYZ Roastery</title></head><body><h1>Finca Luna</h1><p>£11.50</p><button>Add to cart</button></body></html>', "https://xyzroastery.example/product/finca-luna")[0])),
     ("Kaffa's own coffees still count", lambda: not any(scan.EXCLUDE.search(x) for x in ["Kaffebønner Kenya Kagere", "Kaffebønner Honduras El Guaco", "Kaffebønner Klassisk Julekaffe fra", "Switch Up Charity Coffee"])),
     ("Coffee sacks, a milk frother, a pallet and a chocolate bar are not coffee", lambda: all(scan.EXCLUDE.search(t) for t in
         ["Jute Coffee Sacks", "Alessi Mousseur à lait Pulcina", "Halvpalle med kaffe", "Malmö Chokladfabrik x Gringo – Kaffekross 55% chokladkaka", "SCA Introduction to coffee", "30 ks", "Čaj Yunnan Green Superior", "Brazil Natural - Greens"])),
