@@ -2,6 +2,9 @@
 
 **Live at [www.goccio.co.uk](https://www.goccio.co.uk)**.
 
+© 2026 Federico R. T. Ferrari. All rights reserved. Not open source: the code, the scanner and the compiled data may not be
+copied or reused without written permission. See [LICENSE](LICENSE).
+
 New specialty coffees from roasters in the UK, Europe and beyond, read every day from their own shops, each with a recipe for
 your brewer and your grinder: grind setting, dose, water, temperature and every step, with a brew-along screen, a journal
 that learns, My bags and a bag scanner. No accounts, no tracking, no API keys; everything you save stays on your device.
