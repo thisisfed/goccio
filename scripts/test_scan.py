@@ -115,6 +115,12 @@ CASES = [
      lambda: scan.page_price("<html><body><h1>Danse</h1><p>Ethiopia</p><p>£ 14.00</p><p>250g</p><p>Free delivery over £25</p></body></html>", "Danse") == (14.0, "GBP")
        and scan.page_price("<html><body><h1>Danse</h1><p>Free delivery on orders over £25</p><p>Ethiopia</p></body></html>", "Danse") == (None, None)
        and scan.page_price("<html><body><p>£ 14.00</p><h1>Danse</h1></body></html>", "") == (None, None)),
+    ("Conscious: the real page has three h1s ('Close', the coffee, 'Overview'), a 'Shop | Arcangel' title and '£&nbsp;13.00' after the size and grind lines",
+     lambda: scan.page_price('<html><head><title>Shop | Arcangel</title></head><body><h1 class="heading-106">Close</h1><div>$0.00</div><p>Free shipping for orders £20+</p>'
+                             '<h1 class="pro_buy_now_producer_header">Arcangel</h1><div>Size 250g 1kg</div><div>Grind Whole beans Espresso Stove top Pour over Aeropress French press</div>'
+                             '<h6 class="pro_buy_now_heading">£&nbsp;13.00&nbsp;</h6><a>Buy</a><h1 class="heading-55">Overview</h1><p>Price paid to the farm £10.60/KG</p></body></html>', "Arcangel") == (13.0, "GBP")),
+    ("Prices are read from product pages for every shop, not only for roasters with a roast set in roasters.json (Conscious: 27 coffees unlisted for want of a price)",
+     lambda: re.search(r"\n            add_page_details\(recs, r, old\)\n            add_page_prices\(recs, r, old\)", open(scan.ROOT / "scripts" / "scan.py").read()) is not None),
     ("Kaffa's own coffees still count", lambda: not any(scan.EXCLUDE.search(x) for x in ["Kaffebønner Kenya Kagere", "Kaffebønner Honduras El Guaco", "Kaffebønner Klassisk Julekaffe fra", "Switch Up Charity Coffee"])),
     ("Coffee sacks, a milk frother, a pallet and a chocolate bar are not coffee", lambda: all(scan.EXCLUDE.search(t) for t in
         ["Jute Coffee Sacks", "Alessi Mousseur à lait Pulcina", "Halvpalle med kaffe", "Malmö Chokladfabrik x Gringo – Kaffekross 55% chokladkaka", "SCA Introduction to coffee", "30 ks", "Čaj Yunnan Green Superior", "Brazil Natural - Greens"])),

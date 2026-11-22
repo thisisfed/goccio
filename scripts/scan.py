@@ -2632,11 +2632,11 @@ def main():
                     rec["found"] = seen_at.get(rec["url"]) or old.get(rec["url"], {}).get("found", today)
                     recs.append(rec)
             add_page_details(recs, r, old)
+            add_page_prices(recs, r, old)   # for every shop: it once sat under the roast line below and ran for two roasters only
         if r.get("roast"):   # a roaster that roasts every filter coffee the same way says so once in roasters.json
             for rec in recs:
                 if not rec.get("roast") and rec.get("roast_for") != "espresso":
                     rec["roast"], rec["roast_from"] = r["roast"], "roaster"
-            add_page_prices(recs, r, old)
         return kind, err, recs
 
     with ThreadPoolExecutor(max_workers=16) as pool:
