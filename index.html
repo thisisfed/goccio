@@ -1753,6 +1753,12 @@ html[lang="it"] .bag-rorow{grid-template-columns:118px auto}
 /* coffee spec dots: whole-pixel circles (em sizes land on fractions and render slightly oval), a touch taller than the capitals */
 .item .tags .oc::before,.item .tags .tg.p-nat::before,.item .tags .tg.p-wash::before,.item .tags .tg.p-honey::before,.item .tags .tg.p-exp::before,.item .tags .tg.p-decaf::before,.item .tags .tg.vdot::before,.item .tags .tg.rdot::before,.item .tags .tg.lbl::before,.item .tags .tg.p-other::before,.item .tags .tg.miss::before{content:"";display:inline-block;box-sizing:border-box;flex:none;width:12px;height:12px;min-width:12px;aspect-ratio:1/1;padding:0;border:0;border-radius:50%;margin-right:5px;vertical-align:-1px;transform:none}
 #journal[hidden],[data-jump="journal"][hidden]{display:none!important}
+#logBox[hidden], #logBox.saved > :not(#suggest){display:none!important}
+/* a journal entry: date, then the text at full width, its buttons in a row underneath */
+#journalList .entry{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:4px!important;padding:16px 0!important;align-items:start!important}
+#journalList .entry .when{grid-column:1!important}
+#journalList .entry .what{gap:4px!important}
+#journalList .entry .e-act{display:flex!important;flex-wrap:wrap;gap:4px!important;margin-top:8px;justify-content:flex-start!important;grid-column:1!important}
 [data-jump="recipe"][hidden]{display:none!important}
 /* nothing to brew yet: only "What are you brewing?" and Scan the bag. Brewer, grinder, water and the rest appear once it's filled */
 #coffee.empty .kit > :not(.scan-opt):not(#scanReview), #coffee.empty #opts-main, #coffee.empty #moreOpts, #coffee.empty #adjOpts{display:none!important}
@@ -2391,6 +2397,7 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
    only shows while the bottom bar is away (the first screen) */
 html:not(.bn-off) .dock{display:none!important}
 .botnav .chip.bn-go{background:var(--hl)!important;color:#000!important}
+.botnav .chip{flex:1 1 auto!important}
 .chips{overflow-y:hidden}   /* the pills' bigger tap areas reach past the row: the row never scrolls up and down for them */
 /* pill rows never scroll inside themselves: they wrap (the invisible 44 px tap areas reached past the row and made it scrollable) */
 .chips{overflow:visible!important}
@@ -5373,7 +5380,7 @@ html:not(.bn-off) .dock{display:none!important}
       box.innerHTML = `<span><b>Saved.</b> ${has ? `Next time: ${esc(s.text)}` : nailed ? "Your numbers worked. Keep them." : "Your numbers stay as they are."}</span>${has ? '<span><button type="button" class="chip" id="applyFix">Apply to my numbers</button></span>' : ""}`;
       const ab = $("applyFix"); if (ab) ab.onclick = () => { applyToMine(r, d); box.innerHTML = "<span><b>Applied.</b> Your numbers are updated for next time.</span>"; };
       $("saveLog").textContent = "Saved"; setTimeout(() => ($("saveLog").textContent = "Save to journal"), 1400);
-      return;
+      logSaved(); return;
     }
     const a = recipe, diff = [];
     if (a.clicks !== before.clicks) diff.push(isC40() ? `${before.clicks} → <b>${a.clicks} clicks</b>` : `${esc(onMill(before.clicks).txt)} → <b>${esc(onMill(a.clicks).txt)} ${esc(mill().short)}</b>`);
@@ -5383,13 +5390,17 @@ html:not(.bn-off) .dock{display:none!important}
     box.innerHTML = diff.length ? `<span><b>Saved.</b> Next time for ${esc(coffeeTitle(state, a))}: ${diff.join(", ")}. Shown on the recipe with a “your log” badge.</span>`
       : `<span><b>Saved.</b> ${nailed ? "Recipe locked in for this coffee, and it counts towards your " + esc(PROCESS[a.c.process].label) + " brews." : "No change to the numbers."}</span>`;
     $("saveLog").textContent = "Saved"; setTimeout(() => ($("saveLog").textContent = "Save to journal"), 1400);
+    logSaved();
   }
+  function logSaved() { brewDone = false; $("logBox").classList.add("saved"); journalOn(); }
   // the Journal (and its link in the menu) only exists once there's a brew to write about: one that reached its end in this
   // visit, or an entry already saved
   let brewDone = false;   // this visit only: leave without saving an entry and the Journal is gone again next time
   try { localStorage.removeItem("v60.brewed"); } catch (e) {}
   function journalOn() { const untimed = !$("recipe").hidden && $("startBrew").hidden;   // moka and cold brew have no timer to start
     const on = journal.length > 0 || brewDone || untimed;
+    // the form to log a brew only once there's a brew to log (or a brewer with no timer); after Save, just its Saved line
+    const lb = $("logBox"); lb.hidden = !(brewDone || untimed || lb.classList.contains("saved"));
     $("journal").hidden = !on; document.querySelectorAll('[data-sec="journal"]').forEach((b) => b.hidden = !on); if (window.syncSecs) syncSecs(); }
   function renderJournal() { setTimeout(() => window.syncSecs && syncSecs(), 0);
     try { renderShelfO(); } catch (e) {}   // a logged brew teaches For you too
@@ -5600,7 +5611,7 @@ html:not(.bn-off) .dock{display:none!important}
     // Drained (Done for immersion) is live from the last step on
     const canDrain = idx === P.length - 1 && (bv.running || bv.paused > 0);
     $("bvDrain").hidden = !canDrain; $("bvReset").hidden = canDrain;
-    if (canDrain && !brewDone) { brewDone = true; journalOn(); }   // the last pour is in: the brew is at its end, the Journal appears
+    if (canDrain && !brewDone) { brewDone = true; $("logBox").classList.remove("saved"); $("suggest").hidden = true; journalOn(); }   // the last pour is in: the brew is at its end, the Journal appears
     if (bv.running && el > r.hi + 240) { stopLoop(); $("bvGo").textContent = "Resume"; }
   }
 
@@ -7954,7 +7965,10 @@ html:not(.bn-off) .dock{display:none!important}
   // the bottom bar: always four. My bags with nothing saved shows the list, where Save is; Journal before any brew shows What's brewing
   // the Brew pill turns into Start brewing while there's a timed recipe (the brew bar would show); a tap opens brew mode
   const syncBrewPill = () => { const b = document.querySelector('.botnav [data-bn="coffee"]'); if (!b) return; const go = !$("dock").hidden && !$("dockGo").disabled;
-    b.classList.toggle("bn-go", go); b.textContent = go ? (LANG === "it" ? "Inizia" : "Start brewing") : (LANG === "it" ? "Prepara" : "Brew"); };
+    b.classList.toggle("bn-go", go); b.textContent = go ? (LANG === "it" ? "Inizia" : "Start brewing") : (LANG === "it" ? "Prepara" : "Brew");
+    // too many pills for the words: the orange pill still says it, in one word
+    const nav = b.closest(".botnav"); if (go && nav && [...nav.children].some((c) => !c.hidden && c.scrollWidth > c.clientWidth + 1)) b.textContent = LANG === "it" ? "Prepara" : "Brew"; };
+  { const nav = document.querySelector(".botnav"); if (nav) new MutationObserver(syncBrewPill).observe(nav, { subtree: true, attributes: true, attributeFilter: ["hidden"] }); addEventListener("resize", syncBrewPill); }
   new MutationObserver(syncBrewPill).observe($("dock"), { attributes: true, attributeFilter: ["hidden"] }); new MutationObserver(syncBrewPill).observe($("dockGo"), { attributes: true, attributeFilter: ["disabled"] }); syncBrewPill();
   document.querySelectorAll(".botnav [data-bn]").forEach((b) => b.onclick = () => { const id = b.dataset.bn, el = $(id);
     if (id === "coffee" && b.classList.contains("bn-go")) return openBrew();
