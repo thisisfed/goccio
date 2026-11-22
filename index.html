@@ -2193,24 +2193,28 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after, :is(#adjOpts
 .top .nav #langBtn{--tb-x:calc((var(--pill-h) + var(--nav-gap,4px)) * 2);--tb-m:calc(var(--nav-gap,4px) * 2)}
 .top .nav #themeBtn{--tb-x:calc(var(--pill-h) + var(--nav-gap,4px));--tb-m:var(--nav-gap,4px)}
 .top{--tb-r:calc(var(--pill-h) / 2)}
-.top.tools-open .nav #langBtn{--tb-s:-12px;animation:tools-l 1.4s linear both}
-.top.tools-open .nav #themeBtn{--tb-s:-6px;animation:tools-t 1.4s linear both}
-.top.tools-open .nav #toolsBtn{animation:tools-p 1.4s linear both}
-.top.tools-closing .nav :is(#langBtn,#themeBtn){animation:tools-back .32s cubic-bezier(.5,0,.9,.5) both}
-.top.tools-closing .nav #toolsBtn{animation:tools-pc .8s linear both}
-/* opening: the three come out already apart, each round, joined by a string of water. They pull a little too far, the string
-   tenses, thins and breaks (36%), and each drop springs back and wobbles its own way. Closing: the two slip back behind the +,
-   which wobbles at once */
-@keyframes tools-l{0%{transform:translateX(var(--tb-x));scale:1;animation-timing-function:cubic-bezier(.15,.7,.3,1)}28%{transform:translateX(calc(var(--tb-s) * .8));scale:1;animation-timing-function:ease-out}
-  36%{transform:translateX(var(--tb-s));scale:1.04 .97;animation-timing-function:cubic-bezier(.3,1.6,.6,1)}46%{transform:none;scale:1.16 .87;animation-timing-function:ease-in-out}57%{scale:.92 1.08;animation-timing-function:ease-in-out}68%{scale:1.05 .96;animation-timing-function:ease-in-out}79%{scale:.98 1.02;animation-timing-function:ease-in-out}90%{scale:1.01 .99}100%{transform:none;scale:1}}
-@keyframes tools-t{0%{transform:translateX(var(--tb-x));scale:1;animation-timing-function:cubic-bezier(.15,.7,.3,1)}28%{transform:translateX(calc(var(--tb-s) * .8));scale:1;animation-timing-function:ease-out}
-  36%{transform:translateX(var(--tb-s));scale:1.05 .96;animation-timing-function:cubic-bezier(.3,1.6,.6,1)}47%{transform:none;scale:.9 1.13;animation-timing-function:ease-in-out}59%{scale:1.08 .93;animation-timing-function:ease-in-out}71%{scale:.97 1.03;animation-timing-function:ease-in-out}83%{scale:1.01 .99}100%{transform:none;scale:1}}
-@keyframes tools-p{0%,28%{scale:1;transform-origin:100% 50%;animation-timing-function:ease-out}36%{scale:1.06 .96;transform-origin:100% 50%;animation-timing-function:ease-in-out}45%{scale:.95 1.05;animation-timing-function:ease-in-out}55%{scale:1.04 .97;animation-timing-function:ease-in-out}66%{scale:.98 1.02;animation-timing-function:ease-in-out}78%,100%{scale:1}}
-@keyframes tools-back{from{transform:none}to{transform:translateX(var(--tb-x))}}
-@keyframes tools-pc{0%{scale:1;animation-timing-function:ease-in-out}14%{scale:1.14 .89;animation-timing-function:ease-in-out}30%{scale:.93 1.07;animation-timing-function:ease-in-out}46%{scale:1.05 .96;animation-timing-function:ease-in-out}62%{scale:.98 1.02;animation-timing-function:ease-in-out}80%{scale:1.01 .99}100%{scale:1}}
-/* the string between two drops: sits in the gap (its far end under the next drop), thins as it is pulled, gone when it breaks */
-.top.tools-open .nav :is(#langBtn,#themeBtn)::after{content:"";position:absolute;left:calc(100% - 2px);top:calc(50% - 5px);width:calc(var(--nav-gap,4px) + 12px);height:10px;border-radius:5px;background:var(--pill);pointer-events:none;transform:scaleY(0);z-index:-1;animation:tools-neck 1.4s linear both}
-@keyframes tools-neck{0%{transform:scaleY(1);animation-timing-function:ease-out}28%{transform:scaleY(.42);animation-timing-function:ease-in}35.5%{transform:scaleY(.1)}36%,100%{transform:scaleY(0)}}
+.top.tools-open .nav #langBtn{animation:tools-l 1.5s linear both}
+.top.tools-open .nav #themeBtn{animation:tools-t 1.5s linear both}
+.top.tools-open .nav #toolsBtn{animation:tools-p 1.5s linear both}
+.top.tools-closing .nav #langBtn{animation:tools-l .6s linear reverse both}
+.top.tools-closing .nav #themeBtn{animation:tools-t .6s linear reverse both}
+.top.tools-closing .nav #toolsBtn{animation:tools-pc .8s linear both}   /* closing: the + stays round while the two slide back behind it */
+/* out as one pill (to 40%), then it parts like water: the joins thin to a neck and snap (62%), and each drop wobbles, wide then
+   tall, until it sits round. Closing runs it backwards */
+@keyframes tools-l{0%{transform:translateX(var(--tb-x));border-radius:var(--tb-r);scale:1;animation-timing-function:cubic-bezier(.2,.7,.2,1)}5%{border-radius:var(--tb-r) 0 0 var(--tb-r)}
+  22%{transform:translateX(var(--tb-m));border-radius:var(--tb-r) 0 0 var(--tb-r);scale:1;animation-timing-function:cubic-bezier(.85,0,1,.55)}
+  45%{transform:none;border-radius:var(--tb-r);scale:1;animation-timing-function:ease-in-out}55%{scale:1.17 .87;animation-timing-function:ease-in-out}66%{scale:.92 1.08;animation-timing-function:ease-in-out}76%{scale:1.05 .96;animation-timing-function:ease-in-out}85%{scale:.98 1.02;animation-timing-function:ease-in-out}93%{scale:1.01 .99}100%{transform:none;border-radius:var(--tb-r);scale:1}}
+@keyframes tools-t{0%{transform:translateX(var(--tb-x));border-radius:var(--tb-r);scale:1;animation-timing-function:cubic-bezier(.2,.7,.2,1)}5%{border-radius:0}
+  22%{transform:translateX(var(--tb-m));border-radius:0;scale:1;animation-timing-function:cubic-bezier(.85,0,1,.55)}
+  45%{transform:none;border-radius:var(--tb-r);scale:1;animation-timing-function:ease-in-out}57%{scale:.9 1.13;animation-timing-function:ease-in-out}69%{scale:1.08 .93;animation-timing-function:ease-in-out}80%{scale:.97 1.03;animation-timing-function:ease-in-out}90%{scale:1.01 .99}100%{transform:none;border-radius:var(--tb-r);scale:1}}
+@keyframes tools-p{0%{border-radius:var(--tb-r);scale:1}5%,22%{border-radius:0 var(--tb-r) var(--tb-r) 0;scale:1;animation-timing-function:cubic-bezier(.85,0,1,.55)}45%{border-radius:var(--tb-r);scale:1;animation-timing-function:ease-in-out}53%{scale:1.09 .93;animation-timing-function:ease-in-out}63%{scale:.96 1.05;animation-timing-function:ease-in-out}73%{scale:1.03 .98;animation-timing-function:ease-in-out}83%{scale:.99 1.01}90%,100%{border-radius:var(--tb-r);scale:1}}
+/* the neck between two drops: as tall as the pills, thinning to a thread, gone at the snap */
+.top:is(.tools-open,.tools-closing) .nav :is(#langBtn,#themeBtn)::after{content:"";position:absolute;left:calc(100% - 1px);top:0;width:calc(var(--nav-gap,4px) + 2px);height:100%;background:var(--pill);pointer-events:none;transform:scaleY(0)}
+.top.tools-open .nav :is(#langBtn,#themeBtn)::after{animation:tools-neck 1.5s linear both}
+.top.tools-closing .nav :is(#langBtn,#themeBtn)::after{animation:tools-neck .6s linear reverse both}
+/* closing: the + takes the two back in and wobbles like a drop that has just swallowed them */
+@keyframes tools-pc{0%,18%{scale:1;animation-timing-function:ease-in-out}32%{scale:1.14 .89;animation-timing-function:ease-in-out}46%{scale:.93 1.07;animation-timing-function:ease-in-out}60%{scale:1.05 .96;animation-timing-function:ease-in-out}74%{scale:.98 1.02;animation-timing-function:ease-in-out}88%{scale:1.01 .99}100%{scale:1}}
+@keyframes tools-neck{0%,21%{transform:scaleY(0)}22%{transform:scaleY(1);border-radius:0;animation-timing-function:cubic-bezier(.85,0,1,.55)}44%{transform:scaleY(.08);border-radius:40%/50%}45%,100%{transform:scaleY(0)}}
 #toolsBtn{border:0;border-radius:50%;width:var(--pill-h);height:var(--pill-h);padding:0;display:inline-flex;align-items:center;justify-content:center;flex:none;background:var(--pill);color:var(--ink);cursor:pointer}
 @media (hover:hover){ #toolsBtn:hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))} }
 #toolsBtn svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
@@ -7725,11 +7729,7 @@ html:not(.bn-off) .dock{display:none!important}
     let toolsT = 0;
     $("toolsBtn").onclick = () => { const t = document.querySelector(".top"), on = !t.classList.contains("tools-open") || t.classList.contains("tools-closing");
       clearTimeout(toolsT); $("toolsBtn").setAttribute("aria-expanded", String(on)); $("toolsBtn").setAttribute("aria-label", on ? "Hide language and appearance" : "Language and appearance");
-      if (on) { t.classList.remove("tools-closing"); t.classList.add("tools-open"); setTop();
-        // the drops pull 12 px past their places before the string breaks: the box gives them that room, then takes it back
-        if (!matchMedia("(prefers-reduced-motion: reduce)").matches) { const de = document.documentElement, w = parseFloat(getComputedStyle(de).getPropertyValue("--nav-w")) || 0;
-          if (w) { de.style.setProperty("--nav-w", (w + 12) + "px"); toolsT = setTimeout(setTop, 520); } }
-        return; }
+      if (on) { t.classList.remove("tools-closing"); t.classList.add("tools-open"); setTop(); return; }
       // closing: the two slide back behind the +, then the box grows back
       t.classList.add("tools-closing");
       { const b = $("toolsBtn").getBoundingClientRect(), gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--nav-gap")) || 4;
