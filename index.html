@@ -2188,26 +2188,18 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after, #adjOpts[ope
 .top:not(.tools-open) .nav #langBtn, .top:not(.tools-open) .nav #themeBtn{display:none!important}
 /* both come out from behind the + (it stays on top) and go back behind it when closed */
 .top .nav #toolsBtn{position:relative;z-index:2}
-/* the three come out as one pill (no gaps, inner corners square), then split into three rounds; closing runs it backwards */
-.top .nav #langBtn{--tb-x:calc((var(--pill-h) + var(--nav-gap,4px)) * 2);--tb-m:calc(var(--nav-gap,4px) * 2)}
-.top .nav #themeBtn{--tb-x:calc(var(--pill-h) + var(--nav-gap,4px));--tb-m:var(--nav-gap,4px)}
-.top{--tb-r:calc(var(--pill-h) / 2)}
-.top.tools-open .nav #langBtn{animation:tools-l .6s cubic-bezier(.3,.6,.2,1) both}
-.top.tools-open .nav #themeBtn{animation:tools-t .6s cubic-bezier(.3,.6,.2,1) both}
-.top.tools-open .nav #toolsBtn{animation:tools-p .6s cubic-bezier(.3,.6,.2,1) both}
-.top.tools-closing .nav #langBtn{animation:tools-l .5s cubic-bezier(.3,.6,.2,1) reverse both}
-.top.tools-closing .nav #themeBtn{animation:tools-t .5s cubic-bezier(.3,.6,.2,1) reverse both}
-.top.tools-closing .nav #toolsBtn{animation:tools-p .5s cubic-bezier(.3,.6,.2,1) reverse both}
-@keyframes tools-l{0%,8%{border-radius:var(--tb-r)}0%{transform:translateX(var(--tb-x))}30%{border-radius:var(--tb-r) 0 0 var(--tb-r)}55%{transform:translateX(var(--tb-m));border-radius:var(--tb-r) 0 0 var(--tb-r)}100%{transform:none;border-radius:var(--tb-r)}}
-@keyframes tools-t{0%{transform:translateX(var(--tb-x));border-radius:var(--tb-r)}8%{border-radius:0 var(--tb-r) var(--tb-r) 0}30%{border-radius:0}55%{transform:translateX(var(--tb-m));border-radius:0}100%{transform:none;border-radius:var(--tb-r)}}
-@keyframes tools-p{0%{border-radius:var(--tb-r)}8%,55%{border-radius:0 var(--tb-r) var(--tb-r) 0}100%{border-radius:var(--tb-r)}}
+/* the three come out of the + like drops of liquid and pull apart (drawn by script, see toolsGoo) */
+.tb-goo{position:absolute;inset:0;pointer-events:none;z-index:0;filter:url(#tbGooF)}
+.tb-goo i{position:absolute;display:block;border-radius:50%;background:var(--pill);will-change:transform}
+.top.tools-anim .nav :is(#langBtn,#themeBtn,#toolsBtn){background:transparent!important;z-index:1;will-change:transform}
+.top.tools-anim .ask-line{transition:none!important}   /* the box follows the drops frame by frame */
 #toolsBtn{border:0;border-radius:50%;width:var(--pill-h);height:var(--pill-h);padding:0;display:inline-flex;align-items:center;justify-content:center;flex:none;background:var(--pill);color:var(--ink);cursor:pointer}
 @media (hover:hover){ #toolsBtn:hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))} }
 #toolsBtn svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
 #toolsBtn .tb-v{transition:transform .25s ease;transform-origin:center}
 .top.tools-open:not(.tools-closing) #toolsBtn .tb-v{transform:scaleY(0)}
 .ask-line{transition:opacity .25s ease, transform .25s ease, right .3s cubic-bezier(.2,.7,.2,1), visibility 0s linear 0s!important}
-@media (prefers-reduced-motion: reduce){ .top.tools-open .nav :is(#langBtn,#themeBtn,#toolsBtn), .top.tools-closing .nav :is(#langBtn,#themeBtn,#toolsBtn){animation:none} .ask-line{transition:none!important} }
+@media (prefers-reduced-motion: reduce){ .tb-goo{display:none} .ask-line{transition:none!important} }
 .top .top-in{justify-content:flex-end!important}
 
 .top:has(.sec-list.instant) .ask-line{transition:none}
@@ -2434,6 +2426,7 @@ html:not(.bn-off) .dock{display:none!important}
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><filter id="tbGooF" x="-10%" y="-60%" width="120%" height="220%" color-interpolation-filters="sRGB"><feGaussianBlur id="tbGooB" in="SourceGraphic" stdDeviation="0"/><feColorMatrix values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 24 -11"/></filter></defs></svg>
 <header class="top">
   <div class="top-in">
     <div class="mark" translate="no">Goccio</div>
@@ -7522,8 +7515,7 @@ html:not(.bn-off) .dock{display:none!important}
     a.addEventListener("focus", settle);
     const next = () => { if (calm) return; if (Date.now() - t0 > 11000 || scrollY > 80) return settle();
       if (!(document.activeElement === a || a.value)) { i = (i + 1) % EX.length; roll(T(EX[i])); } setTimeout(next, 1700); };
-    if (scrollY > 80 || still) settle();
-    else { roll(T(EX[0])); i = 0; setTimeout(next, 1700); } show(); }
+    settle(); show(); }   // no rolling examples: the still hint from the start
   // the ask line: its words go into the search (which reads them as an ask), the brewer it names becomes the brewer, and the page goes to the list
   // the brewer the ask names becomes the brewer; "6 cup" (or 3-cup, 1 cup) picks that size where the brewer has one
   const askBrewer = (q) => { if (!isAsk(q)) return; const w = readAsk(q); if (!w.brewer || !BREWERS[w.brewer]) return;
@@ -7621,12 +7613,34 @@ html:not(.bn-off) .dock{display:none!important}
     let toolsT = 0;
     $("toolsBtn").onclick = () => { const t = document.querySelector(".top"), on = !t.classList.contains("tools-open") || t.classList.contains("tools-closing");
       clearTimeout(toolsT); $("toolsBtn").setAttribute("aria-expanded", String(on)); $("toolsBtn").setAttribute("aria-label", on ? "Hide language and appearance" : "Language and appearance");
-      if (on) { t.classList.remove("tools-closing"); t.classList.add("tools-open"); setTop(); return; }
+      if (on) { t.classList.remove("tools-closing"); t.classList.add("tools-open"); setTop(); toolsGoo(true, () => {}); return; }
       // closing: the two slide back behind the +, then the box grows back
       t.classList.add("tools-closing");
       { const b = $("toolsBtn").getBoundingClientRect(), gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--nav-gap")) || 4;
         document.documentElement.style.setProperty("--nav-w", (innerWidth - b.left + gap) + "px"); }   // the box grows with the pills going back, not after
-      toolsT = setTimeout(() => { t.classList.remove("tools-open", "tools-closing"); setTop(); }, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 500); };
+      toolsGoo(false, () => { t.classList.remove("tools-open", "tools-closing"); setTop(); }); };
+    // liquid: three blobs under the buttons, blurred and cut sharp again (an SVG filter), so where they're close they flow into one;
+    // they slide out of the +, the blur eases off at the end and they pull apart into three rounds. Closing runs it backwards.
+    let gooRaf = 0;
+    function toolsGoo(open, done) {
+      const t = document.querySelector(".top"), els = [$("langBtn"), $("themeBtn"), $("toolsBtn")], blur = document.getElementById("tbGooB");
+      cancelAnimationFrame(gooRaf); t.querySelectorAll(".tb-goo").forEach((x) => x.remove()); t.classList.remove("tools-anim");
+      const reset = () => els.forEach((e) => { e.style.transform = ""; e.style.opacity = ""; });
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches || !blur) { reset(); return done(); }
+      reset(); const tr = t.getBoundingClientRect(), R = els.map((e) => { const r = e.getBoundingClientRect(); return { l: r.left - tr.left, t: r.top - tr.top, w: r.width, h: r.height }; });
+      const layer = document.createElement("div"); layer.className = "tb-goo"; layer.setAttribute("aria-hidden", "true");
+      const bl = R.map((r) => { const i = document.createElement("i"); Object.assign(i.style, { left: r.l + "px", top: r.t + "px", width: r.w + "px", height: r.h + "px" }); layer.appendChild(i); return i; });
+      t.insertBefore(layer, t.firstChild); t.classList.add("tools-anim");
+      const gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--nav-gap")) || 4;
+      const dur = open ? 750 : 560, t0 = performance.now(), off = [R[2].l - R[0].l, R[2].l - R[1].l, 0];
+      const ease = (x) => 1 - Math.pow(1 - x, 3), sm = (a, b, x) => { const k = Math.min(1, Math.max(0, (x - a) / (b - a))); return k * k * (3 - 2 * k); };
+      const frame = (now) => { const k = Math.min(1, (now - t0) / dur), p = open ? k : 1 - k, e = ease(p);
+        [0, 1].forEach((i) => { const x = off[i] * (1 - e); els[i].style.transform = bl[i].style.transform = `translateX(${x}px)`; els[i].style.opacity = String(sm(.15, .5, p)); });
+        document.documentElement.style.setProperty("--nav-w", (innerWidth - (tr.left + R[0].l + off[0] * (1 - e)) + gap) + "px");   // the box ends a gap before the leftmost drop
+        blur.setAttribute("stdDeviation", (6 * (1 - sm(.62, 1, p))).toFixed(2));
+        if (k < 1) { gooRaf = requestAnimationFrame(frame); return; }
+        layer.remove(); t.classList.remove("tools-anim"); reset(); blur.setAttribute("stdDeviation", "0"); done(); };
+      gooRaf = requestAnimationFrame(frame); }
     if ("ResizeObserver" in window) new ResizeObserver(setTop).observe(document.querySelector(".top"));
     setTop(); addEventListener("resize", setTop);
     const tools = document.querySelector(".shelf-tools");
