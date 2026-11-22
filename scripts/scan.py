@@ -110,7 +110,7 @@ EXCLUDE = re.compile(r"subscri|abonnement|abbonamento|\babo\b|suscripci|assinatu
                      r"\btasse\b|tazza|dip ?style|in-store|xpods?|xbloom|セット|飲み比べ|ドリップバッグ|latte art|\bpen\b|\btool\b|accessor|machine|maker|moccamaster|ticket|party|event|festival|origami|glass|server|carafe|porcelain|ceramic|brewer|filter holder|gift|voucher|capsule|\bpods?\b|nespresso|(?<!\dg )(?<!\d g )coffee bags?|drip bags?|brew bags?|immersion bags?|caf[ée] de poche|"
                      r"h[aå]ndbrygg|presskanne|julepakke|pakken\b|med pegasus|\bswitch\s[–-]|\bnewby\b|steep|equipment|grinder|\bmug\b|kettle|dripper|filter papers?|papers\b|\bcups?\b(?! of excellence)|"
                      r"sampler|tasting pack|taster|bundle|merch|t-?shirt|hoodie|tote|cap\b|"
-                     r"cold brew|concentrate|instant|\btea\b|chocolate bar|chocolate\b|cascara|"
+                     r"cold brew|concentrate|instant|\btea\b|chocolate bar|chocolate\b|\bchocolat\b|tablettes?\b|tampers?\b|stirring stick|\bwdt\b|cascara|"
                      r"workshop|course|\bclass(?:es)?\b|masterclass|training|advent|box\b|\bkit\b|scale\b|aeropress\b(?! recipe)|"
                      r"green (?:beans?|coffee)|råkaffe|rohkaffee|unroasted|\bduo\b|\btrio\b|\bpack\b|\bset\b|selection|collection|wholesale|"
                      r"\b\d+(?:[.,]\d+)?\s?kg\b|\btin\b|longjing|sencha|oolong|rooibos|darjeeling|\bassam\b|earl grey|bai hao|jasmine (?:green|tea|pearl)|"
@@ -2346,8 +2346,20 @@ def add_page_details(recs, roaster, old):
     return fetched
 
 
+def name_from_url(name, url):
+    """A name with no readable letters ("/ [ ]", what was left of a Japanese title, or the Japanese itself) is replaced by the
+    words of the product's own link. Names that are numbers ("60/40", "11") are left alone."""
+    if re.search(r"[A-Za-zÀ-ÿ]", name or "") or re.fullmatch(r"[\d\s/.,:#&+-]+", name or ""):
+        return name
+    slug = re.sub(r"[-_]+", " ", urllib.parse.unquote(url.rstrip("/").split("/")[-1].split("?")[0]))
+    slug = re.sub(r"\s+", " ", re.sub(r"\b(?:copy|\d{4})\b", " ", slug)).strip()
+    return slug.title() if re.search(r"[A-Za-z]{3}", slug) else name
+
+
 def home_currency(r):
-    return r.get("currency") or COUNTRY_CCY.get(r.get("country"), "EUR" if r.get("region") == "Europe" else "GBP")
+    # a roaster with no country set has no home market to ask for: keep the currency its shop gave (Fandango, in Sweden with
+    # no country on file, was asked for pounds and its kronor came back labelled "£270.00")
+    return r.get("currency") or COUNTRY_CCY.get(r.get("country")) or r.get("_ccy") or ("EUR" if r.get("region") == "Europe" else "GBP")
 
 
 def shop_currency(shop, kind, r, extra=""):
@@ -2651,7 +2663,10 @@ def main():
         if kind:
             for it in items:
                 rec = classify(it, r)
+                if rec and rec["url"].rstrip("/").split("//")[-1].replace("www.", "") == r["shop"].rstrip("/").split("//")[-1].replace("www.", ""):
+                    rec = None   # a "coffee" whose link is the shop's front page (Doubleshot: "Farm", "Fun") can't be opened or checked
                 if rec:
+                    rec["name"] = name_from_url(rec["name"], rec["url"])
                     rec["found"] = seen_at.get(rec["url"]) or old.get(rec["url"], {}).get("found", today)
                     recs.append(rec)
             add_page_details(recs, r, old)
