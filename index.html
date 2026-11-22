@@ -2188,18 +2188,26 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after, #adjOpts[ope
 .top:not(.tools-open) .nav #langBtn, .top:not(.tools-open) .nav #themeBtn{display:none!important}
 /* both come out from behind the + (it stays on top) and go back behind it when closed */
 .top .nav #toolsBtn{position:relative;z-index:2}
-/* the three come out of the + like drops of liquid and pull apart (drawn by script, see toolsGoo) */
-.tb-goo{position:absolute;inset:0;pointer-events:none;z-index:0;filter:url(#tbGooF)}
-.tb-goo i{position:absolute;display:block;border-radius:50%;background:var(--pill);will-change:transform}
-.top.tools-anim .nav :is(#langBtn,#themeBtn,#toolsBtn){background:transparent!important;z-index:1;will-change:transform}
-.top.tools-anim .ask-line{transition:none!important}   /* the box follows the drops frame by frame */
+/* the three come out as one pill (no gaps, inner corners square), then split into three rounds; closing runs it backwards */
+.top .nav #langBtn{--tb-x:calc((var(--pill-h) + var(--nav-gap,4px)) * 2);--tb-m:calc(var(--nav-gap,4px) * 2)}
+.top .nav #themeBtn{--tb-x:calc(var(--pill-h) + var(--nav-gap,4px));--tb-m:var(--nav-gap,4px)}
+.top{--tb-r:calc(var(--pill-h) / 2)}
+.top.tools-open .nav #langBtn{animation:tools-l .6s cubic-bezier(.3,.6,.2,1) both}
+.top.tools-open .nav #themeBtn{animation:tools-t .6s cubic-bezier(.3,.6,.2,1) both}
+.top.tools-open .nav #toolsBtn{animation:tools-p .6s cubic-bezier(.3,.6,.2,1) both}
+.top.tools-closing .nav #langBtn{animation:tools-l .5s cubic-bezier(.3,.6,.2,1) reverse both}
+.top.tools-closing .nav #themeBtn{animation:tools-t .5s cubic-bezier(.3,.6,.2,1) reverse both}
+.top.tools-closing .nav #toolsBtn{animation:tools-p .5s cubic-bezier(.3,.6,.2,1) reverse both}
+@keyframes tools-l{0%,8%{border-radius:var(--tb-r)}0%{transform:translateX(var(--tb-x))}30%{border-radius:var(--tb-r) 0 0 var(--tb-r)}55%{transform:translateX(var(--tb-m));border-radius:var(--tb-r) 0 0 var(--tb-r)}100%{transform:none;border-radius:var(--tb-r)}}
+@keyframes tools-t{0%{transform:translateX(var(--tb-x));border-radius:var(--tb-r)}8%{border-radius:0 var(--tb-r) var(--tb-r) 0}30%{border-radius:0}55%{transform:translateX(var(--tb-m));border-radius:0}100%{transform:none;border-radius:var(--tb-r)}}
+@keyframes tools-p{0%{border-radius:var(--tb-r)}8%,55%{border-radius:0 var(--tb-r) var(--tb-r) 0}100%{border-radius:var(--tb-r)}}
 #toolsBtn{border:0;border-radius:50%;width:var(--pill-h);height:var(--pill-h);padding:0;display:inline-flex;align-items:center;justify-content:center;flex:none;background:var(--pill);color:var(--ink);cursor:pointer}
 @media (hover:hover){ #toolsBtn:hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))} }
 #toolsBtn svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
 #toolsBtn .tb-v{transition:transform .25s ease;transform-origin:center}
 .top.tools-open:not(.tools-closing) #toolsBtn .tb-v{transform:scaleY(0)}
 .ask-line{transition:opacity .25s ease, transform .25s ease, right .3s cubic-bezier(.2,.7,.2,1), visibility 0s linear 0s!important}
-@media (prefers-reduced-motion: reduce){ .tb-goo{display:none} .ask-line{transition:none!important} }
+@media (prefers-reduced-motion: reduce){ .top.tools-open .nav :is(#langBtn,#themeBtn,#toolsBtn), .top.tools-closing .nav :is(#langBtn,#themeBtn,#toolsBtn){animation:none} .ask-line{transition:none!important} }
 .top .top-in{justify-content:flex-end!important}
 
 .top:has(.sec-list.instant) .ask-line{transition:none}
@@ -2426,7 +2434,6 @@ html:not(.bn-off) .dock{display:none!important}
 </style>
 </head>
 <body>
-<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><filter id="tbGooF" x="-10%" y="-60%" width="120%" height="220%" color-interpolation-filters="sRGB"><feGaussianBlur id="tbGooB" in="SourceGraphic" stdDeviation="0"/><feColorMatrix values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 24 -11"/></filter></defs></svg>
 <header class="top">
   <div class="top-in">
     <div class="mark" translate="no">Goccio</div>
@@ -5809,7 +5816,7 @@ html:not(.bn-off) .dock{display:none!important}
     .sort((a, b) => pk(a.roaster) - pk(b.roaster)); };
   // ---------- shelves ----------
   let knownRoasters = [];   // every roaster we follow, for reading their names off a bag
-  let shelf = [], shelfF = "all", shelfR = "all", shelfAll = false, shelfV = "all", shelfO = "all", shelfRo = "", shelfN = 10;   // one list: every coffee
+  let shelf = [], shelfF = "all", shelfR = "all", shelfAll = false, shelfV = "all", shelfO = "all", shelfRo = "", shelfN = 5;   // one list: every coffee
   // Made for, picked by you (Everything until you do). Filter: roasted for filter or omni, single origins, and blends
   // only when the roaster says filter. Espresso & moka: espresso roasts, blends, coffees named espresso, medium and darker,
   // or listed for moka or espresso. A medium-roast single origin fits both.
@@ -6377,7 +6384,7 @@ html:not(.bn-off) .dock{display:none!important}
     list = shelfRo ? [...list].sort((a, b) => shelfDate(b).localeCompare(shelfDate(a))) : fy ? list : askRank ? [...list].sort((a, b) => (askRank.get(b) - askRank.get(a))
         || (askWant.dear ? (b._p100 ?? -1) - (a._p100 ?? -1) : askWant.cheap ? (a._p100 ?? 1e9) - (b._p100 ?? 1e9) : 0) || shelfDate(b).localeCompare(shelfDate(a)))
       : shelfT ? [...list].sort((a, b) => (b._p100 ?? -1) - (a._p100 ?? -1)) : shelfGV ? [...list].sort((a, b) => a._p100 - b._p100) : interleave(list);   // good value: cheapest first   // top lots: dearest first
-    if (!shelfAll) shelfN = 10;   // a new filter or search starts again from the ten newest
+    if (!shelfAll) shelfN = 5;   // a new filter or search starts again from the five newest
     shelfAll = true;
     let shown = list.slice(0, shelfN);
     // paid promotion: each promoted roaster's newest coffees that pass the filters, pinned first and labelled
@@ -6427,7 +6434,7 @@ html:not(.bn-off) .dock{display:none!important}
           return `<p class="muted" style="padding:16px 0;margin:0">${msg}</p>`; })();
     const left = list.length - Math.min(shelfN, list.length);
     $("shelfMore").hidden = false; $("shelfMore").removeAttribute("aria-hidden");
-    $("shelfMore").textContent = left > 0 ? `Load ${Math.min(10, left)} more (${list.length} in total)` : "Back to top";   // the end of the list: a way back up
+    $("shelfMore").textContent = left > 0 ? `Load ${Math.min(5, left)} more (${list.length} in total)` : "Back to top";   // the end of the list: a way back up
     $("shelfMore").dataset.top = left > 0 ? "" : "1";
     $("shelf").querySelectorAll("button[data-i]").forEach((b) => b.onclick = () => brewThis(shelf[+b.dataset.i]));
     $("shelf").querySelectorAll("a[data-ro]").forEach((b) => b.onclick = (e) => { e.preventDefault(); openRoaster(b.dataset.ro); });
@@ -6645,35 +6652,45 @@ html:not(.bn-off) .dock{display:none!important}
       gearOpen.gearB = gearOpen.gearG = gearOpen.water = false; renderGear(); renderWaterBody(); }, 2000 + n * 150);
     [["gearB", $("gearB")], ["gearG", $("gearG")], ["water", $("wBody").querySelector(".chips")]].forEach(([k, box]) => { if (box && gearOpen[k]) cdTail(box, 2000 + n * 150); }); };   // See all: the rest of the list, to add something
   // the first-visit setup: brewer, then grinder, each one tap (or Set later); then straight to a coffee
-  const SETUP_KEY = "v60.setup1", SU_B = ["v60", "aero", "chemex", "kalita", "press", "switch", "espresso", "moka"], SU_G = ["c40", "kultra", "c2", "encore", "ode2", "niche"];
-  let suStep = 0, suAll = false; try { if (!localStorage.getItem(SETUP_KEY)) suStep = -1; } catch (e) {}   // -1: not decided yet (renderGear decides)
-  const suDone = () => { try { localStorage.setItem(SETUP_KEY, "1"); } catch (e) {} };
+  const SU_B = ["v60", "aero", "chemex", "kalita", "press", "switch", "espresso", "moka"], SU_G = ["c40", "kultra", "c2", "encore", "ode2", "niche"];
+  // nothing in My equipment: the questions are its empty state, every visit. Brewers and grinders: tick as many as you own, then
+  // Next (or Set later); water: one tap. Steps: 1 brewers, 2 grinders, 4 water, 3 done; 0 = My equipment as usual
+  let suStep = -1, suAll = false; const suSel = new Set();
   function renderSetup() {
     const it = LANG === "it", box = $("setup"), q = $("suQ"), c = $("suC"), g = $("gear");
-    if (suStep === -1) suStep = !gear.brewers.length && !gear.grinders.length ? 1 : (suDone(), 0);
+    const bare = !gear.brewers.length && !gear.grinders.length && !(prefs.water || {}).kind;
+    if (suStep === -1 || (suStep === 0 && bare)) suStep = bare ? 1 : 0;
     box.hidden = !suStep; g.classList.toggle("setup-on", !!suStep); g.classList.toggle("su-fin", suStep === 3);   // steps: 1 brewer, 2 grinder, 4 water, 3 done
     if (!suStep) return;
-    const pills = (keys, all, more) => keys.map((k) => `<button type="button" class="chip" data-k="${k}">${esc(all[k].name)}</button>`).join("")
+    const multi = suStep === 1 || suStep === 2;
+    const pills = (keys, all, more) => keys.map((k) => `<button type="button" class="chip" data-k="${k}"${multi ? ` aria-pressed="${suSel.has(k)}"` : ""}>${esc(all[k].name)}</button>`).join("")
       + (more ? `<button type="button" class="chip gear-more" data-more="1" aria-label="${it ? "Tutti" : "See all"}"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>` : "")
-      + `<button type="button" class="chip su-skip" data-skip="1">${it ? "Più tardi" : "Set later"}</button>`;
-    if (suStep === 1) { const all = Object.fromEntries(Object.entries(BREWERS).filter(([k, B]) => k !== "cold" && !B.cup));
-      q.textContent = it ? "Con cosa prepari il caffè?" : "What do you brew with?"; c.innerHTML = pills(suAll ? Object.keys(all) : SU_B, all, !suAll); }
-    else if (suStep === 2) { q.textContent = it ? "E il macinino?" : "And your grinder?"; c.innerHTML = pills(suAll ? Object.keys(GRINDERS) : SU_G, GRINDERS, !suAll); }
+      + (multi && suSel.size ? `<button type="button" class="chip su-next" data-next="1">${it ? "Avanti" : "Next"}</button>` : `<button type="button" class="chip su-skip" data-skip="1">${it ? "Più tardi" : "Set later"}</button>`);
+    if (suStep === 1) { const all = Object.fromEntries(Object.entries(BREWERS).filter(([k, B]) => k !== "cold" && !B.cup)), keys = suAll ? Object.keys(all) : [...new Set([...SU_B, ...suSel])];
+      q.textContent = it ? "Con cosa prepari il caffè? Anche più di uno." : "What do you brew with? Pick as many as you have."; c.innerHTML = pills(keys, all, !suAll); }
+    else if (suStep === 2) { const keys = suAll ? Object.keys(GRINDERS) : [...new Set([...SU_G, ...suSel])];
+      q.textContent = it ? "E il macinino?" : "And your grinder?"; c.innerHTML = pills(keys, GRINDERS, !suAll); }
     else if (suStep === 4) { q.textContent = it ? "E l’acqua?" : "And your water?";
       c.innerHTML = pills(WATER.filter(([k]) => k !== "custom").map(([k]) => k), Object.fromEntries(WATER.map(([k, t]) => [k, { name: t }])), false); }
-    else { const b = gear.brewers[0], m = gear.grinders[0], wk = (prefs.water || {}).kind, wt = { soft: it ? "acqua dolce" : "soft water", hard: it ? "acqua dura" : "hard tap water" }[wk];
+    else { const b = gear.brewers, m = gear.grinders, wk = (prefs.water || {}).kind, wt = { soft: it ? "acqua dolce" : "soft water", hard: it ? "acqua dura" : "hard tap water" }[wk];
+      const parts = [...b.map((k) => BREWERS[k] && BREWERS[k].name), ...m.map((k) => GRINDERS[k] && GRINDERS[k].name), wt].filter(Boolean);
+      if (!parts.length) { suStep = 1; return renderSetup(); }   // all skipped: back to the first question
       q.textContent = it ? "Fatto." : "Set.";
-      c.innerHTML = `<p class="su-done">${it ? "Ogni ricetta ora è per " : "Every recipe is now for your "}${esc(BREWERS[b] ? BREWERS[b].name : "brewer")}${[m && GRINDERS[m] ? esc(GRINDERS[m].name) : "", wt || ""].filter(Boolean).map((x, i, a) => (i === a.length - 1 ? (it ? " e " : " and ") : ", ") + x).join("")}${it ? ". Scegli un caffè:" : ". Now pick a coffee:"}</p>`
+      c.innerHTML = `<p class="su-done">${it ? "Ogni ricetta ora è per " : "Every recipe is now for your "}${esc(parts.slice(0, -1).join(", ") + (parts.length > 1 ? (it ? " e " : " and ") : "") + parts[parts.length - 1])}${it ? ". Scegli un caffè:" : ". Now pick a coffee:"}</p>`
         + `<div class="chips"><button type="button" class="chip" id="suFind">${it ? "Trova un caffè" : "Find a coffee"}</button><button type="button" class="chip" id="suBag">${it ? "Ho un sacchetto" : "I have a bag"}</button></div>`;
       $("suFind").onclick = () => $("wmFind").click(); $("suBag").onclick = () => $("wmBag").click(); return; }
     c.querySelectorAll("button").forEach((x) => x.onclick = () => {
       if (x.dataset.more) { suAll = true; return renderSetup(); }
-      if (x.dataset.skip) { suDone(); suAll = false; if (suStep === 1) { suStep = 0; renderGear(); return; } suStep = suStep === 2 ? 4 : 3; renderGear(); return; }
-      const k = x.dataset.k; suAll = false;
-      if (suStep === 1) { if (!gear.brewers.includes(k)) gear.brewers.push(k); saveGear(); try { if (brewerOf(state) !== k) setBrewer(k); } catch (e) {} suStep = 2; }
-      else if (suStep === 2) { if (!gear.grinders.includes(k)) gear.grinders.push(k); prefs.mill = k; savePrefs(); $("millSel").value = k; saveGear(); try { render(); } catch (e) {} suStep = 4; }
-      else { prefs.water = { ...(prefs.water || {}), kind: k }; savePrefs(); try { render(); renderWaterBody(); } catch (e) {} suStep = 3; suDone(); }
-      renderGear(); });
+      if (x.dataset.skip || x.dataset.next) { const picked = [...suSel]; suSel.clear(); suAll = false;
+        if (suStep === 1) { picked.forEach((k) => { if (!gear.brewers.includes(k)) gear.brewers.push(k); });
+          if (picked.length) { saveGear(); try { if (brewerOf(state) !== picked[0]) setBrewer(picked[0]); } catch (e) {} } suStep = 2; }
+        else if (suStep === 2) { picked.forEach((k) => { if (!gear.grinders.includes(k)) gear.grinders.push(k); });
+          if (picked.length) { prefs.mill = picked[0]; savePrefs(); $("millSel").value = picked[0]; saveGear(); try { render(); } catch (e) {} } suStep = 4; }
+        else suStep = 3;
+        renderGear(); return; }
+      const k = x.dataset.k;
+      if (multi) { suSel.has(k) ? suSel.delete(k) : suSel.add(k); return renderSetup(); }
+      prefs.water = { ...(prefs.water || {}), kind: k }; savePrefs(); try { render(); renderWaterBody(); } catch (e) {} suStep = 3; renderGear(); });
   }
   function renderGear() {
     // once you've ticked something, the row shows only what you own and See all; an owned pill asks Remove? first, like a saved bag
@@ -7613,41 +7630,12 @@ html:not(.bn-off) .dock{display:none!important}
     let toolsT = 0;
     $("toolsBtn").onclick = () => { const t = document.querySelector(".top"), on = !t.classList.contains("tools-open") || t.classList.contains("tools-closing");
       clearTimeout(toolsT); $("toolsBtn").setAttribute("aria-expanded", String(on)); $("toolsBtn").setAttribute("aria-label", on ? "Hide language and appearance" : "Language and appearance");
-      if (on) { t.classList.remove("tools-closing"); t.classList.add("tools-open"); setTop(); toolsGoo(true, () => {}); return; }
+      if (on) { t.classList.remove("tools-closing"); t.classList.add("tools-open"); setTop(); return; }
       // closing: the two slide back behind the +, then the box grows back
       t.classList.add("tools-closing");
       { const b = $("toolsBtn").getBoundingClientRect(), gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--nav-gap")) || 4;
         document.documentElement.style.setProperty("--nav-w", (innerWidth - b.left + gap) + "px"); }   // the box grows with the pills going back, not after
-      toolsGoo(false, () => { t.classList.remove("tools-open", "tools-closing"); setTop(); }); };
-    // liquid: three blobs under the buttons, blurred and cut sharp again (an SVG filter), so where they're close they flow into one;
-    // they slide out of the +, the blur eases off at the end and they pull apart into three rounds. Closing runs it backwards.
-    let gooRaf = 0;
-    function toolsGoo(open, done) {
-      const t = document.querySelector(".top"), els = [$("langBtn"), $("themeBtn"), $("toolsBtn")], blur = document.getElementById("tbGooB");
-      cancelAnimationFrame(gooRaf); t.querySelectorAll(".tb-goo").forEach((x) => x.remove()); t.classList.remove("tools-anim");
-      const reset = () => els.forEach((e) => { e.style.transform = ""; e.style.opacity = ""; });
-      if (matchMedia("(prefers-reduced-motion: reduce)").matches || !blur) { reset(); return done(); }
-      reset(); const tr = t.getBoundingClientRect(), R = els.map((e) => { const r = e.getBoundingClientRect(); return { l: r.left - tr.left, t: r.top - tr.top, w: r.width, h: r.height }; });
-      const layer = document.createElement("div"); layer.className = "tb-goo"; layer.setAttribute("aria-hidden", "true");
-      const bl = R.map((r) => { const i = document.createElement("i"); Object.assign(i.style, { left: r.l + "px", top: r.t + "px", width: r.w + "px", height: r.h + "px" }); layer.appendChild(i); return i; });
-      t.insertBefore(layer, t.firstChild); t.classList.add("tools-anim");
-      const gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--nav-gap")) || 4;
-      // out as one pill (0 to 45%), then the split: they spread a touch past their places and settle back, each wobbling
-      // wide-and-flat then narrow-and-tall like a drop, while the blur eases off so the joins stretch thin and snap
-      const dur = open ? 900 : 650, t0 = performance.now(), off = [R[2].l - R[0].l, R[2].l - R[1].l, 0], mid = [2 * gap, gap, 0];
-      const out3 = (x) => 1 - Math.pow(1 - x, 3), sm = (a, b, x) => { const k = Math.min(1, Math.max(0, (x - a) / (b - a))); return k * k * (3 - 2 * k); };
-      const spring = (q) => 1 - Math.exp(-6 * q) * Math.cos(q * 3 * Math.PI);   // 0 to 1, past 1 and back: the spread and settle
-      const frame = (now) => { const k = Math.min(1, (now - t0) / dur), p = open ? k : 1 - k, S = .45, q = Math.max(0, (p - S) / (1 - S));
-        const wob = p > S ? Math.sin(q * 2.5 * Math.PI) * Math.exp(-3.2 * q) * .16 : 0, sx = 1 + wob, sy = 1 - wob * .75;
-        [0, 1, 2].forEach((i) => { const x = p < S ? mid[i] + (off[i] - mid[i]) * (1 - out3(p / S)) : mid[i] * (1 - spring(q));
-          const tf = `translateX(${x}px) scale(${sx.toFixed(3)},${sy.toFixed(3)})`; els[i].style.transform = bl[i].style.transform = tf;
-          if (i < 2) els[i].style.opacity = String(sm(.12, .42, p)); });
-        blur.setAttribute("stdDeviation", (p < S ? 3.5 : 3.5 * (1 - sm(0, .75, q))).toFixed(2));
-        const xl = p < S ? mid[0] + (off[0] - mid[0]) * (1 - out3(p / S)) : mid[0] * (1 - spring(q));
-        document.documentElement.style.setProperty("--nav-w", (innerWidth - (tr.left + R[0].l + xl) + gap) + "px");   // the box ends a gap before the leftmost
-        if (k < 1) { gooRaf = requestAnimationFrame(frame); return; }
-        layer.remove(); t.classList.remove("tools-anim"); reset(); blur.setAttribute("stdDeviation", "0"); done(); };
-      gooRaf = requestAnimationFrame(frame); }
+      toolsT = setTimeout(() => { t.classList.remove("tools-open", "tools-closing"); setTop(); }, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 500); };
     if ("ResizeObserver" in window) new ResizeObserver(setTop).observe(document.querySelector(".top"));
     setTop(); addEventListener("resize", setTop);
     const tools = document.querySelector(".shelf-tools");
@@ -7672,7 +7660,7 @@ html:not(.bn-off) .dock{display:none!important}
     window.checkShelfWrap = checkWrap;
     checkWrap(); addEventListener("resize", checkWrap); if (document.fonts && document.fonts.ready) document.fonts.ready.then(checkWrap);
     addEventListener("scroll", syncShelfBar, { passive: true }); }
-  const loadMore = () => { shelfN += 10; renderShelf(); };
+  const loadMore = () => { shelfN += 5; renderShelf(); };
   $("shelfMore").onclick = () => $("shelfMore").dataset.top ? jumpTo($("shelves")) : loadMore();
   const cfSet = (v) => { cfLift = true; try { localStorage.setItem(CF_KEY, v); } catch (e) {} shelfAll = false; renderShelfO(); renderShelf(); cfNudge(); };
   // after 2 pm, a caffeinated coffee in the recipe: one gentle line, a way to the decafs, and a way past it (for the night, or for good)
