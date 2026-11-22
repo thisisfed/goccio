@@ -958,21 +958,42 @@ def microdata_product(page):
 SPEC_LABELS = r"Country|Origin|Region|Varietals?|Variet(?:y|ies)|Process(?:ing)?|Altitude|Producers?|Farm|Tasting notes|Notes"
 
 
+def own_heading(page):
+    """(match, text) of the coffee's own <h1>: not a cart or menu button ("Close"), and the one the page title repeats when
+    there are several (Conscious: three h1s, "Close", the coffee, "Overview", under the title "Shop | Arcangel")."""
+    hs = [(m, strip_html(m.group(1)).strip()) for m in re.finditer(r"(?is)<h1[^>]*>(.*?)</h1>", page)]
+    hs = [(m, t) for m, t in hs if t and not UI_WORD.match(t)]
+    dt = re.search(r"(?is)<title[^>]*>(.*?)</title>", page)
+    dt = strip_html(dt.group(1)).lower() if dt else ""
+    return next(((m, t) for m, t in hs if t.lower() in dt), hs[0] if hs else (None, ""))
+
+
+def price_after(tail):
+    """The first real price printed after a heading: never a zero (an empty cart's "$0.00") and never a delivery line."""
+    text = re.sub(r"\s+", " ", strip_html(re.sub(r"(?is)<(script|style|noscript|svg|template)[^>]*>.*?</\1>", " ", tail)))[:1500]
+    for m in re.finditer(r"([£€$])\s?(\d{1,4}(?:[.,]\d{2})?)", text):
+        if float(m.group(2).replace(",", ".")) > 0 and not re.search(r"(?:over|above|orders?|shipping|delivery|spend)\W{0,3}$", text[max(0, m.start() - 24):m.start()], re.I):
+            return m
+    return None
+
+
 def spec_grid_product(page):
     """Next.js shops that render the product as plain HTML with a spec grid and no product data (Newground):
     <h1>Name</h1>, "One Time Purchase £11.00", then label/value pairs like Country / Colombia, Process / Washed."""
-    h1 = re.search(r"<h1[^>]*>(.*?)</h1>", page, re.S | re.I)
+    h1, name = own_heading(page)
     specs = re.findall(r">\s*(" + SPEC_LABELS + r")\s*</div>\s*<div[^>]*>([^<]{1,120})</div>", page, re.I)
     if not h1 or not specs:
         return []
-    price = re.search(r"(?:buyingOptPrice|[Pp]rice)[^>]*>\s*([£€$])\s?(\d+(?:[.,]\d{2})?)", page)
+    # the price printed after the coffee's heading; failing that, the first priced element on the page that isn't a zero
+    price = price_after(page[h1.end():]) or next((m for m in re.finditer(r"(?:buyingOptPrice|[Pp]rice)[^>]*>\s*([£€$])\s?(\d+(?:[.,]\d{2})?)", page)
+                                                  if float(m.group(2).replace(",", ".")) > 0), None)
     cur = {"£": "GBP", "€": "EUR", "$": "USD"}.get(price.group(1)) if price else ""
     body = "\n".join(f"{k}: {html.unescape(v).strip()}" for k, v in specs)
     m = re.search(r'<meta[^>]+name=["\']description["\'][^>]+content=["\']([^"\']+)', page, re.I)
     if m:
         body += "\n" + html.unescape(m.group(1))
     sold = re.search(r">\s*(?:sold out|out of stock)\s*<", page, re.I) and not re.search(r"add to (?:bag|basket|cart)", page, re.I)
-    return [{"@type": "Product", "name": strip_html(h1.group(1)).strip(), "description": body,
+    return [{"@type": "Product", "name": name, "description": body,
              "offers": {"price": price.group(2).replace(",", ".") if price else "", "priceCurrency": cur, "availability": "OutOfStock" if sold else "InStock"}}]
 
 
@@ -1068,11 +1089,7 @@ def plain_product(page, url):
     body = re.sub(r"(?is)<(header|nav|footer)[^>]*>.*?</\1>", " ", body)
     # the coffee's own heading: not a cart or menu button ("Close"), and the one the page title repeats when there are several
     # (Conscious: three h1s, "Close", the coffee, "Overview", under the title "Shop | Arcangel")
-    h1s = [(m, strip_html(m.group(1)).strip()) for m in re.finditer(r"(?is)<h1[^>]*>(.*?)</h1>", body)]
-    h1s = [(m, t) for m, t in h1s if t and not UI_WORD.match(t)]
-    dt = re.search(r"(?is)<title[^>]*>(.*?)</title>", page)
-    dt = strip_html(dt.group(1)).lower() if dt else ""
-    h1, title = next(((m, t) for m, t in h1s if t.lower() in dt), h1s[0] if h1s else (None, ""))
+    h1, title = own_heading(body)
     if not title:
         m = re.search(r'<meta[^>]+property=["\']og:title["\'][^>]+content=["\']([^"\']+)', page, re.I)
         title = html.unescape(m.group(1)).strip() if m else ""
