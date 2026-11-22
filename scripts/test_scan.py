@@ -147,6 +147,11 @@ CASES = [
      lambda: scan.name_from_url("/ [ ]", "https://xyzroastery.example/products/el-salvador-familia-diaz-la-mina") == "El Salvador Familia Diaz La Mina"
        and scan.name_from_url("ペルー / ブエナ・ビスタ", "https://xyzroastery.example/products/peru-buena-vista-geisha-2026") == "Peru Buena Vista Geisha"
        and scan.name_from_url("60/40", "https://xyzroastery.example/products/60-40") == "60/40" and scan.name_from_url("Danche", "https://xyzroastery.example/products/x") == "Danche"),
+    ("Doubleshot: product data that gives the shop's front page as its own link takes the page's link; a real product link is kept",
+     lambda: scan.ld_to_item({"name": "Farm", "url": "https://www.xyzroastery.example"}, "https://xyzroastery.example/produkt/farm", "")["url"] == "https://xyzroastery.example/produkt/farm"
+       and scan.ld_to_item({"name": "Farm", "url": "https://xyzroastery.example/p/farm-2"}, "https://xyzroastery.example/produkt/farm", "")["url"] == "https://xyzroastery.example/p/farm-2"
+       and scan.ld_to_item({"name": "Farm"}, "https://xyzroastery.example/produkt/farm", "")["url"] == "https://xyzroastery.example/produkt/farm"
+       and scan.EXCLUDE.search("MHW-3BOMBER Magnetic Dosing Ring 58mm Black") is not None),
     ("Kaffa's own coffees still count", lambda: not any(scan.EXCLUDE.search(x) for x in ["Kaffebønner Kenya Kagere", "Kaffebønner Honduras El Guaco", "Kaffebønner Klassisk Julekaffe fra", "Switch Up Charity Coffee"])),
     ("Coffee sacks, a milk frother, a pallet and a chocolate bar are not coffee", lambda: all(scan.EXCLUDE.search(t) for t in
         ["Jute Coffee Sacks", "Alessi Mousseur à lait Pulcina", "Halvpalle med kaffe", "Malmö Chokladfabrik x Gringo – Kaffekross 55% chokladkaka", "SCA Introduction to coffee", "30 ks", "Čaj Yunnan Green Superior", "Brazil Natural - Greens"])),

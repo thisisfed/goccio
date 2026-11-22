@@ -110,7 +110,7 @@ EXCLUDE = re.compile(r"subscri|abonnement|abbonamento|\babo\b|suscripci|assinatu
                      r"\btasse\b|tazza|dip ?style|in-store|xpods?|xbloom|セット|飲み比べ|ドリップバッグ|latte art|\bpen\b|\btool\b|accessor|machine|maker|moccamaster|ticket|party|event|festival|origami|glass|server|carafe|porcelain|ceramic|brewer|filter holder|gift|voucher|capsule|\bpods?\b|nespresso|(?<!\dg )(?<!\d g )coffee bags?|drip bags?|brew bags?|immersion bags?|caf[ée] de poche|"
                      r"h[aå]ndbrygg|presskanne|julepakke|pakken\b|med pegasus|\bswitch\s[–-]|\bnewby\b|steep|equipment|grinder|\bmug\b|kettle|dripper|filter papers?|papers\b|\bcups?\b(?! of excellence)|"
                      r"sampler|tasting pack|taster|bundle|merch|t-?shirt|hoodie|tote|cap\b|"
-                     r"cold brew|concentrate|instant|\btea\b|chocolate bar|chocolate\b|\bchocolat\b|tablettes?\b|tampers?\b|stirring stick|\bwdt\b|cascara|"
+                     r"cold brew|concentrate|instant|\btea\b|chocolate bar|chocolate\b|\bchocolat\b|tablettes?\b|tampers?\b|stirring stick|\bwdt\b|dosing (?:ring|cup|funnel)|cascara|"
                      r"workshop|course|\bclass(?:es)?\b|masterclass|training|advent|box\b|\bkit\b|scale\b|aeropress\b(?! recipe)|"
                      r"green (?:beans?|coffee)|råkaffe|rohkaffee|unroasted|\bduo\b|\btrio\b|\bpack\b|\bset\b|selection|collection|wholesale|"
                      r"\b\d+(?:[.,]\d+)?\s?kg\b|\btin\b|longjing|sencha|oolong|rooibos|darjeeling|\bassam\b|earl grey|bai hao|jasmine (?:green|tea|pearl)|"
@@ -806,6 +806,14 @@ def ld_products(html_text):
     return out
 
 
+def own_url(stated, page_url):
+    """The link a page's product data gives for itself, unless that is just the shop's front page (Doubleshot's data says
+    "https://www.doubleshot.cz" on every product): then the page being read is the product's link."""
+    if isinstance(stated, str) and urllib.parse.urlparse(stated).path.strip("/"):
+        return stated
+    return page_url or (stated if isinstance(stated, str) else "")
+
+
 def ld_to_item(p, url, lastmod):
     offers = p.get("offers") or []
     if isinstance(offers, dict):
@@ -843,7 +851,7 @@ def ld_to_item(p, url, lastmod):
     desc = p.get("description") or ""
     return {"title": html.unescape(str(p.get("name") or "")).strip(), "type": str(cat), "tags": [],
             "body": strip_html(str(desc)), "variants": "", "available": avail,
-            "price": min(prices) if prices else None, "currency": ccy, "url": p.get("url") or url,
+            "price": min(prices) if prices else None, "currency": ccy, "url": own_url(p.get("url"), url),
             "published": "", "lastmod": lastmod, "brand": brand}
 
 
