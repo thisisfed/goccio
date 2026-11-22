@@ -2437,9 +2437,12 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
   box-shadow:none!important;clip-path:none!important;background:var(--bg)!important;border-bottom:1px solid var(--line);overscroll-behavior:contain}
 /* Recent: one line, the last three searches, a long one cut short */
 .ask-sug .sug-rec .sug-xs{flex-wrap:nowrap;overflow:hidden}
-.ask-sug .sug-rec .chip.sug-clear{flex:none;width:var(--pill-h);min-width:var(--pill-h);height:var(--pill-h);padding:0;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:var(--muted)}
-.ask-sug .sug-rec .chip.sug-clear svg{width:10px;height:10px}
-.ask-sug .sug-rec .chip:not(.sug-clear){min-width:0;max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto}
+.ask-sug .sug-rec .chip{min-width:0;max-width:60%;overflow:hidden;flex:0 1 auto;display:inline-flex;align-items:center;gap:2px;padding-right:2px}
+.ask-sug .sug-rec .sug-t{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* each recent search has its own small x: tap it and that one is forgotten */
+.ask-sug .sug-rec .sug-x{flex:none;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;color:var(--muted);border-radius:50%;position:relative}
+.ask-sug .sug-rec .sug-x::before{content:"";position:absolute;inset:-8px -4px}
+.ask-sug .sug-rec .sug-x svg{width:9px;height:9px}
 /* typing in the search on a phone: the bottom bar and the brew bar step aside (the keyboard needs the room) */
 @media (max-width:760px){ html:has(#askIn:focus) .botnav{transform:translateY(100%)!important;visibility:hidden} html:has(#askIn:focus) .dock{display:none!important} }
 /* every pill keeps its look but takes a tap 44 px tall (the size Apple and Google ask for): an invisible area above and below it */
@@ -6806,12 +6809,7 @@ html:not(.bn-off) .dock{display:none!important}
     if (c.text && !c.roaster) { state.text = c.text; state.bag = null; state.roastPhoto = null; $("coffeeIn").value = c.text; saveState(); renderAllOpts(); render(); }
     else brewThis(c, false);
     const miss = (engine(state, { noPrefs: true }).c || {}).missing || [];
-    if (miss.length) {   // something only you can answer: land on that question in What's brewing, not on the recipe
-      const row = ($("lab-" + (miss.includes("roast") ? "roast" : "process")) || {}).parentNode;
-      if (row) { row.classList.add("ask"); jumpTo(row); } else jumpTo($("coffee"));
-      return;
-    }
-    build();
+    build();   // always straight to the recipe (a missing roast or process plays it safe, and Bag details is just above)
   };
 
   // the recipe's own coffee (typed or from the list)
@@ -7664,7 +7662,7 @@ html:not(.bn-off) .dock{display:none!important}
         : `<span class="sug-fy-t">${it ? "Salva 3 caffè o registra 3 preparazioni e scelgo io." : "Save 3 coffees or log 3 brews and I’ll pick for you."}</span>`}</span></div>`; };
     const draw = () => { const r = recent().slice(0, 3);
       box.innerHTML = fyRow() + (r.length ? [[T("Recent"), r, true]] : []).concat(SUG.map(([h, xs]) => [T(h), xs.map(T)])).map(([h, xs]) =>
-        `<div class="sug-row${h === T("Recent") ? " sug-rec" : ""}"><span class="sug-h">${esc(h)}</span><span class="sug-xs">${xs.map((x) => `<button type="button" class="chip" data-q="${esc(x)}">${esc(x)}</button>`).join("")}${h === T("Recent") ? `<button type="button" class="chip sug-clear" data-clear="1" aria-label="${LANG === "it" ? "Cancella le ricerche recenti" : "Clear recent searches"}"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 3l6 6M9 3l-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>` : ""}</span></div>`).join(""); };
+        `<div class="sug-row${h === T("Recent") ? " sug-rec" : ""}"><span class="sug-h">${esc(h)}</span><span class="sug-xs">${xs.map((x) => `<button type="button" class="chip" data-q="${esc(x)}"><span class="sug-t">${esc(x)}</span>${h === T("Recent") ? `<span class="sug-x" role="button" data-forget="${esc(x)}" aria-label="${LANG === "it" ? "Dimentica questa ricerca" : "Forget this search"}"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 3l6 6M9 3l-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>` : ""}</button>`).join("")}</span></div>`).join(""); };
     // open: spans the whole width (measured from the box), fades out at its foot, and the page behind it holds still so the
     // search box stays where it is; the suggestions scroll on their own if they're taller than what's left above the keyboard
     const fit = () => { const r = a.closest(".ask-box").getBoundingClientRect(), vv = window.visualViewport, H = vv ? vv.height : innerHeight;
@@ -7689,7 +7687,8 @@ html:not(.bn-off) .dock{display:none!important}
       if (e.target.closest("[data-fy]")) {   // For you: the list ranked by what you like, the search box says so; type anything to leave it
         const sq = $("shelfQ"); a.value = LANG === "it" ? "Per te" : "For you"; a.dataset.fy = a.value; shut(); a.blur(); sq.value = ""; $("shelfQx").hidden = true;
         shelfY = true; fyHold = null; shelfAll = false; renderShelf(); jumpTo($("shelves")); return; }
-      if (e.target.closest("[data-clear]")) { try { localStorage.removeItem("v60.askRecent"); } catch (err) {} draw(); fit(); a.focus(); return; }   // the x: recent searches forgotten
+      { const fx = e.target.closest("[data-forget]"); if (fx) { e.preventDefault(); e.stopPropagation();   // the x in a recent pill: that search forgotten
+          try { localStorage.setItem("v60.askRecent", JSON.stringify(recent().filter((x) => x !== fx.dataset.forget))); } catch (err) {} draw(); fit(); a.focus(); return; } }
       const b = e.target.closest("[data-q]"); if (!b) return; a.value = b.dataset.q; shut(); $("askForm").requestSubmit(); });
     $("askForm").addEventListener("submit", () => { shut(); const t = a.value.trim(); if (!t) return;
       try { localStorage.setItem("v60.askRecent", JSON.stringify([t, ...recent().filter((x) => x.toLowerCase() !== t.toLowerCase())].slice(0, 6))); } catch (e) {} });
