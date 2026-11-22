@@ -2187,19 +2187,26 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after, #adjOpts[ope
 .top:not(.tools-open) .nav #langBtn, .top:not(.tools-open) .nav #themeBtn{display:none!important}
 /* both come out from behind the + (it stays on top) and go back behind it when closed */
 .top .nav #toolsBtn{position:relative;z-index:2}
-.top .nav #langBtn{--tb-x:calc((var(--pill-h) + var(--nav-gap,4px)) * 2)}
-.top .nav #themeBtn{--tb-x:calc(var(--pill-h) + var(--nav-gap,4px))}
-.top.tools-open .nav #langBtn, .top.tools-open .nav #themeBtn{animation:tools-in .3s cubic-bezier(.2,.7,.2,1) both}
-.top.tools-closing .nav #langBtn, .top.tools-closing .nav #themeBtn{animation:tools-out .3s cubic-bezier(.2,.7,.2,1) both}
-@keyframes tools-in{from{transform:translateX(var(--tb-x))}to{transform:none}}
-@keyframes tools-out{from{transform:none}to{transform:translateX(var(--tb-x))}}
+/* the three come out as one pill (no gaps, inner corners square), then split into three rounds; closing runs it backwards */
+.top .nav #langBtn{--tb-x:calc((var(--pill-h) + var(--nav-gap,4px)) * 2);--tb-m:calc(var(--nav-gap,4px) * 2)}
+.top .nav #themeBtn{--tb-x:calc(var(--pill-h) + var(--nav-gap,4px));--tb-m:var(--nav-gap,4px)}
+.top{--tb-r:calc(var(--pill-h) / 2)}
+.top.tools-open .nav #langBtn{animation:tools-l .6s cubic-bezier(.3,.6,.2,1) both}
+.top.tools-open .nav #themeBtn{animation:tools-t .6s cubic-bezier(.3,.6,.2,1) both}
+.top.tools-open .nav #toolsBtn{animation:tools-p .6s cubic-bezier(.3,.6,.2,1) both}
+.top.tools-closing .nav #langBtn{animation:tools-l .5s cubic-bezier(.3,.6,.2,1) reverse both}
+.top.tools-closing .nav #themeBtn{animation:tools-t .5s cubic-bezier(.3,.6,.2,1) reverse both}
+.top.tools-closing .nav #toolsBtn{animation:tools-p .5s cubic-bezier(.3,.6,.2,1) reverse both}
+@keyframes tools-l{0%,8%{border-radius:var(--tb-r)}0%{transform:translateX(var(--tb-x))}30%{border-radius:var(--tb-r) 0 0 var(--tb-r)}55%{transform:translateX(var(--tb-m));border-radius:var(--tb-r) 0 0 var(--tb-r)}100%{transform:none;border-radius:var(--tb-r)}}
+@keyframes tools-t{0%{transform:translateX(var(--tb-x));border-radius:var(--tb-r)}8%{border-radius:0 var(--tb-r) var(--tb-r) 0}30%{border-radius:0}55%{transform:translateX(var(--tb-m));border-radius:0}100%{transform:none;border-radius:var(--tb-r)}}
+@keyframes tools-p{0%{border-radius:var(--tb-r)}8%,55%{border-radius:0 var(--tb-r) var(--tb-r) 0}100%{border-radius:var(--tb-r)}}
 #toolsBtn{border:0;border-radius:50%;width:var(--pill-h);height:var(--pill-h);padding:0;display:inline-flex;align-items:center;justify-content:center;flex:none;background:var(--pill);color:var(--ink);cursor:pointer}
-#toolsBtn:hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))}
+@media (hover:hover){ #toolsBtn:hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))} }
 #toolsBtn svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
 #toolsBtn .tb-v{transition:transform .25s ease;transform-origin:center}
 .top.tools-open:not(.tools-closing) #toolsBtn .tb-v{transform:scaleY(0)}
 .ask-line{transition:opacity .25s ease, transform .25s ease, right .3s cubic-bezier(.2,.7,.2,1), visibility 0s linear 0s!important}
-@media (prefers-reduced-motion: reduce){ .top.tools-open .nav #langBtn, .top.tools-open .nav #themeBtn, .top.tools-closing .nav #langBtn, .top.tools-closing .nav #themeBtn{animation:none} .ask-line{transition:none!important} }
+@media (prefers-reduced-motion: reduce){ .top.tools-open .nav :is(#langBtn,#themeBtn,#toolsBtn), .top.tools-closing .nav :is(#langBtn,#themeBtn,#toolsBtn){animation:none} .ask-line{transition:none!important} }
 .top .top-in{justify-content:flex-end!important}
 
 .top:has(.sec-list.instant) .ask-line{transition:none}
@@ -2324,7 +2331,9 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
 .litext, .litext *, .outro-end, .outro-end *, .scene, .scene *, .hero h1, .spec b, .bv-big, .bv-big span, .item .name, .r-title h2, .col .big { letter-spacing: -.01em !important; }
 .bv-big small, .spec b small { letter-spacing: 0 !important; }
 /* the language and Light / Dark buttons, and Freezer in My bags: circles */
-#langBtn, #themeBtn, .bag-fz{border-radius:50%!important;width:var(--pill-h)!important;min-width:var(--pill-h)!important;max-width:var(--pill-h)!important;height:var(--pill-h)!important;padding:0!important;display:inline-flex!important;align-items:center;justify-content:center;flex:none}
+.bag-fz{border-radius:50%!important}
+#langBtn, #themeBtn{border-radius:50%}
+#langBtn, #themeBtn, .bag-fz{width:var(--pill-h)!important;min-width:var(--pill-h)!important;max-width:var(--pill-h)!important;height:var(--pill-h)!important;padding:0!important;display:inline-flex!important;align-items:center;justify-content:center;flex:none}
 #bvClose{width:var(--pill-h)!important;height:var(--pill-h)!important;min-width:0!important;padding:0!important;border-radius:50%!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:none!important}   /* the close button a circle */
 .zr-opt .step button { width: 28px !important; min-width: 28px !important; height: var(--pill-h) !important; padding: 0 !important; }
 .zr-opt #zVal { min-width: 24px; padding: 0 2px; text-align: center; font-size: var(--fs-s); }
@@ -7558,7 +7567,7 @@ html:not(.bn-off) .dock{display:none!important}
       t.classList.add("tools-closing");
       { const b = $("toolsBtn").getBoundingClientRect(), gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--nav-gap")) || 4;
         document.documentElement.style.setProperty("--nav-w", (innerWidth - b.left + gap) + "px"); }   // the box grows with the pills going back, not after
-      toolsT = setTimeout(() => { t.classList.remove("tools-open", "tools-closing"); setTop(); }, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 300); };
+      toolsT = setTimeout(() => { t.classList.remove("tools-open", "tools-closing"); setTop(); }, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 500); };
     if ("ResizeObserver" in window) new ResizeObserver(setTop).observe(document.querySelector(".top"));
     setTop(); addEventListener("resize", setTop);
     const tools = document.querySelector(".shelf-tools");
