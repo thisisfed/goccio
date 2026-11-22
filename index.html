@@ -2193,22 +2193,33 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after, :is(#adjOpts
 .top .nav #langBtn{--tb-x:calc((var(--pill-h) + var(--nav-gap,4px)) * 2);--tb-m:calc(var(--nav-gap,4px) * 2)}
 .top .nav #themeBtn{--tb-x:calc(var(--pill-h) + var(--nav-gap,4px));--tb-m:var(--nav-gap,4px)}
 .top{--tb-r:calc(var(--pill-h) / 2)}
-.top.tools-open .nav #langBtn{animation:tools-l .6s cubic-bezier(.3,.6,.2,1) both}
-.top.tools-open .nav #themeBtn{animation:tools-t .6s cubic-bezier(.3,.6,.2,1) both}
-.top.tools-open .nav #toolsBtn{animation:tools-p .6s cubic-bezier(.3,.6,.2,1) both}
-.top.tools-closing .nav #langBtn{animation:tools-l .5s cubic-bezier(.3,.6,.2,1) reverse both}
-.top.tools-closing .nav #themeBtn{animation:tools-t .5s cubic-bezier(.3,.6,.2,1) reverse both}
-.top.tools-closing .nav #toolsBtn{animation:tools-p .5s cubic-bezier(.3,.6,.2,1) reverse both}
-@keyframes tools-l{0%,8%{border-radius:var(--tb-r)}0%{transform:translateX(var(--tb-x))}30%{border-radius:var(--tb-r) 0 0 var(--tb-r)}55%{transform:translateX(var(--tb-m));border-radius:var(--tb-r) 0 0 var(--tb-r)}100%{transform:none;border-radius:var(--tb-r)}}
-@keyframes tools-t{0%{transform:translateX(var(--tb-x));border-radius:var(--tb-r)}8%{border-radius:0 var(--tb-r) var(--tb-r) 0}30%{border-radius:0}55%{transform:translateX(var(--tb-m));border-radius:0}100%{transform:none;border-radius:var(--tb-r)}}
-@keyframes tools-p{0%{border-radius:var(--tb-r)}8%,55%{border-radius:0 var(--tb-r) var(--tb-r) 0}100%{border-radius:var(--tb-r)}}
+.top.tools-open .nav #langBtn{animation:tools-l .85s linear both}
+.top.tools-open .nav #themeBtn{animation:tools-t .85s linear both}
+.top.tools-open .nav #toolsBtn{animation:tools-p .85s linear both}
+.top.tools-closing .nav #langBtn{animation:tools-l .6s linear reverse both}
+.top.tools-closing .nav #themeBtn{animation:tools-t .6s linear reverse both}
+.top.tools-closing .nav #toolsBtn{animation:tools-p .6s linear reverse both}
+/* out as one pill (to 40%), then it parts like water: the joins thin to a neck and snap (62%), and each drop wobbles, wide then
+   tall, until it sits round. Closing runs it backwards */
+@keyframes tools-l{0%{transform:translateX(var(--tb-x));border-radius:var(--tb-r);scale:1;animation-timing-function:cubic-bezier(.2,.7,.2,1)}8%{border-radius:var(--tb-r) 0 0 var(--tb-r)}
+  40%{transform:translateX(var(--tb-m));border-radius:var(--tb-r) 0 0 var(--tb-r);scale:1;animation-timing-function:ease-in}
+  62%{transform:none;border-radius:var(--tb-r);scale:1}72%{scale:1.13 .9}83%{scale:.95 1.05}92%{scale:1.03 .98}100%{transform:none;border-radius:var(--tb-r);scale:1}}
+@keyframes tools-t{0%{transform:translateX(var(--tb-x));border-radius:var(--tb-r);scale:1;animation-timing-function:cubic-bezier(.2,.7,.2,1)}8%{border-radius:0}
+  40%{transform:translateX(var(--tb-m));border-radius:0;scale:1;animation-timing-function:ease-in}
+  62%{transform:none;border-radius:var(--tb-r);scale:1}74%{scale:1.13 .9}85%{scale:.95 1.05}94%{scale:1.03 .98}100%{transform:none;border-radius:var(--tb-r);scale:1}}
+@keyframes tools-p{0%{border-radius:var(--tb-r);scale:1}8%,40%{border-radius:0 var(--tb-r) var(--tb-r) 0;scale:1}62%{border-radius:var(--tb-r);scale:1}76%{scale:1.13 .9}87%{scale:.95 1.05}96%{scale:1.03 .98}100%{border-radius:var(--tb-r);scale:1}}
+/* the neck between two drops: as tall as the pills, thinning to a thread, gone at the snap */
+.top:is(.tools-open,.tools-closing) .nav :is(#langBtn,#themeBtn)::after{content:"";position:absolute;left:calc(100% - 1px);top:0;width:calc(var(--nav-gap,4px) + 2px);height:100%;background:var(--pill);pointer-events:none;transform:scaleY(0)}
+.top.tools-open .nav :is(#langBtn,#themeBtn)::after{animation:tools-neck .85s linear both}
+.top.tools-closing .nav :is(#langBtn,#themeBtn)::after{animation:tools-neck .6s linear reverse both}
+@keyframes tools-neck{0%,40%{transform:scaleY(1);border-radius:0}55%{transform:scaleY(.38);border-radius:40%/50%}61%{transform:scaleY(.1)}63%,100%{transform:scaleY(0)}}
 #toolsBtn{border:0;border-radius:50%;width:var(--pill-h);height:var(--pill-h);padding:0;display:inline-flex;align-items:center;justify-content:center;flex:none;background:var(--pill);color:var(--ink);cursor:pointer}
 @media (hover:hover){ #toolsBtn:hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))} }
 #toolsBtn svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
 #toolsBtn .tb-v{transition:transform .25s ease;transform-origin:center}
 .top.tools-open:not(.tools-closing) #toolsBtn .tb-v{transform:scaleY(0)}
 .ask-line{transition:opacity .25s ease, transform .25s ease, right .3s cubic-bezier(.2,.7,.2,1), visibility 0s linear 0s!important}
-@media (prefers-reduced-motion: reduce){ .top.tools-open .nav :is(#langBtn,#themeBtn,#toolsBtn), .top.tools-closing .nav :is(#langBtn,#themeBtn,#toolsBtn){animation:none} .ask-line{transition:none!important} }
+@media (prefers-reduced-motion: reduce){ .top.tools-open .nav :is(#langBtn,#themeBtn,#toolsBtn), .top.tools-closing .nav :is(#langBtn,#themeBtn,#toolsBtn), .top .nav :is(#langBtn,#themeBtn)::after{animation:none!important} .ask-line{transition:none!important} }
 .top .top-in{justify-content:flex-end!important}
 
 .top:has(.sec-list.instant) .ask-line{transition:none}
@@ -2393,6 +2404,9 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
 /* the last big number sits as far above the next rule as every other one: the body's row gap is taken back under the numbers */
 #specs{margin-bottom:-14px}
 #cfNudge{margin:26px 0 0}
+:where(.chip, .btn, .ro-pill, .hero-pill, .gear-dd, .gear-btn, .pill.bag-add, .shelf .item > .r > *, .botnav .chip, #toolsBtn, #langBtn, #themeBtn, .ask-go, .step button, .mill-btn, .bv-go, .bv-reset, .bv-x){transition:scale .35s cubic-bezier(.34,1.7,.5,1)}
+:is(.chip, .btn, .ro-pill, .hero-pill, .gear-dd, .gear-btn, .pill.bag-add, .shelf .item > .r > *, .botnav .chip, #toolsBtn, #langBtn, #themeBtn, .ask-go, .step button, .mill-btn, .bv-go, .bv-reset, .bv-x):active:not(:disabled){scale:.95 .9;transition:scale .07s ease-out}
+@media (prefers-reduced-motion: reduce){ :is(.chip, .btn, .ro-pill, .hero-pill, .gear-dd, .botnav .chip, #toolsBtn, #langBtn, #themeBtn):active{scale:none} }
 @media (max-width:760px){ .litext, .litext .outro-end{font-size:var(--fs-m)!important;line-height:1.15!important} }   /* the closing text: one step down the scale on phones */
 .spec .add-mill{order:9;margin-top:6px}
 .lede-need{margin:8px 0 0;font:500 var(--fs-s)/1.35 var(--sans);color:var(--muted)}
@@ -7671,7 +7685,7 @@ html:not(.bn-off) .dock{display:none!important}
       t.classList.add("tools-closing");
       { const b = $("toolsBtn").getBoundingClientRect(), gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--nav-gap")) || 4;
         document.documentElement.style.setProperty("--nav-w", (innerWidth - b.left + gap) + "px"); }   // the box grows with the pills going back, not after
-      toolsT = setTimeout(() => { t.classList.remove("tools-open", "tools-closing"); setTop(); }, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 500); };
+      toolsT = setTimeout(() => { t.classList.remove("tools-open", "tools-closing"); setTop(); }, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 600); };
     if ("ResizeObserver" in window) new ResizeObserver(setTop).observe(document.querySelector(".top"));
     setTop(); addEventListener("resize", setTop);
     const tools = document.querySelector(".shelf-tools");
@@ -7826,6 +7840,7 @@ html:not(.bn-off) .dock{display:none!important}
   { const disarm = () => document.querySelectorAll("[data-armed]").forEach((x) => { delete x.dataset.armed; x.classList.remove("armed"); if (x.dataset.was) { x.textContent = x.dataset.was; delete x.dataset.was; } });
     addEventListener("touchmove", disarm, { passive: true }); addEventListener("wheel", disarm, { passive: true });
     addEventListener("keydown", (e) => { if (/^(PageDown|PageUp|ArrowDown|ArrowUp|Home|End| )$/.test(e.key)) disarm(); }); }
+  document.addEventListener("touchstart", () => {}, { passive: true });   // iOS: lets :active (the pills' squish) show under a finger
   // ---------- wire up ----------
   $("go").onclick = () => { surprisePick = null; build(); };
   $("coffeeIn").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); build(); } });
