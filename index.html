@@ -6975,7 +6975,7 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
   // a coloured sticker with the coffee's details (white print on lime, teal, pink…) is often a small part of the photo: find the
   // biggest solid block of one strong colour, cut it out of the full photo, enlarge it, and turn it into dark print on white
   // (colour strength x brightness: the label comes out light, white or black print dark). Null when there's no such block
-  function panel(src, gamma = 1.4) {
+  function panel(src, gamma = 1.4, minPart = 0.025) {
     const w0 = src.naturalWidth || src.width, h0 = src.naturalHeight || src.height, W = 180, H = Math.max(1, Math.round(h0 * W / w0));
     const t = document.createElement("canvas"); t.width = W; t.height = H; const tx = t.getContext("2d", { willReadFrequently: true }); tx.drawImage(src, 0, 0, W, H);
     const d = tx.getImageData(0, 0, W, H).data, m = new Uint8Array(W * H);
@@ -6986,7 +6986,7 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
         if (x > 0 && m[q - 1] && !seen[q - 1]) { seen[q - 1] = 1; st.push(q - 1); } if (x < W - 1 && m[q + 1] && !seen[q + 1]) { seen[q + 1] = 1; st.push(q + 1); }
         if (y > 0 && m[q - W] && !seen[q - W]) { seen[q - W] = 1; st.push(q - W); } if (y < H - 1 && m[q + W] && !seen[q + W]) { seen[q + W] = 1; st.push(q + W); } }
       const bw = x1 - x0 + 1, bh = y1 - y0 + 1, fill = n / (bw * bh), part = bw * bh / (W * H);
-      if (part < 0.025 || part > 0.6 || fill < 0.62 || bw < 14 || bh < 14) continue;   // a sticker is a solid rectangle; leaves outside a window are not
+      if (part < minPart || part > 0.6 || fill < 0.62 || bw < 14 || bh < 14) continue;   // a sticker is a solid rectangle; leaves outside a window are not
       if (x0 === 0 || y0 === 0 || x1 === W - 1 || y1 === H - 1) continue;              // and it sits inside the photo, not cut by its edge
       if (!best || n * fill > best.sc) best = { sc: n * fill, x0, y0, bw, bh }; }
     if (!best) return null;
@@ -6998,7 +6998,39 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
     const ref = Math.max(20, sum / v.length * 0.9);
     for (let i = 0, j = 0; j < v.length; i += 4, j++) { const g = Math.round(255 * Math.pow(Math.min(1, v[j] / ref), gamma)); p[i] = p[i + 1] = p[i + 2] = g; }
     x.putImageData(im, 0, 0);
-    return { canvas: c, sx, sy, k, w0 };
+    return { canvas: c, sx, sy, k, w0, sw, sh };
+  }
+  // a white paper label on a coloured bag (the commonest bag there is): the biggest bright, colourless block that sits inside
+  // the photo with strong colour around it. Its artwork leaves a hole, so the block's outline is what counts. Cut out, enlarged
+  // and stretched to full contrast, the small print under the artwork becomes readable. Null when there's no such label
+  function whiteLabel(src) {
+    const w0 = src.naturalWidth || src.width, h0 = src.naturalHeight || src.height, W = 300, H = Math.max(1, Math.round(h0 * W / w0));
+    const t = document.createElement("canvas"); t.width = W; t.height = H; const tx = t.getContext("2d", { willReadFrequently: true }); tx.drawImage(src, 0, 0, W, H);
+    const d = tx.getImageData(0, 0, W, H).data, m = new Uint8Array(W * H), cm = new Uint8Array(W * H); let col = 0;
+    for (let i = 0, j = 0; j < m.length; i += 4, j++) { const mx = Math.max(d[i], d[i + 1], d[i + 2]), mn = Math.min(d[i], d[i + 1], d[i + 2]), s = mx ? (mx - mn) / mx : 0;
+      m[j] = mx > 165 && s < 0.16 ? 1 : 0; if (mx > 90 && s > 0.45) { col++; cm[j] = 1; } }
+    // the bag's colour on all four sides, just outside the block: a label stuck on the bag, not a white bag or a window
+    const ringed = (x0, y0, x1, y1) => { const g = 4, side = (xa, ya, xb, yb) => { let n = 0, t = 0; for (let y = Math.max(0, ya); y <= Math.min(H - 1, yb); y++) for (let x = Math.max(0, xa); x <= Math.min(W - 1, xb); x++) { t++; n += cm[y * W + x]; } return t ? n / t : 0; };
+      return [side(x0, y0 - g, x1, y0 - 2), side(x0, y1 + 2, x1, y1 + g), side(x0 - g, y0, x0 - 2, y1), side(x1 + 2, y0, x1 + g, y1)].every((f) => f >= 0.5); };
+    if (col / m.length < 0.15) return null;   // no coloured bag around it
+    let best = null; const seen = new Uint8Array(W * H), st = [];
+    for (let s0 = 0; s0 < m.length; s0++) { if (!m[s0] || seen[s0]) continue; let n = 0, x0 = W, x1 = 0, y0 = H, y1 = 0; st.push(s0); seen[s0] = 1;
+      while (st.length) { const q = st.pop(), x = q % W, y = (q - x) / W; n++; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+        if (x > 0 && m[q - 1] && !seen[q - 1]) { seen[q - 1] = 1; st.push(q - 1); } if (x < W - 1 && m[q + 1] && !seen[q + 1]) { seen[q + 1] = 1; st.push(q + 1); }
+        if (y > 0 && m[q - W] && !seen[q - W]) { seen[q - W] = 1; st.push(q - W); } if (y < H - 1 && m[q + W] && !seen[q + W]) { seen[q + W] = 1; st.push(q + W); } }
+      const bw = x1 - x0 + 1, bh = y1 - y0 + 1, fill = n / (bw * bh), part = bw * bh / (W * H);
+      if (part < 0.003 || part > 0.75 || fill < 0.28 || bw < 14 || bh < 14) continue;   // from a date sticker to a full label
+      if (x0 === 0 || y0 === 0 || x1 === W - 1 || y1 === H - 1) continue;
+      if (!ringed(x0, y0, x1, y1)) continue;
+      if (!best || n > best.n) best = { n, x0, y0, bw, bh }; }
+    if (!best) return null;
+    const f = w0 / W, sx = best.x0 * f, sy = best.y0 * f, sw = best.bw * f, sh = best.bh * f, k = Math.min(6, 2000 / sw), big = best.bw * best.bh / (W * H) >= 0.06;
+    const c = document.createElement("canvas"); c.width = Math.round(sw * k); c.height = Math.round(sh * k);
+    const x = c.getContext("2d", { willReadFrequently: true }); x.imageSmoothingQuality = "high"; x.drawImage(src, sx, sy, sw, sh, 0, 0, c.width, c.height);
+    const im = x.getImageData(0, 0, c.width, c.height), p = im.data;
+    for (let i = 0; i < p.length; i += 4) { const g = 0.299 * p[i] + 0.587 * p[i + 1] + 0.114 * p[i + 2], v = Math.max(0, Math.min(255, (g - 70) * 255 / 130)); p[i] = p[i + 1] = p[i + 2] = v; }   // paper to white, print to black
+    x.putImageData(im, 0, 0);
+    return { canvas: c, sx, sy, k, w0, sw, sh, big };
   }
   function quarter(c, dir, long = 1300) {   // a quarter turn (dir 1 clockwise, -1 anticlockwise), for words that run up or down the bag
     const k = Math.min(1, long / Math.max(c.width, c.height)), w = Math.round(c.width * k), h = Math.round(c.height * k), o = document.createElement("canvas");
@@ -7100,6 +7132,14 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
     try { const base = toCanvas(img); for (const gm of [1.4, 2.2]) { const pn = panel(img, gm); if (!pn) break; const pr = await timed(pn.canvas, 10000), q = base.width / pn.w0;
         if (pr) { const fix = (bb) => bb && ({ x0: (pn.sx + bb.x0 / pn.k) * q, x1: (pn.sx + bb.x1 / pn.k) * q, y0: (pn.sy + bb.y0 / pn.k) * q, y1: (pn.sy + bb.y1 / pn.k) * q });
           reads.push({ lines: (pr.lines || []).map((l) => ({ text: l.text, confidence: l.confidence, bbox: fix(l.bbox) })), words: (pr.words || []).map((w) => ({ text: w.text, confidence: w.confidence, bbox: fix(w.bbox) })) }); } } } catch (err) {}
+    // a white label on a coloured bag: read on its own, enlarged, and placed back the same way
+    try { const base = toCanvas(img), pn = whiteLabel(img); if (pn) { const pr = await timed(pn.canvas, 20000), q = base.width / pn.w0;
+        if (pr) { const fix = (bb) => bb && ({ x0: (pn.sx + bb.x0 / pn.k) * q, x1: (pn.sx + bb.x1 / pn.k) * q, y0: (pn.sy + bb.y0 / pn.k) * q, y1: (pn.sy + bb.y1 / pn.k) * q });
+          reads.push({ lines: (pr.lines || []).map((l) => ({ text: l.text, confidence: l.confidence, bbox: fix(l.bbox) })), words: (pr.words || []).map((w) => ({ text: w.text, confidence: w.confidence, bbox: fix(w.bbox) })), label: true });
+          // a full label read well: what's printed outside it in the photo (the next bag on the shelf, a price tag) is not this coffee
+          if (pn.big && (pr.lines || []).filter((l) => l.confidence >= 60 && /[a-z]{4}/i.test(l.text)).length >= 6) { const X0 = (pn.sx - pn.sw * 0.04) * q, X1 = (pn.sx + pn.sw * 1.04) * q, Y0 = (pn.sy - pn.sh * 0.04) * q, Y1 = (pn.sy + pn.sh * 1.04) * q;
+            const inside = (o) => !o.bbox || ((o.bbox.x0 + o.bbox.x1) / 2 >= X0 && (o.bbox.x0 + o.bbox.x1) / 2 <= X1 && (o.bbox.y0 + o.bbox.y1) / 2 >= Y0 && (o.bbox.y0 + o.bbox.y1) / 2 <= Y1);
+            reads = reads.map((d) => d.label ? d : { ...d, lines: (d.lines || []).filter(inside), words: (d.words || []).filter(inside) }); } } } } catch (err) {}
     // a weak read (few confident words) gets a third look at the untouched photo, for labels the clean-up didn't suit
     if (reads.reduce((n, d) => n + strongN(d), 0) < 12) { const c = await timed(toCanvas(img), 15000); if (c) reads.push(c); }
     // the roaster's name often runs up or down the bag (Climpson & Sons): read it turned both ways, small and quick
@@ -7136,7 +7176,7 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
       ["cofer", ["co ferment", "co fermented", "cofermented", "co fermentation", "coferment", "infused", "infusion", "thermal shock", "yeast", "koji", "inoculated", "fruit fermented", "barrel aged", "cofermentado"]],
       ["anaerobic", ["anaerobic", "anaerobe", "anaerob", "anaerobico", "anaerobie", "carbonic maceration", "double fermentation", "extended fermentation", "lactic", "anoxic"]],
       ["honey", ["honey", "miel", "pulped natural", "semi washed", "black honey", "red honey", "yellow honey", "white honey", "honig"]],
-      ["natural", ["natural", "naturals", "dry processed", "dry process", "sun dried", "sundried", "naturel", "natur", "naturale", "secado al sol", "natural process"]],
+      ["natural", ["natural", "naturals", "dry processed", "dry process", "sun dried", "sundried", "naturelle", "naturel", "natur", "naturale", "secado al sol", "natural process"]],
       ["washed", ["washed", "fully washed", "wet processed", "wet process", "lavado", "lave", "lavee", "gewaschen", "vaskede", "vasket", "tvattad", "lavato", "wet hulled"]] ],
     roast: [ ["vlight", ["very light", "ultra light", "extra light", "nordic", "sehr hell", "tres claire", "muy claro"]],
       ["mdark", ["medium dark", "full city", "mittel dunkel", "medio oscuro"]],
@@ -7184,12 +7224,12 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
     const names = [...knownRoasters, ...shelf.map((r) => r.roaster), ...ROASTERS.map(titleCase)];
     if (knownKeysCache && knownKeysCache.n === names.length) return knownKeysCache.list;
     const byK = new Map(); names.forEach((n) => { const k = roasterKey(n); if (k.length >= 3 && (!byK.has(k) || n.length > byK.get(k).length)) byK.set(k, n); });
-    const list = [...byK].map(([k, name]) => ({ k, name, geo: GEO_WORDS.has(k) || REGION_OF.some(([re]) => re.test(k)), everyday: EVERYDAY_ROASTER.test(k) || /^(method|proper|world|balance|grind|union|taste|craft|quality|pure|simply|smooth|rich|bold)$/.test(k),
+    const list = [...byK].map(([k, name]) => ({ k, name, geo: GEO_WORDS.has(k) || REGION_OF.some(([re]) => re.test(k)), everyday: EVERYDAY_ROASTER.test(k) || /^(method|process|proper|world|balance|grind|union|taste|craft|quality|pure|simply|smooth|rich|bold)$/.test(k),
       long: k.split(" ").filter((t) => t.length >= 5 && !GEO_WORDS.has(t) && !EVERYDAY_ROASTER.test(t)) }));   // words long and rare enough to trust read sideways
     knownKeysCache = { n: names.length, list }; return list;
   }
   const FLAVOUR = /\b(berr|straw|rasp|blue|black ?curr|currant|cherr|plum|peach|apricot|nectar|mango|lychee|passion|pineapple|citrus|lemon|lime|orange|grapefruit|mandarin|bergamot|apple|pear|grape|fig|date|raisin|jasmine|rose|floral|hibiscus|lavender|tea|earl|chocolate|cacao|cocoa|caramel|toffee|honey|molasses|sugar|vanilla|nut|almond|hazelnut|walnut|treacle|butterscotch|flower|spice|cinnamon|clove|cardamom|wine|rum|whisk|cream|milk|butter|syrup|tamarind|rhubarb|kiwi|melon|watermelon|cola|mint|ginger|stone fruit|tropical|myrtille|cassis|framboise|fraise|jazmin|albaricoque|johannisbeere|zitrus|solbaer|grapefrugt)/;
-  const NOTES_KEY = /^(?:tasting notes?|notes?|notas?(?: de cata)?|notes de degustation|geschmack|aromen|aroma|smaksnoter|smagsnoter|flavou?r(?: notes)?|cup(?: profile| notes)?|tastes?(?: like| of)?(?!\s*buds)|we taste|in the cup|profile)\b\s*[:\-–]?\s*/i;
+  const NOTES_KEY = /^(?:(?:[nm]?o[tlf]es )?de d[eé]gustation|tasting notes?|notes?|notas?(?: de cata)?|geschmack|aromen|aroma|smaksnoter|smagsnoter|flavou?r(?: notes)?|cup(?: profile| notes)?|tastes?(?: like| of)?(?!\s*buds)|we taste|in the cup|profile)\b\s*[:\-–]?\s*/i;
   const BOILER = /\b(whole ?bean|ground|net ?(wt|weight)?|\d+\s?(g|gr|kg|oz)\b|altitude|masl|m a s l|elevation|producer|harvest|importer|recyclable|compostable|roasted (in|on)|roast date|best before|bbe|www|http|instagram|arabica|meet the|storage|store (coffee|sealed|in)|airtight|grind|stovetop|cafetiere|cafetière|aeropress|french press|certified|b corp|corporation|since \d{4}|unit \d+|business park)\b|\d{1,2}[.\/-]\d{1,2}[.\/-]\d{2,4}|@|\.com/;
   /* Is this a coffee bag at all? A beer, wine or spirits label says so in its own words (beer, lager, brewery, 5.2% vol).
      One clear word is enough when nothing on the label speaks of coffee; two are needed when something does (a coffee
@@ -7259,8 +7299,15 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
     if (!notes) { const fl = L.map((l, i) => ({ l, i, k: (l.n.match(new RegExp(FLAVOUR.source, "g")) || []).length })).filter((x) => x.k >= 2 && x.l.n.split(" ").length <= 9).sort((a, b) => b.k - a.k || b.l.n.length - a.l.n.length || (b.l.conf || 0) - (a.l.conf || 0))[0];
       if (fl) { notes = { v: fl.l.text, c: cf(0.8, fl.l.conf), why: "a line of flavour words" }; used.add(fl.i); nIdx = fl.i; } }
     if (notes) { const parts = notes.v.split(/\s*,\s*/).filter(Boolean); notes.v = parts.filter((p, k) => !parts.some((q, j) => j !== k && norm(q) !== norm(p) && norm(q).startsWith(norm(p).slice(0, 5)) && q.length > p.length) && parts.findIndex((q) => norm(q) === norm(p)) === k).join(", "); }
-    if (notes) notes.v = notes.v.replace(/^[^A-Za-zÀ-ÿ]+/, "").replace(/\.\s+(?=[A-ZÀ-Ý])/g, ", ");   // "25 Caramel. Jasmine": a misread first word and full stops for commas
-    out.notes = notes ? { ...notes, v: notes.v.replace(/\s*[\/·•|-]\s*|\s{2,}/g, ", ").replace(/,\s*,/g, ",").replace(/^,|,$/g, "").trim() } : { v: null, why: "No tasting notes on this side" };
+    if (notes) notes.v = notes.v.replace(/\s+&\s+/g, ", ").replace(/(?:,\s*[\p{L}]{0,2})?[\s,]*$/u, "").replace(/^[^A-Za-zÀ-ÿ]+/, "").replace(/\.\s+(?=[A-ZÀ-Ý])/g, ", ");   // "25 Caramel. Jasmine": a misread first word and full stops for commas
+    out.notes = notes ? { ...notes, v: notes.v.replace(/\s*[\/·•|-]\s*|\s{2,}/g, ", ").replace(/,\s*,/g, ",").replace(/^,|,$/g, "").replace(/[\s,]+$/, "").trim() } : { v: null, why: "No tasting notes on this side" };
+    // a title set out as "Kenya - Gicherori AA [Washed]": the country, a dash, the coffee's own name, the process in brackets.
+    // The country may be in another language or a letter out (Éthiopie, "Kenyq"); the name is what follows it
+    let titleHit = null;
+    L.forEach((l, i) => { if (titleHit || l.conf < 55 || i === nIdx) return; const m = l.text.match(/^\s*([\p{L}]{4,}(?: [\p{L}]{3,})?)\s*[-–—.:]\s*([\p{L}\p{N}][^\[\(\]]{1,40}?)\s*(?:[\[\(].*)?$/u); if (!m) return;
+      const first = norm(m[1]), land = Object.entries(V.country).find(([, syn]) => syn.some((t) => t === first || (t.length >= 5 && first.length >= 5 && lev(t, first) <= 1)));
+      const nm = m[2].replace(/[\s\-–.,]+$/, ""); if (land && nm.length >= 2 && !Object.values(V.country).flat().includes(norm(nm))) titleHit = { land: land[0], name: nm, l, i }; });
+    const FR_HEAD = /^(producteur|producteyr|methode de|sechage|methode de sechage|variete|region|variete region|torrefie|orrefie|torrefig|notes de|otes de)\b/;
     const scan = (pick) => { let best = null; L.forEach((l, i) => { if ((used.has(i) && i === nIdx) || l.conf < 45) return; const r = pick(l, i); if (r && (!best || r.s > best.s)) best = { ...r, i, l }; }); return best; };
     // process: labelled lines ("Process: …", "Proceso:") are trusted more; the most specific family wins
     let proc = null;
@@ -7292,6 +7339,7 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
     if (found.length) { found.sort((a, b) => b.s - a.s || a.y - b.y); const top = found.filter((f) => f.s >= 0.8).sort((a, b) => a.y - b.y);
       const list = top.length ? top : [found[0]], s = Math.min(...list.map((f) => f.s));
       out.origin = { v: list.map((f) => f.name).join(" / "), c: cf(s, Math.min(...list.map((f) => f.l.conf))), why: list.length > 1 ? "several countries: a blend" : "“" + list[0].l.text + "”" };
+    } else if (titleHit) { out.origin = { v: titleHit.land, c: "medium", why: "“" + titleHit.l.text + "”" };
     } else { const all = L.map((l) => l.n).join(" "), hit = REGION_OF.find(([re]) => re.test(all));
       out.origin = hit ? { v: hit[1], c: "medium", why: "from the region named on the label" } : { v: null, why: "No country on this side" }; }
     const regLine = L.find((l, i) => i !== nIdx && /(region|region|area|zone)\s*[:\-]/i.test(l.text));
@@ -7345,7 +7393,10 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
       const cand = known.filter((r) => { const ws = norm(r.name).split(" ").filter((w) => w.length >= 4 && !/^(coffee|roasters?|roastery|company)$/.test(w)); if (ws.length < 2) return false;
         const f = ws.map(fits); return f.every(Boolean) && f.some((x) => x === 2) && f.some((x) => x === 1); });
       if (cand.length === 1) roaster = { name: cand[0].name, s: 0.9, l: { text: cand[0].name, conf: 60 }, i: -1, side: true }; }
-    if (!roaster) L.forEach((l, i) => { if (i === nIdx || l.conf < 55) return; known.forEach((r) => { if (r.geo) return;
+    const frLabel = !!titleHit || L.filter((l) => FR_HEAD.test(l.n)).length >= 2;   // a label we understand: its big top line is the roaster's logo
+    if (!roaster) L.forEach((l, i) => { if (i === nIdx || l.conf < (frLabel ? 45 : 55)) return;
+      if (/^(process|processing|origin|variety|varietal|notes|region|producer|altitude|roast|method)$/.test(l.n)) return;   // a heading on the label ("Process") is not the roaster of that name
+      known.forEach((r) => { if (r.geo) return;
       const sc0 = findTerm(l.n, r.k); if (sc0 < 0.85) return;
       // a near miss that's the name grown into an English word ("balanced" is not Balance, "methods" not Method)
       if (sc0 < 1 && l.n.split(" ").some((w) => w.startsWith(r.k) && /^(s|es|d|ed|ing|er|ers|ly|y|ness)$/.test(w.slice(r.k.length)))) return;
@@ -7355,7 +7406,7 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
       if (!own && suffix && !nextTo) return;
       if (sc0 < 1 && !nextTo && !own && !l.n.split(" ").some((w) => w.length >= 5 && r.k.startsWith(w))) return;   // a cut-off name (@skylar) still counts   // a near miss ("farmers" for Farrers) only right beside "coffee" or "roasters"
       if (!own && (l.n.split(" ").length > 5 || /,\s*\S/.test(l.text) || /^(of|the|we|our|and|in|a)\b/.test(l.n))) return;   // a sentence, not a name
-      if (isTitle(l) && !suffix) return;
+      if (isTitle(l) && !suffix && !(frLabel && own)) return;   // with the coffee's name found on its own line, the biggest print is the roaster (a logo over a label)
       if ((r.k.length <= 4 || r.everyday) && !suffix) return;
       const sc = sc0 + (own ? 0.1 : 0) + (suffix ? 0.1 : 0);
       if (!roaster || sc > roaster.s) roaster = { name: r.name, s: sc, l, i, own }; }); });
@@ -7375,13 +7426,13 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
     const KICK_WORD = /\b(signature|classic|seasonal|placebo|single|origin|estate coffee|limited|release|edition|microlot|nanolot|guest|reserve|experimental|exclusive)\b/;
     const kicker = (l, H) => KICKER.test(l.n) || (KICK_WORD.test(l.n) && l.n.split(" ").length <= 3 && (!H || l.h < H * 0.85));   // "E CLASSIC" is THE CLASSIC misread
     const varLines = new Set(vClean.map((v) => v.l));
-    const fieldLine = (l) => BOILER.test(l.n) || NOTES_KEY.test(l.text) || /^(process|variety|varietal|region|origin|roast|notes?|altitude|tastes?)\b/.test(l.n)
+    const fieldLine = (l) => FR_HEAD.test(l.n) || BOILER.test(l.n) || NOTES_KEY.test(l.text) || /^(process|variety|varietal|region|origin|roast|notes?|altitude|tastes?)\b/.test(l.n)
       || (((proc && proc.l === l) || (roast && roast.l === l) || varLines.has(l)) && !isTitle(l));
     const geoOnly = (l) => { const ws = l.n.split(" "); const country = Object.values(V.country).flat().some((t) => findTerm(l.n, t) >= 0.8);
       return country && ws.length <= 3 && ws.every((w) => w.length <= 2 || Object.values(V.country).flat().some((t) => t.split(" ").includes(w) || lev(t, w) <= 1) || REGION_OF.some(([re]) => re.test(w))); };
     // a label set out as a table (Cup / Process / Varietal / Producer…): the headings and the lines under them are details, not the name
     const HEAD = /^(cup|cupping notes|tasting notes|notes|flavou?rs?|flavou?r notes|altitude|elevation|timezone|time zone|producers?|farm|finca|process|processing|method|varietals?|variety|varieties|cultivars?|origin|region|country|importer|imported by|exporter|harvest|lot|grower|washing station|station|roast|roasted|roast date|roast level|we taste|tastes like|masl)$/;
-    const heads = L.filter((l) => HEAD.test(l.n));
+    const heads = L.filter((l) => HEAD.test(l.n) || FR_HEAD.test(l.n));
     const overX = (a, b) => { const pad = Math.max(a.h, b.h); return (a.x - pad) < (b.x + (b.w || b.h * 4)) && (b.x - pad) < (a.x + (a.w || a.h * 4)); };
     const underHead = (l) => heads.some((hd) => hd !== l && l.y > hd.y && l.y - hd.y < hd.h * 7 && l.h < hd.h * 1.6 && overX(hd, l));   // a big title under a small heading is still the title
     // a block of four or more lines of the same size, stacked: a paragraph of copy (the roaster's story), not a title
@@ -7431,6 +7482,7 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
       if (nn.replace(/[^a-z]/g, "").length <= 3) out.name = { v: null, why: "The big print didn’t read clearly: type the name" };
       else if (land) { if (!out.origin || !out.origin.v) out.origin = { v: land[0], c: "medium", why: "set as the title" }; out.name = { v: null, why: "The title is the country: type the coffee’s name" }; }
     } else out.name = { v: null, why: "Couldn’t pick out the coffee’s name" };
+    if (titleHit) out.name = { v: calm(titleHit.name), c: titleHit.l.conf >= 80 ? "high" : "medium", why: "after the country in “" + titleHit.l.text + "”" };
     // every word the reader is fairly sure of, for finding this coffee on today's list
     Object.defineProperty(out, "words", { value: [...new Set(L.filter((l) => l.conf >= 45).flatMap((l) => l.n.split(" ")).filter((w) => w.length >= 3))], enumerable: false });
     if (regLine) out.region = { v: regLine.text.replace(/^[^:\-]*[:\-]\s*/, "").trim(), c: "medium" };
@@ -7676,6 +7728,7 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
     } finally { clearInterval(tick); btn.disabled = false; }
   });
   // test hook (only with ?scantest): run the whole photo pipeline on a file and return the fields
+  if (/[?&]scantest\b/.test(location.search)) window.__wl = async (blob) => { const T = await loadOcr(), img = await loadImg(blob), pn = whiteLabel(img); if (!pn) return null; const w = await newWorker(T, () => {}), r = await w.recognize(pn.canvas); await w.terminate(); return { size: [pn.canvas.width, pn.canvas.height], lines: r.data.lines.map((l) => [l.text.trim(), Math.round(l.confidence)]) }; };
   if (/[?&]scantest\b/.test(location.search)) window.__panel = async (blob) => { const img = await loadImg(blob), pn = panel(img); return pn ? pn.canvas.toDataURL("image/jpeg", 0.8) : null; };
   if (/[?&]scantest\b/.test(location.search)) { window.__prep = async (blob) => { const img = await loadImg(blob), c0 = toCanvas(img); const pre = prepare(img);
       return { angle: pre.angle, inv: pre.inverted, gray: pre.gray.toDataURL("image/jpeg", 0.7), bin: pre.bin.toDataURL("image/png"), edge: pre.edge.toDataURL("image/png") }; }; }
