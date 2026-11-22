@@ -31,17 +31,17 @@ g=lambda v:('%.3f'%v).rstrip('0').rstrip('.') or '0'
 def kf(name,rows): return '@keyframes %s{%s}'%(name,''.join('%s%%{%s}'%(g(100*t/TOT),r) for t,r in rows))
 out=[]
 # language: leading (left) edge fixed, trailing right edge wobbles
-pL=pos(ms(50),0.26,0.7); eL=edge(3,ms(110),ms(156),0.26,0.25)
+pL=pos(ms(50),0.26,0.7); eL=edge(3,ms(120),ms(171),0.26,0.25)
 rows=[]
 for t in ts:
     w=32+eL(t); rows.append((t,'transform:translateX(calc(var(--tb-x) * %s));scale:%s %s'%(g(pL(t)),g(w/32),g(math.sqrt(32/w)))))
 out.append(kf('drop-l',rows))
-pT=pos(ms(50),0.30,0.7); eTl=edge(2,ms(110),ms(156),0.23,0.30); eTr=edge(2,ms(146),ms(196),0.23,0.30)
+pT=pos(ms(50),0.30,0.7); eTl=edge(2,ms(120),ms(171),0.23,0.30); eTr=edge(2,ms(160),ms(214),0.23,0.30)
 rows=[]
 for t in ts:
     l,r=eTl(t),eTr(t); w=32+l+r; rows.append((t,'transform:translateX(calc(var(--tb-x) * %s + %spx));scale:%s %s'%(g(pT(t)),g((r-l)/2),g(w/32),g(math.sqrt(32/w)))))
 out.append(kf('drop-t',rows))
-eP=edge(2,0,ms(196),0.20,0.35,bulge=True)
+eP=edge(2,0,ms(214),0.20,0.35,bulge=True)
 out.append(kf('drop-p',[(t,'scale:%s %s'%(g((32+eP(t))/32),g(math.sqrt(32/(32+eP(t)))))) for t in ts]))
 # closing: the + swells as each pill is absorbed (150 and 180 ms), then rings
 TC=0.46*S; tc=[TC*i/30 for i in range(31)]
