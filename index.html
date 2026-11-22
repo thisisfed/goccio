@@ -3161,6 +3161,7 @@ html:not(.bn-off) .dock{display:none!important}
   };
   // hard temperature ceilings: above these, ferment and dark-roast flavours turn harsh
   const T_CAP = { anaerobic: 93, cofer: 92, decaf: 92, unsure: 94 };
+  const T_CAP_HARD = new Set(["anaerobic", "cofer", "decaf"]);   // these caps hold whatever the roast
   const T_CAP_ROAST = { medium: 93, mdark: 90, dark: 87 };
   const ROAST = {
     vlight: { label: "very light",  T: 96, dC: -1 },
@@ -3472,13 +3473,22 @@ html:not(.bn-off) .dock{display:none!important}
   // Iced (Japanese style, after Hoffmann): brew with two thirds of the water hot, onto the last third as ice in the jug.
   // Same total liquid, so the same strength once the ice melts; two clicks finer because less hot water does the extracting.
   const ICED_OK = new Set(["v60", "neo", "kalita", "melitta", "chemex", "origami", "switch", "clever", "aero"]);
-  function engine(st, opts = {}) {
+  // total time: to the nearest 5 s, and the earliest finish at least 10 s after the last pour ends (a pour can't drain faster)
+  function tidyTimes(r) {
+    if (r.kind !== "pour" || !r.pours || !r.pours.length || r.lo == null || r.hi == null) return r;
+    const last = r.pours[r.pours.length - 1], end = last.t + (last.dur || 10);
+    const lo = Math.max(Math.round(r.lo / 5) * 5, Math.ceil((end + 10) / 5) * 5), hi = Math.max(Math.round(r.hi / 5) * 5, lo + 15);
+    return lo === r.lo && hi === r.hi ? r : { ...r, lo, hi };
+  }
+  function engine(st, opts = {}) { return tidyTimes(engineIce(st, opts)); }
+  function engineIce(st, opts = {}) {
     const r = engineHot(st, opts);
     if (st.serve !== "iced" || !ICED_OK.has(r.brewer) || !r.pours) return r;
     const total = r.water, hot = g5(total * 2 / 3), ice = total - hot;
     const xs = r.pours.filter((p) => p.x != null), b = xs.length > 1 && xs[0].x < total / 2 ? xs[0].x : 0;
     xs.forEach((p) => { const x = b ? (p.x <= b ? p.x : b + (p.x - b) * (hot - b) / (total - b)) : p.x * hot / total; p.x = g5(x); p.to = p.x; });
     if (xs.length) { xs[xs.length - 1].x = hot; xs[xs.length - 1].to = hot; }
+    if (r.m === "ten" && xs.some((p, i) => p.x - (i ? xs[i - 1].x : 0) < 10)) xs.forEach((p, i) => { p.x = p.to = i === xs.length - 1 ? hot : Math.round(hot * (i + 1) / xs.length); });   // ten equal pours, to the gram
     const fin = Math.max(12, r.clicks - 2);
     r.clickParts = { ...r.clickParts, iced: fin - r.clicks };
     return { ...r, iced: true, total, ice, water: hot, clicks: fin, lo: r.kind === "pour" ? Math.max(90, r.lo - 20) : r.lo, hi: r.kind === "pour" ? Math.max(120, r.hi - 20) : r.hi };
@@ -3536,11 +3546,11 @@ html:not(.bn-off) .dock{display:none!important}
     if (agit <= 1) temp = Math.min(temp, 95);                      // ferment-forward lots go boozy when pushed
     if (T_CAP[c.process]) temp = Math.min(temp, T_CAP[c.process]);
     if (T_CAP_ROAST[c.roast]) temp = Math.min(temp, T_CAP_ROAST[c.roast]);
-    if (c.roast === "vlight" && agit >= 2 && m !== "cafec") temp = Math.max(temp, 96); // dense Nordic roasts under-extract below this
+    if (c.roast === "vlight" && agit >= 2 && m !== "cafec" && !T_CAP_HARD.has(c.process)) temp = Math.max(temp, 96); // dense Nordic roasts under-extract below this (never over a ferment's cap)
     if (tea) temp = teaTemp(c);
     const baseTemp = clamp(temp, 82, 100);
     temp = clamp(temp + (pc.temp || 0), 82, 100);
-    if (!tea) temp = vlFloor(c, temp);
+    if (!tea && m !== "cafec") temp = vlFloor(c, temp);   // CAFEC's method is cooler water by design
 
     // pours: t = start (s), to = scale reading, dur = suggested pour length (s)
     const P = [];
@@ -4859,7 +4869,7 @@ html:not(.bn-off) .dock{display:none!important}
     if (BLURB[r.m]) why.push(BLURB[r.m]);
     const hasT = r.temp != null;
     const cons = [];
-    if (c.process === "unsure") cons.push(`Process not stated, so it’s treated as possibly fermented: ${K === "pour" ? "gentle pours, " : ""}${hasT ? `${r.temp}°C (94 at most), ` : ""}${cl(1)} coarser.`);
+    if (c.process === "unsure") cons.push(`Process not stated, so it’s treated as possibly fermented: ${K === "pour" ? "gentle pours, " : ""}${hasT ? `${r.temp}°C${r.temp <= 94 ? " (94 at most)" : " (a very light roast still needs the heat)"}, ` : ""}${cl(1)} coarser.`);
     if (c.roast === "unsure") cons.push(`Roast not sure, so it plays safe: ${hasT ? "a cooler base temperature and " : ""}${cl(1)} coarser. Less bitterness risk, maybe a little less sweetness.`);
     if (cons.length) cons.push("Tell it the process and roast under Bag details for a sharper recipe.");
     const pl = cap1(PROCESS[c.process].label), whyBase = why.length;
@@ -4881,7 +4891,7 @@ html:not(.bn-off) .dock{display:none!important}
       why.push(`The weight out sets the taste: ${r.dose} g in, ${r.water} g out (1:${r.ratio}). Longer is clearer and sweeter, shorter is thicker and more intense. Grind sets the time: aim for ${r.lo}–${r.hi} s.`);
     } else {
       const moves = [r.clickParts.roast && `${ROAST[c.roast].label} roast ${signed(r.clickParts.roast)}`, r.clickParts.process && `${PROCESS[c.process].label} ${signed(r.clickParts.process)}`].filter(Boolean);
-      if (c.process !== "unsure" && c.roast !== "unsure") why.push(`${pl}, ${ROAST[c.roast].label} roast: ${moves.length ? `the grind moves ${moves.join(", ")} clicks` : "the grind stays at the base"}${hasT ? `, and the kettle goes to ${r.temp}°C` : ""}, the same rules as the V60 recipes.`);
+      if (c.process !== "unsure" && c.roast !== "unsure") why.push(`${pl}, ${ROAST[c.roast].label} roast: ${moves.length ? `the grind moves ${moves.join(", ")} (in C40 clicks)` : "the grind stays at the base"}${hasT ? `, and the kettle goes to ${r.temp}°C` : ""}, the same rules as the V60 recipes.`);
     }
     if (hasT && K !== "shot") why.push(`Temperature, grind and agitation are all ways to reach the same extraction. At equal strength and extraction, UC Davis panels tasted no difference between 87, 90 and 93°C (Batali et al. 2020), so ${r.temp}°C is set together with the grind, not on its own.`);
     if (["anaerobic", "cofer", "natural", "decaf"].includes(c.process) && hasT && K !== "shot") why.push(`${pl} coffees tend to extract faster, so this recipe runs a little cooler and gentler. If yours tastes thin, sour or sharply vinegary, it is under-extracted: go 2°C hotter, as the dial-in tips say.`);
@@ -4889,7 +4899,7 @@ html:not(.bn-off) .dock{display:none!important}
     if (K !== "shot" && CUP[r.m]) why.splice(Math.min(1, why.length), 0, CUP[r.m].how);   // how this brewer and method shape the cup
     { const what = [c.roast !== "unsure" ? ROAST[c.roast].label.toLowerCase() + " roast" : "", c.process !== "unsure" ? PROCESS[c.process].label.toLowerCase() : ""].filter(Boolean).join(", ");
       const np = K === "pour" ? r.pours.filter((x) => !x.act).length : 0;
-      const how = K === "shot" ? `${r.dose} g in, ${r.water} g out in ${r.lo}–${r.hi} s` : [`a ${gw(r.clicks)[1].toLowerCase()} grind`, hasT ? `${r.temp}°C water` : "", np ? `${np} pour${np === 1 ? "" : "s"}` : ""].filter(Boolean).join(", ").replace(/, ([^,]*)$/, " and $1");
+      const how = K === "shot" ? `${r.dose} g in, ${r.water} g out in ${r.lo}–${r.hi} s` : [`${/^e/i.test(gw(r.clicks)[1]) ? "an" : "a"} ${gw(r.clicks)[1].toLowerCase()} grind`, hasT ? `${r.temp}°C water` : "", np ? `${np} pour${np === 1 ? "" : "s"}` : ""].filter(Boolean).join(", ").replace(/, ([^,]*)$/, " and $1");
       why.unshift(`In short: ${how}, chosen so ${what ? `this ${what} coffee` : "this coffee"} comes out sweet, not sour or bitter. The reasons follow.`); }
     const rk = risks(r);
     $("why").innerHTML = rk.map((w) => `<li class="warn">${esc(w)}</li>`).join("") + cons.map((w) => `<li class="cons">${esc(w)}</li>`).join("") + why.map((w) => `<li>${esc(w)}</li>`).join("");
@@ -4914,9 +4924,9 @@ html:not(.bn-off) .dock{display:none!important}
       "Sour and bitter at once → uneven bed: same grind, gentler pours, swirl once.",
     ];
     else if (r.brewer === "aero") dial = [
-      `Sour or thin → ${cl(2)} finer, or let it steep 30 s longer before the swirl.`,
+      `Sour or thin → ${cl(2)} finer, or let it steep 30 s longer before the ${r.m === "wendelboe" ? "second stir" : "swirl"}.`,
       `Bitter or drying → ${cl(2)} coarser, or 2°C cooler (you’re at ${r.temp}°C).`,
-      `The press is hard work or stalls → ${cl(2)} coarser. Press gently: it should take about 30 s.`,
+      `The press is hard work or stalls → ${cl(2)} coarser. Press gently: it should take about ${r.m === "wendelboe" ? 20 : 30} s.`,
       `Watery but sweet → 1:${stronger}. Heavy → 1:${lighter}. Leave the grind.`,
     ];
     else if (r.brewer === "cupping") dial = [
@@ -4947,6 +4957,12 @@ html:not(.bn-off) .dock{display:none!important}
       `On time but sour → a longer shot, 1:${Math.round((r.ratio + 0.5) * 10) / 10}, or 1°C hotter. On time but bitter → 1:${Math.round((r.ratio - 0.3) * 10) / 10}, or 1°C cooler.`,
       "Sour and bitter together, or spurts from one side → it’s channelling. Break up the clumps, level the bed, tamp flat.",
       "Change one thing per shot and weigh every one: grind for the time, the weight out for the taste.",
+    ];
+    else if (r.brewer === "clever") dial = [
+      `Sour or thin → ${cl(2)} finer, or steep 30 s longer before you break the crust.`,
+      `Bitter or drying → ${cl(2)} coarser, or 2°C cooler (you’re at ${r.temp}°C).`,
+      `Still draining after ${fmt(r.hi)} → ${cl(2)} coarser: fines are clogging the paper.`,
+      `Watery but sweet → 1:${stronger}. Heavy → 1:${lighter}. Leave the grind.`,
     ];
     else dial = [
       `Bitter or burnt → take it off the heat sooner, turn the flame down, then ${cl(2)} coarser.`,
@@ -5687,13 +5703,13 @@ html:not(.bn-off) .dock{display:none!important}
       coffeeTitle(state, r), who, "",
       `${r.method}${r.goal ? ", " + GOAL[r.goal] : ""}`,
       isC40() ? `Grind    ${r.clicks} clicks, Comandante C40 from zero${prefs.zero ? ` (my zero ${signed(prefs.zero)})` : ""}`
+        : mill().words ? `Grind    ${gw(r.clicks)[1]}, ${gw(r.clicks)[2]} (about ${microns(r.clicks)} µm)`
         : `Grind    ${onMill(r.clicks).txt} on ${mill().name} (${mill().lbl}; from ${r.clicks} C40 clicks)`,
       `Coffee   ${r.dose} g${r.brewer === "moka" ? ` (${doseName(r)} pot, basket full and level)` : ""}`,
       K === "shot" ? `Out      ${r.water} g (1:${r.ratio}), machine at ${r.temp}°C` : r.temp != null ? `Water    ${r.water} g (1:${r.ratio}) at ${r.temp}°C` : r.brewer === "cold" ? `Water    ${r.water} g cold (1:${r.ratio})` : r.brewer === "mocca" ? `Water    ${r.water} g cold, in the tank (1:${r.ratio})` : `Water    ${r.water} g, boiled, to just under the valve`,
     ];
     if (K === "pour") L.push(`Drain    ${fmt(r.lo)}–${fmt(r.hi)}`, `Pours    agitation ${AGIT[r.agit]}`,
-      ...r.pours.flatMap((p, i) => [`  ${fmt(p.t).padStart(4)}  ${g1(p.x).padStart(5)} g  +${g1(pourAdd(r, i))} g in ~${p.dur} s  ${p.note}`, `${" ".repeat(13)}(scale: ${p.to} g)`]),
-      "  Targets shown to 0.1 g. Pour to the nearest gram on your scale.");
+      ...r.pours.flatMap((p, i) => [`  ${fmt(p.t).padStart(4)}  ${g1(p.x).padStart(5)} g  +${g1(pourAdd(r, i))} g in ~${p.dur} s  ${p.note}`, ...(p.to !== p.x ? [`${" ".repeat(13)}(scale: ${p.to} g)`] : [])]));
     else if (K === "shot") L.push(`Time     ${r.lo}–${r.hi} s`, `Shot     start the shot and the timer together, stop at ${r.water} g`);
     else if (K === "imm") L.push(`Time     ${r.lo === r.hi ? fmt(r.hi) : `${fmt(r.lo)}–${fmt(r.hi)}`}`, "Steps",
       ...r.pours.map((p) => `  ${fmt(p.t).padStart(4)}  ${p.act ? p.lbl.padEnd(7) : (p.to + " g").padEnd(7)}  ${p.note}`));
@@ -8102,6 +8118,7 @@ html:not(.bn-off) .dock{display:none!important}
     [0, 60, 200, 450, 800, 1300, 2000, 2800].forEach((ms) => setTimeout(put, ms));
   })();
 
+  if (/[?&]scantest\b/.test(location.search)) window.__set = (st) => { Object.assign(state, st); renderAllOpts(); render(); return recipe; };   // tests: any recipe on screen
   window.__v60 = { parseCoffee, engine, suggest, cupNotes, cardImage, risks, recipeText, BASE, get recipe() { return recipe; } };
 })();
 </script>
