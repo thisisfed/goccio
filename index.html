@@ -2530,8 +2530,7 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
 .chip > .gx::before{content:"";position:absolute;inset:-14px -10px -14px -6px}
 .chip > .gx svg{width:9px;height:9px;display:block}
 @media (hover:hover){ .chip > .gx:hover{opacity:1} }
-/* the example, open: only the arrow to close it, so the name has the whole line and every example sits at the same height */
-.g-ex:not(.fold) .glimpse figcaption button.g-tag{font-size:0!important;gap:0;padding:12px 0 12px 12px;margin:-12px 0 -12px auto}
+.g-ex:not(.fold) .glimpse figcaption .g-name{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}   /* one line, always */
 </style>
 </head>
 <body>
@@ -6665,6 +6664,8 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
   const EX_FOLD = "v60.exFold";
   const exFold = (on) => { const ex = document.querySelector(".g-ex"), b = $("exTog"); if (!ex || !b) return;
     ex.classList.toggle("fold", on); document.documentElement.classList.toggle("ex-fold", on); b.setAttribute("aria-expanded", String(!on)); b.setAttribute("aria-label", on ? "Show the example" : "Hide the example");
+    // folded it is the fold's title; open, a short tag on the right, so the coffee's name keeps to one line and every example sits at the same height
+    b.textContent = on ? (LANG === "it" ? "Esempio di preparazione" : "Brewing example") : (LANG === "it" ? "Esempio" : "Example");
     if (!on) try { layGlimpse(); } catch (e) {} requestAnimationFrame(() => { try { exAlign(); } catch (e) {} }); };
   // the Example under the recipe's buttons: its rule as far below them as the rule above them; folded, its label as far over the
   // next rule as under its own, like the folds above (measured, so it holds in every browser and at every size)
