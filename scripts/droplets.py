@@ -55,7 +55,7 @@ out.append('@keyframes drop-pc{%s}'%''.join('%s%%{scale:%s %s}'%(g(100*t/TC),g((
 # the search box edge: a spring as a linear() easing
 def lin(period,zeta,dur):
     n=24; xs=spring(1,0,period*S,zeta,[dur*i/n for i in range(n+1)]); return 'linear(%s)'%','.join(g(1-x) for x in xs)
-vars_=dict(TOT=g(TOT),TC=g(TC),boxo=lin(0.32,0.7,0.48*S),boxod=g(0.48*S),boxc=lin(0.30,0.8,0.42*S),boxcd=g(0.42*S),
+vars_=dict(TOT=g(TOT),TC=g(TC),boxo=lin(0.32,0.7,0.48*S),boxod=g(0.48*S),boxc=lin(0.30,0.55,0.55*S),boxcd=g(0.55*S),
   d40=g(ms(40)),bl=g(ms(140)),bt=g(ms(110)),d60=g(ms(60)),icon=g(ms(150)))
 css='''/* droplets, second take (22 Nov 2026): one drop parting into three at about a fifth of real speed. Each body keeps its own
    clock (the + 5 Hz, appearance 4.3, language 3.8, the box 3.1, all slowed by the same factor) so they never move in step; the
