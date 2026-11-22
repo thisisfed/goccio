@@ -6217,7 +6217,8 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
     for (let i = 1; i <= a.length; i++) { const c = [i]; for (let j = 1; j <= b.length; j++) c[j] = Math.min(p[j] + 1, c[j - 1] + 1, p[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); p = c; } return p[b.length]; };
   const fzWords = (t) => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/['’]s\b/g, "").split(/[^a-z0-9]+/).filter((w) => w && !FZ_STOP.test(w));
   const fzWord = (t, hw) => hw.some((h) => h === t || (t.length >= 4 && h.startsWith(t)) || (h.length >= 4 && t.startsWith(h) && t.length - h.length <= 2)
-    || (t.length >= 6 && h.length >= 5 && t[0] === h[0] && fzLev(t, h) <= (t.length >= 8 ? 2 : 1)));   // a typo, not another word: "mellow" isn't "yellow"
+    || (fzTypos && t.length >= 6 && h.length >= 5 && t[0] === h[0] && fzLev(t, h) <= (t.length >= 8 ? 2 : 1)));   // a typo, not another word: "mellow" isn't "yellow"
+  let fzTypos = true;   // letters-off matches are a fallback: "climps" is the start of Climpson, and only failing that a typo of Chimps
   const fzHas = (hay, t) => { const ws = fzWords(t); return ws.length > 0 && ws.every((w) => fzWord(w, fzWords(hay))); };
   const searchFit = (q) => {
     let parts = q.split(/\s*[,;]\s*|\s+and\s+|\s+e\s+/).map((t) => t.trim()).filter(Boolean);
@@ -6644,7 +6645,8 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
     if (q && isAsk(q)) { askWant = readAsk(q); const sc = askScore(askWant), rank = new Map();
       list.forEach((r) => { const v = sc(r); if (v > 0) rank.set(r, v); });
       list = list.filter((r) => rank.has(r)); askRank = rank; }
-    else if (q) { list = list.filter(searchFit(q)); askWant = null; askRank = null; }
+    else if (q) { const fit = searchFit(q); fzTypos = false; const sure = list.filter(fit); fzTypos = true;
+      list = sure.length ? sure : list.filter(fit); askWant = null; askRank = null; }   // names that start as typed come alone; near-misses only when nothing does
     else { askWant = null; askRank = null; }
     if (shelfV !== "all") list = list.filter(shelfFit());
     if (shelfO === "light") list = list.filter(isLight);
