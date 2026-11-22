@@ -6389,7 +6389,7 @@ html:not(.bn-off) .dock{display:none!important}
     return `<p class="c-notes c-typ">${esc(head)}: ${esc(list)}</p>`; };
   // a note as the roaster wrote it, tidied: stray brackets, stars and dashes at either end go ("Vanilla[" reads Vanilla)
   const noteClean = (n) => String(n).replace(/^[\s\[\](){}*•·|:;,.\-–—"'“”]+|[\s\[\](){}*•·|:;,.\-–—"'“”]+$/g, "").replace(/\s{2,}/g, " ");
-  const cardNotes = (r) => { const ns = (Array.isArray(r.notes) ? r.notes : []).map(noteClean).filter((n) => /\p{L}/u.test(n)).slice(0, 3); if (!ns.length) return cardTypical(r);
+  const cardNotes = (r) => { const ns = (Array.isArray(r.notes) ? r.notes : []).map(noteClean).filter((n) => /\p{L}/u.test(n)); if (!ns.length) return cardTypical(r);   // every note the roaster lists, not the first three
     const reE = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const hits = cardHits(), lit = (n) => { let h = esc(n); hits.forEach((w) => { const own = w[0] === "\u0001", t = own ? w.slice(1) : w;
       // a word you typed lights from the start of a word (a short one only whole); a taste family's words wherever they sit
