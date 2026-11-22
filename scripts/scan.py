@@ -153,7 +153,7 @@ NOTES_CHECK = 9   # pages read for notes with these rules; a coffee checked unde
 # A fix for one shop's page layout re-reads only that shop: raise its number here (above NOTES_CHECK), not NOTES_CHECK,
 # which re-reads every coffee without notes everywhere (thousands of pages). Raise NOTES_CHECK only for a change to the
 # rules every shop goes through
-NOTES_RECHECK = {}   # e.g. {"Monmouth": 10}
+NOTES_RECHECK = {"Climpson & Sons": 10}   # e.g. {"Monmouth": 10}
 notes_ver = lambda shop: max(NOTES_CHECK, NOTES_RECHECK.get(shop, 0))
 NOTES_V = 2       # page notes read under these list rules; a short list (two or fewer) read under older ones is read once more
 
@@ -1937,6 +1937,23 @@ def raw_labelled(raw, k):
     return None
 
 
+RAW_NOTES_LABEL = re.compile(r">\s*(tasting notes|flavou?r notes|flavou?r profile|cup notes|tastes like|notes)\s*:?\s*<", re.I)
+
+
+def raw_notes(raw, name):
+    """Notes under a label that is a whole HTML text node (<h4>Flavour profile:</h4><p>Liquorice, Pear, Blackberry</p>), read
+    straight from the HTML: for pages whose product block _visible() strips (Climpson), like raw_labelled() does for process."""
+    for m in RAW_NOTES_LABEL.finditer(raw):
+        after = strip_html(raw[m.end() - 1:m.end() + 600]).strip()
+        first = next((ln.strip() for ln in after.split("\n") if ln.strip()), "")
+        if not first or len(first) > 120 or first.endswith(":"):
+            continue
+        ns = find_notes({"body": m.group(1) + ":\n" + first + "\n", "title": name, "tags": []})
+        if ns:
+            return ns
+    return []
+
+
 # Tasting notes read as the variety (Caffeine Project "Caramel, Toasts, Vanilla", Tigermoth "Blackberry, tangerine, dark brown
 # sugar"): a variety field with flavour words and no coffee variety in it is notes, not a variety.
 FLAVOUR_WORD = re.compile(r"\b(?:chocolate|cocoa|cacao|caramel|vanilla|toasts?|toasted|berry|berries|blackberry|strawberry|raspberry|blueberry|"
@@ -2236,7 +2253,7 @@ def add_page_details(recs, roaster, old):
         got = False
         if "notes" in need:   # the shop's own tasting notes: a labelled line, a sentence, or the page's description tag
             meta = re.search(r'<meta[^>]+(?:name|property)=["\'](?:og:)?description["\'][^>]+content=["\']([^"\']+)', raw, re.I)
-            ns = class_notes(raw, rec["name"]) or page_notes(text, rec["name"], html.unescape(meta.group(1)) if meta else "")
+            ns = class_notes(raw, rec["name"]) or page_notes(text, rec["name"], html.unescape(meta.group(1)) if meta else "") or raw_notes(raw, rec["name"])
             if ns:
                 rec["notes"], rec["notes_from"], rec["notes_v"] = ns, "page", NOTES_V
                 got = True
@@ -2390,7 +2407,7 @@ def notes_audit(n):
         except Exception as e:  # noqa: BLE001
             print(f"\nAUDIT {k}: {r['url']}  {type(e).__name__}"); continue
         meta = re.search(r'<meta[^>]+(?:name|property)=["\'](?:og:)?description["\'][^>]+content=["\']([^"\']+)', raw, re.I)
-        got = class_notes(raw, r["name"]) or page_notes(text, r["name"], html.unescape(meta.group(1)) if meta else "")
+        got = class_notes(raw, r["name"]) or page_notes(text, r["name"], html.unescape(meta.group(1)) if meta else "") or raw_notes(raw, r["name"])
         print(f"\nAUDIT {k} ({sum(not x.get('notes') for x in by[k])}/{len(by[k])} without notes): {r['name']}  {r['url']}  -> {got}")
         st, shown = name_at(text, r["name"]), 0
         for m in re.finditer(r"[^\n]*\b(?:notes?|flavou?rs?|taste[sd]?|tasting|cup|profile|aroma|we get|expect)\b[^\n]*(?:\n[^\n]{0,160})?", text[st:st + 6000], re.I):
