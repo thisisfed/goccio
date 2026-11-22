@@ -4951,8 +4951,6 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
             $("tech").innerHTML = `<span class="muted">${prepFor(r)}</span>
       <span>Bloom with ${r.pours[0].to} g. <b>Agitation: ${AGIT[r.agit]}.</b> ${agitTxt}</span>`;
     } else $("tech").innerHTML = `<span>${esc(prepFor(r))}</span>`;
-    // every pour, on the page: when, and what the scale should read. The timer shows the same steps one at a time
-    if ((K === "pour" || K === "imm") && (r.pours || []).length > 1) $("tech").insertAdjacentHTML("beforeend", `<ol class="pours">${r.pours.map((p) => `<li><span class="pt">${fmt(p.t)}</span><span>${p.act ? esc(p.lbl) : `Pour to ${p.to} g`}</span></li>`).join("")}<li><span class="pt">${fmt(r.hi)}</span><span>${K === "imm" ? "Done" : "Drained"}</span></li></ol>`);
     $("techLbl").textContent = r.kind === "pour" ? "How to pour" : "How to brew";
     const sum = `${isC40() ? r.clicks + " clk" : (onMill(r.clicks).txt + " " + mill().short).trim()} / ${r.dose} → ${r.water} g${r.temp != null ? ` / ${r.temp}°` : ""}`;
     const ARR = '<span class="arr">→</span>';
