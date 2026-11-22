@@ -806,6 +806,15 @@ def ld_products(html_text):
     return out
 
 
+def range_title(name, page):
+    """Doubleshot names its product data after the range ("Farm", "Fun") and puts the coffee in the page title:
+    "Farm • Bule Hora | doubleshot". When the title reads "<name> • <something>", the something is the coffee."""
+    m = re.search(r"(?is)<title[^>]*>(.*?)</title>", page or "")
+    t = html.unescape(strip_html(m.group(1))).strip() if m else ""
+    m = re.match(re.escape(name or "") + r"\s*[•·]\s*([^|•·]{3,60}?)\s*(?:\||$)", t, re.I) if name else None
+    return m.group(1).strip() if m else name
+
+
 def own_url(stated, page_url):
     """The link a page's product data gives for itself, unless that is just the shop's front page (Doubleshot's data says
     "https://www.doubleshot.cz" on every product): then the page being read is the product's link."""
@@ -1065,7 +1074,7 @@ def fetch_generic(shop, max_pages=45, extra="", lists=None):
         prods = ld_products(page)[:1] or next_products(page) or og_product(page) or microdata_product(page) or spec_grid_product(page) or plain_product(page, url)
         for p in prods:
             it = ld_to_item(p, url, lm)
-            it["title"] = heading_if_seo(it["title"], page)
+            it["title"] = range_title(heading_if_seo(it["title"], page), page)
             if it["title"]:
                 if len(it["body"]) < 60:   # thin JSON-LD: add the page's meta description
                     m = re.search(r'<meta[^>]+(?:name|property)=["\'](?:og:)?description["\'][^>]+content=["\']([^"\']+)', page, re.I)
@@ -1230,7 +1239,8 @@ def fetch_woo(shop):
                 "type": " ".join(cats),
                 "tags": tags + cats,
                 "body": strip_html((p.get("short_description") or "") + "\n" + (p.get("description") or "")),
-                "variants": "",
+                # the sizes on sale: the listed price is the cheapest, so it belongs to the smallest bag (Smith's "from £3.20" is 125 g)
+                "variants": " / ".join(str(t.get("name", "")) for a in (p.get("attributes") or []) if isinstance(a, dict) for t in (a.get("terms") or []) if isinstance(t, dict)),
                 "available": bool(p.get("is_in_stock", True)),
                 "price": price,
                 "price_prefix": prefix,
@@ -1798,6 +1808,14 @@ def bag_grams(item):
         return min(got) if got else None
     return None
 
+def price_ccy(item, roaster):
+    """The currency to print a price in: the one set by hand for the roaster, else the one the coffee's own page states, else the
+    shop's. Father's pages give some coffees in koruna and some in euros: every price was labelled with the shop's euros, so a
+    449 Kč bag read "€449.77"."""
+    own = item.get("currency")
+    return roaster.get("currency") or (own if isinstance(own, str) and re.fullmatch(r"[A-Z]{3}", own) else None) or roaster.get("_ccy", "GBP")
+
+
 def money(v, ccy):
     sym = SYMBOL.get(ccy, ccy + " ")
     amount = f"{v:,.0f}" if ccy in ("COP", "CLP", "ARS") else f"{v:.0f}" if ccy in ("JPY", "DKK", "SEK", "NOK", "CZK") else f"{v:.2f}"
@@ -1914,7 +1932,7 @@ def classify(item, roaster):
         "process": process,
         "variety": variety,
         "notes": find_notes(item),
-        "price": (item.get("price_prefix") or "") + money(item["price"], roaster.get("_ccy", "GBP")) if item["price"] else None,
+        "price": (item.get("price_prefix") or "") + money(item["price"], price_ccy(item, roaster)) if item["price"] else None,
         "url": item["url"],
         "bag_g": bag_grams(item),
         "published": item["published"] or None,

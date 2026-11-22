@@ -152,6 +152,14 @@ CASES = [
        and scan.ld_to_item({"name": "Farm", "url": "https://xyzroastery.example/p/farm-2"}, "https://xyzroastery.example/produkt/farm", "")["url"] == "https://xyzroastery.example/p/farm-2"
        and scan.ld_to_item({"name": "Farm"}, "https://xyzroastery.example/produkt/farm", "")["url"] == "https://xyzroastery.example/produkt/farm"
        and scan.EXCLUDE.search("MHW-3BOMBER Magnetic Dosing Ring 58mm Black") is not None),
+    ("Father's: a coffee whose own page gives its price in koruna is not labelled with the shop's euros ('€449.77'); a currency set by hand still wins",
+     lambda: scan.price_ccy({"currency": "CZK"}, {"_ccy": "EUR"}) == "CZK" and scan.price_ccy({"currency": None}, {"_ccy": "EUR"}) == "EUR"
+       and scan.price_ccy({"currency": "USD"}, {"currency": "GBP", "_ccy": "USD"}) == "GBP" and scan.price_ccy({}, {}) == "GBP"),
+    ("Smith's: a 'from £3.20' price on a shop that sells 125 g, 250 g, 500 g and 1 kg is shown with its 125 g bag",
+     lambda: scan.bag_grams({"variants": "125g / 250g / 500g / 1kg / Whole Bean / Cafetiere", "title": "Peru"}) == 125),
+    ("Doubleshot: 'Farm • Bule Hora | doubleshot' in the page title names the coffee Bule Hora, not the range; other titles change nothing",
+     lambda: scan.range_title("Farm", "<html><head><title>Farm • Bule Hora | doubleshot</title></head></html>") == "Bule Hora"
+       and scan.range_title("Danche", "<title>Danche | XYZ Roastery</title>") == "Danche" and scan.range_title("Farm", "<title>Shop • Farm</title>") == "Farm"),
     ("Kaffa's own coffees still count", lambda: not any(scan.EXCLUDE.search(x) for x in ["Kaffebønner Kenya Kagere", "Kaffebønner Honduras El Guaco", "Kaffebønner Klassisk Julekaffe fra", "Switch Up Charity Coffee"])),
     ("Coffee sacks, a milk frother, a pallet and a chocolate bar are not coffee", lambda: all(scan.EXCLUDE.search(t) for t in
         ["Jute Coffee Sacks", "Alessi Mousseur à lait Pulcina", "Halvpalle med kaffe", "Malmö Chokladfabrik x Gringo – Kaffekross 55% chokladkaka", "SCA Introduction to coffee", "30 ks", "Čaj Yunnan Green Superior", "Brazil Natural - Greens"])),
