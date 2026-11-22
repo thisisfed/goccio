@@ -129,6 +129,14 @@ CASES = [
     ("A plain product page with one heading still reads as before: its heading and the first price after it",
      lambda: (lambda p: p["name"] == "Finca Luna" and p["offers"][0]["price"] == "11.50")(scan.plain_product(
          '<html><head><title>Finca Luna | XYZ Roastery</title></head><body><h1>Finca Luna</h1><p>£11.50</p><button>Add to cart</button></body></html>', "https://xyzroastery.example/product/finca-luna")[0])),
+    ("Conscious, as its pages are really read (the spec-grid reader): the cart's 'Close' and '$0.00' came first; the coffee is the heading the title repeats, its price the first real one after it",
+     lambda: (lambda p: p["name"] == "Arcangel" and p["offers"]["price"] == "13.00" and p["offers"]["priceCurrency"] == "GBP")(scan.spec_grid_product(
+         '<html><head><title>Shop | Arcangel</title></head><body><div>Free shipping over £20</div><h1 class="heading-106">Close</h1><div class="w-commerce-commercecartordervalue price">$0.00</div>'
+         '<p>Free shipping for orders £20+</p><h1 class="pro_buy_now_producer_header">Arcangel</h1><div>Size 250g 1kg</div><h6 class="pro_buy_now_heading">£&nbsp;13.00&nbsp;</h6><a>Buy</a>'
+         '<h1 class="heading-55">Overview</h1><div>Origin</div><div>Bolivia</div><div>Process</div><div>Coco natural</div><div class="rel-price">£ 17.00</div></body></html>')[0])),
+    ("A spec-grid page with one heading and a price element reads as before (Newground: 'One Time Purchase £11.00')",
+     lambda: (lambda p: p["name"] == "Finca Luna" and p["offers"]["price"] == "11.00")(scan.spec_grid_product(
+         '<html><head><title>Finca Luna</title></head><body><h1>Finca Luna</h1><div>One Time Purchase</div><span class="buyingOptPrice">£11.00</span><div>Country</div><div>Colombia</div><div>Process</div><div>Washed</div></body></html>')[0])),
     ("Kaffa's own coffees still count", lambda: not any(scan.EXCLUDE.search(x) for x in ["Kaffebønner Kenya Kagere", "Kaffebønner Honduras El Guaco", "Kaffebønner Klassisk Julekaffe fra", "Switch Up Charity Coffee"])),
     ("Coffee sacks, a milk frother, a pallet and a chocolate bar are not coffee", lambda: all(scan.EXCLUDE.search(t) for t in
         ["Jute Coffee Sacks", "Alessi Mousseur à lait Pulcina", "Halvpalle med kaffe", "Malmö Chokladfabrik x Gringo – Kaffekross 55% chokladkaka", "SCA Introduction to coffee", "30 ks", "Čaj Yunnan Green Superior", "Brazil Natural - Greens"])),
