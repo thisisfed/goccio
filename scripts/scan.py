@@ -1508,7 +1508,27 @@ def find_notes(item):
     return out[:5]
 
 
+BEANS_PREFIX = re.compile(r"^\s*(?:kaffeb[øo]nner|kaffeb[öo]nor|kaffeebohnen|koffiebonen|coffee beans|caf[ée] en grains?|caff[èe] in grani)\s+(?=\S)", re.I)
+FROM_TAIL = re.compile(r"\s+(?:fra|från|from|aus|von|uit)(?:\s+(\S+))?\s*$", re.I)
+
+
 def clean_name(title, roaster, origin):
+    """The coffee's own name. The shop's wording round it goes: "Kaffebønner Klassisk Julekaffe fra Guatemala" (Kaffa: "coffee
+    beans … from Guatemala") is "Klassisk Julekaffe"; "Kaffebønner Etiopia Danche" is "Danche"."""
+    t = html.unescape(title)
+    name = _clean_name(BEANS_PREFIX.sub("", t), roaster, origin)
+    if not BEANS_PREFIX.match(t):
+        return name   # only a shop that words its titles this way gets the rest
+    m = FROM_TAIL.search(name)   # "… fra" left hanging once the origin went, or "… fra Etiopia" in the shop's own language
+    if m and (not m.group(1) or (origin and find_origin(m.group(1)) == origin)) and name[:m.start()].strip():
+        name = name[:m.start()].strip()
+    first, _, rest = name.partition(" ")   # the origin in front: "Etiopia Danche", "Brasil Fazenda IP", "Kenya Kagere"
+    if rest and origin and find_origin(first) == origin and not find_origin(rest):
+        name = rest.strip()
+    return name
+
+
+def _clean_name(title, roaster, origin):
     title = re.sub(r"<br\s*/?>", " ", html.unescape(title), flags=re.I)
     title = re.sub(r"<[^>]+>", "", title)
     title = re.sub(r"^\s*\d{1,2}/\d{1,2}\s+\d{1,2}:\d{2}\s*[~〜～]\s*", "", title)   # Philocoffea: "11/16 10:00~" release stamp
@@ -2078,8 +2098,29 @@ PRICE_META = re.compile(r'<meta[^>]+(?:property|name)=["\'](?:og|product):price:
 PRICE_FETCHES_PER_ROASTER = 40
 
 
-def page_price(raw):
-    """(amount, currency) from a product page: schema.org offers first, then og/product price meta tags."""
+SHOWN_PRICE = re.compile(r"([£€])\s?(\d{1,3}(?:[.,]\d{2})?)(?![\d.,]*\s?(?:off|%))")
+
+
+def shown_price(raw, name):
+    """The price printed on the page just after the coffee's name ("Danse … £ 14.00"), for shops whose page data gives none or a
+    zero (Conscious: its data says $0.00 while the page shows pounds). Only pounds or euros, only within a few lines of the name,
+    never a 'free delivery over £25' line."""
+    text = _visible(raw)
+    i = name_at(text, name) if name else -1
+    if i < 0 or (i == 0 and not text.lower().startswith(name.lower()[:30])):
+        return None, None
+    for ln in text[i:i + 700].split("\n")[:14]:
+        if re.search(r"\b(?:over|above|under|from|save|delivery|shipping|orders?|spend|subscri)\b", ln, re.I):
+            continue
+        m = SHOWN_PRICE.search(ln)
+        if m and float(m.group(2).replace(",", ".")) > 0:
+            return float(m.group(2).replace(",", ".")), {"£": "GBP", "€": "EUR"}[m.group(1)]
+    return None, None
+
+
+def page_price(raw, name=""):
+    """(amount, currency) from a product page: schema.org offers first, then og/product price meta tags, then the price
+    printed by the coffee's name."""
     for p in ld_products(raw):
         it = ld_to_item(p, "", "")
         if it.get("price"):
@@ -2108,7 +2149,7 @@ def page_price(raw):
             return float(meta["amount"].replace(",", ".")), meta.get("currency")
     except ValueError:
         pass
-    return None, None
+    return shown_price(raw, name) if name else (None, None)
 
 
 def add_page_prices(recs, roaster, old):
@@ -2134,7 +2175,7 @@ def add_page_prices(recs, roaster, old):
             raw = get_text(rec["url"] + ("&" if "?" in rec["url"] else "?") + loc, tries=1)
         except Exception:  # noqa: BLE001
             continue
-        amount, ccy = page_price(raw)
+        amount, ccy = page_price(raw, rec.get("name") or "")
         if amount and 1 <= amount <= 1000 and (ccy or "").upper() == home:
             rec["price"], rec["price_from"] = money(amount, home), "page"
             filled += 1
@@ -2321,6 +2362,8 @@ def scan_roaster(r):
                     is_shopify = any(i.get("via") == "js" for i in items)
 
                     def seen_in(its, extra=""):
+                        if r.get("currency"):   # set by hand in roasters.json: the shop's own data can be wrong (Conscious says USD, sells in pounds)
+                            return r["currency"]
                         if is_shopify:   # product .js carries no currency: ask the shop's cart, as for Shopify feeds
                             return shop_currency(shop, "shopify", r, extra)
                         found = [i["currency"] for i in its if i.get("currency")]
