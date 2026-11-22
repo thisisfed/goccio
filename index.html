@@ -2539,6 +2539,7 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
 /* brew screen: the close button sits exactly where the + sits in the top bar (8 px down, 12 px in from the right) */
 .bv .bv-opts{margin-top:-8px} .bv .bv-opts #bvClose{margin-right:-4px}
 .bv .bv-then{font:500 24px/1.2 var(--sans)!important;color:var(--muted)}   /* the next step: the same type as Wait and the lines below */
+.carry .chip > .gx{margin-left:4px}
 </style>
 </head>
 <body>
@@ -6572,8 +6573,9 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
     const rec = lastSeen.url ? shelf.find((r) => r.url === lastSeen.url) : null; if (lastSeen.url && !rec) return;   // gone from the shop: nothing to offer
     const label = rec ? listName(rec) : String(lastSeen.text || "").split(/[,\n]/).slice(0, 2).join(",").trim().slice(0, 40); if (!label) return;
     const need = document.querySelector(".lede-need"); if (!need) return;
-    need.insertAdjacentHTML("afterend", `<p class="carry"><button type="button" class="chip" id="carryBtn">${LANG === "it" ? "Riprendi con" : "Carry on with"} <span translate="no">${esc(calm(label))}</span></button></p>`);
-    $("carryBtn").onclick = () => { if (rec) brewThis(rec); else { $("coffeeIn").value = lastSeen.text; surprisePick = null; build(); landBrewing(); } }; }
+    need.insertAdjacentHTML("afterend", `<p class="carry"><button type="button" class="chip" id="carryBtn">${LANG === "it" ? "Riprendi con" : "Carry on with"} <span translate="no">${esc(calm(label))}?</span><span class="gx" role="button" aria-label="${LANG === "it" ? "Togli" : "Remove"}"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 3l6 6M9 3l-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span></button></p>`);
+    $("carryBtn").onclick = (ev) => { if (ev.target.closest(".gx")) { store.set("v60.last", null); $("carryBtn").parentNode.remove(); return; }   // the ×: forget it, and don't offer it again
+      if (rec) brewThis(rec); else { $("coffeeIn").value = lastSeen.text; surprisePick = null; build(); landBrewing(); } }; }
   function renderShelf() { try { carryOn(); } catch (e) {}
     const t0 = performance.now();
     const q = $("shelfQ").value.trim().toLowerCase();
