@@ -1513,6 +1513,24 @@ def tidy_note(n):
     return n[:1].upper() + n[1:]
 
 
+NOT_A_NOTE = re.compile(r"\b(?:beans?|whole|ground|grind|espresso|filter|omni|cafeti[eè]re|aeropress|v60|washed|natural|anaerobic|light|medium|dark|small|large|regular|mild|strong|size|decaf\w*|"
+                        r"bourbon|gei?sha|caturra|catuai|typica|sl\s?\d+|heirloom|arabica|robusta|organic|fairtrade|blend|single|origin|roast\w*|"
+                        r"the|our|this|with|from|for|your|you|is|are|we|new|free|delivery|bag|kg|subscription|gift|limited|edition)\b", re.I)
+
+
+def first_line_notes(text):
+    """A description that opens with nothing but a short list ("Florals, Mandarin, Raspberry", Long & Short) is the tasting
+    notes, with no label to say so: two to five commas-apart phrases of one to three words, none of them a grind, a process,
+    a variety or ordinary sentence words."""
+    line = next((ln.strip() for ln in (text or "").splitlines() if ln.strip()), "")
+    bits = [b.strip(" .") for b in line.split(",")]
+    if not (2 <= len(bits) <= 5) or len(line) > 70 or re.search(r"\d|[:;!?]", line):
+        return None
+    if any(not b or len(b.split()) > 3 or NOT_A_NOTE.search(b) or first(COUNTRIES, b) for b in bits):
+        return None
+    return line
+
+
 def find_notes(item):
     text = item["body"]
     m = NOTES_CELL.search(text) or NOTES_NEXT.search(text) or NOTES_RE.search(text) or NOTES_LINE.search(text)   # a line that is only the label and its list is the surest
@@ -1521,6 +1539,8 @@ def find_notes(item):
         raw = dot_notes(text)
     if not raw:
         raw = notes_from_text(text)
+    if not raw:
+        raw = first_line_notes(text)
     if not raw:
         # "Name - Country - Note, Note, Note" style titles
         parts = re.split(r"\s[-–|]\s", item["title"])
