@@ -2636,7 +2636,7 @@ footer #tip{margin-top:10px!important}footer #tip a{color:var(--ink);text-decora
   <section class="sec hero-sec" aria-labelledby="h1">
     <div class="hero">
       <div class="wm-screen">
-        <video class="wm-video" id="wmVideo" autoplay muted loop playsinline webkit-playsinline preload="auto" poster="/img/goccio-drop.jpg" aria-hidden="true" tabindex="-1" disablepictureinpicture><source src="/img/goccio-drop.mp4" type="video/mp4"></video>
+        <video class="wm-video" id="wmVideo" autoplay muted playsinline webkit-playsinline preload="auto" poster="/img/goccio-drop.jpg" aria-hidden="true" tabindex="-1" disablepictureinpicture><source src="/img/goccio-drop.mp4" type="video/mp4"></video>
         <p class="wordmark" aria-hidden="true" translate="no"><span id="wm">Goccio</span></p>
         <div class="wm-more">
           <p class="wm-tagline">Your coffee companion</p>
@@ -8687,7 +8687,8 @@ footer #tip{margin-top:10px!important}footer #tip a{color:var(--ink);text-decora
       else {
         // phones are fussy about films that start by themselves: ask again when it has loaded, when the page is shown, and on the
         // first touch or scroll (a touch always lets a silent film start, Low Power Mode included)
-        const kick = () => { if (!v.paused) return; v.muted = true; try { const p = v.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {} };
+        let played = false; v.loop = false; v.addEventListener("ended", () => { played = true; });   // once: the drop falls, the surface settles, and it rests
+        const kick = () => { if (played || v.ended || !v.paused) return; v.muted = true; try { const p = v.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {} };
         ["loadeddata", "canplay"].forEach((ev) => v.addEventListener(ev, kick));
         ["pageshow", "touchstart", "pointerdown", "scroll"].forEach((ev) => addEventListener(ev, kick, { passive: true }));
         document.addEventListener("visibilitychange", () => { if (!document.hidden) kick(); });
