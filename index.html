@@ -7001,6 +7001,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const rest = p && (g || per) ? [g ? `${g} g` : "", shop, per].filter(Boolean).join(", ") : shop ? `${shop} ${it ? "sul sito" : "at the shop"}` : "";   // the shop's price alone only repeats Buy
     return rest ? `<p class="c-price c-per">${rest}</p>` : ""; };
   // Buy is a pill with the price in it, in the card's one row of actions: Brew, Buy, and Save at the end
+  // the grey line under the city says what it is: a roaster whose name doesn't already say so gets "Roastery" after it (Rave Roastery),
+  // one that does is left alone (Square Mile Coffee Roasters, Kaffeerösterei X, Torrefazione Y)
+  const SAYS_ROASTER = /roast|röst|rost|torref|torréf|tostad|brûler|bruler|coffee|caf[eé]|kaffe|kaffee|koffie|kahve|kawa|coffea|beans?\b|\bco\.?$|collective|lab\b|club\b|company/i;
+  const roasteryName = (n) => { n = String(n || "").trim(); if (!n || SAYS_ROASTER.test(n)) return n; return LANG === "it" ? "Torrefazione " + n : n + " Roastery"; };
   // Buy and Save wait behind the row's plus, as language and theme do behind the top bar's
   const rowOpen = new Set(), rowKey = (r) => r.url || (r.roaster + "|" + r.name);
   // the liquid between a row's pills while they part or meet: the top bar's own bridge (window.__bridge), drawn between each pill and
@@ -7140,7 +7144,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       tagBits.push(...coffeeLabels(r, shown).map((l) => `<span class="tg lbl" style="--vc:${LABEL_DOT[l] || "#8e8e93"}">${l}</span>`));
       return `${head}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
         <div class="l">
-          <p class="c-where">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span> ` : !isSp && r.just_in ? `<span class="ji">${LANG === "it" ? "Nuovo" : "New"}</span> ` : ""}${r.roaster_city ? `<span class="rcity">${esc(r.roaster_city)}, </span>` : ""}<span class="day">${day}</span>${cardBuy(r, true) ? ` <span class="c-cost">( ${cardBuy(r, true)} )</span>` : ""}<br class="rn-br"><a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(r.roaster)}</a></p>
+          <p class="c-where">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span> ` : !isSp && r.just_in ? `<span class="ji">${LANG === "it" ? "Nuovo" : "New"}</span> ` : ""}${r.roaster_city ? `<span class="rcity">${esc(r.roaster_city)}, </span>` : ""}<span class="day">${day}</span>${cardBuy(r, true) ? ` <span class="c-cost">( ${cardBuy(r, true)} )</span>` : ""}<br class="rn-br"><a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a></p>
           <span class="name">${esc(calm(shown))}</span>
           <p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p>
           ${cardNotes(r)}${cardPrice(r)}
@@ -7318,7 +7322,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         rk ? `<span class="tg">${esc(cap1(ROAST[rk].label))} roast</span>` : ""].join("");
       return `<article class="item bag">
         <div class="l">
-          ${b.roaster ? `<p class="c-where">${bagCity(b) ? `<span class="rcity">${esc(bagCity(b))}</span><br class="rn-br">` : ""}<span class="rn">${esc(b.roaster)}</span></p>` : `<span class="who">Your coffee</span>`}
+          ${b.roaster ? `<p class="c-where">${bagCity(b) ? `<span class="rcity">${esc(bagCity(b))}</span><br class="rn-br">` : ""}<span class="rn">${esc(roasteryName(b.roaster))}</span></p>` : `<span class="who">Your coffee</span>`}
           <span class="name">${esc(calm(b.roaster ? listName(b) : (b.name || b.text || "Coffee")))}</span>
           ${tags ? `<p class="tags">${tags}</p>` : ""}
           <div class="bag-f">${bagNeedsRoast(b) ? `<div class="bag-rorow"><span>Roast</span><span class="bag-ro">${PHOTO_CHIP.replace('class="chip rp-go"', `class="chip rp-go" data-scan="${i}"`)}<span class="ro-chips" hidden>${OPTS_MORE[1].items.filter(([k]) => k !== "unsure").map(([k, t]) => `<button type="button" class="chip" data-ro="${i}" data-k="${k}">${t}</button>`).join("")}</span><button type="button" class="chip gear-more" data-rodd="${i}" aria-expanded="false" aria-label="${esc(tr("Choose the roast"))}">${plusN(5)}</button></span></span></div>` : ""}<label>Roasted<span class="bag-d${b.roasted ? "" : " empty"}"><input type="date" data-k="roasted" data-i="${i}" value="${esc(b.roasted || "")}"></span></label>
