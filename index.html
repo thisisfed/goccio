@@ -2433,9 +2433,14 @@ footer #tip a:hover, footer .foot-links a:hover{text-decoration-color:transparen
 @media (max-width:640px){ .wm-screen{--fold:58px} }   /* the first screen ends under "Coffees.", now that no pills follow it: no coffee name cut in half */
 #footCredits .foot-copy{margin-top:10px!important}
 @media (max-width:759px){ html body footer .fcol .foot-links{margin-bottom:-7px!important} }   /* as much room under the links, to the bottom bar, as over them, to the rule: 13 px */
-/* the roaster's name a size up (24 px) over the coffee's, so it is read first; the city and the day stay small and grey beside it */
-.item .who a.rn{font-size:var(--fs-m);line-height:1.15;letter-spacing:-.01em;text-decoration-thickness:1px;text-underline-offset:3px}
-.item .who{line-height:1.15}
+/* the roaster's name as big as the coffee's, right above it; where it roasts and the day the coffee came in sit small and grey at the foot of the row */
+.item .who .rn{font-size:39px;line-height:1.05;letter-spacing:-.01em;color:var(--ink)}
+.item .who a.rn{text-decoration-thickness:2px;text-underline-offset:5px}
+@media (min-width:1000px){.item .who .rn{font-size:63px}.item .who a.rn{text-decoration-thickness:3px;text-underline-offset:8px}}
+.item .who{line-height:1.05;white-space:normal;overflow:visible;padding-bottom:4px}
+.item .c-where{margin:-1px 0 0;font-size:var(--fs-s);line-height:20.25px;color:var(--muted)}
+.item .c-where .ji{margin-right:.5em;font-weight:500;color:var(--go)}.item .c-where .ji.fy{color:var(--hl)}
+#shelves.ro-on .item .who,#shelves.ro-on .item .c-where .rcity{display:none!important}
 #gear { display: none !important; }   /* My equipment is gone: brewer, grinder and water are picked in the recipe, and remembered */
 #gear.bare #gearIntro { display: block; width: 100%; }
 #gear.bare .gear-tools { display: none; }
@@ -3230,7 +3235,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   };
   // copied text is laid out in columns: each run between wide gaps is its own piece
   const trBlock = (t) => LANG === "it" && t ? String(t).split("\n").map((l) => l.split(/(\s{2,})/).map((p, j) => j % 2 ? p : tr(p)).join("")).join("\n") : t;
-  const I18N_SKIP = "script,style,svg,#fyNote,[translate=no],.name,.rn,.rcity,#rtitle,.entry .serif,#coffeeIn,#logNote,textarea,ol.refs,.mark,.wordmark,.rs,#justLn,.spec.roastery b,.spec.pick b";
+  const I18N_SKIP = "script,style,svg,#fyNote,[translate=no],.name,.rn,.rcity,.day,#rtitle,.entry .serif,#coffeeIn,#logNote,textarea,ol.refs,.mark,.wordmark,.rs,#justLn,.spec.roastery b,.spec.pick b";
   if (LANG === "it") {
     document.documentElement.lang = "it";
     // the hero and the closing text are built word by word for their animations, so they are rebuilt in Italian
@@ -6968,10 +6973,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       tagBits.push(...coffeeLabels(r, shown).map((l) => `<span class="tg lbl" style="--vc:${LABEL_DOT[l] || "#8e8e93"}">${l}</span>`));
       return `${head}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
         <div class="l">
-          <span class="who">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span> ` : !isSp && r.just_in ? `<span class="ji">${LANG === "it" ? "Nuovo" : "New"}</span> ` : ""}<a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(r.roaster)}</a>${r.roaster_city ? `<span class="rcity">, ${esc(r.roaster_city)}</span>` : ""} <span class="day">(${day})</span></span>
+          <span class="who"><a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(r.roaster)}</a></span>
           <span class="name">${esc(calm(shown))}</span>
           <p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p>
           ${cardNotes(r)}${cardPrice(r)}
+          <p class="c-where">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span> ` : !isSp && r.just_in ? `<span class="ji">${LANG === "it" ? "Nuovo" : "New"}</span> ` : ""}${r.roaster_city ? `<span class="rcity">${esc(r.roaster_city)}, </span>` : ""}<span class="day">${day}</span></p>
         </div>
         <div class="r">
           <button class="btn" type="button" data-i="${i}">Brew</button>${cardBuy(r)}
@@ -7146,9 +7152,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         rk ? `<span class="tg">${esc(cap1(ROAST[rk].label))} roast</span>` : ""].join("");
       return `<article class="item bag">
         <div class="l">
-          <span class="who">${b.roaster ? `<span class="rn">${esc(b.roaster)}</span>${bagCity(b) ? `<span class="rcity">, ${esc(bagCity(b))}</span>` : ""}` : "Your coffee"}</span>
+          <span class="who">${b.roaster ? `<span class="rn">${esc(b.roaster)}</span>` : "Your coffee"}</span>
           <span class="name">${esc(calm(b.roaster ? listName(b) : (b.name || b.text || "Coffee")))}</span>
-          ${tags ? `<p class="tags">${tags}</p>` : ""}
+          ${tags ? `<p class="tags">${tags}</p>` : ""}${b.roaster && bagCity(b) ? `<p class="c-where"><span class="rcity">${esc(bagCity(b))}</span></p>` : ""}
           <div class="bag-f">${bagNeedsRoast(b) ? `<div class="bag-rorow"><span>Roast</span><span class="bag-ro">${PHOTO_CHIP.replace('class="chip rp-go"', `class="chip rp-go" data-scan="${i}"`)}<span class="ro-chips" hidden>${OPTS_MORE[1].items.filter(([k]) => k !== "unsure").map(([k, t]) => `<button type="button" class="chip" data-ro="${i}" data-k="${k}">${t}</button>`).join("")}</span><button type="button" class="chip gear-more" data-rodd="${i}" aria-expanded="false" aria-label="${esc(tr("Choose the roast"))}">${plusN(5)}</button></span></span></div>` : ""}<label>Roasted<span class="bag-d${b.roasted ? "" : " empty"}"><input type="date" data-k="roasted" data-i="${i}" value="${esc(b.roasted || "")}"></span></label>
             <label>Coffee left<span class="bag-gw"><span class="bag-g${isLow(b) ? " low" : ""}"><input type="number" inputmode="numeric" min="0" max="5000" step="1" data-k="left" data-i="${i}" value="${b.left ?? ""}" style="--w:${String(b.left ?? "").length || 1}ch"><span>g</span></span>${buyAgain(b)}</span></label></div>
         </div>
