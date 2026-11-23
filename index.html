@@ -2356,7 +2356,8 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
 .zr-opt[hidden] { display: none !important; }
 #startBrew { display: none !important; }   /* Start brewing lives in the bar at the bottom only */
 #gearIntro { display: none; }
-#millOpt .zr-ctl { justify-content: flex-start; width: auto; } #millOpt .zr-lbl { white-space: nowrap; }
+#millOpt .zr-ctl { justify-content: flex-start; width: auto; margin-top: 8px; }
+#millOpt #zVal { min-width: 38px; white-space: nowrap; word-spacing: .12em; } #millOpt .zr-lbl { white-space: nowrap; }
 #gear { display: none !important; }   /* My equipment is gone: brewer, grinder and water are picked in the recipe, and remembered */
 #gear.bare #gearIntro { display: block; width: 100%; }
 #gear.bare .gear-tools { display: none; }
@@ -4798,7 +4799,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   function kitState() {
     $("zrCtl").hidden = !isC40();   // the Comandante's clicks, under the grinder when it's the one in use
     $("millSel").value = GRINDERS[prefs.mill] ? prefs.mill : "c40"; syncMill();
-    $("zVal").textContent = String(prefs.zero || 0).replace("-", "−").replace(/^−/, "−");   // no "+" in front
+    { const z = prefs.zero || 0; $("zVal").textContent = z > 0 ? "+ " + z : z < 0 ? "− " + -z : "0"; }   // "+ 1", "− 1": the sign stands apart from the number
     $("zeroRow").classList.toggle("on", !!prefs.zero);
     try { adjSum(); } catch (e) {}
   }
