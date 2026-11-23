@@ -7285,18 +7285,18 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   // a coloured sticker with the coffee's details (white print on lime, teal, pink…) is often a small part of the photo: find the
   // biggest solid block of one strong colour, cut it out of the full photo, enlarge it, and turn it into dark print on white
   // (colour strength x brightness: the label comes out light, white or black print dark). Null when there's no such block
-  function panel(src, gamma = 1.4, minPart = 0.025) {
+  function panel(src, gamma = 1.4, minPart = 0.025, sat = 0.4, minFill = 0.62) {
     const w0 = src.naturalWidth || src.width, h0 = src.naturalHeight || src.height, W = 180, H = Math.max(1, Math.round(h0 * W / w0));
     const t = document.createElement("canvas"); t.width = W; t.height = H; const tx = t.getContext("2d", { willReadFrequently: true }); tx.drawImage(src, 0, 0, W, H);
     const d = tx.getImageData(0, 0, W, H).data, m = new Uint8Array(W * H);
-    for (let i = 0, j = 0; j < m.length; i += 4, j++) { const mx = Math.max(d[i], d[i + 1], d[i + 2]), mn = Math.min(d[i], d[i + 1], d[i + 2]); m[j] = mx > 80 && (mx - mn) / mx > 0.4 ? 1 : 0; }
+    for (let i = 0, j = 0; j < m.length; i += 4, j++) { const mx = Math.max(d[i], d[i + 1], d[i + 2]), mn = Math.min(d[i], d[i + 1], d[i + 2]); m[j] = mx > 80 && (mx - mn) / mx > sat ? 1 : 0; }
     let best = null; const seen = new Uint8Array(W * H), st = [];
     for (let s0 = 0; s0 < m.length; s0++) { if (!m[s0] || seen[s0]) continue; let n = 0, x0 = W, x1 = 0, y0 = H, y1 = 0; st.push(s0); seen[s0] = 1;
       while (st.length) { const q = st.pop(), x = q % W, y = (q - x) / W; n++; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
         if (x > 0 && m[q - 1] && !seen[q - 1]) { seen[q - 1] = 1; st.push(q - 1); } if (x < W - 1 && m[q + 1] && !seen[q + 1]) { seen[q + 1] = 1; st.push(q + 1); }
         if (y > 0 && m[q - W] && !seen[q - W]) { seen[q - W] = 1; st.push(q - W); } if (y < H - 1 && m[q + W] && !seen[q + W]) { seen[q + W] = 1; st.push(q + W); } }
       const bw = x1 - x0 + 1, bh = y1 - y0 + 1, fill = n / (bw * bh), part = bw * bh / (W * H);
-      if (part < minPart || part > 0.6 || fill < 0.62 || bw < 14 || bh < 14) continue;   // a sticker is a solid rectangle; leaves outside a window are not
+      if (part < minPart || part > 0.6 || fill < minFill || bw < 14 || bh < 14) continue;   // a sticker is a solid rectangle; leaves outside a window are not
       if (x0 === 0 || y0 === 0 || x1 === W - 1 || y1 === H - 1) continue;              // and it sits inside the photo, not cut by its edge
       if (!best || n * fill > best.sc) best = { sc: n * fill, x0, y0, bw, bh }; }
     if (!best) return null;
@@ -7310,6 +7310,67 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     x.putImageData(im, 0, 0);
     return { canvas: c, sx, sy, k, w0, sw, sh };
   }
+  // the roaster's web address printed tone on tone on the bag itself, under the paper label: near invisible, but always
+  // there. The strip under the label, its grain smoothed away and what little contrast it has stretched to the full
+  function darkLabel(src) {   // a paper label on a dark bag: the biggest bright block with the dark bag under it. Glare on the foil may join it from above, so only its foot is trusted
+    const w0 = src.naturalWidth || src.width, h0 = src.naturalHeight || src.height, W = 200, H = Math.max(1, Math.round(h0 * W / w0));
+    const t = document.createElement("canvas"); t.width = W; t.height = H; const tx = t.getContext("2d", { willReadFrequently: true }); tx.drawImage(src, 0, 0, W, H);
+    const d = tx.getImageData(0, 0, W, H).data, m = new Uint8Array(W * H), dk = new Uint8Array(W * H);
+    for (let i = 0, j = 0; j < m.length; i += 4, j++) { const mx = Math.max(d[i], d[i + 1], d[i + 2]), mn = Math.min(d[i], d[i + 1], d[i + 2]); m[j] = mx > 150 && (mx - mn) / mx < 0.2 ? 1 : 0; dk[j] = mx < 90 ? 1 : 0; }
+    const part = (xa, ya, xb, yb) => { let n = 0, t2 = 0; for (let y = Math.max(0, ya); y <= Math.min(H - 1, yb); y++) for (let x = Math.max(0, xa); x <= Math.min(W - 1, xb); x++) { t2++; n += dk[y * W + x]; } return t2 ? n / t2 : 0; };
+    let best = null; const seen = new Uint8Array(W * H), st = [];
+    for (let s0 = 0; s0 < m.length; s0++) { if (!m[s0] || seen[s0]) continue; let n = 0, x0 = W, x1 = 0, y0 = H, y1 = 0; st.push(s0); seen[s0] = 1;
+      while (st.length) { const q = st.pop(), x = q % W, y = (q - x) / W; n++; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+        if (x > 0 && m[q - 1] && !seen[q - 1]) { seen[q - 1] = 1; st.push(q - 1); } if (x < W - 1 && m[q + 1] && !seen[q + 1]) { seen[q + 1] = 1; st.push(q + 1); }
+        if (y > 0 && m[q - W] && !seen[q - W]) { seen[q - W] = 1; st.push(q - W); } if (y < H - 1 && m[q + W] && !seen[q + W]) { seen[q + W] = 1; st.push(q + W); } }
+      const bw = x1 - x0 + 1, bh = y1 - y0 + 1, fill = n / (bw * bh);
+      if (bw * bh / (W * H) < 0.03 || fill < 0.45 || bw < 20 || bh < 20 || x0 === 0 || y1 === H - 1 || x1 === W - 1) continue;
+      let fx0 = W, fx1 = 0; for (let y = Math.max(y0, y1 - Math.round(bh * 0.15)); y <= y1 - 2; y++) for (let x = x0; x <= x1; x++) if (m[y * W + x]) { if (x < fx0) fx0 = x; if (x > fx1) fx1 = x; }   // the label's foot
+      if (fx1 - fx0 < 20 || part(fx0, y1 + 3, fx1, y1 + 10) < 0.6) continue;
+      if (!best || n > best.n) best = { n, fx0, fx1, y1 }; }
+    if (!best) return null; const f = w0 / W; return { sx: best.fx0 * f, sw: (best.fx1 - best.fx0 + 1) * f, yb: (best.y1 + 1) * f }; }
+  function faintStrips(src, pn) { const out = [], W0 = src.naturalWidth || src.width, H0 = src.naturalHeight || src.height;
+    { const x0 = Math.max(0, pn.sx - pn.sw * 0.1), x1 = Math.min(W0, pn.sx + pn.sw * 1.1), ya = Math.min(H0, pn.yb + pn.sw * 0.03), yb = Math.min(H0, pn.yb + pn.sw * 0.3); if (yb - ya < 40 || x1 - x0 < 200) return out;
+      const k = Math.min(1, 900 / (x1 - x0)), w = Math.round((x1 - x0) * k), h = Math.round((yb - ya) * k);
+      const c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d", { willReadFrequently: true }); x.imageSmoothingQuality = "high"; x.drawImage(src, x0, ya, x1 - x0, yb - ya, 0, 0, w, h);
+      const im = x.getImageData(0, 0, w, h), p = im.data, g = new Float32Array(w * h); let sum = 0;
+      for (let j = 0; j < g.length; j++) { g[j] = 0.299 * p[j * 4] + 0.587 * p[j * 4 + 1] + 0.114 * p[j * 4 + 2]; sum += g[j]; }
+      if (sum / g.length > 120) return out;   // a light bag: its print shows without help
+      const b = boxBlur(boxBlur(g, w, h, 2), w, h, 2), loc = boxBlur(b, w, h, 40), d = new Float32Array(w * h), hist = new Uint32Array(512);
+      for (let j = 0; j < d.length; j++) { d[j] = b[j] - loc[j]; hist[Math.max(0, Math.min(511, Math.round(d[j] * 4) + 256))]++; }
+      const at = (q) => { let a = 0, i = 0; while (i < 511 && (a += hist[i]) < d.length * q) i++; return (i - 256) / 4; };
+      for (const dark of [true, false]) { const med = at(0.5), sg = Math.max(0.4, (at(0.75) - at(0.25)) / 1.35), lo = dark ? med - 4 * sg : med - 0.5 * sg, hi = dark ? med + 0.5 * sg : med + 4 * sg;   // measured on the bag's own grain, so a fold or the bag's edge in the strip can't flatten it   // print darker than the bag, then lighter
+        const c2 = document.createElement("canvas"); c2.width = w; c2.height = h; const im2 = new ImageData(w, h), q = im2.data;
+        for (let j = 0; j < d.length; j++) { let v = Math.max(0, Math.min(1, (d[j] - lo) / (hi - lo))) * 255; if (!dark) v = 255 - v; q[j * 4] = q[j * 4 + 1] = q[j * 4 + 2] = v; q[j * 4 + 3] = 255; }
+        c2.getContext("2d").putImageData(im2, 0, 0); out.push(c2); } }
+    return out; }
+  // a logo drawn as one big word across a coloured sticker (handwriting, a wordmark): far too large for the page read, which looks
+  // for print. The sticker shrunk until the word is the size of a headline, its strokes thickened, is read as a single line
+  function logoShots(src, pn) { const out = [];
+    for (const [hh, fat] of [[150, 2], [220, 3], [110, 1], [150, 4]]) { const k = hh / pn.sh, W = Math.max(8, Math.round(pn.sw * k)), H = hh, M = 24;
+      const t = document.createElement("canvas"); t.width = W; t.height = H; const tx = t.getContext("2d", { willReadFrequently: true }); tx.imageSmoothingQuality = "high"; tx.drawImage(src, pn.sx, pn.sy, pn.sw, pn.sh, 0, 0, W, H);
+      const d = tx.getImageData(0, 0, W, H).data, b = new Uint8Array(W * H), hist = new Uint32Array(256);
+      for (let j = 0; j < b.length; j++) hist[Math.min(d[j * 4], d[j * 4 + 1], d[j * 4 + 2])]++;
+      let top = 255, acc = 0; while (top > 60 && (acc += hist[top]) < b.length * 0.02) top--;   // the paper's white, whatever the light
+      for (let j = 0; j < b.length; j++) { const r = d[j * 4], g = d[j * 4 + 1], bl = d[j * 4 + 2], mx = Math.max(r, g, bl), mn = Math.min(r, g, bl); b[j] = mn >= top * 0.8 && (mx - mn) / mx < 0.16 ? 1 : 0; }
+      // white that runs off the sticker is the bag or the paper under the artwork, not the word
+      const st = []; const kill = (q) => { if (b[q] === 1) { b[q] = 2; st.push(q); } };
+      for (let x = 0; x < W; x++) { kill(x); kill((H - 1) * W + x); } for (let y = 0; y < H; y++) { kill(y * W); kill(y * W + W - 1); }
+      while (st.length) { const q = st.pop(), x = q % W, y = (q - x) / W; if (x > 0) kill(q - 1); if (x < W - 1) kill(q + 1); if (y > 0) kill(q - W); if (y < H - 1) kill(q + W); }
+      // the word's strokes are the tall shapes; specks and thin streaks of light paint are not
+      const lab = new Int32Array(W * H), boxes = []; let tall = 0;
+      for (let s0 = 0; s0 < b.length; s0++) { if (b[s0] !== 1 || lab[s0]) continue; const id = boxes.length + 1; let y0 = H, y1 = 0; st.push(s0); lab[s0] = id;
+        while (st.length) { const q = st.pop(), x = q % W, y = (q - x) / W; if (y < y0) y0 = y; if (y > y1) y1 = y;
+          for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [1, -1], [-1, 1], [1, 1]]) { const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue; const r = yy * W + xx; if (b[r] === 1 && !lab[r]) { lab[r] = id; st.push(r); } } }
+        boxes.push(y1 - y0 + 1); if (y1 - y0 + 1 > tall) tall = y1 - y0 + 1; }
+      if (tall < H * 0.3) continue;   // no big white word here
+      let n = 0; for (let j = 0; j < b.length; j++) { if (b[j] === 1 && boxes[lab[j] - 1] < tall * 0.3) b[j] = 0; if (b[j] === 1) n++; } if (n < b.length * 0.01 || n > b.length * 0.3) continue;
+      const tmp = new Uint8Array(W * H), fatb = new Uint8Array(W * H);
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { let v = 0; for (let q = Math.max(0, x - fat); q <= Math.min(W - 1, x + fat) && !v; q++) v = b[y * W + q] === 1; tmp[y * W + x] = v; }
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { let v = 0; for (let q = Math.max(0, y - fat); q <= Math.min(H - 1, y + fat) && !v; q++) v = tmp[q * W + x]; fatb[y * W + x] = v; }
+      const c = document.createElement("canvas"); c.width = W + 2 * M; c.height = H + 2 * M; const x2 = c.getContext("2d"); x2.fillStyle = "#fff"; x2.fillRect(0, 0, c.width, c.height);
+      const im = x2.getImageData(M, M, W, H), p = im.data; for (let j = 0; j < fatb.length; j++) { const g = fatb[j] ? 0 : 255; p[j * 4] = p[j * 4 + 1] = p[j * 4 + 2] = g; p[j * 4 + 3] = 255; } x2.putImageData(im, M, M); out.push(c); }
+    return out; }
   // a white paper label on a coloured bag (the commonest bag there is): the biggest bright, colourless block that sits inside
   // the photo with strong colour around it. Its artwork leaves a hole, so the block's outline is what counts. Cut out, enlarged
   // and stretched to full contrast, the small print under the artwork becomes readable. Null when there's no such label
@@ -7495,7 +7556,15 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           reads.push({ lines: ls.map((l, j) => ({ text: l.text, confidence: l.confidence, bbox: { x0: 0, x1: 200, y0: base.height + j * 30, y1: base.height + j * 30 + 16 } })), words: [] }); } } }
     await w.terminate();
     if (!reads.length) throw new Error("slow");
-    return { ...mergeReads(reads), rot, angle: pre.angle, inverted: pre.inverted };
+    // the logo: one big white word across a coloured sticker, read as a single line at a few sizes
+    // two short extra reads with a reader of their own (the main one may still be busy with a pass that ran over time)
+    let logo = [], faint = []; try { const pn = panel(img, 1.4, 0.04, 0.2, 0.5), shots = pn ? logoShots(img, pn) : [], wl = darkLabel(img), strips = wl ? faintStrips(img, wl) : [];
+      if (shots.length || strips.length) { const w2 = await newWorker(T);
+        await Promise.race([(async () => {
+          for (const c of strips) { const r = await w2.recognize(c); (r.data.lines || []).forEach((l) => { if (/[a-z]{6}/i.test(l.text)) faint.push(l.text.trim()); }); }
+          if (shots.length) { await w2.setParameters({ tessedit_pageseg_mode: "7" }); for (const c of shots) { const r = await w2.recognize(c); if (r.data.text) logo.push(r.data.text.trim()); } }
+        })(), new Promise((ok) => setTimeout(ok, 10000))]); w2.terminate(); } } catch (err) {}
+    return { ...mergeReads(reads), rot, angle: pre.angle, inverted: pre.inverted, logo, faint };
   }
 
   // ---- 3. parsing: vocabulary first, layout second, nothing guessed. Every field comes back as { v, c: "high"|"medium"|"low", why } ----
@@ -7606,8 +7675,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     ["Morrisons", /\bmorrisons\b/], ["Co-op", /\bco-?op\b/], ["L’OR", /\bl'?or espresso\b|\bl’or\b/], ["Jacobs", /\bjacobs\b/], ["Segafredo", /\bsegafredo\b/], ["Kimbo", /\bkimbo\b/],
     ["Café Royal", /\bcafe royal\b/], ["Melitta", /\bmelitta (?:coffee|bella|auslese)\b/], ["Black Sheep", /\bblack sheep coffee\b/], ["Pret", /\bpret a manger\b/]];
   function brandOf(lines) {   // the brand whose name is set biggest (a shelf label behind the bag is small print)
-    let best = null; BRANDS.forEach(([name, re]) => { let w = 0; lines.forEach((l) => { const t = String(l.text || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); if (re.test(t)) w += (l.h || 10) * ((l.conf || 60) >= 50 ? 1 : 0.5); });
-      const all = lines.map((l) => String(l.text || "").toLowerCase()).join(" "); if (!w && re.test(all)) w = 5;
+    let best = null; BRANDS.forEach(([name, re]) => { let w = 0; lines.forEach((l) => { const t = String(l.text || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); if ((l.conf == null || l.conf >= 35) && re.test(t)) w += (l.h || 10) * ((l.conf || 60) >= 50 ? 1 : 0.5); });
+      const all = lines.filter((l) => l.conf == null || l.conf >= 35).map((l) => String(l.text || "").toLowerCase()).join(" "); if (!w && re.test(all)) w = 5;
       if (w && (!best || w > best.w)) best = { name, w }; }); return best && best.name; }
   const IS_COFFEE = /\b(coffees?|caff[eè]|caf[eé]|kaffee?|koffie|espresso|filter|roast(?:ed|ery|ers?|ing)?|torrefa\w+|whole beans?|arabica|robusta|washed|anaerobic|masl|m\.a\.s\.l|varietal|decaf\w*|cupping)\b/gi;
   function notCoffee(ocr, f) {
@@ -7779,10 +7848,21 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const hits = shelf.filter((r) => { const ts = norm(r.name || "").split(" ").filter((w) => w.length >= 4 && !lands.has(w) && !/^(coffee|natural|washed|honey|decaf|espresso|filter|blend|anaerobic|year)$/.test(w)); return ts.length >= 2 && ts.every((t) => ws.has(t)); });
       const who = [...new Set(hits.map((r) => r.roaster))];
       if (who.length === 1) roaster = { name: who[0], s: 0.9, l: { text: hits[0].name, conf: 80 }, i: -1, onList: true }; }
+    // still no name: their web address printed tone on tone on the bag ("timwendelbo: a0"). Faint, so a letter may be lost
+    if (!roaster && (ocr.faint || []).length) { const toks = [...new Set(ocr.faint.flatMap((t) => norm(t).split(" ")))].filter((t) => t.length >= 8), hit = new Map();
+      toks.forEach((t) => known.forEach(({ k, name }) => { const kk = k.replace(/ /g, ""); if (kk.length < 8) return; const d = lev(t.slice(0, kk.length + 1), kk); if (d <= Math.floor(kk.length / 4) && (!hit.has(name) || d < hit.get(name).d)) hit.set(name, { d, t }); }));
+      const top = [...hit].sort((a, b) => a[1].d - b[1].d);
+      if (top.length && (!top[1] || top[0][1].d < top[1][1].d)) roaster = { name: top[0][0], s: 0.7, l: { text: top[0][1].t, conf: 60 }, i: -1, faint: true }; }
+    // still no name: the logo. Handwriting never reads letter for letter ("hoppy"), so it only has to come close to one roaster we know, and to no other
+    if (!roaster && (ocr.logo || []).length) { const votes = new Map();
+      [...new Set(ocr.logo.map((t) => norm(t).replace(/ /g, "")))].filter((t) => t.length >= 4).forEach((t) => knownRoasterKeys().forEach(({ k, name }) => { const kk = k.replace(/ /g, "");
+        if (kk.length < 5 || Math.abs(kk.length - t.length) > 1) return; const d = lev(t, kk); if (d <= 2) votes.set(name, (votes.get(name) || 0) + 3 - d); }));
+      const top = [...votes].sort((a, b) => b[1] - a[1]);
+      if (top.length && top[0][1] >= 2 && (!top[1] || top[0][1] >= 2 * top[1][1])) roaster = { name: top[0][0], s: 0.4, l: { text: top[0][0], conf: 40 }, i: -1, logo: true }; }
     if (roaster && roaster.name && roaster.l && !roaster.web && !roaster.side && !roaster.brand
         && (/^(speciality|specialty|coffee|roasters?|roastery|torrefacteur|cafes? fins?)$/.test(norm(roaster.name)) || (/,/.test(roaster.l.text || "") && flvN(roaster.l.text) >= 1) || /^(speciality|specialty) coffee roasters?$/.test(norm(roaster.l.text || "")))) roaster = null;
     out.roaster = roaster && roaster.name ? { v: roaster.name, c: roaster.side || roaster.web || roaster.brand || roaster.listed ? "high" : cf(Math.min(1, roaster.s), roaster.l.conf),
-        why: roaster.onList ? `“${roaster.l.text}” is on today’s list` : roaster.web ? `their ${roaster.web} “${roaster.l.text}”` : roaster.brand ? "a supermarket brand" : roaster.side ? "the name down the side of the bag" : "“" + roaster.l.text + "”" }
+        why: roaster.onList ? `“${roaster.l.text}” is on today’s list` : roaster.web ? `their ${roaster.web} “${roaster.l.text}”` : roaster.brand ? "a supermarket brand" : roaster.logo ? "the logo looks like it" : roaster.faint ? `“${roaster.l.text}” printed on the bag` : roaster.side ? "the name down the side of the bag" : "“" + roaster.l.text + "”" }
       : { v: null, why: "No roaster name found: it’s often a logo, or on the back" };
     if (roaster && roaster.brand) Object.defineProperty(out, "brand", { value: roaster.name, enumerable: false });
     // coffee name: the biggest print, with the short lines it's set in (THE / ESTATE, BROADWAY / BLEND). Never the small line
@@ -8124,10 +8204,14 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   // test hook (only with ?scantest): run the whole photo pipeline on a file and return the fields
   if (/[?&]scantest\b/.test(location.search)) window.__read = async (blob) => { const T = await loadOcr(), img = await loadImg(blob), w = await newWorker(T, () => {}), r = await w.recognize(toCanvas(img)); await w.terminate(); return r.data.lines.map((l) => [l.text.trim(), Math.round(l.confidence)]); };
   if (/[?&]scantest\b/.test(location.search)) window.__wl = async (blob) => { const T = await loadOcr(), img = await loadImg(blob), pn = whiteLabel(img); if (!pn) return null; const w = await newWorker(T, () => {}), r = await w.recognize(pn.canvas); await w.terminate(); return { size: [pn.canvas.width, pn.canvas.height], lines: r.data.lines.map((l) => [l.text.trim(), Math.round(l.confidence)]) }; };
+  if (/[?&]scantest\b/.test(location.search)) window.__logo = async (blob) => { const T = await loadOcr(), img = await loadImg(blob), pn = panel(img, 1.4, 0.04, 0.2, 0.5); if (!pn) return null; const w = await newWorker(T, () => {}), out = [[pn.sx, pn.sy, pn.sw, pn.sh, pn.w0]]; window.__shots = logoShots(img, pn).map((c) => c.toDataURL("image/png")); window.__pn = pn.canvas.toDataURL("image/jpeg", 0.7);
+    for (const psm of ["7", "8", "13"]) { await w.setParameters({ tessedit_pageseg_mode: psm }); for (const c of logoShots(img, pn)) { const r = await w.recognize(c); out.push([psm, c.width, r.data.text.trim(), Math.round(r.data.confidence)]); } } await w.terminate(); return out; };
+  if (/[?&]scantest\b/.test(location.search)) window.__faint = async (blob) => { const T = await loadOcr(), img = await loadImg(blob), wl = darkLabel(img); if (!wl) return "no label"; const st = faintStrips(img, wl), w = await newWorker(T, () => {}), out = [[wl.sx, wl.yb, wl.sw, st.length]];
+    window.__shots = st.map((c) => c.toDataURL("image/png")); for (const c of st) { const r = await w.recognize(c); out.push(r.data.lines.map((l) => [l.text.trim(), Math.round(l.confidence)])); } await w.terminate(); return out; };
   if (/[?&]scantest\b/.test(location.search)) window.__panel = async (blob) => { const img = await loadImg(blob), pn = panel(img); return pn ? pn.canvas.toDataURL("image/jpeg", 0.8) : null; };
   if (/[?&]scantest\b/.test(location.search)) { window.__prep = async (blob) => { const img = await loadImg(blob), c0 = toCanvas(img); const pre = prepare(img);
       return { angle: pre.angle, inv: pre.inverted, gray: pre.gray.toDataURL("image/jpeg", 0.7), bin: pre.bin.toDataURL("image/png"), edge: pre.edge.toDataURL("image/png") }; }; }
-  if (/[?&]scantest\b/.test(location.search)) window.__scan = async (blob) => { const ocr = await readPhoto(blob); return { rot: (ocr.rot || []).map((l) => [l.text, Math.round(l.conf)]), fields: readFields(ocr, null), other: notCoffee(ocr, readFields(ocr, null)), lines: ocr.lines.map((l) => [l.text, Math.round(l.conf), l.h]), rot: (ocr.rot || []).map((l) => [l.text, Math.round(l.conf)]), angle: ocr.angle, inverted: ocr.inverted, match: (() => { const m = shelfMatch(readFields(ocr, null)); return !m ? null : m.pick ? m.pick.roaster + " | " + m.pick.name + (m.sure ? "" : " (?)") : "choose: " + m.choices.map((r) => r.roaster).join(", "); })() }; };
+  if (/[?&]scantest\b/.test(location.search)) window.__scan = async (blob) => { const ocr = await readPhoto(blob); return { logo: ocr.logo, faint: ocr.faint, rot: (ocr.rot || []).map((l) => [l.text, Math.round(l.conf)]), fields: readFields(ocr, null), other: notCoffee(ocr, readFields(ocr, null)), lines: ocr.lines.map((l) => [l.text, Math.round(l.conf), l.h]), rot: (ocr.rot || []).map((l) => [l.text, Math.round(l.conf)]), angle: ocr.angle, inverted: ocr.inverted, match: (() => { const m = shelfMatch(readFields(ocr, null)); return !m ? null : m.pick ? m.pick.roaster + " | " + m.pick.name + (m.sure ? "" : " (?)") : "choose: " + m.choices.map((r) => r.roaster).join(", "); })() }; };
 
   $("shelfQ").addEventListener("input", () => { $("shelfQx").hidden = !$("shelfQ").value; shelfAll = false; renderShelf(); keepShelfTop(); });
   // the cross clears what you typed and leaves the cursor in the box
