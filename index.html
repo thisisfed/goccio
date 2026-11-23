@@ -2492,7 +2492,7 @@ html.brew-in .botnav [data-bn]:not([data-bn="cancel"]):not([data-bn="coffee"]){d
 /* the recipe's own actions: Use my own recipe, then a plus that lets Copy, Share and Save out, with the same fluid motion as a coffee's row */
 #recipe .share > .share-more{border:0;border-radius:50%;width:var(--pill-h);height:var(--pill-h);padding:0;display:inline-flex;align-items:center;justify-content:center;flex:none;background:var(--pill);color:var(--ink);cursor:pointer;position:relative;z-index:2;align-self:center}
 @media (hover:hover){ #recipe .share > .share-more:hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))} }
-#recipe .share:not(.more-open) > .btn:not(#mUse){display:none!important}
+
 .share.more-open:not(.more-closing) > .row-more .tb-v{transform:scaleY(0)}
 #recipe .share.more-anim > .share-more{transform-origin:0 50%;animation:drop-p 1.098s linear both}
 #recipe .share.more-anim > .btn:not(#mUse){transform-origin:0 50%;animation:drop-l 1.098s linear both, row-fade 1.098s linear both}
@@ -2580,10 +2580,9 @@ html.brew-in #fyNote{display:none!important}
 /* the recipe stands on a slightly lighter black than the list around it, edge to edge: a different room, no new colour */
 #recipe{background:color-mix(in srgb,var(--ink) 6%,var(--bg));margin-inline:calc(50% - 50vw)!important;padding-inline:calc(50vw - 50%)!important;padding-top:12px!important;padding-bottom:16px!important}
 /* What’s brewing and its pill in the bottom bar wait until a coffee is wanted: Brew on a coffee, or I have a coffee */
-html:not(.mine) .botnav [data-bn="coffee"], html:not(.mine) body #coffee > :not(.wb-sign){display:none!important}
-/* until then the section is only its sign-off, "Brew something good.", with the same room over it as under it */
-html:not(.mine) body #coffee#coffee#coffee{display:block!important;min-height:0!important;padding-top:0!important;padding-bottom:0!important}
-html:not(.mine) body #coffee > .wb-sign{display:block!important;margin:0!important;padding:43px 0!important;text-align:center;font:500 var(--fs-m, 24px)/1.15 var(--sans);letter-spacing:-.02em;color:var(--ink)}
+html:not(.mine) .botnav [data-bn="coffee"]{display:none!important}
+/* until then the section keeps its full shape with the form unseen: "Brew something good." sits where it always does, just over the rule at the bottom */
+html:not(.mine) body #coffee > :not(.wb-sign){visibility:hidden!important;pointer-events:none!important}
 /* tags stay on one line: a tag too long for it (a list of varieties) is cut with an ellipsis, the longest giving way first */
 html body .item .tags{display:flex!important;flex-wrap:nowrap!important;min-width:0;max-width:100%;overflow:hidden}
 html body .item .tags > *{flex:0 1 auto;min-width:0;white-space:nowrap!important;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal!important}
@@ -2594,9 +2593,17 @@ html body .item .tags > :last-child{min-width:0}
 html body .shelf .item > .r > .buy-p:not(.ro-all){order:1!important}
 html body .shelf .item > .r > .btn{order:2!important;margin-left:0!important}
 html body .shelf .item > .r > .ro-all{order:3!important}
-/* What's brewing arrives under the sign-off, which stays where it was */
-html.mine.no-recipe body #coffee#coffee#coffee{padding-top:0!important}
-html.mine.no-recipe body #coffee > .wb-sign{order:-1;margin:0!important;padding:43px 0!important}
+/* the recipe's actions, all out: Use my own recipe, Buy, then the small ones */
+html body #recipe .share > .share-more{display:none!important}
+html body #recipe .share > .btn{display:inline-flex!important;animation:none!important;opacity:1!important;transform:none!important}
+html body #recipe .share > .btn[hidden]{display:none!important}
+html body #recipe .share > #mUse{order:-2!important;margin:0!important}
+html body #recipe .share > #buyBtn{order:-1!important}
+/* a bag's row: Freeze, Brew, Remove */
+html body #bagList .item > .r > .bag-fzp{order:1!important}
+html body #bagList .item > .r > .btn{order:2!important}
+html body #bagList .item > .r > .bag-rm{order:3!important}
+@media (max-width:345px){ html body #recipe .share > #mUse{padding-left:5px!important;padding-right:5px!important} html body #recipe .share > #buyBtn{padding-left:8px!important;padding-right:8px!important} html body #recipe .share{gap:2px!important} }   /* the narrowest phones: the five still share one line */
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
@@ -7390,8 +7397,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
             <label>Coffee left<span class="bag-gw"><span class="bag-g${isLow(b) ? " low" : ""}"><input type="number" inputmode="numeric" min="0" max="5000" step="1" data-k="left" data-i="${i}" value="${b.left ?? ""}" style="--w:${String(b.left ?? "").length || 1}ch"><span>g</span></span>${buyAgain(b)}</span></label></div>
         </div>
         <div class="r">
-          <button class="btn" type="button" data-brew="${i}">Brew</button>
           <button type="button" class="pill bag-fzp" data-fz="${i}" aria-pressed="${!!b.frozen}">${b.frozen ? "Frozen" : "Freeze"}</button>
+          <button class="btn" type="button" data-brew="${i}">Brew</button>
           <button type="button" class="pill bag-rm" data-rm="${i}">Remove</button>
         </div>
         <p class="rp-msg bag-rp" id="bagRp-${i}" hidden></p>
