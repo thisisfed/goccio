@@ -2430,13 +2430,12 @@ html body footer .foot-links a{display:inline!important;width:auto!important}
 footer #tip a:hover, footer .foot-links a:hover{text-decoration-color:transparent!important}   /* every footer link drops its line on hover, Buy me a coffee included */
 .scan-review.only-match .sc-hit svg{display:none!important}   /* It's a match!: the words alone */
 .shelf-tools{display:none!important}   /* the New / Where / Price / Process / Origin bar is gone: the search box does the finding */
-@media (max-width:640px){ .wm-screen{--fold:58px} }   /* the first screen ends under "Coffees.", now that no pills follow it: no coffee name cut in half */
+@media (max-width:640px){ .wm-screen{--fold:84px} }   /* the first screen ends under "Coffees.", now that no pills follow it: no coffee name cut in half */
 #footCredits .foot-copy{margin-top:10px!important}
 @media (max-width:759px){ html body footer .fcol .foot-links{margin-bottom:-7px!important} }   /* as much room under the links, to the bottom bar, as over them, to the rule: 13 px */
 /* the avatar: a ring, a little liquid, two eyes. One home, bottom right above the bar, always there; it never takes a tap.
    It idles (blinks, looks around, yawns, dozes) and it follows what the site is doing: looking at a bag, measuring a brew, done, not sure */
-.gav{position:fixed;right:12px;bottom:calc(var(--bot-h, 64px) + 12px);z-index:28;width:64px;height:64px;pointer-events:none;color:var(--ink);display:block;
-  filter:drop-shadow(0 2px 10px rgba(0,0,0,.55));transition:translate .5s cubic-bezier(.3,1.3,.5,1), opacity .3s}
+.gav{position:absolute;left:0;top:0;z-index:24;width:64px;height:64px;pointer-events:none;color:var(--ink);display:block;transition:translate .5s cubic-bezier(.3,1.3,.5,1), opacity .3s}   /* its home: centred over the big Goccio, the size of its o, drawn with the same stroke */
 .gav svg{display:block;width:100%;height:100%;overflow:visible}
 .gav .bg{fill:var(--bg)}
 .gav .gl{transition:translate .6s cubic-bezier(.3,1.4,.5,1), rotate .6s cubic-bezier(.3,1.4,.5,1), fill .25s ease;transform-box:view-box;transform-origin:50px 50px}
@@ -2451,9 +2450,13 @@ footer #tip a:hover, footer .foot-links a:hover{text-decoration-color:transparen
 .gav.happy .ge{scale:1.1 .22;translate:0 -2px}
 .gav.odd .ge.l{scale:.7} .gav.odd .ge.r{scale:1.15}
 .gav.hop{translate:0 -6px}
-.gav.in-brew{z-index:101;right:28px;bottom:150px}   /* on the brewing screen it sits in the card's corner, over the progress bar, and the liquid follows the pour */
-html:has(#askIn:focus) .gav, html:has(.scan-review.only-match:not([hidden])) .gav{opacity:0}
 @media (prefers-reduced-motion: reduce){ .gav, .gav *{transition:none!important} }
+/* section titles: the big size, with room over them, so each reads as a start. The recipe's own title inside an open coffee stays at 24 px, under the coffee's name */
+.sec-head .cap:first-child, #askLbl{font-size:var(--fs-xl, 39px)!important;line-height:1.05!important;letter-spacing:-.03em!important}
+.sec-head{padding-top:24px!important}
+#coffee .ask > #askLbl{display:block;padding-top:11px}
+.brew-host #recipe .sec-head{padding-top:8px!important}
+.brew-host #recipe .sec-head .cap:first-child{font-size:var(--fs-m, 24px)!important;line-height:1.15!important;letter-spacing:-.02em!important}
 #gear { display: none !important; }   /* My equipment is gone: brewer, grinder and water are picked in the recipe, and remembered */
 #gear.bare #gearIntro { display: block; width: 100%; }
 #gear.bare .gear-tools { display: none; }
@@ -8232,13 +8235,23 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     new MutationObserver(fit).observe($("coffee"), { attributes: true, attributeFilter: ["hidden"] }); fit(); }
   // ---- the avatar ----
   { const el = $("gav"), still = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
-    el.innerHTML = `<svg viewBox="0 0 100 100"><defs><clipPath id="gavc"><circle cx="50" cy="50" r="38"/></clipPath></defs><circle class="bg" cx="50" cy="50" r="40"/>
-      <g clip-path="url(#gavc)"><rect class="gl" x="-20" y="90" width="140" height="140"/></g><circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" stroke-width="5"/>
-      <g class="eyes"><ellipse class="ge l" cx="38" cy="44" rx="5.4" ry="7.4"/><ellipse class="ge r" cx="62" cy="44" rx="5.4" ry="7.4"/><ellipse class="gm" cx="50" cy="62" rx="5" ry="6.5"/></g></svg>`;
+    el.innerHTML = `<svg viewBox="0 0 100 100"><defs><clipPath id="gavc"><circle cx="50" cy="50" r="32"/></clipPath></defs><circle class="bg" cx="50" cy="50" r="40"/>
+      <g clip-path="url(#gavc)"><rect class="gl" x="-20" y="82" width="140" height="140"/></g><circle cx="50" cy="50" r="39.75" fill="none" stroke="currentColor" stroke-width="16.5"/>
+      <g class="eyes"><ellipse class="ge l" cx="40.5" cy="45" rx="4.4" ry="6.2"/><ellipse class="ge r" cx="59.5" cy="45" rx="4.4" ry="6.2"/><ellipse class="gm" cx="50" cy="60" rx="4" ry="5.2"/></g></svg>`;
+    // where it lives: over the wordmark, centred, as tall as its o (0.543 of the type size), sitting a little above the capital G
+    const place = () => { const wm = $("wm"); if (!wm) return; const fs = parseFloat(getComputedStyle(wm).fontSize) || 100, D = fs * 0.543, word = wm.parentElement, bar = document.querySelector(".top");
+      // on a wide screen the word fills the top of the page: it moves down just enough for the avatar to stand on it, clear of the top bar
+      const scr = document.querySelector(".wm-screen"); if (scr) { scr.style.removeProperty("min-height"); const r0 = wm.getBoundingClientRect(), room = r0.top + scrollY + fs * 0.025 - ((bar ? bar.offsetHeight : 49) + 12);
+        if (room < D) { for (let k = 0; k < 4; k++) { const rk = wm.getBoundingClientRect(), need = D - (rk.top + scrollY + fs * 0.025 - ((bar ? bar.offsetHeight : 49) + 12)); if (need <= 0.5) break;
+            scr.style.setProperty("min-height", Math.ceil(scr.offsetHeight + need) + "px", "important"); } } }
+      const r = wm.getBoundingClientRect();
+      el.style.width = el.style.height = D + "px"; el.style.left = (r.left + scrollX + r.width / 2 - D / 2) + "px"; el.style.top = (r.top + scrollY + fs * 0.135 - fs * 0.11 - D) + "px"; };
+    place(); addEventListener("resize", place); addEventListener("load", place); if (document.fonts && document.fonts.ready) document.fonts.ready.then(place); [300, 900, 2000, 4000].forEach((t) => setTimeout(place, t));
+    try { new MutationObserver(place).observe($("wm"), { attributes: true, attributeFilter: ["style"] }); } catch (e) {}
     const gl = el.querySelector(".gl"), eyes = el.querySelector(".eyes"), FACES = ["blink", "doze", "wide", "focus", "happy", "odd", "yawn"];
     let mode = "rest", lvNow = 0.3;
     // the liquid: how much, tilted or not, orange while the site is at work. On a full ring the eyes go dark so they still show
-    const pour = (lv, tilt, hot) => { lvNow = lv; gl.style.translate = `0 ${-lv * 80}px`; gl.style.rotate = (tilt || 0) + "deg"; gl.style.fill = hot ? "var(--hl)" : "currentColor";
+    const pour = (lv, tilt, hot) => { lvNow = lv; gl.style.translate = `0 ${-lv * 64}px`; gl.style.rotate = (tilt || 0) + "deg"; gl.style.fill = hot ? "var(--hl)" : "currentColor";
       eyes.style.fill = lv > 0.62 && !hot ? "var(--bg)" : lv > 0.62 ? "#000" : "currentColor"; };
     const face = (f) => { FACES.forEach((x) => el.classList.toggle(x, x === f)); };
     const look = (x, y) => { eyes.style.translate = `${x}px ${y}px`; };
@@ -8246,7 +8259,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       if (m === "rest") { pour(0.3); face(null); look(0, 0); }
       else if (m === "working") { pour(0.34, -14, true); face("focus"); look(-5, 5); }
       else if (m === "looking") { pour(0.3); face("wide"); look(0, -6); }
-      else if (m === "measuring") { pour(lv, 0, true); face(null); look(0, Math.max(-18, Math.min(10, 34 - lv * 80))); }   // the eyes ride just above the level
+      else if (m === "measuring") { pour(lv, 0, true); face(null); look(0, Math.max(-14, Math.min(8, 26 - lv * 64))); }   // the eyes ride just above the level
       else if (m === "done") { pour(1); face("happy"); look(0, 0); el.classList.add("hop"); setTimeout(() => el.classList.remove("hop"), 320); }
       else if (m === "unsure") { pour(0.06); face("odd"); look(0, 2); } };
     window.gav = set; pour(0.3);
@@ -8269,7 +8282,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const m = /^(Cleaning|Reading|Looking|Opening|Getting|Pulisco|Leggo|Cerco)/i.test(t) || /…$/.test(t) ? "looking" : /^Found it|^Trovato/i.test(t) ? "done" : /couldn’t|could not|nothing|no text|try again|non riesco|niente/i.test(t) ? "unsure" : "rest";
       set(m); if (m === "done" || m === "unsure") smT = setTimeout(() => set("rest"), 3500); }).observe(sm, { childList: true, characterData: true, subtree: true });
     let brewing = false;
-    setInterval(() => { const open = !$("bv").hidden; el.classList.toggle("in-brew", open); if (!open) { if (brewing) { brewing = false; set("rest"); } return; } brewing = true;
+    setInterval(() => { const open = !$("bv").hidden; if (!open) { if (brewing) { brewing = false; set("rest"); } return; } brewing = true;
       const st = $("bvState").textContent.trim(), head = $("bvBar").querySelector(".head"), p = head ? parseFloat(head.style.left) / 100 : 0;
       if (/^(Done|Fatto|Finished|Enjoy)/i.test(st) || p >= 0.995) set("done"); else if (/^(Ready|Pronto)/i.test(st) || !(p > 0)) set("rest"); else set("measuring", 0.12 + p * 0.8); }, 500); }
   window.__useScan = () => !!(review && !$("scanReview").hidden && applyReview());
