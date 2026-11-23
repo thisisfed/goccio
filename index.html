@@ -7373,6 +7373,24 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   }
   function rotate(c, deg) { if (!deg) return c; const a = (deg * Math.PI) / 180, o = document.createElement("canvas"); o.width = c.width; o.height = c.height;
     const x = o.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, o.width, o.height); x.translate(o.width / 2, o.height / 2); x.rotate(-a); x.drawImage(c, -c.width / 2, -c.height / 2); return o; }
+  // the local median of a grey image, worked out on a small copy (one value per 8 x 8 block) and stretched back smoothly
+  function medianBg(g, w, h, r) {
+    const S = 8, sw = Math.ceil(w / S), sh = Math.ceil(h / S), small = new Float32Array(sw * sh), cnt = new Uint16Array(sw * sh);
+    for (let y = 0; y < h; y++) { const row = (y / S | 0) * sw; for (let x = 0; x < w; x++) { const k = row + (x / S | 0); small[k] += g[y * w + x]; cnt[k]++; } }
+    for (let k = 0; k < small.length; k++) small[k] /= cnt[k] || 1;
+    const rr = Math.max(2, Math.round(r / S)), med = new Float32Array(sw * sh), hist = new Uint16Array(256);
+    for (let y = 0; y < sh; y++) { const y0 = Math.max(0, y - rr), y1 = Math.min(sh - 1, y + rr);
+      hist.fill(0); let n = 0;   // a sliding histogram along the row: add the column coming in, drop the one going out
+      const col = (x, d) => { for (let yy = y0; yy <= y1; yy++) { hist[small[yy * sw + x] | 0] += d; } n += d * (y1 - y0 + 1); };
+      for (let x = 0; x <= Math.min(sw - 1, rr); x++) col(x, 1);
+      for (let x = 0; x < sw; x++) { if (x > 0) { if (x + rr < sw) col(x + rr, 1); if (x - rr - 1 >= 0) col(x - rr - 1, -1); }
+        let acc = 0, v = 0; const half = n / 2; while (v < 255 && (acc += hist[v]) < half) v++; med[y * sw + x] = v; } }
+    const out = new Float32Array(w * h);
+    for (let y = 0; y < h; y++) { const fy = Math.min(sh - 1, Math.max(0, (y + 0.5) / S - 0.5)), ya = fy | 0, yb = Math.min(sh - 1, ya + 1), ty = fy - ya;
+      for (let x = 0; x < w; x++) { const fx = Math.min(sw - 1, Math.max(0, (x + 0.5) / S - 0.5)), xa = fx | 0, xb = Math.min(sw - 1, xa + 1), tx = fx - xa;
+        out[y * w + x] = (med[ya * sw + xa] * (1 - tx) + med[ya * sw + xb] * tx) * (1 - ty) + (med[yb * sw + xa] * (1 - tx) + med[yb * sw + xb] * tx) * ty; } }
+    return out;
+  }
   function prepare(src) {
     const c0 = toCanvas(src), w = c0.width, h = c0.height; let g = lum(c0);
     // polarity: dark foil with light print reads far better inverted. Judge from the middle of the frame, where the label is
@@ -7399,11 +7417,20 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const ang = skewAngle(bin, w, h);
     // polarity-free copy: print is whatever differs from its surroundings, so white text on a blue label and black text
     // on a cream bag both come out dark on white (Climpson's labels are white print on colour, the bag around them is pale)
-    const g0 = minCh(c0), loc = boxBlur(g0, w, h, Math.max(14, Math.round(Math.max(w, h) / 30))), dif = new Float32Array(g0.length);
+    /* "its surroundings" is the local median, not the local mean: a mean taken across a label's edge is half bag, half label, so a
+       band as wide as the window, just inside every edge of the label, differed from it and came out as solid print. That band
+       swallowed the first letters of every line ("ADWAY" for BROADWAY, "wn Sugar" for Brown Sugar). A median stays with whichever
+       side holds most of the window, so the label's own colour is its own surroundings right up to its edge. */
+    const g0 = minCh(c0), rB = Math.max(14, Math.round(Math.max(w, h) / 30)), loc = boxBlur(g0, w, h, rB), dif = new Float32Array(g0.length);
     for (let i = 0; i < g0.length; i++) dif[i] = Math.abs(g0[i] - loc[i]);
     const ds = Float32Array.from(dif.filter((_, i) => i % 11 === 0)).sort(), dhi = Math.max(12, ds[Math.floor(ds.length * 0.985)]);
     const edge = new Float32Array(dif.length); for (let i = 0; i < dif.length; i++) edge[i] = 255 - Math.min(255, (dif[i] / dhi) * 255);
-    return { gray: rotate(fromGray(flat, w, h), ang), bin: rotate(fromGray(bin, w, h), ang), edge: rotate(fromGray(edge, w, h), ang), angle: ang, inverted };
+    // the same, against the local median (see medianBg): no band inside the label's edges, so each line keeps its first letters.
+    // Capped at 80 levels, so heavy black lettering beside the label doesn't set the scale and leave the label's thin print grey.
+    // Both copies are read: the first is surer on small print in the middle of a label, this one on whatever starts at its edge
+    const loc2 = medianBg(g0, w, h, rB), edge2 = new Float32Array(g0.length);
+    for (let i = 0; i < g0.length; i++) edge2[i] = 255 - Math.min(255, (Math.abs(g0[i] - loc2[i]) / Math.min(80, dhi)) * 255);
+    return { gray: rotate(fromGray(flat, w, h), ang), bin: rotate(fromGray(bin, w, h), ang), edge: rotate(fromGray(edge, w, h), ang), edge2: rotate(fromGray(edge2, w, h), ang), angle: ang, inverted };
   }
   // live camera: say what's wrong with the frame (glare, dark, blur) before the reader struggles with it
   function frameAdvice(c) {
@@ -7436,7 +7463,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const timed = (c, ms) => Promise.race([w.recognize(c).then((r) => r.data), new Promise((ok) => setTimeout(() => ok(null), ms))]);
     const a = await timed(pre.gray, 20000), b = a && strongN(a) >= 25 ? null : await timed(pre.bin, 15000);   // a clear first read doesn't need the second
     const e = await timed(pre.edge, 15000);   // white print on a coloured label, which the first two can't see
-    let reads = [a, b, e].filter(Boolean);
+    const e2 = await timed(pre.edge2, 12000);   // the same print with the label's edges kept clean: lines that start at the edge
+    let reads = [a, b, e, e2].filter(Boolean);
     // a coloured sticker: read on its own, enlarged, and placed back where it sits in the photo (so print sizes still compare)
     // twice: once soft (bold titles keep their letters apart), once hard (thin small print comes up)
     try { const base = toCanvas(img); for (const gm of [1.4, 2.2]) { const pn = panel(img, gm); if (!pn) break; const pr = await timed(pn.canvas, 10000), q = base.width / pn.w0;
@@ -7747,7 +7775,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const nm = i >= 0 ? titleCase(L[i].n.replace(/\b(coffee roasters?|roastery|roasting co|coffee co|kaffeerosterei|rosterei|torrefaction|tostadores|torrefazione)\b/g, "").trim()) : "";
       if (nm && !GEO_WORDS.has(norm(nm))) roaster = { name: nm, s: 0.7, l: L[i], i }; }
     // no name on the bag, but the coffee itself is on today's list: every word of its name is there, and only one roaster sells it
-    if (!roaster) { const ws = new Set(L.filter((l) => l.conf >= 60).flatMap((l) => l.n.split(" ")).filter((w) => w.length >= 4)), lands = new Set(Object.values(V.country).flat());
+    if (!roaster) { const ws = new Set(L.filter((l, j) => l.conf >= 60 && j !== nIdx && flvN(l.text) < 2).flatMap((l) => l.n.split(" ")).filter((w) => w.length >= 4)), lands = new Set(Object.values(V.country).flat());
       const hits = shelf.filter((r) => { const ts = norm(r.name || "").split(" ").filter((w) => w.length >= 4 && !lands.has(w) && !/^(coffee|natural|washed|honey|decaf|espresso|filter|blend|anaerobic|year)$/.test(w)); return ts.length >= 2 && ts.every((t) => ws.has(t)); });
       const who = [...new Set(hits.map((r) => r.roaster))];
       if (who.length === 1) roaster = { name: who[0], s: 0.9, l: { text: hits[0].name, conf: 80 }, i: -1, onList: true }; }
