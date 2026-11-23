@@ -2830,7 +2830,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
 </head>
 <body>
 <!-- the hero film lies over the page top, the top bar included: its black is see-through, so the drop falls across the bar into the coffee -->
-<img class="wm-video" id="wmFilm" src="/img/goccio-drop2.jpg" data-film="/img/goccio-drop2.webp" alt="" aria-hidden="true" decoding="async" draggable="false">
+<picture><source media="(prefers-reduced-motion: reduce)" srcset="/img/goccio-drop2.jpg"><img class="wm-video" id="wmFilm" src="/img/goccio-drop2.webp" alt="" aria-hidden="true" draggable="false"></picture>
 <header class="top">
   <div class="top-in">
     <div class="mark" translate="no">Goccio</div>
@@ -3445,6 +3445,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       if (!full) return full;
       // a blend named, then what's in it: "Broadway Blend: El Salvador & Guatemala" is Broadway Blend (the origins are tags)
       { const bm = full.match(/^(.{2,40}?\bblend)\s*[:–—]\s+\S/i); if (bm) return bm[1]; }
+      // initials and what they stand for are one name: "NBA New Berry Addiction {Blend}" is NBA New Berry Addiction, not NBA ("New" is no label here)
+      { const am = full.replace(/\{[^}]*\}?|\[[^\]]*\]?|\([^)]*\)?/g, " ").replace(/\s{2,}/g, " ").trim().match(/^([A-Z]{2,5})\s*[-–—:]?\s+(.+)$/);
+        if (am) { const ws = am[2].split(/\s+/).slice(0, am[1].length); if (ws.length === am[1].length && ws.every((w, i) => w[0].toUpperCase() === am[1][i])) return am[1] + " " + ws.join(" "); } }
       // a blend that names two countries (Brazil & Costa Rica 80/20): the countries are the name
       if (new RegExp(`${B(ALL_COUNTRIES)}\\s*(?:&|\\+|/|\\band\\b|,)\\s*${B(ALL_COUNTRIES)}`, "iu").test(full)) return full;
       const keep = (a) => a.filter((w) => w && w.length > 2).map(reEsc);
@@ -9183,12 +9186,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   var PN_PLUS = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
       PN_MINUS = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
   // the film reaches from the top of the screen to the foot of the hero, and steps behind the top bar once the page scrolls
-  // the film is an animated picture, not a video: a phone plays it by itself, with no play button, Low Power Mode or not. It plays once,
-  // starting when the page shows (not behind the loading fade), and anyone who asks for less motion keeps the still
-  { const f = $("wmFilm"); if (f && !matchMedia("(prefers-reduced-motion: reduce)").matches) { const pre = new Image(); pre.src = f.dataset.film;
-      const go = () => { if (f.dataset.on) return; if (document.documentElement.classList.contains("wait")) return setTimeout(go, 100); f.dataset.on = "1";
-        const show = () => { f.src = f.dataset.film; }; pre.complete ? show() : (pre.onload = show); };
-      go(); } }
+  // the film is an animated picture in the page itself, not a video and not started by script: every phone plays it, round and round, with no
+  // play button; anyone who asks for less motion gets the still (the picture element chooses)
   { const v = $("wmFilm"), h = document.querySelector(".wm-screen"); if (v && h) { const fit = () => { v.style.height = Math.round(h.getBoundingClientRect().bottom + scrollY) + "px"; };
       fit(); addEventListener("resize", fit); setTimeout(fit, 400); setTimeout(fit, 2000); if (document.fonts) document.fonts.ready.then(fit);
       const sc = () => document.documentElement.classList.toggle("scrolled", scrollY > 2); sc(); addEventListener("scroll", sc, { passive: true });
