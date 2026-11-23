@@ -1597,6 +1597,20 @@ NOTE_BREW = re.compile(r"^(?:ratios?|brew(?:ing)? ratios?|dos(?:e|es|age)|bloom(
                        r"temp(?:erature)?|yield|recipe|pours?|time|timings?|method|agitation|filter papers?)$", re.I)
 
 
+# what a blend is made of, as the shop spells it out: "50% Bookkisa Natural / 50% El Higuerón" (Square Mile's Sweetshop). The same
+# words are printed on the bag, often with no roaster's name beside them, so the bag scan can tell whose blend it is
+BLEND_PART = re.compile(r"(\d{1,3})\s?%\s+([^\W\d_][^\n/|+%,;:()\d]{2,40}?)\s*(?=/|\||\+|,|;|&|\band\b|\n|$|\d{1,3}\s?%)", re.I)
+
+
+def blend_parts(text):
+    """The parts of a blend when the page gives them with their shares, and the shares add up to the whole: else nothing."""
+    for line in re.split(r"[\n.]", text or ""):
+        ps = [(int(a), b.strip(" -–")) for a, b in BLEND_PART.findall(line)]
+        if len(ps) >= 2 and 95 <= sum(a for a, _ in ps) <= 100 and all(re.search(r"[^\W\d_]{3}", b) and len(b.split()) <= 5 for _, b in ps):
+            return [b for _, b in ps]
+    return []
+
+
 def junk_note(n):
     return bool(NOTE_JUNK.search(n or "")) or bool(NOTE_BREW.match((n or "").strip(" .,;:")))
 
@@ -2491,14 +2505,20 @@ def add_page_details(recs, roaster, old):
             need.append("notes")
         # every coffee the shop doesn't label filter or espresso gets its page read once for the brewers it names
         want_methods = not rec.get("roast_for") and not rec.get("methods") and not rec.get("methods_none")
-        if not need and not want_methods and not want_roast:
+        # a blend's page is read once for what it is made of (kept from then on)
+        if prev.get("parts"):
+            rec["parts"] = prev["parts"]
+        if prev.get("parts_checked"):
+            rec["parts_checked"] = prev["parts_checked"]
+        want_parts = bool(rec.get("blend")) and not rec.get("parts") and not rec.get("parts_checked")
+        if not need and not want_methods and not want_roast and not want_parts:
             continue
         for k in [k for k in need if k != "notes"]:
             ok = prev.get(k) and (labelled(f"Variety:\n{prev[k]}\n", "variety") if k == "variety" else find_process(prev[k]))
             if ok and prev.get(k + "_from") == "page":
                 rec[k], rec[k + "_from"] = prev[k].strip(" \xa0"), "page"
         need = [k for k in need if not rec.get(k) or (k == "notes" and short_old)]
-        if not need and not want_methods and not want_roast:
+        if not need and not want_methods and not want_roast and not want_parts:
             continue
         if fetched >= PAGE_FETCHES_PER_ROASTER or time.monotonic() - SCAN_T0 > PAGE_MINUTES * 60:
             report_skip("page_cap" if fetched >= PAGE_FETCHES_PER_ROASTER else "page_time", roaster["name"])
@@ -2511,6 +2531,12 @@ def add_page_details(recs, roaster, old):
             errs.append(f"{type(e).__name__}: {str(e)[:60]}")
             time.sleep(1)
             continue
+        if want_parts:
+            ps = blend_parts(text)
+            if ps:
+                rec["parts"] = ps
+            else:
+                rec["parts_checked"] = 1
         ms = brew_methods(raw, text)
         if len(ms) >= 2:
             # the shop shows which brewers a coffee is for: no filter method means it isn't a V60 coffee
