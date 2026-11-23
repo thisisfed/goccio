@@ -2550,7 +2550,7 @@ html body .shelf .item .l > .c-notes, html body .shelf .item .l > .c-notes *{lin
 .item .c-where .ji{margin-right:0!important}
 #coffee, #coffee *{overflow-anchor:none}   /* the browser is not to re-anchor the page when the recipe arrives under What’s brewing */
 /* Load more: in line with the pills above it (Brew) on the left, as far under them as over the rule below */
-#shelfMore{margin-left:0!important;margin-right:auto!important;justify-self:start!important;align-self:flex-start!important;margin-top:17px!important}   /* 43 px to the last row's pills and 43 px to the rule */
+#shelfMore{margin-left:auto!important;margin-right:auto!important;justify-self:center!important;align-self:center!important;margin-top:17px!important}   /* 43 px to the last row's pills and 43 px to the rule */
 .shelf .item .c-notes:not(.c-typ){color:var(--ink)!important}   /* the roaster's own tasting notes in full white; typical notes (a guess from origin and process) stay grey */
 /* Save is always in view, beside Brew at the right; the plus holds Buy and More from this roaster */
 html body .shelf .item > .r > .bag-add{order:9!important;animation:none!important;opacity:1!important;transform:none!important}
@@ -2579,6 +2579,16 @@ html body #shelves .fy-note.fy-top[hidden]{display:none}
 html.brew-in #fyNote{display:none!important}
 /* the recipe stands on a slightly lighter black than the list around it, edge to edge: a different room, no new colour */
 #recipe{background:color-mix(in srgb,var(--ink) 6%,var(--bg));margin-inline:calc(50% - 50vw)!important;padding-inline:calc(50vw - 50%)!important;padding-top:12px!important;padding-bottom:16px!important}
+/* What’s brewing and its pill in the bottom bar wait until a coffee is wanted: Brew on a coffee, or I have a coffee */
+html:not(.mine) #coffee, html:not(.mine) .botnav [data-bn="coffee"]{display:none!important}
+/* tags stay on one line: a tag too long for it (a list of varieties) is cut with an ellipsis, the longest giving way first */
+html body .item .tags{display:flex!important;flex-wrap:nowrap!important;min-width:0;max-width:100%;overflow:hidden}
+html body .item .tags > *{flex:0 1 auto;min-width:0;white-space:nowrap!important;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal!important}
+html body .item .tags > .vdot{flex-shrink:1000}
+html body .item .tags > :not(.vdot){min-width:max-content}
+html body .item .tags > :last-child{min-width:0}
+html.nav-off .botnav{display:none!important}
+html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
 html.brew-in .brew-above{display:none!important}
 html.brew-in #shelves{margin-top:0!important}
 /* "Recipe for V60" as big as the recipe's own numbers, centred, no full stop */
@@ -9032,7 +9042,17 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   // Find a coffee: to the list, and the search box in the bar glows twice, so you see where to say what you like
   if ($("wmFind")) $("wmFind").onclick = () => { jumpTo($("shelves")); const bx = document.querySelector(".ask-line .ask-box"); if (!bx) return;
     bx.classList.remove("nudge"); void bx.offsetWidth; setTimeout(() => { bx.classList.add("nudge"); setTimeout(() => bx.classList.remove("nudge"), 1800); }, 450); };
-  if ($("wmBag")) $("wmBag").onclick = () => { if (!$("coffeeIn").value.trim()) $("coffeeIn").placeholder = LANG === "it" ? "Cosa dice il sacchetto: XYZ Roastery, Etiopia, lavato, tostatura chiara" : "What the bag says: XYZ Roastery, Ethiopia, washed, light roast"; jumpTo($("coffee")); setTimeout(() => { try { $("coffeeIn").focus({ preventScroll: true }); } catch (e) {} }, 500); };
+  const mineOn = () => { if (document.documentElement.classList.contains("mine")) return; document.documentElement.classList.add("mine"); try { localStorage.setItem("mine", "1"); } catch (e) {} };
+  try { if (localStorage.getItem("mine") || /^#(?:coffee|r=|recipe)/.test(location.hash)) mineOn(); } catch (e) {}
+  setTimeout(() => { if (!$("recipe").hidden || ($("coffeeIn") && $("coffeeIn").value.trim())) mineOn(); }, 1200);
+  /* the bottom bar is a way between sections: with one section to show there is nowhere to go, and no bar */
+  const navSync = () => { const n = document.querySelector(".botnav"); if (!n) return; const on = [...n.querySelectorAll(".chip")].filter((c) => !c.hidden && getComputedStyle(c).display !== "none").length >= 2;
+    if (document.documentElement.classList.contains("nav-off") === on) document.documentElement.classList.toggle("nav-off", !on); };
+  navSync(); new MutationObserver(navSync).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+  new MutationObserver(navSync).observe(document.querySelector(".botnav"), { attributes: true, subtree: true, attributeFilter: ["hidden", "class"] });
+  new MutationObserver(() => { if (!$("recipe").hidden) mineOn(); }).observe($("recipe"), { attributes: true, attributeFilter: ["hidden"] });
+  document.addEventListener("click", (e) => { const t = e.target.closest && e.target.closest("#wmBag, #suBag, .shelf .item .btn[data-i], #bags .btn, [data-bn='coffee']"); if (t) mineOn(); }, true);
+  if ($("wmBag")) $("wmBag").onclick = () => { mineOn(); if (!$("coffeeIn").value.trim()) $("coffeeIn").placeholder = LANG === "it" ? "Cosa dice il sacchetto: XYZ Roastery, Etiopia, lavato, tostatura chiara" : "What the bag says: XYZ Roastery, Ethiopia, washed, light roast"; jumpTo($("coffee")); setTimeout(() => { try { $("coffeeIn").focus({ preventScroll: true }); } catch (e) {} }, 500); };
   // the two buttons exactly as far from the count's baseline as from the capitals of the text under the photo, in every browser:
   // measured from the letters themselves (a probe on each baseline, the font's own cap height), not from line boxes
   (function evenCtas() {
