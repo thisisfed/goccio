@@ -2428,6 +2428,9 @@ html body footer .foot-links a{line-height:1.4!important;padding:0!important;mar
 html body footer .foot-links a{display:inline!important;width:auto!important}
 footer #tip a:hover, footer .foot-links a:hover{text-decoration-color:transparent!important}   /* every footer link drops its line on hover, Buy me a coffee included */
 .scan-review.only-match .sc-hit svg{display:none!important}   /* It's a match!: the words alone */
+.shelf-tools{display:none!important}   /* the New / Where / Price / Process / Origin bar is gone: the search box does the finding */
+@media (max-width:640px){ .wm-screen{--fold:58px} }   /* the first screen ends under "Coffees.", now that no pills follow it: no coffee name cut in half */
+#footCredits .foot-copy{margin-top:10px!important}
 #gear { display: none !important; }   /* My equipment is gone: brewer, grinder and water are picked in the recipe, and remembered */
 #gear.bare #gearIntro { display: block; width: 100%; }
 #gear.bare .gear-tools { display: none; }
@@ -3022,18 +3025,18 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     </details>
     </div>
     <div class="fcol f-cred">
-    <details class="foot-x"><summary class="foot-note refs-h foot-credits">Credits</summary>
+    <details class="foot-x" id="footCredits" open><summary class="foot-note refs-h foot-credits">Credits</summary>
     <p class="foot-note" id="credit">Made by <a href="https://thisisfed.xyz/" target="_blank" rel="noopener">Federico R. T. Ferrari</a>.<br>Set in ALT Riviera, with thanks to <a href="https://alt-tf.com/" target="_blank" rel="noopener">Alt Type Foundry</a>.<br>Hosted on <a href="https://pages.cloudflare.com/" target="_blank" rel="noopener">Cloudflare</a>, domain by <a href="https://www.spaceship.com/" target="_blank" rel="noopener">Spaceship</a>.</p>
     <p class="foot-note" id="rights">All rights reserved. Coffee names and tasting notes belong to their roasters.</p>
+    <p class="foot-note foot-copy">© <span id="cYear">2026</span> Federico R. T. Ferrari.<br><span id="tip">Free, no ads. <a href="https://buymeacoffee.com/thisisfed" target="_blank" rel="noopener">Buy me a coffee</a>.</span></p>
     </details>
     <p class="foot-note foot-all foot-links"><a href="/coffee/">Every coffee, by roaster</a><a href="/list/">Get your roastery listed</a><a href="/list/#remove">Remove your roastery</a><a href="/privacy/">Privacy</a><a class="mail" href="#" data-m="ku.oc.oiccog@nu">Email us</a></p>
-    <p class="foot-note foot-copy">© <span id="cYear">2026</span> Federico R. T. Ferrari.<br><span id="tip">Free, no ads. <a href="https://buymeacoffee.com/thisisfed" target="_blank" rel="noopener">Buy me a coffee</a>.</span></p>
     <script>try { document.getElementById("cYear").textContent = new Date().getFullYear(); } catch (e) {}</script>
     </div>
   </footer>
   <script>
     // on a phone Sources opens folded, one tap away; the Disclaimer and Methods stay open
-    if (matchMedia("(max-width: 760px)").matches) document.querySelectorAll("footer details.foot-x").forEach((d) => { if (d.querySelector("summary.refs-h")) d.removeAttribute("open"); });   // on a phone both lists start folded; the long Sources list starts folded everywhere
+    if (matchMedia("(max-width: 760px)").matches) document.querySelectorAll("footer details.foot-x").forEach((d) => { if (d.id !== "footCredits" && d.querySelector("summary.refs-h")) d.removeAttribute("open"); });   // on a phone both lists start folded; the long Sources list starts folded everywhere
   </script>
 </main>
 
