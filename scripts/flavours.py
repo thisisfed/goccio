@@ -71,6 +71,11 @@ _add("biele|biela|biely|bílé|bílá|bílý", "white", "a"); _add("zelené|zele
 _add("sladké|sladká|sladký", "sweet", "a"); _add("zrelé|zrelá|zrelý|zralé|zralá|zralý", "ripe", "a"); _add("sušené|sušená|sušený", "dried", "a")
 _add("tropické|tropická|tropický", "tropical", "a"); _add("kvetinové|kvetinová|kvetinový|květinové|květinová|květinový", "floral", "a")
 
+# French, as Fève writes them
+_add("orange sanguine|oranges sanguines", "blood orange"); _add("poivre (baies roses)|poivre (baies roses|baies roses|baie rose", "pink peppercorn")
+_add("pointe ananas|pointe d'ananas|pointe d’ananas", "pineapple"); _add("fruits jaunes", "yellow fruit"); _add("fruité", "fruity"); _add("sucré", "sweet")
+_add("épices|epices", "spices")
+
 # fruit
 _add("fresa|fresas|fraise|fraises|fragola|fragole|morango|morangos|erdbeere|erdbeeren|aardbei|aardbeien|căpșuni|capsuni|jordgubbe|jordbær", "strawberry")
 _add("frambuesa|frambuesas|framboise|framboises|lampone|lamponi|framboesa|himbeere|himbeeren|framboos|frambozen|zmeură|hallon|hindbær", "raspberry")
