@@ -2545,6 +2545,8 @@ html body .shelf .item .l > .c-notes, html body .shelf .item .l > .c-notes *{lin
 @media (min-width:1000px){ .shelf .item .l > .c-where:has(.rn){margin-bottom:3px!important} }
 @supports (font:-apple-system-body){ .shelf .item .l > .c-where:has(.rn){margin-bottom:2.6px!important} }   /* Safari sets the big name lower in its line (measured on iPhone screenshots) */
 #shelves.ro-on .item .c-where .rn, #shelves.ro-on .item .c-where .rn-br{display:none!important}
+#shelves.ro-on .item .c-where .rn-from{font-size:0;display:inline-block;width:5px}   /* on the roaster's own page: "New", a space, then the date */
+.item .c-where .ji{margin-right:0!important}
 #coffee, #coffee *{overflow-anchor:none}   /* the browser is not to re-anchor the page when the recipe arrives under What’s brewing */
 /* Load more: in line with the pills above it (Brew) on the left, as far under them as over the rule below */
 #shelfMore{margin-left:0!important;margin-right:auto!important;justify-self:start!important;align-self:flex-start!important;margin-top:17px!important}   /* 43 px to the last row's pills and 43 px to the rule */
@@ -7155,7 +7157,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       tagBits.push(...coffeeLabels(r, shown).map((l) => `<span class="tg lbl" style="--vc:${LABEL_DOT[l] || "#8e8e93"}">${l}</span>`));
       return `${head}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
         <div class="l">
-          <p class="c-where">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span> ` : !isSp && r.just_in ? `<span class="ji">${LANG === "it" ? "Nuovo!" : "New!"}</span> ` : ""}${r.roaster_city ? `<span class="rcity">${esc(r.roaster_city)}, </span>` : ""}<span class="day">${day}</span>${cardBuy(r, true) ? ` <span class="c-cost">( ${cardBuy(r, true)} )</span>` : ""}<br class="rn-br"><a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a></p>
+          <p class="c-where">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : !isSp && r.just_in ? `<span class="ji">${LANG === "it" ? "Nuovo" : "New"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : ""}<a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a><br class="rn-br">${r.roaster_city ? `<span class="rcity">${esc(r.roaster_city)}, </span>` : ""}<span class="day">${day}</span>${cardBuy(r, true) ? ` <span class="c-cost">( ${cardBuy(r, true)} )</span>` : ""}</p>
           <span class="name">${esc(calm(shown))}</span>
           <p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p>
           ${cardNotes(r)}${cardPrice(r)}
