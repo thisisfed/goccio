@@ -2574,6 +2574,7 @@ html body .shelf .item > .r:has(> .bag-add) > .btn{margin-left:0!important}
 @media (hover:hover){ .fy-pill:not([aria-pressed="true"]):hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))} }
 html body #shelves .fy-note.fy-top{margin:0 0 12px!important;padding:12px 14px!important;line-height:19px;text-box:none!important;display:block;background:var(--pill);border-radius:var(--r);color:var(--ink)!important}   /* the explanation in one big pill */
 html body #shelves .fy-note.fy-top[hidden]{display:none}
+html body #shelves #askNote.fy-top{transform:none!important;position:static!important;pointer-events:auto}   /* the search's line in the same pill, in the same place */
 .item .c-where .ji{color:var(--hl)!important}   /* New in the accent, as For you is */
 /* one empty line under the explanation */
 html.brew-in #fyNote{display:none!important}
@@ -7174,7 +7175,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     { const secs = Math.max(0.01, (performance.now() - t0) / 1000), n0 = list.length;   // what it found, and how long the looking took
       const found = LANG === "it" ? `: ${n0.toLocaleString("it-IT")} caffè in ${secs.toFixed(2).replace(".", ",")} secondi` : `: ${n0.toLocaleString("en-GB")} coffee${n0 === 1 ? "" : "s"} in ${secs.toFixed(2)} seconds`;
       var askFound = (q || askWant) && !shelfRo ? found : ""; }
-    { const n = $("askNote"), t = shelfRo || !q ? "" : (askFound.replace(/^: /, "").replace(/^./, (c) => c.toUpperCase()))   /* only what was found and how fast: the search box already shows the words */
+    { const n = $("askNote"), t = shelfRo || !q ? "" : (LANG === "it" ? `Ricerca “${$("shelfQ").value.trim()}”${askFound}` : `Searching for “${$("shelfQ").value.trim()}”${askFound}`)
         + (askWant && list.length ? (LANG === "it" ? ". I più vicini per primi." : ". Best match first.") : ""); const f = $("fyNote");   // what the list is showing, in grey under Coffees (and read out to screen readers)   // with For you's line showing, the two read as one paragraph
       if (t && !f.hidden) { f.textContent = f.textContent.trim() + " " + t; n.hidden = true; n.textContent = ""; } else { n.hidden = !t; n.textContent = t; } }   // the search's lens in front, as in the box
     list = shelfRo ? [...list].sort((a, b) => shelfDate(b).localeCompare(shelfDate(a))) : fy ? list : askRank ? [...list].sort((a, b) => (askRank.get(b) - askRank.get(a))
@@ -9071,6 +9072,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   // Find a coffee: to the list, and the search box in the bar glows twice, so you see where to say what you like
   if ($("wmFind")) $("wmFind").onclick = () => { jumpTo($("shelves")); const bx = document.querySelector(".ask-line .ask-box"); if (!bx) return;
     bx.classList.remove("nudge"); void bx.offsetWidth; setTimeout(() => { bx.classList.add("nudge"); setTimeout(() => bx.classList.remove("nudge"), 1800); }, 450); };
+  { const an = $("askNote"), fn = $("fyNote"); if (an && fn) { fn.after(an); an.classList.add("fy-note", "fy-top"); } }   /* what the search found sits where For you's line does, in the same pill */
   const mineOn = () => { if (document.documentElement.classList.contains("mine")) return; document.documentElement.classList.add("mine"); };   /* for this visit only: the next one starts without it again */
   /* and away again once back at the list or the opening screen, unless a coffee of your own has its recipe out */
   const mineOff = () => { const h = document.documentElement; if (h.classList.contains("mine") && !h.classList.contains("brew-in") && $("recipe").hidden) h.classList.remove("mine"); };
