@@ -7507,7 +7507,7 @@ footer #tip{margin-top:10px!important}footer #tip a{color:var(--ink);text-decora
     knownKeysCache = { n: names.length, list }; return list;
   }
   const FLAVOUR = /\b(berr|straw|rasp|blue|black ?curr|currant|cherr|plum|peach|apricot|nectar|mango|lychee|passion|pineapple|citrus|lemon|lime|orange|grapefruit|mandarin|bergamot|apple|pear|grape|fig|date|raisin|jasmine|rose|floral|hibiscus|lavender|tea|earl|chocolate|cacao|cocoa|caramel|toffee|honey|molasses|sugar|vanilla|nut|almond|hazelnut|walnut|treacle|butterscotch|flower|spice|cinnamon|clove|cardamom|wine|rum|whisk|cream|milk|butter|syrup|tamarind|rhubarb|kiwi|melon|watermelon|cola|mint|ginger|stone fruit|tropical|myrtille|cassis|framboise|fraise|jazmin|albaricoque|johannisbeere|zitrus|solbaer|grapefrugt)/;
-  const NOTES_KEY = /^(?:(?:[nm]?o[tlf]es )?de d[eé]gustation|tasting notes?|notes?|notas?(?: de cata)?|geschmack|aromen|aroma|smaksnoter|smagsnoter|flavou?r(?: notes)?|cup(?: profile| notes)?|tastes?(?: like| of)?(?!\s*buds)|we taste|in the cup|profile)\b\s*[:\-–]?\s*/i;
+  const NOTES_KEY = /^(?:(?:[nm]?o[tlf]es )?de d[eé]gustation|tasting notes?|notes?|notas?(?: de cata)?|geschmack|aromen|aroma|smaksnoter|smagsnoter|flavou?r(?: notes)?|cup(?: profile| notes)?|tastes?(?: like| of)?(?!\s*buds)|we taste|in the cup|profil aromatique|flavou?rs like|profile)\b\s*[:\-–]?\s*/i;
   const BOILER = /\b(whole ?bean|ground|net ?(wt|weight)?|\d+\s?(g|gr|kg|oz)\b|altitude|masl|m a s l|elevation|producer|harvest|importer|recyclable|compostable|roasted (in|on)|roast date|best before|bbe|www|http|instagram|arabica|meet the|storage|store (coffee|sealed|in)|airtight|grind|stovetop|cafetiere|cafetière|aeropress|french press|certified|b corp|corporation|since \d{4}|unit \d+|business park)\b|\d{1,2}[.\/-]\d{1,2}[.\/-]\d{2,4}|@|\.com/;
   /* Is this a coffee bag at all? A beer, wine or spirits label says so in its own words (beer, lager, brewery, 5.2% vol).
      One clear word is enough when nothing on the label speaks of coffee; two are needed when something does (a coffee
@@ -7565,8 +7565,11 @@ footer #tip{margin-top:10px!important}footer #tip a{color:var(--ink);text-decora
       // "NOTES OF" as a heading: the lines set just under it, beside each other (Milk Chocolate / Almond), the flavours first
       if (t.length < 3) { const under = L.map((u, j) => ({ u, j })).filter(({ u, j }) => j !== i && u.y > l.y && u.y - l.y < Math.max(l.h, u.h) * 4.5 && Math.abs(u.x - l.x) < Math.max(l.h, u.h) * 6
           && !BOILER.test(u.n) && (u.conf || 0) >= 45 && flvN(u.text)).sort((a, b) => a.u.y - b.u.y).slice(0, 2);
+        if (under.length && /,\s*$/.test(under[under.length - 1].u.text)) {   // the list carries on below
+          let last = under[under.length - 1].u; L.map((u, j) => ({ u, j })).filter(({ u, j }) => j !== i && !under.some((x) => x.j === j) && u.y > last.y && Math.abs(u.x - l.x) < Math.max(l.h, u.h) * 6 && (u.conf || 0) >= 45 && !BOILER.test(u.n))
+            .sort((a, b) => a.u.y - b.u.y).slice(0, 5).every((x) => { if (x.u.y - last.y > Math.max(last.h, x.u.h) * 2.6 || x.u.text.trim().split(/\s+/).length > 4) return false; under.push(x); last = x.u; return /,\s*$/.test(x.u.text); }); }
         if (under.length) { t = under.map(({ u }) => u.text.trim()).join(", "); under.forEach(({ j }) => used.add(j)); } else if (L[i + 1] && flvN(L[i + 1].text)) { t = L[i + 1].text; used.add(i + 1); } }
-      if (t.length >= 3) { notes = { v: t, c: cf(1, l.conf, 0.1), why: "after “" + m[0].replace(/[:\-–\s]+$/, "") + "”" }; nIdx = i; used.add(i); } } });
+      if (t.length >= 3 && !(/^(?:t[oa]|is|are|was|of the|that|which|and|from|will|can)\b/i.test(t) && !flvN(t))) { notes = { v: t, c: cf(1, l.conf, 0.1), why: "after “" + m[0].replace(/[:\-–\s]+$/, "") + "”" }; nIdx = i; used.add(i); } } });
     // said in a sentence: "with notes of dark cocoa and walnuts", "hints of milk chocolate and almond", "notes of caramel"
     if (!notes) { const all = L.filter((l) => (l.conf || 0) >= 40).map((l) => l.text).join(" ").replace(/\s+/g, " ");
       const ms = [...all.matchAll(/\b(?:notes?|hints?|tones)\s*(?:of)?\s*[:,]?\s+((?:[a-z’'&-]+[ ,]+){0,7}[a-z’'&-]+)/gi)]
@@ -7577,7 +7580,7 @@ footer #tip{margin-top:10px!important}footer #tip a{color:var(--ink);text-decora
     if (!notes) { const fl = L.map((l, i) => ({ l, i, k: (l.n.match(new RegExp(FLAVOUR.source, "g")) || []).length })).filter((x) => x.k >= 2 && x.l.n.split(" ").length <= 9).sort((a, b) => b.k - a.k || b.l.n.length - a.l.n.length || (b.l.conf || 0) - (a.l.conf || 0))[0];
       if (fl) { notes = { v: fl.l.text, c: cf(0.8, fl.l.conf), why: "a line of flavour words" }; used.add(fl.i); nIdx = fl.i; } }
     if (notes) { const parts = notes.v.split(/\s*,\s*/).filter(Boolean); notes.v = parts.filter((p, k) => !parts.some((q, j) => j !== k && norm(q) !== norm(p) && norm(q).startsWith(norm(p).slice(0, 5)) && q.length > p.length) && parts.findIndex((q) => norm(q) === norm(p)) === k).join(", "); }
-    if (notes) notes.v = notes.v.replace(/\s+&\s+/g, ", ").replace(/(?:,\s*[\p{L}]{0,2})?[\s,]*$/u, "").replace(/^[^A-Za-zÀ-ÿ]+/, "").replace(/\.\s+(?=[A-ZÀ-Ý])/g, ", ");   // "25 Caramel. Jasmine": a misread first word and full stops for commas
+    if (notes) notes.v = notes.v.replace(/\s+[«»•·+*|]\s+/g, ", ").replace(/\s+&\s+/g, ", ").replace(/(?:,\s*[\p{L}]{0,2})?[\s,]*$/u, "").replace(/^[^A-Za-zÀ-ÿ]+/, "").replace(/\.\s+(?=[A-ZÀ-Ý])/g, ", ");   // "25 Caramel. Jasmine": a misread first word and full stops for commas
     out.notes = notes ? { ...notes, v: notes.v.replace(/\s*[\/·•|-]\s*|\s{2,}/g, ", ").replace(/,\s*,/g, ",").replace(/^,|,$/g, "").replace(/[\s,]+$/, "").trim() } : { v: null, why: "No tasting notes on this side" };
     // a title set out as "Kenya - Gicherori AA [Washed]": the country, a dash, the coffee's own name, the process in brackets.
     // The country may be in another language or a letter out (Éthiopie, "Kenyq"); the name is what follows it
@@ -7591,6 +7594,8 @@ footer #tip{margin-top:10px!important}footer #tip a{color:var(--ink);text-decora
     let proc = null;
     for (const [key, terms] of V.process) { const hit = scan((l) => { let s = 0; terms.forEach((t) => { s = Math.max(s, findTerm(l.n, t)); });
         if (key === "natural" && s < 1 && /\b(people|and) nature\b|\bnature (and|alliance)\b/.test(l.n)) s = 0;   // "people and nature" is not a natural process
+        if (key === "honey" && s && !/process|proceso|procede|\b(black|red|yellow|white|pulped|semi) /.test(l.n) && (flvN(l.text) >= 2 || /\b(like|flavou?rs?|notes?|sweet|taste)\b/.test(l.n))) s = 0;   // "Lemon, Honey, Prune", "flavors like honey"
+        if (key === "anaerobic" && s && /\blactic\b/.test(l.n) && /\bacid/.test(l.n) && !/anaerob|ferment|process/.test(l.n)) s = 0;   // "Lactic Acidity." is a taste
         return s ? { s, lab: /process|proceso|procede|aufbereitung|processing|metodo/.test(l.n) } : null; });
       if (hit && (!proc || (hit.s >= 0.85 && proc.s < 0.85))) { proc = { key, ...hit }; if (hit.s >= 0.85) break; } }
     out.process = proc ? { v: proc.key, c: cf(proc.s, proc.l.conf, proc.lab ? 0.1 : 0), why: (proc.s < 1 ? "close match: " : "") + "“" + proc.l.text + "”" } : { v: null, why: "Process not printed on this side" };
@@ -7600,6 +7605,9 @@ footer #tip{margin-top:10px!important}footer #tip a{color:var(--ink);text-decora
         terms.forEach((t) => { const f = findTerm(l.n, t); if (f && (t.includes(" ") || short || lab)) s = Math.max(s, f * (t.includes(" ") || lab ? 1 : 0.85)); }); return s ? { s, lab } : null; });
       if (hit && (!roast || hit.s > roast.s)) roast = { key, ...hit }; }
     if (roast && /omni/.test(roast.l.n)) roast = null;
+    if (roast && !roast.lab) { const lv = new Set(); L.forEach((l) => { if ((l.conf || 0) < 45 || l.n.split(" ").length > 3 || /roast/.test(l.n)) return;
+        for (const [key, terms] of V.roast) if (terms.some((t) => !t.includes(" ") && findTerm(l.n, t) >= 1)) lv.add(key); });
+      if (lv.size >= 2) roast = null; }
     if (roast && !roast.lab && L.filter((l) => /\b(espresso|stovetop|omni|cafetiere|cafetiere|aeropress|filter|moka|french press|whole ?bean)\b/.test(l.n) && l.n.split(" ").length <= 3).length >= 3) roast = null;   // the grind tick boxes on the back
     // supermarket bags give a scale instead: "4/5 roast", "Strength 4", "Strength No 3", "5/6 intensity", "Intensity 5/10"
     if (!roast) { const all = L.filter((l) => (l.conf || 0) >= 40).map((l) => l.n).join(" ");
@@ -7698,6 +7706,8 @@ footer #tip{margin-top:10px!important}footer #tip a{color:var(--ink);text-decora
       const hits = shelf.filter((r) => { const ts = norm(r.name || "").split(" ").filter((w) => w.length >= 4 && !lands.has(w) && !/^(coffee|natural|washed|honey|decaf|espresso|filter|blend|anaerobic|year)$/.test(w)); return ts.length >= 2 && ts.every((t) => ws.has(t)); });
       const who = [...new Set(hits.map((r) => r.roaster))];
       if (who.length === 1) roaster = { name: who[0], s: 0.9, l: { text: hits[0].name, conf: 80 }, i: -1, onList: true }; }
+    if (roaster && roaster.name && roaster.l && !roaster.web && !roaster.side && !roaster.brand
+        && (/^(speciality|specialty|coffee|roasters?|roastery|torrefacteur|cafes? fins?)$/.test(norm(roaster.name)) || (/,/.test(roaster.l.text || "") && flvN(roaster.l.text) >= 1) || /^(speciality|specialty) coffee roasters?$/.test(norm(roaster.l.text || "")))) roaster = null;
     out.roaster = roaster && roaster.name ? { v: roaster.name, c: roaster.side || roaster.web || roaster.brand || roaster.listed ? "high" : cf(Math.min(1, roaster.s), roaster.l.conf),
         why: roaster.onList ? `“${roaster.l.text}” is on today’s list` : roaster.web ? `their ${roaster.web} “${roaster.l.text}”` : roaster.brand ? "a supermarket brand" : roaster.side ? "the name down the side of the bag" : "“" + roaster.l.text + "”" }
       : { v: null, why: "No roaster name found: it’s often a logo, or on the back" };
@@ -7707,7 +7717,7 @@ footer #tip{margin-top:10px!important}footer #tip a{color:var(--ink);text-decora
     // word (THE DECAF), so a big line is only a field line when it's small print
     const taken = new Set([nIdx, ...used, roaster && roaster.i >= 0 ? roaster.i : -1]);
     const flavours = (l) => (l.n.match(new RegExp(FLAVOUR.source, "g")) || []).length >= 2;
-    const KICKER = /^(the )?(signature|classic|seasonal|seasonal one|placebo|single origin|single estate|single farm|limited|limited release|limited edition|special release|micro ?lot|nano ?lot|guest|house|espresso|filter|omni|new|reserve|experimental|rare|competition|exclusive|seasonal release)$/;
+    const KICKER = /^(the )?(signature|classic|seasonal|seasonal one|placebo|single origin|single estate|single farm|limited|limited release|limited edition|special release|micro ?lot|nano ?lot|guest|house|espresso|filter|omni|new|reserve|experimental|rare|competition|exclusive|seasonal release|torrefacteur|cafes fins|speciality coffee roasters|specialty coffee roasters|direct trade|selection superfine)$/;
     const KICK_WORD = /\b(signature|classic|seasonal|placebo|single|origin|estate coffee|limited|release|edition|microlot|nanolot|guest|reserve|experimental|exclusive)\b/;
     const kicker = (l, H) => KICKER.test(l.n) || (KICK_WORD.test(l.n) && l.n.split(" ").length <= 3 && (!H || l.h < H * 0.85));   // "E CLASSIC" is THE CLASSIC misread
     const varLines = new Set(vClean.map((v) => v.l));
