@@ -2435,14 +2435,15 @@ footer #tip a:hover, footer .foot-links a:hover{text-decoration-color:transparen
 @media (max-width:759px){ html body footer .fcol .foot-links{margin-bottom:-7px!important} }   /* as much room under the links, to the bottom bar, as over them, to the rule: 13 px */
 /* the roaster's name as big as the coffee's, right above it; where it roasts and the day the coffee came in sit small and grey at the foot of the row */
 .item .who .rn{font-size:24px;line-height:27px;letter-spacing:-.01em;color:var(--ink)}
-.item .who:has(.rn){margin-top:13.95px;line-height:27px!important}   /* the roaster sits down on the coffee's name; the room it gave up goes above it, so the row is as tall as before */   /* the roaster one size down from the coffee (24 under 39), on the line height it had at 39 */
+.item .who:has(.rn){margin-top:4.45px;line-height:27px!important}   /* the roaster sits down on the coffee's name; the room it gave up goes above it, so the row is as tall as before */   /* the roaster one size down from the coffee (24 under 39), on the line height it had at 39 */
 .item .who a.rn{text-decoration-thickness:1.5px;text-underline-offset:4px}
-@media (min-width:1000px){.item .who:has(.rn){margin-top:23.15px;line-height:43px!important}.item .who .rn{font-size:39px;line-height:43px}.item .who a.rn{text-decoration-thickness:2px;text-underline-offset:5px}}
+@media (min-width:1000px){.item .who:has(.rn){margin-top:5.15px;line-height:43px!important}.item .who .rn{font-size:39px;line-height:43px}.item .who a.rn{text-decoration-thickness:2px;text-underline-offset:5px}}
 .item .who{line-height:1.05;white-space:normal;overflow:visible;padding-bottom:0;margin-bottom:-4px}   /* roaster and coffee read as one paragraph, the coffee one line down: no gap beyond the line height */
 .item .who:has(.rn){display:block}
 .item .c-where{margin:0;font-size:var(--fs-s);line-height:20.25px;color:var(--muted)}
 /* the price after the date, set off by a small drop */
 .item .c-where .c-drop{display:inline-block;width:6px;height:6px;margin:0 .6em 0 .7em;background:currentColor;border-radius:0 50% 50% 50%;transform:translateY(-1px) rotate(45deg)}
+.item .c-where .ji::after{content:"";display:inline-block;width:6px;height:6px;margin:0 .1em 0 .7em;background:var(--muted);border-radius:0 50% 50% 50%;transform:translateY(-1px) rotate(45deg)}   /* the same small drop between New (or For you) and the city */
 .item .c-where .ji{margin-right:.5em;font-weight:500;color:var(--go)}.item .c-where .ji.fy{color:var(--hl)}
 #shelves.ro-on .item .who,#shelves.ro-on .item .c-where .rcity{display:none!important}
 /* a coffee's row: Brew, then a plus in a circle that lets Buy and Save out, the same plus as the top bar's */
@@ -2452,6 +2453,7 @@ footer #tip a:hover, footer .foot-links a:hover{text-decoration-color:transparen
 .row-more .tb-v{transition:transform .21s ease;transform-origin:center}
 .r.more-open:not(.more-closing) > .row-more .tb-v{transform:scaleY(0)}
 .shelf .item > .r:not(.more-open) > :is(.buy-p,.bag-add){display:none!important}
+.shelf .item > .r.more-open > .row-more, #recipe .share.more-open > .share-more{order:9}   /* open: the pills take the plus's place and the minus closes the row, at its end */
 .shelf .item > .r:has(> .bag-add.in):not(.more-open) > .row-more{background:var(--go)!important;color:var(--on-hl)!important}   /* saved to My bags: the closed plus says so, in the green */
 /* the fluid study on the row: the plus swells and lets Buy and Save go like drops, and Brew beside it is pushed and settles */
 @keyframes row-fade{0%,12%{opacity:0}34%,100%{opacity:1}}
@@ -2828,7 +2830,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
 </head>
 <body>
 <!-- the hero film lies over the page top, the top bar included: its black is see-through, so the drop falls across the bar into the coffee -->
-<video class="wm-video" id="wmVideo" autoplay muted playsinline webkit-playsinline preload="auto" poster="/img/goccio-drop2.jpg" aria-hidden="true" tabindex="-1" disablepictureinpicture><source src="/img/goccio-drop2.mp4" type="video/mp4"></video>
+<img class="wm-video" id="wmFilm" src="/img/goccio-drop2.jpg" data-film="/img/goccio-drop2.webp" alt="" aria-hidden="true" decoding="async" draggable="false">
 <header class="top">
   <div class="top-in">
     <div class="mark" translate="no">Goccio</div>
@@ -6950,7 +6952,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     return `<p class="c-notes c-typ">${esc(head)}: ${esc(list)}</p>`; };
   // a note as the roaster wrote it, tidied: stray brackets, stars and dashes at either end go ("Vanilla[" reads Vanilla)
   const noteClean = (n) => String(n).replace(/^[\s\[\](){}*•·|:;,.\-–—"'“”]+|[\s\[\](){}*•·|:;,.\-–—"'“”]+$/g, "").replace(/\s{2,}/g, " ");
-  const cardNotes = (r) => { const ns = (Array.isArray(r.notes) ? r.notes : []).map(noteClean).filter((n) => /\p{L}/u.test(n)); if (!ns.length) return cardTypical(r);   // every note the roaster lists, not the first three
+  // never shown as a taste: page markup the scanner once kept (an image's address, a tag) and a brew guide's headings (Ratios, dose, bloom)
+  const NOTE_JUNK = /[<>]|=\s*["'“”]|https?:|\/\/|\.(?:png|jpe?g|gif|svg|webp|avif)\b|\b\d{2,4}w\b|\bsizes=|\bsrcset\b/i, NOTE_BREW = /^(?:ratios?|brew(?:ing)? ratios?|dos(?:e|es|age)|bloom(?:ing)?|grind(?: size)?|water(?: temp(?:erature)?)?|temp(?:erature)?|yield|recipe|pours?|time|timings?|method|agitation)$/i;
+  const cardNotes = (r) => { const ns = (Array.isArray(r.notes) ? r.notes : []).filter((n) => !NOTE_JUNK.test(n) && !NOTE_BREW.test(String(n).trim())).map(noteClean).filter((n) => /\p{L}/u.test(n)); if (!ns.length) return cardTypical(r);   // every note the roaster lists, not the first three
     if (ns.length === 1) { const t = cardTypical(r); if (t) return t; }   // a single word ("Nuts") says less than what the origin usually gives
     const reE = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const hits = cardHits(), lit = (n) => { let h = esc(n); hits.forEach((w) => { const own = w[0] === "\u0001", t = own ? w.slice(1) : w;
@@ -6974,11 +6978,18 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest(".row-more"); if (!b) return;
     const r = b.parentElement, k = b.dataset.more, inShare = r.classList.contains("share"), on = !r.classList.contains("more-open") || r.classList.contains("more-closing");
     clearTimeout(r._mc); r.classList.remove("more-closing", "more-anim"); void r.offsetWidth;
-    if (on) { if (!inShare) rowOpen.add(k); r.classList.add("more-open", "more-anim");
-      // Buy and Save start under the plus and part from it as the top bar's drops do; each knows how far it has to travel
-      const x0 = b.getBoundingClientRect().left; r.querySelectorAll(inShare ? ":scope > .btn:not(#mUse)" : ":scope > .buy-p, :scope > .bag-add").forEach((p) => p.style.setProperty("--tb-x", (x0 - p.getBoundingClientRect().left) + "px"));
+    const calm = matchMedia("(prefers-reduced-motion: reduce)").matches, slide = (from, ms) => { try { if (!calm) return b.animate([{ transform: `translateX(${from}px)` }, { transform: "none" }], { duration: ms, easing: "cubic-bezier(.3,.8,.3,1)" }); } catch (e) {} };
+    if (on) { const x0 = b.getBoundingClientRect().left; if (!inShare) rowOpen.add(k); r.classList.add("more-open", "more-anim");
+      // the plus gives its place to the first pill and travels to the end of the row, where it waits as a minus; the pills come out of
+      // where it stood, as the top bar's drops do, each knowing how far it has to travel
+      slide(x0 - b.getBoundingClientRect().left, 620);
+      r.querySelectorAll(inShare ? ":scope > .btn:not(#mUse)" : ":scope > .buy-p, :scope > .bag-add").forEach((p) => p.style.setProperty("--tb-x", (x0 - p.getBoundingClientRect().left) + "px"));
       r._mc = setTimeout(() => r.classList.remove("more-anim"), 900); }
-    else { rowOpen.delete(k); r.classList.add("more-closing"); r._mc = setTimeout(() => r.classList.remove("more-open", "more-closing"), 660); }
+    else { rowOpen.delete(k); r.classList.add("more-closing");
+      // closing: the minus travels back to where the plus lives while the pills go back in
+      try { const x1 = b.getBoundingClientRect().left, first = r.querySelector(inShare ? ":scope > .btn:not(#mUse):not([hidden])" : ":scope > .buy-p, :scope > .bag-add"), xb = first ? first.getBoundingClientRect().left : x1;
+        if (!calm) r._ma = b.animate([{ transform: "none" }, { transform: `translateX(${xb - x1}px)` }], { duration: 420, easing: "cubic-bezier(.4,0,.2,1)", fill: "forwards" }); } catch (e) {}
+      r._mc = setTimeout(() => { r.classList.remove("more-open", "more-closing"); try { r._ma && r._ma.cancel(); } catch (e) {} }, 660); }
     b.setAttribute("aria-expanded", on); });
   const cardBuy = (r, priceOnly) => { if (!r.url) return ""; const it = LANG === "it", own = r.price ? esc(r.price.replace(/^From\s+/i, "")) : "";
     // another currency: about this much in pounds, from the shop's currency (or the symbol on the price), bag weight or not
@@ -9172,7 +9183,13 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   var PN_PLUS = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
       PN_MINUS = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
   // the film reaches from the top of the screen to the foot of the hero, and steps behind the top bar once the page scrolls
-  { const v = $("wmVideo"), h = document.querySelector(".wm-screen"); if (v && h) { const fit = () => { v.style.height = Math.round(h.getBoundingClientRect().bottom + scrollY) + "px"; };
+  // the film is an animated picture, not a video: a phone plays it by itself, with no play button, Low Power Mode or not. It plays once,
+  // starting when the page shows (not behind the loading fade), and anyone who asks for less motion keeps the still
+  { const f = $("wmFilm"); if (f && !matchMedia("(prefers-reduced-motion: reduce)").matches) { const pre = new Image(); pre.src = f.dataset.film;
+      const go = () => { if (f.dataset.on) return; if (document.documentElement.classList.contains("wait")) return setTimeout(go, 100); f.dataset.on = "1";
+        const show = () => { f.src = f.dataset.film; }; pre.complete ? show() : (pre.onload = show); };
+      go(); } }
+  { const v = $("wmFilm"), h = document.querySelector(".wm-screen"); if (v && h) { const fit = () => { v.style.height = Math.round(h.getBoundingClientRect().bottom + scrollY) + "px"; };
       fit(); addEventListener("resize", fit); setTimeout(fit, 400); setTimeout(fit, 2000); if (document.fonts) document.fonts.ready.then(fit);
       const sc = () => document.documentElement.classList.toggle("scrolled", scrollY > 2); sc(); addEventListener("scroll", sc, { passive: true });
       // while the drop is in the air it stays in front of the bar, scrolled or not (on a phone the film often starts with the first scroll)
