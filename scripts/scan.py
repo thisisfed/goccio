@@ -206,18 +206,18 @@ NOTES_RE = re.compile(r"(?:tasting notes|flavour notes|flavor notes|flavour prof
 NOTES_SENT = re.compile(r"(?:notes? of|flavou?rs? of|tastes? of|hints? of|aromas? of|we(?:'re| are)? (?:getting|tasting)|expect(?:ing)?(?! notes)|tasting like)\s+"
                         r"((?:[A-Za-z][\w'’\-]*(?:\s(?!and\b)[A-Za-z][\w'’\-]*){0,2})(?:\s*(?:,|&|\band\b)\s*[A-Za-z][\w'’\-]*(?:\s(?!and\b)[A-Za-z][\w'’\-]*){0,2}){1,5})", re.I)
 # a label on a line of its own with the notes on the next ("Tasting notes\nStrawberry, blueberry, nectarine"; Standout)
-NOTES_LINE = re.compile(r"(?:tasting notes|flavou?r notes|flavou?r composition|flavou?r profile|cup(?:ping)? notes|in the cup|smaksnoter|smagsnoter|smaksnotater|geschmacksnoten|"
+NOTES_LINE = re.compile(r"(?:tasting notes|flavou?r notes|flavou?r composition|flavou?r descriptions?|flavou?r profile|cup(?:ping)? notes|in the cup|smaksnoter|smagsnoter|smaksnotater|geschmacksnoten|"
                         r"notas de cata|note di degustazione|notes de d[ée]gustation)[ \t]*(?:\n|\s{2,})\s*([^\n.]{3,120})", re.I)
 # a table row read as one line, label and notes split by a single space ("Tasting notes Citrus, Lemon Peel, White Florals"; Dak).
 # The line must be the label and a list and nothing else, so a sentence ("tasting notes of ...", "tasting notes are ...") is never taken.
 # Also a bare label ("Notes", "Flavor", "Aroma", "Tastes like") and other languages ("Note de degustare", "NOTES DE DÉGUSTATIONS"),
 # with the list split by commas, spaced dashes or bullets ("Fraise - Myrtille - Mûre - Figue"; Tanat, Mabó, Dropshot, Coffea Circulor)
-NOTES_CELL = re.compile(r"^[ \t\xa0]*(?:tasting notes|tastes?(?![ \t]+like)|flavou?r notes|flavou?r composition|flavou?r profile|notes? de d[ée]gustations?|d[ée]gustation|note de degustare|note di degustazione|notas de cata|"
+NOTES_CELL = re.compile(r"^[ \t\xa0]*(?:tasting notes|tastes?(?![ \t]+like)|flavou?r notes|flavou?r composition|flavou?r descriptions?|flavou?r profile|notes? de d[ée]gustations?|d[ée]gustation|note de degustare|note di degustazione|notas de cata|"
                         r"sensory profile|cup(?:ping)? notes|tastes like|smaksnoter|smagsnoter|smaksnotater|geschmacksnoten|flavou?rs?|aromas?|notes)[ \t\xa0]*:?[ \t\xa0]+"
                         r"(?!(?:of|are|is|include|from|with|that|we|you|and|the|a|an)\b)(?![^\n]*\b(?:coffee|roasters?|roastery|caf[ée])\b)"
-                        r"([^\n.:]{3,120}?(?:,|&|\band\b|\s[-–•·]\s|\s?//\s?)[^\n.:]{2,160}?)[ \t\xa0]*$", re.I | re.M)
+                        r"([^\n.:]{3,120}?(?:,|&|\band\b|\s[-–•·]\s|\s?//\s?)[^\n.:]{2,160}?)[ \t\xa0]*\.?[ \t\xa0]*$", re.I | re.M)
 # the same label alone on its line and the list alone on the next ("Notes\nGem de fragi, Mar rosu, Stafide"; Dropshot, Mabó, Inverness)
-NOTES_NEXT = re.compile(r"^[ \t\xa0]*(?:tasting notes|tastes?(?![ \t]+like)|flavou?r notes|flavou?r composition|flavou?r profile|notes? de d[ée]gustations?|d[ée]gustation|note de degustare|note di degustazione|notas de cata|"
+NOTES_NEXT = re.compile(r"^[ \t\xa0]*(?:tasting notes|tastes?(?![ \t]+like)|flavou?r notes|flavou?r composition|flavou?r descriptions?|flavou?r profile|notes? de d[ée]gustations?|d[ée]gustation|note de degustare|note di degustazione|notas de cata|"
                         r"sensory profile|cup(?:ping)? notes|tastes like|smaksnoter|smagsnoter|smaksnotater|geschmacksnoten|flavou?rs?|aromas?|notes)[ \t\xa0]*:?[ \t\xa0]*\n[ \t\xa0]*"
                         r"(?!(?:of|are|is|include|from|with|that|we|you|and|the|a|an)\b)(?![^\n]*\b(?:coffee|roasters?|roastery|caf[ée])\b)"
                         r"([^\n.:]{3,120}?(?:,|&|\band\b|\s[-–•·]\s|\s?//\s?)[^\n.:]{2,160}?)[ \t\xa0]*$", re.I | re.M)
