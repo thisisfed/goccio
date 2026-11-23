@@ -7255,7 +7255,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   function landBrewing() {
     try { const a = document.activeElement; if (a && a !== document.body) a.blur(); const sel = getSelection(); if (sel) sel.removeAllRanges(); } catch (e) {}
     // no brewer saved yet: ask what you brew with first (once a visit), then on to the recipe
-    goRecipe();   // straight to the recipe; its choices sit just above
+    // on the choices, not past them: the roast question when there is one, then brewer, cup, grinder and water. The recipe is right under them
+    if ($("recipe").hidden) return goRecipe();
+    const d = $("detected"), t = d && d.textContent.trim() && d.offsetParent ? d : $("moreOpts") && $("moreOpts").offsetParent ? $("moreOpts") : $("kit");
+    jumpTo(t && t.offsetParent ? t : $("recipe"));
   }
 
   // ---------- scan the bag: read the label on this device (Tesseract OCR, loaded only when used) ----------
