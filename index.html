@@ -2544,6 +2544,7 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
 .shelf-tools .quick .chip[data-g]{gap:0}
 .shelf-tools .quick .chip[aria-expanded="true"]:not([aria-pressed="true"]){box-shadow:inset 0 0 0 1.5px var(--ink)}
 .bv{padding-bottom:calc(8px + env(safe-area-inset-bottom))!important}   /* Start and Reset end where the bottom menu's pills end */
+#adjusted .lrn-h, #adjusted .lrn-h b, #adjusted p, #adjusted .lrn-list, #adjusted .lrn-list li, #adjusted button{font-size:var(--fs-s)!important;line-height:1.3}
 </style>
 </head>
 <body>
@@ -5365,7 +5366,7 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
       ? `<span class="mine-tag">Custom numbers</span><button type="button" class="chip" id="mEdit">Edit</button><button type="button" class="chip" id="mReset">Use the suggested recipe</button>`
       : "";
     { const sh = document.querySelector("#recipe .share"); let ub = $("mUse");   // not customised: the way in sits with Copy recipe and Share link
-      if (!ub && sh) { sh.insertAdjacentHTML("beforeend", `<button class="btn" id="mUse" type="button">Enter my own recipe</button>`); ub = $("mUse"); }
+      if (!ub && sh) { sh.insertAdjacentHTML("afterbegin", `<button class="btn" id="mUse" type="button">Enter my own recipe</button>`); ub = $("mUse"); }
       if (ub) { ub.hidden = editing || !!r.mine; ub.onclick = () => { editing = true; render(); requestAnimationFrame(() => { const top = document.querySelector(".top"), h = top ? top.getBoundingClientRect().height : 0;
         window.scrollTo({ top: $("mineEd").getBoundingClientRect().top + scrollY - h - 12, behavior: "smooth" }); }); }; } }
     if ($("mEdit")) $("mEdit").onclick = () => { editing = true; render(); requestAnimationFrame(() => { const top = document.querySelector(".top"), h = top ? top.getBoundingClientRect().height : 0;
@@ -8290,7 +8291,7 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
     const paint = () => {
       ticking = false;
       const r = $("litext").getBoundingClientRect(), vh = innerHeight;
-      const k = Math.max(0, Math.min(1, (vh * .85 - r.top) / (r.height + vh * .35)));
+      const k = Math.max(0, Math.min(1, (vh * .25 - r.top) / Math.max(120, r.height - vh * .55)));   // stays dim until it is the thing being read: it starts lighting a quarter of the way down the screen, so the field above it is what you see on arriving
       const n = Math.round(k * words.length);
       words.forEach((w, i) => w.classList.toggle("lit", i < n));
       end.classList.toggle("on", n >= words.length);   // lights up last, straight after "wanted."
