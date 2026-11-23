@@ -308,6 +308,20 @@ CASES = [
      lambda: scan.class_notes('<div class="footer-notes"><p>Free delivery over £30</p></div>', "X") == []),
     ("A sentence 'Tasting notes of this lot change, and so does…' is not a notes row",
      lambda: scan.NOTES_CELL.search("Tasting notes of this lot change every harvest, and so does the roast") is None),
+    ("Flavoured coffee is told by its name (Amaretto Flavoured Coffee, Irish Cream, Pumpkin Spice, French Vanilla), never by tasting notes",
+     lambda: all(scan.flavoured(t) for t in ["Amaretto Flavoured Coffee", "Abie's Irish Cream 5LB", "Pumpkin Spice 2LB", "French Vanilla 5LB", "Hazelnut flavored coffee"])
+       and not any(scan.flavoured(t) for t in ["Las Lajas Micromill", "Colombia El Paraiso", "Caramel Blend", "Hazelnut Hill Estate", "Brazil Santos, vanilla and caramel"])),
+    ("Robusta is told by the name or the variety (robusta, canephora, conilon), and '100% Arabica, no robusta' is not robusta",
+     lambda: all(scan.robusta(n, v) for n, v in [("Indian Cherry Robusta", ""), ("Gio 100% Canephora (Omniroast)", ""), ("Italian Roast Coffee", "Robusta"),
+                                                    ("Espresso blend, 80% Arabica, 20% Robusta", ""), ("Rise & Grind", "Robusta/Canephora and Arabica"), ("Brazil Conilon", "")])
+       and not any(scan.robusta(n, v) for n, v in [("House Espresso, no robusta", ""), ("Dr. Espresso dark", "100% Arabica"), ("Ethiopia Guji", "Heirloom"), ("Robust Blend", "")])),
+    ("Only specialty shops are added: one flavoured coffee, one robusta, a tea merchant's name, or coffees that never say process or variety keep a shop off",
+     lambda: (lambda C: scan.specialty_gate([C("Ethiopia Guji", "Ethiopia", "washed", "Heirloom"), C("Colombia Huila", "Colombia", "natural", "Caturra"), C("Kenya AA", "Kenya", "washed", "")], "XYZ Roastery") is None
+       and "flavoured" in scan.specialty_gate([C("Ethiopia Guji", "Ethiopia", "washed", "Heirloom"), C("Colombia Huila", "Colombia", "natural", "Caturra"), C("Irish Cream", "", "", "")], "XYZ Roastery")
+       and "robusta" in scan.specialty_gate([C("Ethiopia Guji", "Ethiopia", "washed", "Heirloom"), C("Colombia Huila", "Colombia", "natural", "Caturra"), C("India Cherry Robusta", "India", "natural", "")], "XYZ Roastery")
+       and "tea" in scan.specialty_gate([C("Ethiopia Guji", "Ethiopia", "washed", "Heirloom")] * 3, "XYZ Tea & Coffee")
+       and "rarely" in scan.specialty_gate([C("Brazil", "Brazil", "", ""), C("Colombia", "Colombia", "", ""), C("Italian Blend", "Brazil", "", ""), C("House", "Brazil", "", "")], "XYZ Roastery"))(
+         lambda n, o, p, v: {"name": n, "origin": o, "process": p, "variety": v})),
 ]
 
 
