@@ -2474,7 +2474,7 @@ html.brew-in .botnav [data-bn]:not([data-bn="cancel"]):not([data-bn="coffee"]){d
 /* a coffee open in the list: its own Brew and plus step aside and the Brewer row slides up into their place; Cancel in the bar at the bottom closes it, so no Close here or at the foot */
 .shelf .item.brewing > .r, .brew-host .brew-shut{display:none!important}
 @keyframes brew-up{0%{transform:translateY(44px)}100%{transform:none}}
-.item.brewing > .brew-host{animation:brew-up .45s cubic-bezier(.2,.8,.2,1) both}
+.item.brewing > .brew-host.fresh{animation:brew-up .45s cubic-bezier(.2,.8,.2,1) both}
 @media (prefers-reduced-motion: reduce){ .item.brewing > .brew-host{animation:none} }
 .tech .tech-w::before{content:"⚠︎ ";color:var(--hl);font-weight:700}   /* the water line carries the same small warning sign as the notes in Why this recipe */
 /* the recipe's own actions: Enter my own recipe, then a plus that lets Copy, Share and Save out, with the same fluid motion as a coffee's row */
@@ -2512,6 +2512,8 @@ html.brew-in .shelf > .item.brewing{padding-bottom:14px!important}
 .wm-more .wm-ctas{margin:0 0 20px!important}
 .wm-screen + .hero-row{margin-top:-15px!important}
 .pours.steps.timed th{white-space:nowrap}
+/* the bar at the bottom: its plain pills (Coffees, Bags, Journal) share the width equally; Start brewing takes the room it needs */
+@media (max-width:899px){ .botnav .chip:not(.bn-go):not([data-bn="cancel"]){flex:1 1 0!important;min-width:0} html:not(.brew-in) .botnav .chip.bn-go{flex:2 1 0!important} }
 html.brew-in .brew-above{display:none!important}
 html.brew-in #shelves{margin-top:0!important}
 /* "Recipe for V60" as big as the recipe's own numbers, centred, no full stop */
@@ -7485,7 +7487,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // the list was re-drawn under an open coffee (another brewer, another grinder): put it back as it was, without moving the page
     brewHome(); const again = !brewFresh && brewKeep ? brewKeep : null; brewFresh = false;
     BREW_MOVE.forEach((id) => { const el = $(id); if (el && !BREW_AT[id]) BREW_AT[id] = { p: el.parentNode, n: el.nextSibling }; });
-    const host = document.createElement("div"); host.className = "brew-host"; row.appendChild(host); BREW_MOVE.forEach((id) => { const el = $(id); if (el) host.appendChild(el); });
+    const host = document.createElement("div"); host.className = "brew-host" + (again ? "" : " fresh"); row.appendChild(host);   /* the slide up is for opening a coffee, not for every re-draw of it */ BREW_MOVE.forEach((id) => { const el = $(id); if (el) host.appendChild(el); });
     const shut = document.createElement("button"); shut.type = "button"; shut.className = "chip brew-shut"; shut.textContent = LANG === "it" ? "Chiudi" : "Close"; shut.onclick = () => { brewShut(); jumpTo(row); }; host.appendChild(shut);
     row.classList.add("brewing"); const bb = row.querySelector("button[data-i]"); if (bb) { bb.setAttribute("aria-pressed", "true"); bb.textContent = LANG === "it" ? "Chiudi" : "Close"; }   // the open coffee's Brew is its Close
     const y0 = row.getBoundingClientRect().top;
