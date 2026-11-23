@@ -2441,6 +2441,20 @@ footer #tip a:hover, footer .foot-links a:hover{text-decoration-color:transparen
 .item .c-where{margin:-1px 0 0;font-size:var(--fs-s);line-height:20.25px;color:var(--muted)}
 .item .c-where .ji{margin-right:.5em;font-weight:500;color:var(--go)}.item .c-where .ji.fy{color:var(--hl)}
 #shelves.ro-on .item .who,#shelves.ro-on .item .c-where .rcity{display:none!important}
+/* a coffee's row: Brew, then a plus in a circle that lets Buy and Save out, the same plus as the top bar's */
+.shelf .item > .r > .row-more{border:0!important;border-radius:50%!important;width:var(--pill-h);height:var(--pill-h);padding:0;display:inline-flex;align-items:center;justify-content:center;flex:none;background:var(--pill)!important;color:var(--ink)!important;cursor:pointer;align-self:center}
+@media (hover:hover){ .shelf .item > .r > .row-more:hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))!important} }
+.row-more svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+.row-more .tb-v{transition:transform .21s ease;transform-origin:center}
+.r.more-open:not(.more-closing) > .row-more .tb-v{transform:scaleY(0)}
+.shelf .item > .r:not(.more-open) > :is(.buy-p,.bag-add){display:none!important}
+.shelf .item > .r:has(> .bag-add.in):not(.more-open) > .row-more{background:var(--go)!important;color:var(--on-hl)!important}   /* saved to My bags: the closed plus says so, in the green */
+@keyframes row-out{0%{opacity:0;transform:translateX(-28px) scale(.5)}60%{opacity:1;transform:translateX(3px) scale(1.03)}100%{opacity:1;transform:none}}
+@keyframes row-in{0%{opacity:1;transform:none}100%{opacity:0;transform:translateX(-28px) scale(.5)}}
+.shelf .item > .r.more-open > :is(.buy-p,.bag-add){animation:row-out .42s cubic-bezier(.3,.9,.4,1) both;transform-origin:0 50%}
+.shelf .item > .r.more-open > .bag-add{animation-delay:.07s}
+.shelf .item > .r.more-open.more-closing > :is(.buy-p,.bag-add){animation:row-in .24s ease both;animation-delay:0s}
+@media (prefers-reduced-motion: reduce){ .shelf .item > .r.more-open > :is(.buy-p,.bag-add){animation:none!important} }
 #gear { display: none !important; }   /* My equipment is gone: brewer, grinder and water are picked in the recipe, and remembered */
 #gear.bare #gearIntro { display: block; width: 100%; }
 #gear.bare .gear-tools { display: none; }
@@ -6875,6 +6889,14 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const rest = p && (g || per) ? [g ? `${g} g` : "", shop, per].filter(Boolean).join(", ") : shop ? `${shop} ${it ? "sul sito" : "at the shop"}` : "";   // the shop's price alone only repeats Buy
     return rest ? `<p class="c-price c-per">${rest}</p>` : ""; };
   // Buy is a pill with the price in it, in the card's one row of actions: Brew, Buy, and Save at the end
+  // Buy and Save wait behind the row's plus, as language and theme do behind the top bar's
+  const rowOpen = new Set(), rowKey = (r) => r.url || (r.roaster + "|" + r.name);
+  document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest(".row-more"); if (!b) return;
+    const r = b.parentElement, k = b.dataset.more, on = !r.classList.contains("more-open") || r.classList.contains("more-closing");
+    clearTimeout(r._mc); r.classList.remove("more-closing");
+    if (on) { rowOpen.add(k); r.classList.add("more-open"); }
+    else { rowOpen.delete(k); r.classList.add("more-closing"); r._mc = setTimeout(() => r.classList.remove("more-open", "more-closing"), 260); }
+    b.setAttribute("aria-expanded", on); });
   const cardBuy = (r) => { if (!r.url) return ""; const it = LANG === "it", own = r.price ? esc(r.price.replace(/^From\s+/i, "")) : "";
     // another currency: about this much in pounds, from the shop's currency (or the symbol on the price), bag weight or not
     const ccy = ccyOf(r);
@@ -6979,8 +7001,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           ${cardNotes(r)}${cardPrice(r)}
           <p class="c-where">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span> ` : !isSp && r.just_in ? `<span class="ji">${LANG === "it" ? "Nuovo" : "New"}</span> ` : ""}${r.roaster_city ? `<span class="rcity">${esc(r.roaster_city)}, </span>` : ""}<span class="day">${day}</span></p>
         </div>
-        <div class="r">
-          <button class="btn" type="button" data-i="${i}">Brew</button>${cardBuy(r)}
+        <div class="r${rowOpen.has(rowKey(r)) ? " more-open" : ""}">
+          <button class="btn" type="button" data-i="${i}">Brew</button><button type="button" class="row-more" data-more="${esc(rowKey(r))}" aria-expanded="${rowOpen.has(rowKey(r))}" aria-label="${LANG === "it" ? "Compra o salva" : "Buy or save"}"><svg viewBox="0 0 12 12" aria-hidden="true"><path class="tb-v" d="M6 2v8"/><path d="M2 6h8"/></svg></button>${cardBuy(r)}
           <button type="button" class="pill bag-add ico${hasBag(r) ? " in" : ""}" data-b="${i}" aria-pressed="${hasBag(r)}" aria-label="${hasBag(r) ? (LANG === "it" ? "Nei miei sacchetti" : "In my bags") : (LANG === "it" ? "Salva nei miei sacchetti" : "Save to my bags")}">${BAG_ICO}</button>
         </div></article>`; }).join("") : (() => { const msg = `Nothing matches${shelfV !== "all" ? `. Try Everything under Made for, or` : `. Try a taste, an origin or a roaster, or <a href="#" class="mail-me scan-me">scan the bag in front of you</a>. Missing a roaster?`} <a href="#" class="mail-me" data-s="Missing coffee">${shelfV !== "all" ? "email me" : "Email me"}</a> and I’ll add it.`;
           // a search found nothing: one paragraph with the Searching line, a line break between; three searches that do work, one tap each
