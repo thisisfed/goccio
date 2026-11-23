@@ -162,6 +162,11 @@ CASES = [
        and scan.range_title("Fun • El Paraíso Geisha", "https://xyzroastery.example/cs/products/fun-guatemala-el-paraiso-geisha") == "El Paraíso Geisha"
        and scan.range_title("Kenya • blackcurrant, tomato", "https://xyzroastery.example/products/kenya-kagere") == "Kenya • blackcurrant, tomato"
        and scan.range_title("Danche", "https://xyzroastery.example/products/danche") == "Danche"),
+    ("Long & Short: a description that opens with a bare list is the tasting notes; grind options, a process line and a sentence are not",
+     lambda: scan.find_notes({"title": "Sanchez, Colombia", "tags": [], "body": "Florals, Mandarin, Raspberry\n \n\nGrown by the Sanchez family at 1,900 m."}) == ["Florals", "Mandarin", "Raspberry"]
+       and scan.first_line_notes("Whole Bean, Espresso, Filter") is None and scan.first_line_notes("Colombia, Washed, Pink Bourbon") is None
+       and scan.first_line_notes("A bright, clean coffee from our friends in Huila") is None and scan.first_line_notes("Raspberry") is None and scan.first_line_notes("Light, Medium, Dark") is None
+       and scan.first_line_notes("Peach, Jasmine, Bergamot, Honey") == "Peach, Jasmine, Bergamot, Honey"),
     ("Kaffa's own coffees still count", lambda: not any(scan.EXCLUDE.search(x) for x in ["Kaffebønner Kenya Kagere", "Kaffebønner Honduras El Guaco", "Kaffebønner Klassisk Julekaffe fra", "Switch Up Charity Coffee"])),
     ("Coffee sacks, a milk frother, a pallet and a chocolate bar are not coffee", lambda: all(scan.EXCLUDE.search(t) for t in
         ["Jute Coffee Sacks", "Alessi Mousseur à lait Pulcina", "Halvpalle med kaffe", "Malmö Chokladfabrik x Gringo – Kaffekross 55% chokladkaka", "SCA Introduction to coffee", "30 ks", "Čaj Yunnan Green Superior", "Brazil Natural - Greens"])),
