@@ -2768,19 +2768,15 @@ html.no-recipe #coffee > .wb-sign{display:block;margin:0;margin-top:auto;padding
 @supports (height:100dvh){ html.no-recipe #coffee{min-height:calc(100dvh - var(--top-h, 49px) - var(--bot-h) - 13px)!important} }   /* the screen as it is right now: on an iPhone the browser's bar shrinks as you scroll, and the rule has to follow the bottom bar */
 html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h) - 13px);align-content:start;grid-template-rows:none;grid-auto-rows:max-content}
 /* the search box stands out from the bar: a lighter fill, white words, and a caret while its hint types itself */
-.ask-line #askIn{background:color-mix(in srgb,var(--ink) 17%,var(--bg))!important}
 .ask-line .ask-ph .ph-t.ph-q{color:var(--ink)!important;letter-spacing:0!important}
 .ask-line .ask-ph .ph-type::after{content:"";display:inline-block;width:1.5px;height:1.05em;margin-left:2px;vertical-align:-.16em;background:var(--hl);animation:phCaret .9s steps(1) infinite}
 .ask-line .ask-ph .ph-type.done::after{animation:phCaret .9s steps(1) 3 forwards}
 @keyframes phCaret{0%{opacity:1}50%{opacity:0}100%{opacity:0}}
 @media (prefers-reduced-motion: reduce){.ask-line .ask-ph .ph-type::after{display:none}}
 /* the search box is the brightest thing in the bar: a clear outline, a lighter fill, white words and a white lens */
-.ask-line #askIn{background:color-mix(in srgb,var(--ink) 20%,var(--bg))!important;box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--ink) 78%,transparent)!important}
-.ask-line #askIn:focus{box-shadow:inset 0 0 0 1.5px var(--ink)!important}
 .ask-line .ask-ph .ph-t.ph-q{color:var(--ink)!important;font-weight:500}
 .ask-line .ask-go{color:var(--ink)!important}
 /* the lens sits inside the outlined box: nothing covers the outline's right end */
-.ask-line .ask-go{background:transparent!important}
 .ask-line #askIn{padding-right:calc(var(--pill-h) + 4px)!important}
 </style>
 </head>
@@ -7004,11 +7000,17 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // two of a roaster's coffees that would show the same short name (Koppi's La Lia, a Red Honey SL28 and a White Honey
     // Catuai) keep the rest of their own name, so they read as two coffees, not one listed twice
     // only the coffees on screen and their roaster's others are looked at (each name worked out once and kept), so it costs nothing
-    const nm = (r) => r._nm ?? (r._nm = coffeeName(r) ?? shortName(r)), seen = new Map();
+    // the variety and the process are in the tags: said again at the end of the name ("El Pergamino Bourbon Natural") they only make it long
+    const tailTrim = (n, r) => { let out = String(n || ""); const bits = [r.variety, r.process].filter(Boolean).map((x) => String(x).trim()).filter((x) => x.length >= 3);
+      for (let go = true; go;) { go = false; for (const b of bits) { const m = out.match(new RegExp("^(.*\\S)[\\s,\\-–|/]+" + b.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\s*$", "i")); if (m && m[1].replace(/[\s,\-–|/]+$/, "").length >= 3) { out = m[1].replace(/[\s,\-–|/]+$/, ""); go = true; } } }
+      return out; };
+    const nm = (r) => r._nm ?? (r._nm = tailTrim(coffeeName(r) ?? shortName(r), r)), seen = new Map();
     if (!shelf._byRo) { shelf._byRo = new Map(); shelf.forEach((r) => { const a = shelf._byRo.get(r.roaster); a ? a.push(r) : shelf._byRo.set(r.roaster, [r]); }); }
     const inList = new Set(list);
-    shown.forEach((r) => { const k = r.roaster + "|" + String(nm(r)).toLowerCase(); if (seen.has(k)) return;
-      seen.set(k, new Set((shelf._byRo.get(r.roaster) || []).filter((o) => inList.has(o) && String(nm(o)).toLowerCase() === String(nm(r)).toLowerCase()).map((o) => String(o.name).toLowerCase()))); });
+    // two coffees of one roaster under one short name get their full names, unless the tags already tell them apart (El Pergamino: natural, honey, washed)
+    const tagKey = (r) => "|" + String(r.process || "").toLowerCase() + "|" + String(r.variety || "").toLowerCase();
+    shown.forEach((r) => { const k = r.roaster + "|" + String(nm(r)).toLowerCase() + tagKey(r); if (seen.has(k)) return;
+      seen.set(k, new Set((shelf._byRo.get(r.roaster) || []).filter((o) => inList.has(o) && String(nm(o)).toLowerCase() === String(nm(r)).toLowerCase() && tagKey(o) === tagKey(r)).map((o) => String(o.name).toLowerCase()))); });
     const fullName = (r) => String(r.name || "").replace(/^\s*(?:espresso|filter|filtro|omni)\s*[-–—:|]\s*/i, "").replace(/["“”]/g, "").replace(/\s{2,}/g, " ").trim();
     let lastGroup = null;
     brewHome();   // the recipe sits inside a row while a listed coffee is being brewed: out before the rows are redrawn, back in after
@@ -7027,7 +7029,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const origins = originTag(r.origin, r.region);
       const place = origins;
       const day = isoDm(shelfDate(r));
-      const shown = (seen.get(r.roaster + "|" + String(nm(r)).toLowerCase()) || new Set()).size > 1 ? fullName(r) : nm(r);
+      const shown = (seen.get(r.roaster + "|" + String(nm(r)).toLowerCase() + tagKey(r)) || new Set()).size > 1 ? fullName(r) : nm(r);
       tagBits.push(...coffeeLabels(r, shown).map((l) => `<span class="tg lbl" style="--vc:${LABEL_DOT[l] || "#8e8e93"}">${l}</span>`));
       return `${head}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
         <div class="l">
