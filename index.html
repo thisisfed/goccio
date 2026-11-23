@@ -2594,7 +2594,11 @@ html body .item .tags > :last-child{min-width:0}
 html body .shelf .item > .r > .buy-p:not(.ro-all){order:1!important}
 html body .shelf .item > .r > .btn{order:2!important;margin-left:0!important}
 html body .shelf .item > .r > .ro-all{order:3!important}
-html.nav-off .botnav{display:none!important}
+/* What's brewing arrives under the sign-off, which stays where it was */
+html.mine.no-recipe body #coffee#coffee#coffee{padding-top:0!important}
+html.mine.no-recipe body #coffee > .wb-sign{order:-1;margin:0!important;padding:43px 0!important}
+html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
+html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
 html.brew-in .brew-above{display:none!important}
 html.brew-in #shelves{margin-top:0!important}
@@ -3219,7 +3223,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   <div class="cam-top"><p class="cam-status" id="camStatus"></p><div class="cam-found" id="camFound"></div></div>
   <div class="cam-ctrls"><button type="button" class="chip" id="camClose">Cancel</button><button type="button" class="chip" id="camPhoto">Take a photo instead</button><button type="button" class="chip on" id="camDone">Use what it read</button></div>
 </div>
-<nav class="botnav" aria-label="Sections"><button type="button" class="chip" data-bn="cancel">Cancel</button><button type="button" class="chip" data-bn="shelves">Coffees</button><button type="button" class="chip" data-bn="bags" hidden>Bags</button><button type="button" class="chip" data-bn="coffee">Brew</button><button type="button" class="chip" data-bn="journal" hidden>Journal</button></nav>
+<nav class="botnav" aria-label="Sections"><button type="button" class="chip" data-bn="cancel">Cancel</button><button type="button" class="chip" data-bn="shelves">Coffees</button><button type="button" class="chip" data-bn="bags" hidden>Bags</button><button type="button" class="chip" data-bn="coffee">Brew</button><button type="button" class="chip" data-bn="journal" hidden>Journal</button></nav><script>document.documentElement.classList.add("nav-off");</script>
 <div class="dock" id="dock"><button class="btn" id="dockGo" type="button"><span>Start brewing</span><span class="num" id="dockSum"></span></button></div>
 
 <!-- Brew mode -->
@@ -9056,6 +9060,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   /* the bottom bar is a way between sections: with one section to show there is nowhere to go, and no bar */
   const navSync = () => { const n = document.querySelector(".botnav"); if (!n) return; const on = [...n.querySelectorAll(".chip")].filter((c) => !c.hidden && getComputedStyle(c).display !== "none").length >= 2;
     if (document.documentElement.classList.contains("nav-off") === on) document.documentElement.classList.toggle("nav-off", !on); };
+  document.addEventListener("click", () => { setTimeout(navSync, 0); setTimeout(navSync, 400); });   /* and after any tap, should a change slip past the observers */
   navSync(); new MutationObserver(navSync).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
   new MutationObserver(navSync).observe(document.querySelector(".botnav"), { attributes: true, subtree: true, attributeFilter: ["hidden", "class"] });
   new MutationObserver(() => { if (!$("recipe").hidden) mineOn(); }).observe($("recipe"), { attributes: true, attributeFilter: ["hidden"] });
