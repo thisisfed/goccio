@@ -5395,7 +5395,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     out.innerHTML = sumBits(picks.map((t) => SHORT[t] || t)); }
   // what a fold is set to, beside its title: each choice starts with a capital and stands apart from the next by a space, no commas
   function sumBits(list) { return list.filter(Boolean).map((t) => `<span class="sum-b">${esc(String(t).charAt(0).toUpperCase() + String(t).slice(1))}</span>`).join(" "); }
-  const renderAllOpts = () => { renderOpts("opts-kit", [{ key: "brewer", label: "Brewer", items: brewerItems(), on: setBrewer, cur: () => { try { if (suAfter) return ""; } catch (e) {} return brewerOf(state) === "cold" ? "press" : brewerOf(state); } }]); renderOpts("opts-main", optsMain()); { const b = brewerOf(state), B = BREWERS[b]; renderOpts("opts-dose", optsMain(true)); } adjSum(); renderOpts("opts-more", OPTS_MORE); };
+  const renderAllOpts = () => { renderOpts("opts-kit", [{ key: "brewer", label: "Brewer", items: brewerItems(), on: setBrewer, cur: () => { try { if (suAfter) return ""; } catch (e) {} return brewerOf(state) === "cold" ? "press" : brewerOf(state); } }]); renderOpts("opts-main", optsMain()); { const b = brewerOf(state), B = BREWERS[b]; renderOpts("opts-dose", optsMain(true)); } adjSum(); renderOpts("opts-more", OPTS_MORE);
+    { const box = $("adjOpts"); if (box) box.hidden = ![...$("opts-main").querySelectorAll(".chip, select, input")].some((x) => x.offsetParent !== null || !box.open); if (box && box.hidden) box.open = false; } };   // nothing to adjust (cupping): no Adjust line
 
   // the recipe section only exists once there's a full recipe; until then go to the questions
   // jumping to a section: straight there, its top rule just under the top bar, then checked again while the page settles
