@@ -9159,7 +9159,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       let hasGear = false; try { hasGear = !!(gear.brewers.length || gear.grinders.length || (prefs.water || {}).kind); } catch (e) {}   // Equipment once there's something in it
       document.querySelectorAll(".botnav [data-bn]").forEach((b) => { b.setAttribute("aria-pressed", String(b.dataset.bn === a || (b.dataset.bn === "coffee" && a === "recipe")));
         if (b.dataset.bn === "gear") b.hidden = false;   // always: with nothing in it, it's where the first question is
-        if (b.dataset.bn === "coffee") b.hidden = $("coffee").hidden && $("recipe").hidden;   // Brew once there's something to brew (or What's brewing was asked for)
+        if (b.dataset.bn === "coffee") b.hidden = false;   // always: Coffees and Brew are the menu; with nothing to brew yet, Brew opens What's brewing
         if (b.dataset.bn === "bags") b.hidden = !(typeof bags !== "undefined" && bags.length);   // only once a bag is saved
         if (b.dataset.bn === "journal") b.hidden = !(typeof journal !== "undefined" && journal.length); });
       if (a !== active0) { active0 = a; const on = row && row.querySelector(`[data-sec="${a}"]`);
@@ -9204,6 +9204,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     if (id === "coffee" && b.classList.contains("bn-go")) return openBrew();
     if (id === "coffee" && window.__useScan && window.__useScan()) return;   // a scan waiting to be checked: Brew is Use these
     if (id === "coffee" && document.querySelector(".item.brewing")) return jumpTo(document.querySelector(".item.brewing"));
+    if (id === "coffee" && $("recipe").hidden && $("wmBag")) return $("wmBag").click();   // nothing to brew yet: as "I have a coffee" does
     if (id === "coffee") return jumpTo($("coffee"));
     if (el && !el.hidden) return jumpTo(el);
     jumpTo($(id === "bags" ? "shelves" : "coffee")); });
@@ -9238,11 +9239,17 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   if (/[?&]scantest\b/.test(location.search)) window.__set = (st) => { Object.assign(state, st); renderAllOpts(); render(); return recipe; };   // tests: any recipe on screen
   // the live dot: each ring leaves after a random wait (sometimes two in quick succession), at a random size and speed, so it never repeats
   (function liveRing() { if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const done = new WeakSet(); let tries = 0;
-    const fire = () => { document.querySelectorAll(".live-dot").forEach((d) => { if (done.has(d) || !d.offsetParent) return; done.add(d);
-        const r = document.createElement("i"); r.className = "lr"; r.style.setProperty("--d", "1.6s"); r.style.setProperty("--s", "3.4");
-        r.addEventListener("animationend", () => r.remove()); d.appendChild(r); });
-      if (++tries < 40) setTimeout(fire, 500); };   // the count arrives with the list: wait for the dot, pulse once, stop
+    // the antenna: a ring leaves the dot as the count arrives, then again every now and then (6 to 14 s apart, sometimes two close
+    // together, never the same size or speed twice), only while the dot is on screen and the page is in front
+    const ring = (d) => { const r = document.createElement("i"); r.className = "lr"; r.style.setProperty("--d", (1.3 + Math.random() * 0.7).toFixed(2) + "s"); r.style.setProperty("--s", (2.8 + Math.random() * 1.2).toFixed(2));
+      r.addEventListener("animationend", () => r.remove()); d.appendChild(r); };
+    const seen = (d) => { if (!d.offsetParent) return false; const b = d.getBoundingClientRect(); return b.bottom > 0 && b.top < innerHeight; };
+    let first = false, tries = 0;
+    const fire = () => { let any = false;
+      if (!document.hidden) document.querySelectorAll(".live-dot").forEach((d) => { if (!seen(d)) return; any = true; ring(d); if (first && Math.random() < 0.3) setTimeout(() => ring(d), 420); });
+      if (any) first = true;
+      if (!first) { if (++tries < 40) setTimeout(fire, 500); return; }   // the count arrives with the list: wait for the dot
+      setTimeout(fire, 6000 + Math.random() * 8000); };
     setTimeout(fire, 600); })();
   { const g = $("bagEmptyGo"); if (g) g.onclick = () => jumpTo($("shelves")); }
   // a + that opens the rest of a list says how many are behind it ("+6"); a bare + is kept for adding something
