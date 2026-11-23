@@ -296,6 +296,17 @@ CASES = [
     ("Sydrip's Slovak notes in English: Red grapes, Tropical fruit, Blueberry, Dark chocolate",
      lambda: __import__("flavours").english_notes(["Červené hrozno", "Tropické ovocie", "Čučoriedky", "Tmavá čokoláda"])
              == ["Red grapes", "Tropical fruit", "Blueberry", "Dark chocolate"]),
+    ("Sydrip: a line of flavours closed by full stops is the notes ('Biela broskyňa. Marhuľa. Šľahačka. Čokoláda.')",
+     lambda: scan.find_notes({"body": "Peach\nBiela broskyňa. Marhuľa. Šľahačka. Čokoláda.\nDo košíka", "title": "Peach", "tags": []})
+             == ["Biela broskyňa", "Marhuľa", "Šľahačka", "Čokoláda"]),
+    ("Sydrip: a related coffee's notes under 'Súvisiace produkty' are not this coffee's",
+     lambda: scan.page_notes("Peach\nFermentovaná drip káva z Kolumbie, pražená v Bratislave pre filter a drip. " + "Káva. " * 40
+                             + "\nSúvisiace produkty\nBurundi\nČervené hrozno · Tropické ovocie · Čučoriedky · Tmavá čokoláda\n", "Peach") == []),
+    ("A slogan in full stops is not tasting notes ('Free. Fast. Fresh.')",
+     lambda: scan.stop_notes("Free. Fast. Fresh.") is None),
+    ("Sydrip's other Slovak notes in English: Whipped cream, Citrus, Aged rum, Egg liqueur, Red berries",
+     lambda: __import__("flavours").english_notes(["Šľahačka", "Citrusy", "Starý rum", "Vaječný likér", "Červené bobuľové ovocie"])
+             == ["Whipped cream", "Citrus", "Aged rum", "Egg liqueur", "Red berries"]),
     ("Czech notes too: 'Borůvky', 'Hořká čokoláda', 'Lískové ořechy' are Blueberry, Dark chocolate, Hazelnut",
      lambda: __import__("flavours").english_notes(["Borůvky", "Hořká čokoláda", "Lískové ořechy"]) == ["Blueberry", "Dark chocolate", "Hazelnut"]),
     ("English notes are left as written ('Tropical fruits', 'Clementine', 'Mango yogurt')",

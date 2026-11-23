@@ -225,7 +225,7 @@ NOTES_CHECK = 9   # pages read for notes with these rules; a coffee checked unde
 # A fix for one shop's page layout re-reads only that shop: raise its number here (above NOTES_CHECK), not NOTES_CHECK,
 # which re-reads every coffee without notes everywhere (thousands of pages). Raise NOTES_CHECK only for a change to the
 # rules every shop goes through
-NOTES_RECHECK = {"Climpson & Sons": 10}   # e.g. {"Monmouth": 10}
+NOTES_RECHECK = {"Climpson & Sons": 10, "Sydrip": 10}   # e.g. {"Monmouth": 10}
 notes_ver = lambda shop: max(NOTES_CHECK, NOTES_RECHECK.get(shop, 0))
 NOTES_V = 2       # page notes read under these list rules; a short list (two or fewer) read under older ones is read once more
 
@@ -242,6 +242,23 @@ def dot_notes(text):
                and not any(v.lower() == x.lower() for v in VARIETIES)
                and not re.search(r"\b(?:filter|espresso|omni|whole ?beans?|ground|roast|light|medium|dark|decaf|organic|fair ?trade|new|limited|"
                                  r"single origin|blend|subscription|gift|home|shop|cart|menu|about|contact|wholesale|coffees?|beans?|products?|collections?|all|equipment|merch)\b", x, re.I) for x in parts):
+            return ", ".join(parts)
+    return stop_notes(text)
+
+
+def stop_notes(text):
+    """A line of flavours on its own, each closed by a full stop: 'Biela broskyňa. Marhuľa. Šľahačka. Čokoláda.' (Sydrip).
+    Three to eight parts of a word or three, and at least half of them flavours we know, so 'Free. Fast. Fresh.' is not taken."""
+    import flavours
+    for line in (text or "").splitlines():
+        line = line.strip()
+        if not line.endswith(".") or line.count(".") < 3:
+            continue
+        parts = [x.strip() for x in line.split(".") if x.strip()]
+        if not 3 <= len(parts) <= 8 or not all(re.fullmatch(r"[^\W\d_][^\W\d_'’\- ]*(?:\s[^\W\d_][^\W\d_'’\-]*){0,2}", x) for x in parts):
+            continue
+        known = sum(1 for x in parts if x.lower() in flavours.PHRASES or all(w in flavours.W for w in x.lower().split()))
+        if known * 2 >= len(parts) and not any(find_process(x) or find_origin(x) for x in parts):
             return ", ".join(parts)
     return None
 
@@ -1439,7 +1456,7 @@ NOT_PROC = re.compile(r"brew|filter|espresso|roast|grind|order|payment|cookie|da
 # a sentence that hedges or compares ("usually natural", "if you enjoy a washed Kenya", "between a washed and a natural")
 # says nothing sure about this coffee, so it is skipped; so is one naming two processes ("80% natural and 20% honey")
 PROC_HEDGE = re.compile(r"\b(?:usually|often|typically|generally|commonly|traditionally|tend|tends|expect|if you|compared|unlike|than|between|such as|like most|most of|many)\b", re.I)
-PAGE_END = re.compile(r"related products|you may also like|you might also like|recently viewed|customers (?:also|who)|frequently bought|more (?:coffees|from)|other products|similar products|reviews?\b", re.I)
+PAGE_END = re.compile(r"related products|you may also like|you might also like|recently viewed|customers (?:also|who)|frequently bought|more (?:coffees|from)|other products|similar products|súvisiace produkty|související produkty|podobné produkty|mohlo by sa vám páčiť|mohlo by se vám líbit|reviews?\b", re.I)
 
 
 def process_phrase(text, why=False):
@@ -2450,6 +2467,11 @@ def add_page_details(recs, roaster, old):
         need = [k for k in ("process", "variety", "notes") if not rec.get(k) and not (k == "notes" and rec.get("notes_checked"))]
         if short_old and rec.get("notes_from") == "page" and "notes" not in need:
             need.append("notes")
+        # a shop whose page layout fooled the notes rules (Sydrip: the related coffees' notes taken for this one's) is read
+        # once more under the fixed rules, and what the page says now replaces the old list
+        redo = roaster["name"] in NOTES_RECHECK and prev.get("notes_from") == "page" and (prev.get("notes_checked") or 0) < NOTES_RECHECK[roaster["name"]]
+        if redo and "notes" not in need:
+            need.append("notes")
         # every coffee the shop doesn't label filter or espresso gets its page read once for the brewers it names
         want_methods = not rec.get("roast_for") and not rec.get("methods") and not rec.get("methods_none")
         if not need and not want_methods and not want_roast:
@@ -2493,7 +2515,12 @@ def add_page_details(recs, roaster, old):
             ns = class_notes(raw, rec["name"]) or page_notes(text, rec["name"], html.unescape(meta.group(1)) if meta else "") or raw_notes(raw, rec["name"])
             if ns:
                 rec["notes"], rec["notes_from"], rec["notes_v"] = ns, "page", NOTES_V
+                if redo:
+                    rec["notes_checked"] = notes_ver(roaster["name"])
                 got = True
+            elif redo:   # the page read again names none of its own: the list it had was another coffee's
+                rec.pop("notes", None); rec.pop("notes_from", None); rec.pop("notes_v", None)
+                rec["notes_checked"] = notes_ver(roaster["name"])
             elif rec.get("notes"):
                 rec["notes_v"] = NOTES_V   # the short list read again and nothing better: keep it, don't read it again
             else:
