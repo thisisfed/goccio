@@ -478,7 +478,8 @@ def not_coffee(item):
     # a tea shelf at a tea and coffee merchant: the category says tea and nothing in it or the title says coffee (Smith's "Peppermint")
     if re.search(r"\b(?:teas?|tisanes?|herbal|infusions?)\b", ptype, re.I) and not re.search(r"coffee|espresso|caf[eé]|kaffee|decaf", ptype + " " + title, re.I):
         return f"product type '{ptype[:40]}'"
-    if re.search(r"^\s*green\b.{0,60}\b(?:coffee|beans)\b|\bunroasted\b|\bgreen (?:coffee )?beans\b|\braw (?:coffee|beans)\b", title, re.I):
+    if re.search(r"^\s*green\b.{0,60}\b(?:coffee|beans)\b|\bunroasted\b|\bgreen (?:coffee )?beans\b|\braw (?:coffee|beans)\b"
+                 r"|^\s*green\s+(?:robusta|arabica|\w+(?:ian|ean|ese|can)\b)|\bcaf[ée]s? verts?\b|\bvert grain\b", title, re.I):   # "Green Brazilian Santos", "Café vert grain"
         return "green, unroasted coffee"
     # (tags aren't used: shops tag coffees "gift", "subscription", "chocolate" or "coffee bags" as filters)
     m = CHOC_HEAD.search(title) or CHOC_URL.search(url.rsplit("/", 1)[-1]) \

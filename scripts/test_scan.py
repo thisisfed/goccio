@@ -175,6 +175,9 @@ CASES = [
        and scan.not_coffee({"title": "Guatemala Green Mountain Estate", "type": "Coffee", "tags": [], "url": "", "body": ""}) is None),
     ("Proud Mary: '250gms / Whole Bean … 1kg' is a 250 g bag, not a kilo ($19 read as a kilo price)",
      lambda: scan.bag_grams({"variants": "250gms / Whole Bean / 250gms / Ground for Espresso / 1kg / Whole Bean", "title": "Honeysuckle"}) == 250),
+    ("Green beans named by origin or in French are not roasted coffee ('Green Brazilian Santos', 'Café vert grain BIO'); 'Green Land Estate' and 'Green Roof Espresso' are",
+     lambda: all(scan.not_coffee({"title": t, "type": "", "tags": [], "body": ""}) for t in ["Green Brazilian Santos", "Green Ethiopian Yirgacheffe", "Green Robusta", "Café vert grain BIO"])
+       and not any(scan.not_coffee({"title": t, "type": "", "tags": [], "body": ""}) for t in ["Green Land Estate", "Green Roof Espresso", "Colombia Verde"])),
     ("Kaffa's own coffees still count", lambda: not any(scan.EXCLUDE.search(x) for x in ["Kaffebønner Kenya Kagere", "Kaffebønner Honduras El Guaco", "Kaffebønner Klassisk Julekaffe fra", "Switch Up Charity Coffee"])),
     ("Coffee sacks, a milk frother, a pallet and a chocolate bar are not coffee", lambda: all(scan.EXCLUDE.search(t) for t in
         ["Jute Coffee Sacks", "Alessi Mousseur à lait Pulcina", "Halvpalle med kaffe", "Malmö Chokladfabrik x Gringo – Kaffekross 55% chokladkaka", "SCA Introduction to coffee", "30 ks", "Čaj Yunnan Green Superior", "Brazil Natural - Greens"])),
