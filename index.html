@@ -2559,6 +2559,15 @@ html body .shelf .item .l > .c-notes, html body .shelf .item .l > .c-notes *{lin
 .shelf .item > .r > .bag-add{order:2}
 .shelf .item > .r.more-open > .row-more{order:9!important}
 .shelf .item > .r > .btn{order:10;margin-left:auto!important}
+/* For you: a pill beside "Coffees.", white when on; its line of explanation sits under the title */
+#shelves .sec-head{display:flex;align-items:center;gap:12px}
+.fy-pill{flex:none;height:var(--pill-h);padding:0 12px;border:0;border-radius:var(--r);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);cursor:pointer;margin-left:auto}
+.fy-pill[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+@media (hover:hover){ .fy-pill:not([aria-pressed="true"]):hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))} }
+.fy-note.fy-top{margin:0 0 12px!important;padding:0!important;line-height:19px}
+html.brew-in #fyNote{display:none!important}
+/* the recipe stands on a slightly lighter black than the list around it, edge to edge: a different room, no new colour */
+#recipe{background:color-mix(in srgb,var(--ink) 6%,var(--bg));margin-inline:calc(50% - 50vw)!important;padding-inline:calc(50vw - 50%)!important;padding-top:12px!important;padding-bottom:16px!important}
 html.brew-in .brew-above{display:none!important}
 html.brew-in #shelves{margin-top:0!important}
 /* "Recipe for V60" as big as the recipe's own numbers, centred, no full stop */
@@ -2930,7 +2939,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   </section>
 
   <section class="sec" id="shelves" aria-labelledby="sh">
-    <div class="sec-head"><span class="cap" id="sh" role="heading" aria-level="2"><span class="sh-t">Coffees.</span><span class="ro-title" id="roName" translate="no"></span></span></div>
+    <div class="sec-head"><span class="cap" id="sh" role="heading" aria-level="2"><span class="sh-t">Coffees.</span><span class="ro-title" id="roName" translate="no"></span></span><button type="button" class="chip fy-pill" id="fyPill" aria-pressed="false">For you</button></div>
+    <p class="fy-note fy-top" id="fyNote" role="status" hidden></p>
     <p class="shelf-meta" id="shelfMeta" hidden></p>
     <div class="shelf-tools">
       <div class="chips quick" id="quick" role="group" aria-label="Quick filters"></div>
@@ -2938,7 +2948,6 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       <div class="opt f-row" hidden><span id="labR">Region</span><div class="chips" id="shelfR" role="group" aria-labelledby="labR"></div><select class="shelf-sel" id="shelfRSel" aria-label="Region"></select></div>
       <div class="opt f-row" hidden><span id="labF">Process</span><div class="chips" id="shelfF" role="group" aria-labelledby="labF"></div><select class="shelf-sel" id="shelfFSel" aria-label="Process"></select></div>
       <div class="opt f-row" hidden><span id="labX">Extras</span><div class="chips" id="shelfX" role="group" aria-labelledby="labX"></div><select class="shelf-sel" id="shelfXSel" aria-label="Extras"></select></div>
-      <p class="fy-note" id="fyNote" role="status" hidden></p>
       <p class="fy-note" id="askNote" role="status" hidden></p>
       <div class="curfew" id="curfew" role="status" hidden>
         <p class="cf-h" id="cfNow">Decaf only after 14:00.</p>
@@ -6585,6 +6594,12 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   }
   const FY_KEY = "v60.foryou";   // For you has no switch while the filter rows are hidden: off, whatever an earlier visit left   // For you stays ticked until you untick it, visit after visit
   const fySave = () => { try { localStorage.setItem(FY_KEY, shelfY ? "1" : ""); } catch (e) {} };
+  // For you's switch: a pill beside the Coffees title. On, the list is the coffees closest to what you've saved and brewed, best match
+  // first, and a line under the title says why; with fewer than three coffees to learn from, the line says so and the pill lets go
+  document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("#fyPill"); if (!b) return;
+    shelfY = !shelfY; fyHold = null; fySave(); try { shelfAll = false; } catch (er) {}
+    try { const a = $("askIn"); if (a && a.dataset.fy) { delete a.dataset.fy; a.value = ""; } } catch (er) {}
+    try { renderShelfO(); } catch (er) {} renderShelf(); });
   // the search reads tasting notes too: a word for a family (fruity, floral, chocolatey…) finds every note in it
   const TASTE_FAM = [
     [/^(fruit|fruity|fruits|fruttat[oa]|frutta)$/, "berr currant cherr plum peach apricot nectarin mango pineapple papaya guava passion lychee melon kiwi banana apple pear grape fig raisin date prune jam tropical citrus lemon lime orange grapefruit mandarin tangerine clementine fruit"],
@@ -7101,6 +7116,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     if (qf.price === "cheap") list = list.filter((r) => r._p100 != null && r._p100 >= 2).sort((a, b) => a._p100 - b._p100);   // per 100 g, so bag sizes compare fairly
     const fyOn = !!fy;   // each pick carries For you where Just in would be
     // For you ticked: under the menu, why these (or, before it knows three coffees, what it needs; the list stays as it was)
+    { const fp = $("fyPill"); if (fp) { fp.setAttribute("aria-pressed", String(!!shelfY && !shelfRo)); fp.hidden = !!shelfRo; fp.textContent = LANG === "it" ? "Per te" : "For you"; } }
     { const n = $("fyNote"); n.hidden = !(shelfY && !shelfRo); if (!n.hidden) n.textContent = fyWhy();
       // nothing to learn from yet: the note stays for as long as it takes to read it ON SCREEN (time scrolled away or with the
       // tab hidden doesn't count, so a scroll never cuts it short), then For you switches itself off and the note goes
