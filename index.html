@@ -2598,6 +2598,10 @@ html[lang="it"] :is(#adjOpts,#moreOpts) > summary{grid-template-columns:max-cont
   .wm-screen{min-height:min(62svh,520px)!important;height:auto!important}
   .hero-row{display:none!important}
 }
+.chip.gear-more:has(> .pn){width:auto!important;min-width:var(--pill-h);padding:0 9px!important;border-radius:980px!important}
+.chip.gear-more > .pn{color:var(--ink);font:500 var(--fs-s)/1 var(--sans);font-variant-numeric:tabular-nums;letter-spacing:0}
+/* the phone's first screen ends cleanly under the list's filter pills: nothing is sliced by the bottom bar */
+@media (max-width:640px){ .wm-screen{min-height:max(340px, calc(100svh - var(--top-h, 49px) - var(--bot-h) - var(--fold, 114px)))!important} }
 </style>
 </head>
 <body>
@@ -4879,7 +4883,7 @@ html[lang="it"] :is(#adjOpts,#moreOpts) > summary{grid-template-columns:max-cont
     if (!w.kind && !(gearOpen && gearOpen.water)) {   // nothing picked yet: one dropdown pill, like Region
       $("wBody").innerHTML = `<div class="chips"><button type="button" class="gear-dd" aria-expanded="false">${LANG === "it" ? "Aggiungi la tua acqua" : "Add your water"}</button></div>`;
       $("wBody").querySelector(".gear-dd").onclick = () => { gearOpen.water = true; renderWaterBody(); gearWait(); }; return; }
-    $("wBody").innerHTML = `<div class="chips" role="group" aria-label="Your water">${WATER.filter(([k]) => open || k === w.kind).map(([k, t]) => `<button type="button" class="chip" data-w="${k}" aria-pressed="${w.kind === k}">${t}${w.kind === k ? `<span class="gx" role="button" aria-label="${LANG === "it" ? "Togli" : "Remove"}"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 3l6 6M9 3l-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>` : ""}</button>`).join("")}${open ? "" : `<button type="button" class="chip gear-more" aria-expanded="false" aria-label="See all"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>`}</div>
+    $("wBody").innerHTML = `<div class="chips" role="group" aria-label="Your water">${WATER.filter(([k]) => open || k === w.kind).map(([k, t]) => `<button type="button" class="chip" data-w="${k}" aria-pressed="${w.kind === k}">${t}${w.kind === k ? `<span class="gx" role="button" aria-label="${LANG === "it" ? "Togli" : "Remove"}"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 3l6 6M9 3l-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>` : ""}</button>`).join("")}${open ? "" : `<button type="button" class="chip gear-more" aria-expanded="false" aria-label="See all">${plusN(WATER.length - WATER.filter(([k]) => open || k === w.kind).length)}</button>`}</div>
       ${open ? pcBlock : ""}${custom && open ? `<div class="w-custom"><label>Hardness<input id="wHard" inputmode="numeric" value="${esc(w.hard ?? "")}" placeholder="e.g. 80"></label><label>Alkalinity<input id="wAlk" inputmode="numeric" value="${esc(w.alk ?? "")}" placeholder="e.g. 40"></label></div>
         <p class="muted" style="font-size: var(--fs-s)">Your water company lists both by postcode. Bottled water labels give bicarbonate in mg/L: divide by 1.22 for ppm CaCO₃.</p>` : ""}
       ${custom && open ? `<div class="w-sca"><b>Hardness</b><span>50–175 ppm (calcium 17–85, aim ~68)</span><b>Alkalinity</b><span>40–75 ppm, aim ~40 (bicarbonate buffer)</span><b>TDS</b><span>75–250 ppm, aim ~150</span>
@@ -5010,7 +5014,7 @@ html[lang="it"] :is(#adjOpts,#moreOpts) > summary{grid-template-columns:max-cont
     // roast missing: asked right here, as pills, because roast moves the grind and the temperature more than anything else the bag says
     { const it = LANG === "it", PLUS = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`, MINUS = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
       // Scan the beans first; the round + opens the five levels, as the + does everywhere else on the site
-      const ask = miss.includes("roast") ? `<span class="roast-ask chips" role="group" aria-label="${it ? "Tostatura" : "Roast"}">${PHOTO_CHIP}${roastAskOpen ? [["vlight", "Very light"], ["light", "Light"], ["medium", "Medium"], ["mdark", "Medium-dark"], ["dark", "Dark"]].map(([v, t]) => `<button type="button" class="chip" data-roast="${v}">${esc(tr(t))}</button>`).join("") : ""}<button type="button" class="chip gear-more" id="roastMore" aria-expanded="${roastAskOpen}" aria-label="${esc(tr(roastAskOpen ? "Hide the roast levels" : "Choose the roast"))}">${roastAskOpen ? MINUS : PLUS}</button></span>` : "";
+      const ask = miss.includes("roast") ? `<span class="roast-ask chips" role="group" aria-label="${it ? "Tostatura" : "Roast"}">${PHOTO_CHIP}${roastAskOpen ? [["vlight", "Very light"], ["light", "Light"], ["medium", "Medium"], ["mdark", "Medium-dark"], ["dark", "Dark"]].map(([v, t]) => `<button type="button" class="chip" data-roast="${v}">${esc(tr(t))}</button>`).join("") : ""}<button type="button" class="chip gear-more" id="roastMore" aria-expanded="${roastAskOpen}" aria-label="${esc(tr(roastAskOpen ? "Hide the roast levels" : "Choose the roast"))}">${roastAskOpen ? MINUS : plusN(5)}</button></span>` : "";
       $("detected").innerHTML = state.text && miss.length ? (miss.includes("roast")
         ? `${miss.length === 2 ? "Process and roast aren’t" : "The roast isn’t"} ${state.bag ? "on the listing" : "given"}. This recipe is a safe middle until you say. What roast is it?${ask}${miss.length === 2 ? " The process is under Bag details." : ""}`
         : `The process isn’t ${state.bag ? "on the listing" : "given"}, so the recipe plays it safe. If the bag says, set it under Bag details.`) : "";
@@ -5320,7 +5324,7 @@ html[lang="it"] :is(#adjOpts,#moreOpts) > summary{grid-template-columns:max-cont
         g.appendChild(b);
       });
       if (o.key === "brewer" && (brewAll || brewerHidden())) {   // + for every brewer, − to fold back, like My equipment's See all
-        g.insertAdjacentHTML("beforeend", `<button type="button" class="chip gear-more" aria-expanded="${brewAll}" aria-label="${brewAll ? "Fewer brewers" : "See all brewers"}">${brewAll ? `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>` : `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`}</button>`);
+        g.insertAdjacentHTML("beforeend", `<button type="button" class="chip gear-more" aria-expanded="${brewAll}" aria-label="${brewAll ? "Fewer brewers" : "See all brewers"}">${brewAll ? `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>` : `${plusN(Object.keys(BREWERS).filter((k) => k !== "cold").length - brewerItems().length)}`}</button>`);
         g.lastElementChild.onclick = () => { brewAll = !brewAll; renderAllOpts(); }; }
       if (o.key === "roast") { g.insertAdjacentHTML("beforeend", PHOTO_CHIP); const sc = g.querySelector(".rp-go"); sc.onclick = () => beanScan("rpMsgOpts"); sc.classList.toggle("off", pickedOf("roast") !== "unsure"); }   // Scan the beans only while the roast is Unknown
       row.append(lab, g); box.appendChild(row);
@@ -6426,7 +6430,7 @@ html[lang="it"] :is(#adjOpts,#moreOpts) > summary{grid-template-columns:max-cont
     // what's ticked stays out, with a + for the rest (all of them while nothing is ticked); the rest folds back by itself
     const anyX = xs.some(([v]) => extraOn(v));
     $("shelfX").innerHTML = xs.map(([v, t]) => `<button type="button" class="chip" data-v="${v}" aria-pressed="${extraOn(v)}">${t}</button>`).join("")
-      + (anyX ? `<button type="button" class="chip gear-more x-more" aria-label="See all" aria-expanded="false"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>` : "");
+      + (anyX ? `<button type="button" class="chip gear-more x-more" aria-label="See all" aria-expanded="false">${plusN(xs.filter(([v]) => !extraOn(v)).length)}</button>` : "");
     const xrow = $("shelfX").closest(".opt"); xrow.classList.add("xrow"); xrow.classList.toggle("xall", xOpen); xrow.classList.toggle("xnone", !anyX);   // nothing ticked: a dropdown like Region
     const more = $("shelfX").querySelector(".x-more"); if (more) more.onclick = (e) => { e.stopPropagation(); xOpen = true; renderShelfO(); xWait(); };
     $("shelfX").querySelectorAll("button[data-v]").forEach((b) => b.onclick = () => { const v = b.dataset.v; if (xTap.v === v && performance.now() - xTap.t < 700) return; xTap = { v, t: performance.now() }; if (xOpen) xWait();
@@ -6695,6 +6699,7 @@ html[lang="it"] :is(#adjOpts,#moreOpts) > summary{grid-template-columns:max-cont
   // a note as the roaster wrote it, tidied: stray brackets, stars and dashes at either end go ("Vanilla[" reads Vanilla)
   const noteClean = (n) => String(n).replace(/^[\s\[\](){}*•·|:;,.\-–—"'“”]+|[\s\[\](){}*•·|:;,.\-–—"'“”]+$/g, "").replace(/\s{2,}/g, " ");
   const cardNotes = (r) => { const ns = (Array.isArray(r.notes) ? r.notes : []).map(noteClean).filter((n) => /\p{L}/u.test(n)); if (!ns.length) return cardTypical(r);   // every note the roaster lists, not the first three
+    if (ns.length === 1) { const t = cardTypical(r); if (t) return t; }   // a single word ("Nuts") says less than what the origin usually gives
     const reE = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const hits = cardHits(), lit = (n) => { let h = esc(n); hits.forEach((w) => { const own = w[0] === "\u0001", t = own ? w.slice(1) : w;
       // a word you typed lights from the start of a word (a short one only whole); a taste family's words wherever they sit
@@ -6986,7 +6991,7 @@ html[lang="it"] :is(#adjOpts,#moreOpts) > summary{grid-template-columns:max-cont
           <span class="who">${b.roaster ? `<span class="rn">${esc(b.roaster)}</span>${bagCity(b) ? `<span class="rcity">, ${esc(bagCity(b))}</span>` : ""}` : "Your coffee"}</span>
           <span class="name">${esc(calm(b.roaster ? listName(b) : (b.name || b.text || "Coffee")))}</span>
           ${tags ? `<p class="tags">${tags}</p>` : ""}
-          <div class="bag-f">${bagNeedsRoast(b) ? `<div class="bag-rorow"><span>Roast</span><span class="bag-ro">${PHOTO_CHIP.replace('class="chip rp-go"', `class="chip rp-go" data-scan="${i}"`)}<span class="ro-chips" hidden>${OPTS_MORE[1].items.filter(([k]) => k !== "unsure").map(([k, t]) => `<button type="button" class="chip" data-ro="${i}" data-k="${k}">${t}</button>`).join("")}</span><button type="button" class="chip gear-more" data-rodd="${i}" aria-expanded="false" aria-label="${esc(tr("Choose the roast"))}"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></span></span></div>` : ""}<label>Roasted<span class="bag-d${b.roasted ? "" : " empty"}"><input type="date" data-k="roasted" data-i="${i}" value="${esc(b.roasted || "")}"></span></label>
+          <div class="bag-f">${bagNeedsRoast(b) ? `<div class="bag-rorow"><span>Roast</span><span class="bag-ro">${PHOTO_CHIP.replace('class="chip rp-go"', `class="chip rp-go" data-scan="${i}"`)}<span class="ro-chips" hidden>${OPTS_MORE[1].items.filter(([k]) => k !== "unsure").map(([k, t]) => `<button type="button" class="chip" data-ro="${i}" data-k="${k}">${t}</button>`).join("")}</span><button type="button" class="chip gear-more" data-rodd="${i}" aria-expanded="false" aria-label="${esc(tr("Choose the roast"))}">${plusN(5)}</button></span></span></div>` : ""}<label>Roasted<span class="bag-d${b.roasted ? "" : " empty"}"><input type="date" data-k="roasted" data-i="${i}" value="${esc(b.roasted || "")}"></span></label>
             <label>Coffee left<span class="bag-gw"><span class="bag-g${isLow(b) ? " low" : ""}"><input type="number" inputmode="numeric" min="0" max="5000" step="1" data-k="left" data-i="${i}" value="${b.left ?? ""}" style="--w:${String(b.left ?? "").length || 1}ch"><span>g</span></span>${buyAgain(b)}</span></label></div>
         </div>
         <div class="r">
@@ -6998,7 +7003,7 @@ html[lang="it"] :is(#adjOpts,#moreOpts) > summary{grid-template-columns:max-cont
         <p class="bag-rest"><span class="bag-r1">${esc(restLine(b))}</span>${lowLine(b)}</p></article>`; }).join("");
     // Roast: a dropdown pill that opens into all the roast pills in place (like the grinder); a pick saves it and the row goes
     $("bagList").querySelectorAll("button[data-rodd]").forEach((x) => x.onclick = () => { const ch = x.closest(".bag-ro").querySelector(".ro-chips"), open = ch.hidden; ch.hidden = !open; x.setAttribute("aria-expanded", String(open));   // the same + as the roast question under the coffee
-      x.querySelector("path").setAttribute("d", open ? "M2 6h8" : "M6 2v8M2 6h8"); });
+      x.innerHTML = open ? PN_MINUS : plusN(5); });
     $("bagList").querySelectorAll("button[data-ro]").forEach((x) => x.onclick = () => { const b = bags[+x.dataset.ro]; if (!b) return; b.roast = x.dataset.k; b.roastYou = true; saveBags(); renderBags();
       // the bag being brewed: its roast is the recipe's too, so What's brewing stops asking for it
       // (picked from the list, from your bags or typed: whichever it is, the recipe's coffee is this bag), and its request goes
@@ -7062,7 +7067,7 @@ html[lang="it"] :is(#adjOpts,#moreOpts) > summary{grid-template-columns:max-cont
     if (!suStep) return;
     const multi = suStep === 1 || suStep === 2;
     const pills = (keys, all, more) => keys.map((k) => `<button type="button" class="chip" data-k="${k}"${multi ? ` aria-pressed="${suSel.has(k)}"` : ""}>${esc(all[k].name)}</button>`).join("")
-      + (more ? `<button type="button" class="chip gear-more" data-more="1" aria-label="${it ? "Tutti" : "See all"}"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>` : "")
+      + (more ? `<button type="button" class="chip gear-more" data-more="1" aria-label="${it ? "Tutti" : "See all"}">${plusN(Object.keys(all).length - keys.length)}</button>` : "")
       + (multi && suSel.size ? `<button type="button" class="chip su-next" data-next="1">${it ? "Avanti" : "Next"}</button>` : suStep === 1 && !suAfter ? "" : `<button type="button" class="chip su-skip" data-skip="1">${it ? "Più tardi" : "Set later"}</button>`);
     if (suStep === 1) { const all = Object.fromEntries(Object.entries(BREWERS).filter(([k, B]) => k !== "cold" && !B.cup)), keys = suAll ? Object.keys(all) : [...new Set([...SU_B, ...suSel])];
       q.textContent = it ? "Con cosa prepari il caffè? Anche più di uno." : "What do you brew with? Pick as many as you have."; c.innerHTML = pills(keys, all, !suAll); }
@@ -7098,7 +7103,7 @@ html[lang="it"] :is(#adjOpts,#moreOpts) > summary{grid-template-columns:max-cont
       if (!list.length && !gearOpen[id]) {   // nothing picked yet: one dropdown pill, like Region; a tap unfolds the list
         $(id).innerHTML = `<button type="button" class="gear-dd" aria-expanded="false">${LANG === "it" ? "Aggiungi" : "Add"}</button>`; $(id).querySelector(".gear-dd").onclick = () => { gearOpen[id] = true; renderGear(); gearWait(); }; return; }
       $(id).innerHTML = keys.map((k) => `<button type="button" class="chip" data-k="${k}" aria-pressed="${list.includes(k)}">${esc(label(all[k]))}${list.includes(k) ? `<span class="gx" role="button" aria-label="${LANG === "it" ? "Togli" : "Remove"}"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 3l6 6M9 3l-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>` : ""}</button>`).join("")
-        + (list.length && !open ? `<button type="button" class="chip gear-more" aria-expanded="false" aria-label="See all"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>` : "");
+        + (list.length && !open ? `<button type="button" class="chip gear-more" aria-expanded="false" aria-label="See all">${plusN(Object.keys(all).length - list.length)}</button>` : "");
       // the full list folds back by itself, given time to read it (2 s plus 0.15 s a pill: about 7 s for both lists); each tap starts the wait again
       const wait = gearWait;
       $(id).querySelectorAll("button[data-k]").forEach((b) => b.onclick = (ev) => { const k = b.dataset.k, i = list.indexOf(k);
@@ -8652,6 +8657,10 @@ html[lang="it"] :is(#adjOpts,#moreOpts) > summary{grid-template-columns:max-cont
       if (++tries < 40) setTimeout(fire, 500); };   // the count arrives with the list: wait for the dot, pulse once, stop
     setTimeout(fire, 600); })();
   { const g = $("bagEmptyGo"); if (g) g.onclick = () => jumpTo($("shelves")); }
+  // a + that opens the rest of a list says how many are behind it ("+6"); a bare + is kept for adding something
+  function plusN(n) { return n > 0 ? `<span class="pn">+${n}</span>` : `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`; }
+  var PN_PLUS = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+      PN_MINUS = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
   window.__v60 = { analyseBeans, decafGuard, parseCoffee, engine, suggest, cupNotes, cardImage, risks, recipeText, BASE, get recipe() { return recipe; }, get shelf() { return shelf; } };
 })();
 </script>
