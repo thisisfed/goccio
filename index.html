@@ -2495,9 +2495,22 @@ html.brew-in .shelf > .item.brewing{padding-bottom:14px!important}
 .tech .tech-w::before, #why li.warn::before{content:""!important;display:inline-block;width:16px;height:16px;margin-right:6px;vertical-align:-2.5px;background:var(--hl);
   -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4 21.5 20h-19Z'/%3E%3Cpath d='M12 10.5v4'/%3E%3Cpath d='M12 17.2v.1'/%3E%3C/svg%3E") center/contain no-repeat;
   mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4 21.5 20h-19Z'/%3E%3Cpath d='M12 10.5v4'/%3E%3Cpath d='M12 17.2v.1'/%3E%3C/svg%3E") center/contain no-repeat}
+/* the first screen ends exactly where the bottom bar begins, on every screen: its rule under the two buttons lies on the bar's own top rule */
+.wm-screen{--fold:0px!important}
+@media (max-width:640px){ #shelves{margin-top:-72px!important} }
+@supports (height:100dvh){ .wm-screen{min-height:calc(100dvh - var(--top-h, 49px) - var(--bot-h, 0px))!important} }
+/* light theme: the film is turned to white, and what stands on it to black */
+:root[data-theme="light"] .wm-screen{background:#fff!important}
+:root[data-theme="light"] .wm-video{filter:invert(1) contrast(1.08)!important;mix-blend-mode:multiply!important}
+:root[data-theme="light"] .wm-screen::after{background:linear-gradient(180deg, rgba(255,255,255,0) 38%, rgba(255,255,255,.88) 82%)!important}
+:root[data-theme="light"] body .wm-screen .wordmark, :root[data-theme="light"] body .wm-screen .wordmark *{color:#000!important}
+:root[data-theme="light"] .wm-more .wm-live, :root[data-theme="light"] .wm-more .wm-lead, :root[data-theme="light"] .wm-more .wm-tagline{color:#000!important}
+:root[data-theme="light"] .wm-more .wm-bag{background:var(--pill)!important;color:var(--ink)!important}
 html.brew-in .brew-above{display:none!important}
 html.brew-in #shelves{margin-top:0!important}
-/* "Recipe for V60." as big as the recipe's own numbers */
+/* "Recipe for V60" as big as the recipe's own numbers, centred, no full stop */
+#recipe .sec-head{justify-content:center!important;text-align:center!important}
+#recipe .sec-head .cap:first-child{width:100%;text-align:center!important}
 html body #recipe .sec-head .cap:first-child, html body #recipe .sec-head .cap:first-child *{font-size:39px!important;line-height:1.05!important;letter-spacing:-.01em!important}
 @media (min-width:1000px){ html body #recipe .sec-head .cap:first-child, html body #recipe .sec-head .cap:first-child *{font-size:63px!important} }
 #waterOpt{display:none!important}   /* no water to choose: the recipe says what water to use */
@@ -5266,7 +5279,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     $("zeroRow").hidden = !!r.mine; $("clkHow").hidden = !!r.mine || !!mill().words;   // no grinder saved: the grind is in words, the click maths would be noise
     renderMine(r);
     const showRet = r.tds != null;
-    { const bn = BREWERS[r.brewer].name; $("recTitle").textContent = LANG === "it" ? `Ricetta per ${bn}.` : `Recipe for ${bn}.`; }   // the brewer, in the title
+    { const bn = BREWERS[r.brewer].name; $("recTitle").textContent = LANG === "it" ? `Ricetta per ${bn}` : `Recipe for ${bn}`; }   // the brewer, in the title
     const noMillYet = !!mill().words;
     $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}${k === "key" && mill().words ? " wide" : ""}"><b>${v}${u ? `<small>${u === "-cup" ? u : " " + u}</small>` : ""}</b><span class="sub2">${l.charAt(0).toUpperCase() + l.slice(1)}${badge ? ` <span class="yr">${esc(badge)}</span>` : ""}</span>${k === "key" && isC40() && prefs.zero ? `<span class="zo">${sign(prefs.zero)} zero offset</span>` : ""}${k === "key" && K === "shot" && mill().noEsp ? `<span class="sub2">Not an espresso grinder</span>` : k === "key" && !isC40() && (onMill(r.clicks).atMax || onMill(r.clicks).atMin) ? `<span class="sub2">${onMill(r.clicks).atMax ? "Coarsest setting, may still run fast" : "Finest setting"}</span>` : ""}${k === "dose" ? (() => { const ds = BREWERS[r.brewer].doses, i = ds.findIndex(([v]) => v === r.dose); if (ds.length < 2 || i < 0) return "";
         const ic = (p) => `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="${p}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`, moka = r.brewer === "moka";
@@ -5502,16 +5515,20 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     renderShelfV(); renderShelf();
   }
   // Cup is the choice people have a view on, so it sits in the open; the dose is set on the recipe itself, with − and +
+  // Hot or Iced is a spring and summer question: March to August, or September to February south of the equator (told by the time zone). The rest of the year the recipe is hot
+  const SUMMER = (() => { const m = new Date().getMonth(); let south = false;
+    try { south = /^(?:Australia|Antarctica)\/|^Pacific\/(?:Auckland|Chatham|Fiji)|^America\/(?:Sao_Paulo|Argentina|Buenos_Aires|Santiago|Montevideo|Asuncion|La_Paz|Lima)|^Africa\/(?:Johannesburg|Maputo|Windhoek|Harare|Gaborone|Lusaka|Maseru|Mbabane)/.test(Intl.DateTimeFormat().resolvedOptions().timeZone); } catch (e) {}
+    return south ? m >= 8 || m <= 1 : m >= 2 && m <= 7; })();
   const optsMain = (cupOnly) => {
     const b = brewerOf(state), B = BREWERS[b], teaOn = state.goal === "tea" && teaAvail(b);
     return [
-      !cupOnly && ICED_OK.has(b) && { key: "serve", label: "Serve", items: [["hot", "Hot"], ["iced", "Iced"]] },
+      !cupOnly && ICED_OK.has(b) && SUMMER && { key: "serve", label: "Serve", items: [["hot", "Hot"], ["iced", "Iced"]] },
       (b === "press" || b === "cold") && { key: "steep", label: "Steep", items: [["hot", "Hot"], ["cold", "Cold brew"]], on: (v) => setBrewer(v === "cold" ? "cold" : "press"), cur: () => b === "cold" ? "cold" : "hot" },
       // Method: one row for how the cup is made. The Cup row is gone: Light & sweet is what every recipe aims for, and the two other cups
       // (Rich & syrupy, Tea-like) are pills here, beside the named methods. On the V60 the method that is best for this coffee is
       // named, comes first and carries a Best tag; it follows the coffee and the dose until you pick another
       // no Method row: the recipe always takes the method that is best for this coffee, and Why this recipe names it
-      (() => { if (state.method !== "best" || state.goal !== "light" || (state.aeroWay && state.aeroWay !== "standard")) { state.method = "best"; state.goal = "light"; state.aeroWay = "standard"; } return null; })(),
+      (() => { if (state.method !== "best" || state.goal !== "light" || (state.aeroWay && state.aeroWay !== "standard")) { state.method = "best"; state.goal = "light"; state.aeroWay = "standard"; } if (!SUMMER && state.serve === "iced") state.serve = "hot"; return null; })(),
     ].filter(Boolean).filter((o) => (o.key === "goal") === !!cupOnly);
   };
   const OPTS_MORE = [
@@ -7450,7 +7467,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     return b ? b.closest(".item") : null; }
   function brewHome() { const html = document.documentElement; if (!html.classList.contains("brew-in")) return;
     [...BREW_MOVE].reverse().forEach((id) => { const el = $(id), at = BREW_AT[id]; if (!el || !at) return; at.p.insertBefore(el, at.n && at.n.parentNode === at.p ? at.n : null); });
-    html.classList.remove("brew-in"); document.querySelectorAll(".brew-above").forEach((x) => x.classList.remove("brew-above")); document.querySelectorAll(".item.brewing").forEach((x) => { x.classList.remove("brewing"); const h = x.querySelector(".brew-host"); if (h) h.remove();
+    html.classList.remove("brew-in"); try { $("shelves").style.removeProperty("margin-top"); } catch (e) {} document.querySelectorAll(".brew-above").forEach((x) => x.classList.remove("brew-above")); document.querySelectorAll(".item.brewing").forEach((x) => { x.classList.remove("brewing"); const h = x.querySelector(".brew-host"); if (h) h.remove();
       const bb = x.querySelector("button[data-i]"); if (bb) { bb.removeAttribute("aria-pressed"); bb.textContent = "Brew"; } }); }
   // closing the open coffee puts it away for good: no "What's brewing?" with its name left further down the page. That section is for a scanned or typed bag
   function brewShut() { brewIn = false; brewHome(); state.text = ""; state.bag = null; state.roastPhoto = null; try { $("coffeeIn").value = ""; wbOpen = false; } catch (e) {} saveState(); renderAllOpts(); render(); }
@@ -7468,6 +7485,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     for (let el = row; el && el !== document.body; el = el.parentElement) for (let p = el.previousElementSibling; p; p = p.previousElementSibling) {
       if (/^(SCRIPT|STYLE|LINK)$/.test(p.tagName) || /fixed|sticky/.test(getComputedStyle(p).position)) continue; p.classList.add("brew-above"); }
     scrollTo(0, 0);
+    try { const sh = $("shelves"), cw = row.querySelector(".c-where") || row, tp = document.querySelector(".top"); sh.style.removeProperty("margin-top");
+      const side = Math.max(8, row.getBoundingClientRect().left), gap = cw.getBoundingClientRect().top + 4 - tp.getBoundingClientRect().bottom;   // + 4: the line box's top to the capitals
+      if (Math.abs(gap - side) > .5) sh.style.setProperty("margin-top", (parseFloat(getComputedStyle(sh).marginTop) + side - gap) + "px", "important"); scrollTo(0, 0); } catch (e) {}
     // the coffee travels from where it was tapped to the top of the page, unhurried: no jump cut
     try { const dy = y0 - row.getBoundingClientRect().top; if (Math.abs(dy) > 2 && !matchMedia("(prefers-reduced-motion: reduce)").matches) row.animate([{ transform: `translateY(${dy}px)` }, { transform: "none" }], { duration: Math.min(900, 420 + Math.abs(dy) * .6), easing: "cubic-bezier(.3,.7,.2,1)" }); } catch (e) {} }
   function brewThis(r, jump = true, inRow = false) {
@@ -8639,6 +8659,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           B3.setAttribute("d", d); live = t < 1100 && !gone; }
         if (live && !(opening && snapped[0] && snapped[1])) brRaf = requestAnimationFrame(step); else [...P, B3].forEach((p) => p && p.setAttribute("d", "")); };
       brRaf = requestAnimationFrame(step); };
+    // open and the page scrolls: language and theme go back behind the plus
+    { let y0 = null; addEventListener("scroll", () => { const t = document.querySelector(".top"); if (!t.classList.contains("tools-open") || t.classList.contains("tools-closing") || y0 == null) return;
+        if (Math.abs(scrollY - y0) > 8) { y0 = null; $("toolsBtn").click(); } }, { passive: true });
+      $("toolsBtn").addEventListener("click", () => { y0 = scrollY; }, true); }
     $("toolsBtn").onclick = () => { const t = document.querySelector(".top"), on = !t.classList.contains("tools-open") || t.classList.contains("tools-closing");
       clearTimeout(toolsT); $("toolsBtn").setAttribute("aria-expanded", String(on)); $("toolsBtn").setAttribute("aria-label", on ? "Hide language and appearance" : "Language and appearance");
       if (on) { t.classList.remove("tools-closing"); t.classList.add("tools-open"); setTop(); runBridges(true);
