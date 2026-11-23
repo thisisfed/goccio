@@ -7621,6 +7621,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     if (!notes) { const fl = L.map((l, i) => ({ l, i, k: (l.n.match(new RegExp(FLAVOUR.source, "g")) || []).length })).filter((x) => x.k >= 2 && x.l.n.split(" ").length <= 9).sort((a, b) => b.k - a.k || b.l.n.length - a.l.n.length || (b.l.conf || 0) - (a.l.conf || 0))[0];
       if (fl) { notes = { v: fl.l.text, c: cf(0.8, fl.l.conf), why: "a line of flavour words" }; used.add(fl.i); nIdx = fl.i; } }
     if (notes) { const parts = notes.v.split(/\s*,\s*/).filter(Boolean); notes.v = parts.filter((p, k) => !parts.some((q, j) => j !== k && norm(q) !== norm(p) && norm(q).startsWith(norm(p).slice(0, 5)) && q.length > p.length) && parts.findIndex((q) => norm(q) === norm(p)) === k).join(", "); }
+    // a line read with its first letters missing: "ocolate, Orange" is Chocolate, "wn Sugar" is Brown Sugar (only when one word fits)
+    if (notes) { const m = notes.v.match(/^([a-z]{2,8})\b/); if (m) { const W = ["chocolate", "brown", "caramel", "orange", "blackberry", "strawberry", "blueberry", "raspberry", "peach", "apple", "hazelnut", "almond", "vanilla", "honey", "toffee", "fudge", "lemon", "cherry", "jasmine", "liquorice", "molasses", "pineapple", "marzipan", "apricot", "grapefruit", "bergamot", "cocoa", "walnut", "plum", "mango"];
+        const fit = W.filter((w) => w !== m[1] && w.endsWith(m[1]) && w.length - m[1].length <= 4); if (fit.length === 1) notes.v = fit[0].charAt(0).toUpperCase() + fit[0].slice(1) + notes.v.slice(m[1].length); } }
+    if (notes && !/[\p{L}]{3,}/u.test(notes.v.replace(/\b(?:lh|ike|like|tastes?|notes?)\b/gi, ""))) notes = null;   // "lh:" is the label's own heading, misread
     if (notes) notes.v = notes.v.replace(/\s+[«»•·+*|]\s+/g, ", ").replace(/\s+&\s+/g, ", ").replace(/(?:,\s*[\p{L}]{0,2})?[\s,]*$/u, "").replace(/^[^A-Za-zÀ-ÿ]+/, "").replace(/\.\s+(?=[A-ZÀ-Ý])/g, ", ");   // "25 Caramel. Jasmine": a misread first word and full stops for commas
     out.notes = notes ? { ...notes, v: notes.v.replace(/\s*[\/·•|-]\s*|\s{2,}/g, ", ").replace(/,\s*,/g, ",").replace(/^,|,$/g, "").replace(/[\s,]+$/, "").trim() } : { v: null, why: "No tasting notes on this side" };
     // a title set out as "Kenya - Gicherori AA [Washed]": the country, a dash, the coffee's own name, the process in brackets.
@@ -7839,7 +7843,30 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   const coreWords = (name) => norm(calm(String(name || "").split(/:|\(| [-–—|] /)[0])).split(" ").filter((w) => w.length >= 3 && !NAME_STOP.has(w));
   const GENERIC_NAME = new Set(["washed", "natural", "honey", "decaf", "blend", "espresso", "filter", "house", "seasonal", "single", "origin", "omni", "coffee", "anaerobic", "lot", "microlot", "reserve", "classic", "dark", "light", "medium", "roast"]);
   const near1 = (t, w) => t === w || (w.length >= 4 && Math.abs(t.length - w.length) <= 1 && lev(t, w) <= 1);
-  function shelfMatch(f) {
+  /* The roaster is read (its name runs down the side of the bag) but the coffee's name came out in scraps: "STAT E" for THE ESTATE,
+     "ADWAY" for BROADWAY, "LACEBO / DECAF" for THE PLACEBO / THE DECAF. That roaster has only so many coffees on today's list, so
+     the scraps are tried against each of their names: one coffee whose every name word is on the label, whole or as a long piece
+     of it, and whose origin agrees, is offered as a likely match (never a sure one). */
+  function roasterScraps(f) {
+    if (!f || !f.roaster || !f.roaster.v || !shelf.length) return null;
+    const rk = roasterKey(f.roaster.v); if (!rk) return null;
+    const mine = shelf.filter((r) => { const k = roasterKey(r.roaster); return k && (k === rk || k.includes(rk) || rk.includes(k)); });
+    if (!mine.length) return null;
+    const toks = [...new Set([...(f.words || []), ...(f.name && f.name.v ? norm(f.name.v).split(" ") : [])])].filter((t) => t.length >= 4);
+    const piece = (t, w) => w.length >= 5 && t.length >= Math.max(4, w.length - 3) && w.includes(t);
+    const oN = f.origin && f.origin.v ? f.origin.v.split(" / ") : null, seen = new Map();
+    mine.forEach((r) => { const cw = coreWords(r.name); if (!cw.length) return;
+      if (oN && r.origin && !r.origin.split(" / ").some((o) => oN.includes(o))) return;
+      if (!cw.every((w) => toks.some((t) => near1(t, w) || piece(t, w)))) return;
+      if (!cw.some((w) => w.length >= 5 && !Object.values(V.country).flat().includes(w))) return;   // a country alone is not a name ("The Decaf" is)
+      const key = cw.join(" "); if (!seen.has(key) || cw.length > seen.get(key).n) seen.set(key, { r, n: cw.length }); });
+    if (!seen.size) return null;
+    const best = [...seen.values()].sort((a, b) => b.n - a.n);
+    if (best.length > 1 && best[0].n === best[1].n) return null;   // two of their coffees fit: it can't say which
+    return { pick: best[0].r, sure: false };
+  }
+  function shelfMatch(f) { const m = shelfMatch0(f); return m && (m.pick || m.choices) ? m : (roasterScraps(f) || m); }
+  function shelfMatch0(f) {
     if (!f || !f.name || !f.name.v || !shelf.length) return null;
     const title = coreWords(f.name.v), words = new Set([...(f.words || []), ...title]), titleFull = norm(f.name.v);
     if (!title.length || title.join("").length < 4) return null;   // "Ura" is a scrap of a word, not a name
@@ -7866,7 +7893,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     if (rk) { const mine = cands.find((c) => c.sameR); return mine ? { pick: mine.r, sure: true } : null; }   // the roaster's own coffee, or none
     const top = cands[0], peers = cands.filter((c) => c.key === top.key && c.sc >= top.sc - 0.5);
     const roasters = [...new Set(peers.map((c) => c.r.roaster))];
-    if (roasters.length === 1) return { pick: top.r, sure: top.sc >= 2.4 };
+    if (roasters.length === 1) return { pick: top.r, sure: false };   // the roaster was not read: two roasters can sell a coffee of one name, so this is likely, never certain
     if (roasters.length <= 4) return { choices: roasters.map((n) => peers.find((c) => c.r.roaster === n).r) };
     return null;   // "Decaf" from a dozen roasters: the name alone can't say which
   }
