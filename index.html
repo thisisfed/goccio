@@ -2433,24 +2433,6 @@ footer #tip a:hover, footer .foot-links a:hover{text-decoration-color:transparen
 @media (max-width:640px){ .wm-screen{--fold:84px} }   /* the first screen ends under "Coffees.", now that no pills follow it: no coffee name cut in half */
 #footCredits .foot-copy{margin-top:10px!important}
 @media (max-width:759px){ html body footer .fcol .foot-links{margin-bottom:-7px!important} }   /* as much room under the links, to the bottom bar, as over them, to the rule: 13 px */
-/* the avatar: a ring, a little liquid, two eyes. One home, bottom right above the bar, always there; it never takes a tap.
-   It idles (blinks, looks around, yawns, dozes) and it follows what the site is doing: looking at a bag, measuring a brew, done, not sure */
-.gav{position:absolute;left:0;top:0;z-index:24;width:64px;height:64px;pointer-events:none;color:var(--ink);display:block;transition:translate .5s cubic-bezier(.3,1.3,.5,1), opacity .3s}   /* its home: centred over the big Goccio, the size of its o, drawn with the same stroke */
-.gav svg{display:block;width:100%;height:100%;overflow:visible}
-.gav .bg{fill:var(--bg)}
-.gav .gl{transition:translate .6s cubic-bezier(.3,1.4,.5,1), rotate .6s cubic-bezier(.3,1.4,.5,1), fill .25s ease;transform-box:view-box;transform-origin:50px 50px}
-.gav .eyes{transition:translate .28s cubic-bezier(.3,1.2,.5,1)}
-.gav .ge{transition:scale .14s ease, rx .2s ease, ry .2s ease;transform-box:fill-box;transform-origin:center}
-.gav .gm{transition:scale .35s ease, opacity .2s;transform-box:fill-box;transform-origin:center;scale:0;opacity:0}
-.gav.yawn .gm{scale:1;opacity:1} .gav.yawn .ge{scale:1.15 .14}
-.gav.blink .ge{scale:1 .1}
-.gav.doze .ge{scale:1 .38}
-.gav.wide .ge{scale:1.25}
-.gav.focus .ge{scale:1 .5}
-.gav.happy .ge{scale:1.1 .22;translate:0 -2px}
-.gav.odd .ge.l{scale:.7} .gav.odd .ge.r{scale:1.15}
-.gav.hop{translate:0 -6px}
-@media (prefers-reduced-motion: reduce){ .gav, .gav *{transition:none!important} }
 /* section titles: the big size, with room over them, so each reads as a start. The recipe's own title inside an open coffee stays at 24 px, under the coffee's name */
 .sec-head .cap:first-child, #askLbl{font-size:var(--fs-xl, 39px)!important;line-height:1.05!important;letter-spacing:-.03em!important}
 .sec-head{padding-top:24px!important}
@@ -3073,7 +3055,6 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   <div class="cam-top"><p class="cam-status" id="camStatus"></p><div class="cam-found" id="camFound"></div></div>
   <div class="cam-ctrls"><button type="button" class="chip" id="camClose">Cancel</button><button type="button" class="chip" id="camPhoto">Take a photo instead</button><button type="button" class="chip on" id="camDone">Use what it read</button></div>
 </div>
-<i class="gav" id="gav" aria-hidden="true"></i>
 <nav class="botnav" aria-label="Sections"><button type="button" class="chip" data-bn="shelves">Coffees</button><button type="button" class="chip" data-bn="bags" hidden>Bags</button><button type="button" class="chip" data-bn="coffee">Brew</button><button type="button" class="chip" data-bn="journal" hidden>Journal</button></nav>
 <div class="dock" id="dock"><button class="btn" id="dockGo" type="button"><span>Start brewing</span><span class="num" id="dockSum"></span></button></div>
 
@@ -8233,58 +8214,6 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     ta.addEventListener("input", fit); addEventListener("resize", fit); window.__fitCoffee = fit;
     const d = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value"); Object.defineProperty(ta, "value", { get() { return d.get.call(this); }, set(v) { d.set.call(this, v); try { fit(); } catch (e) {} }, configurable: true });
     new MutationObserver(fit).observe($("coffee"), { attributes: true, attributeFilter: ["hidden"] }); fit(); }
-  // ---- the avatar ----
-  { const el = $("gav"), still = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
-    el.innerHTML = `<svg viewBox="0 0 100 100"><defs><clipPath id="gavc"><circle cx="50" cy="50" r="32"/></clipPath></defs><circle class="bg" cx="50" cy="50" r="40"/>
-      <g clip-path="url(#gavc)"><rect class="gl" x="-20" y="82" width="140" height="140"/></g><circle cx="50" cy="50" r="39.75" fill="none" stroke="currentColor" stroke-width="16.5"/>
-      <g class="eyes"><ellipse class="ge l" cx="40.5" cy="45" rx="4.4" ry="6.2"/><ellipse class="ge r" cx="59.5" cy="45" rx="4.4" ry="6.2"/><ellipse class="gm" cx="50" cy="60" rx="4" ry="5.2"/></g></svg>`;
-    // where it lives: over the wordmark, centred, as tall as its o (0.543 of the type size), sitting a little above the capital G
-    const place = () => { const wm = $("wm"); if (!wm) return; const fs = parseFloat(getComputedStyle(wm).fontSize) || 100, D = fs * 0.543, word = wm.parentElement, bar = document.querySelector(".top");
-      // on a wide screen the word fills the top of the page: it moves down just enough for the avatar to stand on it, clear of the top bar
-      const scr = document.querySelector(".wm-screen"); if (scr) { scr.style.removeProperty("min-height"); const r0 = wm.getBoundingClientRect(), room = r0.top + scrollY + fs * 0.025 - ((bar ? bar.offsetHeight : 49) + 12);
-        if (room < D) { for (let k = 0; k < 4; k++) { const rk = wm.getBoundingClientRect(), need = D - (rk.top + scrollY + fs * 0.025 - ((bar ? bar.offsetHeight : 49) + 12)); if (need <= 0.5) break;
-            scr.style.setProperty("min-height", Math.ceil(scr.offsetHeight + need) + "px", "important"); } } }
-      const r = wm.getBoundingClientRect();
-      el.style.width = el.style.height = D + "px"; el.style.left = (r.left + scrollX + r.width / 2 - D / 2) + "px"; el.style.top = (r.top + scrollY + fs * 0.135 - fs * 0.11 - D) + "px"; };
-    place(); addEventListener("resize", place); addEventListener("load", place); if (document.fonts && document.fonts.ready) document.fonts.ready.then(place); [300, 900, 2000, 4000].forEach((t) => setTimeout(place, t));
-    try { new MutationObserver(place).observe($("wm"), { attributes: true, attributeFilter: ["style"] }); } catch (e) {}
-    const gl = el.querySelector(".gl"), eyes = el.querySelector(".eyes"), FACES = ["blink", "doze", "wide", "focus", "happy", "odd", "yawn"];
-    let mode = "rest", lvNow = 0.3;
-    // the liquid: how much, tilted or not, orange while the site is at work. On a full ring the eyes go dark so they still show
-    const pour = (lv, tilt, hot) => { lvNow = lv; gl.style.translate = `0 ${-lv * 64}px`; gl.style.rotate = (tilt || 0) + "deg"; gl.style.fill = hot ? "var(--hl)" : "currentColor";
-      eyes.style.fill = lv > 0.62 && !hot ? "var(--bg)" : lv > 0.62 ? "#000" : "currentColor"; };
-    const face = (f) => { FACES.forEach((x) => el.classList.toggle(x, x === f)); };
-    const look = (x, y) => { eyes.style.translate = `${x}px ${y}px`; };
-    const set = (m, lv) => { if (m === mode && (lv == null || Math.abs(lv - lvNow) < 0.02)) return; mode = m;
-      if (m === "rest") { pour(0.3); face(null); look(0, 0); }
-      else if (m === "working") { pour(0.34, -14, true); face("focus"); look(-5, 5); }
-      else if (m === "looking") { pour(0.3); face("wide"); look(0, -6); }
-      else if (m === "measuring") { pour(lv, 0, true); face(null); look(0, Math.max(-14, Math.min(8, 26 - lv * 64))); }   // the eyes ride just above the level
-      else if (m === "done") { pour(1); face("happy"); look(0, 0); el.classList.add("hop"); setTimeout(() => el.classList.remove("hop"), 320); }
-      else if (m === "unsure") { pour(0.06); face("odd"); look(0, 2); } };
-    window.gav = set; pour(0.3);
-    // idle life, only at rest: something every few seconds, never on a beat. Mostly blinks; now and then a look around, a yawn, a doze
-    const idle = () => { const wait = 1800 + Math.random() * 3600; setTimeout(idle, wait); if (mode !== "rest" || document.hidden || still()) return; const r = Math.random();
-      if (r < 0.42) { face("blink"); setTimeout(() => mode === "rest" && face(null), 140); if (Math.random() < 0.3) setTimeout(() => { if (mode !== "rest") return; face("blink"); setTimeout(() => mode === "rest" && face(null), 130); }, 320); }
-      else if (r < 0.72) { const d = [[-7, 0], [7, 0], [-6, -5], [6, -5], [0, -7], [0, 6]][Math.floor(Math.random() * 6)]; look(d[0], d[1]); if (Math.random() < 0.5) setTimeout(() => mode === "rest" && look(-d[0], d[1]), 700); setTimeout(() => mode === "rest" && look(0, 0), 1500); }
-      else if (r < 0.82) { face("yawn"); look(0, -3); setTimeout(() => { if (mode === "rest") { face("doze"); look(0, 0); setTimeout(() => mode === "rest" && face(null), 900); } }, 1500); }
-      else if (r < 0.9) { face("doze"); look(0, 4); pour(0.3, 6); setTimeout(() => { if (mode === "rest") { face("wide"); look(0, 0); pour(0.3, 0); setTimeout(() => mode === "rest" && face(null), 450); } }, 2600); }
-      else if (r < 0.96) { face("wide"); setTimeout(() => mode === "rest" && face(null), 700); }
-      else { pour(0.3, -10); setTimeout(() => mode === "rest" && pour(0.3, 8), 420); setTimeout(() => mode === "rest" && pour(0.3, 0), 840); } };
-    setTimeout(idle, 2200);
-    // it glances at where you tap
-    addEventListener("pointerdown", (e) => { if (mode !== "rest" || still()) return; const r = el.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1;
-      look(dx / d * 7, dy / d * 6); setTimeout(() => mode === "rest" && look(0, 0), 900); }, { passive: true });
-    // what the site is doing: the list loading, a bag being read, a brew running
-    set("working"); const settle = (k) => { if ((typeof shelf !== "undefined" && shelf.length > 100) || k > 40) return set("rest"); setTimeout(() => settle(k + 1), 300); }; settle(0);
-    const sm = $("scanMsg"); let smT = 0;
-    if (sm) new MutationObserver(() => { const t = sm.textContent.trim(); clearTimeout(smT); if (!t) { if (mode !== "measuring") set("rest"); return; }
-      const m = /^(Cleaning|Reading|Looking|Opening|Getting|Pulisco|Leggo|Cerco)/i.test(t) || /…$/.test(t) ? "looking" : /^Found it|^Trovato/i.test(t) ? "done" : /couldn’t|could not|nothing|no text|try again|non riesco|niente/i.test(t) ? "unsure" : "rest";
-      set(m); if (m === "done" || m === "unsure") smT = setTimeout(() => set("rest"), 3500); }).observe(sm, { childList: true, characterData: true, subtree: true });
-    let brewing = false;
-    setInterval(() => { const open = !$("bv").hidden; if (!open) { if (brewing) { brewing = false; set("rest"); } return; } brewing = true;
-      const st = $("bvState").textContent.trim(), head = $("bvBar").querySelector(".head"), p = head ? parseFloat(head.style.left) / 100 : 0;
-      if (/^(Done|Fatto|Finished|Enjoy)/i.test(st) || p >= 0.995) set("done"); else if (/^(Ready|Pronto)/i.test(st) || !(p > 0)) set("rest"); else set("measuring", 0.12 + p * 0.8); }, 500); }
   window.__useScan = () => !!(review && !$("scanReview").hidden && applyReview());
   function closeReview() { const b = $("scanReview"); b.hidden = true; b.innerHTML = ""; b.classList.remove("only-match"); review = null; }
   function applyReview(land = true) {
