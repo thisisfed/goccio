@@ -2603,13 +2603,13 @@ html[lang="it"] :is(#adjOpts,#moreOpts) > summary{grid-template-columns:max-cont
 /* the phone's first screen ends cleanly under the list's filter pills: nothing is sliced by the bottom bar */
 @media (max-width:640px){ .wm-screen{min-height:max(340px, calc(100svh - var(--top-h, 49px) - var(--bot-h) - var(--fold, 114px)))!important} }
 footer #tip{margin-top:10px!important}footer #tip a{color:var(--ink);text-decoration:underline;text-decoration-color:color-mix(in srgb,currentColor 40%,transparent);text-underline-offset:2px}
-/* the hero is a film now: bubbles drifting on black coffee, black at the top and the foot so it runs into the page */
+/* the hero is a film: one drop falling into black coffee, the ripples settling, black at the top and the foot so it runs into the page */
 .wm-screen{background:#000!important}
 .wm-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 42%;z-index:0;pointer-events:none;border:0;background:#000}
 .wm-video::-webkit-media-controls{display:none!important}
 @media (min-width:641px){
   .wm-screen{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h))!important}   /* the bottom bar is always there now: the two buttons sit above it */
-  .wm-video{transform:translateY(-16%)}   /* the line of bubbles rides above the name, not through it */
+  .wm-video{transform:translateY(-12%)}   /* the drop lands above the name, not behind it */
 }
 </style>
 </head>
@@ -2636,7 +2636,7 @@ footer #tip{margin-top:10px!important}footer #tip a{color:var(--ink);text-decora
   <section class="sec hero-sec" aria-labelledby="h1">
     <div class="hero">
       <div class="wm-screen">
-        <video class="wm-video" id="wmVideo" autoplay muted loop playsinline webkit-playsinline preload="auto" poster="/img/goccio-hero.jpg" aria-hidden="true" tabindex="-1" disablepictureinpicture><source src="/img/goccio-hero.mp4" type="video/mp4"></video>
+        <video class="wm-video" id="wmVideo" autoplay muted loop playsinline webkit-playsinline preload="auto" poster="/img/goccio-drop.jpg" aria-hidden="true" tabindex="-1" disablepictureinpicture><source src="/img/goccio-drop.mp4" type="video/mp4"></video>
         <p class="wordmark" aria-hidden="true" translate="no"><span id="wm">Goccio</span></p>
         <div class="wm-more">
           <p class="wm-tagline">Your coffee companion</p>
@@ -8694,7 +8694,7 @@ footer #tip{margin-top:10px!important}footer #tip a{color:var(--ink);text-decora
         kick(); setTimeout(kick, 800); setTimeout(kick, 2500);
         // nothing loaded after four seconds (Safari gives up when a server answers its part-requests oddly): fetch the whole
         // film, 0.6 MB, and play it from memory
-        setTimeout(async () => { if (v.readyState >= 2 && !v.error) return; try { const r = await fetch("/img/goccio-hero.mp4"); if (!r.ok) return;
+        setTimeout(async () => { if (v.readyState >= 2 && !v.error) return; try { const r = await fetch("/img/goccio-drop.mp4"); if (!r.ok) return;
             v.src = URL.createObjectURL(await r.blob()); v.load(); kick(); } catch (e) {} }, 4000);
       } } }
   window.__v60 = { analyseBeans, decafGuard, parseCoffee, engine, suggest, cupNotes, cardImage, risks, recipeText, BASE, get recipe() { return recipe; }, get shelf() { return shelf; } };
