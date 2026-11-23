@@ -84,6 +84,9 @@ CASES = [
      lambda: name("Lomaverde (500g coffee bag)", "Pergamino", "Colombia") == "Lomaverde" and not scan.EXCLUDE.search("Lomaverde (500g coffee bag)")),
     ("Onyx's 'Krampus - Cafe Only' is sold to cafes, not to drinkers: left out, and 'Krampus' stays",
      lambda: scan.EXCLUDE.search("Krampus - Cafe Only") is not None and scan.EXCLUDE.search("Framily - Café Only") is not None and not scan.EXCLUDE.search("Krampus") and not scan.EXCLUDE.search("Cafe Imports Only One")),
+    ("River's Kyarumba took 'Bright acidity' from the roaster's remarks: the label is 'Flavour Description: Blackcurrant, Honey, Juicy.'",
+     lambda: scan.find_notes({"body": "Flavour Description: Blackcurrant, Honey, Juicy.\nProducer: Community of Kyarumba.\nVarietal: SL14 and SL28.\nProcess: Natural Process.\nRoasters Notes: We have roasted this coffee to a medium/medium light level which accentuates the tropical fruit notes and bright acidity.", "title": "Kyarumba (Uganda)", "tags": []})
+             == ["Blackcurrant", "Honey", "Juicy"]),
     ("Drip coffee bags are still not beans", lambda: scan.EXCLUDE.search("Drip coffee bags x10") is not None),
     ("Um Coffee Co: 'Nanolotes | Wush Wush' is named Wush Wush", lambda: name("Nanolotes | Wush Wush", "Um Coffee Co", "Brazil") == "Wush Wush"),
     ("Um Coffee Co: 'Blend | Fruitbomb' is named Fruitbomb", lambda: name("Blend | Fruitbomb", "Um Coffee Co", "Brazil") == "Fruitbomb"),
