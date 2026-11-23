@@ -2450,7 +2450,7 @@ footer #tip a:hover, footer .foot-links a:hover{text-decoration-color:transparen
 .item .c-where{margin:0;font-size:var(--fs-s);line-height:20.25px;color:var(--muted)}
 /* the price after the date, set off by a small drop */
 .item .c-where .c-drop{display:inline-block;width:6px;height:6px;margin:0 .6em 0 .7em;background:currentColor;border-radius:0 50% 50% 50%;transform:translateY(-1px) rotate(45deg)}
-.item .c-where .ji::after{content:"/";margin-left:.45em;color:var(--muted);font-weight:500}   /* New / City, date (price) */
+.item .c-where .ji::after{content:none}   /* "New! Paris, 23 Nov": a space, no slash */
 .item .c-where .ji{margin-right:.2em;font-weight:500;color:var(--go)}.item .c-where .ji.fy{color:var(--hl)}
 #shelves.ro-on .item .who,#shelves.ro-on .item .c-where .rcity,#shelves.ro-on .item .r > .ro-all{display:none!important}
 /* a coffee's row: Brew, then a plus in a circle that lets Buy and Save out, the same plus as the top bar's */
@@ -7147,7 +7147,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       tagBits.push(...coffeeLabels(r, shown).map((l) => `<span class="tg lbl" style="--vc:${LABEL_DOT[l] || "#8e8e93"}">${l}</span>`));
       return `${head}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
         <div class="l">
-          <p class="c-where">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span> ` : !isSp && r.just_in ? `<span class="ji">${LANG === "it" ? "Nuovo" : "New"}</span> ` : ""}${r.roaster_city ? `<span class="rcity">${esc(r.roaster_city)}, </span>` : ""}<span class="day">${day}</span>${cardBuy(r, true) ? ` <span class="c-cost">( ${cardBuy(r, true)} )</span>` : ""}<br class="rn-br"><a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a></p>
+          <p class="c-where">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span> ` : !isSp && r.just_in ? `<span class="ji">${LANG === "it" ? "Nuovo!" : "New!"}</span> ` : ""}${r.roaster_city ? `<span class="rcity">${esc(r.roaster_city)}, </span>` : ""}<span class="day">${day}</span>${cardBuy(r, true) ? ` <span class="c-cost">( ${cardBuy(r, true)} )</span>` : ""}<br class="rn-br"><a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a></p>
           <span class="name">${esc(calm(shown))}</span>
           <p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p>
           ${cardNotes(r)}${cardPrice(r)}
