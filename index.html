@@ -2691,8 +2691,8 @@ html.scrolled.dropping .wm-video{z-index:25!important}
 /* I have a coffee, nothing brewed yet: What's brewing? fills the screen, with no sign-off under it */
 html.no-recipe .outro{display:none!important}
 /* nothing to brew yet: the sign-off sits at the very bottom of the screen, on the rule */
-html.no-recipe #coffee{position:relative}
-html.no-recipe #coffee::after{content:"Brew something good.";position:absolute;left:0;right:0;bottom:-3px;text-align:center;font:500 var(--fs-m, 24px)/1.15 var(--sans);letter-spacing:-.02em;color:var(--ink)}   /* centred; as far above the rule under it as "What’s brewing?" is below the rule over it (13 px) */
+html.no-recipe #coffee{display:flex!important;flex-direction:column}   /* the sign-off is the last thing in the column, pushed to the bottom: it can never sit on top of what's above it (a scan's review sheet) */
+html.no-recipe #coffee::after{content:"Brew something good.";margin-top:auto;padding-top:28px;margin-bottom:-3px;text-align:center;font:500 var(--fs-m, 24px)/1.15 var(--sans);letter-spacing:-.02em;color:var(--ink)}   /* centred; as far above the rule under it as "What’s brewing?" is below the rule over it (13 px) */
 html[lang="it"].no-recipe #coffee::after{content:"Prepara qualcosa di buono."}
 html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h) - 28px);align-content:start;grid-template-rows:none;grid-auto-rows:max-content}
 /* the search box stands out from the bar: a lighter fill, white words, and a caret while its hint types itself */
