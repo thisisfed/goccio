@@ -6686,7 +6686,7 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
       if (t && !f.hidden) { f.textContent = f.textContent.trim() + " " + t; n.hidden = true; n.textContent = ""; } else { n.hidden = !t; n.textContent = t; } }   // the search's lens in front, as in the box
     list = shelfRo ? [...list].sort((a, b) => shelfDate(b).localeCompare(shelfDate(a))) : fy ? list : askRank ? [...list].sort((a, b) => (askRank.get(b) - askRank.get(a))
         || (askWant.dear ? (b._p100 ?? -1) - (a._p100 ?? -1) : askWant.cheap ? (a._p100 ?? 1e9) - (b._p100 ?? 1e9) : 0) || shelfDate(b).localeCompare(shelfDate(a)))
-      : shelfT ? [...list].sort((a, b) => (b._p100 ?? -1) - (a._p100 ?? -1)) : shelfGV ? [...list].sort((a, b) => a._p100 - b._p100) : interleave(list);   // good value: cheapest first   // top lots: dearest first
+      : shelfT ? [...list].sort((a, b) => (b._p100 ?? -1) - (a._p100 ?? -1)) : shelfGV ? [...list].sort((a, b) => a._p100 - b._p100) : qf.price === "cheap" ? list : interleave(list);   // Cheapest first keeps its order: the mixing by roaster put dearer coffees among the first rows   // good value: cheapest first   // top lots: dearest first
     if (!shelfAll) shelfN = 5;   // a new filter or search starts again from the five newest
     shelfAll = true;
     let shown = list.slice(0, shelfN);
