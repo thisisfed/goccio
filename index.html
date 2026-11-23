@@ -4527,7 +4527,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     let b = P.body + (r.goal === "syrupy" ? 1 : r.goal === "light" ? -1 : r.goal === "tea" ? -3 : 0) + (darkish ? 0.5 : 0) + (fermented ? 0.5 : 0);
     b = Math.max(1, Math.min(5, Math.round(b)));
     const tds = r.tds && r.tds.length ? ` About ${r.tds[0].toFixed(2)}–${r.tds[1].toFixed(2)}% TDS at ${r.ey[0]}–${r.ey[1]}% extraction.` : "";
-    out.push(`Body: ${BODY_W[b - 1]}, ${P.tex}.`);
+    { const bw = BODY_W[b - 1], tx = P.tex.toLowerCase().startsWith(bw.toLowerCase() + ",") ? P.tex.slice(bw.length + 1).trim() : P.tex; out.push(`Body: ${bw}, ${tx}.`); }   /* the texture may open with the same word ("full, a little silt"): said once */
     out.tds = r.m === "cold" || r.m === "moka" || r.m === "espresso" ? "" : tds.trim();   // the lab numbers go under More
     // clarity
     let cl = P.clar - (fermented ? 0.5 : 0) - (darkish ? 1 : 0);
