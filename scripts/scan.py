@@ -1753,7 +1753,7 @@ def find_notes(item):
             b = tidy_note(b)
             if b and b.lower() not in (o.lower() for o in out):
                 out.append(b)
-    return out[:5]
+    return out[:8]   # every note the shop lists, up to eight (Fève lists six)
 
 
 BEANS_PREFIX = re.compile(r"^\s*(?:kaffeb[øo]nner|kaffeb[öo]nor|kaffeebohnen|koffiebonen|coffee beans|caf[ée] en grains?|caff[èe] in grani)\s+(?=\S)", re.I)
