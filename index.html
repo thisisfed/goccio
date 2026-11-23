@@ -2471,6 +2471,11 @@ footer #tip a:hover, footer .foot-links a:hover{text-decoration-color:transparen
 .botnav [data-bn="cancel"]{display:none!important}
 html.brew-in .botnav [data-bn="cancel"]{display:inline-flex!important}
 html.brew-in .botnav [data-bn]:not([data-bn="cancel"]):not([data-bn="coffee"]){display:none!important}
+/* a coffee open in the list: its own Brew and plus step aside and the Brewer row slides up into their place; Cancel in the bar at the bottom closes it, so no Close here or at the foot */
+.shelf .item.brewing > .r, .brew-host .brew-shut{display:none!important}
+@keyframes brew-up{0%{transform:translateY(44px)}100%{transform:none}}
+.item.brewing > .brew-host{animation:brew-up .45s cubic-bezier(.2,.8,.2,1) both}
+@media (prefers-reduced-motion: reduce){ .item.brewing > .brew-host{animation:none} }
 #waterOpt{display:none!important}   /* no water to choose: the recipe says what water to use */
 #gear { display: none !important; }   /* My equipment is gone: brewer, grinder and water are picked in the recipe, and remembered */
 #gear.bare #gearIntro { display: block; width: 100%; }
