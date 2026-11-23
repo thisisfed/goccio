@@ -2616,7 +2616,7 @@ footer #tip{margin-top:10px!important}footer #tip a{color:var(--ink);text-decora
   z-index:25!important;mix-blend-mode:screen;pointer-events:none;transform:translateY(-9%)!important;background:transparent!important}   /* a touch higher: the surface sits further up the screen */
 html.scrolled .wm-video{z-index:1!important}
 /* the bag is on today's list for certain: said in the middle, with a tick */
-.scan-review .sc-match.sure{flex-direction:column;align-items:center;text-align:center;gap:6px;padding:10px 0 6px}
+.scan-review .sc-match.sure{flex-direction:column;align-items:center;text-align:center;gap:6px;padding:12px 0 16px}   /* the same room above it (to the line of text) as below it (to the first field) */
 .scan-review .sc-hit{margin:0;display:inline-flex;align-items:center;gap:8px;font-size:var(--fs-m,24px);font-weight:500;color:var(--ink);line-height:1.15}
 .scan-review .sc-hit svg{width:22px;height:22px;flex:none;color:var(--ink)}
 .scan-review .sc-match.sure .sc-sub{color:var(--muted)}
@@ -7870,7 +7870,7 @@ html.scrolled .wm-video{z-index:1!important}
       : `<input data-f="${k}" value="${esc(f.v || "")}" placeholder="${k === "date" ? "19 Nov 2026" : "Not found"}"${' autocapitalize="words"'}>`;
     const m = review.match, ch = review.choices;
     box.innerHTML = `${m ? (review.sure
-        ? `<div class="sc-match sure"><p class="sc-hit"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>There’s a match</p><span><b>${esc(m.roaster)}, ${esc(calm(m.name))}</b></span><span class="sc-sub">It’s on today’s list.</span><button type="button" class="pill" id="scUseListing">Use the listing</button></div>`
+        ? `<div class="sc-match sure"><p class="sc-hit"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>There’s a match</p><span><b>${esc(m.roaster)}, ${esc(calm(m.name))}</b></span><span class="sc-sub">It’s on today’s list.</span></div>`
         : `<div class="sc-match"><span>Looks like this one from today’s list: <b>${esc(m.roaster)}, ${esc(calm(m.name))}</b>.</span><button type="button" class="pill" id="scUseListing">Use the listing</button></div>`)
       : ch ? `<div class="sc-match"><span>${ch.length === 2 ? "Two" : ch.length === 3 ? "Three" : "Four"} roasters have a coffee called <b>${esc(calm(ch[0].name).split(/:|\(/)[0].trim())}</b> today. Whose bag is it?</span><span class="sc-pick">${ch.map((r, i) => `<button type="button" class="pill" data-pick="${i}">${esc(r.roaster)}</button>`).join("")}</span></div>` : ""}
       <div class="sc-rows">${FIELD_ROWS.map(([k, lbl]) => { const f = fields[k] || { v: null }; return `<label class="sc-row"><span class="sc-l">${k === "date" && f.kind === "best" ? "Best before" : lbl}</span>
@@ -7886,7 +7886,7 @@ html.scrolled .wm-video{z-index:1!important}
     // Add to my bags: only for a bag found on today's list. Sets the coffee, saves that listing (shown Saved in the list), goes to My bags
     if (m) $("scBag").onclick = () => { closeReview(); $("scanMsg").textContent = ""; brewThis(m, false); if (!hasBag(m)) toggleBag(m); renderShelf(); syncBagBtn(); jumpTo($("bags")); };
     $("scAgain").onclick = () => { closeReview(); startScan(); };
-    if (m) $("scUseListing").onclick = () => { closeReview(); $("scanMsg").textContent = `Found it: ${m.roaster}, ${calm(m.name)}.`; brewThis(m); };
+    if (m && $("scUseListing")) $("scUseListing").onclick = () => { closeReview(); $("scanMsg").textContent = `Found it: ${m.roaster}, ${calm(m.name)}.`; brewThis(m); };
     if (ch) box.querySelectorAll("[data-pick]").forEach((x) => x.onclick = () => { const r = ch[+x.dataset.pick]; closeReview(); $("scanMsg").textContent = `Found it: ${r.roaster}, ${calm(r.name)}.`; brewThis(r); });
     $("scanMsg").textContent = fields.brand && !review.match ? `${fields.brand} isn’t on Goccio’s list of specialty roasters, but the recipe works from what the bag says. Check it, then Use these.` : "Here’s what the label says. Check it, then Use these.";
     box.scrollIntoView({ behavior: "smooth", block: "nearest" });
