@@ -307,6 +307,13 @@ CASES = [
     ("Sydrip's other Slovak notes in English: Whipped cream, Citrus, Aged rum, Egg liqueur, Red berries",
      lambda: __import__("flavours").english_notes(["Šľahačka", "Citrusy", "Starý rum", "Vaječný likér", "Červené bobuľové ovocie"])
              == ["Whipped cream", "Citrus", "Aged rum", "Egg liqueur", "Red berries"]),
+    ("Dak: an image's addresses and sizes are not tasting notes ('https://…-1024x717.png 1024w', 'sizes=\"auto')",
+     lambda: scan.tidy_note("https://d1j9xh2330ho4m.cloudfront.net/uploads/2026/11/Little-Orange_Render_Front_89x89-1024x717.png 1024w") == ""
+             and scan.junk_note('600w" sizes="auto') and not scan.junk_note("Blood orange")),
+    ("Counter Culture and Coffee Bean Shop: tags and attributes are not tasting notes ('<svg', 'Class=\"', 'Alt=\"Chocolate')",
+     lambda: [scan.tidy_note(x) for x in ("<svg", 'Class="', 'Alt="Chocolate', '<img', "Black currant")] == ["", "", "", "", "Black currant"]),
+    ("The Source: a brew guide's headings are not tasting notes ('Ratios', 'Dose', 'Bloom'), and real ones still are",
+     lambda: [scan.tidy_note(x) for x in ("Ratios", "Dose", "Bloom", "Grind size", "Orange blossom", "Honey")] == ["", "", "", "", "Orange blossom", "Honey"]),
     ("Czech notes too: 'Borůvky', 'Hořká čokoláda', 'Lískové ořechy' are Blueberry, Dark chocolate, Hazelnut",
      lambda: __import__("flavours").english_notes(["Borůvky", "Hořká čokoláda", "Lískové ořechy"]) == ["Blueberry", "Dark chocolate", "Hazelnut"]),
     ("English notes are left as written ('Tropical fruits', 'Clementine', 'Mango yogurt')",
