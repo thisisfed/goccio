@@ -2436,7 +2436,6 @@ footer #tip a:hover, footer .foot-links a:hover{text-decoration-color:transparen
 /* the roaster's name as big as the coffee's, right above it; where it roasts and the day the coffee came in sit small and grey at the foot of the row */
 .item .who .rn{font-size:24px;line-height:27px;letter-spacing:-.01em;color:var(--ink)}
 .item .who:has(.rn){margin-top:-4px;line-height:27px!important}   /* the roaster sits down on the coffee's name; the room it gave up goes above it, so the row is as tall as before */   /* the roaster one size down from the coffee (24 under 39), on the line height it had at 39 */
-.item .who .rn, .item .who a.rn{color:var(--muted)!important}   /* "Roaster: name", all of it in grey: the coffee's name is the white one */
 .item .who a.rn{text-decoration:none!important}   /* no underline and no arrow: the roaster's name is a link for whoever tries it */
 
 @media (min-width:1000px){.item .who:has(.rn){margin-top:-4px;line-height:43px!important}.item .who .rn{font-size:39px;line-height:43px}.item .who a.rn{text-decoration-thickness:2px;text-underline-offset:5px}}
@@ -8947,21 +8946,6 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   if ($("wmBag")) $("wmBag").onclick = () => { if (!$("coffeeIn").value.trim()) $("coffeeIn").placeholder = LANG === "it" ? "Cosa dice il sacchetto: XYZ Roastery, Etiopia, lavato, tostatura chiara" : "What the bag says: XYZ Roastery, Ethiopia, washed, light roast"; jumpTo($("coffee")); setTimeout(() => { try { $("coffeeIn").focus({ preventScroll: true }); } catch (e) {} }, 500); };
   // the two buttons exactly as far from the count's baseline as from the capitals of the text under the photo, in every browser:
   // measured from the letters themselves (a probe on each baseline, the font's own cap height), not from line boxes
-  // Goccio sits as far above "Your coffee companion" as the two buttons sit above the text under them: measured from the name's
-  // baseline to the tagline's capitals, and moved with translate so nothing else on the first screen shifts
-  (function nameToTagline() { const wm = document.querySelector(".wm-screen .wordmark"), tag = document.querySelector(".wm-more .wm-tagline"), ctas = document.querySelector(".wm-more .wm-ctas"), lead = document.querySelector(".wm-more .wm-lead");
-    if (!wm || !tag || !ctas || !lead) return;
-    const fit = () => { try { wm.style.translate = "none"; const p = document.createElement("span"); p.style.cssText = "display:inline-block;width:0;height:0;vertical-align:baseline";
-        const el = $("wm") || wm; el.appendChild(p); const base = p.getBoundingClientRect().bottom; p.remove();
-        let over = 0; try { const cs = getComputedStyle(el), cv = document.createElement("canvas").getContext("2d"); cv.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`; over = cv.measureText("Goccio").actualBoundingBoxDescent || 0; } catch (e) {}   // the round letters dip under the baseline
-        const want = lead.getBoundingClientRect().top - ctas.getBoundingClientRect().bottom, dy = tag.getBoundingClientRect().top - want - base - over / 2;   // half: checked against the pixels at 390 and 1280 wide (20.0 and 19.8 px for a wanted 20)
-        wm.style.translate = `0 ${dy.toFixed(1)}px`; } catch (e) {} };
-    // always after the code further down that sizes and places the name (it answers the same resize, and a phone's browser bar folding
-    // away as the page scrolls is a resize): measure once it has settled, or the name drifts off as you scroll
-    let lastW = innerWidth; const later = (e) => { if (e && e.type === "resize") { if (innerWidth === lastW) return; lastW = innerWidth; }   // a browser bar folding away is not a new layout
-      setTimeout(fit, 0); setTimeout(fit, 150); };
-    fit(); addEventListener("resize", later); setTimeout(fit, 300); setTimeout(fit, 1500); if (document.fonts) document.fonts.ready.then(later);
-    })();
   (function evenCtas() {
     const live = $("wmLive"), ctas = document.querySelector(".wm-more .wm-ctas"), lede = document.querySelector(".wm-screen + .hero-row .lede"), row = document.querySelector(".wm-screen + .hero-row");
     if (!live || !ctas || !lede || !row) return;
@@ -8993,7 +8977,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const L = o.left - m.actualBoundingBoxLeft * k, R = o.left + (m.actualBoundingBoxRight + ls * 100 * gaps) * k;
       const T = o.bottom - m.actualBoundingBoxAscent * k, B = o.bottom + m.actualBoundingBoxDescent * k, sr = scr.getBoundingClientRect();
       const gap = (sr.width - (R - L)) / 2;   // the room left and right of the letters: the same room under them, at the foot of the photo
-      const more = scr.querySelector(".wm-more"), tg = more && more.querySelector(".wm-tagline"), lb = tg ? parseFloat(getComputedStyle(tg).marginBottom) || 14 : 14, foot = more ? more.getBoundingClientRect().top - lb : sr.bottom - gap;   // as far over the tagline as a line break   // over the line and buttons
+      const more = scr.querySelector(".wm-more"), tg = more && more.querySelector(".wm-tagline"), ct = more && more.querySelector(".wm-ctas"), ld = more && more.querySelector(".wm-lead"), far = ct && ld ? ld.getBoundingClientRect().top - ct.getBoundingClientRect().bottom : 0,
+        lb = far > 4 ? far : tg ? parseFloat(getComputedStyle(tg).marginBottom) || 14 : 14, foot = more ? more.getBoundingClientRect().top - lb : sr.bottom - gap;   // as far over the tagline as the two buttons are over the text under them (20 px): set in the one place that puts the name, so it is there from the first frame
       w.style.transform = `translate(${(sr.left + sr.width / 2 - (L + R) / 2).toFixed(2)}px, ${(foot - B).toFixed(2)}px)`; };
     fit(); addEventListener("resize", fit);
     { const more = scr.querySelector(".wm-more"); if (more && "ResizeObserver" in window) new ResizeObserver(() => fit()).observe(more); }   // the count arrives late
