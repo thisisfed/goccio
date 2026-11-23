@@ -2476,6 +2476,12 @@ html.brew-in .botnav [data-bn]:not([data-bn="cancel"]):not([data-bn="coffee"]){d
 @keyframes brew-up{0%{transform:translateY(44px)}100%{transform:none}}
 .item.brewing > .brew-host{animation:brew-up .45s cubic-bezier(.2,.8,.2,1) both}
 @media (prefers-reduced-motion: reduce){ .item.brewing > .brew-host{animation:none} }
+.tech .tech-w::before{content:"⚠︎ ";color:var(--hl);font-weight:700}   /* the water line carries the same small warning sign as the notes in Why this recipe */
+html.brew-in .brew-above{display:none!important}
+html.brew-in #shelves{margin-top:12px!important}
+/* "Recipe for V60." as big as the recipe's own numbers */
+html body #recipe .sec-head .cap:first-child, html body #recipe .sec-head .cap:first-child *{font-size:39px!important;line-height:1.05!important;letter-spacing:-.01em!important}
+@media (min-width:1000px){ html body #recipe .sec-head .cap:first-child, html body #recipe .sec-head .cap:first-child *{font-size:63px!important} }
 #waterOpt{display:none!important}   /* no water to choose: the recipe says what water to use */
 #gear { display: none !important; }   /* My equipment is gone: brewer, grinder and water are picked in the recipe, and remembered */
 #gear.bare #gearIntro { display: block; width: 100%; }
@@ -7423,7 +7429,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     return b ? b.closest(".item") : null; }
   function brewHome() { const html = document.documentElement; if (!html.classList.contains("brew-in")) return;
     [...BREW_MOVE].reverse().forEach((id) => { const el = $(id), at = BREW_AT[id]; if (!el || !at) return; at.p.insertBefore(el, at.n && at.n.parentNode === at.p ? at.n : null); });
-    html.classList.remove("brew-in"); document.querySelectorAll(".item.brewing").forEach((x) => { x.classList.remove("brewing"); const h = x.querySelector(".brew-host"); if (h) h.remove();
+    html.classList.remove("brew-in"); document.querySelectorAll(".brew-above").forEach((x) => x.classList.remove("brew-above")); document.querySelectorAll(".item.brewing").forEach((x) => { x.classList.remove("brewing"); const h = x.querySelector(".brew-host"); if (h) h.remove();
       const bb = x.querySelector("button[data-i]"); if (bb) { bb.removeAttribute("aria-pressed"); bb.textContent = "Brew"; } }); }
   // closing the open coffee puts it away for good: no "What's brewing?" with its name left further down the page. That section is for a scanned or typed bag
   function brewShut() { brewIn = false; brewHome(); state.text = ""; state.bag = null; state.roastPhoto = null; try { $("coffeeIn").value = ""; wbOpen = false; } catch (e) {} saveState(); renderAllOpts(); render(); }
@@ -7435,7 +7441,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const host = document.createElement("div"); host.className = "brew-host"; row.appendChild(host); BREW_MOVE.forEach((id) => { const el = $(id); if (el) host.appendChild(el); });
     const shut = document.createElement("button"); shut.type = "button"; shut.className = "chip brew-shut"; shut.textContent = LANG === "it" ? "Chiudi" : "Close"; shut.onclick = () => { brewShut(); jumpTo(row); }; host.appendChild(shut);
     row.classList.add("brewing"); const bb = row.querySelector("button[data-i]"); if (bb) { bb.setAttribute("aria-pressed", "true"); bb.textContent = LANG === "it" ? "Chiudi" : "Close"; }   // the open coffee's Brew is its Close
-    document.documentElement.classList.add("brew-in"); }
+    document.documentElement.classList.add("brew-in");
+    // nothing above the open coffee either: the page starts at it, so there is no scrolling up past it
+    for (let el = row; el && el !== document.body; el = el.parentElement) for (let p = el.previousElementSibling; p; p = p.previousElementSibling) {
+      if (/^(SCRIPT|STYLE|LINK)$/.test(p.tagName) || /fixed|sticky/.test(getComputedStyle(p).position)) continue; p.classList.add("brew-above"); }
+    scrollTo(0, 0); }
   function brewThis(r, jump = true, inRow = false) {
     brewIn = !!inRow; bagAskShow = false;
     if (jump) surprisePick = null;
