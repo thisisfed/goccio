@@ -144,7 +144,8 @@ def probe(c):
             rec = None
         if rec:
             recs.append(rec)
-    c.update({"platform": kind, "coffees": len(recs), "sample": [x["name"] for x in recs[:4]], "error": None if kind else (err or "")[:300]})
+    c.update({"platform": kind, "coffees": len(recs), "sample": [x["name"] for x in recs[:4]], "error": None if kind else (err or "")[:300],
+              "gate": scan.specialty_gate(recs, c["name"]) if recs else None})   # specialty only: why it is not added, or None
     return c
 
 
@@ -167,6 +168,11 @@ def removed():
         return set(json.loads(REMOVED.read_text()))
     except (OSError, ValueError):
         return set()
+
+
+def blocked():
+    """Hosts never added: roasters who asked to be removed, and shops banned for not being specialty (data/banned.json)."""
+    return removed() | set(scan.banned())
 
 
 def save_roasters(roasters):
@@ -225,6 +231,10 @@ def listings():
                 gh("POST", f"/issues/{iss['number']}/comments", {"body": f"Not added yet: {req.get('email')} isn't at {host(shop)}. Check it's the roaster, then add it to data/roasters.json by hand."})
             continue
         c = probe({"name": req["name"], "shop": shop})
+        if host(shop) in scan.banned() or (c["coffees"] and c.get("gate")):   # asked to be listed, but not specialty: a person decides
+            if not any("specialty" in (x.get("body") or "") for x in gh("GET", f"/issues/{iss['number']}/comments")):
+                gh("POST", f"/issues/{iss['number']}/comments", {"body": f"Not added: Goccio lists specialty roasters only, and this shop {c.get('gate') or 'is on data/banned.json'}. If that is wrong, add it to data/roasters.json by hand."})
+            continue
         if c["coffees"]:
             ie = host(shop).endswith(".ie")
             r = {"name": req["name"], "shop": shop, "city": req.get("town") or "", "region": "UK", "country": "IE" if ie else "GB"}
@@ -274,7 +284,7 @@ def main():
                 print("CONTACT " + json.dumps(c))
         return
     roasters = scan.load_roasters()
-    have_hosts = {host(r["shop"]) for r in roasters} | {host(r["feed"]) for r in roasters if r.get("feed")} | removed()
+    have_hosts = {host(r["shop"]) for r in roasters} | {host(r["feed"]) for r in roasters if r.get("feed")} | blocked()
     have_names = {norm(r["name"]) for r in roasters}
     args = sys.argv[1:]
     if "--urls" in args:
@@ -302,6 +312,10 @@ def main():
         new = list(pool.map(probe, new))
     new.sort(key=lambda c: (-c["coffees"], c["name"].lower()))
     OUT.write_text(json.dumps(new, ensure_ascii=False, indent=1) + "\n")
+    for c in new:
+        if c["coffees"] and c.get("gate"):
+            print(f"NOT SPECIALTY {c['name']} ({c['shop']}): {c['gate']}")
+    new = [c for c in new if not (c["coffees"] and c.get("gate"))]
     ok = [c for c in new if c["coffees"]]
     print(f"readable with coffees: {len(ok)}; readable, no coffees: {sum(1 for c in new if c['platform'] and not c['coffees'])}; unreadable: {sum(1 for c in new if not c['platform'])}")
     for c in new:   # the whole record, for whoever reviews the run (artifacts aren't always reachable)

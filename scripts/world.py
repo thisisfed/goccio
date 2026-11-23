@@ -77,7 +77,7 @@ def check(c):
     try:
         kind, items, _ = scan.scan_roaster(r)
     except Exception:  # noqa: BLE001
-        return None, 0, 0
+        return None, 0, 0, "unreadable"
     recs = []
     for it in items or []:
         try:
@@ -86,14 +86,14 @@ def check(c):
             rec = None
         if rec:
             recs.append(rec)
-    return kind, len(recs), sum(1 for x in recs if x.get("origin"))
+    return kind, len(recs), sum(1 for x in recs if x.get("origin")), scan.specialty_gate(recs, c["name"])
 
 
 def main():
     dry = "--dry" in sys.argv
     today = date.today()
     roasters = scan.load_roasters()
-    have = {discover.host(r["shop"]) for r in roasters} | {discover.host(r.get("feed") or "") for r in roasters} | discover.removed()
+    have = {discover.host(r["shop"]) for r in roasters} | {discover.host(r.get("feed") or "") for r in roasters} | discover.blocked()
     names = {discover.norm(r["name"]) for r in roasters}
     try:
         seen = json.loads(SEEN.read_text())
@@ -112,10 +112,10 @@ def main():
         if len(added) >= MAX_ADD or tried >= MAX_TRY:
             break
         tried += 1
-        kind, n, origins = check(c)
+        kind, n, origins, gate = check(c)
         seen[discover.host(c["shop"])] = today.isoformat()
-        ok = kind and n >= 3 and origins >= 2
-        print(f"  {'ADD ' if ok else 'skip'} {c['name']} ({c['shop']}, {c['country'] or '?'}): {kind or 'unreadable'}, {n} coffees, {origins} with an origin")
+        ok = kind and n >= 3 and origins >= 2 and not gate   # specialty only (scan.specialty_gate)
+        print(f"  {'ADD ' if ok else 'skip'} {c['name']} ({c['shop']}, {c['country'] or '?'}): {kind or 'unreadable'}, {n} coffees, {origins} with an origin{'; not specialty: ' + gate if kind and gate else ''}")
         if ok:
             r = {"name": c["name"], "shop": c["shop"], "city": c["city"], "country": c["country"], "region": region(c["country"])}
             if c["country"] == "GB":

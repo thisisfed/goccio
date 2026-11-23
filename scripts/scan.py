@@ -30,6 +30,63 @@ import flavours  # noqa: E402  (tasting notes in English)
 ROASTERS = ROOT / "data" / "roasters.json"
 
 
+BANNED = ROOT / "data" / "banned.json"   # shops taken off for not being specialty: {host: {"name", "why", "on"}}. Never scanned, never added back
+
+
+def host_of(shop):
+    return urllib.parse.urlparse(shop or "").netloc.lower().removeprefix("www.")
+
+
+def banned():
+    try:
+        return json.loads(BANNED.read_text())
+    except (OSError, ValueError):
+        return {}
+
+
+# Specialty only. Two things a specialty roaster's shelf never holds:
+# flavoured coffee (said in the name: "Amaretto Flavoured Coffee", "Irish Cream", "Pumpkin Spice"; tasting notes are never read for this,
+# they say "caramel flavour" of honest coffees), and robusta (the name or the variety says robusta, canephora or conilon).
+FLAVOURED = re.compile(r"\bflavou?red\b|\bflavou?r(?:ed)? coffee\b|\baromatisiert|\baromatizzat|\baromatis[ée]e?s?\b|\birish cream\b|\bpumpkin spice\b"
+                       r"|\bamaretto\b|\bfrench vanilla\b|\btoffee nut\b|\bcinnamon bun\b", re.I)
+ROBUSTA = re.compile(r"\brobustas?\b|\bcanephora\b|\bconilon\b", re.I)
+NO_ROBUSTA = re.compile(r"\b(?:no|without|sans|ohne|senza|zero|0 ?%)\s+robusta|100 ?% arabica", re.I)
+
+
+def flavoured(name):
+    m = FLAVOURED.search(name or "")
+    return m.group(0) if m else None
+
+
+def robusta(name, variety=""):
+    v = " ".join(variety) if isinstance(variety, list) else (variety or "")
+    for t in (name or "", v):
+        if ROBUSTA.search(t) and not NO_ROBUSTA.search(t):
+            return True
+    return False
+
+
+def specialty_gate(recs, name=""):
+    """Why a shop found by the directory or the map is not added (None when it passes). A specialty roaster says where each
+    coffee is from and how it was made, sells no flavoured coffee and no robusta, and isn't a tea merchant with a coffee shelf."""
+    if re.search(r"\bteas?\b|\btee\b|\bth[ée]s?\b", name or "", re.I):
+        return "a tea and coffee merchant by its name"
+    for x in recs:
+        if flavoured(x.get("name")):
+            return f"sells flavoured coffee ({x.get('name')})"
+        if robusta(x.get("name"), x.get("variety")):
+            return f"sells robusta ({x.get('name')})"
+    n = len(recs)
+    if n < 3:
+        return "fewer than 3 coffees"
+    share = lambda k: sum(1 for x in recs if x.get(k)) / n
+    if share("origin") < 0.6:
+        return f"only {share('origin'):.0%} of its coffees name an origin"
+    if share("process") < 0.3 and share("variety") < 0.2:
+        return f"its coffees rarely say process ({share('process'):.0%}) or variety ({share('variety'):.0%})"
+    return None
+
+
 def load_roasters():
     """data/roasters.json, forgiving the two slips a hand edit on GitHub makes: a comma after the last roaster,
     and a roaster added twice (the first one stays). A broken file would otherwise stop the whole daily scan."""
@@ -41,7 +98,8 @@ def load_roasters():
             print(f"roasters.json: {r.get('name')} is listed twice; the first one is kept")
             continue
         seen.add(key); out.append(r)
-    return out
+    gone = banned()
+    return [r for r in out if host_of(r.get("shop")) not in gone]
 OUT = ROOT / "data" / "releases.json"
 REPORT_FILE = ROOT / "data" / "scan_report.json"   # what the last scan couldn't finish (limits hit), for the morning check and the run page
 SEEN = ROOT / "data" / "seen.json"   # when each coffee page was first seen, including ones the list leaves out as duplicates
@@ -2766,6 +2824,26 @@ def main():
             REJECTED.append(f"{x.get('roaster')}: {x.get('name')} ({why}, dropped from list)")
         return not why
     found = [x for x in found if still_beans(x)]
+    # specialty only: a shop with a flavoured coffee on its shelf is banned (all its coffees go, and it is never scanned or
+    # added again); a robusta is dropped wherever it turns up
+    gone, shop_of = banned(), {r["name"]: r.get("shop") for r in load_roasters()}
+    for x in found:
+        f = flavoured(x.get("name"))
+        h = host_of(shop_of.get(x["roaster"]))
+        if f and h and h not in gone:
+            gone[h] = {"name": x["roaster"], "why": f"flavoured coffee: {x.get('name')}", "on": datetime.now(timezone.utc).date().isoformat()}
+            print(f"BANNED {x['roaster']} ({h}): flavoured coffee '{x.get('name')}'")
+    if gone != banned():
+        BANNED.write_text(json.dumps(gone, ensure_ascii=False, indent=1, sort_keys=True) + "\n")
+    out_names = {v["name"] for v in gone.values()}
+    kept = []
+    for x in found:
+        if x["roaster"] in out_names:
+            continue
+        if robusta(x.get("name"), x.get("variety")):
+            REJECTED.append(f"{x.get('roaster')}: {x.get('name')} (robusta, dropped from list)"); continue
+        kept.append(x)
+    found = kept
     for x in found:   # entries carried over from older scans get today's name clean-up too
         x["name"] = tidy_name(x["name"], x["roaster"]) or x["name"]
         flavour_variety(x)   # tasting notes read as the variety go back to being notes
