@@ -2622,7 +2622,12 @@ html body .wm-screen{min-height:500px!important;height:500px!important}
 @media (min-width:900px){ html body .wm-screen{min-height:min(62svh,620px)!important;height:min(62svh,620px)!important} }
 html body #recipe table.pours.steps{margin-bottom:-14px!important}   /* the last step sits as far over the next rule as every step sits over its own */
 /* the roast, when the bag didn't say: just its name, Scan the beans and the + 5, set out as the other rows are */
-#detected .miss.miss-ro{display:grid!important;grid-template-columns:70px minmax(0,1fr);gap:12px;align-items:center}
+#detected .miss.miss-ro{display:grid!important;grid-template-columns:70px minmax(0,1fr);gap:12px;align-items:start}
+#detected .miss.miss-ro > .mr-l{line-height:var(--pill-h)}   /* the label keeps to the first line of pills when they open onto more */
+#consTop{display:grid;gap:8px;margin:0}
+#consTop[hidden]{display:none}
+#consTop .cons-top{margin:0;padding:8px 12px;border-radius:var(--r);background:var(--wash, var(--pill));color:var(--ink);font-size:var(--fs-s);line-height:1.35}
+#consTop .why-ask{color:inherit;text-decoration:underline;text-underline-offset:2px}
 #detected .miss.miss-ro > .mr-l{color:var(--muted)}
 #detected .miss.miss-ro > .roast-ask{margin:0!important}
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
@@ -4522,7 +4527,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     let b = P.body + (r.goal === "syrupy" ? 1 : r.goal === "light" ? -1 : r.goal === "tea" ? -3 : 0) + (darkish ? 0.5 : 0) + (fermented ? 0.5 : 0);
     b = Math.max(1, Math.min(5, Math.round(b)));
     const tds = r.tds && r.tds.length ? ` About ${r.tds[0].toFixed(2)}–${r.tds[1].toFixed(2)}% TDS at ${r.ey[0]}–${r.ey[1]}% extraction.` : "";
-    out.push(`Body: ${BODY_W[b - 1]}, ${P.tex}.`);
+    { const bw = BODY_W[b - 1], tx = P.tex.toLowerCase().startsWith(bw.toLowerCase() + ",") ? P.tex.slice(bw.length + 1).trim() : P.tex; out.push(`Body: ${bw}, ${tx}.`); }   /* the texture may open with the same word ("full, a little silt"): said once */
     out.tds = r.m === "cold" || r.m === "moka" || r.m === "espresso" ? "" : tds.trim();   // the lab numbers go under More
     // clarity
     let cl = P.clar - (fermented ? 0.5 : 0) - (darkish ? 1 : 0);
@@ -5533,6 +5538,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         // with a note before it ("Roast not sure, so it plays safe…"), the line joins that note's box, one line down
         { const pv = li.previousElementSibling; if (pv && pv.classList.contains("cons")) { pv.appendChild(document.createElement("br")); pv.appendChild(a); li.remove(); } }
         a.onclick = (ev) => { ev.preventDefault(); bagAskShow = true; render(); const d = $("detected"); if (d && !d.hidden) jumpTo(d); }; } }
+    /* those notes (Roast not sure, so it plays safe…) are read before the pour, not folded away under it: they sit over How to pour */
+    { let ct = $("consTop"); if (!ct) { ct = document.createElement("div"); ct.id = "consTop"; $("techLbl").before(ct); } ct.textContent = "";
+      $("why").querySelectorAll("li.cons").forEach((li) => { const p = document.createElement("p"); p.className = "cons-top"; while (li.firstChild) p.appendChild(li.firstChild); ct.appendChild(p); li.remove(); }); ct.hidden = !ct.childElementCount; }
     // "Label: text" lines bold the label; a line with no label (the roast note) is shown as it is
     // the roaster's notes (or the typical ones) lead, then the rest, all in view
     const xli = (w) => { const i = w.indexOf(": "); if (i < 1 || i > 60) return `<li>${esc(w)}</li>`;
