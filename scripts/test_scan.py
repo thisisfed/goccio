@@ -326,6 +326,11 @@ CASES = [
      lambda: (lambda C: scan.rarely_states([C("", "")] * 6) and scan.rarely_states([C("washed", "")] + [C("", "")] * 5)
        and not scan.rarely_states([C("", "")] * 4) and not scan.rarely_states([C("washed", "")] * 2 + [C("", "")] * 4)
        and not scan.rarely_states([C("", "Caturra")] + [C("", "")] * 5))(lambda p, v: {"process": p, "variety": v})),
+    ("A Japanese description that names its flavours in a sentence gives them as notes, in English, and nothing else from the sentence",
+     lambda: scan.ja_notes("豆は全国送料300円 \n焼きりんごやレーズンを思わせる、熟度の高い果実感。滑らかな質感とともに、キャラメルのような甘さがゆっくりと伸びていく。") == "baked apple, raisin, caramel"
+       and scan.ja_notes("熟した桃とジャスミンの香り。") == "peach, jasmine"
+       and scan.ja_notes("豆は全国送料300円。毎日飲みたいコーヒーです。") is None
+       and scan.ja_notes("Reminiscent of baked apples and raisins.") is None),
 ]
 
 

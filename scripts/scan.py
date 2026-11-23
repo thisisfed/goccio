@@ -1608,6 +1608,49 @@ def first_line_notes(text):
     return line
 
 
+# Japanese shops write the cup as a sentence, not a list: 「焼きりんごやレーズンを思わせる、熟度の高い果実感。…キャラメルのような甘さ」
+# ("reminiscent of baked apple and raisin … a caramel-like sweetness"). Only the flavours named before を思わせる / のような / の風味 are
+# taken, and only words in this list: nothing is guessed from the rest of the sentence.
+JA_FLAVOURS = {
+    "焼きりんご": "baked apple", "青りんご": "green apple", "りんご": "apple", "リンゴ": "apple", "アップル": "apple", "林檎": "apple",
+    "レーズン": "raisin", "ドライフルーツ": "dried fruit", "プルーン": "prune", "デーツ": "date", "いちじく": "fig", "イチジク": "fig",
+    "キャラメル": "caramel", "トフィー": "toffee", "黒糖": "brown sugar", "ブラウンシュガー": "brown sugar", "きび砂糖": "cane sugar", "和三盆": "wasanbon sugar",
+    "はちみつ": "honey", "ハチミツ": "honey", "蜂蜜": "honey", "メープルシロップ": "maple syrup", "メープル": "maple", "バニラ": "vanilla",
+    "ミルクチョコレート": "milk chocolate", "ダークチョコレート": "dark chocolate", "チョコレート": "chocolate", "カカオ": "cacao", "ココア": "cocoa",
+    "ヘーゼルナッツ": "hazelnut", "アーモンド": "almond", "くるみ": "walnut", "クルミ": "walnut", "ピーナッツ": "peanut", "ナッツ": "nuts",
+    "ブラッドオレンジ": "blood orange", "オレンジ": "orange", "みかん": "mandarin", "ミカン": "mandarin", "グレープフルーツ": "grapefruit", "レモン": "lemon",
+    "ライム": "lime", "ゆず": "yuzu", "柚子": "yuzu", "柑橘": "citrus", "シトラス": "citrus", "ベルガモット": "bergamot",
+    "ストロベリー": "strawberry", "いちご": "strawberry", "イチゴ": "strawberry", "苺": "strawberry", "ブルーベリー": "blueberry", "ラズベリー": "raspberry",
+    "クランベリー": "cranberry", "ブラックベリー": "blackberry", "カシス": "blackcurrant", "ベリー": "berries",
+    "アメリカンチェリー": "cherry", "さくらんぼ": "cherry", "チェリー": "cherry", "プラム": "plum", "すもも": "plum", "梅": "ume plum",
+    "白桃": "white peach", "黄桃": "yellow peach", "ピーチ": "peach", "桃": "peach", "ネクタリン": "nectarine", "アプリコット": "apricot", "杏": "apricot",
+    "マスカット": "muscat grape", "巨峰": "kyoho grape", "ぶどう": "grape", "ブドウ": "grape", "葡萄": "grape", "グレープ": "grape",
+    "洋梨": "pear", "洋ナシ": "pear", "梨": "pear", "メロン": "melon", "ライチ": "lychee",
+    "トロピカルフルーツ": "tropical fruit", "マンゴー": "mango", "パイナップル": "pineapple", "パッションフルーツ": "passion fruit", "グァバ": "guava",
+    "グアバ": "guava", "パパイヤ": "papaya", "ココナッツ": "coconut", "バナナ": "banana",
+    "赤ワイン": "red wine", "白ワイン": "white wine", "ワイン": "wine", "ラム酒": "rum", "ウイスキー": "whisky", "ブランデー": "brandy",
+    "ジャスミン": "jasmine", "フローラル": "floral", "花": "flowers", "ラベンダー": "lavender", "ローズ": "rose", "バラ": "rose",
+    "アールグレイ": "earl grey", "紅茶": "black tea", "緑茶": "green tea", "ほうじ茶": "roasted green tea", "ハーブ": "herbs",
+    "シナモン": "cinnamon", "スパイス": "spice", "バター": "butter", "クリーム": "cream", "ヨーグルト": "yoghurt", "ミルク": "milk",
+}
+_JA_KEYS = sorted(JA_FLAVOURS, key=len, reverse=True)
+JA_CUE = re.compile(r"([^。、！？\n]{1,40}?)(?:を思わせる|を感じさせる|を連想させる|のような|の(?:風味|フレーバー|香り|ニュアンス|甘さ|酸味|甘み|余韻))")
+
+
+def ja_notes(text):
+    """Flavours a Japanese description names in a sentence, in English, in the order written (see JA_FLAVOURS), or None."""
+    if not re.search(r"[\u3040-\u30ff]", text or ""):
+        return None
+    out = []
+    for m in JA_CUE.finditer(text):
+        for part in re.split(r"[や・と&＆/／]|および|そして", m.group(1)):
+            part = part.strip()
+            k = next((k for k in _JA_KEYS if part.endswith(k)), None)   # the flavour is the last word before the cue: 熟した桃 -> 桃
+            if k and JA_FLAVOURS[k] not in out:
+                out.append(JA_FLAVOURS[k])
+    return ", ".join(out) if out else None
+
+
 def find_notes(item):
     text = item["body"]
     m = NOTES_CELL.search(text) or NOTES_NEXT.search(text) or NOTES_RE.search(text) or NOTES_LINE.search(text)   # a line that is only the label and its list is the surest
@@ -1618,6 +1661,8 @@ def find_notes(item):
         raw = notes_from_text(text)
     if not raw:
         raw = first_line_notes(text)
+    if not raw:
+        raw = ja_notes(text)
     if not raw:
         # "Name - Country - Note, Note, Note" style titles
         parts = re.split(r"\s[-–|]\s", item["title"])
