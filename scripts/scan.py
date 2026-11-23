@@ -1588,9 +1588,24 @@ NOTE_NOT = re.compile(r"^(?:courtesy|half|now|let|whilst|while|these|those|full|
                       r"here|there|both|each|every|very|much|more|most|less|in the cup|cup|body|round|quality|flavou?r|flavou?rs)$", re.I)
 
 
+# page markup read as a note: an image's address or srcset ("https://…-1024x717.png 1024w"), a tag ("<svg", "<img"), an attribute ("Class=\"…", "Alt=\"Chocolate")
+NOTE_JUNK = re.compile(r"[<>]|=\s*[\"'“”]|https?:|//|\.(?:png|jpe?g|gif|svg|webp|avif)\b|\b\d{2,4}w\b|\bsizes=|\bsrcset\b", re.I)
+
+
+# a brew guide's headings read as notes ("Ratios, dose, bloom"; The Source): how to brew it, not how it tastes
+NOTE_BREW = re.compile(r"^(?:ratios?|brew(?:ing)? ratios?|dos(?:e|es|age)|bloom(?:ing)?|brew(?:ing)? (?:time|guide|method|recipe|temp(?:erature)?)|grind(?: size)?|water(?: temp(?:erature)?)?|"
+                       r"temp(?:erature)?|yield|recipe|pours?|time|timings?|method|agitation|filter papers?)$", re.I)
+
+
+def junk_note(n):
+    return bool(NOTE_JUNK.search(n or "")) or bool(NOTE_BREW.match((n or "").strip(" .,;:")))
+
+
 def tidy_note(n):
     """One tasting note, without the sentence it was cut from: 'Juicy notes of nectarine' -> 'Nectarine', 'A hint of caramel' -> 'Caramel',
     'Butterscotch followed by' -> 'Butterscotch', 'A caramel finish' -> 'Caramel finish', 'Rounded out by' and 'Hints of' -> '' (dropped)."""
+    if junk_note(n):
+        return ""
     n = (n or "").split("\n")[0].strip(" .;:-–[](){}*•|\"'“”")   # stray brackets and stars too: "Vanilla[" -> "Vanilla"
     if n.isupper() and len(n) > 3:
         n = n.lower()   # shouted notes ("CHERRY YOGURT") read as "Cherry yogurt"
@@ -2458,6 +2473,8 @@ def add_page_details(recs, roaster, old):
         # page notes are kept. A list of two or fewer read under older rules may have been cut short ("Té verde, manzanilla,
         # fruta de la pasión y kiwi amarillo" kept only the first two), so its page is read once more; the old list stays if that finds nothing
         short_old = prev.get("notes_from") == "page" and len(prev.get("notes") or []) <= 2 and (prev.get("notes_v") or 0) < NOTES_V
+        if prev.get("notes") and any(junk_note(n) for n in prev["notes"]):   # markup kept as notes by older rules (Dak's image addresses): forgotten, and the page is read again
+            prev = {**prev, "notes": None, "notes_from": None, "notes_checked": 0}
         if not rec.get("notes") and prev.get("notes") and prev.get("notes_from") == "page":
             rec["notes"], rec["notes_from"] = prev["notes"], "page"
             if prev.get("notes_v"):
@@ -2513,6 +2530,7 @@ def add_page_details(recs, roaster, old):
         if "notes" in need:   # the shop's own tasting notes: a labelled line, a sentence, or the page's description tag
             meta = re.search(r'<meta[^>]+(?:name|property)=["\'](?:og:)?description["\'][^>]+content=["\']([^"\']+)', raw, re.I)
             ns = class_notes(raw, rec["name"]) or page_notes(text, rec["name"], html.unescape(meta.group(1)) if meta else "") or raw_notes(raw, rec["name"])
+            ns = [n for n in (ns or []) if not junk_note(n)]   # whatever rule found them, markup is never a note
             if ns:
                 rec["notes"], rec["notes_from"], rec["notes_v"] = ns, "page", NOTES_V
                 if redo:
