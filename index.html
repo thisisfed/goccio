@@ -1881,6 +1881,7 @@ body { animation: pageIn .45s cubic-bezier(.2,.7,.2,1) backwards; }
 }
 footer .fcol > p + .foot-x{margin-top:14px}
 #o-goal-tea .beta{margin-left:12px}
+#opts-main .chip .beta{margin-left:12px}
 /* on a computer, Scan the bag and Scan the beans open a big QR code in the middle of the screen: scan it and carry on on the phone */
 .qr-ov{position:fixed;inset:0;z-index:200;display:grid;place-items:center;background:color-mix(in srgb, var(--bg) 88%, transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);opacity:0;transition:opacity .2s ease;cursor:pointer}
 .qr-ov.on{opacity:1}
@@ -2394,6 +2395,10 @@ html.brew-in #coffee{display:none!important}
 .flap-n{animation:flapIn .24s cubic-bezier(.2,.8,.3,1.25) calc(var(--d,0ms) + .16s) both}
 @keyframes flapOut{from{transform:rotateX(0);opacity:1}to{transform:rotateX(-90deg);opacity:.2}}
 @keyframes flapIn{from{transform:rotateX(90deg);opacity:.2}to{transform:rotateX(0);opacity:1}}
+/* the footer is always out: nothing to open. Everything in it is set a half step under the body size (15 / √1.618 = 12 px), the one place the small size is used */
+html body .page footer, html body .page footer *, html body footer, html body footer *{font-size:12px!important;line-height:1.45!important}
+footer .foot-x > summary{cursor:default!important;pointer-events:none}
+footer .foot-x > summary::after{display:none!important}
 #gear { display: none !important; }   /* My equipment is gone: brewer, grinder and water are picked in the recipe, and remembered */
 #gear.bare #gearIntro { display: block; width: 100%; }
 #gear.bare .gear-tools { display: none; }
@@ -5387,14 +5392,21 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const b = brewerOf(state), B = BREWERS[b], teaOn = state.goal === "tea" && teaAvail(b);
     return [
       !cupOnly && ICED_OK.has(b) && { key: "serve", label: "Serve", items: [["hot", "Hot"], ["iced", "Iced"]] },
-      (B.kind !== "steps" || b === "mocca") && !B.cup && { key: "goal", label: "Cup", items: [["light", "Light & sweet"], ["balanced", "Balanced"], ["syrupy", "Rich & syrupy"],
-        ...(teaAvail(b) ? [["tea", TEA_DIL.has(b) ? "Tea-like, by dilution" : "Tea-like"]] : [])] },
       (b === "press" || b === "cold") && { key: "steep", label: "Steep", items: [["hot", "Hot"], ["cold", "Cold brew"]], on: (v) => setBrewer(v === "cold" ? "cold" : "press"), cur: () => b === "cold" ? "cold" : "hot" },
-      b === "aero" && !teaOn && { key: "aeroWay", label: "Method", items: [["standard", "Hoffmann"], ["inverted", "Hoffmann inverted"], ["wendelboe", "Wendelboe"]] },
-      (b === "v60" || b === "neo") && !teaOn && (() => { // no "Best for this coffee" pill: the method that is best for this coffee is named, comes first and carries a Best tag. It stays picked until you choose another, and follows the coffee and the dose
-        const all = [["hoffmann", "Hoffmann"], ["fourSix", "Kasuya 4:6"], ...(Number(state.dose) >= 25 ? [] : [["ten", "Kasuya 10-Pour"]]), ["rao", "Rao"], ["onyx", "Onyx"], ["cafec", "CAFEC Osmotic Flow"], ["winton", "Winton Five-Pour"], ["hedrick", "Hedrick"]];
-        let best = "hoffmann"; try { const m = engine({ ...state, method: "best" }).m; best = m === "hoffmannU" ? "hoffmann" : m; } catch (e) {} if (!all.some(([k]) => k === best)) best = "hoffmann";
-        return { key: "method", label: "Method", best, items: [all.find(([k]) => k === best), ...all.filter(([k]) => k !== best)], cur: () => state.method === "best" ? best : state.method, on: (v) => { state.method = v === best ? "best" : v; } }; })(),   // ten: 15 s pours don't scale to a double batch   // ten 15 s pours don't scale to a double batch
+      // Method: one row for how the cup is made. The Cup row is gone: Light & sweet is what every recipe aims for, and the two other cups
+      // (Rich & syrupy, Tea-like) are pills here, beside the named methods. On the V60 the method that is best for this coffee is
+      // named, comes first and carries a Best tag; it follows the coffee and the dose until you pick another
+      (B.kind !== "steps" || b === "mocca") && !B.cup && (() => {
+        if (state.goal === "balanced") state.goal = "light";
+        const cups = [["g:syrupy", "Rich & syrupy"], ...(teaAvail(b) ? [["g:tea", TEA_DIL.has(b) ? "Tea-like, by dilution" : "Tea-like"]] : [])];
+        const cupNow = () => state.goal === "syrupy" ? "g:syrupy" : state.goal === "tea" && teaAvail(b) ? "g:tea" : null;
+        const pick = (set) => (v) => { if (v.slice(0, 2) === "g:") { state.goal = v.slice(2); if (b === "v60" || b === "neo") state.method = "best"; } else { state.goal = "light"; set(v); } };
+        if (b === "v60" || b === "neo") {
+          const all = [["hoffmann", "Hoffmann"], ["fourSix", "Kasuya 4:6"], ...(Number(state.dose) >= 25 ? [] : [["ten", "Kasuya 10-Pour"]]), ["rao", "Rao"], ["onyx", "Onyx"], ["cafec", "CAFEC Osmotic Flow"], ["winton", "Winton Five-Pour"], ["hedrick", "Hedrick"]];   // ten: 15 s pours don't scale to a double batch
+          let best = "hoffmann"; try { const m = engine({ ...state, method: "best", goal: "light" }).m; best = m === "hoffmannU" ? "hoffmann" : m; } catch (e) {} if (!all.some(([k]) => k === best)) best = "hoffmann";
+          return { key: "method", label: "Method", best, items: [all.find(([k]) => k === best), ...all.filter(([k]) => k !== best), ...cups], cur: () => cupNow() || (state.method === "best" ? best : state.method), on: pick((v) => { state.method = v === best ? "best" : v; }) }; }
+        if (b === "aero") return { key: "method", label: "Method", items: [["standard", "Hoffmann"], ["inverted", "Hoffmann inverted"], ["wendelboe", "Wendelboe"], ...cups], cur: () => cupNow() || state.aeroWay || "standard", on: pick((v) => { state.aeroWay = v; }) };
+        return { key: "method", label: "Method", items: [["classic", "Classic"], ...cups], cur: () => cupNow() || "classic", on: pick(() => {}) }; })(),
     ].filter(Boolean).filter((o) => (o.key === "goal") === !!cupOnly);
   };
   const OPTS_MORE = [
@@ -5421,6 +5433,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         b.setAttribute("aria-pressed", String((o.cur ? o.cur() : o.key === "process" || o.key === "roast" ? pickedOf(o.key) : state[o.key]) === v));
         b.onclick = () => { if (o.on) o.on(v); else state[o.key] = v; if (o.key === "roast") state.roastPhoto = null; saveState(); renderAllOpts(); render(); };
         if (o.key === "goal" && v === "tea") b.insertAdjacentHTML("beforeend", `<span class="beta">Beta</span>`);
+        if (o.key === "method" && v === "g:tea") b.insertAdjacentHTML("beforeend", `<span class="beta">Beta</span>`);
         if (o.key === "method" && v === o.best) b.insertAdjacentHTML("beforeend", `<span class="beta">${LANG === "it" ? "Migliore" : "Best"}</span>`);   // kept because it looks good, not because it's unfinished
         g.appendChild(b);
       });
@@ -5466,7 +5479,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   var wbOpen = false;
   function jumpTo(el, center) {
     if (el && el.id === "coffee" && el.hidden) { wbOpen = true; el.hidden = false; try { window.syncSecs && syncSecs(); } catch (e) {} }   // asked for: there from now on
-    if (el && document.documentElement.classList.contains("brew-in") && el.offsetParent === null && !el.closest(".item.brewing")) { brewIn = false; placeBrew(); }   // it's behind the open coffee: fold that first
+    if (el && document.documentElement.classList.contains("brew-in") && el.offsetParent === null && !el.closest(".item.brewing")) brewShut();   // it's behind the open coffee: fold that first
     if (!el) return; const gen = ++jumpGen, html = document.documentElement;
     // the coffee filter bar keeps one shape for the whole jump, so nothing changes size on the way and the target stays put.
     // Passing through the list it stays stuck under the top bar with its dropdowns, as when you scroll; it opens up again on landing
@@ -6934,7 +6947,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     $("shelfMore").textContent = left > 0 ? `Load ${Math.min(20, left)} more (${(shelfPart && !q && !qActive() ? shelfPart : list.length).toLocaleString("en-GB")} in total)` : !list.length && q && !shelfRo ? "Clear search" : !list.length && qActive() && !shelfRo ? "Clear the filters" : "Back to top";   // the end of the list: a way back up
     $("shelfMore").dataset.top = left > 0 ? "" : "1"; $("shelfMore").dataset.clear = !list.length && q && !shelfRo ? "1" : ""; $("shelfMore").dataset.unfilter = !list.length && !q && qActive() && !shelfRo ? "1" : "";
     $("shelf").querySelectorAll("button[data-i]").forEach((b) => b.onclick = () => { const r = shelf[+b.dataset.i];
-      if (brewIn && b.closest(".item.brewing")) { brewIn = false; placeBrew(); return; }   // Brew again on the open coffee: it folds
+      if (brewIn && b.closest(".item.brewing")) { brewShut(); return; }   // Brew again on the open coffee: it folds
       brewThis(r, true, true); });
     placeBrew();
     $("shelf").querySelectorAll("a[data-ro]").forEach((b) => b.onclick = (e) => { e.preventDefault(); openRoaster(b.dataset.ro); });
@@ -7314,13 +7327,15 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     [...BREW_MOVE].reverse().forEach((id) => { const el = $(id), at = BREW_AT[id]; if (!el || !at) return; at.p.insertBefore(el, at.n && at.n.parentNode === at.p ? at.n : null); });
     html.classList.remove("brew-in"); document.querySelectorAll(".item.brewing").forEach((x) => { x.classList.remove("brewing"); const h = x.querySelector(".brew-host"); if (h) h.remove();
       const bb = x.querySelector("button[data-i]"); if (bb) { bb.removeAttribute("aria-pressed"); bb.textContent = "Brew"; } }); }
+  // closing the open coffee puts it away for good: no "What's brewing?" with its name left further down the page. That section is for a scanned or typed bag
+  function brewShut() { brewIn = false; brewHome(); state.text = ""; state.bag = null; state.roastPhoto = null; try { $("coffeeIn").value = ""; wbOpen = false; } catch (e) {} saveState(); renderAllOpts(); render(); }
   function placeBrew() { const row = $("recipe").hidden ? null : brewRow();
     if (!row) return brewHome();
     if (row.classList.contains("brewing") && row.contains($("recipe"))) return;
     brewHome();
     BREW_MOVE.forEach((id) => { const el = $(id); if (el && !BREW_AT[id]) BREW_AT[id] = { p: el.parentNode, n: el.nextSibling }; });
     const host = document.createElement("div"); host.className = "brew-host"; row.appendChild(host); BREW_MOVE.forEach((id) => { const el = $(id); if (el) host.appendChild(el); });
-    const shut = document.createElement("button"); shut.type = "button"; shut.className = "chip brew-shut"; shut.textContent = LANG === "it" ? "Chiudi" : "Close"; shut.onclick = () => { brewIn = false; placeBrew(); jumpTo(row); }; host.appendChild(shut);
+    const shut = document.createElement("button"); shut.type = "button"; shut.className = "chip brew-shut"; shut.textContent = LANG === "it" ? "Chiudi" : "Close"; shut.onclick = () => { brewShut(); jumpTo(row); }; host.appendChild(shut);
     row.classList.add("brewing"); const bb = row.querySelector("button[data-i]"); if (bb) { bb.setAttribute("aria-pressed", "true"); bb.textContent = LANG === "it" ? "Chiudi" : "Close"; }   // the open coffee's Brew is its Close
     document.documentElement.classList.add("brew-in"); }
   function brewThis(r, jump = true, inRow = false) {
@@ -8152,6 +8167,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     $("scanMsg").textContent = fields.brand && !review.match ? `${fields.brand} isn’t on Goccio’s list of specialty roasters, but the recipe works from what the bag says. Check it, then Use these.` : "Here’s what the label says. Check it, then Use these.";
     box.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
+  document.querySelectorAll("footer details").forEach((d) => { d.open = true; d.addEventListener("toggle", () => { if (!d.open) d.open = true; }); });   // the footer has no folds any more
   window.__useScan = () => !!(review && !$("scanReview").hidden && applyReview());
   function closeReview() { const b = $("scanReview"); b.hidden = true; b.innerHTML = ""; b.classList.remove("only-match"); review = null; }
   function applyReview(land = true) {
