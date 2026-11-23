@@ -2459,9 +2459,9 @@ footer #tip a:hover, footer .foot-links a:hover{text-decoration-color:transparen
 .row-more svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
 .row-more .tb-v{transition:transform .29s ease;transform-origin:center}
 .r.more-open:not(.more-closing) > .row-more .tb-v{transform:scaleY(0)}
-.shelf .item > .r:not(.more-open) > :is(.buy-p,.bag-add){display:none!important}
+.shelf .item > .r:not(.more-open) > .buy-p{display:none!important}
 .shelf .item > .r.more-open > .row-more, #recipe .share.more-open > .share-more{order:9}   /* open: the pills take the plus's place and the minus closes the row, at its end */
-.shelf .item > .r:has(> .bag-add.in):not(.more-open) > .row-more{background:var(--go)!important;color:var(--on-hl)!important}   /* saved to My bags: the closed plus says so, in the green */
+/* (the closed plus no longer turns green for a saved coffee: the bookmark beside Brew shows it) */
 /* the fluid study on the row: the plus swells and lets Buy and Save go like drops, and Brew beside it is pushed and settles */
 @keyframes row-fade{0%,12%{opacity:0}34%,100%{opacity:1}}
 @keyframes row-in{0%{opacity:1;transform:none}70%{opacity:1}100%{opacity:0;transform:translateX(var(--tb-x))}}
@@ -2544,13 +2544,18 @@ html body .shelf .item .l > .c-notes, html body .shelf .item .l > .c-notes *{lin
 .shelf .item .l > .c-where:has(.rn){margin-bottom:5px!important}   /* the coffee's name as far under this paragraph as over the tags */
 @media (min-width:1000px){ .shelf .item .l > .c-where:has(.rn){margin-bottom:3px!important} }
 @supports (font:-apple-system-body){ .shelf .item .l > .c-where:has(.rn){margin-bottom:2.6px!important} }   /* Safari sets the big name lower in its line (measured on iPhone screenshots) */
-#shelves.ro-on .item .c-where .rn, #shelves.ro-on .item .c-where .rn-br{display:none!important}
+#shelves.ro-on .item .c-where .rn, #shelves.ro-on .item .c-where .rn-br, #shelves.ro-on .item .c-where .rcity{display:none!important}
 #shelves.ro-on .item .c-where .rn-from{font-size:0;display:inline-block;width:5px}   /* on the roaster's own page: "New", a space, then the date */
 .item .c-where .ji{margin-right:0!important}
 #coffee, #coffee *{overflow-anchor:none}   /* the browser is not to re-anchor the page when the recipe arrives under What’s brewing */
 /* Load more: in line with the pills above it (Brew) on the left, as far under them as over the rule below */
 #shelfMore{margin-left:0!important;margin-right:auto!important;justify-self:start!important;align-self:flex-start!important;margin-top:17px!important}   /* 43 px to the last row's pills and 43 px to the rule */
 .shelf .item .c-notes:not(.c-typ){color:var(--ink)!important}   /* the roaster's own tasting notes in full white; typical notes (a guess from origin and process) stay grey */
+/* Save is always in view, beside Brew at the right; the plus holds Buy and More from this roaster */
+html body .shelf .item > .r > .bag-add{order:9!important;animation:none!important;opacity:1!important;transform:none!important}
+html body .shelf .item > .r > .row-more{margin-right:auto!important}   /* everything after the plus (Save, Brew) goes to the right edge */
+html body .shelf .item > .r:has(> .bag-add) > .btn{margin-left:0!important}
+.shelf .item > .r.more-open > .row-more{order:8!important}
 /* a coffee's row: the plus on the left, Brew at the right edge of the screen. Open, the pills take the plus's place and the minus waits just before Brew */
 .shelf .item > .r{width:100%;justify-content:flex-start!important;justify-items:start}
 .shelf .item > .r > .row-more{order:0}
@@ -2564,7 +2569,10 @@ html body .shelf .item .l > .c-notes, html body .shelf .item .l > .c-notes *{lin
 .fy-pill{flex:none;height:var(--pill-h);padding:0 12px;border:0;border-radius:var(--r);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);cursor:pointer;margin-left:auto}
 .fy-pill[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 @media (hover:hover){ .fy-pill:not([aria-pressed="true"]):hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))} }
-.fy-note.fy-top{margin:0 0 12px!important;padding:0!important;line-height:19px}
+html body #shelves .fy-note.fy-top{margin:0!important;padding:0 0 19px!important;line-height:19px;text-box:none!important;display:block}
+html body #shelves .fy-note.fy-top[hidden]{display:none}
+.item .c-where .ji{color:var(--hl)!important}   /* New in the accent, as For you is */
+/* one empty line under the explanation */
 html.brew-in #fyNote{display:none!important}
 /* the recipe stands on a slightly lighter black than the list around it, edge to edge: a different room, no new colour */
 #recipe{background:color-mix(in srgb,var(--ink) 6%,var(--bg));margin-inline:calc(50% - 50vw)!important;padding-inline:calc(50vw - 50%)!important;padding-top:12px!important;padding-bottom:16px!important}
@@ -7058,10 +7066,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     if (on) { const x0 = b.getBoundingClientRect().left; if (!inShare) rowOpen.add(k); r.classList.add("more-open", "more-anim");
       // the plus gives its place to the first pill and travels to the end of the row, where it waits as a minus; the pills come out of
       // where it stood, as the top bar's drops do, each knowing how far it has to travel
-      slide(x0 - b.getBoundingClientRect().left, 870); rowBridges(r, true, inShare ? ":scope > .btn, :scope > .row-more" : ":scope > .btn, :scope > .buy-p, :scope > .bag-add, :scope > .row-more");
+      slide(x0 - b.getBoundingClientRect().left, 870); rowBridges(r, true, inShare ? ":scope > .btn, :scope > .row-more" : ":scope > .buy-p, :scope > .row-more");
       r.querySelectorAll(inShare ? ":scope > .btn:not(#mUse)" : ":scope > .buy-p, :scope > .bag-add").forEach((p) => p.style.setProperty("--tb-x", (x0 - p.getBoundingClientRect().left) + "px"));
       r._mc = setTimeout(() => r.classList.remove("more-anim"), 1260); }
-    else { rowOpen.delete(k); r.classList.add("more-closing"); rowBridges(r, false, inShare ? ":scope > .btn, :scope > .row-more" : ":scope > .btn, :scope > .buy-p, :scope > .bag-add, :scope > .row-more");
+    else { rowOpen.delete(k); r.classList.add("more-closing"); rowBridges(r, false, inShare ? ":scope > .btn, :scope > .row-more" : ":scope > .buy-p, :scope > .row-more");
       // closing: the minus travels back to where the plus lives while the pills go back in
       try { const x1 = b.getBoundingClientRect().left, first = r.querySelector(inShare ? ":scope > .btn:not(#mUse):not([hidden])" : ":scope > .buy-p, :scope > .bag-add"), xb = first ? first.getBoundingClientRect().left : x1;
         if (!calm) r._ma = b.animate([{ transform: "none" }, { transform: `translateX(${xb - x1}px)` }], { duration: 590, easing: "cubic-bezier(.4,0,.2,1)", fill: "forwards" }); } catch (e) {}
@@ -7173,7 +7181,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       tagBits.push(...coffeeLabels(r, shown).map((l) => `<span class="tg lbl" style="--vc:${LABEL_DOT[l] || "#8e8e93"}">${l}</span>`));
       return `${head}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
         <div class="l">
-          <p class="c-where">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : !isSp && r.just_in ? `<span class="ji">${LANG === "it" ? "Nuovo" : "New"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : ""}<a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a><br class="rn-br">${r.roaster_city ? `<span class="rcity">${esc(r.roaster_city)}, </span>` : ""}<span class="day">${day}</span>${cardBuy(r, true) ? ` <span class="c-cost">( ${cardBuy(r, true)} )</span>` : ""}</p>
+          <p class="c-where">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : !isSp && r.just_in ? `<span class="ji">${LANG === "it" ? "Nuovo" : "New"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : ""}<a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a>${r.roaster_city ? `<span class="rcity">, ${esc(r.roaster_city)}</span>` : ""}<br class="rn-br"><span class="day">${day}</span>${cardBuy(r, true) ? `<span class="c-cost"> — ${cardBuy(r, true)}</span>` : ""}</p>
           <span class="name">${esc(calm(shown))}</span>
           <p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p>
           ${cardNotes(r)}${cardPrice(r)}
@@ -7518,7 +7526,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   function syncBagBtn() { const b = $("bagBtn"); if (!b) return; const r = currentBag(), inIt = !!(r.name || r.text) && hasBag(r);
     // Surprise me picked one of the newest coffees: Buy this bag (the roaster's page) instead of Add to my bags; one of yours: neither
     const sp = !!(surprisePick && surprisePick.url && !inIt), buy = $("buyBtn");
-    if (buy) { buy.hidden = !sp; if (sp) buy.href = surprisePick.url; }
+    { const url = sp ? surprisePick.url : (state.bag && state.bag.url) || "";   // any coffee from the list can be bought from its recipe, behind the plus, beside Save
+      if (buy) { buy.hidden = !url; if (url) { buy.href = url; buy.target = "_blank"; buy.rel = "noopener"; buy.textContent = LANG === "it" ? "Compra" : "Buy"; } } }
     // the card's bookmark, with Save / Saved beside it: a tap saves, a second tap takes it out again
     const it = LANG === "it"; b.innerHTML = BAG_ICO; b.setAttribute("aria-label", inIt ? (it ? "Nei miei sacchetti" : "In my bags") : (it ? "Salva nei miei sacchetti" : "Save to my bags")); b.classList.toggle("in", inIt); b.setAttribute("aria-pressed", String(inIt));
     b.hidden = sp || !(state.text || "").trim(); }
@@ -9219,11 +9228,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   // the bottom bar: always four. My bags with nothing saved shows the list, where Save is; Journal before any brew shows What's brewing
   // the Brew pill turns into Start brewing while there's a timed recipe (the brew bar would show); a tap opens brew mode
   const syncBrewPill = () => { const b = document.querySelector('.botnav [data-bn="coffee"]'); if (!b) return; const go = !$("dock").hidden && !$("dockGo").disabled;
-    b.classList.toggle("bn-go", go); b.textContent = go ? (LANG === "it" ? "Inizia" : "Start brewing") : (LANG === "it" ? "Prepara" : "Brew");
+    b.classList.toggle("bn-go", go); b.textContent = go ? (LANG === "it" ? "Inizia" : "Start brewing") : (LANG === "it" ? "Il mio caffè" : "My coffee");   // not "Brew": that is what each coffee's own button says
     let wait = false; try { wait = roastWait && !$("recipe").hidden; } catch (e) {}
     b.classList.toggle("bn-ask", wait); if (wait) { b.textContent = LANG === "it" ? "Che tostatura è?" : "What roast is it?"; return; }
     // too many pills for the words: the orange pill still says it, in one word
-    const nav = b.closest(".botnav"); if (go && nav && [...nav.children].some((c) => !c.hidden && c.scrollWidth > c.clientWidth + 1)) b.textContent = LANG === "it" ? "Prepara" : "Brew"; };
+    const nav = b.closest(".botnav"); if (go && nav && [...nav.children].some((c) => !c.hidden && c.scrollWidth > c.clientWidth + 1)) b.textContent = LANG === "it" ? "Prepara" : "Brew"; };   // (Start brewing that doesn't fit: one word)
   { const nav = document.querySelector(".botnav"); if (nav) new MutationObserver(syncBrewPill).observe(nav, { subtree: true, attributes: true, attributeFilter: ["hidden"] }); addEventListener("resize", syncBrewPill); }
   new MutationObserver(syncBrewPill).observe($("dock"), { attributes: true, attributeFilter: ["hidden"] }); new MutationObserver(syncBrewPill).observe($("dockGo"), { attributes: true, attributeFilter: ["disabled"] }); syncBrewPill();
   document.querySelectorAll(".botnav [data-bn]").forEach((b) => b.onclick = () => { const id = b.dataset.bn, el = $(id);
