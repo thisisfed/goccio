@@ -312,6 +312,12 @@ CASES = [
              and scan.junk_note('600w" sizes="auto') and not scan.junk_note("Blood orange")),
     ("Dak's The Alchemist: a shop's badge is not a tasting note ('New', 'Sold out'), and real ones still are",
      lambda: [scan.tidy_note(x) for x in ("New", "Sold out", "Sale", "New potato", "Orange Candy")] == ["", "", "", "New potato", "Orange Candy"]),
+    ("Fève had no notes: the label is 'Dégustation' alone on its line, the list on the next, in French",
+     lambda: __import__("flavours").english_notes(scan.find_notes({"body": "Méthode\nFiltre\nDégustation\nDoux, orange sanguine, cardamome, citron, poivre (baies roses), pointe ananas\nCe café nous provient de Zarza Coffee, une ferme familiale.\n", "title": "Bourbon rose", "tags": []}))
+             == ["Sweet", "Blood orange", "Cardamom", "Lemon", "Pink peppercorn"]),
+    ("Morgon's Holiday Coffee kept one note of three: 'Taste notes: Buttery with creamy notes of chocolate Santas and ripe juicy plum'",
+     lambda: scan.find_notes({"body": "BUTTERY - CHOCOLATE SANTAS - PLUM\nVariety: Catuai\nProcessing: Honey\nAltitude: 1900 m.a.s.l.\nHarvested: March 2026\nTaste notes: Buttery with creamy notes of chocolate Santas and ripe juicy plum\n250 grams of whole coffee beans roasted for filter.", "title": "Holiday Coffee", "tags": []})
+             == ["Buttery", "Chocolate Santas", "Ripe juicy plum"]),
     ("Counter Culture and Coffee Bean Shop: tags and attributes are not tasting notes ('<svg', 'Class=\"', 'Alt=\"Chocolate')",
      lambda: [scan.tidy_note(x) for x in ("<svg", 'Class="', 'Alt="Chocolate', '<img', "Black currant")] == ["", "", "", "", "Black currant"]),
     ("The Source: a brew guide's headings are not tasting notes ('Ratios', 'Dose', 'Bloom'), and real ones still are",
