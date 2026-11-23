@@ -2621,6 +2621,10 @@ html body .shelf .item > .r > .btn:not(:hover){background:var(--pill)!important;
 html body .wm-screen{min-height:500px!important;height:500px!important}
 @media (min-width:900px){ html body .wm-screen{min-height:min(62svh,620px)!important;height:min(62svh,620px)!important} }
 html body #recipe table.pours.steps{margin-bottom:-14px!important}   /* the last step sits as far over the next rule as every step sits over its own */
+/* the roast, when the bag didn't say: just its name, Scan the beans and the + 5, set out as the other rows are */
+#detected .miss.miss-ro{display:grid!important;grid-template-columns:70px minmax(0,1fr);gap:12px;align-items:center}
+#detected .miss.miss-ro > .mr-l{color:var(--muted)}
+#detected .miss.miss-ro > .roast-ask{margin:0!important}
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
@@ -5353,7 +5357,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const where = state.bag ? "on the listing" : "given";
       const pAsk = miss.includes("process") ? `<span class="roast-ask chips" role="group" aria-label="${it ? "Processo" : "Process"}">${[["washed", "Washed"], ["natural", "Natural"], ["honey", "Honey"], ["anaerobic", "Anaerobic"], ["cofer", "Co-ferment / Infused"], ["decaf", "Decaf"]].map(([v, t]) => `<button type="button" class="chip" data-proc="${v}">${esc(tr(t))}</button>`).join("")}</span>` : "";
       $("detected").innerHTML = state.text && miss.length ? [
-        miss.includes("roast") ? `<span class="miss">The roast isn’t ${where}. This recipe is a safe middle until you say. What roast is it?${ask}</span>` : "",
+        miss.includes("roast") ? `<span class="miss miss-ro"><span class="mr-l">${LANG === "it" ? "Tostatura" : "Roast"}</span>${ask}</span>` : "",
         miss.includes("process") ? `<span class="miss">The process isn’t ${where}, so the recipe plays it safe. What does the bag say?${pAsk}</span>` : ""].join("") : "";
       const D = $("detected"), go = D.querySelector(".rp-go"), mo = $("roastMore"); D.hidden = !bagAskShow || !D.textContent.trim();
       if (go) { go.classList.remove("off"); go.onclick = () => beanScan("rpMsgOpts"); }
@@ -7240,7 +7244,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           <button type="button" class="pill bag-add ico${hasBag(r) ? " in" : ""}" data-b="${i}" aria-pressed="${hasBag(r)}" aria-label="${hasBag(r) ? (LANG === "it" ? "Nei miei sacchetti" : "In my bags") : (LANG === "it" ? "Salva nei miei sacchetti" : "Save to my bags")}">${BAG_ICO}</button>
         </div></article>`; }).join("") : (() => { const msg = `${shelfV !== "all" ? `Try Everything under Made for, or` : `Try a taste, an origin or a roaster, or <a href="#" class="mail-me scan-me">scan the bag in front of you</a>.<br>Missing a roaster?`} <a href="#" class="mail-me" data-s="Missing coffee">${shelfV !== "all" ? "email me" : "Email me"}</a> and I’ll add it.`;
           // a search found nothing: one paragraph with the Searching line, a line break between; three searches that do work, one tap each
-          const tryQ = shelfV !== "all" ? "" : `<br>${LANG === "it" ? "Oppure prova" : "Or try"}: ` + (LANG === "it" ? ["fruttato", "Etiopia lavato", "decaffeinato", "Colombia naturale", "gesha", "cioccolato", "floreale", "tostatura chiara"] : ["fruity", "washed Ethiopia", "decaf", "natural Colombia", "gesha", "chocolate", "floral", "light roast"]).map((x) => `<a href="#" class="try-q" data-q="${x}">${x}</a>`).join(", ") + ".";
+          const tryQ = shelfV !== "all" ? "" : `<br>${LANG === "it" ? "Oppure prova" : "Or try"}: ` + (LANG === "it" ? ["fruttato", "Huila", "Etiopia lavato", "gesha", "cioccolato", "tostatura chiara", "decaffeinato", "Tokyo"] : ["blueberry", "Huila", "good value", "anaerobic", "gesha", "light roast", "decaf", "Tokyo"]   /* a flavour, a region, a price, a process, a variety, a roast, decaf, a city */).map((x) => `<a href="#" class="try-q" data-q="${x}">${x}</a>`).join(", ") + ".";
           const an = $("askNote"); if (!an.hidden && an.textContent) { an.innerHTML = esc(an.textContent).replace(/([^.])$/, "$1.") + "<br>" + msg + tryQ; return ""; }
           return `<p class="muted" style="padding:16px 0;margin:0">${msg}</p>`; })();
     const left = list.length - Math.min(shelfN, list.length);
