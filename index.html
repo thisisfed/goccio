@@ -7312,7 +7312,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   const bagNeedsRoast = (b) => !!(b.roaster || b.name) && !bagRoastKey(b);   // once picked (or stated), the dropdown goes: the roast shows under the coffee
   const bagRoastKey = (b) => b.roast && ROAST[b.roast] ? b.roast : b.roast_level === "dark" ? "dark" : b.roast_level === "medium-dark" ? "mdark" : "";
   function renderBags() {
-    $("bags").hidden = false; setTimeout(() => window.syncSecs && syncSecs(), 0);
+    $("bags").hidden = !bags.length; setTimeout(() => window.syncSecs && syncSecs(), 0);   // no bags saved: no My bags section, and no Bags pill in the bar
     { const em = $("bagEmpty"); if (em) em.hidden = !!bags.length; }
     try { renderShelfO(); } catch (e) {}   // For you appears once it knows three of your coffees
     if (typeof renderGear === "function" && $("gearNote")) try { renderGear(); } catch (e) {}
@@ -9158,7 +9158,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       document.querySelectorAll(".botnav [data-bn]").forEach((b) => { b.setAttribute("aria-pressed", String(b.dataset.bn === a || (b.dataset.bn === "coffee" && a === "recipe")));
         if (b.dataset.bn === "gear") b.hidden = false;   // always: with nothing in it, it's where the first question is
         if (b.dataset.bn === "coffee") b.hidden = $("coffee").hidden && $("recipe").hidden;   // Brew once there's something to brew (or What's brewing was asked for)
-        if (b.dataset.bn === "bags") b.hidden = false;   // always: empty, it says how a bag gets there
+        if (b.dataset.bn === "bags") b.hidden = !(typeof bags !== "undefined" && bags.length);   // only once a bag is saved
         if (b.dataset.bn === "journal") b.hidden = !(typeof journal !== "undefined" && journal.length); });
       if (a !== active0) { active0 = a; const on = row && row.querySelector(`[data-sec="${a}"]`);
         if (on && row.scrollWidth > row.clientWidth + 1) { const l = on.offsetLeft - row.offsetLeft, r = l + on.offsetWidth;   // the pill in view slides into the row
