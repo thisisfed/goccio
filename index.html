@@ -2434,12 +2434,14 @@ footer #tip a:hover, footer .foot-links a:hover{text-decoration-color:transparen
 #footCredits .foot-copy{margin-top:10px!important}
 @media (max-width:759px){ html body footer .fcol .foot-links{margin-bottom:-7px!important} }   /* as much room under the links, to the bottom bar, as over them, to the rule: 13 px */
 /* the roaster's name as big as the coffee's, right above it; where it roasts and the day the coffee came in sit small and grey at the foot of the row */
-.item .who .rn{font-size:39px;line-height:1.05;letter-spacing:-.01em;color:var(--ink)}
-.item .who a.rn{text-decoration-thickness:2px;text-underline-offset:5px}
-@media (min-width:1000px){.item .who .rn{font-size:63px}.item .who a.rn{text-decoration-thickness:3px;text-underline-offset:8px}}
+.item .who .rn{font-size:24px;line-height:40.95px;letter-spacing:-.01em;color:var(--ink)}   /* the roaster one size down from the coffee (24 under 39), on the line height it had at 39 */
+.item .who a.rn{text-decoration-thickness:1.5px;text-underline-offset:4px}
+@media (min-width:1000px){.item .who .rn{font-size:39px;line-height:66.15px}.item .who a.rn{text-decoration-thickness:2px;text-underline-offset:5px}}
 .item .who{line-height:1.05;white-space:normal;overflow:visible;padding-bottom:0;margin-bottom:-4px}   /* roaster and coffee read as one paragraph, the coffee one line down: no gap beyond the line height */
 .item .who:has(.rn){display:block}
 .item .c-where{margin:0;font-size:var(--fs-s);line-height:20.25px;color:var(--muted)}
+/* the price after the date, set off by a small drop */
+.item .c-where .c-drop{display:inline-block;width:6px;height:6px;margin:0 .6em 0 .7em;background:currentColor;border-radius:0 50% 50% 50%;transform:translateY(-1px) rotate(45deg)}
 .item .c-where .ji{margin-right:.5em;font-weight:500;color:var(--go)}.item .c-where .ji.fy{color:var(--hl)}
 #shelves.ro-on .item .who,#shelves.ro-on .item .c-where .rcity{display:none!important}
 /* a coffee's row: Brew, then a plus in a circle that lets Buy and Save out, the same plus as the top bar's */
@@ -3313,7 +3315,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   };
   // copied text is laid out in columns: each run between wide gaps is its own piece
   const trBlock = (t) => LANG === "it" && t ? String(t).split("\n").map((l) => l.split(/(\s{2,})/).map((p, j) => j % 2 ? p : tr(p)).join("")).join("\n") : t;
-  const I18N_SKIP = "script,style,svg,#fyNote,[translate=no],.name,.rn,.rcity,.day,#rtitle,.entry .serif,#coffeeIn,#logNote,textarea,ol.refs,.mark,.wordmark,.rs,#justLn,.spec.roastery b,.spec.pick b";
+  const I18N_SKIP = "script,style,svg,#fyNote,[translate=no],.name,.rn,.rcity,.day,.c-cost,#rtitle,.entry .serif,#coffeeIn,#logNote,textarea,ol.refs,.mark,.wordmark,.rs,#justLn,.spec.roastery b,.spec.pick b";
   if (LANG === "it") {
     document.documentElement.lang = "it";
     // the hero and the closing text are built word by word for their animations, so they are rebuilt in Italian
@@ -6973,13 +6975,14 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       r._mc = setTimeout(() => r.classList.remove("more-anim"), 900); }
     else { rowOpen.delete(k); r.classList.add("more-closing"); r._mc = setTimeout(() => r.classList.remove("more-open", "more-closing"), 660); }
     b.setAttribute("aria-expanded", on); });
-  const cardBuy = (r) => { if (!r.url) return ""; const it = LANG === "it", own = r.price ? esc(r.price.replace(/^From\s+/i, "")) : "";
+  const cardBuy = (r, priceOnly) => { if (!r.url) return ""; const it = LANG === "it", own = r.price ? esc(r.price.replace(/^From\s+/i, "")) : "";
     // another currency: about this much in pounds, from the shop's currency (or the symbol on the price), bag weight or not
     const ccy = ccyOf(r);
     const n0 = priceNum(own), k0 = GBP_PER[ccy];
     const gbp = /£/.test(own) || !own || ccy === "GBP" ? null : r._p100 != null && r.bag_g ? r._p100 * r.bag_g / 100 : n0 && k0 ? n0 * k0 : null;
     const p = gbp != null ? `≈ £${gbp >= 10 ? Math.round(gbp) : gbp.toFixed(2)}` : own;
-    return `<a class="pill buy-p" href="${esc(r.url)}" target="_blank" rel="noopener" aria-label="${it ? "Compra" : "Buy"} ${esc(r.name)} ${it ? "da" : "from"} ${esc(r.roaster)}${p ? ", " + p : ""}">${it ? "Compra" : "Buy"}${p ? ` <b>${p}</b>` : ""}</a>`; };
+    if (priceOnly) return p;
+    return `<a class="pill buy-p" href="${esc(r.url)}" target="_blank" rel="noopener" aria-label="${it ? "Compra" : "Buy"} ${esc(r.name)} ${it ? "da" : "from"} ${esc(r.roaster)}">${it ? "Compra" : "Buy"}</a>`; };   // the price is said once, beside the date
   let askWant = null, askRank = null;
   // back again: one line under the intro picks up the last coffee where it was left
   function carryOn() { if (carryOn.done || !lastSeen || !shelf.length || shelfPart) return; carryOn.done = true;
@@ -7077,7 +7080,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       tagBits.push(...coffeeLabels(r, shown).map((l) => `<span class="tg lbl" style="--vc:${LABEL_DOT[l] || "#8e8e93"}">${l}</span>`));
       return `${head}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
         <div class="l">
-          <p class="c-where">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span> ` : !isSp && r.just_in ? `<span class="ji">${LANG === "it" ? "Nuovo" : "New"}</span> ` : ""}${r.roaster_city ? `<span class="rcity">${esc(r.roaster_city)}, </span>` : ""}<span class="day">${day}</span></p>
+          <p class="c-where">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span> ` : !isSp && r.just_in ? `<span class="ji">${LANG === "it" ? "Nuovo" : "New"}</span> ` : ""}${r.roaster_city ? `<span class="rcity">${esc(r.roaster_city)}, </span>` : ""}<span class="day">${day}</span>${cardBuy(r, true) ? `<i class="c-drop" aria-hidden="true"></i><span class="c-cost">${cardBuy(r, true)}</span>` : ""}</p>
           <span class="who"><a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(r.roaster)}</a></span>
           <span class="name">${esc(calm(shown))}</span>
           <p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p>
