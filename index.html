@@ -8686,7 +8686,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const dark = t !== "light";
     root.setAttribute("data-theme", dark ? "dark" : "light");
     document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute("content", dark ? "#14100d" : "#f6f1ea"));
-    if ($("themeBtn")) $("themeBtn").innerHTML = THEME_IC[t]; if ($("themeBtn")) $("themeBtn").setAttribute("aria-label", `Appearance: ${THEME_LBL[t]}. Tap to change.`);
+    // the button shows where a tap takes you, like the language button: a moon while it's light, a sun while it's dark
+    if ($("themeBtn")) $("themeBtn").innerHTML = THEME_IC[dark ? "light" : "dark"]; if ($("themeBtn")) $("themeBtn").setAttribute("aria-label", `Appearance: ${THEME_LBL[t]}. Tap for ${dark ? "light" : "dark"}.`);
   }
   let theme = (() => { try { return localStorage.getItem("v60.theme") === "light" ? "light" : "dark"; } catch (e) { return "dark"; } })();
   // IT / EN: kept on this device, and the page reloads in the other language
