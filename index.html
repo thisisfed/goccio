@@ -2621,6 +2621,12 @@ html.scrolled .wm-video{z-index:1!important}
 .scan-review .sc-hit svg{width:22px;height:22px;flex:none;color:var(--ink)}
 .scan-review .sc-match.sure .sc-sub{color:var(--muted)}
 .scan-review .sc-match.sure .pill{margin-top:6px}
+html.scrolled.dropping .wm-video{z-index:25!important}
+/* "+ 14" is a pill like the others, not a circle */
+.chip.gear-more:has(> .pn){border-radius:var(--r,4px)!important;padding:0 12px!important;height:var(--pill-h)!important}
+/* I have a coffee, nothing brewed yet: What's brewing? fills the screen, with no sign-off under it */
+html.no-recipe .outro{display:none!important}
+html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h) - 28px);align-content:start;grid-template-rows:none;grid-auto-rows:max-content}
 </style>
 </head>
 <body>
@@ -4246,6 +4252,7 @@ html.scrolled .wm-video{z-index:1!important}
     $("coffee").hidden = blocked && !wbOpen;   // no coffee yet and nobody asked for it: not on the page   // before a coffee is named: only the question and Scan the bag
     // no coffee yet, no recipe: its menu link goes too, and the button at the bottom points at the first step instead
     document.querySelectorAll('[data-sec="recipe"]').forEach((b) => b.hidden = blocked); if (window.syncSecs) syncSecs();
+    document.documentElement.classList.toggle("no-recipe", !!blocked);   // nothing brewed yet: no sign-off under the question, and the question has the screen to itself
     document.querySelectorAll('.hero-pill[data-jump="recipe"]').forEach((b) => { b.textContent = blocked ? "Pick a coffee" : "Back to recipe"; b.dataset.pick = blocked ? "1" : ""; });
     if (!blocked) return false;
     if (empty) {
@@ -8697,7 +8704,10 @@ html.scrolled .wm-video{z-index:1!important}
   // the film reaches from the top of the screen to the foot of the hero, and steps behind the top bar once the page scrolls
   { const v = $("wmVideo"), h = document.querySelector(".wm-screen"); if (v && h) { const fit = () => { v.style.height = Math.round(h.getBoundingClientRect().bottom + scrollY) + "px"; };
       fit(); addEventListener("resize", fit); setTimeout(fit, 400); setTimeout(fit, 2000); if (document.fonts) document.fonts.ready.then(fit);
-      const sc = () => document.documentElement.classList.toggle("scrolled", scrollY > 2); sc(); addEventListener("scroll", sc, { passive: true }); } }
+      const sc = () => document.documentElement.classList.toggle("scrolled", scrollY > 2); sc(); addEventListener("scroll", sc, { passive: true });
+      // while the drop is in the air it stays in front of the bar, scrolled or not (on a phone the film often starts with the first scroll)
+      const air = () => document.documentElement.classList.toggle("dropping", !v.paused && !v.ended && v.currentTime < 1.5);
+      ["playing", "timeupdate", "ended", "pause"].forEach((ev) => v.addEventListener(ev, air)); } }
   // the hero film: silent, looping, and still (its first frame) for anyone who asks for less motion
   { const v = $("wmVideo"); if (v) { v.muted = true; v.defaultMuted = true; v.playsInline = true;
       if (matchMedia("(prefers-reduced-motion: reduce)").matches) { v.removeAttribute("autoplay"); v.pause(); }
