@@ -2572,8 +2572,9 @@ html body .shelf .item > .r:has(> .bag-add) > .btn{margin-left:0!important}
 .fy-pill{flex:none;height:var(--pill-h);padding:0 12px;border:0;border-radius:var(--r);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);cursor:pointer;margin-left:auto}
 .fy-pill[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 @media (hover:hover){ .fy-pill:not([aria-pressed="true"]):hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))} }
-html body #shelves .fy-note.fy-top{margin:0 0 12px!important;padding:12px 14px!important;line-height:19px;text-box:none!important;display:block;background:var(--pill);border-radius:var(--r);color:var(--ink)!important}   /* the explanation in one big pill */
+html body #shelves .fy-note.fy-top{margin:0 0 -2px!important;padding:12px 14px!important;line-height:19px;text-box:none!important;display:block;background:var(--pill);border-radius:var(--r);color:var(--ink)!important}   /* the explanation in one big pill */
 html body #shelves .fy-note.fy-top[hidden]{display:none}
+html body #shelfMore[data-clear="1"], html body #shelfMore[data-unfilter="1"]{margin-top:-15px!important}   /* Clear search: as far under the pill as the pill is under Coffees (14 px) */
 html body #shelves #askNote.fy-top{transform:none!important;position:static!important;pointer-events:auto}   /* the search's line in the same pill, in the same place */
 .item .c-where .ji{color:var(--hl)!important}   /* New in the accent, as For you is */
 /* one empty line under the explanation */
@@ -2588,7 +2589,7 @@ html:not(.mine) body #coffee#coffee#coffee{min-height:0!important;padding-top:0!
 html:not(.mine) body #coffee > .wb-sign{padding-top:86px!important;margin-top:0!important}   /* 43 px from Load more to the sign-off, as from the last coffee to Load more */
 html:not(.mine) body #coffee#coffee#coffee{height:auto!important;min-height:0!important;padding-bottom:0!important;margin-bottom:-87px!important}   /* 13 px from the sign-off to the rule under it, as when the form is out */   /* as far under Load more as Load more is under the last coffee; over the bottom rule exactly as before */
 /* tags stay on one line: a tag too long for it (a list of varieties) is cut with an ellipsis, the longest giving way first */
-html body .item .tags{display:flex!important;flex-wrap:nowrap!important;min-width:0;max-width:100%;overflow:hidden}
+html body .item .tags{column-gap:20px!important;display:flex!important;flex-wrap:nowrap!important;min-width:0;max-width:100%;overflow:hidden}
 html body .item .tags > *{flex:0 1 auto;min-width:0;white-space:nowrap!important;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal!important}
 html body .item .tags > .vdot{flex-shrink:1000}
 html body .item .tags > :not(.vdot){min-width:max-content}
@@ -7235,9 +7236,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         <div class="r${rowOpen.has(rowKey(r)) ? " more-open" : ""}">
           <button class="btn" type="button" data-i="${i}">Brew</button><button type="button" class="row-more" data-more="${esc(rowKey(r))}" aria-expanded="${rowOpen.has(rowKey(r))}" aria-label="${LANG === "it" ? "Compra o salva" : "Buy or save"}"><svg viewBox="0 0 12 12" aria-hidden="true"><path class="tb-v" d="M6 2v8"/><path d="M2 6h8"/></svg></button>${cardBuy(r)}<a class="pill buy-p ro-all" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${LANG === "it" ? "Torrefattore" : "Roaster"}</a>
           <button type="button" class="pill bag-add ico${hasBag(r) ? " in" : ""}" data-b="${i}" aria-pressed="${hasBag(r)}" aria-label="${hasBag(r) ? (LANG === "it" ? "Nei miei sacchetti" : "In my bags") : (LANG === "it" ? "Salva nei miei sacchetti" : "Save to my bags")}">${BAG_ICO}</button>
-        </div></article>`; }).join("") : (() => { const msg = `Nothing matches${shelfV !== "all" ? `. Try Everything under Made for, or` : `. Try a taste, an origin or a roaster, or <a href="#" class="mail-me scan-me">scan the bag in front of you</a>. Missing a roaster?`} <a href="#" class="mail-me" data-s="Missing coffee">${shelfV !== "all" ? "email me" : "Email me"}</a> and I’ll add it.`;
+        </div></article>`; }).join("") : (() => { const msg = `Nothing matches${shelfV !== "all" ? `. Try Everything under Made for, or` : `. Try a taste, an origin or a roaster, or <a href="#" class="mail-me scan-me">scan the bag in front of you</a>.<br>Missing a roaster?`} <a href="#" class="mail-me" data-s="Missing coffee">${shelfV !== "all" ? "email me" : "Email me"}</a> and I’ll add it.`;
           // a search found nothing: one paragraph with the Searching line, a line break between; three searches that do work, one tap each
-          const tryQ = shelfV !== "all" ? "" : `<br>${LANG === "it" ? "Oppure prova" : "Or try"}: ` + (LANG === "it" ? ["fruttato", "Etiopia lavato", "decaffeinato"] : ["fruity", "washed Ethiopia", "decaf"]).map((x) => `<a href="#" class="try-q" data-q="${x}">${x}</a>`).join(", ") + ".";
+          const tryQ = shelfV !== "all" ? "" : `<br>${LANG === "it" ? "Oppure prova" : "Or try"}: ` + (LANG === "it" ? ["fruttato", "Etiopia lavato", "decaffeinato", "Colombia naturale", "gesha", "cioccolato", "floreale", "tostatura chiara"] : ["fruity", "washed Ethiopia", "decaf", "natural Colombia", "gesha", "chocolate", "floral", "light roast"]).map((x) => `<a href="#" class="try-q" data-q="${x}">${x}</a>`).join(", ") + ".";
           const an = $("askNote"); if (!an.hidden && an.textContent) { an.innerHTML = esc(an.textContent).replace(/([^.])$/, "$1.") + "<br>" + msg + tryQ; return ""; }
           return `<p class="muted" style="padding:16px 0;margin:0">${msg}</p>`; })();
     const left = list.length - Math.min(shelfN, list.length);
