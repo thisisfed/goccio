@@ -2720,6 +2720,8 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
 .top .nav{position:relative}
 .drop-br{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:0}
 .drop-br path{fill:var(--pill)}
+.shelf .item > .r, #recipe .share{position:relative}
+.row-br{position:absolute!important;inset:0;z-index:0!important;display:block!important;flex:none}
 .top .nav :is(#langBtn,#themeBtn){position:relative;z-index:1}
 @media (prefers-reduced-motion: reduce){ .drop-br{display:none} }
 .setup .chip.su-next{background:var(--hl)!important;color:var(--on-hl)!important}   /* Next is the step forward, not one more thing to pick: the accent, like Start brewing */
@@ -7000,6 +7002,22 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   // Buy is a pill with the price in it, in the card's one row of actions: Brew, Buy, and Save at the end
   // Buy and Save wait behind the row's plus, as language and theme do behind the top bar's
   const rowOpen = new Set(), rowKey = (r) => r.url || (r.roaster + "|" + r.name);
+  // the liquid between a row's pills while they part or meet: the top bar's own bridge (window.__bridge), drawn between each pill and
+  // the next from the rounds at their facing ends. Fat while they overlap, thinning as the gap opens, gone at the gap they keep
+  const rowBridges = (r, opening, sel) => { const bridge = window.__bridge; if (!bridge || matchMedia("(prefers-reduced-motion: reduce)").matches) return; cancelAnimationFrame(r._br || 0);
+    let sv = r.querySelector(":scope > .row-br"); if (!sv) { sv = document.createElementNS("http://www.w3.org/2000/svg", "svg"); sv.setAttribute("class", "drop-br row-br"); sv.setAttribute("aria-hidden", "true"); r.prepend(sv); }
+    const t0 = performance.now(), G = 3.5, MAX = opening ? 1260 : 1000;
+    const step = (now) => { const t = now - t0, o = sv.getBoundingClientRect();
+      const els = [...r.querySelectorAll(sel)].filter((x) => x.offsetWidth && getComputedStyle(x).opacity > 0.05).sort((a, c) => a.getBoundingClientRect().left - c.getBoundingClientRect().left);
+      while (sv.childNodes.length < Math.max(0, els.length - 1)) sv.appendChild(document.createElementNS("http://www.w3.org/2000/svg", "path"));
+      [...sv.childNodes].forEach((p, i) => { let d = ""; const a = els[i], c = els[i + 1];
+        if (a && c) { const A = a.getBoundingClientRect(), B = c.getBoundingClientRect(), gap = B.left - A.right, rA = A.height / 2, rB = B.height / 2;
+          if (Math.abs((A.top + rA) - (B.top + rB)) < 4) {   // on one line only: a wrapped pill has no neck to the one above
+            const v = opening ? (gap <= 0 ? 0.5 : gap >= G ? 0 : Math.max(0.06, 0.5 * Math.pow(1 - gap / G, 2 / 3))) : (gap >= G ? 0.5 * Math.min(1, Math.sqrt(Math.max(0, t - 56) / 126)) * Math.max(0, 1 - (gap - G) / 14) : 0.5);
+            if (v > 0) d = bridge([Math.min(A.right - rA, B.left + rB - 0.5) - o.left, A.top + rA - o.top], rA, [Math.max(B.left + rB, A.right - rA + 0.5) - o.left, B.top + rB - o.top], rB, v); } }
+        p.setAttribute("d", d); });
+      if (t < MAX) r._br = requestAnimationFrame(step); else [...sv.childNodes].forEach((p) => p.setAttribute("d", "")); };
+    r._br = requestAnimationFrame(step); };
   document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest(".row-more"); if (!b) return;
     const r = b.parentElement, k = b.dataset.more, inShare = r.classList.contains("share"), on = !r.classList.contains("more-open") || r.classList.contains("more-closing");
     clearTimeout(r._mc); r.classList.remove("more-closing", "more-anim"); void r.offsetWidth;
@@ -7007,10 +7025,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     if (on) { const x0 = b.getBoundingClientRect().left; if (!inShare) rowOpen.add(k); r.classList.add("more-open", "more-anim");
       // the plus gives its place to the first pill and travels to the end of the row, where it waits as a minus; the pills come out of
       // where it stood, as the top bar's drops do, each knowing how far it has to travel
-      slide(x0 - b.getBoundingClientRect().left, 870);
+      slide(x0 - b.getBoundingClientRect().left, 870); rowBridges(r, true, inShare ? ":scope > .btn, :scope > .row-more" : ":scope > .btn, :scope > .buy-p, :scope > .bag-add, :scope > .row-more");
       r.querySelectorAll(inShare ? ":scope > .btn:not(#mUse)" : ":scope > .buy-p, :scope > .bag-add").forEach((p) => p.style.setProperty("--tb-x", (x0 - p.getBoundingClientRect().left) + "px"));
       r._mc = setTimeout(() => r.classList.remove("more-anim"), 1260); }
-    else { rowOpen.delete(k); r.classList.add("more-closing");
+    else { rowOpen.delete(k); r.classList.add("more-closing"); rowBridges(r, false, inShare ? ":scope > .btn, :scope > .row-more" : ":scope > .btn, :scope > .buy-p, :scope > .bag-add, :scope > .row-more");
       // closing: the minus travels back to where the plus lives while the pills go back in
       try { const x1 = b.getBoundingClientRect().left, first = r.querySelector(inShare ? ":scope > .btn:not(#mUse):not([hidden])" : ":scope > .buy-p, :scope > .bag-add"), xb = first ? first.getBoundingClientRect().left : x1;
         if (!calm) r._ma = b.animate([{ transform: "none" }, { transform: `translateX(${xb - x1}px)` }], { duration: 590, easing: "cubic-bezier(.4,0,.2,1)", fill: "forwards" }); } catch (e) {}
@@ -8704,6 +8722,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const d2 = Math.min(v * 2.4, Math.hypot(p1[0] - p3[0], p1[1] - p3[1]) / (r1 + r2)) * Math.min(1, d * 2 / (r1 + r2));
       const h1 = vec(p1, a1 - Math.PI / 2, r1 * d2), h2 = vec(p2, a2 + Math.PI / 2, r1 * d2), h3 = vec(p3, a3 + Math.PI / 2, r2 * d2), h4 = vec(p4, a4 - Math.PI / 2, r2 * d2), f = (p) => p[0].toFixed(2) + " " + p[1].toFixed(2);
       return `M${f(p1)}C${f(h1)} ${f(h3)} ${f(p3)}L${f(p4)}C${f(h4)} ${f(h2)} ${f(p2)}Z`; };
+    window.__bridge = bridge;   // the rows' plus and the recipe's plus draw the same necks between their pills
     let brRaf = 0;
     const runBridges = (opening) => { cancelAnimationFrame(brRaf); const sv = $("dropBr"), P = [$("dropB1"), $("dropB2")]; if (!sv || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
       const B3 = $("dropB3"), box = document.querySelector(".top .ask-box"); let met = false, gone = false; if (B3) B3.setAttribute("d", "");
