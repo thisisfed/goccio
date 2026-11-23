@@ -82,6 +82,8 @@ CASES = [
     # South America (16/11/2026)
     ("Pergamino: 'Lomaverde (500g coffee bag)' is a bag of coffee named Lomaverde",
      lambda: name("Lomaverde (500g coffee bag)", "Pergamino", "Colombia") == "Lomaverde" and not scan.EXCLUDE.search("Lomaverde (500g coffee bag)")),
+    ("Onyx's 'Krampus - Cafe Only' is sold to cafes, not to drinkers: left out, and 'Krampus' stays",
+     lambda: scan.EXCLUDE.search("Krampus - Cafe Only") is not None and scan.EXCLUDE.search("Framily - Café Only") is not None and not scan.EXCLUDE.search("Krampus") and not scan.EXCLUDE.search("Cafe Imports Only One")),
     ("Drip coffee bags are still not beans", lambda: scan.EXCLUDE.search("Drip coffee bags x10") is not None),
     ("Um Coffee Co: 'Nanolotes | Wush Wush' is named Wush Wush", lambda: name("Nanolotes | Wush Wush", "Um Coffee Co", "Brazil") == "Wush Wush"),
     ("Um Coffee Co: 'Blend | Fruitbomb' is named Fruitbomb", lambda: name("Blend | Fruitbomb", "Um Coffee Co", "Brazil") == "Fruitbomb"),
