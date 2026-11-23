@@ -322,6 +322,10 @@ CASES = [
        and "tea" in scan.specialty_gate([C("Ethiopia Guji", "Ethiopia", "washed", "Heirloom")] * 3, "XYZ Tea & Coffee")
        and "rarely" in scan.specialty_gate([C("Brazil", "Brazil", "", ""), C("Colombia", "Colombia", "", ""), C("Italian Blend", "Brazil", "", ""), C("House", "Brazil", "", "")], "XYZ Roastery"))(
          lambda n, o, p, v: {"name": n, "origin": o, "process": p, "variety": v})),
+    ("A shop is on watch only with five or more coffees, under 30% stating a process and under 15% a variety",
+     lambda: (lambda C: scan.rarely_states([C("", "")] * 6) and scan.rarely_states([C("washed", "")] + [C("", "")] * 5)
+       and not scan.rarely_states([C("", "")] * 4) and not scan.rarely_states([C("washed", "")] * 2 + [C("", "")] * 4)
+       and not scan.rarely_states([C("", "Caturra")] + [C("", "")] * 5))(lambda p, v: {"process": p, "variety": v})),
 ]
 
 
