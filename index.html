@@ -2572,7 +2572,7 @@ html body .shelf .item > .r:has(> .bag-add) > .btn{margin-left:0!important}
 .fy-pill{flex:none;height:var(--pill-h);padding:0 12px;border:0;border-radius:var(--r);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);cursor:pointer;margin-left:auto}
 .fy-pill[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 @media (hover:hover){ .fy-pill:not([aria-pressed="true"]):hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))} }
-html body #shelves .fy-note.fy-top{margin:0!important;padding:0 0 19px!important;line-height:19px;text-box:none!important;display:block}
+html body #shelves .fy-note.fy-top{margin:0!important;padding:0!important;line-height:19px;text-box:none!important;display:block}
 html body #shelves .fy-note.fy-top[hidden]{display:none}
 .item .c-where .ji{color:var(--hl)!important}   /* New in the accent, as For you is */
 /* one empty line under the explanation */
@@ -2580,7 +2580,7 @@ html.brew-in #fyNote{display:none!important}
 /* the recipe stands on a slightly lighter black than the list around it, edge to edge: a different room, no new colour */
 #recipe{background:color-mix(in srgb,var(--ink) 6%,var(--bg));margin-inline:calc(50% - 50vw)!important;padding-inline:calc(50vw - 50%)!important;padding-top:12px!important;padding-bottom:16px!important}
 /* What’s brewing and its pill in the bottom bar wait until a coffee is wanted: Brew on a coffee, or I have a coffee */
-html:not(.mine) #coffee, html:not(.mine) .botnav [data-bn="coffee"]{display:none!important}
+html:not(.mine) body #coffee#coffee#coffee, html:not(.mine) .botnav [data-bn="coffee"]{display:none!important}
 /* tags stay on one line: a tag too long for it (a list of varieties) is cut with an ellipsis, the longest giving way first */
 html body .item .tags{display:flex!important;flex-wrap:nowrap!important;min-width:0;max-width:100%;overflow:hidden}
 html body .item .tags > *{flex:0 1 auto;min-width:0;white-space:nowrap!important;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal!important}
@@ -9046,9 +9046,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   // Find a coffee: to the list, and the search box in the bar glows twice, so you see where to say what you like
   if ($("wmFind")) $("wmFind").onclick = () => { jumpTo($("shelves")); const bx = document.querySelector(".ask-line .ask-box"); if (!bx) return;
     bx.classList.remove("nudge"); void bx.offsetWidth; setTimeout(() => { bx.classList.add("nudge"); setTimeout(() => bx.classList.remove("nudge"), 1800); }, 450); };
-  const mineOn = () => { if (document.documentElement.classList.contains("mine")) return; document.documentElement.classList.add("mine"); try { localStorage.setItem("mine", "1"); } catch (e) {} };
-  try { if (localStorage.getItem("mine") || /^#(?:coffee|r=|recipe)/.test(location.hash)) mineOn(); } catch (e) {}
-  setTimeout(() => { if (!$("recipe").hidden || ($("coffeeIn") && $("coffeeIn").value.trim())) mineOn(); }, 1200);
+  const mineOn = () => { if (document.documentElement.classList.contains("mine")) return; document.documentElement.classList.add("mine"); };   /* for this visit only: the next one starts without it again */
+  try { localStorage.removeItem("mine"); } catch (e) {}
+  if (/^#(?:coffee|r=|recipe)/.test(location.hash)) mineOn();
+  
   /* the bottom bar is a way between sections: with one section to show there is nowhere to go, and no bar */
   const navSync = () => { const n = document.querySelector(".botnav"); if (!n) return; const on = [...n.querySelectorAll(".chip")].filter((c) => !c.hidden && getComputedStyle(c).display !== "none").length >= 2;
     if (document.documentElement.classList.contains("nav-off") === on) document.documentElement.classList.toggle("nav-off", !on); };
