@@ -111,7 +111,7 @@ EXCLUDE = re.compile(r"subscri|abonnement|abbonamento|\babo\b|suscripci|assinatu
                      r"\btasse\b|tazza|dip ?style|in-store|xpods?|xbloom|セット|飲み比べ|ドリップバッグ|latte art|\bpen\b|\btool\b|accessor|machine|maker|moccamaster|ticket|party|event|festival|origami|glass|server|carafe|porcelain|ceramic|brewer|filter holder|gift|voucher|capsule|\bpods?\b|nespresso|(?<!\dg )(?<!\d g )coffee bags?|drip bags?|brew bags?|immersion bags?|caf[ée] de poche|"
                      r"h[aå]ndbrygg|presskanne|julepakke|pakken\b|med pegasus|\bswitch\s[–-]|\bnewby\b|steep|equipment|grinder|\bmug\b|kettle|dripper|filter papers?|papers\b|\bcups?\b(?! of excellence)|"
                      r"sampler|tasting pack|taster|bundle|merch|t-?shirt|hoodie|tote|cap\b|"
-                     r"cold brew|concentrate|instant|\btea\b|chocolate bar|chocolate\b|\bchocolat\b|tablettes?\b|tampers?\b|stirring stick|\bwdt\b|dosing (?:ring|cup|funnel)|cascara|"
+                     r"cold brew|concentrate|instant|\btea\b|chocolate bar|chocolate\b|kaffeehonig|\bhonig\b|\bchocolat\b|tablettes?\b|tampers?\b|stirring stick|\bwdt\b|dosing (?:ring|cup|funnel)|cascara|"
                      r"workshop|course|\bclass(?:es)?\b|masterclass|training|advent|box\b|\bkit\b|scale\b|aeropress\b(?! recipe)|"
                      r"green (?:beans?|coffee)|råkaffe|rohkaffee|unroasted|\bduo\b|\btrio\b|\bpack\b|\bset\b|selection|collection|wholesale|"
                      r"\b\d+(?:[.,]\d+)?\s?kg\b|\btin\b|longjing|sencha|oolong|rooibos|darjeeling|\bassam\b|earl grey|bai hao|jasmine (?:green|tea|pearl)|"
@@ -475,6 +475,11 @@ def not_coffee(item):
     body = item.get("body") or ""
     if NOT_COFFEE_TYPE.match(ptype.strip()):
         return f"product type '{ptype}'"
+    # a tea shelf at a tea and coffee merchant: the category says tea and nothing in it or the title says coffee (Smith's "Peppermint")
+    if re.search(r"\b(?:teas?|tisanes?|herbal|infusions?)\b", ptype, re.I) and not re.search(r"coffee|espresso|caf[eé]|kaffee|decaf", ptype + " " + title, re.I):
+        return f"product type '{ptype[:40]}'"
+    if re.search(r"^\s*green\b.{0,60}\b(?:coffee|beans)\b|\bunroasted\b|\bgreen (?:coffee )?beans\b|\braw (?:coffee|beans)\b", title, re.I):
+        return "green, unroasted coffee"
     # (tags aren't used: shops tag coffees "gift", "subscription", "chocolate" or "coffee bags" as filters)
     m = CHOC_HEAD.search(title) or CHOC_URL.search(url.rsplit("/", 1)[-1]) \
         or (None if re.search(r"coffee|espresso|blend|roast|filter", title, re.I) else CACAO_ITEM.search(title))
@@ -1809,7 +1814,7 @@ def calm_caps(name):
 
 
 
-BAG_W = re.compile(r"(\d+(?:[.,]\d+)?)\s?(kg|kilos?|g|gr|grams?|oz|lbs?)\b", re.I)
+BAG_W = re.compile(r"(\d+(?:[.,]\d+)?)\s?(kg|kilos?|g|gr|gms?|grams?|oz|lbs?)\b", re.I)   # "250gms" (Proud Mary) too
 
 
 def bag_grams(item):

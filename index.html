@@ -6141,8 +6141,12 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
   const priceNum = (p) => { let t = String(p || "").replace(/[^\d.,]/g, ""); if (!t) return null;
     if (t.includes(".") && t.includes(",")) t = t.replace(/,/g, ""); else if (/,\d{3}(?!\d)/.test(t) && !/,\d{1,2}$/.test(t)) t = t.replace(/,/g, ""); else t = t.replace(",", ".");
     const n = parseFloat(t); return isFinite(n) && n > 0 ? n : null; };
+  // the currency of one price: what the price itself says (a shop can price some coffees in koruna and some in euros), else the shop's
+  const ccyOf = (r) => { const p = String(r.price || ""), shop = roCcy.get(r.roaster) || "GBP", code = (p.match(/\b([A-Z]{3})\b/) || [])[1];
+    return code && GBP_PER[code] ? code : /£/.test(p) ? "GBP" : /€/.test(p) ? "EUR" : /Kč/.test(p) ? "CZK" : /zł/.test(p) ? "PLN" : /CA\$/.test(p) ? "CAD" : /A\$/.test(p) ? "AUD"
+      : /\$/.test(p) ? (/^(USD|CAD|AUD|NZD|SGD|HKD|TWD|MXN)$/.test(shop) ? shop : "USD") : /¥/.test(p) ? (shop === "CNY" ? "CNY" : "JPY") : shop; };
   function priceLots() {
-    shelf.forEach((r) => { const n = priceNum(r.price), k = GBP_PER[roCcy.get(r.roaster) || "GBP"], g = r.bag_g;
+    shelf.forEach((r) => { const n = priceNum(r.price), k = GBP_PER[ccyOf(r)], g = r.bag_g;
       r._p100 = n && k && g >= 50 && g <= 1000 ? (n * k) / g * 100 : null;
       if (r._p100 != null && r._p100 > 150) r._p100 = null; });   // a price that can't be right for 100 g (a 1 kg price on a 250 g bag)
     const v = shelf.map((r) => r._p100).filter((x) => x != null).sort((a, b) => a - b);
@@ -6150,12 +6154,12 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
     // Good value: the cheapest fifth per 100 g, each coffee measured only against coffees sold in the same currency
     // (a UK shop against UK prices, a Swedish one against Swedish), so a market's own price level doesn't decide it
     const by = new Map();
-    shelf.forEach((r) => { if (r._p100 == null || r._p100 < 2) return; const c = roCcy.get(r.roaster) || "GBP"; if (!by.has(c)) by.set(c, []); by.get(c).push(r._p100); });
+    shelf.forEach((r) => { if (r._p100 == null || r._p100 < 2) return; const c = ccyOf(r); if (!by.has(c)) by.set(c, []); by.get(c).push(r._p100); });
     valueCut = new Map([...by].map(([c, xs]) => { xs.sort((a, b) => a - b); return [c, xs.length >= 20 ? xs[Math.floor(xs.length * 0.2)] : -1]; }));
   }
   let valueCut = new Map();
   // under £2 per 100 g is a sample or a variant's price against the full bag's weight, not a real bag: never Good value
-  const isValue = (r) => r._p100 != null && r._p100 >= 2 && r._p100 <= (valueCut.get(roCcy.get(r.roaster) || "GBP") ?? -1);
+  const isValue = (r) => r._p100 != null && r._p100 >= 2 && r._p100 <= (valueCut.get(ccyOf(r)) ?? -1);
   const isTopLot = (r) => (r._p100 != null && r._p100 >= lotCut) || (LOT_RX.test(r.name || "") && (r._p100 == null || r._p100 >= lotMid));
   // Extras: pills you can tick together. For you, Light roast, For filter, Good value, Top lots, Decaf. On a phone they fold into one dropdown like the other rows
   // Good value: the cheapest fifth (above). For filter: leaves out what the roaster sells as an espresso roast
@@ -6169,7 +6173,7 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
     price: { u10: (r) => r._p100 != null && r._p100 >= 2 && r._p100 < 4, value: (r) => isValue(r) },   // under £10 for a 250 g bag is under £4 per 100 g
     proc: { washed: (r) => bucket(r.process) === "washed", natural: (r) => bucket(r.process) === "natural", honey: (r) => bucket(r.process) === "honey", exp: (r) => bucket(r.process) === "exp", decaf: (r) => isDecaf(r) },
   };
-  const qActive = () => qk.size > 0 || Object.keys(qf).length > 0;
+  const qActive = () => Object.keys(qf).length > 0;
   const topOrigins = () => { if (qTop) return qTop; const n = new Map();
     (shelf || []).forEach((r) => String(r.origin || "").split(/\s*(?:,|\/|&|\+| and )\s*/).forEach((o) => { o = o.trim(); if (o && o.length < 24) n.set(o, (n.get(o) || 0) + 1); }));
     const top = [...n.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([o]) => o); if ((shelf || []).length && !shelfPart) qTop = top; return top; };   // counted on the whole list, not the first few that load
@@ -6184,12 +6188,12 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
     const X = `<span class="gx" role="button" aria-label="${it ? "Togli" : "Remove"}"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 3l6 6M9 3l-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>`;
     const open = G.find(([k]) => k === qOpen);
     box.hidden = !!shelfRo;
-    box.innerHTML = `<button type="button" class="chip" data-q="new" aria-pressed="${qk.has("new")}">${it ? "Nuovi" : "New"}</button>`
+    box.innerHTML = `<button type="button" class="chip" data-q="new" aria-pressed="${qf.price !== "cheap"}">${it ? "Nuovi" : "New"}</button>`
       + G.map(([k, t, opts]) => { const cur = opts.find(([v]) => v === qf[k]);
         return `<button type="button" class="chip" data-g="${k}" aria-expanded="${qOpen === k}" aria-pressed="${!!cur}">${cur ? `<span>${esc(cur[1])}</span>` + X : t}</button>`; }).join("")
       + (open ? `<div class="q-opts" role="group" aria-label="${esc(open[1])}">${open[2].map(([v, t]) => `<button type="button" class="chip" data-v="${esc(v)}" aria-pressed="${qf[qOpen] === v}">${esc(t)}</button>`).join("")}</div>` : "");
     const again = () => { shelfN = 5; shelfAll = false; renderShelf(); };
-    box.querySelectorAll("[data-q]").forEach((b) => b.onclick = () => { if (qk.has("new")) qk.delete("new"); else qk.add("new"); again(); });
+    box.querySelectorAll("[data-q]").forEach((b) => b.onclick = () => { if (qf.price === "cheap") { delete qf.price; qOpen = null; again(); } });   // New is the list's own order, newest first: on unless Cheapest first is; a tap brings it back
     box.querySelectorAll("[data-g]").forEach((b) => b.onclick = (ev) => { const k = b.dataset.g;
       if (ev.target.closest(".gx")) { delete qf[k]; qOpen = null; again(); return; }   // the ×: clear that group
       qOpen = qOpen === k ? null : k; paintQuick(); });                                // the pill: show or hide its choices, the list stays as it is
@@ -6624,7 +6628,7 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
   // Buy is a pill with the price in it, in the card's one row of actions: Brew, Buy, and Save at the end
   const cardBuy = (r) => { if (!r.url) return ""; const it = LANG === "it", own = r.price ? esc(r.price.replace(/^From\s+/i, "")) : "";
     // another currency: about this much in pounds, from the shop's currency (or the symbol on the price), bag weight or not
-    const ccy = roCcy.get(r.roaster) || (/€/.test(own) ? "EUR" : /CA\$/.test(own) ? "CAD" : /A\$/.test(own) ? "AUD" : /\$/.test(own) ? "USD" : /Kč/.test(own) ? "CZK" : /zł/.test(own) ? "PLN" : /¥/.test(own) ? "JPY" : /CHF/.test(own) ? "CHF" : "");
+    const ccy = ccyOf(r);
     const n0 = priceNum(own), k0 = GBP_PER[ccy];
     const gbp = /£/.test(own) || !own || ccy === "GBP" ? null : r._p100 != null && r.bag_g ? r._p100 * r.bag_g / 100 : n0 && k0 ? n0 * k0 : null;
     const p = gbp != null ? `≈ £${gbp >= 10 ? Math.round(gbp) : gbp.toFixed(2)}` : own;
@@ -6660,7 +6664,6 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
     // browsing with no espresso machine in My equipment: espresso roasts step aside (a search or a roaster's page still shows them)
     if (!q && !shelfRo && ownBrewers().length && !ownBrewers().includes("espresso")) list = list.filter((r) => r.roast_for !== "espresso" && !/\bespresso\b/i.test(r.name || ""));
     // the quick pills: narrow the list without typing
-    if (qk.has("new")) list = list.filter((r) => r.just_in || r.new);
     ["where", "price", "proc"].forEach((k) => { const f = qf[k] && QF[k][qf[k]]; if (f) list = list.filter(f); });
     if (qf.origin) { const o = qf.origin.toLowerCase(); list = list.filter((r) => String(r.origin || "").toLowerCase().includes(o)); }
     paintQuick();
@@ -8554,7 +8557,7 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
   })();
 
   if (/[?&]scantest\b/.test(location.search)) window.__set = (st) => { Object.assign(state, st); renderAllOpts(); render(); return recipe; };   // tests: any recipe on screen
-  window.__v60 = { parseCoffee, engine, suggest, cupNotes, cardImage, risks, recipeText, BASE, get recipe() { return recipe; } };
+  window.__v60 = { parseCoffee, engine, suggest, cupNotes, cardImage, risks, recipeText, BASE, get recipe() { return recipe; }, get shelf() { return shelf; } };
 })();
 </script>
 <div id="printSheet" aria-hidden="true"></div>

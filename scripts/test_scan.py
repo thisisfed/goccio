@@ -167,6 +167,14 @@ CASES = [
        and scan.first_line_notes("Whole Bean, Espresso, Filter") is None and scan.first_line_notes("Colombia, Washed, Pink Bourbon") is None
        and scan.first_line_notes("A bright, clean coffee from our friends in Huila") is None and scan.first_line_notes("Raspberry") is None and scan.first_line_notes("Light, Medium, Dark") is None
        and scan.first_line_notes("Peach, Jasmine, Bergamot, Honey") == "Peach, Jasmine, Bergamot, Honey"),
+    ("Cheapest first showed teas, green beans and a jar of coffee honey: a tea category with no coffee in it, unroasted beans and Kaffeehonig are not coffee; a coffee in a 'Tea & Coffee' shop still is",
+     lambda: scan.not_coffee({"title": "Peppermint", "type": "Loose Leaf Tea Herbal Infusions", "tags": [], "url": "", "body": ""}) is not None
+       and scan.not_coffee({"title": "Green Costa Rican Tarrazu Coffee Beans", "type": "Coffee", "tags": [], "url": "", "body": ""}) is not None
+       and scan.EXCLUDE.search("Kaffeehonig") is not None
+       and scan.not_coffee({"title": "Kenya AA", "type": "Tea & Coffee", "tags": [], "url": "", "body": ""}) is None
+       and scan.not_coffee({"title": "Guatemala Green Mountain Estate", "type": "Coffee", "tags": [], "url": "", "body": ""}) is None),
+    ("Proud Mary: '250gms / Whole Bean … 1kg' is a 250 g bag, not a kilo ($19 read as a kilo price)",
+     lambda: scan.bag_grams({"variants": "250gms / Whole Bean / 250gms / Ground for Espresso / 1kg / Whole Bean", "title": "Honeysuckle"}) == 250),
     ("Kaffa's own coffees still count", lambda: not any(scan.EXCLUDE.search(x) for x in ["Kaffebønner Kenya Kagere", "Kaffebønner Honduras El Guaco", "Kaffebønner Klassisk Julekaffe fra", "Switch Up Charity Coffee"])),
     ("Coffee sacks, a milk frother, a pallet and a chocolate bar are not coffee", lambda: all(scan.EXCLUDE.search(t) for t in
         ["Jute Coffee Sacks", "Alessi Mousseur à lait Pulcina", "Halvpalle med kaffe", "Malmö Chokladfabrik x Gringo – Kaffekross 55% chokladkaka", "SCA Introduction to coffee", "30 ks", "Čaj Yunnan Green Superior", "Brazil Natural - Greens"])),
