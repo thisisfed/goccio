@@ -2685,6 +2685,8 @@ html.scrolled .wm-video{z-index:1!important}
 .scan-review .sc-match.sure .sc-sub{color:var(--muted)}
 .scan-review.only-match{position:fixed;left:0;right:0;top:var(--top-h, 49px);bottom:var(--bot-h, 0px);z-index:20;margin:0;background:var(--bg, #000);align-content:center}   /* a sure match: alone on the screen, half way between the top bar and the bottom bar */
 .scan-review.only-match .sc-match.sure{padding:0}
+.scan-review.only-match .sc-hit{font-size:var(--fs-xl, 39px);letter-spacing:-.03em;gap:12px}   /* alone on the screen: the big size */
+.scan-review.only-match .sc-hit svg{width:34px;height:34px}
 .scan-review .sc-match.sure .pill{margin-top:6px}
 html.scrolled.dropping .wm-video{z-index:25!important}
 /* "+ 14" is a pill like the others, not a circle */
@@ -8159,7 +8161,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       : `<input data-f="${k}" value="${esc(f.v || "")}" placeholder="${k === "date" ? "19 Nov 2026" : "Not found"}"${' autocapitalize="words"'}>`;
     const m = review.match, ch = review.choices;
     box.innerHTML = `${m ? (review.sure
-        ? `<div class="sc-match sure"><p class="sc-hit"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>It’s a match!</p><span><b>${esc(m.roaster)}, ${esc(calm(m.name))}</b></span></div>`
+        ? `<div class="sc-match sure"><p class="sc-hit"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>It’s a match!</p></div>`
         : `<div class="sc-match"><span>Looks like this one from today’s list: <b>${esc(m.roaster)}, ${esc(calm(m.name))}</b>.</span><button type="button" class="pill" id="scUseListing">Use the listing</button></div>`)
       : ch ? `<div class="sc-match"><span>${ch.length === 2 ? "Two" : ch.length === 3 ? "Three" : "Four"} roasters have a coffee called <b>${esc(calm(ch[0].name).split(/:|\(/)[0].trim())}</b> today. Whose bag is it?</span><span class="sc-pick">${ch.map((r, i) => `<button type="button" class="pill" data-pick="${i}">${esc(r.roaster)}</button>`).join("")}</span></div>` : ""}
       <div class="sc-rows">${FIELD_ROWS.map(([k, lbl]) => { const f = fields[k] || { v: null }; return `<label class="sc-row"><span class="sc-l">${k === "date" && f.kind === "best" ? "Best before" : lbl}</span>
