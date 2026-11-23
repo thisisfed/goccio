@@ -2639,6 +2639,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
 .ask-line #askIn:focus{box-shadow:inset 0 0 0 1.5px var(--ink)!important}
 .ask-line .ask-ph .ph-t.ph-q{color:var(--ink)!important;font-weight:500}
 .ask-line .ask-go{color:var(--ink)!important}
+/* the lens sits inside the outlined box: nothing covers the outline's right end */
+.ask-line .ask-go{background:transparent!important}
+.ask-line #askIn{padding-right:calc(var(--pill-h) + 4px)!important}
 </style>
 </head>
 <body>
@@ -8098,7 +8101,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       setTimeout(() => old.remove(), 450); };
     let calm = false, i = -1; const t0 = Date.now();
     // what the box is for, with the size of the list in it: "Search 8,705 coffees" (the plain hint until the list is in)
-    const hintText = () => { const n = (typeof shelf !== "undefined" && shelf.length) || 0;
+    const hintText = () => { const n = (typeof shelfPart !== "undefined" && shelfPart) || (typeof shelf !== "undefined" && shelf.length) || 0;   // the whole list, also while only its first part is in
       return n ? (LANG === "it" ? `Cerca tra ${n.toLocaleString("it-IT")} caffè` : `Search ${n.toLocaleString("en-GB")} coffees`) : T(HINT); };
     const settle = () => { if (calm) return; calm = true; roll(hintText(), true); };
     addEventListener("scroll", () => { if (scrollY > 80) settle(); }, { passive: true });
@@ -8108,7 +8111,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     calm = true; show();
     // the hint is simply there, as soon as the list's count is known: no typing
     const put = () => { const el = document.createElement("span"); el.className = "ph-t ph-q"; el.textContent = hintText(); ph.appendChild(el); if (cur) cur.remove(); cur = el; };
-    put(); const wait = (n) => { if (typeof shelf !== "undefined" && shelf.length) return put(); if (n < 60) setTimeout(() => wait(n + 1), 150); };
+    put(); window.__searchHint = () => { if (cur && cur.textContent !== hintText()) put(); }; const wait = (n) => { window.__searchHint(); if (n < 80) setTimeout(() => wait(n + 1), 250); };
     wait(0); }
   // the ask line: its words go into the search (which reads them as an ask), the brewer it names becomes the brewer, and the page goes to the list
   // the brewer the ask names becomes the brewer; "6 cup" (or 3-cup, 1 cup) picks that size where the brewer has one
