@@ -2574,7 +2574,7 @@ html body .shelf .item > .r:has(> .bag-add) > .btn{margin-left:0!important}
 @media (hover:hover){ .fy-pill:not([aria-pressed="true"]):hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))} }
 html body #shelves .fy-note.fy-top{margin:0 0 -2px!important;padding:12px 14px!important;line-height:19px;text-box:none!important;display:block;background:var(--pill);border-radius:var(--r);color:var(--ink)!important}   /* the explanation in one big pill */
 html body #shelves .fy-note.fy-top[hidden]{display:none}
-html body #shelfMore[data-clear="1"], html body #shelfMore[data-unfilter="1"]{margin-top:-15px!important}   /* Clear search: as far under the pill as the pill is under Coffees (14 px) */
+html body #shelfMore[data-clear="1"], html body #shelfMore[data-unfilter="1"]{margin-top:-12px!important}   /* Clear search: as far under the pill as the pill is under Coffees (14 px) */
 html body #shelves #askNote.fy-top{transform:none!important;position:static!important;pointer-events:auto}   /* the search's line in the same pill, in the same place */
 .item .c-where .ji{color:var(--hl)!important}   /* New in the accent, as For you is */
 /* one empty line under the explanation */
@@ -2620,6 +2620,7 @@ html body .shelf .item > .r > .btn:not(:hover){background:var(--pill)!important;
 /* a shorter opening screen: the list's title and the top of the first coffee show without scrolling */
 html body .wm-screen{min-height:500px!important;height:500px!important}
 @media (min-width:900px){ html body .wm-screen{min-height:min(62svh,620px)!important;height:min(62svh,620px)!important} }
+html body #recipe table.pours.steps{margin-bottom:-14px!important}   /* the last step sits as far over the next rule as every step sits over its own */
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
@@ -5108,8 +5109,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     $("millBtn").setAttribute("aria-label", "Your grinder: " + (G ? G.name : ""));
     $("millChips").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === v))); }
   function foldMill(focus) { $("millOpt").classList.remove("open"); $("millChips").hidden = true; $("millBtn").setAttribute("aria-expanded", "false"); if (focus) $("millBtn").focus(); }
-  $("millChips").innerHTML = Object.entries(GRINDERS).map(([k, G]) => `<button type="button" class="chip" data-v="${k}" aria-pressed="false">${esc(G.name)}</button>`).join("");
-  $("millChips").onclick = (e) => { const b = e.target.closest("button[data-v]"); if (!b) return; const kb = e.detail === 0;
+  $("millChips").innerHTML = Object.entries(GRINDERS).map(([k, G]) => `<button type="button" class="chip" data-v="${k}" aria-pressed="false">${esc(G.name)}</button>`).join("")
+    + `<button type="button" class="chip gear-more" data-close="1" aria-label="${LANG === "it" ? "Chiudi l’elenco" : "Close the list"}"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>`;   /* a minus at the end closes the list without picking */
+  $("millChips").onclick = (e) => { if (e.target.closest("[data-close]")) { e.stopPropagation(); return foldMill(true); } const b = e.target.closest("button[data-v]"); if (!b) return; const kb = e.detail === 0;
     $("millSel").value = b.dataset.v; $("millSel").dispatchEvent(new Event("change")); foldMill(kb); };
   $("millBtn").onclick = (e) => { $("millOpt").classList.add("open"); $("millChips").hidden = false; $("millBtn").setAttribute("aria-expanded", "true"); syncMill();
     if (e.detail === 0) { const on = $("millChips").querySelector('[aria-pressed="true"]'); if (on) on.focus(); } };
@@ -5331,7 +5333,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     $("startBrew").hidden = !timed; $("dock").hidden = !timed; journalOn();
     $("rmethod").textContent = r.method;
     $("rgoal").innerHTML = [r.goal ? GOAL[r.goal] : "", doseName(r)].filter(Boolean).map((t) => `<span>${esc(t)}</span>`).join("");
-    $("rzero").hidden = !prefs.zero; $("rzero").textContent = prefs.zero ? `${prefs.zero > 0 ? "+" : "−"}${Math.abs(prefs.zero)} zero offset` : "";
+    $("rzero").hidden = !prefs.zero; $("rzero").textContent = prefs.zero ? `${prefs.zero > 0 ? "+" : "−"} ${Math.abs(prefs.zero)} zero offset` : "";
     $("rtitle").textContent = coffeeTitle(state, r);
     const bits = [c.roaster ? titleCase(c.roaster) : (state.bag && state.bag.roaster) || null, c.origin, c.variety ? titleCase(c.variety) : null,
       PROCESS[c.process].label, roastLabel(c.roast)].filter(Boolean);
@@ -5403,7 +5405,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const showRet = r.tds != null;
     { const bn = BREWERS[r.brewer].name; $("recTitle").textContent = LANG === "it" ? `Ricetta per ${bn}` : `Recipe for ${bn}`; }   // the brewer, in the title
     const noMillYet = !!mill().words;
-    $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}${k === "key" && mill().words ? " wide" : ""}"><b>${v}${u ? `<small>${u === "-cup" ? u : " " + u}</small>` : ""}</b><span class="sub2">${l.charAt(0).toUpperCase() + l.slice(1)}${badge ? ` <span class="yr">${esc(badge)}</span>` : ""}</span>${k === "key" && isC40() && prefs.zero ? `<span class="zo">${sign(prefs.zero)} zero offset</span>` : ""}${k === "key" && K === "shot" && mill().noEsp ? `<span class="sub2">Not an espresso grinder</span>` : k === "key" && !isC40() && (onMill(r.clicks).atMax || onMill(r.clicks).atMin) ? `<span class="sub2">${onMill(r.clicks).atMax ? "Coarsest setting, may still run fast" : "Finest setting"}</span>` : ""}${k === "dose" ? (() => { const ds = BREWERS[r.brewer].doses, i = ds.findIndex(([v]) => v === r.dose); if (ds.length < 2 || i < 0) return "";
+    $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}${k === "key" && mill().words ? " wide" : ""}"><b>${v}${u ? `<small>${u === "-cup" ? u : " " + u}</small>` : ""}</b><span class="sub2">${l.charAt(0).toUpperCase() + l.slice(1)}${badge ? ` <span class="yr">${esc(badge)}</span>` : ""}</span>${k === "key" && isC40() && prefs.zero ? `<span class="zo">${sign(prefs.zero).replace(/^(.)/, "$1 ")} zero offset</span>` : ""}${k === "key" && K === "shot" && mill().noEsp ? `<span class="sub2">Not an espresso grinder</span>` : k === "key" && !isC40() && (onMill(r.clicks).atMax || onMill(r.clicks).atMin) ? `<span class="sub2">${onMill(r.clicks).atMax ? "Coarsest setting, may still run fast" : "Finest setting"}</span>` : ""}${k === "dose" ? (() => { const ds = BREWERS[r.brewer].doses, i = ds.findIndex(([v]) => v === r.dose); if (ds.length < 2 || i < 0) return "";
         const ic = (p) => `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="${p}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`, moka = r.brewer === "moka";
         return `<span class="dstep" role="group" aria-label="${esc(tr(moka ? "Pot size" : "Coffee dose"))}"><button type="button" class="chip gear-more" data-dstep="-1"${i === 0 ? " disabled" : ""} aria-label="${esc(tr(moka ? "Smaller pot" : "Less coffee"))}">${ic("M2 6h8")}</button><button type="button" class="chip gear-more" data-dstep="1"${i === ds.length - 1 ? " disabled" : ""} aria-label="${esc(tr(moka ? "Bigger pot" : "More coffee"))}">${ic("M6 2v8M2 6h8")}</button></span>`; })() : ""}${k === "ratio" && showRet && false ? `<span class="ret">(${r.water} g water − 2.1 × ${r.dose} g retained). Estimate only.</span>` : ""}</div>`).join("");
     { const ds = $("specs").querySelector(".dstep"), bb = ds && ds.parentNode.querySelector("b"); if (bb) { bb.classList.add("dstep-b"); bb.prepend(ds.querySelector('[data-dstep="-1"]')); bb.appendChild(ds.querySelector('[data-dstep="1"]')); ds.remove(); } }   // minus before the figure, plus after
@@ -6201,7 +6203,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const r = recipe;
     if ($("rbody").hidden || r.kind === "steps") return;
     if (!r.bagTaken) { r.bagTaken = true; bagUsed(r.dose); }   // starting the brew takes the grams off the bag, once per recipe
-    $("bvCoffee").textContent = `${BREWERS[r.brewer].name} / ${coffeeTitle(state, r)} / ${grindLine(r.clicks)}${isC40() && prefs.zero ? ` (${prefs.zero > 0 ? "+" : "−"}${Math.abs(prefs.zero)} zero offset)` : ""} / ${r.temp}°C / ${r.dose}→${r.water} g`;
+    $("bvCoffee").textContent = `${BREWERS[r.brewer].name} / ${coffeeTitle(state, r)} / ${grindLine(r.clicks)}${isC40() && prefs.zero ? ` (${prefs.zero > 0 ? "+" : "−"} ${Math.abs(prefs.zero)} zero offset)` : ""} / ${r.temp}°C / ${r.dose}→${r.water} g`;
     $("bvDrain").textContent = r.kind === "pour" ? "Drained" : "Done";
     if (r.kind === "shot") $("bvCoffee").textContent = `Espresso / ${coffeeTitle(state, r)} / ${grindLine(r.clicks)} / ${r.temp}°C / ${r.dose} g in, ${r.water} g out`;
     const T = r.hi + 20;
@@ -7236,7 +7238,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         <div class="r${rowOpen.has(rowKey(r)) ? " more-open" : ""}">
           <button class="btn" type="button" data-i="${i}">Brew</button><button type="button" class="row-more" data-more="${esc(rowKey(r))}" aria-expanded="${rowOpen.has(rowKey(r))}" aria-label="${LANG === "it" ? "Compra o salva" : "Buy or save"}"><svg viewBox="0 0 12 12" aria-hidden="true"><path class="tb-v" d="M6 2v8"/><path d="M2 6h8"/></svg></button>${cardBuy(r)}<a class="pill buy-p ro-all" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${LANG === "it" ? "Torrefattore" : "Roaster"}</a>
           <button type="button" class="pill bag-add ico${hasBag(r) ? " in" : ""}" data-b="${i}" aria-pressed="${hasBag(r)}" aria-label="${hasBag(r) ? (LANG === "it" ? "Nei miei sacchetti" : "In my bags") : (LANG === "it" ? "Salva nei miei sacchetti" : "Save to my bags")}">${BAG_ICO}</button>
-        </div></article>`; }).join("") : (() => { const msg = `Nothing matches${shelfV !== "all" ? `. Try Everything under Made for, or` : `. Try a taste, an origin or a roaster, or <a href="#" class="mail-me scan-me">scan the bag in front of you</a>.<br>Missing a roaster?`} <a href="#" class="mail-me" data-s="Missing coffee">${shelfV !== "all" ? "email me" : "Email me"}</a> and I’ll add it.`;
+        </div></article>`; }).join("") : (() => { const msg = `${shelfV !== "all" ? `Try Everything under Made for, or` : `Try a taste, an origin or a roaster, or <a href="#" class="mail-me scan-me">scan the bag in front of you</a>.<br>Missing a roaster?`} <a href="#" class="mail-me" data-s="Missing coffee">${shelfV !== "all" ? "email me" : "Email me"}</a> and I’ll add it.`;
           // a search found nothing: one paragraph with the Searching line, a line break between; three searches that do work, one tap each
           const tryQ = shelfV !== "all" ? "" : `<br>${LANG === "it" ? "Oppure prova" : "Or try"}: ` + (LANG === "it" ? ["fruttato", "Etiopia lavato", "decaffeinato", "Colombia naturale", "gesha", "cioccolato", "floreale", "tostatura chiara"] : ["fruity", "washed Ethiopia", "decaf", "natural Colombia", "gesha", "chocolate", "floral", "light roast"]).map((x) => `<a href="#" class="try-q" data-q="${x}">${x}</a>`).join(", ") + ".";
           const an = $("askNote"); if (!an.hidden && an.textContent) { an.innerHTML = esc(an.textContent).replace(/([^.])$/, "$1.") + "<br>" + msg + tryQ; return ""; }
