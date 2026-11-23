@@ -4186,7 +4186,7 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
       need.innerHTML = ""; need.hidden = true;
       return true;
     }
-    const dot = (key, v) => key === "roast" && ROAST_SW[v] ? `<i class="bean-dot" style="--c:${ROAST_SW[v]}"></i>` : "";
+    const dot = () => "";   // roast levels are words only: no brown swatches
     const q = (key, label, items, hint, extra = "") => `<div class="q"><span class="cap">${label}</span><div class="chips">${items.map(([v, t]) => `<button type="button" class="chip" data-k="${key}" data-v="${v}">${dot(key, v)}${t}</button>`).join("")}${extra}</div>${hint ? `<p>${hint}</p>` : ""}</div>`;
     const where = missing.includes("process") ? (state.bag && state.bag.url ? ` The process is usually on the bag or <a href="${esc(state.bag.url)}" target="_blank" rel="noopener">the roaster’s page</a>.` : " The process is usually printed on the bag.") : "";
     need.innerHTML = `<h3>${missing.length === 2 ? "Two things" : "One thing"} before the numbers</h3>
@@ -5271,7 +5271,7 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
         // process and roast: what the bag says is picked for you; nothing stated, Unknown
         b.setAttribute("aria-pressed", String((o.cur ? o.cur() : o.key === "process" || o.key === "roast" ? pickedOf(o.key) : state[o.key]) === v));
         b.onclick = () => { if (o.on) o.on(v); else state[o.key] = v; if (o.key === "roast") state.roastPhoto = null; saveState(); renderAllOpts(); render(); };
-        if (o.key === "roast" && ROAST_SW[v]) b.insertAdjacentHTML("afterbegin", `<i class="bean-dot" style="--c:${ROAST_SW[v]}"></i>`);
+        if (o.key === "goal" && v === "tea") b.insertAdjacentHTML("beforeend", `<span class="beta">Beta</span>`);   // kept because it looks good, not because it's unfinished
         g.appendChild(b);
       });
       if (o.key === "brewer" && (brewAll || brewerHidden())) {   // + for every brewer, − to fold back, like My equipment's See all
@@ -6934,7 +6934,7 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
     $("bagList").innerHTML = bags.map((b, i) => {
       const rk = bagRoastKey(b);
       const tags = [originTag(b.origin), b.process ? `<span class="tg ${procTone(b.process)}">${esc(titleCase(b.process))}</span>` : "", b.variety ? varietyTag(b.variety) : "",
-        rk ? `<span class="tg rdot" style="--vc:${ROAST_SW[rk]}">${esc(cap1(ROAST[rk].label))} roast</span>` : ""].join("");
+        rk ? `<span class="tg">${esc(cap1(ROAST[rk].label))} roast</span>` : ""].join("");
       return `<article class="item bag">
         <div class="l">
           <span class="who">${b.roaster ? `<span class="rn">${esc(b.roaster)}</span>${bagCity(b) ? `<span class="rcity">, ${esc(bagCity(b))}</span>` : ""}` : "Your coffee"}</span>
