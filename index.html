@@ -2564,6 +2564,10 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
 .spec b.dstep-b small{margin-left:-4px}
 .bag-ro .ro-chips{display:contents!important}.bag-ro .ro-chips[hidden]{display:none!important}
 .bag-fzp[aria-pressed="true"]{background:var(--ink)!important;color:var(--bg)!important}
+/* the live dot's rings leave at random moments, set by script: no loop to spot */
+.live-dot::before,.live-dot::after{animation:none!important;opacity:0!important}
+.live-dot .lr{position:absolute;inset:0;border-radius:50%;box-shadow:0 0 0 1px var(--hl);opacity:0;pointer-events:none;animation:liveRing var(--d,1.3s) cubic-bezier(.2,.6,.3,1) forwards}
+@keyframes liveRing{from{transform:scale(1);opacity:var(--o,.85)}to{transform:scale(var(--s,3.2));opacity:0}}
 </style>
 </head>
 <body>
@@ -8606,6 +8610,13 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
   })();
 
   if (/[?&]scantest\b/.test(location.search)) window.__set = (st) => { Object.assign(state, st); renderAllOpts(); render(); return recipe; };   // tests: any recipe on screen
+  // the live dot: each ring leaves after a random wait (sometimes two in quick succession), at a random size and speed, so it never repeats
+  (function liveRings() { if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const fire = () => { if (!document.hidden) document.querySelectorAll(".live-dot").forEach((d) => { if (!d.offsetParent || d.childElementCount > 4) return;
+        const r = document.createElement("i"); r.className = "lr"; r.style.setProperty("--d", (0.9 + Math.random() * 1.1).toFixed(2) + "s"); r.style.setProperty("--s", (2.4 + Math.random() * 1.6).toFixed(2)); r.style.setProperty("--o", (0.5 + Math.random() * 0.45).toFixed(2));
+        r.addEventListener("animationend", () => r.remove()); d.appendChild(r); });
+      setTimeout(fire, Math.random() < 0.3 ? 140 + Math.random() * 260 : 500 + Math.random() * 2600); };
+    setTimeout(fire, 600); })();
   window.__v60 = { analyseBeans, decafGuard, parseCoffee, engine, suggest, cupNotes, cardImage, risks, recipeText, BASE, get recipe() { return recipe; }, get shelf() { return shelf; } };
 })();
 </script>
