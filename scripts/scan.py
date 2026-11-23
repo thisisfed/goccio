@@ -66,6 +66,19 @@ def robusta(name, variety=""):
     return False
 
 
+def rarely_states(recs):
+    """A shop with five or more coffees where fewer than 30% state a process and fewer than 15% a variety: the test that took
+    25 roasters off on 23 Nov 2026, now run on every roaster at every scan."""
+    n = len(recs)
+    if n < 5:
+        return False
+    return sum(1 for x in recs if x.get("process")) / n < 0.3 and sum(1 for x in recs if x.get("variety")) / n < 0.15
+
+
+WEAK = ROOT / "data" / "weak.json"   # {host: {"since", "days": [each day it was read and failed rarely_states()]}}; banned at WEAK_DAYS days
+WEAK_DAYS = 7                        # a week's grace: a shop that changes its theme can stop being readable for a few days
+
+
 def specialty_gate(recs, name=""):
     """Why a shop found by the directory or the map is not added (None when it passes). A specialty roaster says where each
     coffee is from and how it was made, sells no flavoured coffee and no robusta, and isn't a tea merchant with a coffee shelf."""
@@ -2833,6 +2846,31 @@ def main():
         if f and h and h not in gone:
             gone[h] = {"name": x["roaster"], "why": f"flavoured coffee: {x.get('name')}", "on": datetime.now(timezone.utc).date().isoformat()}
             print(f"BANNED {x['roaster']} ({h}): flavoured coffee '{x.get('name')}'")
+    # every roaster read today: one that rarely states process or variety goes on watch, and is banned once it has failed for
+    # WEAK_DAYS days running (never on one bad read)
+    try:
+        weak = json.loads(WEAK.read_text())
+    except (OSError, ValueError):
+        weak = {}
+    day = datetime.now(timezone.utc).date()
+    for name in sorted(scanned_ok):
+        h = host_of(shop_of.get(name))
+        if not h or h in gone:
+            continue
+        if rarely_states([x for x in found if x["roaster"] == name]):
+            w = weak.get(h) if isinstance(weak.get(h), dict) else {"since": day.isoformat(), "days": [], }
+            if day.isoformat() not in w["days"]:
+                w["days"].append(day.isoformat())   # one count a day, however many scans run
+            weak[h] = w
+            if len(w["days"]) >= WEAK_DAYS:   # read and found wanting on seven separate days, with no good read in between
+                gone[h] = {"name": name, "why": f"its coffees rarely state a process or a variety (since {w['since']})", "on": day.isoformat()}
+                weak.pop(h, None)
+                print(f"BANNED {name} ({h}): rarely states process or variety since {w['since']}")
+            else:
+                print(f"ON WATCH {name} ({h}): rarely states process or variety, day {len(w['days'])} of {WEAK_DAYS}")
+        else:
+            weak.pop(h, None)
+    WEAK.write_text(json.dumps(weak, ensure_ascii=False, indent=1, sort_keys=True) + "\n")
     if gone != banned():
         BANNED.write_text(json.dumps(gone, ensure_ascii=False, indent=1, sort_keys=True) + "\n")
     out_names = {v["name"] for v in gone.values()}
