@@ -87,6 +87,15 @@ CASES = [
     ("River's Kyarumba took 'Bright acidity' from the roaster's remarks: the label is 'Flavour Description: Blackcurrant, Honey, Juicy.'",
      lambda: scan.find_notes({"body": "Flavour Description: Blackcurrant, Honey, Juicy.\nProducer: Community of Kyarumba.\nVarietal: SL14 and SL28.\nProcess: Natural Process.\nRoasters Notes: We have roasted this coffee to a medium/medium light level which accentuates the tropical fruit notes and bright acidity.", "title": "Kyarumba (Uganda)", "tags": []})
              == ["Blackcurrant", "Honey", "Juicy"]),
+    ("The Source: the notes label is 'cup profile', the list split by dashes",
+     lambda: scan.find_notes({"body": "process: natural+\nalt: 1850 masl\nvariety: sidra\ncup profile: cherry cola - Scottish blaeberries - grape\n", "title": "la planta", "tags": []})
+             == ["Cherry cola", "Scottish blaeberries", "Grape"]),
+    ("The Source writes names in small letters: 'la planta natural sidra' reads 'La Planta Natural Sidra', codes and chosen capitals kept",
+     lambda: [scan.cap_name(x) for x in ("la planta natural sidra", "thermal shock orange gesha C-13", "finca de la luna", "El Pergamino", "iPhone blend", "#beãnz")]
+             == ["La Planta Natural Sidra", "Thermal Shock Orange Gesha C-13", "Finca de La Luna", "El Pergamino", "iPhone Blend", "#beãnz"]),
+    ("Passage had no notes: a bracketed heading '【Taste Note】' with the list on the line under it",
+     lambda: scan.find_notes({"body": "【COMMENT】\nHe is the winning producer of the Colombia Washed Coffee Festival 2026.\n\n【Taste Note】\n\nAlmond, Red apple, Orange, Plum, Clean\n\n【PROFILE】\nPRODUCER：Rubiera Velasquez\n", "title": "Colombia Rubiera Velazquez", "tags": []})
+             == ["Almond", "Red apple", "Orange", "Plum", "Clean"]),
     ("Drip coffee bags are still not beans", lambda: scan.EXCLUDE.search("Drip coffee bags x10") is not None),
     ("Um Coffee Co: 'Nanolotes | Wush Wush' is named Wush Wush", lambda: name("Nanolotes | Wush Wush", "Um Coffee Co", "Brazil") == "Wush Wush"),
     ("Um Coffee Co: 'Blend | Fruitbomb' is named Fruitbomb", lambda: name("Blend | Fruitbomb", "Um Coffee Co", "Brazil") == "Fruitbomb"),
