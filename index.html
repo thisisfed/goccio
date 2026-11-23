@@ -2395,10 +2395,14 @@ html.brew-in #coffee{display:none!important}
 .flap-n{animation:flapIn .24s cubic-bezier(.2,.8,.3,1.25) calc(var(--d,0ms) + .16s) both}
 @keyframes flapOut{from{transform:rotateX(0);opacity:1}to{transform:rotateX(-90deg);opacity:.2}}
 @keyframes flapIn{from{transform:rotateX(90deg);opacity:.2}to{transform:rotateX(0);opacity:1}}
-/* the footer is always out: nothing to open. Everything in it is set a half step under the body size (15 / √1.618 = 12 px), the one place the small size is used */
-html body .page footer, html body .page footer *, html body footer, html body footer *{font-size:12px!important;line-height:1.45!important}
-footer .foot-x > summary{cursor:default!important;pointer-events:none}
-footer .foot-x > summary::after{display:none!important}
+/* the footer's folds are set apart like the recipe's: a rule over each, the same row height, a rule under the last */
+footer .foot-x{border-top:1px solid var(--line);margin:0!important}
+footer .foot-x > summary{padding:13px 0!important;margin:0!important}
+footer .foot-x[open] > summary{margin-bottom:0!important}
+footer .foot-x[open]{padding-bottom:16px}
+footer .fcol:last-child > .foot-x:last-of-type{border-bottom:1px solid var(--line)}
+footer .fcol{row-gap:0!important}
+@media (max-width:640px){ footer{row-gap:0!important} footer .fcol{padding-bottom:0!important;margin-bottom:0!important} footer .fcol:last-child > .foot-x:last-of-type{margin-bottom:16px!important} }
 #gear { display: none !important; }   /* My equipment is gone: brewer, grinder and water are picked in the recipe, and remembered */
 #gear.bare #gearIntro { display: block; width: 100%; }
 #gear.bare .gear-tools { display: none; }
@@ -8167,7 +8171,6 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     $("scanMsg").textContent = fields.brand && !review.match ? `${fields.brand} isn’t on Goccio’s list of specialty roasters, but the recipe works from what the bag says. Check it, then Use these.` : "Here’s what the label says. Check it, then Use these.";
     box.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
-  document.querySelectorAll("footer details").forEach((d) => { d.open = true; d.addEventListener("toggle", () => { if (!d.open) d.open = true; }); });   // the footer has no folds any more
   window.__useScan = () => !!(review && !$("scanReview").hidden && applyReview());
   function closeReview() { const b = $("scanReview"); b.hidden = true; b.innerHTML = ""; b.classList.remove("only-match"); review = null; }
   function applyReview(land = true) {
