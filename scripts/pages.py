@@ -191,7 +191,7 @@ def page(title, desc, path, body, extra_head="", nav=True, tight=False):
 <link rel="canonical" href="{e(url)}">
 <meta property="og:type" content="website"><meta property="og:site_name" content="Goccio">
 <meta property="og:title" content="{e(title)}"><meta property="og:description" content="{e(desc)}">
-<meta property="og:url" content="{e(url)}"><meta property="og:image" content="{BASE}/og/card.png">
+<meta property="og:url" content="{e(url)}"><meta property="og:image" content="{BASE}/og/card-6.png">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png?v=3"><link rel="apple-touch-icon" href="/apple-touch-icon.png?v=3"><meta name="apple-mobile-web-app-title" content="Goccio">
 <style>{CSS}</style>{extra_head}
@@ -293,7 +293,7 @@ def main():
                             + go + "</section>")
                 steps = [{"@type": "HowToStep", "text": f'{mmss(p["t"])}: pour to {p["to"]} g. {p["note"]}'.strip()} for p in r["pours"] if p.get("to") is not None]
                 ld = json.dumps({"@context": "https://schema.org", "@type": "Recipe", "name": f"V60 recipe for {c['name']} ({name})",
-                                 "description": f"A V60 pour over recipe for {c['name']} from {name}.", "image": [BASE + "/og/card.png"],
+                                 "description": f"A V60 pour over recipe for {c['name']} from {name}.", "image": [BASE + "/og/card-6.png"],
                                  "author": {"@type": "Organization", "name": "Goccio", "url": BASE + "/"},
                                  "recipeCategory": "Drink", "recipeYield": "1 cup", "totalTime": iso_dur(r["hi"]), "keywords": f"V60, pour over, {name}, {c.get('origin') or ''}".strip(", "),
                                  "recipeIngredient": [f'{r["dose"]} g {c["name"]} coffee, ground at {r["clicks"]} clicks on a {GRINDER}', f'{r["water"]} g water at {r["temp"]}°C'],
