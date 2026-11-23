@@ -16,6 +16,16 @@ PHRASES = {
     "frutos del bosque": "forest fruits", "frutti di bosco": "forest fruits", "fruits des bois": "forest fruits", "waldfrüchte": "forest fruits",
     "chocolate negro": "dark chocolate", "chocolate amargo": "dark chocolate", "chocolat noir": "dark chocolate", "cioccolato fondente": "dark chocolate",
     "zartbitterschokolade": "dark chocolate", "dunkle schokolade": "dark chocolate", "pure chocolade": "dark chocolate", "chocolate meio amargo": "dark chocolate",
+    # Slovak and Czech (Sydrip, Bratislava: "Červené hrozno, tropické ovocie, čučoriedky a tmavá čokoláda")
+    "červené hrozno": "red grapes", "červené hrozny": "red grapes", "biele hrozno": "white grapes", "bílé hrozny": "white grapes",
+    "tropické ovocie": "tropical fruit", "tropické ovoce": "tropical fruit", "tmavá čokoláda": "dark chocolate", "horká čokoláda": "dark chocolate",
+    "hořká čokoláda": "dark chocolate", "mliečna čokoláda": "milk chocolate", "mléčná čokoláda": "milk chocolate", "biela čokoláda": "white chocolate",
+    "bílá čokoláda": "white chocolate", "lesné ovocie": "forest fruits", "lesní ovoce": "forest fruits", "červené ovocie": "red berries",
+    "červené ovoce": "red berries", "kôstkové ovocie": "stone fruit", "peckové ovoce": "stone fruit", "sušené ovocie": "dried fruit",
+    "sušené ovoce": "dried fruit", "hnedý cukor": "brown sugar", "hnědý cukr": "brown sugar", "trstinový cukor": "cane sugar", "třtinový cukr": "cane sugar",
+    "čierny čaj": "black tea", "černý čaj": "black tea", "zelený čaj": "green tea", "čierne ríbezle": "blackcurrant", "černý rybíz": "blackcurrant",
+    "červené ríbezle": "redcurrant", "červený rybíz": "redcurrant", "lieskový orech": "hazelnut", "lieskové orechy": "hazelnut",
+    "lískový ořech": "hazelnut", "lískové ořechy": "hazelnut", "vlašský orech": "walnut", "vlašský ořech": "walnut", "javorový sirup": "maple syrup",
     "chocolate con leche": "milk chocolate", "chocolat au lait": "milk chocolate", "cioccolato al latte": "milk chocolate", "milchschokolade": "milk chocolate",
     "chocolate ao leite": "milk chocolate", "melkchocolade": "milk chocolate",
     "azúcar moreno": "brown sugar", "azucar moreno": "brown sugar", "sucre roux": "brown sugar", "zucchero di canna": "cane sugar",
@@ -43,6 +53,22 @@ W = {}
 def _add(words, en, kind="n"):
     for w in words.split("|"):
         W[w] = (en, kind)
+
+# Slovak and Czech
+_add("čučoriedky|čučoriedka|borůvky|borůvka", "blueberry"); _add("jahoda|jahody", "strawberry"); _add("malina|maliny", "raspberry")
+_add("černice|ostružiny|ostružina", "blackberry"); _add("čerešňa|čerešne|třešeň|třešně|višňa|višne|višeň|višně", "cherry")
+_add("slivka|slivky|švestka|švestky", "plum"); _add("broskyňa|broskyne|broskev|broskve", "peach"); _add("marhuľa|marhule|meruňka|meruňky", "apricot")
+_add("jablko|jablká|jablka", "apple"); _add("hruška|hrušky", "pear"); _add("hrozno|hrozny", "grape"); _add("citrón|citróny|citrony", "lemon")
+_add("pomaranč|pomaranče|pomeranč|pomeranče", "orange"); _add("mandarínka|mandarinka|mandarínky|mandarinky", "mandarin"); _add("limetka|limetky", "lime")
+_add("čokoláda|čokolády", "chocolate"); _add("orechy|ořechy|oriešky|oříšky", "nuts"); _add("mandle|mandľa", "almond"); _add("vanilka", "vanilla")
+_add("škorica|skořice", "cinnamon"); _add("jazmín|jasmín", "jasmine"); _add("ananás", "pineapple"); _add("banán", "banana")
+_add("hrozienka|rozinky", "raisin"); _add("datle", "date"); _add("figy|fíky", "fig"); _add("melón|meloun", "melon"); _add("ríbezle|rybíz", "currant")
+_add("brusnice|brusinky", "cranberry"); _add("maslo|máslo", "butter"); _add("smotana|smetana", "cream"); _add("cukor|cukr", "sugar")
+_add("marcipán", "marzipan"); _add("nugát", "nougat"); _add("ovocie|ovoce", "fruit"); _add("čaj", "tea"); _add("víno", "wine"); _add("kvety|květy", "flowers")
+_add("tmavá|tmavý|tmavé", "dark", "a"); _add("červené|červená|červený", "red", "a"); _add("čierne|čierna|čierny|černé|černá|černý", "black", "a")
+_add("biele|biela|biely|bílé|bílá|bílý", "white", "a"); _add("zelené|zelená|zelený", "green", "a"); _add("žlté|žltá|žltý|žluté|žlutá|žlutý", "yellow", "a")
+_add("sladké|sladká|sladký", "sweet", "a"); _add("zrelé|zrelá|zrelý|zralé|zralá|zralý", "ripe", "a"); _add("sušené|sušená|sušený", "dried", "a")
+_add("tropické|tropická|tropický", "tropical", "a"); _add("kvetinové|kvetinová|kvetinový|květinové|květinová|květinový", "floral", "a")
 
 # fruit
 _add("fresa|fresas|fraise|fraises|fragola|fragole|morango|morangos|erdbeere|erdbeeren|aardbei|aardbeien|căpșuni|capsuni|jordgubbe|jordbær", "strawberry")

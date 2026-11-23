@@ -293,6 +293,11 @@ CASES = [
     ("Harmony Bombe's notes in English: Green tea, Chamomile, Passion fruit, Yellow kiwi",
      lambda: __import__("flavours").english_notes(["Té verde", "Manzanilla", "Fruta de la pasión", "Kiwi amarillo"])
              == ["Green tea", "Chamomile", "Passion fruit", "Yellow kiwi"]),
+    ("Sydrip's Slovak notes in English: Red grapes, Tropical fruit, Blueberry, Dark chocolate",
+     lambda: __import__("flavours").english_notes(["Červené hrozno", "Tropické ovocie", "Čučoriedky", "Tmavá čokoláda"])
+             == ["Red grapes", "Tropical fruit", "Blueberry", "Dark chocolate"]),
+    ("Czech notes too: 'Borůvky', 'Hořká čokoláda', 'Lískové ořechy' are Blueberry, Dark chocolate, Hazelnut",
+     lambda: __import__("flavours").english_notes(["Borůvky", "Hořká čokoláda", "Lískové ořechy"]) == ["Blueberry", "Dark chocolate", "Hazelnut"]),
     ("English notes are left as written ('Tropical fruits', 'Clementine', 'Mango yogurt')",
      lambda: __import__("flavours").english_notes(["Tropical fruits", "Clementine", "Mango yogurt"]) == ["Tropical fruits", "Clementine", "Mango yogurt"]),
     ("Climpson: 'Broadway Blend: El Salvador & Guatemala' is called Broadway Blend",
