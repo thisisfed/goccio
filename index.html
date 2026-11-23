@@ -2377,6 +2377,9 @@ html.brew-in .shelf > .item.brewing{border-bottom:0!important;padding-bottom:24p
 html.brew-in #coffee{display:none!important}
 #moreOpts { display: none !important; }   /* Bag details is gone: what the recipe needs and doesn't have is asked above it, nothing else */
 #detected .miss { display: block; } #detected .miss + .miss { margin-top: 8px; }
+/* Adjust is no longer a fold: its two rows (Serve, Method) sit with the others */
+#adjOpts > summary{display:none!important} #adjOpts{margin:0!important;padding:0!important;border:0!important}
+#recipe .sec-head{border-top:0!important}   /* no rule over "Recipe for …": the choices run straight into it */
 #gear { display: none !important; }   /* My equipment is gone: brewer, grinder and water are picked in the recipe, and remembered */
 #gear.bare #gearIntro { display: block; width: 100%; }
 #gear.bare .gear-tools { display: none; }
@@ -2799,7 +2802,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         </div><div class="chips" id="millChips" role="group" aria-label="Your grinder" hidden></div><div class="zr-ctl zr-opt" id="zrCtl"><span class="zr-lbl" id="zrLbl">Adjust clicks</span><div class="step" role="group" aria-labelledby="zrLbl"><button type="button" id="zMinus" aria-label="Zero offset one click lower">−</button><span id="zVal">0</span><button type="button" id="zPlus" aria-label="Zero offset one click higher">+</button></div></div></div></div>
         <div class="opt" id="waterOpt"><span>Water</span><div class="w-row" id="waterNow"><div class="w-body" id="wBody"></div><p class="w-adv" id="wAdv"></p><button type="button" id="wNow" hidden></button></div></div>
       </div>
-      <details class="adj" id="adjOpts"><summary><span class="adj-l">Adjust</span><span class="adj-s" id="adjSum"></span></summary>
+      <details class="adj" id="adjOpts" open><summary><span class="adj-l">Adjust</span><span class="adj-s" id="adjSum"></span></summary>
       <div class="opts" id="opts-main"></div>
       </details>
       <input type="file" accept="image/*" capture="environment" id="roastPhotoIn" hidden>
@@ -5424,7 +5427,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   // what a fold is set to, beside its title: each choice starts with a capital and stands apart from the next by a space, no commas
   function sumBits(list) { return list.filter(Boolean).map((t) => `<span class="sum-b">${esc(String(t).charAt(0).toUpperCase() + String(t).slice(1))}</span>`).join(" "); }
   const renderAllOpts = () => { renderOpts("opts-kit", [{ key: "brewer", label: "Brewer", items: brewerItems(), on: setBrewer, cur: () => { try { if (suAfter) return ""; } catch (e) {} return brewerOf(state) === "cold" ? "press" : brewerOf(state); } }]); renderOpts("opts-main", optsMain()); { const b = brewerOf(state), B = BREWERS[b]; renderOpts("opts-dose", optsMain(true)); } adjSum(); renderOpts("opts-more", OPTS_MORE);
-    { const box = $("adjOpts"); if (box) box.hidden = ![...$("opts-main").querySelectorAll(".chip, select, input")].some((x) => x.offsetParent !== null || !box.open); if (box && box.hidden) box.open = false; } };   // nothing to adjust (cupping): no Adjust line
+    { const box = $("adjOpts"); if (box) box.hidden = !$("opts-main").querySelector(".chip, select, input"); if (box) box.open = true; } };   // nothing to adjust (cupping): no Adjust line
 
   // the recipe section only exists once there's a full recipe; until then go to the questions
   // jumping to a section: straight there, its top rule just under the top bar, then checked again while the page settles
