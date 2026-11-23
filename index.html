@@ -2572,7 +2572,7 @@ html body .shelf .item > .r:has(> .bag-add) > .btn{margin-left:0!important}
 .fy-pill{flex:none;height:var(--pill-h);padding:0 12px;border:0;border-radius:var(--r);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);cursor:pointer;margin-left:auto}
 .fy-pill[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 @media (hover:hover){ .fy-pill:not([aria-pressed="true"]):hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))} }
-html body #shelves .fy-note.fy-top{margin:0!important;padding:0!important;line-height:19px;text-box:none!important;display:block}
+html body #shelves .fy-note.fy-top{margin:0 0 12px!important;padding:12px 14px!important;line-height:19px;text-box:none!important;display:block;background:var(--pill);border-radius:var(--r);color:var(--ink)!important}   /* the explanation in one big pill */
 html body #shelves .fy-note.fy-top[hidden]{display:none}
 .item .c-where .ji{color:var(--hl)!important}   /* New in the accent, as For you is */
 /* one empty line under the explanation */
@@ -2580,11 +2580,12 @@ html.brew-in #fyNote{display:none!important}
 /* the recipe stands on a slightly lighter black than the list around it, edge to edge: a different room, no new colour */
 #recipe{background:color-mix(in srgb,var(--ink) 6%,var(--bg));margin-inline:calc(50% - 50vw)!important;padding-inline:calc(50vw - 50%)!important;padding-top:12px!important;padding-bottom:16px!important}
 /* What’s brewing and its pill in the bottom bar wait until a coffee is wanted: Brew on a coffee, or I have a coffee */
-html:not(.mine) .botnav [data-bn="coffee"]{display:none!important}
+html:not(.mine):not(.brew-in) .botnav [data-bn="coffee"]{display:none!important}
 /* until then the section keeps its full shape with the form unseen: "Brew something good." sits where it always does, just over the rule at the bottom */
 html:not(.mine) body #coffee > :not(.wb-sign){display:none!important}
 html:not(.mine) body #coffee#coffee#coffee{min-height:0!important;padding-top:0!important}
-html:not(.mine) body #coffee > .wb-sign{padding-top:0!important}   /* as far under Load more as Load more is under the last coffee; over the bottom rule exactly as before */
+html:not(.mine) body #coffee > .wb-sign{padding-top:0!important;margin-top:0!important}   /* 43 px from Load more to the sign-off, as from the last coffee to Load more */
+html:not(.mine) body #coffee#coffee#coffee{height:auto!important;min-height:0!important;padding-bottom:0!important;margin-bottom:-87px!important}   /* 13 px from the sign-off to the rule under it, as when the form is out */   /* as far under Load more as Load more is under the last coffee; over the bottom rule exactly as before */
 /* tags stay on one line: a tag too long for it (a list of varieties) is cut with an ellipsis, the longest giving way first */
 html body .item .tags{display:flex!important;flex-wrap:nowrap!important;min-width:0;max-width:100%;overflow:hidden}
 html body .item .tags > *{flex:0 1 auto;min-width:0;white-space:nowrap!important;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal!important}
@@ -2606,12 +2607,12 @@ html body #bagList .item > .r > .bag-fzp{order:1!important}
 html body #bagList .item > .r > .btn{order:2!important}
 html body #bagList .item > .r > .bag-rm{order:3!important}
 @media (max-width:345px){ html body #recipe .share > #mUse{padding-left:5px!important;padding-right:5px!important} html body #recipe .share > #buyBtn{padding-left:8px!important;padding-right:8px!important} html body #recipe .share{gap:2px!important} }   /* the narrowest phones: the five still share one line */
-/* pills with a little depth: a hairline of light along the top edge, and a touch darker while pressed */
-html body :is(.pill,.btn,.chip,.gear-dd,.sec-p,.row-more,.fy-pill,#shelfMore,.ask-box,.tb-plus):not(.ico-plain){box-shadow:inset 0 1px 0 var(--pill-lip, rgba(255,255,255,.13))!important}
-:root[data-theme="light"]{--pill-lip:rgba(255,255,255,.75)}
-html body :is(.pill,.btn,.chip,.gear-dd,.sec-p,.row-more,.fy-pill,#shelfMore):active{filter:brightness(.86)}
 /* the links that close the footer stand alone, each plainly a link: no underline */
 html body footer .foot-links a{text-decoration:none!important}
+/* one idea for the whole footer: links are grey, the words around them white */
+html body footer, html body footer p, html body footer li, html body footer .foot-note, html body footer details > :not(summary){color:var(--ink)!important}
+html body footer a, html body footer a *{color:var(--muted)!important;text-decoration-color:currentColor}
+html:not(.mine) body footer{margin-top:-31px!important}   /* 13 px from the sign-off to the footer's rule */
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
@@ -9069,6 +9070,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   if ($("wmFind")) $("wmFind").onclick = () => { jumpTo($("shelves")); const bx = document.querySelector(".ask-line .ask-box"); if (!bx) return;
     bx.classList.remove("nudge"); void bx.offsetWidth; setTimeout(() => { bx.classList.add("nudge"); setTimeout(() => bx.classList.remove("nudge"), 1800); }, 450); };
   const mineOn = () => { if (document.documentElement.classList.contains("mine")) return; document.documentElement.classList.add("mine"); };   /* for this visit only: the next one starts without it again */
+  /* and away again once back at the list or the opening screen, unless a coffee of your own has its recipe out */
+  const mineOff = () => { const h = document.documentElement; if (h.classList.contains("mine") && !h.classList.contains("brew-in") && $("recipe").hidden) h.classList.remove("mine"); };
+  document.addEventListener("click", (e) => { if (e.target.closest && e.target.closest('.botnav [data-bn="shelves"], .botnav [data-bn="cancel"], #wmFind')) setTimeout(mineOff, 700); });
+  let mineY = 0; addEventListener("scroll", () => { const y = scrollY; if (y < 60 && mineY >= 60) mineOff(); mineY = y; }, { passive: true });   /* scrolled back up to the opening screen */
   try { localStorage.removeItem("mine"); } catch (e) {}
   if (/^#(?:coffee|r=|recipe)/.test(location.hash)) mineOn();
   
@@ -9078,8 +9083,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   document.addEventListener("click", () => { setTimeout(navSync, 0); setTimeout(navSync, 400); });   /* and after any tap, should a change slip past the observers */
   navSync(); new MutationObserver(navSync).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
   new MutationObserver(navSync).observe(document.querySelector(".botnav"), { attributes: true, subtree: true, attributeFilter: ["hidden", "class"] });
-  new MutationObserver(() => { if (!$("recipe").hidden) mineOn(); }).observe($("recipe"), { attributes: true, attributeFilter: ["hidden"] });
-  document.addEventListener("click", (e) => { const t = e.target.closest && e.target.closest("#wmBag, #suBag, .shelf .item .btn[data-i], #bags .btn, [data-bn='coffee']"); if (t) mineOn(); }, true);
+  new MutationObserver(() => setTimeout(() => { if (!$("recipe").hidden && !document.documentElement.classList.contains("brew-in")) mineOn(); }, 60)).observe($("recipe"), { attributes: true, attributeFilter: ["hidden"] });   /* a recipe for your own coffee (a scan, a link, a bag): not for a coffee opened in the list */
+  document.addEventListener("click", (e) => { const t = e.target.closest && e.target.closest("#wmBag, #suBag, #bags .btn"); if (t) mineOn(); }, true);
   if ($("wmBag")) $("wmBag").onclick = () => { mineOn(); if (!$("coffeeIn").value.trim()) $("coffeeIn").placeholder = LANG === "it" ? "Cosa dice il sacchetto: XYZ Roastery, Etiopia, lavato, tostatura chiara" : "What the bag says: XYZ Roastery, Ethiopia, washed, light roast"; jumpTo($("coffee")); setTimeout(() => { try { $("coffeeIn").focus({ preventScroll: true }); } catch (e) {} }, 500); };
   // the two buttons exactly as far from the count's baseline as from the capitals of the text under the photo, in every browser:
   // measured from the letters themselves (a probe on each baseline, the font's own cap height), not from line boxes
