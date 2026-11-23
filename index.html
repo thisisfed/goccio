@@ -7173,7 +7173,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     { const secs = Math.max(0.01, (performance.now() - t0) / 1000), n0 = list.length;   // what it found, and how long the looking took
       const found = LANG === "it" ? `: ${n0.toLocaleString("it-IT")} caffè in ${secs.toFixed(2).replace(".", ",")} secondi` : `: ${n0.toLocaleString("en-GB")} coffee${n0 === 1 ? "" : "s"} in ${secs.toFixed(2)} seconds`;
       var askFound = (q || askWant) && !shelfRo ? found : ""; }
-    { const n = $("askNote"), t = shelfRo || !q ? "" : (LANG === "it" ? `Ricerca “${$("shelfQ").value.trim()}”${askFound}` : `Searching for “${$("shelfQ").value.trim()}”${askFound}`)
+    { const n = $("askNote"), t = shelfRo || !q ? "" : (askFound.replace(/^: /, "").replace(/^./, (c) => c.toUpperCase()))   /* only what was found and how fast: the search box already shows the words */
         + (askWant && list.length ? (LANG === "it" ? ". I più vicini per primi." : ". Best match first.") : ""); const f = $("fyNote");   // what the list is showing, in grey under Coffees (and read out to screen readers)   // with For you's line showing, the two read as one paragraph
       if (t && !f.hidden) { f.textContent = f.textContent.trim() + " " + t; n.hidden = true; n.textContent = ""; } else { n.hidden = !t; n.textContent = t; } }   // the search's lens in front, as in the box
     list = shelfRo ? [...list].sort((a, b) => shelfDate(b).localeCompare(shelfDate(a))) : fy ? list : askRank ? [...list].sort((a, b) => (askRank.get(b) - askRank.get(a))
