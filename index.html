@@ -2436,9 +2436,8 @@ footer #tip a:hover, footer .foot-links a:hover{text-decoration-color:transparen
 /* the roaster's name as big as the coffee's, right above it; where it roasts and the day the coffee came in sit small and grey at the foot of the row */
 .item .who .rn{font-size:24px;line-height:27px;letter-spacing:-.01em;color:var(--ink)}
 .item .who:has(.rn){margin-top:1.45px;line-height:27px!important}   /* the roaster sits down on the coffee's name; the room it gave up goes above it, so the row is as tall as before */   /* the roaster one size down from the coffee (24 under 39), on the line height it had at 39 */
-.item .who a.rn{text-decoration:none!important}   /* no underline: ALT Riviera's own up-right arrow says it leads somewhere */
-.item .who a.rn::after{content:"\2197";font-family:"ALT Riviera";font-variant-emoji:text;margin-left:.18em;color:var(--muted);transition:color .2s ease, translate .2s ease;display:inline-block}
-@media (hover:hover){ .item .who a.rn:hover::after{color:var(--ink);translate:1px -1px} }
+.item .who a.rn{text-decoration:none!important}   /* no underline and no arrow: the roaster's name is a link for whoever tries it */
+
 @media (min-width:1000px){.item .who:has(.rn){margin-top:2.15px;line-height:43px!important}.item .who .rn{font-size:39px;line-height:43px}.item .who a.rn{text-decoration-thickness:2px;text-underline-offset:5px}}
 .item .who{line-height:1.05;white-space:normal;overflow:visible;padding-bottom:0;margin-bottom:-4px}   /* roaster and coffee read as one paragraph, the coffee one line down: no gap beyond the line height */
 .item .who:has(.rn){display:block}
@@ -2447,7 +2446,7 @@ footer #tip a:hover, footer .foot-links a:hover{text-decoration-color:transparen
 .item .c-where .c-drop{display:inline-block;width:6px;height:6px;margin:0 .6em 0 .7em;background:currentColor;border-radius:0 50% 50% 50%;transform:translateY(-1px) rotate(45deg)}
 .item .c-where .ji::after{content:"/";margin-left:.45em;color:var(--muted);font-weight:500}   /* New / City, date (price) */
 .item .c-where .ji{margin-right:.2em;font-weight:500;color:var(--go)}.item .c-where .ji.fy{color:var(--hl)}
-#shelves.ro-on .item .who,#shelves.ro-on .item .c-where .rcity{display:none!important}
+#shelves.ro-on .item .who,#shelves.ro-on .item .c-where .rcity,#shelves.ro-on .item .r > .ro-all{display:none!important}
 /* a coffee's row: Brew, then a plus in a circle that lets Buy and Save out, the same plus as the top bar's */
 .shelf .item > .r > .row-more{border:0!important;border-radius:50%!important;width:var(--pill-h);height:var(--pill-h);padding:0;display:inline-flex;align-items:center;justify-content:center;flex:none;background:var(--pill)!important;color:var(--ink)!important;cursor:pointer;align-self:center}
 @media (hover:hover){ .shelf .item > .r > .row-more:hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))!important} }
@@ -2525,6 +2524,7 @@ html.brew-in .shelf > .item.brewing{padding-bottom:14px!important}
 .pours.steps.timed th{white-space:nowrap}
 /* the bar at the bottom: its plain pills (Coffees, Bags, Journal) share the width equally; Start brewing takes the room it needs */
 @media (max-width:899px){ .botnav .chip:not(.bn-go):not([data-bn="cancel"]){flex:1 1 0!important;min-width:0} html:not(.brew-in) .botnav .chip.bn-go{flex:2 1 0!important} }
+.shelf .item > .r{flex-wrap:wrap!important}   /* the narrowest phones: the open row wraps instead of running off the screen */
 html.brew-in .brew-above{display:none!important}
 html.brew-in #shelves{margin-top:0!important}
 /* "Recipe for V60" as big as the recipe's own numbers, centred, no full stop */
@@ -2832,7 +2832,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
 </head>
 <body>
 <!-- the hero film lies over the page top, the top bar included: its black is see-through, so the drop falls across the bar into the coffee -->
-<picture><source media="(prefers-reduced-motion: reduce)" srcset="/img/goccio-drop2.jpg"><img class="wm-video" id="wmFilm" src="/img/goccio-drop2.webp" alt="" aria-hidden="true" draggable="false"></picture>
+<canvas class="wm-video" id="wmFilm" width="640" height="360" aria-hidden="true"></canvas>
 <header class="top">
   <div class="top-in">
     <div class="mark" translate="no">Goccio</div>
@@ -7109,7 +7109,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         </div>
         <div class="r${rowOpen.has(rowKey(r)) ? " more-open" : ""}">
           <button class="btn" type="button" data-i="${i}">Brew</button><button type="button" class="row-more" data-more="${esc(rowKey(r))}" aria-expanded="${rowOpen.has(rowKey(r))}" aria-label="${LANG === "it" ? "Compra o salva" : "Buy or save"}"><svg viewBox="0 0 12 12" aria-hidden="true"><path class="tb-v" d="M6 2v8"/><path d="M2 6h8"/></svg></button>${cardBuy(r)}
-          <button type="button" class="pill bag-add ico${hasBag(r) ? " in" : ""}" data-b="${i}" aria-pressed="${hasBag(r)}" aria-label="${hasBag(r) ? (LANG === "it" ? "Nei miei sacchetti" : "In my bags") : (LANG === "it" ? "Salva nei miei sacchetti" : "Save to my bags")}">${BAG_ICO}</button>
+          <button type="button" class="pill bag-add ico${hasBag(r) ? " in" : ""}" data-b="${i}" aria-pressed="${hasBag(r)}" aria-label="${hasBag(r) ? (LANG === "it" ? "Nei miei sacchetti" : "In my bags") : (LANG === "it" ? "Salva nei miei sacchetti" : "Save to my bags")}">${BAG_ICO}</button><a class="pill buy-p ro-all" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${LANG === "it" ? "Altri del torrefattore" : "More from roaster"}</a>
         </div></article>`; }).join("") : (() => { const msg = `Nothing matches${shelfV !== "all" ? `. Try Everything under Made for, or` : `. Try a taste, an origin or a roaster, or <a href="#" class="mail-me scan-me">scan the bag in front of you</a>. Missing a roaster?`} <a href="#" class="mail-me" data-s="Missing coffee">${shelfV !== "all" ? "email me" : "Email me"}</a> and I’ll add it.`;
           // a search found nothing: one paragraph with the Searching line, a line break between; three searches that do work, one tap each
           const tryQ = shelfV !== "all" ? "" : `<br>${LANG === "it" ? "Oppure prova" : "Or try"}: ` + (LANG === "it" ? ["fruttato", "Etiopia lavato", "decaffeinato"] : ["fruity", "washed Ethiopia", "decaf"]).map((x) => `<a href="#" class="try-q" data-q="${x}">${x}</a>`).join(", ") + ".";
@@ -9188,8 +9188,18 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   var PN_PLUS = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
       PN_MINUS = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
   // the film reaches from the top of the screen to the foot of the hero, and steps behind the top bar once the page scrolls
-  // the film is an animated picture in the page itself, not a video and not started by script: every phone plays it, round and round, with no
-  // play button; anyone who asks for less motion gets the still (the picture element chooses)
+  // the film is drawn frame by frame on a canvas from four sheets of stills (95 frames, 12 a second): nothing for a phone to block or to
+  // put a play button on, Low Power Mode included. It plays once when the page shows and rests on its last frame; anyone who asks for
+  // less motion gets the first frame only
+  { const c = $("wmFilm"), g = c && c.getContext && c.getContext("2d"); if (g) { const N = 95, FPS = 12, COLS = 6, PER = 24, W = 640, H = 360, sheets = [];
+      const draw = (k) => { const im = sheets[Math.floor(k / PER)]; if (!im || !im.ok) return false; const n = k % PER; g.drawImage(im, (n % COLS) * W, Math.floor(n / COLS) * H, W, H, 0, 0, W, H); return true; };
+      const load = (i) => { const im = new Image(); im.decoding = "async"; im.onload = () => { im.ok = true; if (i === 0) draw(0); if (i < 3) load(i + 1); }; im.src = `/img/goccio-film${i + 1}.jpg`; sheets[i] = im; };
+      load(0);
+      if (!matchMedia("(prefers-reduced-motion: reduce)").matches) { let k = 0, last = 0;
+        const tick = (t) => { if (document.documentElement.classList.contains("wait") || !sheets[0] || !sheets[0].ok) return requestAnimationFrame(tick);   // not behind the loading fade
+          if (t - last >= 1000 / FPS - 2) { if (draw(k)) { k++; last = t; } }   // a sheet still on its way: hold the frame, don't skip
+          if (k < N) requestAnimationFrame(tick); };
+        requestAnimationFrame(tick); } } }
   { const v = $("wmFilm"), h = document.querySelector(".wm-screen"); if (v && h) { const fit = () => { v.style.height = Math.round(h.getBoundingClientRect().bottom + scrollY) + "px"; };
       fit(); addEventListener("resize", fit); setTimeout(fit, 400); setTimeout(fit, 2000); if (document.fonts) document.fonts.ready.then(fit);
       const sc = () => document.documentElement.classList.toggle("scrolled", scrollY > 2); sc(); addEventListener("scroll", sc, { passive: true });
