@@ -2902,9 +2902,8 @@ footer #tip{margin-top:10px!important}footer #tip a{color:var(--ink);text-decora
     <p class="foot-note" id="rights">All rights reserved. Coffee names and tasting notes belong to their roasters.</p>
     </details>
     <p class="foot-note foot-all foot-links"><a href="/coffee/">Every coffee, by roaster</a><a href="/list/">Get your roastery listed</a><a href="/list/#remove">Remove your roastery</a><a href="/privacy/">Privacy</a><a class="mail" href="#" data-m="ku.oc.oiccog@nu">Email us</a></p>
-    <p class="foot-note foot-copy">© <span id="cYear">2026</span> Federico R. T. Ferrari.</p>
+    <p class="foot-note foot-copy">© <span id="cYear">2026</span> Federico R. T. Ferrari.<br><span id="tip">Free, no ads. <a href="https://buymeacoffee.com/thisisfed" target="_blank" rel="noopener">Buy me a coffee</a>.</span></p>
     <script>try { document.getElementById("cYear").textContent = new Date().getFullYear(); } catch (e) {}</script>
-    <p class="foot-note" id="tip">Free, no ads. <a href="https://buymeacoffee.com/thisisfed" target="_blank" rel="noopener">Buy me a coffee</a>.</p>
     </div>
   </footer>
   <script>
@@ -7594,7 +7593,7 @@ footer #tip{margin-top:10px!important}footer #tip a{color:var(--ink);text-decora
     let proc = null;
     for (const [key, terms] of V.process) { const hit = scan((l) => { let s = 0; terms.forEach((t) => { s = Math.max(s, findTerm(l.n, t)); });
         if (key === "natural" && s < 1 && /\b(people|and) nature\b|\bnature (and|alliance)\b/.test(l.n)) s = 0;   // "people and nature" is not a natural process
-        if (key === "honey" && s && !/process|proceso|procede|\b(black|red|yellow|white|pulped|semi) /.test(l.n) && (flvN(l.text) >= 2 || /\b(like|flavou?rs?|notes?|sweet|taste)\b/.test(l.n))) s = 0;   // "Lemon, Honey, Prune", "flavors like honey"
+        if (key === "honey" && s && !/process|proceso|procede|\b(black|red|yellow|white|pulped|semi) /.test(l.n) && (flvN(l.text) >= 2 || /\b(like|flavou?rs?|notes?|sweet|taste)\b/.test(l.n) || (/[,.]\s*\S/.test(l.text) && !Object.values(V.country).flat().some((t) => t.length >= 4 && l.n.includes(t))))) s = 0;   // "Peru, Honey" is a process; "Honey, Prune" is two flavours   // "Lemon, Honey, Prune", "flavors like honey"
         if (key === "anaerobic" && s && /\blactic\b/.test(l.n) && /\bacid/.test(l.n) && !/anaerob|ferment|process/.test(l.n)) s = 0;   // "Lactic Acidity." is a taste
         return s ? { s, lab: /process|proceso|procede|aufbereitung|processing|metodo/.test(l.n) } : null; });
       if (hit && (!proc || (hit.s >= 0.85 && proc.s < 0.85))) { proc = { key, ...hit }; if (hit.s >= 0.85) break; } }
