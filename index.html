@@ -2467,6 +2467,10 @@ footer #tip a:hover, footer .foot-links a:hover{text-decoration-color:transparen
 /* a coffee's small print reads as one paragraph (notes, where and when, price: line after line at the text's own line height), set off from the tags by one empty line */
 .shelf .item .l > .tags ~ :is(.c-notes,.c-where,.c-price){margin-top:-4px!important;line-height:20.25px!important}
 .shelf .item .l > .tags + :is(.c-notes,.c-where,.c-price){margin-top:16.25px!important}
+/* a coffee open in the list: the bar at the bottom is Cancel and Start brewing, nothing else */
+.botnav [data-bn="cancel"]{display:none!important}
+html.brew-in .botnav [data-bn="cancel"]{display:inline-flex!important}
+html.brew-in .botnav [data-bn]:not([data-bn="cancel"]):not([data-bn="coffee"]){display:none!important}
 #waterOpt{display:none!important}   /* no water to choose: the recipe says what water to use */
 #gear { display: none !important; }   /* My equipment is gone: brewer, grinder and water are picked in the recipe, and remembered */
 #gear.bare #gearIntro { display: block; width: 100%; }
@@ -3084,7 +3088,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   <div class="cam-top"><p class="cam-status" id="camStatus"></p><div class="cam-found" id="camFound"></div></div>
   <div class="cam-ctrls"><button type="button" class="chip" id="camClose">Cancel</button><button type="button" class="chip" id="camPhoto">Take a photo instead</button><button type="button" class="chip on" id="camDone">Use what it read</button></div>
 </div>
-<nav class="botnav" aria-label="Sections"><button type="button" class="chip" data-bn="shelves">Coffees</button><button type="button" class="chip" data-bn="bags" hidden>Bags</button><button type="button" class="chip" data-bn="coffee">Brew</button><button type="button" class="chip" data-bn="journal" hidden>Journal</button></nav>
+<nav class="botnav" aria-label="Sections"><button type="button" class="chip" data-bn="cancel">Cancel</button><button type="button" class="chip" data-bn="shelves">Coffees</button><button type="button" class="chip" data-bn="bags" hidden>Bags</button><button type="button" class="chip" data-bn="coffee">Brew</button><button type="button" class="chip" data-bn="journal" hidden>Journal</button></nav>
 <div class="dock" id="dock"><button class="btn" id="dockGo" type="button"><span>Start brewing</span><span class="num" id="dockSum"></span></button></div>
 
 <!-- Brew mode -->
@@ -4933,7 +4937,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   // two or more grinders in My equipment: pick between them right here, as pills (and the one in use, if it isn't one of them)
   function renderMillOwn() {
     let own = []; try { own = gear.grinders; } catch (e) {}
-    const v = $("millSel").value, list = own.length >= 2 ? [...own, ...(own.includes(v) ? [] : [v])].filter((k) => GRINDERS[k]) : [];
+    const v = $("millSel").value, list = [];   // one grinder on show, always: the one in use, and a tap on it opens every grinder
     $("millOwn").hidden = !list.length; $("millOpt").classList.toggle("own", !!list.length);
     $("millOwn").innerHTML = list.map((k) => `<button type="button" class="chip" data-v="${k}" aria-pressed="${k === v}">${esc(GRINDERS[k].name)}</button>`).join("")
       + (list.length ? `<button type="button" class="chip gear-more" data-all="1" aria-label="${LANG === "it" ? "Tutti i macinini" : "Every grinder"}">${plusN(Object.keys(GRINDERS).length - list.length)}</button>` : "");   // the rest of the grinders
@@ -6900,7 +6904,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const low = (n, k) => { const t = n.split(" ").map((x) => /^[A-ZÀ-Ý][a-zà-ÿ'’-]*$/.test(x) ? x.toLowerCase() : x).join(" "); return k ? t : t.charAt(0).toUpperCase() + t.slice(1); };
     const w = ns.map((n, k) => lit(low(n, k))), and = LANG === "it" ? " e " : " and ";
     return `<p class="c-notes">${w.length > 1 ? w.slice(0, -1).join(", ") + and + w[w.length - 1] : w[0]}</p>`; };   // the last one joined with "and"
-  const cardPrice = (r) => { if (!r.url) return ""; const it = LANG === "it", p = r.price ? esc(r.price.replace(/^From\s+/i, "")) : "";
+  const cardPrice = (r) => { return "";   // no price-per-weight line: the price is on Buy
+    if (!r.url) return ""; const it = LANG === "it", p = r.price ? esc(r.price.replace(/^From\s+/i, "")) : "";
     const g = r.bag_g && r.bag_g >= 50 && r.bag_g <= 1000 ? r.bag_g : null, per = r._p100 != null && r._p100 >= 2 ? `£${r._p100.toFixed(2)} ${it ? "ogni" : "per"} 100 g` : "";
     const shop = p && !/£/.test(p) ? p : "";   // the shop's own price, when it isn't in pounds
     const rest = p && (g || per) ? [g ? `${g} g` : "", shop, per].filter(Boolean).join(", ") : shop ? `${shop} ${it ? "sul sito" : "at the shop"}` : "";   // the shop's price alone only repeats Buy
@@ -9031,6 +9036,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   { const nav = document.querySelector(".botnav"); if (nav) new MutationObserver(syncBrewPill).observe(nav, { subtree: true, attributes: true, attributeFilter: ["hidden"] }); addEventListener("resize", syncBrewPill); }
   new MutationObserver(syncBrewPill).observe($("dock"), { attributes: true, attributeFilter: ["hidden"] }); new MutationObserver(syncBrewPill).observe($("dockGo"), { attributes: true, attributeFilter: ["disabled"] }); syncBrewPill();
   document.querySelectorAll(".botnav [data-bn]").forEach((b) => b.onclick = () => { const id = b.dataset.bn, el = $(id);
+    if (id === "cancel") { const it = document.querySelector(".item.brewing"); brewShut(); if (it && it.isConnected) it.scrollIntoView({ block: "center" }); return; }   // a coffee open in the list: Cancel folds it
     if (id === "coffee" && b.classList.contains("bn-ask")) return jumpTo($("detected"));   // the roast first
     if (id === "coffee" && b.classList.contains("bn-go")) return openBrew();
     if (id === "coffee" && window.__useScan && window.__useScan()) return;   // a scan waiting to be checked: Brew is Use these
