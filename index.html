@@ -7466,15 +7466,18 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const b = [...$("shelf").querySelectorAll("button[data-i]")].find((x) => { const r = shelf[+x.dataset.i]; return r && (state.bag.url ? r.url === state.bag.url : r.roaster === state.bag.roaster && r.name === state.bag.name); });
     return b ? b.closest(".item") : null; }
   function brewHome() { const html = document.documentElement; if (!html.classList.contains("brew-in")) return;
+    try { brewKeep = { y: scrollY, m: $("shelves").style.getPropertyValue("margin-top") }; } catch (e) {}
     [...BREW_MOVE].reverse().forEach((id) => { const el = $(id), at = BREW_AT[id]; if (!el || !at) return; at.p.insertBefore(el, at.n && at.n.parentNode === at.p ? at.n : null); });
     html.classList.remove("brew-in"); try { $("shelves").style.removeProperty("margin-top"); } catch (e) {} document.querySelectorAll(".brew-above").forEach((x) => x.classList.remove("brew-above")); document.querySelectorAll(".item.brewing").forEach((x) => { x.classList.remove("brewing"); const h = x.querySelector(".brew-host"); if (h) h.remove();
       const bb = x.querySelector("button[data-i]"); if (bb) { bb.removeAttribute("aria-pressed"); bb.textContent = "Brew"; } }); }
   // closing the open coffee puts it away for good: no "What's brewing?" with its name left further down the page. That section is for a scanned or typed bag
-  function brewShut() { brewIn = false; brewHome(); state.text = ""; state.bag = null; state.roastPhoto = null; try { $("coffeeIn").value = ""; wbOpen = false; } catch (e) {} saveState(); renderAllOpts(); render(); }
+  function brewShut() { brewIn = false; brewHome(); brewKeep = null; state.text = ""; state.bag = null; state.roastPhoto = null; try { $("coffeeIn").value = ""; wbOpen = false; } catch (e) {} saveState(); renderAllOpts(); render(); }
+  let brewFresh = false, brewKeep = null;   // brewKeep: where the page stood when an open coffee was last put away, for when it is only being re-drawn
   function placeBrew() { const row = $("recipe").hidden ? null : brewRow();
     if (!row) return brewHome();
     if (row.classList.contains("brewing") && row.contains($("recipe"))) return;
-    brewHome();
+    // the list was re-drawn under an open coffee (another brewer, another grinder): put it back as it was, without moving the page
+    brewHome(); const again = !brewFresh && brewKeep ? brewKeep : null; brewFresh = false;
     BREW_MOVE.forEach((id) => { const el = $(id); if (el && !BREW_AT[id]) BREW_AT[id] = { p: el.parentNode, n: el.nextSibling }; });
     const host = document.createElement("div"); host.className = "brew-host"; row.appendChild(host); BREW_MOVE.forEach((id) => { const el = $(id); if (el) host.appendChild(el); });
     const shut = document.createElement("button"); shut.type = "button"; shut.className = "chip brew-shut"; shut.textContent = LANG === "it" ? "Chiudi" : "Close"; shut.onclick = () => { brewShut(); jumpTo(row); }; host.appendChild(shut);
@@ -7484,6 +7487,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // nothing above the open coffee either: the page starts at it, so there is no scrolling up past it
     for (let el = row; el && el !== document.body; el = el.parentElement) for (let p = el.previousElementSibling; p; p = p.previousElementSibling) {
       if (/^(SCRIPT|STYLE|LINK)$/.test(p.tagName) || /fixed|sticky/.test(getComputedStyle(p).position)) continue; p.classList.add("brew-above"); }
+    if (again) { if (again.m) $("shelves").style.setProperty("margin-top", again.m, "important"); scrollTo(0, again.y); return; }
     scrollTo(0, 0);
     try { const sh = $("shelves"), cw = row.querySelector(".c-where") || row, tp = document.querySelector(".top"); sh.style.removeProperty("margin-top");
       const side = Math.max(8, row.getBoundingClientRect().left), gap = cw.getBoundingClientRect().top + 4 - tp.getBoundingClientRect().bottom;   // + 4: the line box's top to the capitals
@@ -7491,7 +7495,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // the coffee travels from where it was tapped to the top of the page, unhurried: no jump cut
     try { const dy = y0 - row.getBoundingClientRect().top; if (Math.abs(dy) > 2 && !matchMedia("(prefers-reduced-motion: reduce)").matches) row.animate([{ transform: `translateY(${dy}px)` }, { transform: "none" }], { duration: Math.min(900, 420 + Math.abs(dy) * .6), easing: "cubic-bezier(.3,.7,.2,1)" }); } catch (e) {} }
   function brewThis(r, jump = true, inRow = false) {
-    brewIn = !!inRow; bagAskShow = false;
+    brewIn = !!inRow; bagAskShow = false; brewFresh = !!inRow;
     if (jump) surprisePick = null;
     Object.assign(state, listState(r)); state.roastPhoto = null;
     $("coffeeIn").value = state.text; saveState(); renderAllOpts(); render();
