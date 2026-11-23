@@ -2477,8 +2477,26 @@ html.brew-in .botnav [data-bn]:not([data-bn="cancel"]):not([data-bn="coffee"]){d
 .item.brewing > .brew-host{animation:brew-up .45s cubic-bezier(.2,.8,.2,1) both}
 @media (prefers-reduced-motion: reduce){ .item.brewing > .brew-host{animation:none} }
 .tech .tech-w::before{content:"⚠︎ ";color:var(--hl);font-weight:700}   /* the water line carries the same small warning sign as the notes in Why this recipe */
+/* the recipe's own actions: Enter my own recipe, then a plus that lets Copy, Share and Save out, with the same fluid motion as a coffee's row */
+#recipe .share > .share-more{border:0;border-radius:50%;width:var(--pill-h);height:var(--pill-h);padding:0;display:inline-flex;align-items:center;justify-content:center;flex:none;background:var(--pill);color:var(--ink);cursor:pointer;position:relative;z-index:2;align-self:center}
+@media (hover:hover){ #recipe .share > .share-more:hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))} }
+#recipe .share:not(.more-open) > .btn:not(#mUse){display:none!important}
+.share.more-open:not(.more-closing) > .row-more .tb-v{transform:scaleY(0)}
+#recipe .share.more-anim > .share-more{transform-origin:0 50%;animation:drop-p .784s linear both}
+#recipe .share.more-anim > .btn:not(#mUse){transform-origin:0 50%;animation:drop-l .784s linear both, row-fade .784s linear both}
+#recipe .share.more-anim > #mUse, #recipe .share.more-closing > #mUse{transform-origin:100% 50%;animation:row-brew .7s cubic-bezier(.3,.6,.4,1) .08s both}
+#recipe .share.more-closing > #mUse{animation-delay:.22s}
+#recipe .share.more-closing > .share-more{transform-origin:0 50%;animation:drop-pc .644s linear both}
+#recipe .share.more-closing > .btn:not(#mUse){animation:row-in .28s cubic-bezier(.4,0,1,1) both;pointer-events:none}
+@media (prefers-reduced-motion: reduce){ #recipe .share > *{animation:none!important} }
+/* scrolled to the end of an open coffee, those pills sit as far above the bottom bar's rule as below the rule over them (17 px) */
+html.brew-in .shelf > .item.brewing{padding-bottom:14px!important}
+/* the warning sign: drawn like the plus and the lens, a plain outline at their size and weight */
+.tech .tech-w::before, #why li.warn::before{content:""!important;display:inline-block;width:16px;height:16px;margin-right:6px;vertical-align:-2.5px;background:var(--hl);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4 21.5 20h-19Z'/%3E%3Cpath d='M12 10.5v4'/%3E%3Cpath d='M12 17.2v.1'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4 21.5 20h-19Z'/%3E%3Cpath d='M12 10.5v4'/%3E%3Cpath d='M12 17.2v.1'/%3E%3C/svg%3E") center/contain no-repeat}
 html.brew-in .brew-above{display:none!important}
-html.brew-in #shelves{margin-top:12px!important}
+html.brew-in #shelves{margin-top:0!important}
 /* "Recipe for V60." as big as the recipe's own numbers */
 html body #recipe .sec-head .cap:first-child, html body #recipe .sec-head .cap:first-child *{font-size:39px!important;line-height:1.05!important;letter-spacing:-.01em!important}
 @media (min-width:1000px){ html body #recipe .sec-head .cap:first-child, html body #recipe .sec-head .cap:first-child *{font-size:63px!important} }
@@ -2950,6 +2968,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     <details class="clk xp" id="dialBox"><summary>Dial it in: change one thing per brew</summary><ul id="dial"></ul></details>
     <details class="clk xp" id="clkHow"><summary>How the C40 clicks were set <span class="muted" id="clkSumm" hidden></span></summary><div class="clk-body" id="clkBody"></div></details>
     <div class="share">
+      <button type="button" class="row-more share-more" aria-expanded="false" aria-label="Copy, share or save"><svg viewBox="0 0 12 12" aria-hidden="true"><path class="tb-v" d="M6 2v8"/><path d="M2 6h8"/></svg></button>
       <button class="btn ico-btn" id="copyBtn" type="button" aria-label="Copy recipe"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10.5 3.2V3A1.5 1.5 0 0 0 9 1.5H4A1.5 1.5 0 0 0 2.5 3v5A1.5 1.5 0 0 0 4 9.5h.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
       <button class="btn ico-btn" id="linkBtn" type="button" aria-label="Share link"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 10V1.8M5 4.5l3-3 3 3M4.5 7.5H4A1.5 1.5 0 0 0 2.5 9v4A1.5 1.5 0 0 0 4 14.5h8a1.5 1.5 0 0 0 1.5-1.5V9A1.5 1.5 0 0 0 12 7.5h-.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       <button class="btn" id="bagBtn" type="button" aria-pressed="false"></button>
@@ -6921,11 +6940,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   // Buy and Save wait behind the row's plus, as language and theme do behind the top bar's
   const rowOpen = new Set(), rowKey = (r) => r.url || (r.roaster + "|" + r.name);
   document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest(".row-more"); if (!b) return;
-    const r = b.parentElement, k = b.dataset.more, on = !r.classList.contains("more-open") || r.classList.contains("more-closing");
+    const r = b.parentElement, k = b.dataset.more, inShare = r.classList.contains("share"), on = !r.classList.contains("more-open") || r.classList.contains("more-closing");
     clearTimeout(r._mc); r.classList.remove("more-closing", "more-anim"); void r.offsetWidth;
-    if (on) { rowOpen.add(k); r.classList.add("more-open", "more-anim");
+    if (on) { if (!inShare) rowOpen.add(k); r.classList.add("more-open", "more-anim");
       // Buy and Save start under the plus and part from it as the top bar's drops do; each knows how far it has to travel
-      const x0 = b.getBoundingClientRect().left; r.querySelectorAll(":scope > .buy-p, :scope > .bag-add").forEach((p) => p.style.setProperty("--tb-x", (x0 - p.getBoundingClientRect().left) + "px"));
+      const x0 = b.getBoundingClientRect().left; r.querySelectorAll(inShare ? ":scope > .btn:not(#mUse)" : ":scope > .buy-p, :scope > .bag-add").forEach((p) => p.style.setProperty("--tb-x", (x0 - p.getBoundingClientRect().left) + "px"));
       r._mc = setTimeout(() => r.classList.remove("more-anim"), 900); }
     else { rowOpen.delete(k); r.classList.add("more-closing"); r._mc = setTimeout(() => r.classList.remove("more-open", "more-closing"), 660); }
     b.setAttribute("aria-expanded", on); });
@@ -7443,11 +7462,14 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const host = document.createElement("div"); host.className = "brew-host"; row.appendChild(host); BREW_MOVE.forEach((id) => { const el = $(id); if (el) host.appendChild(el); });
     const shut = document.createElement("button"); shut.type = "button"; shut.className = "chip brew-shut"; shut.textContent = LANG === "it" ? "Chiudi" : "Close"; shut.onclick = () => { brewShut(); jumpTo(row); }; host.appendChild(shut);
     row.classList.add("brewing"); const bb = row.querySelector("button[data-i]"); if (bb) { bb.setAttribute("aria-pressed", "true"); bb.textContent = LANG === "it" ? "Chiudi" : "Close"; }   // the open coffee's Brew is its Close
+    const y0 = row.getBoundingClientRect().top;
     document.documentElement.classList.add("brew-in");
     // nothing above the open coffee either: the page starts at it, so there is no scrolling up past it
     for (let el = row; el && el !== document.body; el = el.parentElement) for (let p = el.previousElementSibling; p; p = p.previousElementSibling) {
       if (/^(SCRIPT|STYLE|LINK)$/.test(p.tagName) || /fixed|sticky/.test(getComputedStyle(p).position)) continue; p.classList.add("brew-above"); }
-    scrollTo(0, 0); }
+    scrollTo(0, 0);
+    // the coffee travels from where it was tapped to the top of the page, unhurried: no jump cut
+    try { const dy = y0 - row.getBoundingClientRect().top; if (Math.abs(dy) > 2 && !matchMedia("(prefers-reduced-motion: reduce)").matches) row.animate([{ transform: `translateY(${dy}px)` }, { transform: "none" }], { duration: Math.min(900, 420 + Math.abs(dy) * .6), easing: "cubic-bezier(.3,.7,.2,1)" }); } catch (e) {} }
   function brewThis(r, jump = true, inRow = false) {
     brewIn = !!inRow; bagAskShow = false;
     if (jump) surprisePick = null;
@@ -7455,7 +7477,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     $("coffeeIn").value = state.text; saveState(); renderAllOpts(); render();
     if (jump && r && r.url) store.set("v60.last", { url: r.url, roaster: r.roaster || "", name: r.name || "" });
     placeBrew();
-    if (jump && brewIn && document.querySelector(".item.brewing")) return jumpTo(document.querySelector(".item.brewing"));
+    if (jump && brewIn && document.querySelector(".item.brewing")) return;   // placeBrew has put it at the top of the page already
     if (jump) landBrewing();
   }
   // the coffee in the recipe: Surprise me's pick, a coffee from the list or your bags, or what's typed ("Intermission, Sundial, …")
