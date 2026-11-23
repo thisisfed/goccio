@@ -2373,7 +2373,6 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
 html.brew-in .shelf > .item.brewing ~ *, html.brew-in #shelfMore, html.brew-in #shelves ~ *, html.brew-in .page ~ footer, html.brew-in footer{display:none!important}
 html.brew-in .shelf > .item.brewing{border-bottom:0!important;padding-bottom:24px}
 #opts-dose:not(:has(button)){display:none}   /* cupping has no Cup row: no gap where it would be */
-.item.brewing button[data-i][aria-pressed="true"]{background:var(--ink)!important;color:var(--bg)!important}
 html.brew-in #coffee{display:none!important}
 #moreOpts { display: none !important; }   /* Bag details is gone: what the recipe needs and doesn't have is asked above it, nothing else */
 #detected .miss { display: block; } #detected .miss + .miss { margin-top: 8px; }
@@ -2385,6 +2384,8 @@ html.brew-in #coffee{display:none!important}
 #detected .roast-ask{margin-bottom:0!important}
 #detected .miss + .miss{margin-top:12px!important}
 .ask > #kit, .ask > #adjOpts{margin-top:-4px!important}
+.brew-host .brew-shut:hover{background:color-mix(in srgb, var(--pill) 80%, var(--ink))}
+#recipe .share{border-top:1px solid var(--line);margin-top:-14px!important;padding-top:16px}   /* the last fold (How the C40 clicks were set, or Dial it in) closes with a rule, like the ones above it open */
 #gear { display: none !important; }   /* My equipment is gone: brewer, grinder and water are picked in the recipe, and remembered */
 #gear.bare #gearIntro { display: block; width: 100%; }
 #gear.bare .gear-tools { display: none; }
@@ -5377,7 +5378,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         ...(teaAvail(b) ? [["tea", TEA_DIL.has(b) ? "Tea-like, by dilution" : "Tea-like"]] : [])] },
       (b === "press" || b === "cold") && { key: "steep", label: "Steep", items: [["hot", "Hot"], ["cold", "Cold brew"]], on: (v) => setBrewer(v === "cold" ? "cold" : "press"), cur: () => b === "cold" ? "cold" : "hot" },
       b === "aero" && !teaOn && { key: "aeroWay", label: "Method", items: [["standard", "Hoffmann"], ["inverted", "Hoffmann inverted"], ["wendelboe", "Wendelboe"]] },
-      (b === "v60" || b === "neo") && !teaOn && { key: "method", label: "Method", items: [["best", "Best for this coffee"], ["hoffmann", "Hoffmann"], ["fourSix", "Kasuya 4:6"], ...(Number(state.dose) >= 25 ? [] : [["ten", "Kasuya 10-Pour"]]), ["rao", "Rao"], ["onyx", "Onyx"], ["cafec", "CAFEC Osmotic Flow"], ["winton", "Winton Five-Pour"], ["hedrick", "Hedrick"]] },   // ten: 15 s pours don't scale to a double batch   // ten 15 s pours don't scale to a double batch
+      (b === "v60" || b === "neo") && !teaOn && (() => { // no "Best for this coffee" pill: the method that is best for this coffee is named, comes first and carries a Best tag. It stays picked until you choose another, and follows the coffee and the dose
+        const all = [["hoffmann", "Hoffmann"], ["fourSix", "Kasuya 4:6"], ...(Number(state.dose) >= 25 ? [] : [["ten", "Kasuya 10-Pour"]]), ["rao", "Rao"], ["onyx", "Onyx"], ["cafec", "CAFEC Osmotic Flow"], ["winton", "Winton Five-Pour"], ["hedrick", "Hedrick"]];
+        let best = "hoffmann"; try { const m = engine({ ...state, method: "best" }).m; best = m === "hoffmannU" ? "hoffmann" : m; } catch (e) {} if (!all.some(([k]) => k === best)) best = "hoffmann";
+        return { key: "method", label: "Method", best, items: [all.find(([k]) => k === best), ...all.filter(([k]) => k !== best)], cur: () => state.method === "best" ? best : state.method, on: (v) => { state.method = v === best ? "best" : v; } }; })(),   // ten: 15 s pours don't scale to a double batch   // ten 15 s pours don't scale to a double batch
     ].filter(Boolean).filter((o) => (o.key === "goal") === !!cupOnly);
   };
   const OPTS_MORE = [
@@ -5403,7 +5407,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         // process and roast: what the bag says is picked for you; nothing stated, Unknown
         b.setAttribute("aria-pressed", String((o.cur ? o.cur() : o.key === "process" || o.key === "roast" ? pickedOf(o.key) : state[o.key]) === v));
         b.onclick = () => { if (o.on) o.on(v); else state[o.key] = v; if (o.key === "roast") state.roastPhoto = null; saveState(); renderAllOpts(); render(); };
-        if (o.key === "goal" && v === "tea") b.insertAdjacentHTML("beforeend", `<span class="beta">Beta</span>`);   // kept because it looks good, not because it's unfinished
+        if (o.key === "goal" && v === "tea") b.insertAdjacentHTML("beforeend", `<span class="beta">Beta</span>`);
+        if (o.key === "method" && v === o.best) b.insertAdjacentHTML("beforeend", `<span class="beta">${LANG === "it" ? "Migliore" : "Best"}</span>`);   // kept because it looks good, not because it's unfinished
         g.appendChild(b);
       });
       if (o.key === "brewer" && (brewAll || brewerHidden())) {   // + for every brewer, − to fold back, like My equipment's See all
@@ -7282,7 +7287,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   function brewHome() { const html = document.documentElement; if (!html.classList.contains("brew-in")) return;
     [...BREW_MOVE].reverse().forEach((id) => { const el = $(id), at = BREW_AT[id]; if (!el || !at) return; at.p.insertBefore(el, at.n && at.n.parentNode === at.p ? at.n : null); });
     html.classList.remove("brew-in"); document.querySelectorAll(".item.brewing").forEach((x) => { x.classList.remove("brewing"); const h = x.querySelector(".brew-host"); if (h) h.remove();
-      const bb = x.querySelector("button[data-i]"); if (bb) bb.removeAttribute("aria-pressed"); }); }
+      const bb = x.querySelector("button[data-i]"); if (bb) { bb.removeAttribute("aria-pressed"); bb.textContent = "Brew"; } }); }
   function placeBrew() { const row = $("recipe").hidden ? null : brewRow();
     if (!row) return brewHome();
     if (row.classList.contains("brewing") && row.contains($("recipe"))) return;
@@ -7290,7 +7295,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     BREW_MOVE.forEach((id) => { const el = $(id); if (el && !BREW_AT[id]) BREW_AT[id] = { p: el.parentNode, n: el.nextSibling }; });
     const host = document.createElement("div"); host.className = "brew-host"; row.appendChild(host); BREW_MOVE.forEach((id) => { const el = $(id); if (el) host.appendChild(el); });
     const shut = document.createElement("button"); shut.type = "button"; shut.className = "chip brew-shut"; shut.textContent = LANG === "it" ? "Chiudi" : "Close"; shut.onclick = () => { brewIn = false; placeBrew(); jumpTo(row); }; host.appendChild(shut);
-    row.classList.add("brewing"); const bb = row.querySelector("button[data-i]"); if (bb) bb.setAttribute("aria-pressed", "true");
+    row.classList.add("brewing"); const bb = row.querySelector("button[data-i]"); if (bb) { bb.setAttribute("aria-pressed", "true"); bb.textContent = LANG === "it" ? "Chiudi" : "Close"; }   // the open coffee's Brew is its Close
     document.documentElement.classList.add("brew-in"); }
   function brewThis(r, jump = true, inRow = false) {
     brewIn = !!inRow;
