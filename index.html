@@ -2384,7 +2384,8 @@ html.brew-in #coffee{display:none!important}
 #opts-main{margin-top:0!important}
 #detected .roast-ask{margin-bottom:0!important}
 #detected .miss + .miss{margin-top:12px!important}
-.ask > #kit, .ask > #adjOpts{margin-top:-4px!important}
+.ask > #kit, .ask > #adjOpts, .ask > #detected{margin-top:-4px!important}
+#coffeeIn{resize:none;overflow:hidden}   /* as tall as what's in it: one line for a short coffee, more for a long one */
 .brew-host .brew-shut:hover{background:color-mix(in srgb, var(--pill) 80%, var(--ink))}
 #recipe .share{border-top:1px solid var(--line);margin-top:-14px!important;padding-top:16px}   /* the last fold (How the C40 clicks were set, or Dial it in) closes with a rule, like the ones above it open */
 /* split-flap figures */
@@ -5121,7 +5122,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // roast missing: asked right here, as pills, because roast moves the grind and the temperature more than anything else the bag says
     { const it = LANG === "it", PLUS = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`, MINUS = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
       // Scan the beans first; the round + opens the five levels, as the + does everywhere else on the site
-      const ask = miss.includes("roast") ? `<span class="roast-ask chips" role="group" aria-label="${it ? "Tostatura" : "Roast"}">${PHOTO_CHIP}${roastAskOpen ? [["vlight", "Very light"], ["light", "Light"], ["medium", "Medium"], ["mdark", "Medium-dark"], ["dark", "Dark"]].map(([v, t]) => `<button type="button" class="chip" data-roast="${v}">${esc(tr(t))}</button>`).join("") : ""}<button type="button" class="chip gear-more" id="roastMore" aria-expanded="${roastAskOpen}" aria-label="${esc(tr(roastAskOpen ? "Hide the roast levels" : "Choose the roast"))}">${roastAskOpen ? MINUS : plusN(5)}</button><button type="button" class="chip" id="roastSkip" aria-pressed="${roastSkipFor === state.text}">${it ? "Non so" : "Not sure"}</button></span>` : "";
+      const ask = miss.includes("roast") ? `<span class="roast-ask chips" role="group" aria-label="${it ? "Tostatura" : "Roast"}">${PHOTO_CHIP}${roastAskOpen ? [["vlight", "Very light"], ["light", "Light"], ["medium", "Medium"], ["mdark", "Medium-dark"], ["dark", "Dark"]].map(([v, t]) => `<button type="button" class="chip" data-roast="${v}">${esc(tr(t))}</button>`).join("") : ""}<button type="button" class="chip gear-more" id="roastMore" aria-expanded="${roastAskOpen}" aria-label="${esc(tr(roastAskOpen ? "Hide the roast levels" : "Choose the roast"))}">${roastAskOpen ? MINUS : plusN(5)}</button></span>` : "";
       // one warning for each thing the recipe needs and doesn't have, each with its answers as pills. Nothing missing: nothing shown
       const where = state.bag ? "on the listing" : "given";
       const pAsk = miss.includes("process") ? `<span class="roast-ask chips" role="group" aria-label="${it ? "Processo" : "Process"}">${[["washed", "Washed"], ["natural", "Natural"], ["honey", "Honey"], ["anaerobic", "Anaerobic"], ["cofer", "Co-ferment / Infused"], ["decaf", "Decaf"]].map(([v, t]) => `<button type="button" class="chip" data-proc="${v}">${esc(tr(t))}</button>`).join("")}</span>` : "";
@@ -5133,7 +5134,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       if (mo) mo.onclick = () => { roastAskOpen = !roastAskOpen; render(); };
       // Start brewing waits for the roast: it moves the grind and the temperature more than anything else. "Not sure" takes the safe middle and lets you through
       { const sk = $("roastSkip"); if (sk) sk.onclick = () => { roastSkipFor = roastSkipFor === state.text ? null : state.text; render(); };
-        roastWait = !!(state.text && miss.includes("roast") && roastSkipFor !== state.text);
+        roastWait = false;   // Start brewing never waits: with the roast unknown the recipe is the safe middle, and you can brew it
         if (!$("recipe").hidden) { $("startBrew").disabled = roastWait; $("dockGo").disabled = roastWait; } try { syncBrewPill(); } catch (e) {} }
       D.querySelectorAll("[data-proc]").forEach((x) => x.onclick = () => { state.process = x.dataset.proc; saveState(); renderAllOpts(); render(); });
       D.querySelectorAll("[data-roast]").forEach((x) => x.onclick = () => { roastAskOpen = false; state.roast = x.dataset.roast; state.roastPhoto = null; saveState(); renderAllOpts(); render(); }); }
@@ -8182,6 +8183,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     $("scanMsg").textContent = fields.brand && !review.match ? `${fields.brand} isn’t on Goccio’s list of specialty roasters, but the recipe works from what the bag says. Check it, then Use these.` : "Here’s what the label says. Check it, then Use these.";
     box.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
+  // the What's brewing box grows and shrinks with the coffee's name
+  { const ta = $("coffeeIn"), fit = () => { ta.style.height = ""; ta.style.minHeight = ""; ta.rows = 2; if (!ta.value) return; ta.rows = 1; ta.style.minHeight = "0"; ta.style.height = "auto"; ta.style.height = (ta.scrollHeight + (ta.offsetHeight - ta.clientHeight)) + "px"; };
+    ta.addEventListener("input", fit); addEventListener("resize", fit); window.__fitCoffee = fit;
+    const d = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value"); Object.defineProperty(ta, "value", { get() { return d.get.call(this); }, set(v) { d.set.call(this, v); try { fit(); } catch (e) {} }, configurable: true });
+    new MutationObserver(fit).observe($("coffee"), { attributes: true, attributeFilter: ["hidden"] }); fit(); }
   window.__useScan = () => !!(review && !$("scanReview").hidden && applyReview());
   function closeReview() { const b = $("scanReview"); b.hidden = true; b.innerHTML = ""; b.classList.remove("only-match"); review = null; }
   function applyReview(land = true) {
