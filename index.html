@@ -2636,7 +2636,7 @@ footer #tip{margin-top:10px!important}footer #tip a{color:var(--ink);text-decora
   <section class="sec hero-sec" aria-labelledby="h1">
     <div class="hero">
       <div class="wm-screen">
-        <video class="wm-video" id="wmVideo" autoplay muted loop playsinline preload="metadata" poster="/img/goccio-hero.jpg" aria-hidden="true" tabindex="-1" disablepictureinpicture><source src="/img/goccio-hero.mp4" type="video/mp4"></video>
+        <video class="wm-video" id="wmVideo" autoplay muted loop playsinline webkit-playsinline preload="auto" poster="/img/goccio-hero.jpg" aria-hidden="true" tabindex="-1" disablepictureinpicture><source src="/img/goccio-hero.mp4" type="video/mp4"></video>
         <p class="wordmark" aria-hidden="true" translate="no"><span id="wm">Goccio</span></p>
         <div class="wm-more">
           <p class="wm-tagline">Your coffee companion</p>
@@ -8682,7 +8682,21 @@ footer #tip{margin-top:10px!important}footer #tip a{color:var(--ink);text-decora
   var PN_PLUS = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
       PN_MINUS = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
   // the hero film: silent, looping, and still (its first frame) for anyone who asks for less motion
-  { const v = $("wmVideo"); if (v) { v.muted = true; if (matchMedia("(prefers-reduced-motion: reduce)").matches) { v.removeAttribute("autoplay"); v.pause(); } else { const p = v.play(); if (p && p.catch) p.catch(() => {}); } } }
+  { const v = $("wmVideo"); if (v) { v.muted = true; v.defaultMuted = true; v.playsInline = true;
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches) { v.removeAttribute("autoplay"); v.pause(); }
+      else {
+        // phones are fussy about films that start by themselves: ask again when it has loaded, when the page is shown, and on the
+        // first touch or scroll (a touch always lets a silent film start, Low Power Mode included)
+        const kick = () => { if (!v.paused) return; v.muted = true; try { const p = v.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {} };
+        ["loadeddata", "canplay"].forEach((ev) => v.addEventListener(ev, kick));
+        ["pageshow", "touchstart", "pointerdown", "scroll"].forEach((ev) => addEventListener(ev, kick, { passive: true }));
+        document.addEventListener("visibilitychange", () => { if (!document.hidden) kick(); });
+        kick(); setTimeout(kick, 800); setTimeout(kick, 2500);
+        // nothing loaded after four seconds (Safari gives up when a server answers its part-requests oddly): fetch the whole
+        // film, 0.6 MB, and play it from memory
+        setTimeout(async () => { if (v.readyState >= 2 && !v.error) return; try { const r = await fetch("/img/goccio-hero.mp4"); if (!r.ok) return;
+            v.src = URL.createObjectURL(await r.blob()); v.load(); kick(); } catch (e) {} }, 4000);
+      } } }
   window.__v60 = { analyseBeans, decafGuard, parseCoffee, engine, suggest, cupNotes, cardImage, risks, recipeText, BASE, get recipe() { return recipe; }, get shelf() { return shelf; } };
 })();
 </script>
