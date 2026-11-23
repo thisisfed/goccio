@@ -2559,6 +2559,9 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
 @keyframes liveRingA{0%{transform:scale(1);opacity:.85}26%{transform:scale(3.2);opacity:0}54%{transform:scale(1);opacity:0}55%{transform:scale(1);opacity:.85}84%,100%{transform:scale(3.2);opacity:0}}
 @keyframes liveRingB{0%,7%{transform:scale(1);opacity:0}8%{transform:scale(1);opacity:.7}36%,100%{transform:scale(3.2);opacity:0}}
 @media (prefers-reduced-motion: reduce){.live-dot::before,.live-dot::after{animation:none!important;opacity:0!important}}
+.spec b.dstep-b{display:inline-flex;align-items:center;gap:10px}
+.spec b.dstep-b .chip[disabled]{opacity:.35;cursor:default}
+.spec b.dstep-b small{margin-left:-4px}
 </style>
 </head>
 <body>
@@ -5032,7 +5035,7 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
     $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}${k === "key" && mill().words ? " wide" : ""}"><b>${v}${u ? `<small>${u === "-cup" ? u : " " + u}</small>` : ""}</b><span class="sub2">${l.charAt(0).toUpperCase() + l.slice(1)}${badge ? ` <span class="yr">${esc(badge)}</span>` : ""}</span>${k === "key" && isC40() && prefs.zero ? `<span class="zo">${sign(prefs.zero)} zero offset</span>` : ""}${k === "key" && K === "shot" && mill().noEsp ? `<span class="sub2">Not an espresso grinder</span>` : k === "key" && !isC40() && (onMill(r.clicks).atMax || onMill(r.clicks).atMin) ? `<span class="sub2">${onMill(r.clicks).atMax ? "Coarsest setting, may still run fast" : "Finest setting"}</span>` : ""}${k === "dose" ? (() => { const ds = BREWERS[r.brewer].doses, i = ds.findIndex(([v]) => v === r.dose); if (ds.length < 2 || i < 0) return "";
         const ic = (p) => `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="${p}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`, moka = r.brewer === "moka";
         return `<span class="dstep" role="group" aria-label="${esc(tr(moka ? "Pot size" : "Coffee dose"))}"><button type="button" class="chip gear-more" data-dstep="-1"${i === 0 ? " disabled" : ""} aria-label="${esc(tr(moka ? "Smaller pot" : "Less coffee"))}">${ic("M2 6h8")}</button><button type="button" class="chip gear-more" data-dstep="1"${i === ds.length - 1 ? " disabled" : ""} aria-label="${esc(tr(moka ? "Bigger pot" : "More coffee"))}">${ic("M6 2v8M2 6h8")}</button></span>`; })() : ""}${k === "ratio" && showRet && false ? `<span class="ret">(${r.water} g water − 2.1 × ${r.dose} g retained). Estimate only.</span>` : ""}</div>`).join("");
-    { const ds = $("specs").querySelector(".dstep"), bb = ds && ds.parentNode.querySelector("b"); if (bb) bb.appendChild(ds); }   // beside the figure it changes
+    { const ds = $("specs").querySelector(".dstep"), bb = ds && ds.parentNode.querySelector("b"); if (bb) { bb.classList.add("dstep-b"); bb.prepend(ds.querySelector('[data-dstep="-1"]')); bb.appendChild(ds.querySelector('[data-dstep="1"]')); ds.remove(); } }   // minus before the figure, plus after
     $("specs").querySelectorAll("[data-dstep]").forEach((x) => x.onclick = () => { const ds = BREWERS[r.brewer].doses, i = ds.findIndex(([v]) => v === r.dose), n = ds[i + Number(x.dataset.dstep)];
       if (!n) return; const d = Number(x.dataset.dstep); state.dose = n[0]; saveState(); renderAllOpts(); render();
       const again = $("specs").querySelector(`[data-dstep="${d}"]:not([disabled])`) || $("specs").querySelector("[data-dstep]:not([disabled])"); if (again) again.focus({ preventScroll: true }); });
