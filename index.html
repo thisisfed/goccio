@@ -8721,6 +8721,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       if (r) document.documentElement.style.setProperty("--row-h", r.getBoundingClientRect().height + "px");
       // on a phone the question is the hint in the box (there's no room for both)
       // the box, its →, and the bar's buttons all the same distance apart: the gap the buttons already keep between them
+      if (t && t.classList.contains("tools-closing")) return;   // the pills are on their way back behind the plus: the box is already heading for its own place; measuring now (a scroll does) would shorten it again
       const n = document.querySelector(".top .nav"); if (n) { const vis = [...n.querySelectorAll(":scope > *, :scope > .sec-inline > *")].filter((x) => x.offsetWidth && !x.classList.contains("sec-inline")).map((x) => { const r = x.getBoundingClientRect(); let dx = 0;
           try { dx = new DOMMatrix(getComputedStyle(x).transform).m41 || 0; } catch (e) {} return { left: r.left - dx, right: r.right - dx }; }).sort((a, b) => a.left - b.left);   // where it lands, not where its slide-in is
         const gap = vis.length > 1 ? Math.max(0, Math.round(vis[1].left - vis[0].right)) : 4, left = vis.length ? vis[0].left : n.getBoundingClientRect().left;
