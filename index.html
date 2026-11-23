@@ -2538,6 +2538,13 @@ html.brew-in .shelf > .item.brewing{padding-bottom:14px!important}
 .shelf .item .l > .who:has(.rn){margin-top:-4px!important}
 .shelf .item .l > .tags{min-height:0!important}
 html body .shelf .item .l > .c-notes, html body .shelf .item .l > .c-notes *{line-height:19px!important}
+/* the city line and the roaster are one paragraph, the roaster one line down: a line break, nothing else, between them */
+.item .c-where .rn, .item .c-where a.rn{color:var(--muted)!important;text-decoration:none!important;font:inherit;line-height:inherit;position:relative}
+.item .c-where a.rn::before{content:"";position:absolute;left:0;right:0;top:50%;height:44px;transform:translateY(-50%)}   /* the roaster's name takes a thumb */
+.shelf .item .l > .c-where:has(.rn){margin-bottom:5px!important}   /* the coffee's name as far under this paragraph as over the tags */
+@media (min-width:1000px){ .shelf .item .l > .c-where:has(.rn){margin-bottom:3px!important} }
+@supports (font:-apple-system-body){ .shelf .item .l > .c-where:has(.rn){margin-bottom:2.6px!important} }   /* Safari sets the big name lower in its line (measured on iPhone screenshots) */
+#shelves.ro-on .item .c-where .rn, #shelves.ro-on .item .c-where .rn-br{display:none!important}
 html.brew-in .brew-above{display:none!important}
 html.brew-in #shelves{margin-top:0!important}
 /* "Recipe for V60" as big as the recipe's own numbers, centred, no full stop */
@@ -7114,8 +7121,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       tagBits.push(...coffeeLabels(r, shown).map((l) => `<span class="tg lbl" style="--vc:${LABEL_DOT[l] || "#8e8e93"}">${l}</span>`));
       return `${head}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
         <div class="l">
-          <p class="c-where">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span> ` : !isSp && r.just_in ? `<span class="ji">${LANG === "it" ? "Nuovo" : "New"}</span> ` : ""}${r.roaster_city ? `<span class="rcity">${esc(r.roaster_city)}, </span>` : ""}<span class="day">${day}</span>${cardBuy(r, true) ? ` <span class="c-cost">( ${cardBuy(r, true)} )</span>` : ""}</p>
-          <span class="who"><a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(r.roaster)}</a></span>
+          <p class="c-where">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span> ` : !isSp && r.just_in ? `<span class="ji">${LANG === "it" ? "Nuovo" : "New"}</span> ` : ""}${r.roaster_city ? `<span class="rcity">${esc(r.roaster_city)}, </span>` : ""}<span class="day">${day}</span>${cardBuy(r, true) ? ` <span class="c-cost">( ${cardBuy(r, true)} )</span>` : ""}<br class="rn-br"><a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(r.roaster)}</a></p>
           <span class="name">${esc(calm(shown))}</span>
           <p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p>
           ${cardNotes(r)}${cardPrice(r)}
@@ -7293,8 +7299,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         rk ? `<span class="tg">${esc(cap1(ROAST[rk].label))} roast</span>` : ""].join("");
       return `<article class="item bag">
         <div class="l">
-          ${b.roaster && bagCity(b) ? `<p class="c-where"><span class="rcity">${esc(bagCity(b))}</span></p>` : ""}
-          <span class="who">${b.roaster ? `<span class="rn">${esc(b.roaster)}</span>` : "Your coffee"}</span>
+          ${b.roaster ? `<p class="c-where">${bagCity(b) ? `<span class="rcity">${esc(bagCity(b))}</span><br class="rn-br">` : ""}<span class="rn">${esc(b.roaster)}</span></p>` : `<span class="who">Your coffee</span>`}
           <span class="name">${esc(calm(b.roaster ? listName(b) : (b.name || b.text || "Coffee")))}</span>
           ${tags ? `<p class="tags">${tags}</p>` : ""}
           <div class="bag-f">${bagNeedsRoast(b) ? `<div class="bag-rorow"><span>Roast</span><span class="bag-ro">${PHOTO_CHIP.replace('class="chip rp-go"', `class="chip rp-go" data-scan="${i}"`)}<span class="ro-chips" hidden>${OPTS_MORE[1].items.filter(([k]) => k !== "unsure").map(([k, t]) => `<button type="button" class="chip" data-ro="${i}" data-k="${k}">${t}</button>`).join("")}</span><button type="button" class="chip gear-more" data-rodd="${i}" aria-expanded="false" aria-label="${esc(tr("Choose the roast"))}">${plusN(5)}</button></span></span></div>` : ""}<label>Roasted<span class="bag-d${b.roasted ? "" : " empty"}"><input type="date" data-k="roasted" data-i="${i}" value="${esc(b.roasted || "")}"></span></label>
