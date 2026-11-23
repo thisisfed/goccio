@@ -1127,7 +1127,7 @@ details.clk > summary .muted { margin-left: auto; overflow: hidden; text-overflo
   .bv-now { grid-row: 1 / 4 !important; } .bv-ctrls { grid-row: 2 !important; align-self: end; } .bv-opts { grid-row: 3 !important; }
 }
 /* no strength estimate and no pour table: the timer carries the pours. Cold brew and moka (no timer) keep their step list */
-#tdsCol, #pourNote, table.pours:not(.steps) { display: none !important; }
+#tdsCol, #pourNote { display: none !important; }
 .cols.two { grid-template-columns: minmax(0, 1fr) !important; }
 /* the stage holds five Just in rows and every verb; no brewer named above "Got 3:15?" */
 .stage { height: max(calc(var(--hs) * 4.4), 196px) !important; }
@@ -2506,6 +2506,12 @@ html.brew-in .shelf > .item.brewing{padding-bottom:14px!important}
 :root[data-theme="light"] body .wm-screen .wordmark, :root[data-theme="light"] body .wm-screen .wordmark *{color:#000!important}
 :root[data-theme="light"] .wm-more .wm-live, :root[data-theme="light"] .wm-more .wm-lead, :root[data-theme="light"] .wm-more .wm-tagline{color:#000!important}
 :root[data-theme="light"] .wm-more .wm-bag{background:var(--pill)!important;color:var(--ink)!important}
+/* a timed schedule reads like the step list: the weight in the text's own size, not as a headline */
+.pours.steps.timed tr:not(.act) td.to{font:500 var(--fs-s)/1.35 var(--sans)!important;letter-spacing:0!important;white-space:nowrap}
+/* first screen: the two buttons come straight after "Your coffee companion", and the text closes it */
+.wm-more .wm-ctas{margin:0 0 20px!important}
+.wm-screen + .hero-row{margin-top:-15px!important}
+.pours.steps.timed th{white-space:nowrap}
 html.brew-in .brew-above{display:none!important}
 html.brew-in #shelves{margin-top:0!important}
 /* "Recipe for V60" as big as the recipe's own numbers, centred, no full stop */
@@ -2839,9 +2845,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         <p class="wordmark" aria-hidden="true" translate="no"><span id="wm">Goccio</span></p>
         <div class="wm-more">
           <p class="wm-tagline">Your coffee companion</p>
+          <p class="wm-ctas"><button type="button" class="btn wm-go" id="wmFind">Find a coffee</button><button type="button" class="btn wm-bag" id="wmBag">I have a coffee</button></p>
           <h1 class="wm-lead">Specialty coffees, with the right recipe for your brewer.</h1>
           <p class="wm-live" id="wmLive" hidden><i class="live-dot" aria-hidden="true"></i><span id="wmLiveT"></span></p>
-          <p class="wm-ctas"><button type="button" class="btn wm-go" id="wmFind">Find a coffee</button><button type="button" class="btn wm-bag" id="wmBag">I have a coffee</button></p>
         </div>
       </div>
       <div class="hero-row">
@@ -5313,11 +5319,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     $("startSum").setAttribute("aria-label", sum); $("dockSum").setAttribute("aria-label", sum);
 
     const tbl = $("pourRows").closest("table");
-    tbl.classList.toggle("steps", K === "steps");
+    tbl.classList.add("steps"); tbl.classList.toggle("timed", K !== "steps");   // every brewer's schedule is the same plain list of steps; a timed one leads with the clock
     tbl.setAttribute("aria-label", K === "pour" ? "Pour schedule" : "Steps");
-    tbl.querySelector("thead tr").innerHTML = K === "steps" ? "<th>Step</th><th>Do</th><th></th><th>How</th>" : `<th>At</th><th>${K === "pour" ? "Target" : "Do"}</th><th>${K === "pour" ? "Pour" : ""}</th><th>How</th>`;
+    tbl.querySelector("thead tr").innerHTML = K === "steps" ? "<th>Step</th><th>Do</th><th></th><th>How</th>" : `<th>At</th><th>${K === "pour" ? "Pour to" : "Do"}</th><th></th><th>How</th>`;
     $("pourRows").innerHTML = r.pours.map((p, i) => `<tr class="${i === r.pours.length - 1 ? "last" : ""}${p.act ? " act" : ""}"><td class="m">${stepAt(r, p, i)}</td>
-      ${p.act ? `<td class="to">${esc(p.lbl)}</td><td class="m"></td>` : `<td class="to">${g1(p.x)}<small>g</small><span class="scale">(scale: ${p.to} g)</span></td><td class="m">+${g1(pourAdd(r, i))} g in ~${p.dur} s</td>`}<td class="how">${esc(p.note)}</td></tr>`).join("");
+      ${p.act ? `<td class="to">${esc(p.lbl)}</td><td class="m"></td>` : `<td class="to">${p.to} g</td><td class="m"></td>`}<td class="how">${p.act ? "" : `+${Math.round(pourAdd(r, i))} g in about ${p.dur} s. `}${esc(p.note)}</td></tr>`).join("");
     $("pourNote").hidden = K === "steps";
 
     $("tdsCol").hidden = !r.tds;
@@ -8908,7 +8914,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const cv = document.createElement("canvas").getContext("2d");
     const base = (el, end) => { const p = document.createElement("span"); p.style.cssText = "display:inline-block;width:0;height:0;vertical-align:baseline";
       end ? el.appendChild(p) : el.prepend(p); const y = p.getBoundingClientRect().bottom; p.remove(); return y; };
-    const fit = () => { if (live.hidden || !live.offsetHeight) return; row.style.marginTop = "";
+    const fit = () => { if (ctas.nextElementSibling) { row.style.marginTop = ""; return; }   // the buttons are no longer the last thing on the first screen: the row under it keeps its own margin
+      if (live.hidden || !live.offsetHeight) return; row.style.marginTop = "";
       const cs = getComputedStyle(lede); cv.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`; const cap = cv.measureText("H").actualBoundingBoxAscent;
       const r = ctas.getBoundingClientRect(), above = r.top - base(live.lastElementChild || live, true), below = (base(lede, false) - cap) - r.bottom;
       const d = Math.round((above - below) * 2) / 2; if (Math.abs(d) >= 0.5) row.style.marginTop = (parseFloat(getComputedStyle(row).marginTop) + d) + "px"; };
