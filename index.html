@@ -2356,7 +2356,11 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
 .zr-opt[hidden] { display: none !important; }
 #startBrew { display: none !important; }   /* Start brewing lives in the bar at the bottom only */
 #gearIntro { display: none; }
-#millOpt .zr-ctl { justify-content: flex-start; width: auto; margin-top: 8px; }
+#millOpt .zr-ctl { justify-content: space-between; width: auto; margin-top: 8px; }
+/* one grinder shown as a pill: the pill and Adjust clicks under it are one column, as wide as the wider of the two, so their right ends meet */
+#millOpt:not(.own):not(.open) .mill-cell { display: inline-grid !important; grid-template-columns: max-content; justify-items: stretch; justify-self: start; gap: 0; }
+#millOpt:not(.own):not(.open) .kit-mill { display: block !important; width: 100% !important; }
+#millOpt:not(.own):not(.open) #millBtn { width: 100% !important; min-width: 0 !important; max-width: none !important; box-sizing: border-box; }
 #millOpt #zVal { min-width: 38px; white-space: nowrap; word-spacing: .12em; } #millOpt .zr-lbl { white-space: nowrap; }
 /* brewing inside the list: the choices and the recipe under the coffee, in its own row */
 .item > .brew-host{grid-column:1/-1;min-width:0;display:grid;gap:12px;padding-top:12px}
@@ -2367,6 +2371,8 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
 .brew-host .brew-shut{justify-self:start}
 .item.brewing button[data-i][aria-pressed="true"]{background:var(--ink)!important;color:var(--bg)!important}
 html.brew-in #coffee{display:none!important}
+#moreOpts { display: none !important; }   /* Bag details is gone: what the recipe needs and doesn't have is asked above it, nothing else */
+#detected .miss { display: block; } #detected .miss + .miss { margin-top: 8px; }
 #gear { display: none !important; }   /* My equipment is gone: brewer, grinder and water are picked in the recipe, and remembered */
 #gear.bare #gearIntro { display: block; width: 100%; }
 #gear.bare .gear-tools { display: none; }
@@ -5070,12 +5076,16 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     { const it = LANG === "it", PLUS = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`, MINUS = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
       // Scan the beans first; the round + opens the five levels, as the + does everywhere else on the site
       const ask = miss.includes("roast") ? `<span class="roast-ask chips" role="group" aria-label="${it ? "Tostatura" : "Roast"}">${PHOTO_CHIP}${roastAskOpen ? [["vlight", "Very light"], ["light", "Light"], ["medium", "Medium"], ["mdark", "Medium-dark"], ["dark", "Dark"]].map(([v, t]) => `<button type="button" class="chip" data-roast="${v}">${esc(tr(t))}</button>`).join("") : ""}<button type="button" class="chip gear-more" id="roastMore" aria-expanded="${roastAskOpen}" aria-label="${esc(tr(roastAskOpen ? "Hide the roast levels" : "Choose the roast"))}">${roastAskOpen ? MINUS : plusN(5)}</button></span>` : "";
-      $("detected").innerHTML = state.text && miss.length ? (miss.includes("roast")
-        ? `${miss.length === 2 ? "Process and roast aren’t" : "The roast isn’t"} ${state.bag ? "on the listing" : "given"}. This recipe is a safe middle until you say. What roast is it?${ask}${miss.length === 2 ? " The process is under Bag details." : ""}`
-        : `The process isn’t ${state.bag ? "on the listing" : "given"}, so the recipe plays it safe. If the bag says, set it under Bag details.`) : "";
+      // one warning for each thing the recipe needs and doesn't have, each with its answers as pills. Nothing missing: nothing shown
+      const where = state.bag ? "on the listing" : "given";
+      const pAsk = miss.includes("process") ? `<span class="roast-ask chips" role="group" aria-label="${it ? "Processo" : "Process"}">${[["washed", "Washed"], ["natural", "Natural"], ["honey", "Honey"], ["anaerobic", "Anaerobic"], ["cofer", "Co-ferment / Infused"], ["decaf", "Decaf"]].map(([v, t]) => `<button type="button" class="chip" data-proc="${v}">${esc(tr(t))}</button>`).join("")}</span>` : "";
+      $("detected").innerHTML = state.text && miss.length ? [
+        miss.includes("roast") ? `<span class="miss">The roast isn’t ${where}. This recipe is a safe middle until you say. What roast is it?${ask}</span>` : "",
+        miss.includes("process") ? `<span class="miss">The process isn’t ${where}, so the recipe plays it safe. What does the bag say?${pAsk}</span>` : ""].join("") : "";
       const D = $("detected"), go = D.querySelector(".rp-go"), mo = $("roastMore");
       if (go) { go.classList.remove("off"); go.onclick = () => beanScan("rpMsgOpts"); }
       if (mo) mo.onclick = () => { roastAskOpen = !roastAskOpen; render(); };
+      D.querySelectorAll("[data-proc]").forEach((x) => x.onclick = () => { state.process = x.dataset.proc; saveState(); renderAllOpts(); render(); });
       D.querySelectorAll("[data-roast]").forEach((x) => x.onclick = () => { roastAskOpen = false; state.roast = x.dataset.roast; state.roastPhoto = null; saveState(); renderAllOpts(); render(); }); }
     { const bs = $("bagSum"); if (bs) bs.innerHTML = sumBits([miss.includes("process") ? "Process unknown" : PROCESS[c.process].label, miss.includes("roast") ? "Roast unknown" : roastLabel(c.roast)]); }
 
