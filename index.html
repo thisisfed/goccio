@@ -2545,6 +2545,7 @@ html body .shelf .item .l > .c-notes, html body .shelf .item .l > .c-notes *{lin
 @media (min-width:1000px){ .shelf .item .l > .c-where:has(.rn){margin-bottom:3px!important} }
 @supports (font:-apple-system-body){ .shelf .item .l > .c-where:has(.rn){margin-bottom:2.6px!important} }   /* Safari sets the big name lower in its line (measured on iPhone screenshots) */
 #shelves.ro-on .item .c-where .rn, #shelves.ro-on .item .c-where .rn-br{display:none!important}
+#coffee, #coffee *{overflow-anchor:none}   /* the browser is not to re-anchor the page when the recipe arrives under What’s brewing */
 html.brew-in .brew-above{display:none!important}
 html.brew-in #shelves{margin-top:0!important}
 /* "Recipe for V60" as big as the recipe's own numbers, centred, no full stop */
@@ -8927,11 +8928,17 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   // no button: the recipe builds itself a moment after you stop typing, on Enter, or when you leave the box
   let buildT = null;
   $("coffeeIn").addEventListener("input", () => { $("detected").textContent = ""; clearTimeout(buildT);
-    buildT = setTimeout(() => { const n = $("coffeeIn").value.trim().length; if (n >= 3) build(false); else if (!n && state.text) clearCoffee(); }, 900); });   // emptied: back to no coffee picked
+    // on a phone nothing moves while the keyboard is up: the brewer, grinder and recipe come once typing is done (the keyboard's tick, Enter,
+    // or a tap elsewhere). With a real keyboard a longer pause still builds it
+    if (matchMedia("(pointer: coarse)").matches) return;
+    buildT = setTimeout(() => { const n = $("coffeeIn").value.trim().length; if (n >= 3) buildHere(); else if (!n && state.text) clearCoffee(); }, 1500); });   // emptied: back to no coffee picked
   const clearCoffee = () => { surprisePick = null; build(false); };
+  // building the recipe from what was typed never moves the box you typed in: wherever it stood on the screen, it still stands
+  const buildHere = () => { const f = $("coffeeIn"), y = f.getBoundingClientRect().top; build(false);
+    const fix = () => { const d = f.getBoundingClientRect().top - y; if (Math.abs(d) > 1) scrollBy(0, d); }; fix(); requestAnimationFrame(fix); setTimeout(fix, 120); };
   $("coffeeIn").addEventListener("blur", () => { clearTimeout(buildT);
     if (!$("coffeeIn").value.trim() && state.text) { clearCoffee(); return; }   // left empty: no coffee picked, as when you first came
-    if ($("coffeeIn").value.trim().length >= 3 && $("coffeeIn").value.trim() !== (state.text || "").trim()) build(false); });
+    if ($("coffeeIn").value.trim().length >= 3 && $("coffeeIn").value.trim() !== (state.text || "").trim()) buildHere(); });
   $("ddIn").addEventListener("input", updateSuggest);
   $("saveLog").onclick = saveLog;
   // bottom: light the words one by one as the paragraph scrolls up through the screen
