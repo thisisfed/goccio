@@ -8478,7 +8478,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   // after 2 pm, a caffeinated coffee in the recipe: one gentle line, a way to the decafs, and a way past it (for the night, or for good)
   function cfNudge() { const n = $("cfNudge"); if (!n) return; let show = false;
     try { const r = recipe; show = curfewOn() && !$("recipe").hidden && !!r && !(r.c && r.c.process === "decaf") && !DECAF_RX.test([state.text, state.bag && state.bag.name].filter(Boolean).join(" ")); } catch (e) {}
-    n.hidden = !show; }
+    n.hidden = true; }   // the afternoon decaf alert is gone: the recipe is never interrupted
   $("cfFine").onclick = () => cfSet("skip:" + nightOf());
   $("cfNever").onclick = () => cfSet("off");
   $("cfDecafs").onclick = () => { const sq = $("shelfQ"); $("askIn").value = "decaf"; sq.value = "decaf"; sq.dispatchEvent(new Event("input")); jumpTo($("shelves")); };
