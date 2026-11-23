@@ -2356,6 +2356,8 @@ footer .foot-links a{display:block;width:fit-content;line-height:inherit}
 .zr-opt[hidden] { display: none !important; }
 #startBrew { display: none !important; }   /* Start brewing lives in the bar at the bottom only */
 #gearIntro { display: none; }
+#millOpt .zr-ctl { justify-content: flex-start; width: auto; } #millOpt .zr-lbl { white-space: nowrap; }
+#gear { display: none !important; }   /* My equipment is gone: brewer, grinder and water are picked in the recipe, and remembered */
 #gear.bare #gearIntro { display: block; width: 100%; }
 #gear.bare .gear-tools { display: none; }
 /* first visit, nothing in My equipment: two questions, then the recipe is yours (never again once answered or skipped) */
@@ -2651,7 +2653,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   <div class="top-in">
     <div class="mark" translate="no">Goccio</div>
     <nav class="nav" aria-label="Sections">
-      <div class="sec-inline"><button type="button" class="sec-p" data-jump="shelves" data-sec="shelves">Coffees</button><button type="button" class="sec-p" data-jump="bags" data-sec="bags"><span class="sl">My bags</span><span class="ss">Bags</span></button><button type="button" class="sec-p" data-jump="gear" data-sec="gear"><span class="sl">My equipment</span><span class="ss">Gear</span></button><button type="button" class="sec-p" data-jump="coffee" data-sec="coffee"><span class="sl">What’s brewing?</span><span class="ss">Brewing</span></button><button type="button" class="sec-p" data-jump="recipe" data-sec="recipe">Recipe</button><button type="button" class="sec-p" data-jump="journal" data-sec="journal">Journal</button></div>
+      <div class="sec-inline"><button type="button" class="sec-p" data-jump="shelves" data-sec="shelves">Coffees</button><button type="button" class="sec-p" data-jump="bags" data-sec="bags"><span class="sl">My bags</span><span class="ss">Bags</span></button><button type="button" class="sec-p" data-jump="coffee" data-sec="coffee"><span class="sl">What’s brewing?</span><span class="ss">Brewing</span></button><button type="button" class="sec-p" data-jump="recipe" data-sec="recipe">Recipe</button><button type="button" class="sec-p" data-jump="journal" data-sec="journal">Journal</button></div>
       <button type="button" class="sec-dd" id="secDd" aria-expanded="false" aria-controls="secList"><span id="secCur">Coffees</span></button>
       <button type="button" class="lang-btn" id="langBtn" translate="no" lang="it" aria-label="Italiano">IT</button>
       <button type="button" class="theme-btn theme-ic" id="themeBtn" aria-label="Appearance"></button>
@@ -2662,7 +2664,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     <label for="askIn" class="ask-q">How do you want your coffee today?</label>
     <div class="ask-box"><div class="ask-sug" id="askSug" hidden></div><input type="search" id="askIn" placeholder="Fruity, under £15" enterkeyhint="search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"><button type="submit" class="ask-go" aria-label="Find my coffee"><svg class="ask-lens" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10.4 10.4l3.6 3.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><svg class="ask-xi" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div>
   </form>
-  <div class="sec-list" id="secList" inert aria-hidden="true"><div class="sec-list-in"><button type="button" class="sec-p" data-jump="shelves" data-sec="shelves">Coffees</button><button type="button" class="sec-p" data-jump="bags" data-sec="bags">My bags</button><button type="button" class="sec-p" data-jump="gear" data-sec="gear">My equipment</button><button type="button" class="sec-p" data-jump="coffee" data-sec="coffee">What’s brewing?</button><button type="button" class="sec-p" data-jump="recipe" data-sec="recipe">Recipe</button><button type="button" class="sec-p" data-jump="journal" data-sec="journal">Journal</button></div></div>
+  <div class="sec-list" id="secList" inert aria-hidden="true"><div class="sec-list-in"><button type="button" class="sec-p" data-jump="shelves" data-sec="shelves">Coffees</button><button type="button" class="sec-p" data-jump="bags" data-sec="bags">My bags</button><button type="button" class="sec-p" data-jump="coffee" data-sec="coffee">What’s brewing?</button><button type="button" class="sec-p" data-jump="recipe" data-sec="recipe">Recipe</button><button type="button" class="sec-p" data-jump="journal" data-sec="journal">Journal</button></div></div>
 </header>
 
 <main class="page">
@@ -2739,15 +2741,13 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     <div class="shelf" id="bagList"></div>
   </section>
 
-  <section class="sec" id="gear" aria-labelledby="gh">
+  <section class="sec" id="gear" aria-labelledby="gh" hidden>
     <div class="sec-head"><span class="cap" id="gh" role="heading" aria-level="2">My equipment.</span></div>
     <button type="button" class="gear-dd gear-intro" id="gearIntro">Add your brewer and grinder for exact recipes</button>
     <div class="setup" id="setup" hidden><p class="su-q" id="suQ"></p><div class="chips" id="suC" role="group" aria-labelledby="suQ"></div></div>
     <div class="gear-tools">
       <div class="opt"><span id="labGB">Brewers</span><div class="chips" id="gearB" role="group" aria-labelledby="labGB"></div></div>
-      <div class="opt"><span id="labGG">Grinders</span><div class="g-cell"><div class="chips" id="gearG" role="group" aria-labelledby="labGG"></div>
-        <div class="zr-ctl zr-opt" id="zrCtl"><span class="zr-lbl" id="zrLbl">Adjust clicks</span><div class="step" role="group" aria-labelledby="zrLbl"><button type="button" id="zMinus" aria-label="Zero offset one click lower">−</button><span id="zVal">0</span><button type="button" id="zPlus" aria-label="Zero offset one click higher">+</button></div></div></div></div>
-      <div class="opt"><span>Water</span><div class="w-row" id="waterCard"><div class="w-body" id="wBody"></div></div></div>
+      <div class="opt"><span id="labGG">Grinders</span><div class="g-cell"><div class="chips" id="gearG" role="group" aria-labelledby="labGG"></div></div></div>
 
     </div>
   </section>
@@ -2772,10 +2772,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         <div class="opts" id="opts-dose"></div>
         <div class="opt" id="millOpt"><span>Grinder</span><div class="mill-cell"><div class="kit-mill">
           <select id="millSel" aria-label="Your grinder"></select><button type="button" id="millBtn" class="mill-btn" aria-expanded="false" aria-controls="millChips"></button><div class="chips" id="millOwn" role="group" aria-label="Your grinder" hidden></div>
-        </div><div class="chips" id="millChips" role="group" aria-label="Your grinder" hidden></div></div></div>
+        </div><div class="chips" id="millChips" role="group" aria-label="Your grinder" hidden></div><div class="zr-ctl zr-opt" id="zrCtl"><span class="zr-lbl" id="zrLbl">Adjust clicks</span><div class="step" role="group" aria-labelledby="zrLbl"><button type="button" id="zMinus" aria-label="Zero offset one click lower">−</button><span id="zVal">0</span><button type="button" id="zPlus" aria-label="Zero offset one click higher">+</button></div></div></div></div>
+        <div class="opt" id="waterOpt"><span>Water</span><div class="w-row" id="waterNow"><div class="w-body" id="wBody"></div><p class="w-adv" id="wAdv"></p><button type="button" id="wNow" hidden></button></div></div>
       </div>
       <details class="adj" id="adjOpts"><summary><span class="adj-l">Adjust</span><span class="adj-s" id="adjSum"></span></summary>
-        <div class="opt"><span>Water</span><div class="w-row" id="waterNow"><div class="chips"><button type="button" class="chip" id="wNow"></button></div><p class="w-adv" id="wAdv"></p></div></div>
       <div class="opts" id="opts-main"></div>
       </details>
       <input type="file" accept="image/*" capture="environment" id="roastPhotoIn" hidden>
@@ -2960,7 +2960,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   <div class="cam-top"><p class="cam-status" id="camStatus"></p><div class="cam-found" id="camFound"></div></div>
   <div class="cam-ctrls"><button type="button" class="chip" id="camClose">Cancel</button><button type="button" class="chip" id="camPhoto">Take a photo instead</button><button type="button" class="chip on" id="camDone">Use what it read</button></div>
 </div>
-<nav class="botnav" aria-label="Sections"><button type="button" class="chip" data-bn="shelves">Coffees</button><button type="button" class="chip" data-bn="bags" hidden>Bags</button><button type="button" class="chip" data-bn="gear">Equipment</button><button type="button" class="chip" data-bn="coffee">Brew</button><button type="button" class="chip" data-bn="journal" hidden>Journal</button></nav>
+<nav class="botnav" aria-label="Sections"><button type="button" class="chip" data-bn="shelves">Coffees</button><button type="button" class="chip" data-bn="bags" hidden>Bags</button><button type="button" class="chip" data-bn="coffee">Brew</button><button type="button" class="chip" data-bn="journal" hidden>Journal</button></nav>
 <div class="dock" id="dock"><button class="btn" id="dockGo" type="button"><span>Start brewing</span><span class="num" id="dockSum"></span></button></div>
 
 <!-- Brew mode -->
@@ -4787,30 +4787,33 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     kitState();
   }
   // Adjust clicks sits under the Comandante pill, as wide as it: the label at its left edge, the stepper's right end level with the pill's
-  const zrFit = () => { const c = $("gearG") && $("gearG").querySelector('[data-k="c40"]'), z = $("zrCtl"); if (!z) return;
-    z.style.width = c && !z.hidden ? Math.max(c.offsetWidth, 150) + "px" : ""; };
+  const zrFit = () => { const c = $("millBtn"), z = $("zrCtl"); if (!z) return;
+    z.style.width = ""; };   // in the recipe it takes the room its label and stepper need
   addEventListener("resize", () => zrFit());
   const gearHasAny = () => { try { return gear.grinders.length > 0; } catch (e) { return false; } };
   const gearHasC40 = () => { try { return gear.grinders.includes("c40"); } catch (e) { return false; } };
   // grinder and zero controls sit above the questions, so they update even before there's a full recipe
   function kitState() {
-    $("zrCtl").hidden = !gearHasC40();   // the Comandante's clicks: set once in My equipment, under Grinders
+    $("zrCtl").hidden = !isC40();   // the Comandante's clicks, under the grinder when it's the one in use
     $("millSel").value = GRINDERS[prefs.mill] ? prefs.mill : "c40"; syncMill();
     $("zVal").textContent = String(prefs.zero || 0).replace("-", "−").replace(/^−/, "−");   // no "+" in front
     $("zeroRow").classList.toggle("on", !!prefs.zero);
     try { adjSum(); } catch (e) {}
   }
   $("millSel").innerHTML = Object.entries(GRINDERS).map(([k, G]) => `<option value="${k}">${esc(G.name)}</option>`).join("");
-  $("millSel").onchange = () => { prefs.mill = $("millSel").value; savePrefs(); render(); syncMill(); };
+  $("millSel").onchange = () => { const was = prefs.mill; prefs.mill = $("millSel").value;   // the grinders you've used become pills to pick between
+    try { let ch = false; [was === "words" ? null : was, prefs.mill].forEach((k) => { if (k && GRINDERS[k] && !gear.grinders.includes(k)) { gear.grinders.push(k); ch = true; } }); if (ch) localStorage.setItem(GEAR_KEY, JSON.stringify(gear)); } catch (e) {}
+    savePrefs(); render(); syncMill(); };
   // the grinder pill: shows your grinder; a tap swaps it for every grinder as pills, a pick sets it and folds back
   // two or more grinders in My equipment: pick between them right here, as pills (and the one in use, if it isn't one of them)
   function renderMillOwn() {
     let own = []; try { own = gear.grinders; } catch (e) {}
     const v = $("millSel").value, list = own.length >= 2 ? [...own, ...(own.includes(v) ? [] : [v])].filter((k) => GRINDERS[k]) : [];
     $("millOwn").hidden = !list.length; $("millOpt").classList.toggle("own", !!list.length);
-    $("millOwn").innerHTML = list.map((k) => `<button type="button" class="chip" data-v="${k}" aria-pressed="${k === v}">${esc(GRINDERS[k].name)}</button>`).join("");
+    $("millOwn").innerHTML = list.map((k) => `<button type="button" class="chip" data-v="${k}" aria-pressed="${k === v}">${esc(GRINDERS[k].name)}</button>`).join("")
+      + (list.length ? `<button type="button" class="chip gear-more" data-all="1" aria-label="${LANG === "it" ? "Tutti i macinini" : "Every grinder"}">${plusN(Object.keys(GRINDERS).length - list.length)}</button>` : "");   // the rest of the grinders
   }
-  $("millOwn").onclick = (e) => { const b = e.target.closest("button[data-v]"); if (!b) return; $("millSel").value = b.dataset.v; $("millSel").dispatchEvent(new Event("change")); };
+  $("millOwn").onclick = (e) => { if (e.target.closest("[data-all]")) { e.stopPropagation(); return $("millBtn").click(); } const b = e.target.closest("button[data-v]"); if (!b) return; $("millSel").value = b.dataset.v; $("millSel").dispatchEvent(new Event("change")); };
   function syncMill() { const v = $("millSel").value, G = GRINDERS[v]; $("millBtn").textContent = G ? G.name : ""; renderMillOwn();
     $("millBtn").setAttribute("aria-label", "Your grinder: " + (G ? G.name : ""));
     $("millChips").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === v))); }
@@ -4923,9 +4926,6 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const pcBlock = custom ? `<div class="w-pc"><input id="wPc" autocomplete="postal-code" autocapitalize="characters" placeholder="Postcode" value="${esc(w.pc || "")}" aria-label="Your postcode"><button type="button" class="chip" id="wPcGo">Find my water</button></div>${pcNote ? `<p class="w-pcn">${pcNote}</p>` : ""}<p class="w-pcn" id="wPcErr" hidden></p>` : "";
     // like Brewers and Grinders: once picked, only yours and See all; the full list folds back by itself (gearWait)
     const open = !!(gearOpen && gearOpen.water) || !w.kind;   // gearOpen (a var) is set further down: undefined on the first render
-    if (!w.kind && !(gearOpen && gearOpen.water)) {   // nothing picked yet: one dropdown pill, like Region
-      $("wBody").innerHTML = `<div class="chips"><button type="button" class="gear-dd" aria-expanded="false">${LANG === "it" ? "Aggiungi la tua acqua" : "Add your water"}</button></div>`;
-      $("wBody").querySelector(".gear-dd").onclick = () => { gearOpen.water = true; renderWaterBody(); gearWait(); }; return; }
     $("wBody").innerHTML = `<div class="chips" role="group" aria-label="Your water">${WATER.filter(([k]) => open || k === w.kind).map(([k, t]) => `<button type="button" class="chip" data-w="${k}" aria-pressed="${w.kind === k}">${t}${w.kind === k ? `<span class="gx" role="button" aria-label="${LANG === "it" ? "Togli" : "Remove"}"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 3l6 6M9 3l-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>` : ""}</button>`).join("")}${open ? "" : `<button type="button" class="chip gear-more" aria-expanded="false" aria-label="See all">${plusN(WATER.length - WATER.filter(([k]) => open || k === w.kind).length)}</button>`}</div>
       ${open ? pcBlock : ""}${custom && open ? `<div class="w-custom"><label>Hardness<input id="wHard" inputmode="numeric" value="${esc(w.hard ?? "")}" placeholder="e.g. 80"></label><label>Alkalinity<input id="wAlk" inputmode="numeric" value="${esc(w.alk ?? "")}" placeholder="e.g. 40"></label></div>
         <p class="muted" style="font-size: var(--fs-s)">Your water company lists both by postcode. Bottled water labels give bicarbonate in mg/L: divide by 1.22 for ppm CaCO₃.</p>` : ""}
@@ -4958,7 +4958,6 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     renderWaterBody();
     // in What's brewing: your water as one pill (set once, in My equipment), the advice for this recipe under it
     const now = $("wNow"); now.textContent = w.kind ? name : "Set your water"; now.setAttribute("aria-pressed", String(!!w.kind)); try { adjSum(); } catch (e) {}
-    now.onclick = () => { if (!(prefs.water || {}).kind) { gearOpen.water = true; renderWaterBody(); } jumpTo($("waterCard").closest(".opt")); };   // lands with the choices already open
   }
 
   // under the big clicks number the grinder's name has half a phone's width: the first of a family ("Timemore C3 / C3S / C3 Pro" → "Timemore C3")
@@ -5321,6 +5320,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   // switching brewer keeps each brewer's own last dose
   function setBrewer(v) {
     const old = brewerOf(state);
+    // the brewers you've used come first in the Brewer row next time; the rest sit behind the +
+    try { let ch = false; [old, v].forEach((k) => { if (k && k !== "cold" && BREWERS[k] && !BREWERS[k].cup && !gear.brewers.includes(k)) { gear.brewers.push(k); ch = true; } }); if (ch) localStorage.setItem(GEAR_KEY, JSON.stringify(gear)); } catch (e) {}
     state.doses = { ...(state.doses || {}), [old]: state.dose };
     state.brewer = v;
     const B = BREWERS[v], d = state.doses[v];
@@ -5387,7 +5388,6 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   // Adjust: Serve, Cup, Method and Water folded away, the line beside it saying what's set
   function adjSum() { const box = $("adjOpts"), out = $("adjSum"); if (!box || !out) return;
     const picks = [...box.querySelectorAll(".opts .chip[aria-pressed=true]")].map((b) => b.textContent.replace(/Beta$/, "").trim());
-    const w = $("wNow") && $("wNow").textContent.trim(); if (w && !/^set your water$/i.test(w) && !/^imposta/i.test(w)) picks.push(w);   // no water set: nothing to say
     const SHORT = { "Best for this coffee": "Best fit", "Il migliore per questo caffè": "Il migliore" };
     out.innerHTML = sumBits(picks.map((t) => SHORT[t] || t)); }
   // what a fold is set to, beside its title: each choice starts with a capital and stands apart from the next by a space, no commas
@@ -7161,7 +7161,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     try { renderSetup(); } catch (e) {}
     row("gearB", gear.brewers, Object.fromEntries(Object.entries(BREWERS).filter(([k, B]) => k !== "cold" && !B.cup)), (B) => B.name);   // cupping needs no kit: everyone can cup
     row("gearG", gear.grinders, GRINDERS, (G) => G.name);
-    $("zrCtl").hidden = !gearHasC40(); zrFit();
+    $("zrCtl").hidden = !isC40(); zrFit();
     gearWait();
     // Surprise me only works from your own things: a brewer, a grinder and a bag with coffee in it (in the freezer or not)
     ($("surpriseRow") || { style: {} }).style.display = gear.brewers.length && gear.grinders.length && openBags().length ? "" : "none";
@@ -7251,7 +7251,6 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   function landBrewing() {
     try { const a = document.activeElement; if (a && a !== document.body) a.blur(); const sel = getSelection(); if (sel) sel.removeAllRanges(); } catch (e) {}
     // no brewer saved yet: ask what you brew with first (once a visit), then on to the recipe
-    if (!gear.brewers.length && !suAsked) { suAsked = true; suAfter = true; suStep = 1; suAll = false; renderGear(); renderAllOpts(); jumpTo($("gear")); return; }
     goRecipe();   // straight to the recipe; its choices sit just above
   }
 
