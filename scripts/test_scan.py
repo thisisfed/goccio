@@ -310,6 +310,8 @@ CASES = [
     ("Dak: an image's addresses and sizes are not tasting notes ('https://…-1024x717.png 1024w', 'sizes=\"auto')",
      lambda: scan.tidy_note("https://d1j9xh2330ho4m.cloudfront.net/uploads/2026/11/Little-Orange_Render_Front_89x89-1024x717.png 1024w") == ""
              and scan.junk_note('600w" sizes="auto') and not scan.junk_note("Blood orange")),
+    ("Dak's The Alchemist: a shop's badge is not a tasting note ('New', 'Sold out'), and real ones still are",
+     lambda: [scan.tidy_note(x) for x in ("New", "Sold out", "Sale", "New potato", "Orange Candy")] == ["", "", "", "New potato", "Orange Candy"]),
     ("Counter Culture and Coffee Bean Shop: tags and attributes are not tasting notes ('<svg', 'Class=\"', 'Alt=\"Chocolate')",
      lambda: [scan.tidy_note(x) for x in ("<svg", 'Class="', 'Alt="Chocolate', '<img', "Black currant")] == ["", "", "", "", "Black currant"]),
     ("The Source: a brew guide's headings are not tasting notes ('Ratios', 'Dose', 'Bloom'), and real ones still are",

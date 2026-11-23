@@ -2459,7 +2459,7 @@ footer #tip a:hover, footer .foot-links a:hover{text-decoration-color:transparen
 .row-more svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
 .row-more .tb-v{transition:transform .29s ease;transform-origin:center}
 .r.more-open:not(.more-closing) > .row-more .tb-v{transform:scaleY(0)}
-.shelf .item > .r:not(.more-open) > .buy-p{display:none!important}
+
 .shelf .item > .r.more-open > .row-more, #recipe .share.more-open > .share-more{order:9}   /* open: the pills take the plus's place and the minus closes the row, at its end */
 /* (the closed plus no longer turns green for a saved coffee: the bookmark beside Brew shows it) */
 /* the fluid study on the row: the plus swells and lets Buy and Save go like drops, and Brew beside it is pushed and settles */
@@ -2545,7 +2545,8 @@ html body .shelf .item .l > .c-notes, html body .shelf .item .l > .c-notes *{lin
 @media (min-width:1000px){ .shelf .item .l > .c-where:has(.rn){margin-bottom:3px!important} }
 @supports (font:-apple-system-body){ .shelf .item .l > .c-where:has(.rn){margin-bottom:2.6px!important} }   /* Safari sets the big name lower in its line (measured on iPhone screenshots) */
 #shelves.ro-on .item .c-where .rn, #shelves.ro-on .item .c-where .rn-br, #shelves.ro-on .item .c-where .rcity{display:none!important}
-#shelves.ro-on .item .c-where .rn-from{font-size:0;display:inline-block;width:5px}   /* on the roaster's own page: "New", a space, then the date */
+#shelves.ro-on .item .c-where .rn-from{display:none}
+#shelves.ro-on .item .c-where .ji{margin-right:.28em!important}   /* on the roaster's own page: "New", a space, then the date */
 .item .c-where .ji{margin-right:0!important}
 #coffee, #coffee *{overflow-anchor:none}   /* the browser is not to re-anchor the page when the recipe arrives under What’s brewing */
 /* Load more: in line with the pills above it (Brew) on the left, as far under them as over the rule below */
@@ -2553,7 +2554,9 @@ html body .shelf .item .l > .c-notes, html body .shelf .item .l > .c-notes *{lin
 .shelf .item .c-notes:not(.c-typ){color:var(--ink)!important}   /* the roaster's own tasting notes in full white; typical notes (a guess from origin and process) stay grey */
 /* Save is always in view, beside Brew at the right; the plus holds Buy and More from this roaster */
 html body .shelf .item > .r > .bag-add{order:9!important;animation:none!important;opacity:1!important;transform:none!important}
-html body .shelf .item > .r > .row-more{margin-right:auto!important}   /* everything after the plus (Save, Brew) goes to the right edge */
+html body .shelf .item > .r > .row-more{display:none!important}   /* no plus: Buy and Roaster are always out, on the left; Save and Brew at the right edge */
+html body .shelf .item > .r > .buy-p{animation:none!important;opacity:1!important;transform:none!important}
+html body .shelf .item > .r::before{content:"";order:5;flex:1 1 0;min-width:0}
 html body .shelf .item > .r:has(> .bag-add) > .btn{margin-left:0!important}
 .shelf .item > .r.more-open > .row-more{order:8!important}
 /* a coffee's row: the plus on the left, Brew at the right edge of the screen. Open, the pills take the plus's place and the minus waits just before Brew */
@@ -7017,8 +7020,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   // a note as the roaster wrote it, tidied: stray brackets, stars and dashes at either end go ("Vanilla[" reads Vanilla)
   const noteClean = (n) => String(n).replace(/^[\s\[\](){}*•·|:;,.\-–—"'“”]+|[\s\[\](){}*•·|:;,.\-–—"'“”]+$/g, "").replace(/\s{2,}/g, " ");
   // never shown as a taste: page markup the scanner once kept (an image's address, a tag) and a brew guide's headings (Ratios, dose, bloom)
-  const NOTE_JUNK = /[<>]|=\s*["'“”]|https?:|\/\/|\.(?:png|jpe?g|gif|svg|webp|avif)\b|\b\d{2,4}w\b|\bsizes=|\bsrcset\b/i, NOTE_BREW = /^(?:ratios?|brew(?:ing)? ratios?|dos(?:e|es|age)|bloom(?:ing)?|grind(?: size)?|water(?: temp(?:erature)?)?|temp(?:erature)?|yield|recipe|pours?|time|timings?|method|agitation)$/i;
-  const cardNotes = (r) => { const ns = (Array.isArray(r.notes) ? r.notes : []).filter((n) => !NOTE_JUNK.test(n) && !NOTE_BREW.test(String(n).trim())).map(noteClean).filter((n) => /\p{L}/u.test(n)); if (!ns.length) return cardTypical(r);   // every note the roaster lists, not the first three
+  const NOTE_BADGE = /^(?:new|new in|new arrival|just landed|sold out|out of stock|sale|on sale|best ?seller|limited(?: edition)?|pre-?order|back in stock)!?$/i, NOTE_JUNK = /[<>]|=\s*["'“”]|https?:|\/\/|\.(?:png|jpe?g|gif|svg|webp|avif)\b|\b\d{2,4}w\b|\bsizes=|\bsrcset\b/i, NOTE_BREW = /^(?:ratios?|brew(?:ing)? ratios?|dos(?:e|es|age)|bloom(?:ing)?|grind(?: size)?|water(?: temp(?:erature)?)?|temp(?:erature)?|yield|recipe|pours?|time|timings?|method|agitation)$/i;
+  const cardNotes = (r) => { const ns = (Array.isArray(r.notes) ? r.notes : []).filter((n) => !NOTE_JUNK.test(n) && !NOTE_BREW.test(String(n).trim()) && !NOTE_BADGE.test(String(n).trim())).map(noteClean).filter((n) => /\p{L}/u.test(n)); if (!ns.length) return cardTypical(r);   // every note the roaster lists, not the first three
     if (ns.length === 1) { const t = cardTypical(r); if (t) return t; }   // a single word ("Nuts") says less than what the origin usually gives
     const reE = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const hits = cardHits(), lit = (n) => { let h = esc(n); hits.forEach((w) => { const own = w[0] === "\u0001", t = own ? w.slice(1) : w;
@@ -7181,13 +7184,13 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       tagBits.push(...coffeeLabels(r, shown).map((l) => `<span class="tg lbl" style="--vc:${LABEL_DOT[l] || "#8e8e93"}">${l}</span>`));
       return `${head}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
         <div class="l">
-          <p class="c-where">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : !isSp && r.just_in ? `<span class="ji">${LANG === "it" ? "Nuovo" : "New"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : ""}<a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a>${r.roaster_city ? `<span class="rcity">, ${esc(r.roaster_city)}</span>` : ""}<br class="rn-br"><span class="day">${day}</span>${cardBuy(r, true) ? `<span class="c-cost"> — ${cardBuy(r, true)}</span>` : ""}</p>
+          <p class="c-where">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : !isSp && r.just_in ? `<span class="ji">${LANG === "it" ? "Nuovo" : "New"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : ""}<a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a>${r.roaster_city ? `<span class="rcity">, ${esc(r.roaster_city)}</span>` : ""}<br class="rn-br"><span class="day">${day}</span>${cardBuy(r, true) ? `<span class="c-cost">. ${LANG === "it" ? "Prezzo" : "Price"}: ${cardBuy(r, true)}</span>` : ""}</p>
           <span class="name">${esc(calm(shown))}</span>
           <p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p>
           ${cardNotes(r)}${cardPrice(r)}
         </div>
         <div class="r${rowOpen.has(rowKey(r)) ? " more-open" : ""}">
-          <button class="btn" type="button" data-i="${i}">Brew</button><button type="button" class="row-more" data-more="${esc(rowKey(r))}" aria-expanded="${rowOpen.has(rowKey(r))}" aria-label="${LANG === "it" ? "Compra o salva" : "Buy or save"}"><svg viewBox="0 0 12 12" aria-hidden="true"><path class="tb-v" d="M6 2v8"/><path d="M2 6h8"/></svg></button>${cardBuy(r)}<a class="pill buy-p ro-all" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${LANG === "it" ? "Altri di questo torrefattore" : "More from this roaster"}</a>
+          <button class="btn" type="button" data-i="${i}">Brew</button><button type="button" class="row-more" data-more="${esc(rowKey(r))}" aria-expanded="${rowOpen.has(rowKey(r))}" aria-label="${LANG === "it" ? "Compra o salva" : "Buy or save"}"><svg viewBox="0 0 12 12" aria-hidden="true"><path class="tb-v" d="M6 2v8"/><path d="M2 6h8"/></svg></button>${cardBuy(r)}<a class="pill buy-p ro-all" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${LANG === "it" ? "Torrefattore" : "Roaster"}</a>
           <button type="button" class="pill bag-add ico${hasBag(r) ? " in" : ""}" data-b="${i}" aria-pressed="${hasBag(r)}" aria-label="${hasBag(r) ? (LANG === "it" ? "Nei miei sacchetti" : "In my bags") : (LANG === "it" ? "Salva nei miei sacchetti" : "Save to my bags")}">${BAG_ICO}</button>
         </div></article>`; }).join("") : (() => { const msg = `Nothing matches${shelfV !== "all" ? `. Try Everything under Made for, or` : `. Try a taste, an origin or a roaster, or <a href="#" class="mail-me scan-me">scan the bag in front of you</a>. Missing a roaster?`} <a href="#" class="mail-me" data-s="Missing coffee">${shelfV !== "all" ? "email me" : "Email me"}</a> and I’ll add it.`;
           // a search found nothing: one paragraph with the Searching line, a line break between; three searches that do work, one tap each
