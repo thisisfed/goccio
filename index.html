@@ -2450,12 +2450,20 @@ footer #tip a:hover, footer .foot-links a:hover{text-decoration-color:transparen
 .r.more-open:not(.more-closing) > .row-more .tb-v{transform:scaleY(0)}
 .shelf .item > .r:not(.more-open) > :is(.buy-p,.bag-add){display:none!important}
 .shelf .item > .r:has(> .bag-add.in):not(.more-open) > .row-more{background:var(--go)!important;color:var(--on-hl)!important}   /* saved to My bags: the closed plus says so, in the green */
-@keyframes row-out{0%{opacity:0;transform:translateX(-28px) scale(.5)}60%{opacity:1;transform:translateX(3px) scale(1.03)}100%{opacity:1;transform:none}}
-@keyframes row-in{0%{opacity:1;transform:none}100%{opacity:0;transform:translateX(-28px) scale(.5)}}
-.shelf .item > .r.more-open > :is(.buy-p,.bag-add){animation:row-out .42s cubic-bezier(.3,.9,.4,1) both;transform-origin:0 50%}
-.shelf .item > .r.more-open > .bag-add{animation-delay:.07s}
-.shelf .item > .r.more-open.more-closing > :is(.buy-p,.bag-add){animation:row-in .24s ease both;animation-delay:0s}
-@media (prefers-reduced-motion: reduce){ .shelf .item > .r.more-open > :is(.buy-p,.bag-add){animation:none!important} }
+/* the fluid study on the row: the plus swells and lets Buy and Save go like drops, and Brew beside it is pushed and settles */
+@keyframes row-fade{0%,12%{opacity:0}34%,100%{opacity:1}}
+@keyframes row-in{0%{opacity:1;transform:none}70%{opacity:1}100%{opacity:0;transform:translateX(var(--tb-x))}}
+@keyframes row-brew{0%{transform:none;scale:1 1}10%{transform:translateX(0);scale:1.02 .985}30%{transform:translateX(-5px);scale:.955 1.03}45%{transform:translateX(-2px);scale:.985 1.01}60%{transform:translateX(1.5px);scale:1.02 .99}78%{transform:translateX(-.5px);scale:.996 1.002}100%{transform:none;scale:1 1}}
+.shelf .item > .r > .row-more{position:relative;z-index:2}
+.shelf .item > .r.more-anim > .row-more{transform-origin:0 50%;animation:drop-p .784s linear both}
+.shelf .item > .r.more-anim > .buy-p{transform-origin:0 50%;animation:drop-l .784s linear both, row-fade .784s linear both}
+.shelf .item > .r.more-anim > .bag-add{transform-origin:0 50%;animation:drop-t .784s linear both, row-fade .784s linear both}
+.shelf .item > .r.more-anim > .btn, .shelf .item > .r.more-closing > .btn{transform-origin:100% 50%;animation:row-brew .7s cubic-bezier(.3,.6,.4,1) .08s both}
+.shelf .item > .r.more-closing > .btn{animation-delay:.22s}
+.shelf .item > .r.more-closing > .row-more{transform-origin:0 50%;animation:drop-pc .644s linear both}
+.shelf .item > .r.more-closing > :is(.buy-p,.bag-add){animation:row-in .26s cubic-bezier(.4,0,1,1) both;pointer-events:none}
+.shelf .item > .r.more-closing > .bag-add{animation-duration:.3s}
+@media (prefers-reduced-motion: reduce){ .shelf .item > .r > *{animation:none!important} }
 #gear { display: none !important; }   /* My equipment is gone: brewer, grinder and water are picked in the recipe, and remembered */
 #gear.bare #gearIntro { display: block; width: 100%; }
 #gear.bare .gear-tools { display: none; }
@@ -5345,6 +5353,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     $("why").innerHTML = rk.map((w) => `<li class="warn">${esc(w)}</li>`).join("") + cons.map((w) => `<li class="cons">${esc(w)}</li>`).join("") + why.map((w) => `<li>${esc(w)}</li>`).join("");
     // the roast and process questions stay out of the way: they open from this line in Why this recipe, for whoever wants a sharper recipe
     { const li = [...$("why").querySelectorAll("li.cons")].pop(); if (li && cons.length) { const a = document.createElement("a"); a.href = "#"; a.className = "why-ask"; a.textContent = li.textContent; li.textContent = ""; li.appendChild(a);
+        // with a note before it ("Roast not sure, so it plays safe…"), the line joins that note's box, one line down
+        { const pv = li.previousElementSibling; if (pv && pv.classList.contains("cons")) { pv.appendChild(document.createElement("br")); pv.appendChild(a); li.remove(); } }
         a.onclick = (ev) => { ev.preventDefault(); bagAskShow = true; render(); const d = $("detected"); if (d && !d.hidden) jumpTo(d); }; } }
     // "Label: text" lines bold the label; a line with no label (the roast note) is shown as it is
     // the roaster's notes (or the typical ones) lead, then the rest, all in view
@@ -6894,9 +6904,12 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   const rowOpen = new Set(), rowKey = (r) => r.url || (r.roaster + "|" + r.name);
   document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest(".row-more"); if (!b) return;
     const r = b.parentElement, k = b.dataset.more, on = !r.classList.contains("more-open") || r.classList.contains("more-closing");
-    clearTimeout(r._mc); r.classList.remove("more-closing");
-    if (on) { rowOpen.add(k); r.classList.add("more-open"); }
-    else { rowOpen.delete(k); r.classList.add("more-closing"); r._mc = setTimeout(() => r.classList.remove("more-open", "more-closing"), 260); }
+    clearTimeout(r._mc); r.classList.remove("more-closing", "more-anim"); void r.offsetWidth;
+    if (on) { rowOpen.add(k); r.classList.add("more-open", "more-anim");
+      // Buy and Save start under the plus and part from it as the top bar's drops do; each knows how far it has to travel
+      const x0 = b.getBoundingClientRect().left; r.querySelectorAll(":scope > .buy-p, :scope > .bag-add").forEach((p) => p.style.setProperty("--tb-x", (x0 - p.getBoundingClientRect().left) + "px"));
+      r._mc = setTimeout(() => r.classList.remove("more-anim"), 900); }
+    else { rowOpen.delete(k); r.classList.add("more-closing"); r._mc = setTimeout(() => r.classList.remove("more-open", "more-closing"), 660); }
     b.setAttribute("aria-expanded", on); });
   const cardBuy = (r) => { if (!r.url) return ""; const it = LANG === "it", own = r.price ? esc(r.price.replace(/^From\s+/i, "")) : "";
     // another currency: about this much in pounds, from the shop's currency (or the symbol on the price), bag weight or not
