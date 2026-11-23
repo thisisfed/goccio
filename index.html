@@ -7010,8 +7010,11 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
       // the full list folds back by itself, given time to read it (2 s plus 0.15 s a pill: about 7 s for both lists); each tap starts the wait again
       const wait = gearWait;
       $(id).querySelectorAll("button[data-k]").forEach((b) => b.onclick = (ev) => { const k = b.dataset.k, i = list.indexOf(k);
-        if (i < 0) { if (!list.length) gearOpen[id] = true; list.push(k); saveGear(); renderGear(); return; }   // ticking from the full list keeps it open a while
-        if (ev.target.closest(".gx")) { list.splice(i, 1); saveGear(); renderGear(); return; }   // yours: the little x takes it off, one tap
+        // a grinder added is the grinder you're about to use: the open recipe moves to it at once. One taken off hands the recipe to another of yours
+        const useMill = (g, said) => { if (id !== "gearG" || !g || !GRINDERS[g] || g === prefs.mill) return; prefs.mill = g; savePrefs(); $("millSel").value = g; syncMill(); try { render(); } catch (e) {}
+          if (said && state.text) toast((LANG === "it" ? "Ricetta ora per " : "Recipe now for ") + GRINDERS[g].name); };
+        if (i < 0) { if (!list.length) gearOpen[id] = true; list.push(k); saveGear(); renderGear(); useMill(k, true); return; }   // ticking from the full list keeps it open a while
+        if (ev.target.closest(".gx")) { list.splice(i, 1); saveGear(); renderGear(); if (k === prefs.mill && list.length) useMill(list[list.length - 1], true); return; }   // yours: the little x takes it off, one tap
         wait(); });
       const more = $(id).querySelector(".gear-more"); if (more) more.onclick = () => { gearOpen[id] = true; renderGear(); }; };
     $("gear").classList.toggle("bare", !gearIntro && !gear.brewers.length && !gear.grinders.length && !(prefs.water || {}).kind);
