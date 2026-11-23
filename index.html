@@ -2562,6 +2562,7 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
 .spec b.dstep-b{display:inline-flex;align-items:center;gap:10px}
 .spec b.dstep-b .chip[disabled]{opacity:.35;cursor:default}
 .spec b.dstep-b small{margin-left:-4px}
+.bag-ro .ro-chips{display:contents!important}.bag-ro .ro-chips[hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -6959,7 +6960,7 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
           <span class="who">${b.roaster ? `<span class="rn">${esc(b.roaster)}</span>${bagCity(b) ? `<span class="rcity">, ${esc(bagCity(b))}</span>` : ""}` : "Your coffee"}</span>
           <span class="name">${esc(calm(b.roaster ? listName(b) : (b.name || b.text || "Coffee")))}</span>
           ${tags ? `<p class="tags">${tags}</p>` : ""}
-          <div class="bag-f">${bagNeedsRoast(b) ? `<div class="bag-rorow"><span>Roast</span><span class="bag-ro"><button type="button" class="ro-dd" data-rodd="${i}" aria-expanded="false">Pick one</button>${PHOTO_CHIP.replace('class="chip rp-go"', `class="chip rp-go" data-scan="${i}"`)}<span class="ro-chips" hidden>${OPTS_MORE[1].items.filter(([k]) => k !== "unsure").map(([k, t]) => `<button type="button" class="chip" data-ro="${i}" data-k="${k}"><i class="bean-dot" style="--c:${ROAST_SW[k]}"></i>${t}</button>`).join("")}</span></span></div>` : ""}<label>Roasted<span class="bag-d${b.roasted ? "" : " empty"}"><input type="date" data-k="roasted" data-i="${i}" value="${esc(b.roasted || "")}"></span></label>
+          <div class="bag-f">${bagNeedsRoast(b) ? `<div class="bag-rorow"><span>Roast</span><span class="bag-ro">${PHOTO_CHIP.replace('class="chip rp-go"', `class="chip rp-go" data-scan="${i}"`)}<span class="ro-chips" hidden>${OPTS_MORE[1].items.filter(([k]) => k !== "unsure").map(([k, t]) => `<button type="button" class="chip" data-ro="${i}" data-k="${k}">${t}</button>`).join("")}</span><button type="button" class="chip gear-more" data-rodd="${i}" aria-expanded="false" aria-label="${esc(tr("Choose the roast"))}"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></span></span></div>` : ""}<label>Roasted<span class="bag-d${b.roasted ? "" : " empty"}"><input type="date" data-k="roasted" data-i="${i}" value="${esc(b.roasted || "")}"></span></label>
             <label>Opened<span class="bag-d${b.opened ? "" : " empty"}"><input type="date" data-k="opened" data-i="${i}" value="${esc(b.opened || "")}"></span></label>
             <label>Coffee left<span class="bag-gw"><span class="bag-g${isLow(b) ? " low" : ""}"><input type="number" inputmode="numeric" min="0" max="5000" step="1" data-k="left" data-i="${i}" value="${b.left ?? ""}" style="--w:${String(b.left ?? "").length || 1}ch"><span>g</span></span>${buyAgain(b)}</span></label>
             <label>Freezer<span><button type="button" class="pill bag-fz${b.frozen ? " in" : ""}" data-fz="${i}" aria-pressed="${!!b.frozen}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span class="sr">${b.frozen ? "In the freezer" : "Not frozen"}</span></button></span></label></div>
@@ -6971,7 +6972,8 @@ html body .scan-opt > span:first-child{display:none!important} .scan-opt{display
         <p class="rp-msg bag-rp" id="bagRp-${i}" hidden></p>
         <p class="bag-rest"><span class="bag-r1">${esc(restLine(b))}</span>${lowLine(b)}</p></article>`; }).join("");
     // Roast: a dropdown pill that opens into all the roast pills in place (like the grinder); a pick saves it and the row goes
-    $("bagList").querySelectorAll("button[data-rodd]").forEach((x) => x.onclick = () => { const row = x.closest(".bag-ro"); row.classList.add("open"); row.querySelector(".ro-chips").hidden = false; x.setAttribute("aria-expanded", "true"); });
+    $("bagList").querySelectorAll("button[data-rodd]").forEach((x) => x.onclick = () => { const ch = x.closest(".bag-ro").querySelector(".ro-chips"), open = ch.hidden; ch.hidden = !open; x.setAttribute("aria-expanded", String(open));   // the same + as the roast question under the coffee
+      x.querySelector("path").setAttribute("d", open ? "M2 6h8" : "M6 2v8M2 6h8"); });
     $("bagList").querySelectorAll("button[data-ro]").forEach((x) => x.onclick = () => { const b = bags[+x.dataset.ro]; if (!b) return; b.roast = x.dataset.k; b.roastYou = true; saveBags(); renderBags();
       // the bag being brewed: its roast is the recipe's too, so What's brewing stops asking for it
       // (picked from the list, from your bags or typed: whichever it is, the recipe's coffee is this bag), and its request goes
