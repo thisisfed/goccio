@@ -1611,8 +1611,13 @@ def blend_parts(text):
     return []
 
 
+# a shop's badge on a product card, read as a note when the next coffee's card follows the label ("New"; Dak's The Alchemist)
+NOTE_BADGE = re.compile(r"^(?:new|new in|new arrival|just landed|sold out|out of stock|sale|on sale|best ?seller|limited(?: edition)?|pre-?order|back in stock)$", re.I)
+
+
 def junk_note(n):
-    return bool(NOTE_JUNK.search(n or "")) or bool(NOTE_BREW.match((n or "").strip(" .,;:")))
+    t = (n or "").strip(" .,;:!")
+    return bool(NOTE_JUNK.search(n or "")) or bool(NOTE_BREW.match(t)) or bool(NOTE_BADGE.match(t))
 
 
 def tidy_note(n):
