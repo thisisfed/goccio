@@ -2875,6 +2875,20 @@ html body .gd-dots i:nth-child(2){animation-delay:.18s} html body .gd-dots i:nth
 @media (prefers-reduced-motion:reduce){html body .gd-dots i{animation:none;opacity:.6}}
 html body .gd-intro-move{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px}
 html body .gd-intro-move button{flex:none;height:32px;padding:0 12px;border:0;border-radius:var(--r,4px);background:var(--hl);color:#000;font:500 15px/1 var(--sans);cursor:pointer}
+/* the chat: a kept thread of bubbles, yours on the right in orange, Goccio's on the left, with tapback reactions */
+html body .wb-sign .gd-talk .gd-say{display:flex!important;flex-direction:column;gap:8px;min-height:0!important;max-height:min(46vh,380px);overflow-y:auto;overscroll-behavior:contain;padding:2px 0 2px!important;margin-top:26px;scrollbar-width:none}
+html body .wb-sign .gd-talk .gd-say::-webkit-scrollbar{display:none}
+html body .wb-sign .gd-talk .gd-say:empty{display:none!important}
+html body .gd-m{position:relative;max-width:86%;padding:8px 12px;border-radius:16px;font:500 15px/1.35 var(--sans);letter-spacing:0;white-space:pre-wrap;overflow-wrap:anywhere;animation:gdMsgIn .26s cubic-bezier(.3,1.4,.5,1)}
+html body .gd-it{align-self:flex-start;background:var(--pill);color:var(--ink);border-bottom-left-radius:4px;transform-origin:0 100%}
+html body .gd-me{align-self:flex-end;background:var(--hl);color:#000;border-bottom-right-radius:4px;transform-origin:100% 100%}
+html body .gd-m.has-tb{margin-top:12px}
+html body .gd-tb{position:absolute;top:-14px;left:-10px;min-width:28px;height:28px;padding:0 4px;box-sizing:border-box;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:15px;line-height:1;
+  background:var(--gd-card);border:1px solid color-mix(in srgb,var(--ink) 16%,var(--bg));box-shadow:0 2px 8px rgba(0,0,0,.18);animation:gdTb .4s cubic-bezier(.3,1.9,.5,1)}
+html body .gd-typing .gd-dots{margin-left:4px}
+@keyframes gdMsgIn{from{scale:.85;opacity:0}to{scale:1;opacity:1}}
+@keyframes gdTb{from{scale:0}to{scale:1}}
+@media (prefers-reduced-motion:reduce){html body .gd-m,html body .gd-tb{animation:none}}
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
@@ -10122,22 +10136,37 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // a real question sometimes gets a moment's thought first: "Mmm, let me think about this one" with three dots flowing,
     // or the dots and then "Good question!". Anything said in the meantime cancels the pause
     let thinkNext = null, sayGen = 0;
+    // the chat: every message is kept as a thread, yours on the right and Goccio's on the left, like a messaging app.
+    // It lasts for the visit (kept in this tab, so a reload doesn't lose it), and Goccio sometimes reacts to yours with an emoji, like a tapback
+    const MAX_MSG = 40, CHAT_KEY = "v60.gdChat"; let msgs = [], typing = null, lastMine = null;
+    const saveChat = () => { try { sessionStorage.setItem(CHAT_KEY, JSON.stringify(msgs.slice(-MAX_MSG))); } catch (e) {} };
+    const toBottom = () => { sayEl.scrollTop = sayEl.scrollHeight; };
+    const bubble = (who, text, rx) => { const m = document.createElement("span"); m.className = "gd-m " + (who === "me" ? "gd-me" : "gd-it"); m.textContent = text;
+      if (rx) { const t = document.createElement("span"); t.className = "gd-tb"; t.textContent = rx; m.appendChild(t); m.classList.add("has-tb"); }
+      sayEl.appendChild(m); while (sayEl.children.length > MAX_MSG) sayEl.firstChild.remove(); toBottom(); return m; };
+    const addMsg = (who, text) => { const m = bubble(who, text); const rec = { w: who, t: text, at: Date.now() }; msgs.push(rec); m._rec = rec; saveChat(); if (who === "me") lastMine = m; return m; };
+    const finishTyping = () => { if (typing) { clearInterval(typeT); typing.m.textContent = typing.text; typing = null; bob(false); toBottom(); } };
+    // a tapback on your last message: a heart for thanks, a laugh for jokes, a ‼️ for a fright, a ❓ when it doesn't know
+    const react = (emoji, delay) => { const m = lastMine; if (!m || m.querySelector(".gd-tb")) return; setTimeout(() => { if (m.querySelector(".gd-tb")) return;
+      const t = document.createElement("span"); t.className = "gd-tb"; t.textContent = emoji; m.appendChild(t); m.classList.add("has-tb"); if (m._rec) { m._rec.r = emoji; saveChat(); } }, delay == null ? 450 : delay); };
+    try { (JSON.parse(sessionStorage.getItem(CHAT_KEY) || "[]") || []).forEach((r) => { const m = bubble(r.w, r.t, r.r); m._rec = r; msgs.push(r); if (r.w === "me") lastMine = m; }); } catch (e) {}
     const say = (text, chips, mood) => { const th = thinkNext; thinkNext = null; if (!th) return sayNow(text, chips, mood); const g = ++sayGen;
-      clearInterval(typeT); chipsEl.textContent = ""; sayEl.textContent = th.lead; const dots = document.createElement("span"); dots.className = "gd-dots"; dots.innerHTML = "<i></i><i></i><i></i>"; sayEl.appendChild(dots);
-      if (D && !still()) hmm(); setTimeout(() => { if (g === sayGen) sayNow(th.pre + text, chips, mood); }, th.ms); };
-    const sayNow = (text, chips, mood) => { sayGen++; clearInterval(typeT); sayEl.textContent = ""; let k = 0; bob(true); typeT = setInterval(() => { k += 2; sayEl.textContent = text.slice(0, k); if (k >= text.length) { clearInterval(typeT); bob(false); } }, 24);
+      finishTyping(); chipsEl.textContent = ""; const tb = bubble("it", th.lead); tb.classList.add("gd-typing"); const dots = document.createElement("span"); dots.className = "gd-dots"; dots.innerHTML = "<i></i><i></i><i></i>"; tb.appendChild(dots); toBottom();
+      if (D && !still()) hmm(); setTimeout(() => { tb.remove(); if (g === sayGen) sayNow(th.pre + text, chips, mood); }, th.ms); };
+    const sayNow = (text, chips, mood) => { sayGen++; finishTyping(); const m = addMsg("it", ""); m._rec.t = text; saveChat(); typing = { m, text }; let k = 0; bob(true);
+      typeT = setInterval(() => { k += 2; m.textContent = text.slice(0, k); if (k % 12 === 0) toBottom(); if (k >= text.length) finishTyping(); }, 24);
       showChips(chips); if (mood) mood(); };
     // the sample questions: a fresh mix each time, one from each kind, so you get an idea of everything it knows
     const POOL = () => ({
       find: [T("What's new?", "Cosa c'è di nuovo?"), T("Surprise me", "Sorprendimi"), T("Something fruity?", "Qualcosa di fruttato?"), T("What's the best coffee?", "Qual è il caffè migliore?")],
       fix: [T("Why is it sour?", "Perché è aspro?"), T("Why is it bitter?", "Perché è amaro?"), T("Why is it weak?", "Perché è acquoso?"), T("It drains too fast", "Scende troppo veloce"), T("How much coffee?", "Quanto caffè?"), T("What water temperature?", "Che temperatura?"), T("How long should it take?", "Quanto deve durare?"), T("What's the bloom?", "Cos’è la pre-infusione?"), T("How should I store beans?", "Come conservo i chicchi?"), T("Which grinder should I buy?", "Che macinino compro?")],
       learn: [T("What is coffee?", "Cos'è il caffè?"), T("Natural or washed?", "Naturale o lavato?"), T("What’s Gesha?", "Cos’è il Gesha?"), T("How is coffee roasted?", "Come si tosta il caffè?"), T("How is coffee made?", "Come nasce il caffè?"), T("Who is James Hoffmann?", "Chi è James Hoffmann?"), T("Who is Tim Wendelboe?", "Chi è Tim Wendelboe?"), T("What’s the 4:6 method?", "Cos’è il metodo 4:6?"), T("What’s the Rao spin?", "Cos’è il Rao spin?"), T("What is third wave?", "Cos’è la terza ondata?"), T("Why does coffee wake you up?", "Perché il caffè sveglia?"), T("How much caffeine?", "Quanta caffeina?"), T("Arabica or Robusta?", "Arabica o Robusta?"), T("What is specialty coffee?", "Cos’è lo specialty?")],
-      fun: [T("Dance!", "Balla!"), T("What does Goccio mean?", "Cosa vuol dire Goccio?"), T("Do a backflip", "Fai una capriola"), T("What's the meaning of life?", "Qual è il senso della vita?"), T("Tell me a joke", "Raccontami una barzelletta")] });
+      fun: [T("Scare me", "Spaventami"), T("Dance!", "Balla!"), T("What does Goccio mean?", "Cosa vuol dire Goccio?"), T("Do a backflip", "Fai una capriola"), T("What's the meaning of life?", "Qual è il senso della vita?"), T("Tell me a joke", "Raccontami una barzelletta")] });
     const SUGGEST = () => { const P = POOL(), one = (k, not) => { const xs = P[k].filter((x) => !not.includes(x)); return xs[Math.floor(Math.random() * xs.length)]; }, out = [];
       out.push(one("find", out), one("fix", out), one("learn", out)); out.push(Math.random() < .5 ? one("fun", out) : one("learn", out));
       return out.sort(() => Math.random() - 0.5); };
     const showChips = (list) => { chipsEl.textContent = ""; const xs = list || SUGGEST();
-      xs.forEach((x) => { const b = document.createElement("button"); b.type = "button"; if (typeof x === "string") { b.textContent = x; b.onclick = () => ask(x); } else if (x.q || x.a) { b.textContent = x.t; b.onclick = () => x.q ? ask(x.q) : x.a(); } else { b.textContent = x.t; b.onclick = x.f; b.className = "on"; } chipsEl.appendChild(b); }); };
+      xs.forEach((x) => { const b = document.createElement("button"); b.type = "button"; if (typeof x === "string") { b.textContent = x; b.onclick = () => ask(x); } else if (x.q || x.a) { b.textContent = x.t; b.onclick = () => { if (x.q) ask(x.q); else { addMsg("me", x.t); x.a(); } }; } else { b.textContent = x.t; b.onclick = x.f; b.className = "on"; } chipsEl.appendChild(b); }); };
     // the empty box under the chips rotates through examples too, every few seconds while Goccio is open
     { let k = 0; const base = () => T("Ask Goccio about coffee", "Chiedi a Goccio del caffè");
       setInterval(() => { if (!talking || inEl.value || document.activeElement === inEl || document.hidden) return; const all = Object.values(POOL()).flat().filter((x) => /\?$/.test(x));
@@ -10602,7 +10631,12 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       return false; };
     const nice = () => say(T(`Nice to meet you, ${name}! Ask me anything about coffee.`, `Piacere, ${name}! Chiedimi qualsiasi cosa sul caffè.`), null, happy);
     let lastQ = "";
-    const ask = (q) => { q = String(q || "").trim(); if (!q) return; inEl.value = ""; lastQ = q;
+    const ask = (q) => { q = String(q || "").trim(); if (!q) return; inEl.value = ""; lastQ = q; addMsg("me", q);
+      const rx = /\b(thanks?|thank you|thx|cheers|grazie|love (you|it|this)|ti amo|you'?re (great|the best|amazing|awesome|cute)|sei (bravo|fantastico|il migliore|carino)|well done|bravo|amazing|awesome|perfect|fantastic|brilliant|lovely|great job)\b/i.test(q) ? "❤️"
+        : /\b(ha(ha)+|ah(ah)+|lol|lmao|rofl|fart|butt|bum|culo|scoreggi\w*|joke|barzellett\w*|funny|divertente)\b|😂|🤣/i.test(q) ? "😂"
+        : /\b(scare|boo|wow|omg|whoa|woah|incredible|no way|davvero|incredibile|accidenti)\b|!{2,}/i.test(q) ? "‼️"
+        : /^(ok|okay|yes|yep|yeah|sure|cool|great|nice|sounds good|got it|va bene|sì|si|certo|perfetto|ottimo)\b[.!]*$/i.test(q) ? "👍" : "";
+      if (rx) react(rx);
       // only real questions, never the quick ones, the tricks or a reply to one of its own questions
       thinkNext = null;
       if (!askingName && q.split(/\s+/).length >= 4 && /\?\s*$|^(what|why|how|is|are|does|do|can|should|which|who|when|where|tell me|explain|cos|perch|come|qual|chi|quant)\b/i.test(q)
@@ -10641,16 +10675,16 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       ["No idea, but I can tell you why your coffee's sour.", "Non lo so, ma posso dirti perché il tuo caffè è aspro."],
       ["I'm stumped. Shall we talk about grinders instead?", "Mi hai fregato. Parliamo di macinini?"]];
     let dunnoLast = -1;
-    const dunno = () => { let i; do { i = Math.floor(Math.random() * DUNNO.length); } while (i === dunnoLast && DUNNO.length > 1); dunnoLast = i; say(T(DUNNO[i][0], DUNNO[i][1]), null, Math.random() < 0.5 ? hmm : curious); };
+    const dunno = () => { react("❓", 900); let i; do { i = Math.floor(Math.random() * DUNNO.length); } while (i === dunnoLast && DUNNO.length > 1); dunnoLast = i; say(T(DUNNO[i][0], DUNNO[i][1]), null, Math.random() < 0.5 ? hmm : curious); };
     $("gdGo").onclick = () => ask(inEl.value);
     { const mic = $("gdMic"), Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (mic && Rec) { mic.hidden = false; let rec = null;
         mic.onclick = () => { if (rec) { try { rec.stop(); } catch (e) {} return; }
-          try { rec = new Rec(); rec.lang = IT ? "it-IT" : "en-GB"; rec.interimResults = true; rec.maxAlternatives = 1; } catch (e) { rec = null; return; }
-          mic.classList.add("on"); sayEl.textContent = T("Listening…", "Ti ascolto…"); D.curious();
+          try { rec = new Rec(); rec.lang = LANG === "it" ? "it-IT" : "en-GB"; rec.interimResults = true; rec.maxAlternatives = 1; } catch (e) { rec = null; return; }
+          mic.classList.add("on"); inEl.placeholder = T("Listening…", "Ti ascolto…"); D.curious();
           rec.onresult = (e) => { const r0 = e.results[e.results.length - 1]; inEl.value = r0[0].transcript; if (r0.isFinal) { const t = inEl.value; try { rec.stop(); } catch (er) {} ask(t); } };
-          rec.onerror = (e) => { sayEl.textContent = e.error === "not-allowed" ? T("I need the microphone for that. You can type instead.", "Mi serve il microfono. Puoi anche scrivere.") : T("I didn't catch that. Try again or type it?", "Non ho capito. Riprova o scrivilo?"); };
-          rec.onend = () => { mic.classList.remove("on"); rec = null; };
+          rec.onerror = (e) => { sayNow(e.error === "not-allowed" ? T("I need the microphone for that. You can type instead.", "Mi serve il microfono. Puoi anche scrivere.") : T("I didn't catch that. Try again or type it?", "Non ho capito. Riprova o scrivilo?"), null, hmm); };
+          rec.onend = () => { mic.classList.remove("on"); rec = null; gdWords(); };
           try { rec.start(); } catch (e) { mic.classList.remove("on"); rec = null; } }; } }
     inEl.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); ask(inEl.value); } if (e.key === "Escape") closeTalk(); });
     // the bubble lives over the drop; asked from the top bar it docks under the bar instead, wherever you are on the page
@@ -10660,7 +10694,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const wide = ar.left < 40; dock.classList.toggle("wide", wide); if (wide) { dock.style.setProperty("--dl", ar.left + "px"); dock.style.setProperty("--dr", (innerWidth - pr.right) + "px"); } };
     addEventListener("resize", fitDock, { passive: true });
     const place = (top) => { const want = top ? dock : home; if (top) fitDock(); if (talkEl.parentNode !== want) want.appendChild(talkEl); talkEl.classList.toggle("docked", !!top); };
-    openTalk = (top) => { if (talking) { place(top); return; } place(top); gdWords(); talking = true; talkEl.hidden = false; el.setAttribute("aria-expanded", "true");
+    openTalk = (top) => { if (talking) { place(top); return; } place(top); gdWords(); talking = true; talkEl.hidden = false; el.setAttribute("aria-expanded", "true"); toBottom();
+      const lastAt = msgs.length ? msgs[msgs.length - 1].at || 0 : 0; if (name && msgs.length && Date.now() - lastAt < 20 * 60000) { showChips(); return; }   // still mid-chat: carry on
       if (!name) { askingName = true; return say(T("Hi! I'm Goccio, the drop that knows coffee. What should I call you?", "Ciao! Sono Goccio, la goccia che sa tutto del caffè. Come ti chiamo?"), [T("Skip", "Salta")], happy); }
       say(pick([T(`Hi ${name}! Ask me about coffee.`, `Ciao ${name}! Chiedimi del caffè.`), T(`Hello ${name}! What are we brewing?`, `Ciao ${name}! Cosa prepariamo?`), T(`Oh, hi ${name}! Need a hand with your coffee?`, `Oh, ciao ${name}! Ti serve una mano col caffè?`)]), null, happy); };
     closeTalk = () => { if (!talking) return; talking = false; talkEl.hidden = true; el.setAttribute("aria-expanded", "false"); clearInterval(typeT); bob(false); };
