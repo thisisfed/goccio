@@ -2693,6 +2693,7 @@ html body{padding-top:var(--top-h, 49px)}
 html body .shelf .item .c-where .ji{color:var(--muted)!important}
 html body .shelf .item .tags, html body .shelf .item .tags > *, html body .shelf .item .tags .tg{color:var(--muted)!important}
 html body .shelf .item .c-notes, html body .shelf .item .c-notes:not(.c-typ){color:var(--muted)!important}
+html body #shelves.ro-on .item .c-where .ji{display:none!important}   /* on a roaster's page a row opens with "Released yesterday": no "New" before it */
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
@@ -9233,15 +9234,23 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   document.addEventListener("click", (e) => { if (document.documentElement.classList.contains("brew-done") && e.target.closest && e.target.closest('.shelf .item .btn[data-i], #bags .btn, #bvReset, #wmBag, .botnav [data-bn="cancel"], #coffeeGo')) brewDoneUI(false); }, true);
   /* a roaster's page and an open coffee are not the search's results: the box does not go on showing the search there. It is put back,
      untouched, on returning to the list (the list itself never stopped being filtered) */
-  { const a = $("askIn"), form = a && a.closest("form"), h = document.documentElement; let held = null, was = false;
+  { const a = $("askIn"), form = a && a.closest("form"), h = document.documentElement, Q = $("shelfQ"); let held = null, wasRo = false, wasBrew = false;
     const poke = () => { try { if (document.activeElement !== a) a.dispatchEvent(new Event("blur")); } catch (e) {} };
-    const sync = () => { if (!a || !form) return; const off = h.classList.contains("ro-page") || h.classList.contains("brew-in");
-      const entering = off && !was; was = off;   /* only what was in the box on arriving: a search typed on a roaster's page is its own and stays */
-      if (entering && !held && a.value.trim() && document.activeElement !== a) { held = { v: a.value, fy: a.dataset.fy, done: form.classList.contains("is-done") }; a.value = ""; delete a.dataset.fy; form.classList.remove("is-done"); poke(); }
-      else if (!off && held) { const k = held; held = null; if (!a.value.trim() && $("shelfQ").value.trim()) { a.value = k.v; if (k.fy) a.dataset.fy = k.fy; form.classList.toggle("is-done", true); poke(); } } };
+    const setQ = (v) => { if (Q.value !== v) { Q.value = v; Q.dispatchEvent(new Event("input")); } };
+    const stash = (withQ) => { held = { v: a.value, fy: a.dataset.fy, done: form.classList.contains("is-done"), q: withQ ? Q.value : null }; a.value = ""; delete a.dataset.fy; form.classList.remove("is-done"); poke(); };
+    const unstash = () => { const k = held; held = null; if (!k) return; a.value = k.v; if (k.fy) a.dataset.fy = k.fy; form.classList.toggle("is-done", !!k.v.trim() && k.done); poke(); return k; };
+    const sync = () => { if (!a || !form) return; const ro = h.classList.contains("ro-page"), brew = h.classList.contains("brew-in");
+      /* a roaster's page is its own place: the search that led there is put aside (box and list), so the page shows all that roaster's coffees
+         and a search made there looks among them. Leaving drops that search and brings the earlier one back */
+      if (ro && !wasRo) { if (!held) stash(true); else if (held.q === null) held.q = Q.value; setQ(""); }
+      else if (!ro && wasRo) { const k = unstash(); if (!brew) { a.value = k ? k.v : ""; if (!k || !k.v.trim()) form.classList.remove("is-done"); setQ(k && k.q !== null ? k.q : ""); poke(); } }
+      /* an open coffee only empties the box; the list behind it stays as it was */
+      else if (brew && !wasBrew && !ro) { if (!held && a.value.trim() && document.activeElement !== a) stash(false); }
+      else if (!brew && wasBrew && !ro) { if (held && !a.value.trim() && Q.value.trim()) unstash(); else held = null; }
+      wasRo = ro; wasBrew = brew; };
     if (a && form) new MutationObserver(sync).observe(h, { attributes: true, attributeFilter: ["class"] }); }
   document.addEventListener("click", (e) => { const a = e.target.closest && e.target.closest(".ro-back-q"); if (!a) return; e.preventDefault();
-    const i = $("askIn"), q = $("shelfQ"); i.value = ""; q.value = ""; $("roBack").click(); });   /* the way out of a roaster's page offered with its search results */
+    $("roBack").click(); });   /* the way out of a roaster's page offered with its search results */
   new MutationObserver(() => { try { window.__searchHint && window.__searchHint(); } catch (e) {} }).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });   // the box's count follows the page it is on
   const mineOn = () => { if (document.documentElement.classList.contains("mine")) return; document.documentElement.classList.add("mine"); };   /* for this visit only: the next one starts without it again */
   /* and away again once back at the list or the opening screen, unless a coffee of your own has its recipe out */
