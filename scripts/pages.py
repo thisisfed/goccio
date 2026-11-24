@@ -362,6 +362,53 @@ def main():
     write("coffee/index.html", page("Specialty coffee roasters and V60 recipes for their coffees",
                                     f"{len(coffees):,} specialty coffees from {len(names)} roasters, updated every day, each with a V60 recipe.", "/coffee/", body, nav=False, tight=True))
 
+    # ---------- new this week: a page and a feed of the coffees added in the last seven days, newest day first ----------
+    from datetime import date as _d, timedelta as _td
+    from email.utils import format_datetime
+    from datetime import datetime as _dt, timezone as _tz
+    last = max((c.get("found") or "" for c in coffees), default="") or updated
+    try:
+        since = (_d.fromisoformat(last[:10]) - _td(days=6)).isoformat()
+    except ValueError:
+        since = ""
+    # new means new from the roaster: the shop's own date when it gives one; else the day Goccio first saw it, but not the day a
+    # roaster joined the list (that day brings its whole range, not new coffees)
+    joined = {(x or {}).get("name"): (x or {}).get("first_seen") for x in (shops.values() if isinstance(shops, dict) else [])}
+    def when(c):
+        if c.get("published"):
+            return c["published"][:10]
+        f = (c.get("found") or "")[:10]
+        return "" if f and f == (joined.get(c["roaster"]) or "")[:10] else f
+    week = sorted([c for c in coffees if when(c) >= since and when(c)], key=lambda c: (when(c), c["roaster"], c["name"]), reverse=True)
+    days, blocks = {}, []
+    for c in week:
+        days.setdefault(when(c), []).append(c)
+    for day, cs in days.items():
+        blocks.append(f'<h2 class="nw-day">{e(ddmmyyyy(day))}, {len(cs)} coffee{"s" if len(cs) != 1 else ""}</h2><ul class="list">' + "".join(
+            f'<li><a href="{cpath[id(c)]}"><span class="name">{e(c["name"])}</span></a><span class="sub">'
+            + e(", ".join(x for x in [c["roaster"], c.get("origin"), c.get("process")] if x)) + "</span></li>" for c in cs) + "</ul>")
+    feed_link = f'<link rel="alternate" type="application/rss+xml" title="Goccio: new coffees" href="{BASE}/new/feed.xml">'
+    body = (f'<section><div class="specs"><div class="spec wide"><h1>New this week</h1></div></div>'
+            f'<p class="r-read">{len(week):,} specialty coffees added in the last seven days, each with a V60 recipe. '
+            f'Follow them with the <a href="/new/feed.xml">feed</a> in any reader.</p>{"".join(blocks)}</section>'
+            '<style>.nw-day{font-size:var(--fs-m,24px);margin:28px 0 8px;font-weight:500;letter-spacing:-.02em}</style>')
+    write("new/index.html", page("New specialty coffees this week, with their recipes",
+                                 f"{len(week):,} specialty coffees added in the last seven days, from {len({c['roaster'] for c in week})} roasters, each with a V60 recipe.",
+                                 "/new/", body, extra_head=feed_link, tight=True))
+    urls.append((f"{BASE}/new/", updated))
+    def rfc(day):
+        try:
+            return format_datetime(_dt.fromisoformat(day[:10]).replace(hour=6, tzinfo=_tz.utc))
+        except ValueError:
+            return ""
+    items = "".join(
+        f"<item><title>{e(c['name'])}, {e(c['roaster'])}</title><link>{BASE}{cpath[id(c)]}</link><guid isPermaLink=\"true\">{BASE}{cpath[id(c)]}</guid>"
+        f"<pubDate>{rfc(when(c))}</pubDate><description>{e(', '.join(x for x in [c.get('origin'), c.get('process'), ', '.join(n for n in (c.get('notes') or []) if isinstance(n, str))] if x))}</description></item>\n"
+        for c in week[:150])
+    write("new/feed.xml", '<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0"><channel><title>Goccio: new coffees</title>'
+          f"<link>{BASE}/new/</link><description>Every new specialty coffee, with its recipe before you buy.</description><language>en-gb</language>\n{items}</channel></rss>\n")
+    print(f"new this week: {len(week)} coffees since {since}")
+
     write("sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
           + "".join(f"<url><loc>{e(u)}</loc><lastmod>{m}</lastmod></url>\n" for u, m in urls) + "</urlset>\n")
     write("robots.txt", f"User-agent: *\nAllow: /\n\nSitemap: {BASE}/sitemap.xml\n")
