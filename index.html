@@ -2726,6 +2726,7 @@ html body #roFollow{display:none}
 html.ro-page body #roFollow{display:inline-flex;flex:none;align-self:flex-start;margin-left:auto}
 html.ro-page body #shelves > .sec-head{flex-wrap:nowrap!important;align-items:flex-start!important;gap:12px}
 html.ro-page body #shelves > .sec-head > #sh{flex:1 1 auto;min-width:0}   /* a long name wraps beside Follow, which stays top right */
+html body #roHead{margin-top:-13px!important}   /* the place line as close under the roaster name as the notes are under the tags */
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
@@ -6750,7 +6751,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     try { country = country ? new Intl.DisplayNames([LANG === "it" ? "it" : "en"], { type: "region" }).of(country) : ""; } catch (e) {}
     $("roName").textContent = roasteryName(shelfRo) + ".";   // "People Possession Roastery.", as the list writes it
     /* one line, written as the list writes it: "Paris (FR), 18 coffees" */
-    { const cc = r0.roaster_country === "GB" ? "UK" : (r0.roaster_country || ""), place = r0.roaster_city ? r0.roaster_city + (cc ? ` (${cc})` : "") : country;
+    { const cc = r0.roaster_country === "GB" ? "UK" : (r0.roaster_country || ""), place = r0.roaster_city ? cityL(r0.roaster_city) + (cc ? ` (${cc})` : "") : country;
       $("roWhere").textContent = [place, mine.length === 1 ? (LANG === "it" ? "1 caffè" : "1 coffee") : `${mine.length} ${LANG === "it" ? "caffè" : "coffees"}`].filter(Boolean).join(", "); }
     $("roCount").textContent = ""; $("roCount").hidden = true;
     followSync();
@@ -7268,6 +7269,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   // the grey line under the city says what it is: a roaster whose name doesn't already say so gets "Roastery" after it (Rave Roastery),
   // one that does is left alone (Square Mile Coffee Roasters, Kaffeerösterei X, Torrefazione Y)
   const SAYS_ROASTER = /roast|röst|rost|torref|torréf|tostad|brûler|bruler|coffee|caf[eé]|kaffe|kaffee|koffie|kahve|kawa|coffea|beans?\b|\bco\.?$|collective|lab\b|club\b|company/i;
+  const CITY_IT = {"London": "Londra", "Edinburgh": "Edimburgo", "Dublin": "Dublino", "Berlin": "Berlino", "Barcelona": "Barcellona", "Paris": "Parigi", "Bucharest": "Bucarest", "Stockholm": "Stoccolma", "Copenhagen": "Copenaghen", "Gothenburg": "Göteborg", "Warsaw": "Varsavia", "Zurich": "Zurigo", "Seville": "Siviglia", "Florence": "Firenze", "Ghent": "Gand", "Leuven": "Lovanio", "Antwerp": "Anversa", "Athens": "Atene", "Hamburg": "Amburgo", "Prague": "Praga", "Brussels": "Bruxelles", "Geneva": "Ginevra", "Frankfurt": "Francoforte", "Lyon": "Lione", "Bern": "Berna", "Ljubljana": "Lubiana", "Cologne": "Colonia", "Milan": "Milano", "São Paulo": "San Paolo", "Rome": "Roma", "Normandy": "Normandia", "Lisbon": "Lisbona", "Munich": "Monaco di Baviera", "Vienna": "Vienna", "Moscow": "Mosca", "Basel": "Basilea", "Lucerne": "Lucerna", "Salzburg": "Salisburgo", "Krakow": "Cracovia", "Kraków": "Cracovia", "Belgrade": "Belgrado", "Marseille": "Marsiglia", "Nice": "Nizza", "Toulouse": "Tolosa", "Strasbourg": "Strasburgo", "The Hague": "L’Aia", "Dresden": "Dresda", "Nuremberg": "Norimberga", "Aachen": "Aquisgrana", "Mainz": "Magonza", "Freiburg": "Friburgo", "Augsburg": "Augusta", "Regensburg": "Ratisbona", "Philadelphia": "Filadelfia", "Mexico City": "Città del Messico", "Cape Town": "Città del Capo", "Beijing": "Pechino", "Seoul": "Seul", "Valencia": "Valencia", "Bruges": "Bruges", "Brno": "Brno", "Lille": "Lilla", "Bordeaux": "Bordeaux", "Hannover": "Hannover", "Heidelberg": "Heidelberg", "Granada": "Granada", "Edmonton": "Edmonton"};
+  const cityL = (c) => (LANG === "it" && CITY_IT[String(c || "").trim()]) || c || "";   // the Italian page names cities in Italian: Paris, Parigi
   const roasteryName = (n) => { n = String(n || "").trim(); if (!n || SAYS_ROASTER.test(n)) return n; return LANG === "it" ? "Torrefazione " + n : n + " Roastery"; };
   // Buy and Save wait behind the row's plus, as language and theme do behind the top bar's
   const rowOpen = new Set(), rowKey = (r) => r.url || (r.roaster + "|" + r.name);
@@ -7438,7 +7441,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       tagBits.push(...coffeeLabels(r, shown).map((l) => `<span class="tg lbl" style="--vc:${LABEL_DOT[l] || "#8e8e93"}">${l}</span>`));
       return `${head}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
         <div class="l">
-          <p class="c-where">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : !isSp && r.just_in ? `<span class="ji">${LANG === "it" ? "Nuovo" : "New"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : ""}<a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a>${r.roaster_city || r.roaster_country ? `<span class="rcity">${r.roaster_city ? ", " : " "}${esc(r.roaster_city || "")}${r.roaster_country ? `${r.roaster_city ? " " : ""}(${esc(r.roaster_country === "GB" ? "UK" : r.roaster_country)})` : ""}</span>` : ""}<br class="rn-br"><span class="day">${day}</span></p>
+          <p class="c-where">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : !isSp && r.just_in ? `<span class="ji">${LANG === "it" ? "Nuovo" : "New"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : ""}<a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a>${r.roaster_city || r.roaster_country ? `<span class="rcity">${r.roaster_city ? ", " : " "}${esc(cityL(r.roaster_city))}${r.roaster_country ? `${r.roaster_city ? " " : ""}(${esc(r.roaster_country === "GB" ? "UK" : r.roaster_country)})` : ""}</span>` : ""}<br class="rn-br"><span class="day">${day}</span></p>
           <span class="name">${esc(capName(calm(shown)))}</span>
           <p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p>
           ${cardNotes(r)}${cardPrice(r)}
@@ -7569,7 +7572,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   const saveBags = () => { try { localStorage.setItem(BAGS_KEY, JSON.stringify(bags)); } catch (e) {} };
   // the roaster's city: saved with the bag, or found in today's list for bags saved before it was kept
   const bagCC = (b) => { const c = b.roaster_country || ((shelf || []).find((r) => r.roaster === b.roaster && r.roaster_country) || {}).roaster_country || ""; return c === "GB" ? "UK" : c; };
-  const bagCity = (b) => b.city || ((shelf || []).find((r) => r.roaster === b.roaster && r.roaster_city) || {}).roaster_city || "";
+  const bagCity = (b) => cityL(b.city || ((shelf || []).find((r) => r.roaster === b.roaster && r.roaster_city) || {}).roaster_city || "");   // shown only: in Italian on the Italian page
   const bagId = (r) => r.url ? "u:" + r.url : "t:" + norm([r.roaster, r.name].filter(Boolean).join(" ") || r.text || "");
   const hasBag = (r) => bags.some((b) => b.id === bagId(r));
   // one short line over the bottom bar that goes by itself
