@@ -2747,6 +2747,12 @@ html.nav-off body #toast{bottom:calc(env(safe-area-inset-bottom) + 12px)}
 /* Process not stated. / Roast not stated.: two lines set like the text under them (How to pour), no gap between them */
 html body #consTop{gap:0!important;row-gap:0!important}
 html body #consTop .cons-top{line-height:1.35!important;margin:0!important;padding:0!important}
+/* What's brewing?: an arrow in the box, bottom right, once there's something new to build: Enter isn't the only way */
+html body #coffee .field{position:relative}
+html body #go{display:none!important}
+html body #go.on{display:inline-flex!important;position:absolute;right:0;bottom:0;width:var(--pill-h,32px);height:var(--pill-h,32px)!important;min-height:0!important;padding:0!important;align-items:center;justify-content:center;border:0;border-radius:var(--r,4px);background:var(--ink);color:var(--bg);cursor:pointer}
+html body #go svg{width:16px;height:16px}
+html body #coffee .field:has(#go.on) #coffeeIn{padding-right:48px!important}
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
@@ -3168,8 +3174,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     <div class="ask">
       <label for="coffeeIn" id="askLbl">What’s brewing?</label>
       <div class="field">
-        <textarea id="coffeeIn" rows="2" placeholder="What the bag says: XYZ Roastery, Ethiopia, washed, light roast"></textarea>
-        <button class="btn" id="go" type="button">Build recipe</button>
+        <textarea id="coffeeIn" rows="2" enterkeyhint="go" placeholder="What the bag says: XYZ Roastery, Ethiopia, washed, light roast"></textarea>
+        <button class="btn" id="go" type="button" aria-label="Build recipe"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </div>
       <div class="detected" id="detected" aria-live="polite"></div>
       <div class="need" id="need" hidden></div>
@@ -9301,7 +9307,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     addEventListener("keydown", (e) => { if (/^(PageDown|PageUp|ArrowDown|ArrowUp|Home|End| )$/.test(e.key)) disarm(); }); }
   document.addEventListener("touchstart", () => {}, { passive: true });   // iOS: lets :active (the pills' squish) show under a finger
   // ---------- wire up ----------
-  $("go").onclick = () => { surprisePick = null; build(); };
+  $("go").onclick = () => { surprisePick = null; build(); syncGo(); };
+  // the arrow in the box: there once something new is typed, so nobody has to guess that Enter builds the recipe; gone once it's built
+  const syncGo = () => { const v = $("coffeeIn").value.trim(); $("go").classList.toggle("on", v.length >= 3 && v !== (state.text || "").trim()); };
+  ["input", "focus", "blur"].forEach((ev) => $("coffeeIn").addEventListener(ev, () => setTimeout(syncGo, 0)));
+  $("coffeeIn").addEventListener("keydown", (e) => { if (e.key === "Enter") setTimeout(syncGo, 0); });
   $("coffeeIn").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); build(); } });
   // no button: the recipe builds itself a moment after you stop typing, on Enter, or when you leave the box
   let buildT = null;
@@ -9309,7 +9319,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // on a phone nothing moves while the keyboard is up: the brewer, grinder and recipe come once typing is done (the keyboard's tick, Enter,
     // or a tap elsewhere). With a real keyboard a longer pause still builds it
     if (matchMedia("(pointer: coarse)").matches) return;
-    buildT = setTimeout(() => { const n = $("coffeeIn").value.trim().length; if (n >= 3) buildHere(); else if (!n && state.text) clearCoffee(); }, 1500); });   // emptied: back to no coffee picked
+    buildT = setTimeout(() => { const n = $("coffeeIn").value.trim().length; if (n >= 3) buildHere(); else if (!n && state.text) clearCoffee(); syncGo(); }, 1500); });   // emptied: back to no coffee picked
   const clearCoffee = () => { surprisePick = null; build(false); };
   // building the recipe from what was typed never moves the box you typed in: wherever it stood on the screen, it still stands
   const buildHere = () => { const f = $("coffeeIn"), y = f.getBoundingClientRect().top; build(false);
