@@ -2713,6 +2713,12 @@ html body footer .refs.meth li{color:var(--muted)!important;margin:0 0 12px}
 html body footer .refs.meth li:last-child{margin-bottom:0}
 html body footer .refs.meth .rt{display:block;color:var(--ink)!important;margin-bottom:2px}
 #crowd{margin:-10px 0 0;text-align:center;color:var(--muted);font-size:var(--fs-s)}   /* "12 brews logged: 9 just right, 2 too sour, 1 too bitter." under Recipe for … */
+/* a roaster's page: its place and count, and Follow on the same line */
+.ro-head .ro-line{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.ro-head .ro-line .ro-v{margin:0}
+html body #roFollow{flex:none;border:0!important;outline:0!important;box-shadow:none!important}
+html body #roFollow[aria-pressed="true"]{background:var(--ink)!important;color:var(--bg)!important}
+#followNote a{color:inherit;text-decoration:underline;text-underline-offset:2px}
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
@@ -3088,6 +3094,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
 
   <section class="sec" id="shelves" aria-labelledby="sh">
     <div class="sec-head"><span class="cap" id="sh" role="heading" aria-level="2"><span class="sh-t">Coffees.</span><span class="ro-title" id="roName" translate="no"></span></span><button type="button" class="chip fy-pill" id="fyPill" aria-pressed="false">For you</button></div>
+    <p class="fy-note fy-top" id="followNote" hidden></p>
     <p class="fy-note fy-top" id="fyNote" role="status" hidden></p>
     <p class="shelf-meta" id="shelfMeta" hidden></p>
     <div class="shelf-tools">
@@ -3104,7 +3111,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       </div>
     </div>
     <div class="ro-head" id="roHead" hidden>
-      <p class="ro-v" id="roWhere" translate="no"></p>
+      <div class="ro-line"><p class="ro-v" id="roWhere" translate="no"></p><button type="button" class="chip ro-follow" id="roFollow" aria-pressed="false">Follow</button></div>
       <p class="ro-v" id="roCount"></p>
       <p class="ro-acts"><a class="ro-pill" id="roShop" target="_blank" rel="noopener">Visit shop</a><button type="button" class="ro-pill" id="roBack">Back to all coffees</button></p>
     </div>
@@ -6242,6 +6249,28 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     if (crowdSeen.has(u)) return show(crowdSeen.get(u));
     el.hidden = true; crowdSeen.set(u, null);
     fetch("/api/taste?u=" + encodeURIComponent(u)).then((r) => r.ok ? r.json() : null).then((t) => { crowdSeen.set(u, t); if (state.bag && state.bag.url === u) show(t); }).catch(() => {}); }
+  // follow a roaster: kept on this device. Coming back, the list says what's new from the roasters you follow since your last visit
+  const FOLLOW_KEY = "v60.follow", FSEEN_KEY = "v60.followSeen";
+  const follows = () => { try { return JSON.parse(localStorage.getItem(FOLLOW_KEY) || "[]"); } catch (e) { return []; } };
+  function followSync() { const b = $("roFollow"); if (!b || !shelfRo) return; const on = follows().includes(shelfRo), it = LANG === "it";
+    b.setAttribute("aria-pressed", on ? "true" : "false"); b.textContent = on ? (it ? "Segui già" : "Following") : (it ? "Segui" : "Follow"); }
+  document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("#roFollow"); if (!b || !shelfRo) return;
+    let f = follows(); const on = f.includes(shelfRo); f = on ? f.filter((x) => x !== shelfRo) : [...f, shelfRo];
+    try { localStorage.setItem(FOLLOW_KEY, JSON.stringify(f)); if (!on && !localStorage.getItem(FSEEN_KEY)) localStorage.setItem(FSEEN_KEY, new Date().toISOString().slice(0, 10)); } catch (e) {}
+    followSync(); try { toast(on ? (LANG === "it" ? `Non segui più ${shelfRo}.` : `You no longer follow ${shelfRo}.`) : (LANG === "it" ? `Segui ${shelfRo}. Quando torni, Goccio ti dice cosa c’è di nuovo, sopra la lista.` : `Following ${shelfRo}. When you come back, Goccio tells you what’s new from them, above the list.`)); } catch (e2) {} });
+  let followShown = false;
+  function followNote() { const el = $("followNote"); if (!el) return; const f = follows();
+    if (!f.length || shelfRo || ($("shelfQ") && $("shelfQ").value.trim())) { el.hidden = true; return; }
+    let prev = ""; try { prev = localStorage.getItem(FSEEN_KEY) || ""; } catch (e) {}
+    if (!prev) { el.hidden = true; return; }
+    const by = new Map(); shelf.forEach((r) => { if (f.includes(r.roaster) && String(shelfDate(r)).slice(0, 10) > prev) by.set(r.roaster, (by.get(r.roaster) || 0) + 1); });
+    if (!by.size) { el.hidden = true; return; }
+    const it = LANG === "it", n = [...by.values()].reduce((a, b) => a + b, 0);
+    el.innerHTML = (it ? `${n} ${n === 1 ? "nuovo caffè" : "nuovi caffè"} dalle torrefazioni che segui: ` : `${n} new ${n === 1 ? "coffee" : "coffees"} from roasters you follow: `)
+      + [...by.entries()].map(([k, v]) => `<a href="#roaster=${encodeURIComponent(k)}" data-ro="${esc(k)}">${esc(k)}</a> (${v})`).join(", ") + ".";
+    el.querySelectorAll("a[data-ro]").forEach((a) => a.onclick = (e) => { e.preventDefault(); openRoaster(a.dataset.ro); });
+    el.hidden = false; followShown = true; }
+  addEventListener("pagehide", () => { if (follows().length) try { localStorage.setItem(FSEEN_KEY, new Date().toISOString().slice(0, 10)); } catch (e) {} });
   let softShut = false;
   var PREVIEW_TASTE = /[?&]howwasit\b/.test(location.search) ? {} : null;   // the ?howwasit preview: nothing it answers is counted   // an open coffee folded for the Journal, still chosen until its brew is logged
   function logSaved() { brewDone = false; try { brewDoneUI(false); } catch (e) {} $("logBox").classList.add("saved"); journalOn();
@@ -6716,6 +6745,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     { const cc = r0.roaster_country === "GB" ? "UK" : (r0.roaster_country || ""), place = r0.roaster_city ? r0.roaster_city + (cc ? ` (${cc})` : "") : country;
       $("roWhere").textContent = [place, mine.length === 1 ? (LANG === "it" ? "1 caffè" : "1 coffee") : `${mine.length} ${LANG === "it" ? "caffè" : "coffees"}`].filter(Boolean).join(", "); }
     $("roCount").textContent = ""; $("roCount").hidden = true;
+    followSync();
     const shop = roShops.get(shelfRo) || (() => { try { return new URL(r0.url).origin; } catch (e) { return ""; } })();
     $("roShop").hidden = !shop; if (shop) $("roShop").href = shop;
   }
@@ -7338,6 +7368,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const fyOn = !!fy;   // each pick carries For you where Just in would be
     // For you ticked: under the menu, why these (or, before it knows three coffees, what it needs; the list stays as it was)
     { const fp = $("fyPill"); if (fp) { fp.setAttribute("aria-pressed", String(!!shelfY && !shelfRo)); fp.hidden = !!shelfRo || (!shelfY && !fyReady()); fp.textContent = LANG === "it" ? "Per te" : "For you"; } }
+    if (!shelfPart) followNote();
     { const n = $("fyNote"); n.hidden = !(shelfY && !shelfRo); if (!n.hidden) n.textContent = fyWhy();
       // nothing to learn from yet: the note stays for as long as it takes to read it ON SCREEN (time scrolled away or with the
       // tab hidden doesn't count, so a scroll never cuts it short), then For you switches itself off and the note goes
