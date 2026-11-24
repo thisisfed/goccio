@@ -3008,7 +3008,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
 </head>
 <body>
 <!-- the hero film lies over the page top, the top bar included: its black is see-through, so the drop falls across the bar into the coffee -->
-<video class="wm-video" id="wmVideo" muted playsinline webkit-playsinline preload="auto" poster="/img/goccio-drop2.jpg?v=3" aria-hidden="true" tabindex="-1" disablepictureinpicture><source src="/img/goccio-drop2.mp4?v=4" type="video/mp4"></video><video class="wm-video" id="wmLoop" muted playsinline webkit-playsinline loop preload="none" aria-hidden="true" tabindex="-1" disablepictureinpicture style="visibility:hidden" data-src="/img/goccio-ripples.mp4?v=4"></video><canvas class="wm-video" id="wmFilm" width="640" height="360" aria-hidden="true" hidden></canvas>
+<video class="wm-video" id="wmVideo" muted playsinline webkit-playsinline preload="auto" poster="/img/goccio-drop2.jpg?v=3" aria-hidden="true" tabindex="-1" disablepictureinpicture><source src="/img/goccio-drop2.mp4?v=5" type="video/mp4"></video><video class="wm-video" id="wmLoop" muted playsinline webkit-playsinline loop preload="none" aria-hidden="true" tabindex="-1" disablepictureinpicture style="visibility:hidden" data-src="/img/goccio-ripples.mp4?v=4"></video><canvas class="wm-video" id="wmFilm" width="640" height="360" aria-hidden="true" hidden></canvas>
 <header class="top">
   <div class="top-in">
     <div class="mark" translate="no">Goccio</div>
@@ -9565,11 +9565,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   // second) that nothing can block. Either way it plays once when the page shows and rests on its last frame
   let filmOnCanvas = false;
   const canvasFilm = () => { if (filmOnCanvas) return; filmOnCanvas = true; const c = $("wmFilm"), v = $("wmVideo"), g = c && c.getContext && c.getContext("2d"); if (!g) return;
-    const N = 69, LOOP = 44, FPS = 12, COLS = 4, PER = 12, W = 640, H = 360, sheets = [];   /* frames 0-43 the drop, 44-68 the ripples, looped */
+    const N = 96, LOOP = 71, FPS = 12, COLS = 4, PER = 12, W = 640, H = 360, sheets = [];   /* frames 0-70 the drop, the bead falling back and settling; 71-95 the ripples, looped */
     const draw = (k) => { const im = sheets[Math.floor(k / PER)]; if (!im || !im.ok) return false; const n = k % PER; g.drawImage(im, (n % COLS) * W, Math.floor(n / COLS) * H, W, H, 0, 0, W, H);
       const old = Math.floor(k / PER) - 1; if (n === 0 && old >= 0 && (old + 1) * PER <= LOOP && sheets[old]) { sheets[old] = null; }   // a sheet that has played is let go
       return true; };
-    const load = (i) => { const im = new Image(); im.decoding = "async"; im.onload = () => { im.ok = true; if (i === 0) { draw(0); c.hidden = false; c.style.height = v ? v.style.height : ""; if (v) v.style.display = "none"; } if (i < 5) load(i + 1); }; im.src = `/img/goccio-film${i + 1}.jpg?v=4`; sheets[i] = im; };
+    const load = (i) => { const im = new Image(); im.decoding = "async"; im.onload = () => { im.ok = true; if (i === 0) { draw(0); c.hidden = false; c.style.height = v ? v.style.height : ""; if (v) v.style.display = "none"; } if (i < 7) load(i + 1); }; im.src = `/img/goccio-film${i + 1}.jpg?v=5`; sheets[i] = im; };
     load(0); let k = 0, last = 0;
     const tick = (t) => { if (document.documentElement.classList.contains("wait")) return requestAnimationFrame(tick);
       if (window.__heroOff) { last = t; return requestAnimationFrame(tick); }   // off screen: the ripples wait
@@ -9605,7 +9605,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         kick(); setTimeout(kick, 800); setTimeout(kick, 2500); { const iv = setInterval(() => { if (!document.documentElement.classList.contains("wait")) { clearInterval(iv); setTimeout(kick, 350); } }, 120); }
         // nothing loaded after four seconds (Safari gives up when a server answers its part-requests oddly): fetch the whole
         // film, 0.6 MB, and play it from memory
-        setTimeout(async () => { if (filmOnCanvas || (v.readyState >= 2 && !v.error)) return; try { const r = await fetch("/img/goccio-drop2.mp4?v=4"); if (!r.ok) return; fetch("/img/goccio-ripples.mp4?v=4").then((x) => x.ok && x.blob()).then((b) => { const lp = $("wmLoop"); if (b && lp) { lp.dataset.src = URL.createObjectURL(b); } }).catch(() => {});
+        setTimeout(async () => { if (filmOnCanvas || (v.readyState >= 2 && !v.error)) return; try { const r = await fetch("/img/goccio-drop2.mp4?v=5"); if (!r.ok) return; fetch("/img/goccio-ripples.mp4?v=4").then((x) => x.ok && x.blob()).then((b) => { const lp = $("wmLoop"); if (b && lp) { lp.dataset.src = URL.createObjectURL(b); } }).catch(() => {});
             v.src = URL.createObjectURL(await r.blob()); v.load(); kick(); } catch (e) {} }, 4000);
       } } }
   window.__v60 = { showReview, analyseBeans, decafGuard, parseCoffee, engine, suggest, cupNotes, cardImage, risks, recipeText, BASE, get recipe() { return recipe; }, get shelf() { return shelf; } };
