@@ -2764,6 +2764,31 @@ html body .wb-sign .gdrop .gd-h{fill:#fff;opacity:.5}
 html body .wb-sign .gdrop .gd-s{fill:var(--hl)}
 html body .wb-sign .gdrop .gd-a,html body .wb-sign .gdrop .gd-sm{fill:none;stroke:#000;stroke-width:1.6;stroke-linecap:round;opacity:0}
 html body .wb-sign .gdrop .gd-ph{opacity:0}
+/* the drop's bubble: over the drop, in the page's own ink with the page's colour for text, a tail pointing down at the drop */
+html body .wb-sign .gd-talk{position:absolute;left:50%;bottom:calc(100% - var(--cup-at, 21px) + 66px);width:min(340px,calc(100vw - 24px));z-index:40;display:grid;grid-template-columns:minmax(0,1fr);gap:12px;padding:14px 12px 12px;
+  border-radius:var(--r,4px);background:var(--ink);color:var(--bg);text-align:left;font:500 15px/1.35 var(--sans);letter-spacing:0;translate:-50% 0;transform-origin:50% 100%;
+  box-shadow:0 12px 40px rgba(0,0,0,.35);animation:gdTalkIn .32s cubic-bezier(.3,1.45,.5,1)}
+html body .wb-sign .gd-talk[hidden]{display:none}
+html body .wb-sign .gd-talk::after{content:"";position:absolute;left:50%;bottom:-6px;width:12px;height:12px;background:inherit;translate:-50% 0;rotate:45deg;border-radius:2px}
+@keyframes gdTalkIn{from{scale:.6;opacity:0}to{scale:1;opacity:1}}
+html body .wb-sign .gd-say{display:block;min-height:2.7em;padding-right:24px;color:var(--bg)}
+html body .wb-sign .gd-chips{display:flex;flex-wrap:wrap;gap:6px}
+html body .wb-sign .gd-chips:empty{display:none}
+html body .wb-sign .gd-chips button,html body .wb-sign .gd-ask button{height:32px;padding:0 10px;border:0;border-radius:var(--r,4px);background:color-mix(in srgb,var(--bg) 12%,var(--ink));color:var(--bg);font:500 15px/1 var(--sans);cursor:pointer;transition:background-color .15s ease}
+html body .wb-sign .gd-chips button.on{background:var(--hl);color:#000}
+@media (hover:hover){html body .wb-sign .gd-chips button:hover,html body .wb-sign .gd-ask button:hover{background:color-mix(in srgb,var(--bg) 24%,var(--ink))}html body .wb-sign .gd-chips button.on:hover{background:color-mix(in srgb,var(--hl) 85%,#000)}}
+html body .wb-sign .gd-ask{display:flex;gap:6px;min-width:0}
+html body .wb-sign .gd-ask input{flex:1;min-width:0;height:32px;padding:0 10px;border:0;border-radius:var(--r,4px);background:color-mix(in srgb,var(--bg) 8%,var(--ink));color:var(--bg);font:500 16px/1 var(--sans);outline:none}
+html body .wb-sign .gd-ask input::placeholder{color:color-mix(in srgb,var(--bg) 55%,var(--ink))}
+html body .wb-sign .gd-ask button{width:32px;min-width:32px!important;max-width:32px;margin:0!important;padding:0;display:inline-flex;align-items:center;justify-content:center;flex:none}
+html body .wb-sign .gd-ask button svg{width:16px;height:16px}
+html body .wb-sign .gd-ask button[hidden]{display:none}
+html body .wb-sign #gdGo{background:var(--hl);color:#000}
+html body .wb-sign #gdMic.on{background:var(--hl);color:#000;animation:gdMic 1s ease-in-out infinite}
+@keyframes gdMic{50%{opacity:.6}}
+html body .wb-sign #gdVoice .x{display:none} html body .wb-sign #gdVoice.off .x{display:inline} html body .wb-sign #gdVoice.off .w{display:none}
+html body .wb-sign .gd-x{position:absolute;top:6px;right:6px;width:28px;height:28px;border:0;background:none;color:var(--bg);font:400 22px/1 var(--sans);cursor:pointer;opacity:.7}
+html body .wb-sign .gdrop:focus-visible{outline:2px solid var(--hl);outline-offset:4px;border-radius:50%}
 html body .wb-sign .gdrop .gd-bl{fill:#ff2d55;opacity:0}
 html body .wb-sign .gdrop .gd-puff{fill:var(--muted);opacity:0;transform-box:fill-box;transform-origin:center;animation:gdpuff 1.2s ease-out forwards}
 @keyframes gdpuff{from{opacity:.75;transform:scale(.4)}to{opacity:0;transform:scale(1.8) translate(0,-6px)}}
@@ -3218,7 +3243,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       </details>
       <input type="file" accept="image/*" capture="environment" id="roastPhotoIn" hidden>
     </div>
-    <p class="wb-sign"><span class="gdrop" id="gdrop" aria-hidden="true"><svg viewBox="-32 -56 64 60"><g class="gd-n"></g><g class="gd-all"><path class="gd-b" d=""/><ellipse class="gd-h" cx="0" cy="0" rx="3.4" ry="1.9"/><g class="gd-e"><ellipse class="gd-l" cx="-6" cy="-12" rx="2.4" ry="3.4"/><ellipse class="gd-r" cx="6" cy="-12" rx="2.4" ry="3.4"/><path class="gd-a" d="M -8.6 -11 Q -6 -14.6 -3.4 -11"/><path class="gd-a" d="M 3.4 -11 Q 6 -14.6 8.6 -11"/><ellipse class="gd-m" cx="0" cy="-4.6" rx="0" ry="0"/><path class="gd-sm" d="M -3.4 -5.6 Q 0 -5.6 3.4 -5.6"/><ellipse class="gd-bl" cx="-10.5" cy="-7.4" rx="3" ry="1.7"/><ellipse class="gd-bl" cx="10.5" cy="-7.4" rx="3" ry="1.7"/></g><g class="gd-ph"><path class="gd-band" d=""/><rect class="gd-cup l" x="0" y="0" width="5" height="9" rx="2.2"/><rect class="gd-cup r" x="0" y="0" width="5" height="9" rx="2.2"/></g></g></svg></span>Brew something good.</p>
+    <p class="wb-sign"><span class="gdrop" id="gdrop" role="button" tabindex="0" aria-label="Ask the drop about coffee" aria-expanded="false"><svg viewBox="-32 -56 64 60" aria-hidden="true"><g class="gd-n"></g><g class="gd-all"><path class="gd-b" d=""/><ellipse class="gd-h" cx="0" cy="0" rx="3.4" ry="1.9"/><g class="gd-e"><ellipse class="gd-l" cx="-6" cy="-12" rx="2.4" ry="3.4"/><ellipse class="gd-r" cx="6" cy="-12" rx="2.4" ry="3.4"/><path class="gd-a" d="M -8.6 -11 Q -6 -14.6 -3.4 -11"/><path class="gd-a" d="M 3.4 -11 Q 6 -14.6 8.6 -11"/><ellipse class="gd-bl" cx="-10.5" cy="-7.4" rx="3" ry="1.7"/><ellipse class="gd-bl" cx="10.5" cy="-7.4" rx="3" ry="1.7"/></g><g class="gd-ph"><path class="gd-band" d=""/><rect class="gd-cup l" x="0" y="0" width="5" height="9" rx="2.2"/><rect class="gd-cup r" x="0" y="0" width="5" height="9" rx="2.2"/></g></g></svg></span><span class="gd-talk" id="gdTalk" role="dialog" aria-label="The drop" hidden><button type="button" class="gd-x" id="gdX" aria-label="Close">×</button><span class="gd-say" id="gdSay" aria-live="polite"></span><span class="gd-chips" id="gdChips"></span><span class="gd-ask"><input id="gdIn" type="text" enterkeyhint="send" autocomplete="off" placeholder="Ask me about coffee" aria-label="Ask the drop"><button type="button" id="gdMic" aria-label="Speak"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="5.5" y="1.5" width="5" height="8.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 7.5a5 5 0 0 0 10 0M8 12.5v2.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button><button type="button" id="gdGo" aria-label="Ask"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" id="gdVoice" aria-pressed="true" aria-label="Voice on"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 6h2.5l3.5-3v10l-3.5-3H2.5z" fill="currentColor"/><path class="w" d="M11 5.5a3.5 3.5 0 0 1 0 5M12.8 3.6a6 6 0 0 1 0 8.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path class="x" d="M11 6l4 4M15 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button></span></span>Brew something good.</p>
   </section>
 
   <section class="sec" id="recipe" aria-labelledby="rtitle">
@@ -9779,45 +9804,41 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const still = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
     const W0 = 36, H0 = 24, R0 = 15.5;   // at rest: a dome 36 wide, 24 high; falling: a round drop of about the same volume
     const wS = 2 * Math.PI / 0.24, zS = 0.3, wL = 2 * Math.PI / 0.42, zL = 0.45, G = 2600;
-    const S = { aRest: 0, eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, phones: 0, jx: 0, blush: 0, melt: 0 }; let jy = 0, jv = 0, ptrX = 0, ptrY = 0, ptrT = 0; let tws = [], a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
+    const S = { aRest: 0, eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, phones: 0, jx: 0, blush: 0 }; let jy = 0, jv = 0, ptrX = 0, ptrY = 0, ptrT = 0; let tws = [], a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
     const draw = () => {
-      const mlt = S.melt, k = 1 + a, h = H0 * k * (1 - 0.7 * mlt), w = W0 / Math.sqrt(Math.max(0.3, k)) * (1 + 0.85 * mlt), r = round;   // volume kept: taller is narrower; melting, it spreads into a puddle
-      // the resting dome (pinned base, rounded shoulders) blended toward a circle while falling
-      const cx = lean * (1 - r), top = -h * (1 - r) - 2 * R0 * r + y, hw = w / 2 * (1 - r) + R0 * r, base = y - (r ? 0 : 0);
-      const sh = 0.56 * (1 - r) + 0.552 * r;   // how full the shoulders are (0.552: a circle drawn with four curves)
-      const mid = (top + base) / 2, bot = base;
-      const d = r > 0.5
-        ? `M ${-hw} ${mid} C ${-hw} ${mid - hw * sh} ${cx - hw * sh} ${top} ${cx} ${top} C ${cx + hw * sh} ${top} ${hw} ${mid - hw * sh} ${hw} ${mid} C ${hw} ${mid + hw * sh} ${hw * sh} ${bot} 0 ${bot} C ${-hw * sh} ${bot} ${-hw} ${mid + hw * sh} ${-hw} ${mid} Z`
-        // sitting: a drop, not a dome. Its widest point is a third of the way up and its base is narrower (the edge curls in
-        // where it meets the surface, as water does on most surfaces), so it reads as liquid, not a ghost
-        : (() => { const bw = hw * (0.74 + 0.24 * mlt); return `M ${-bw} ${bot} C ${-hw * 1.12} ${bot - h * 0.12} ${cx - hw * 0.82} ${top} ${cx} ${top} C ${cx + hw * 0.82} ${top} ${hw * 1.12} ${bot - h * 0.12} ${bw} ${bot} Q 0 ${bot + 0.6} ${-bw} ${bot} Z`; })();
+      // the shape it has just before it falls: round. Squashed or stretched it keeps its volume (taller is narrower); its top
+      // sways with the page; it sits on its lowest point
+      const k = Math.max(0.3, 1 + a), ry = R0 * k, rx = R0 / Math.sqrt(k), w = rx * 2, cx = lean * 0.6, bot = y, mid = bot - ry, top = bot - 2 * ry, sh = 0.552;
+      const d = `M ${-rx} ${mid} C ${-rx} ${mid - ry * sh} ${cx - rx * sh} ${top} ${cx} ${top} C ${cx + rx * sh} ${top} ${rx} ${mid - ry * sh} ${rx} ${mid} C ${rx} ${mid + ry * sh} ${rx * sh} ${bot} 0 ${bot} C ${-rx * sh} ${bot} ${-rx} ${mid + ry * sh} ${-rx} ${mid} Z`;
       body.setAttribute("d", d);
-      const hl = el.querySelector(".gd-h"); if (hl) { const hx = r > 0.5 ? -hw * 0.42 : cx * 0.6 - hw * 0.42, hy = r > 0.5 ? top + hw * 0.45 : top + h * 0.28; hl.setAttribute("transform", `translate(${hx.toFixed(2)} ${hy.toFixed(2)}) rotate(-28)`); }
-      const ey = r > 0.5 ? mid - 1 : bot - h * 0.5, ex = (r > 0.5 ? 0 : cx * 0.7) + lookX;
-      const es = 1 - 0.42 * mlt; eyes.setAttribute("transform", `translate(${ex.toFixed(2)} ${(ey + 12 * es + lookY * es).toFixed(2)}) scale(${(Math.min(1.25, w / W0) * es).toFixed(3)} ${(Math.min(1.3, k) * es).toFixed(3)})`);   /* melting: the face shrinks into the puddle */
-      // the face: two eyes (each can open wider or close on its own), happy eyes (^ ^), a mouth that opens, a smile that curves up or down
+      const hl = el.querySelector(".gd-h"); if (hl) hl.setAttribute("transform", `translate(${(cx * 0.5 - rx * 0.45).toFixed(2)} ${(top + ry * 0.42).toFixed(2)}) rotate(-35)`);
+      const ey = mid - 1, ex = cx * 0.55 + lookX;
+      eyes.setAttribute("transform", `translate(${ex.toFixed(2)} ${(ey + 12 + lookY).toFixed(2)}) scale(${Math.min(1.25, w / 31).toFixed(3)} ${Math.min(1.3, k).toFixed(3)})`);
+      // the face: two eyes (each can open wider or close on its own), happy eyes (^ ^), cheeks that blush. No mouth: the eyes say it all
       const L = el.querySelector(".gd-l"), R = el.querySelector(".gd-r"), op = 1 - S.happy;
       L.setAttribute("rx", (2.4 * S.eyeSL).toFixed(2)); L.setAttribute("ry", Math.max(0, 3.4 * blink * S.eyeL * S.eyeSL * op).toFixed(2));
       R.setAttribute("rx", (2.4 * S.eyeSR).toFixed(2)); R.setAttribute("ry", Math.max(0, 3.4 * blink * S.eyeR * S.eyeSR * op).toFixed(2));
       el.querySelectorAll(".gd-a").forEach((p) => p.style.opacity = S.happy.toFixed(2));
-      const mo = el.querySelector(".gd-m"); mo.setAttribute("rx", (2.3 * S.mouth).toFixed(2)); mo.setAttribute("ry", (3.6 * S.mouth).toFixed(2));
-      const sm = el.querySelector(".gd-sm"), c = Math.max(-1, Math.min(1, S.smile)); sm.style.opacity = Math.min(1, Math.abs(c) * 3).toFixed(2);
-      sm.setAttribute("d", `M -3.4 -5.6 Q 0 ${(-5.6 + 3.4 * c).toFixed(2)} 3.4 -5.6`);
+
+      // no mouth: a smile lifts the lower lids (smiling eyes); a frown tips the eyes down at the outer corners (sad); a yawn squeezes them
+      const c = Math.max(-1, Math.min(1, S.smile)), lift = c > 0 ? c : 0, sad = c < 0 ? -c : 0;
+      L.setAttribute("ry", (parseFloat(L.getAttribute("ry")) * (1 - 0.38 * lift)).toFixed(2)); R.setAttribute("ry", (parseFloat(R.getAttribute("ry")) * (1 - 0.38 * lift)).toFixed(2));
+      L.setAttribute("transform", `translate(0 ${(-1.1 * lift + 1.4 * sad).toFixed(2)}) rotate(${(-28 * sad).toFixed(1)} -6 -12)`); R.setAttribute("transform", `translate(0 ${(-1.1 * lift + 1.4 * sad).toFixed(2)}) rotate(${(28 * sad).toFixed(1)} 6 -12)`);   /* sad: tipped and a little lower */
       // headphones: a band over the top of the head and a cup on each side, at the height of the eyes
       el.querySelectorAll(".gd-bl").forEach((b) => b.style.opacity = (S.blush * 0.75).toFixed(2));
       const ph = el.querySelector(".gd-ph"); ph.style.opacity = S.phones.toFixed(2);
-      if (S.phones > 0.01) { const hh = H0 * (1 + a), ww = W0 / Math.sqrt(Math.max(0.3, 1 + a)), lx = lean, cyp = y - hh * 0.5, tp = y - hh, ex2 = ww / 2 + 0.6, drop = (1 - S.phones) * -10;
+      if (S.phones > 0.01) { const hh = 2 * R0 * Math.max(0.3, 1 + a), ww = 2 * R0 / Math.sqrt(Math.max(0.3, 1 + a)), lx = lean, cyp = y - hh * 0.5, tp = y - hh, ex2 = ww / 2 + 0.6, drop = (1 - S.phones) * -10;
         el.querySelector(".gd-band").setAttribute("d", `M ${(-ex2 + 1.5 + lx * 0.4).toFixed(2)} ${(cyp + drop).toFixed(2)} C ${(-ex2 + lx * 0.6).toFixed(2)} ${(tp - 6 + drop).toFixed(2)} ${(ex2 + lx * 0.6).toFixed(2)} ${(tp - 6 + drop).toFixed(2)} ${(ex2 - 1.5 + lx * 0.4).toFixed(2)} ${(cyp + drop).toFixed(2)}`);
         const cl = el.querySelector(".gd-cup.l"), cr = el.querySelector(".gd-cup.r");
         cl.setAttribute("x", (-ex2 - 2.2 + lx * 0.35).toFixed(2)); cl.setAttribute("y", (cyp - 4.5 + drop).toFixed(2)); cr.setAttribute("x", (ex2 - 2.8 + lx * 0.35).toFixed(2)); cr.setAttribute("y", (cyp - 4.5 + drop).toFixed(2)); }
       all.setAttribute("transform", `translate(${S.jx.toFixed(2)} ${jy.toFixed(2)})`); };
-    // small timed changes (a lid closing, a mouth opening), eased in and out, run in the same frame loop as the physics
+    // small timed changes (a lid closing, an eye opening wide), eased in and out, run in the same frame loop as the physics
     const ease = (x) => x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
     const tween = (key, to, ms, delay = 0) => new Promise((res) => setTimeout(() => { tws = tws.filter((t) => { if (t.key !== key) return true; t.res(); return false; });   /* a change taken over still settles its promise */
       tws.push({ key, from: S[key], to, t0: performance.now(), ms, res }); go(); }, delay));
     const setK = (key, v) => { S[key] = v; };
     const face = (o, ms) => Promise.all(Object.entries(o).map(([k, v]) => tween(k, v, ms)));
-    const REST = { eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, blush: 0 };
+    const REST = { eyeL: 1, eyeR: 1, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, blush: 0 };
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     let acting = false;   // one expression at a time
     const act = async (fn) => { if (acting) return; acting = true; try { await fn(); } finally { await face(REST, 260); acting = false; } };
@@ -9851,33 +9872,28 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // its life at rest: a blink now and then, a look round, a small breath. Never on a beat
     // a wink: one lid down and up, a little lean towards that side
     const wink = () => act(async () => { const right = Math.random() < 0.6, k = right ? "eyeR" : "eyeL"; leanTo = right ? 1.5 : -1.5; await tween(k, 0.08, 110); tween("smile", 0.6, 160); await wait(260); await tween(k, 1, 160); await wait(200); });
-    // a yawn: it stretches up and the mouth opens slowly while the eyes squeeze, holds, then lets go with a small shake
-    const yawn = () => act(async () => { tween("aRest", 0.16, 650); await face({ mouth: 1, eyeL: 0.22, eyeR: 0.22 }, 650); await wait(600);
-      tween("aRest", 0, 420); await face({ mouth: 0, eyeL: 1, eyeR: 1 }, 420); poke(-1.4); });
+    // a yawn: it stretches up, eyes squeezed shut, holds, then lets go with a small shake
+    const yawn = () => act(async () => { tween("aRest", 0.18, 650); await face({ eyeL: 0.08, eyeR: 0.08, eyeSL: 1.15, eyeSR: 1.15 }, 650); leanTo = -1.5; await wait(650);
+      tween("aRest", 0, 420); leanTo = 0; await face({ eyeL: 1, eyeR: 1, eyeSL: 1, eyeSR: 1 }, 420); poke(-1.4); });
     // a smile, eyes softening
     const smile = () => act(async () => { await face({ smile: 1, eyeL: 0.8, eyeR: 0.8 }, 260); await wait(1400 + Math.random() * 800); });
     // happy: eyes curve up (^ ^), a big smile, a little bounce
     const happy = () => act(async () => { await face({ happy: 1, smile: 1 }, 200); poke(-1.8); await wait(1300); });
     // surprised: eyes wide, a small O, it stretches up
-    const surprised = () => act(async () => { tween("aRest", 0.1, 140); await face({ eyeSL: 1.35, eyeSR: 1.35, mouth: 0.45 }, 140); await wait(900); tween("aRest", 0, 300); poke(-0.8); });
+    const surprised = () => act(async () => { tween("aRest", 0.1, 140); await face({ eyeSL: 1.4, eyeSR: 1.4 }, 140); await wait(900); tween("aRest", 0, 300); poke(-0.8); });
     // sleepy: lids droop slowly, it leans and nods off, then wakes with a start
     const sleepy = () => act(async () => { await face({ eyeL: 0.35, eyeR: 0.35 }, 900); leanTo = 2; await wait(700); await face({ eyeL: 0.12, eyeR: 0.12 }, 600); leanTo = 3; await wait(900);
       leanTo = 0; poke(-1.6); await face({ eyeL: 1, eyeR: 1, eyeSL: 1.3, eyeSR: 1.3 }, 120); await wait(500); });
     // curious: one eye opens wider, it tilts and looks to one side
     const curious = () => act(async () => { const s = Math.random() < 0.5 ? -1 : 1; lookX = s * 3; leanTo = s * 2.5; draw(); await face(s > 0 ? { eyeSR: 1.3, eyeSL: 0.85 } : { eyeSL: 1.3, eyeSR: 0.85 }, 220); await wait(1300); lookX = 0; leanTo = 0; draw(); });
-    // hmm: looks up to one side, mouth a little crooked
-    const hmm = () => act(async () => { lookX = 2.5; lookY = -2; draw(); await face({ smile: -0.35, eyeL: 0.85 }, 240); await wait(1300); lookX = 0; lookY = 0; draw(); });
-    // melting: it looks worried, slumps and spreads into a puddle, eyes peeking out of it; a moment later it pulls itself back up
-    const melt = () => act(async () => { await face({ smile: -0.3, eyeSL: 1.15, eyeSR: 1.15 }, 220); await wait(250);
-      await Promise.all([tween("melt", 1, 1500), face({ eyeL: 0.55, eyeR: 0.55, smile: 0 }, 1500)]);
-      await wait(500); lookX = -2.5; draw(); await wait(450); lookX = 2.5; draw(); await wait(450); lookX = 0; draw(); await wait(300);
-      await Promise.all([tween("melt", 0, 420), face({ eyeL: 1, eyeR: 1, eyeSL: 1, eyeSR: 1 }, 420)]); poke(-3.2); await face({ happy: 1, smile: 1 }, 160); await wait(900); });
+    // hmm: looks up to one side, one eye narrowed
+    const hmm = () => act(async () => { lookX = 2.5; lookY = -2; draw(); await face({ eyeL: 0.6, eyeSR: 1.15 }, 240); await wait(1300); lookX = 0; lookY = 0; draw(); });
     const hop = (v, dx, ms) => { jv = -v; tween("jx", dx, ms); go(); return wait(ms + 60); };
     // jumps: to one side, to the other, and home
     const jumps = () => act(async () => { const s0 = Math.random() < 0.5 ? -1 : 1; await face({ smile: 0.7 }, 150); await hop(240, s0 * 9, 330); await wait(160); await hop(260, -s0 * 9, 360); await wait(160); await hop(200, 0, 300); await wait(200); });
     // yes: two nods, eyes down and up with the body; no: two shakes of the head, eyes side to side
     const yes = () => act(async () => { await face({ smile: 0.8 }, 150); for (let i = 0; i < 2; i++) { lookY = 2; tween("aRest", -0.08, 120); draw(); await wait(150); lookY = -0.5; tween("aRest", 0.03, 130); draw(); await wait(170); } lookY = 0; tween("aRest", 0, 150); draw(); await wait(500); });
-    const no = () => act(async () => { await face({ smile: -0.25 }, 150); for (let i = 0; i < 3; i++) { for (const s1 of [-1, 1]) { lookX = s1 * 3; leanTo = s1 * 2.5; draw(); go(); await wait(140); } } lookX = 0; leanTo = 0; draw(); await wait(450); });
+    const no = () => act(async () => { await face({ smile: -0.4 }, 150); for (let i = 0; i < 3; i++) { for (const s1 of [-1, 1]) { lookX = s1 * 3; leanTo = s1 * 2.5; draw(); go(); await wait(140); } } lookX = 0; leanTo = 0; draw(); await wait(450); });
     // dancing: the headphones drop on, it bobs to the beat (two a second), sways and hops, eyes happy, notes float up; then they come off
     const NS = "http://www.w3.org/2000/svg", notes = el.querySelector(".gd-n");
     const note = () => { const t = document.createElementNS(NS, "text"); t.setAttribute("class", "gd-note"); t.textContent = Math.random() < 0.5 ? "♪" : "♫";
@@ -9893,7 +9909,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         const dx = ptrX - (r.left + r.width / 2), dy = ptrY - (r.top + r.height * 0.6), d = Math.hypot(dx, dy) || 1, k = Math.min(1, d / 160);
         lookX = dx / d * 3.2 * k; lookY = dy / d * 2 * k; draw(); }); }, { passive: true });
     // its life at rest: something every few seconds, never on a beat. Mostly happy: smiles, happy eyes, yawns, a dance, a jump now and then
-    const idle = () => { setTimeout(idle, 2000 + Math.random() * 3600); if (document.hidden || still() || phase !== "rest" || acting) return;
+    const idle = () => { setTimeout(idle, 2000 + Math.random() * 3600); if (document.hidden || still() || phase !== "rest" || acting || talking) return;
       const r = Math.random(), rr = el.getBoundingClientRect(); if (rr.bottom < 0 || rr.top > innerHeight) return;
       const following = performance.now() - ptrT < 2500;   // the eyes are on your pointer: no looking round on its own
       if (r < 0.2) { const b = (k) => { blink = k; draw(); }; b(0.12); setTimeout(() => b(1), 130); if (Math.random() < 0.3) setTimeout(() => { b(0.12); setTimeout(() => b(1), 120); }, 300); }
@@ -9907,8 +9923,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       else if (r < 0.88) wink();
       else if (r < 0.91) surprised();
       else if (r < 0.93) curious();
-      else if (r < 0.945) sleepy();
-      else if (r < 0.97) melt();
+      else if (r < 0.95) sleepy();
       else if (!following) { lookX = (Math.random() < 0.5 ? -1 : 1) * 3; lookY = Math.random() < 0.4 ? -1.5 : 0; draw(); setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900 + Math.random() * 700); }
       else poke(-0.9); };
     setTimeout(idle, 2500);
@@ -9923,16 +9938,101 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const puff = () => { const side = S.jx > 0 ? -1 : 1; for (let i = 0; i < 4; i++) { const c = document.createElementNS(NS, "circle"); c.setAttribute("class", "gd-puff");
         c.setAttribute("cx", (side * (14 + i * 3.5)).toFixed(1)); c.setAttribute("cy", (-3 - i * 1.6).toFixed(1)); c.setAttribute("r", (2.2 + i * 0.9).toFixed(1)); c.style.animationDelay = i * 60 + "ms"; notes.appendChild(c); setTimeout(() => c.remove(), 1500); } };
     const fart = () => { if (still()) return; acting = false; tws.forEach((t) => t.res()); tws = []; dancing = false; S.phones = 0;
-      act(async () => { jv = -150; poke(1.8); pfft(); puff(); await face({ eyeSL: 1.3, eyeSR: 1.3, mouth: 0.35 }, 90); await wait(420);
-        lookX = -2.6; lookY = 1.6; draw(); tween("aRest", -0.07, 300); await face({ mouth: 0, eyeSL: 1, eyeSR: 1, eyeL: 0.7, eyeR: 0.7, smile: 0.3, blush: 1 }, 320); await wait(1800);
+      act(async () => { jv = -150; poke(1.8); pfft(); puff(); await face({ eyeSL: 1.4, eyeSR: 1.4 }, 90); await wait(420);
+        lookX = -2.6; lookY = 1.6; draw(); tween("aRest", -0.07, 300); await face({ eyeSL: 1, eyeSR: 1, eyeL: 0.7, eyeR: 0.7, smile: 0.5, blush: 1 }, 320); await wait(1800);
         lookX = 0; lookY = 0; tween("aRest", 0, 300); draw(); }); };
     let holdT = 0, farted = false;
     el.addEventListener("pointerdown", () => { farted = false; clearTimeout(holdT); holdT = setTimeout(() => { farted = true; fart(); }, 750); });
     ["pointerup", "pointerleave", "pointercancel"].forEach((ev) => el.addEventListener(ev, () => clearTimeout(holdT)));
     el.addEventListener("contextmenu", (e) => e.preventDefault());   // a long press on a phone is the drop's, not the menu's
     // touched: it dances (or, already busy, just looks happy)
-    el.addEventListener("click", () => { if (farted) { farted = false; return; } if (!acting) dance(); });
-    window.gdrop = { S, busy: () => acting, yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, fart, melt };   // for testing by hand
+    el.addEventListener("click", () => { if (farted) { farted = false; return; } talking ? closeTalk() : openTalk(); });
+    // ---- talking: tap the drop and ask it something. It answers in a bubble and out loud (the phone's own voice, nothing sent anywhere),
+    // bobbing as it speaks. It knows a handful of things for certain (what's new, a coffee to try, sour or bitter, ratio, temperature,
+    // grind, the processes, what Goccio means, how many coffees and roasters) and otherwise looks the words up in the list itself
+    const IT = LANG === "it", T = (en, it) => IT ? it : en;
+    const talkEl = $("gdTalk"), sayEl = $("gdSay"), chipsEl = $("gdChips"), inEl = $("gdIn"), micEl = $("gdMic"), voiceEl = $("gdVoice");
+    let talking = false, typeT = 0, bobT = 0, voiceOn = true;
+    try { voiceOn = localStorage.getItem("v60.dropVoice") !== "0"; } catch (e) {}
+    const coffees = () => (typeof shelf !== "undefined" && Array.isArray(shelf) ? shelf : []);
+    const pick = (xs) => xs[Math.floor(Math.random() * xs.length)];
+    const andList = (xs) => xs.length > 1 ? xs.slice(0, -1).join(", ") + T(" and ", " e ") + xs[xs.length - 1] : xs[0] || "";
+    const notesOf = (r) => (Array.isArray(r.notes) ? r.notes : []).slice(0, 3).map((n) => String(n).toLowerCase());
+    const newest = () => { const cs = coffees(); let day = ""; for (const r of cs) { const d = String(r.found || "").slice(0, 10); if (d > day) day = d; } return { day, list: cs.filter((r) => String(r.found || "").slice(0, 10) === day) }; };
+    const dayWord = (iso) => { const t = new Date(), y = new Date(); y.setDate(t.getDate() - 1); const f = (d) => d.toISOString().slice(0, 10);
+      return iso === f(t) ? T("today", "oggi") : iso === f(y) ? T("yesterday", "ieri") : T("on ", "il ") + (typeof isoDm === "function" ? isoDm(iso) : iso); };
+    const search = (q) => { $("askIn").value = q; $("askForm").requestSubmit(); };
+    // a voice that suits a small drop: a little higher, a little quicker; English or Italian to match the page
+    let voice = null;
+    const findVoice = () => { const vs = window.speechSynthesis ? speechSynthesis.getVoices() : []; if (!vs.length) return null;
+      const want = IT ? ["Alice", "Federica", "Google italiano", "Paola"] : ["Samantha", "Serena", "Karen", "Moira", "Kate", "Google UK English Female", "Martha", "Tessa"];
+      return vs.find((v) => want.some((n) => v.name.indexOf(n) === 0)) || vs.find((v) => v.lang.indexOf(IT ? "it" : "en-GB") === 0) || vs.find((v) => v.lang.indexOf(IT ? "it" : "en") === 0) || null; };
+    if (window.speechSynthesis) { voice = findVoice(); speechSynthesis.onvoiceschanged = () => { voice = findVoice(); }; }
+    const bob = (on) => { clearInterval(bobT); if (on && !still()) bobT = setInterval(() => { poke(-0.7 - Math.random() * 0.6); if (Math.random() < 0.3) { jv = -90; go(); } }, 210); };
+    const speak = (text) => { if (!voiceOn || !window.speechSynthesis) { bob(true); setTimeout(() => bob(false), Math.min(4000, 60 * text.length)); return; }
+      try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text.replace(/[♪♫]/g, "")); if (voice) u.voice = voice; u.lang = IT ? "it-IT" : "en-GB"; u.pitch = 1.45; u.rate = 1.06;
+        u.onstart = () => bob(true); u.onend = u.onerror = () => bob(false); u.onboundary = () => poke(-1); speechSynthesis.speak(u); } catch (e) { bob(false); } };
+    // the answer types itself out as it is said
+    const say = (text, chips, mood) => { clearInterval(typeT); sayEl.textContent = ""; let k = 0; typeT = setInterval(() => { k += 2; sayEl.textContent = text.slice(0, k); if (k >= text.length) clearInterval(typeT); }, 24);
+      speak(text); showChips(chips); if (mood) mood(); };
+    const SUGGEST = () => [T("What's new?", "Cosa c'è di nuovo?"), T("Surprise me", "Sorprendimi"), T("Why is it sour?", "Perché è aspro?"), T("Why is it bitter?", "Perché è amaro?"),
+      T("How much coffee?", "Quanto caffè?"), T("What water temperature?", "Che temperatura?"), T("What does Goccio mean?", "Cosa vuol dire Goccio?"), T("Natural or washed?", "Naturale o lavato?"), T("Dance!", "Balla!")];
+    const showChips = (list) => { chipsEl.textContent = ""; const xs = list || SUGGEST().sort(() => Math.random() - 0.5).slice(0, 4);
+      xs.forEach((x) => { const b = document.createElement("button"); b.type = "button"; if (typeof x === "string") { b.textContent = x; b.onclick = () => ask(x); } else { b.textContent = x.t; b.onclick = x.f; b.className = "on"; } chipsEl.appendChild(b); }); };
+    // what it knows
+    const ANSWERS = [
+      [/^(hi|hello|hey|ciao|salve|buongiorno|yo)\b/i, () => say(T("Hi! I'm the drop. Ask me anything about your coffee.", "Ciao! Sono la goccia. Chiedimi qualcosa sul tuo caffè."), null, happy)],
+      [/new|today|latest|recent|nuov|oggi|ultim/i, () => { const { day, list } = newest(); if (!list.length) return say(T("The list is still loading. Ask me again in a second.", "La lista sta ancora arrivando. Richiedimelo tra un attimo."));
+        const r = pick(list.filter((x) => notesOf(x).length) .concat(list).slice(0, 40)), ns = notesOf(r);
+        say(T(`${list.length} new coffees came in ${dayWord(day)}. One I like: ${r.name} from ${roasteryName(r.roaster)}${ns.length ? ", " + andList(ns) : ""}.`,
+          `${list.length} caffè nuovi ${dayWord(day)}. Uno che mi piace: ${r.name} della ${roasteryName(r.roaster)}${ns.length ? ", " + andList(ns) : ""}.`),
+          [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); search(r.name); } }, T("Surprise me", "Sorprendimi")], happy); }],
+      [/surprise|recommend|suggest|what should|which coffee|try|consigli|sorprend|quale caff/i, () => { const cs = coffees().filter((x) => notesOf(x).length >= 2); if (!cs.length) return say(T("Give me a second, the coffees are still on their way.", "Un attimo, i caffè stanno arrivando."));
+        const r = pick(cs.slice(0, 300)), ns = notesOf(r);
+        say(T(`Try ${r.name} from ${roasteryName(r.roaster)}${r.origin ? ", " + r.origin : ""}. It tastes of ${andList(ns)}.`, `Prova ${r.name} della ${roasteryName(r.roaster)}${r.origin ? ", " + r.origin : ""}. Sa di ${andList(ns)}.`),
+          [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); search(r.name); } }, T("Another one", "Un altro")], happy); }],
+      [/another|un altro|altro/i, () => ask(T("Surprise me", "Sorprendimi"))],
+      [/sour|acid|sharp|aspr|acid/i, () => say(T("Sour means it's under-extracted. Grind a little finer, or use hotter water. Change one thing at a time.", "Aspro vuol dire sotto-estratto. Macina un po' più fine, o usa acqua più calda. Cambia una cosa alla volta."), null, curious)],
+      [/bitter|harsh|burnt|dry|amar|brucia/i, () => say(T("Bitter means it's over-extracted. Grind a little coarser, or let the water cool a bit. Change one thing at a time.", "Amaro vuol dire sovra-estratto. Macina un po' più grosso, o fai raffreddare un po' l'acqua. Cambia una cosa alla volta."), null, curious)],
+      [/how much|ratio|dose|grams|quant|dose|rapporto/i, () => say(T("Start with about 15 grams of coffee to 250 of water. Each recipe here fine-tunes it for that bag.", "Parti da circa 15 grammi di caffè per 250 di acqua. Ogni ricetta qui lo regola per quella busta."), null, yes)],
+      [/temp|hot|degrees|°|temperatur|gradi|calda/i, () => say(T("Light roasts like it hot, around 94 to 96 degrees. Darker roasts prefer 88 to 92. Your recipe says exactly.", "Le tostature chiare la vogliono calda, 94-96 gradi. Le più scure 88-92. La tua ricetta te lo dice esatto."), null, yes)],
+      [/grind|macina/i, () => say(T("For a V60, medium-fine, about like table salt. Your recipe gives the clicks for your grinder.", "Per la V60, medio-fine, come sale da cucina. La tua ricetta ti dà i click per il tuo macinino."), null, yes)],
+      [/natural|washed|honey|anaerob|process|naturale|lavato|processo/i, () => say(T("Washed is clean and bright. Natural is dried in the fruit: sweeter, jammy, fruitier. Honey sits in between. Anaerobic is fermented without air: wild and boozy.", "Lavato è pulito e brillante. Naturale è seccato nel frutto: più dolce e fruttato. Honey sta in mezzo. Anaerobico fermenta senz'aria: selvaggio e liquoroso."), null, smile)],
+      [/goccio|name|mean|significa|nome/i, () => say(T("Goccio is Italian for a little splash. A drop. Like me!", "Goccio vuol dire un pochino, una goccia. Come me!"), null, happy)],
+      [/who are you|what are you|your name|chi sei|come ti chiami/i, () => say(T("I'm the drop. I live at the bottom of Goccio and keep an eye on the recipes.", "Sono la goccia. Vivo in fondo a Goccio e tengo d'occhio le ricette."), null, happy)],
+      [/how many|roasters|count|quanti|torrefazion/i, () => { const cs = coffees(), ro = new Set(cs.map((r) => r.roaster)).size;
+        say(T(`Right now I know ${cs.length.toLocaleString("en-GB")} coffees from ${ro} roasters, and more arrive every day.`, `Adesso conosco ${cs.length.toLocaleString("it-IT")} caffè di ${ro} torrefazioni, e ogni giorno ne arrivano altri.`), null, surprised); }],
+      [/dance|music|balla|musica/i, () => { say(T("Don't mind if I do!", "Volentieri!"), null); setTimeout(() => { acting = false; dance(); }, 600); }],
+      [/joke|funny|barzellett|ridere/i, () => say(T("What's a drop's favourite music? Drip-hop.", "Qual è la musica preferita di una goccia? Il drip-hop."), null, happy)],
+      [/thank|grazie|cheers/i, () => say(T("Any time. Brew something good!", "Quando vuoi. Fatti un buon caffè!"), null, happy)],
+    ];
+    const ask = (q) => { q = String(q || "").trim(); if (!q) return; inEl.value = "";
+      // a country, a roaster or a variety in the question: it's a coffee to find, not a question to answer ("ethiopia natural")
+      const ql = q.toLowerCase(), known = coffees().some((r) => [r.origin, r.roaster, r.variety].some((v) => v && String(v).length > 3 && ql.includes(String(v).toLowerCase().split(" / ")[0])));
+      if (!known) for (const [re, fn] of ANSWERS) if (re.test(q)) { acting = false; return fn(); }
+      // not one it knows: look the words up in the list
+      const w = q.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, " ").split(/\s+/).filter((x) => x.length > 2 && !/^(the|and|for|with|have|any|what|which|some|coffee|coffees|caff[eè]|una?|del|della|che)$/.test(x));
+      const hit = w.length ? coffees().filter((r) => { const t = (r.name + " " + r.roaster + " " + (r.origin || "") + " " + (r.process || "") + " " + (r.variety || "") + " " + notesOf(r).join(" ")).toLowerCase(); return w.every((x) => t.includes(x)); }) : [];
+      if (hit.length) return say(T(`I found ${hit.length} coffee${hit.length === 1 ? "" : "s"} for “${q}”.`, `Ho trovato ${hit.length} caffè per “${q}”.`), [{ t: T("Show me", "Fammeli vedere"), f: () => { closeTalk(); search(w.join(" ")); } }], happy);
+      say(T("Hmm, I'm only a drop: I know coffee things. Try one of these.", "Mmh, sono solo una goccia: so cose di caffè. Prova una di queste."), null, hmm); };
+    // voice in: the browser's own speech recognition, where there is one
+    const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!Rec) micEl.hidden = true;
+    micEl.onclick = () => { if (!Rec) return; try { const r = new Rec(); r.lang = IT ? "it-IT" : "en-GB"; r.interimResults = false; r.maxAlternatives = 1;
+      micEl.classList.add("on"); acting = false; face({ eyeSL: 1.3, eyeSR: 1.3 }, 160); sayEl.textContent = T("Listening…", "Ti ascolto…");
+      r.onresult = (e) => { const t = e.results[0][0].transcript; inEl.value = t; ask(t); }; r.onend = () => { micEl.classList.remove("on"); face({ eyeSL: 1, eyeSR: 1 }, 200); }; r.onerror = () => { sayEl.textContent = T("I didn't catch that. Type it instead?", "Non ho capito. Lo scrivi?"); }; r.start(); } catch (e) {} };
+    const syncVoice = () => { voiceEl.setAttribute("aria-pressed", String(voiceOn)); voiceEl.classList.toggle("off", !voiceOn); voiceEl.setAttribute("aria-label", voiceOn ? T("Voice on", "Voce attiva") : T("Voice off", "Voce spenta")); };
+    voiceEl.onclick = () => { voiceOn = !voiceOn; try { localStorage.setItem("v60.dropVoice", voiceOn ? "1" : "0"); } catch (e) {} if (!voiceOn && window.speechSynthesis) speechSynthesis.cancel(); syncVoice(); };
+    syncVoice();
+    $("gdGo").onclick = () => ask(inEl.value);
+    inEl.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); ask(inEl.value); } if (e.key === "Escape") closeTalk(); });
+    const openTalk = () => { if (talking) return; talking = true; talkEl.hidden = false; el.setAttribute("aria-expanded", "true");
+      say(pick([T("Hi! Ask me about coffee.", "Ciao! Chiedimi del caffè."), T("Hello! What are we brewing?", "Ciao! Cosa prepariamo?"), T("Oh, hi! Need a hand with your coffee?", "Oh, ciao! Ti serve una mano col caffè?")]), null, happy); };
+    const closeTalk = () => { if (!talking) return; talking = false; talkEl.hidden = true; el.setAttribute("aria-expanded", "false"); clearInterval(typeT); bob(false); try { speechSynthesis.cancel(); } catch (e) {} };
+    $("gdX").onclick = closeTalk;
+    document.addEventListener("pointerdown", (e) => { if (talking && !talkEl.contains(e.target) && !el.contains(e.target)) closeTalk(); }, true);
+    el.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); talking ? closeTalk() : openTalk(); } });
+    window.gdrop = { S, busy: () => acting, yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, fart, talk: () => openTalk() };   // for testing by hand
     // it glances at where you tap
     addEventListener("pointerdown", (e) => { if (still() || e.pointerType === "mouse") return; const r = el.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;
       const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1; lookX = dx / d * 3; lookY = dy / d * 1.5; draw();
