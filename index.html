@@ -7829,6 +7829,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       roast: r.roast_level === "dark" ? "dark" : r.roast_level === "medium-dark" ? "mdark" : "auto" };
   }
   // for the build only (scripts/pages.py writes a page per coffee): the V60 recipe a first-time visitor gets, from this same engine
+  // for the pages built at deploy (scripts/pages.py): a coffee row's taste line and roaster name, exactly as this page writes them
+  window.rowBits = (x) => { try { return { notes: cardNotes(x), ro: roasteryName(x.roaster) }; } catch (err) { return null; } };
   window.bagRecipe = (x) => {
     const st = { ...DEFAULTS, ...listState(x), roastPhoto: null }, r = engine(st, { noPrefs: true }), c = r.c || {};
     return { method: r.method, dose: r.dose ?? st.dose, water: r.water, ratio: r.ratio, temp: r.temp, clicks: r.clicks, lo: r.lo, hi: r.hi, kind: r.kind,
@@ -9449,7 +9451,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     if ("ResizeObserver" in window) new ResizeObserver(fit).observe(live);
     [600, 1500, 3000].forEach((t) => setTimeout(fit, t)); })();   // the count arrives late (no observer on it: the probe would set it off)
   (function fitMark() {
-    // Goccio fills the width between the page margins with its letters' own ink, centred across the photo by that ink and
+    // Goccio spans 0.618 of the width between the page margins (the golden share) with its letters' own ink, centred across the photo by that ink and
     // sitting at its foot, as far above the bottom as from either side (the font's spacing and the line box don't count)
     const w = $("wm"), p = w && w.parentElement, scr = p && p.parentElement; if (!scr) return;
     const cv = document.createElement("canvas").getContext("2d");
@@ -9459,7 +9461,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const room = scr.clientWidth - parseFloat(ss.paddingLeft) - parseFloat(ss.paddingRight);
       const ls = parseFloat(cs.letterSpacing) / parseFloat(cs.fontSize) || 0, gaps = w.textContent.length - 1;   // the tracking, as a share of the size
       const ink = m.actualBoundingBoxLeft + m.actualBoundingBoxRight + ls * 100 * gaps; if (!ink || !room) return;
-      const size = 100 * room / ink, k = size / 100; p.style.fontSize = size.toFixed(2) + "px";
+      const size = 100 * room / ink / 1.618, k = size / 100; p.style.fontSize = size.toFixed(2) + "px";
       const pr = document.createElement("span"); pr.style.cssText = "display:inline-block;width:0;height:0;vertical-align:baseline"; w.prepend(pr);
       const o = pr.getBoundingClientRect(); pr.remove();
       const L = o.left - m.actualBoundingBoxLeft * k, R = o.left + (m.actualBoundingBoxRight + ls * 100 * gaps) * k;
