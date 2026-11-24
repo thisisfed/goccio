@@ -2906,6 +2906,19 @@ html body .gd-dock.wide .gd-x{right:-1px!important}
 /* the chat's column ends where the microphone ends: bubbles (yours too) and reply chips line up with it, leaving the send button's column clear */
 html body .wb-sign .gd-talk .gd-say{padding-right:38px!important} html body .wb-sign .gd-talk .gd-chips{padding-right:38px;box-sizing:border-box}
 html body .gd-m{max-width:100%}
+/* the little Goccio's moves: a dance, a backflip, a spin and a double hop, all inside its pill */
+html body .ask-goccio svg{transform-origin:50% 60%;overflow:visible}
+html body .ask-goccio svg.ag-dance{animation:agDance 1.3s ease-in-out}
+html body .ask-goccio svg.ag-flip{animation:agFlip .8s cubic-bezier(.4,0,.2,1)}
+html body .ask-goccio svg.ag-spin{animation:agSpin .9s cubic-bezier(.5,0,.3,1)}
+html body .ask-goccio svg.ag-hops{animation:agHops .7s ease-out}
+@keyframes agDance{0%,100%{rotate:0deg;translate:0 0}15%{rotate:-14deg;translate:-2px -2px}30%{rotate:12deg;translate:2px 0}45%{rotate:-14deg;translate:-2px -2px}60%{rotate:12deg;translate:2px 0}75%{rotate:0deg;translate:0 -4px;scale:1.08 .92}88%{translate:0 0;scale:.94 1.06}}
+@keyframes agFlip{0%{rotate:0deg;translate:0 0;scale:1.1 .9}25%{translate:0 -7px;scale:.95 1.05}60%{rotate:-360deg;translate:0 -6px}85%{rotate:-360deg;translate:0 1px;scale:1.12 .88}100%{rotate:-360deg;translate:0 0;scale:1}}
+@keyframes agSpin{0%{rotate:0deg}70%{rotate:380deg}85%{rotate:350deg}100%{rotate:360deg}}
+@keyframes agHops{0%,100%{translate:0 0}20%{translate:0 -5px}40%{translate:0 0;scale:1.08 .92}60%{translate:0 -4px}80%{translate:0 0;scale:1.05 .95}}
+@media (prefers-reduced-motion:reduce){html body .ask-goccio svg{animation:none!important}}
+html body .wm-live.wm-tot{margin-top:0!important}   /* the totals, on their own line under today's news, without the live dot */
+html body .gd-dock.right .gd-talk{left:auto!important;right:var(--dr,12px)!important;translate:none!important;transform-origin:100% 0} html body .gd-dock.right .gd-x{right:-1px!important}
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
@@ -3247,7 +3260,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           <p class="wm-tagline">The right recipe for every bag.</p>
           <p class="wm-ctas"><button type="button" class="btn wm-go" id="wmFind">Find a coffee</button><button type="button" class="btn wm-bag" id="wmBag">I have a coffee</button></p>
           <h1 class="wm-lead">Every new coffee, with its recipe before you buy.</h1>
-          <p class="wm-live" id="wmLive" hidden><i class="live-dot" aria-hidden="true"></i><span id="wmLiveT"></span></p>
+          <p class="wm-live" id="wmLive" hidden><i class="live-dot" aria-hidden="true"></i><span id="wmLiveT"></span></p><p class="wm-live wm-tot" id="wmTot" hidden></p>
         </div>
       </div>
       <div class="hero-row">
@@ -9395,7 +9408,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           const loc0 = it0 ? "it-IT" : "en-GB", cN = `${aN.toLocaleString(loc0)} ${it0 ? "caffè" : "coffee" + (aN === 1 ? "" : "s")}`, rN = aR > 0 ? ` ${it0 ? "e" : "and"} ${aR.toLocaleString(loc0)} ${it0 ? (aR === 1 ? "torrefazione" : "torrefazioni") : "roaster" + (aR === 1 ? "" : "s")}` : "";
           const added = aN > 0 && when ? `${cN}${rN} ${it0 ? (aR > 0 ? (aR === 1 ? "aggiunta" : "aggiunte") : aN !== 1 ? "aggiunti" : "aggiunto") : "added"} ${when}.` : "";
           if (window.__searchHint) try { window.__searchHint(); } catch (e) {}
-          if ($("wmLive")) { $("wmLiveT").textContent = added || `${nR.toLocaleString("en-GB")} roasters, updated daily.`;   /* the number of coffees is in the search box */ $("wmLive").hidden = false; } } }
+          // the totals sit on a second line under today's news, now that a phone's search box no longer shows them
+          const g0 = { useGrouping: "always" }, tot = it0 ? `${nC.toLocaleString(loc0, g0)} caffè da ${nR.toLocaleString(loc0, g0)} torrefazioni in tutto.` : `${nC.toLocaleString(loc0)} coffees from ${nR.toLocaleString(loc0)} roasters in total.`;
+          if ($("wmLive")) { $("wmLiveT").textContent = added || tot; $("wmLive").hidden = false; if ($("wmTot") && added) { $("wmTot").textContent = tot; $("wmTot").hidden = false; } } } }
       renderShelfV();
       renderShelf();
       document.documentElement.classList.remove("wait");
@@ -10847,7 +10862,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const home = talkEl.parentNode, dock = document.createElement("div"); dock.className = "wb-sign gd-dock"; document.body.appendChild(dock);
     // on a phone, where the top bar is just its pills, the docked bubble spans exactly from the search pill's left edge to the +'s right edge
     const fitDock = () => { const a = document.querySelector(".top .ask-box"), p = $("toolsBtn"); if (!a || !p) return; const ar = a.getBoundingClientRect(), pr = p.getBoundingClientRect();
-      const wide = ar.left < 40; dock.classList.toggle("wide", wide); if (wide) { dock.style.setProperty("--dl", ar.left + "px"); dock.style.setProperty("--dr", (innerWidth - pr.right) + "px"); } };
+      const wide = ar.left < 40; dock.classList.toggle("wide", wide); dock.classList.toggle("right", !wide); dock.style.setProperty("--dr", (innerWidth - pr.right) + "px"); if (wide) dock.style.setProperty("--dl", ar.left + "px"); };   // wider screens: it hangs from the right, under Goccio and the +
     addEventListener("resize", fitDock, { passive: true });
     // while the chat is open the page behind it dims and softens, so the conversation stands out; a tap on it closes the chat
     const scrim = document.createElement("div"); scrim.className = "gd-scrim"; document.body.appendChild(scrim);
@@ -10865,14 +10880,14 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // the little Goccio in the pill is alive too: it leans and looks towards the pointer (or your finger), blinks, and looks around when nobody moves
     { const tb = $("askGoccio"), bo = tb && tb.querySelector(".ag-b"), ey = tb && tb.querySelector(".ag-e");
       if (bo && ey && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        let tx = 0, ty = 0, x = 0, y = 0, blink = 1, hopT = 0, idle = 0, run = 0;
+        let tx = 0, ty = 0, x = 0, y = 0, blink = 1, hopT = 0, idle = 0, run = 0, wide = 1, wideTo = 1;
         const loop = (t) => { x += (tx - x) * .16; y += (ty - y) * .16; const k = hopT ? Math.max(0, 1 - (t - hopT) / 520) : 0, up = k ? Math.sin((1 - k) * Math.PI) * 6 : 0;
           if (!k) hopT = 0;
           // squash a touch against the way it leans, like the big one
           const lean = Math.hypot(x, y), sx = 1 + lean * .012 - up * .01, sy = 1 - lean * .01 + up * .02;
           bo.setAttribute("transform", `translate(${(x * .45).toFixed(2)} ${(y * .3 - up).toFixed(2)}) scale(${sx.toFixed(3)} ${sy.toFixed(3)})`);
-          ey.setAttribute("transform", `translate(${(x * 1.1).toFixed(2)} ${(y * 1.1).toFixed(2)}) translate(0 -1) scale(1 ${blink}) translate(0 1)`);
-          if (Math.abs(tx - x) + Math.abs(ty - y) > .02 || hopT) run = requestAnimationFrame(loop); else run = 0; };
+          wide += (wideTo - wide) * .2; ey.setAttribute("transform", `translate(${(x * 1.1).toFixed(2)} ${(y * 1.1).toFixed(2)}) translate(0 -1) scale(${wide.toFixed(3)} ${(blink * wide).toFixed(3)}) translate(0 1)`);
+          if (Math.abs(tx - x) + Math.abs(ty - y) > .02 || Math.abs(wideTo - wide) > .01 || hopT) run = requestAnimationFrame(loop); else run = 0; };
         const go = () => { if (!run) run = requestAnimationFrame(loop); };
         const aim = (cx, cy) => { const r = tb.getBoundingClientRect(); if (!r.width) return; const dx = cx - (r.left + r.width / 2), dy = cy - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1, m = Math.min(1, d / 160) * 3.2;
           tx = dx / d * m; ty = dy / d * m; idle = performance.now(); go(); };
@@ -10883,6 +10898,21 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         // nobody about: look this way and that, then back to you
         setInterval(() => { if (document.hidden || performance.now() - idle < 4000) return; const a = Math.random() * Math.PI * 2; tx = Math.cos(a) * 2.6; ty = Math.sin(a) * 1.8; go(); setTimeout(() => { if (performance.now() - idle >= 4000) { tx = 0; ty = 0; go(); } }, 1400); }, 3500);
         tb.hop = () => { hopT = performance.now(); go(); };
+        // the little one has a life too: now and then a dance, a backflip, a spin, a double hop or a wink, never while you're moving the pointer
+        const svg = tb.querySelector("svg"), MOVES = [["ag-dance", 1300, 30], ["ag-flip", 800, 18], ["ag-spin", 900, 14], ["ag-hops", 700, 22], ["ag-wink", 500, 16]];
+        tb.move = (name) => { if (!svg || svg.className.baseVal) return; const m = name ? MOVES.find((x) => x[0] === name) : null; let pickd = m;
+          if (!pickd) { let r = Math.random() * MOVES.reduce((a, x) => a + x[2], 0); pickd = MOVES.find((x) => (r -= x[2]) < 0) || MOVES[0]; }
+          if (pickd[0] === "ag-wink") { blink = 0.1; go(); setTimeout(() => { blink = 1; go(); }, 260); return; }
+          svg.classList.add(pickd[0]); setTimeout(() => svg.classList.remove(pickd[0]), pickd[1]); };
+        // the film at the top: while the drop falls, the little one watches it; when it lands, wide eyes and a jump of surprise
+        { const film = $("wmVideo"); if (film) {
+            const watch = () => { if (film.paused || film.ended || performance.now() - idle < 2500) return; const fr = film.getBoundingClientRect(), r = tb.getBoundingClientRect(); if (fr.bottom < 0 || !r.width) return;
+              const dx = fr.left + fr.width / 2 - (r.left + r.width / 2), dy = fr.top + fr.height * 0.55 - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1; tx = dx / d * 3.2; ty = dy / d * 3.2; go(); requestAnimationFrame(watch); };
+            film.addEventListener("play", () => { wideTo = 1; requestAnimationFrame(watch); }); film.addEventListener("timeupdate", () => requestAnimationFrame(watch));
+            const wow = () => { if (tb.classList.contains("ag-gone")) return; wideTo = 1.35; go(); tb.hop(); setTimeout(() => { wideTo = 1; go(); }, 1100); };
+            film.addEventListener("ended", wow);
+            if (!film.paused && !film.ended) requestAnimationFrame(watch); } }
+        (function life() { setTimeout(() => { const r = tb.getBoundingClientRect(); if (!document.hidden && r.width && !tb.classList.contains("ag-gone") && performance.now() - idle > 3000 && r.bottom > 0) tb.move(); life(); }, 7000 + Math.random() * 9000); })();
         let tg0 = null; addEventListener("deviceorientation", (e) => { if (e.gamma == null || performance.now() - idle < 2500) return; if (tg0 === null) tg0 = e.gamma; tg0 += (e.gamma - tg0) * 0.003;
           const dx = e.gamma - tg0, db = (e.beta || 0) - 45; if (Math.abs(dx) < 4) return; const k = Math.max(-1, Math.min(1, dx / 30)); tx = k * 3.2; ty = Math.max(-1, Math.min(1, db / 40)) * 1.2; go(); }, { passive: true });
         go(); } }
