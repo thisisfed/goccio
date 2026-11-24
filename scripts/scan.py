@@ -2189,7 +2189,10 @@ def classify(item, roaster):
     # espresso-only coffees stay in (the site brews espresso and moka too); they're marked as espresso roasts
     espresso_only = (bool(ESPRESSO.search(title + " " + item["type"])) and not filtery) \
         or (not filtery and bool(ESPRESSO.search(" ".join(item["tags"]))) and not FILTERY.search(item["body"]))
-    process = find_process(title + " " + " ".join(item["tags"])) or process_from_text(item["body"]) or process_phrase(item["body"])
+    # a "Processing: Anaerobic" line on the page is the roaster saying it outright, so it beats a shop tag like "natural"
+    # (Rum Baba's Winter Coffee, 24/11/2026: tagged natural and thermal, labelled Anaerobic)
+    lab = labelled(item["body"], "process") if item["body"] else None
+    process = lab or find_process(title + " " + " ".join(item["tags"])) or process_from_text(item["body"]) or process_phrase(item["body"])
     variety = first(VARIETIES, title + " " + " ".join(item["tags"])) or first(VARIETIES, item["body"])
     rec = {
         "roaster": roaster["name"],

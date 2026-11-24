@@ -48,8 +48,12 @@ const sum = (o) => o ? (o.sour || 0) + (o.balanced || 0) + (o.bitter || 0) : 0;
     const notReached = (rep.roasters_not_reached || []).length;
     $("scan").innerHTML = card(d(rep.date), "scanned") + card(rep.minutes, "minutes (stops at 240)", rep.minutes > 220) + card(rep.roasters_ok, `of ${rep.roasters} roasters read`)
       + card(rep.coffees, "coffees") + card(Math.round(100 * rep.with_notes / Math.max(1, rep.coffees)) + "%", "with tasting notes") + card(notReached, "roasters not reached in time", notReached > 0);
-    const lim = Object.entries(rep.limits || {}).filter(([, v]) => v).map(([k]) => k.replace(/_/g, " "));
-    $("limits").textContent = notReached ? `Not reached: ${rep.roasters_not_reached.join(", ")}. They go first in the next scan.` : lim.length ? `Limits touched: ${lim.join(", ")}.` : "";
+    // only the *_hit flags are limits that were reached; page_minutes, stop_minutes and pages_per_shop are just the settings
+    const L = rep.limits || {}, waiting = rep.pages_waiting || 0, shops = Object.entries(rep.pages_waiting_by_shop || {}).map(([k, v]) => `${k} (${v})`).slice(0, 6).join(", ");
+    const lim = [L.shop_cap_hit && `a shop had more than ${L.pages_per_shop || 60} product pages to read, so ${waiting || "some"} wait${waiting === 1 ? "s" : ""} for tomorrow${shops ? ": " + shops : ""}`,
+      L.page_time_hit && `product pages took the full ${L.page_minutes || 200} minutes allowed, so the rest wait for tomorrow`,
+      L.run_time_hit && `the scan reached its ${L.stop_minutes || 240}-minute stop`].filter(Boolean);
+    $("limits").textContent = notReached ? `Not reached: ${rep.roasters_not_reached.join(", ")}. They go first in the next scan.` : lim.length ? `Limits reached: ${lim.join("; ")}.` : "No limits reached: everything was read.";
   } else $("scan").innerHTML = card("—", "no scan report");
   if (ta && ta.db) {
     $("taste").innerHTML = card(sum(ta.today), "today") + card(sum(ta.week), "last 7 days") + card(sum(ta.all), "all time")
