@@ -2588,7 +2588,7 @@ html:not(.mine):not(.brew-in) .botnav [data-bn="coffee"]{display:none!important}
 /* until then the section keeps its full shape with the form unseen: "Brew something good." sits where it always does, just over the rule at the bottom */
 html:not(.mine) body #coffee > :not(.wb-sign){display:none!important}
 html:not(.mine) body #coffee#coffee#coffee{min-height:0!important;padding-top:0!important}
-html:not(.mine) body #coffee > .wb-sign{padding-top:21px!important;margin-top:0!important}   /* 43 px from Load more to the sign-off, as from the last coffee to Load more */
+html:not(.mine) body #coffee > .wb-sign{padding-top:calc(21px + 57.5px * (var(--gs, 1) - 1))!important;margin-top:0!important}   /* 43 px from Load more to the sign-off, as from the last coffee to Load more */
 html:not(.mine) body #coffee#coffee#coffee{height:auto!important;min-height:0!important;padding-bottom:0!important;margin-bottom:-87px!important}   /* 13 px from the sign-off to the rule under it, as when the form is out */   /* as far under Load more as Load more is under the last coffee; over the bottom rule exactly as before */
 /* tags stay on one line: a tag too long for it (a list of varieties) is cut with an ellipsis, the longest giving way first */
 html body .item .tags{column-gap:20px!important;display:flex!important;flex-wrap:nowrap!important;min-width:0;max-width:100%;overflow:hidden}
@@ -2757,7 +2757,8 @@ html body #coffee .field:has(#go.on) #coffeeIn{padding-right:48px!important}
 /* the drop over Brew something good.: one drop of coffee, seen from a little way off. It falls when it comes into view, lands,
    rings and settles as a drop sitting on a surface; then it lives: blinks, looks, leans when you scroll, wobbles when touched */
 html body #coffee > .wb-sign{position:relative}
-html body .wb-sign .gdrop{position:absolute;left:50%;width:104px;height:97.5px;margin:0 0 0 -52px;bottom:calc(100% - var(--cup-at, 21px) + 1px);color:var(--ink);pointer-events:auto;touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:pointer}
+:root{--gs:1.45} @media (min-width:900px){:root{--gs:2.2}}   /* the drop at the foot, as big to the eye as the Goccio wordmark's capitals (on a wide screen, a little less, or it would fill the page) */
+html body .wb-sign .gdrop{position:absolute;left:50%;width:calc(104px * var(--gs, 1));height:calc(97.5px * var(--gs, 1));margin:0 0 0 calc(-52px * var(--gs, 1));bottom:calc(100% - var(--cup-at, 21px) + 1px);color:var(--ink);pointer-events:auto;touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:pointer}
 html body .wb-sign .gdrop svg{display:block;width:100%;height:100%;overflow:visible}
 html body .wb-sign .gdrop .gd-b,html body .wb-sign .gdrop .gd-arm{fill:url(#gdFill)}   /* a drop of V60 coffee: amber where the light comes through, brown at the edges, a little see-through */   /* the one accent: a drop of the orange, with black eyes in both looks */
 html body .wb-sign .gdrop .gd-e{fill:#000}
@@ -2775,7 +2776,7 @@ html body .wb-sign .gbean .gd-h{opacity:.32}
 /* the bubble's tail points at the drop, which now sits left of centre */
 
 /* the first time it's seen: a small note over it saying what it's for */
-html body .wb-sign .gd-hint{position:absolute;left:50%;bottom:calc(100% - var(--cup-at, 21px) + 66px);translate:-50% 0;z-index:39;white-space:nowrap;padding:6px 10px;border-radius:var(--r,4px);
+html body .wb-sign .gd-hint{position:absolute;left:50%;bottom:calc(100% - var(--cup-at, 21px) + 57.5px * var(--gs, 1) + 8.5px);translate:-50% 0;z-index:39;white-space:nowrap;padding:6px 10px;border-radius:var(--r,4px);
   background:var(--ink);color:var(--bg);font:500 15px/1.35 var(--sans);letter-spacing:0;animation:gdTalkIn .32s cubic-bezier(.3,1.45,.5,1);transition:opacity .35s ease}
 html body .wb-sign .gd-hint::after{content:"";position:absolute;left:50%;bottom:-5px;width:10px;height:10px;background:inherit;translate:-50% 0;rotate:45deg;border-radius:2px}
 html body .wb-sign .gd-hint[hidden]{display:none} html body .wb-sign .gd-hint.out{opacity:0}
@@ -2787,7 +2788,7 @@ html body .wb-sign .gd-say{padding-right:40px!important}
 /* What's brewing?: the arrow sits in the box, no fill of its own */
 html body #go.on{background:transparent!important;color:var(--ink)!important}
 /* the drop's bubble: over the drop, in the page's own ink with the page's colour for text, a tail pointing down at the drop */
-html body .wb-sign .gd-talk{position:absolute;left:50%;bottom:calc(100% - var(--cup-at, 21px) + 66px);width:min(340px,calc(100vw - 24px));z-index:40;display:grid;grid-template-columns:minmax(0,1fr);gap:12px;padding:14px 12px 12px;
+html body .wb-sign .gd-talk{position:absolute;left:50%;bottom:calc(100% - var(--cup-at, 21px) + 57.5px * var(--gs, 1) + 8.5px);width:min(340px,calc(100vw - 24px));z-index:40;display:grid;grid-template-columns:minmax(0,1fr);gap:12px;padding:14px 12px 12px;
   border-radius:var(--r,4px);background:var(--ink);color:var(--bg);text-align:left;font:500 15px/1.35 var(--sans);letter-spacing:0;translate:-50% 0;transform-origin:50% 100%;
   box-shadow:0 12px 40px rgba(0,0,0,.35);animation:gdTalkIn .32s cubic-bezier(.3,1.45,.5,1)}
 html body .wb-sign .gd-talk[hidden]{display:none}
@@ -10241,6 +10242,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // what it knows
     // its friend's name: asked the first time, kept on this device only (never sent anywhere)
     let name = "", askingName = false; try { name = localStorage.getItem("v60.dropName") || ""; } catch (e) {}
+    let nick = ""; try { nick = localStorage.getItem("v60.gdNick") || ""; } catch (e) {}   // what you call Goccio, if you gave it a nickname
     const setName = (n) => { n = String(n).replace(/[^\p{L}\s'’-]/gu, " ").trim().split(/\s+/).filter(Boolean).slice(0, 3).map((x) => x[0].toUpperCase() + x.slice(1)).join(" ").slice(0, 24);
       if (!n || n.length < 2) return false; name = n; try { localStorage.setItem("v60.dropName", n); } catch (e) {} return true; };
     // what it knows. Facts are kept to what the coffee world agrees on (SCA brewing and water standards, EFSA on caffeine, the
@@ -10372,7 +10374,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       [/weather|raining|is it (cold|hot|warm|sunny)|cold outside|hot outside|meteo|che tempo|piove/i, () => weather(lastQ)],
       [/what (does|is) (the word |the name )?goccio mean|meaning of goccio|why (is it |are you )?called goccio|cosa (vuol dire|significa) goccio|perch[eé] (ti chiami|si chiama) goccio|^(hey |hi |ciao )?goccio[!?.]*$/i, () => say(T("Goccio is Italian for a little drop, a splash. That's me: I'm Goccio!", "Goccio vuol dire un goccio, un pochino. Sono io: mi chiamo Goccio!"), null, happy)],
       [/what('?s| is) goccio|what (does|can) goccio do|cos'?è goccio|a cosa serve goccio/i, () => say(T("Goccio finds new specialty coffees every day, from hundreds of roasters, and gives each one the right recipe for your brewer and grinder. 'Goccio' is Italian for a little drop, and that's me: ask me anything about coffee.", "Goccio trova ogni giorno caffè specialty nuovi, da centinaia di torrefazioni, e dà a ognuno la ricetta giusta per il tuo metodo e il tuo macinino. 'Goccio' vuol dire un pochino, una goccia, e sono io: chiedimi qualsiasi cosa sul caffè."), null, happy)],
-      [/who are you|what are you|your name\b|chi sei|come ti chiami/i, () => say(T(`I'm Goccio, the drop. I live on this page and keep an eye on the recipes${name ? ", " + name : ""}.`, `Sono Goccio, la goccia. Vivo su questa pagina e tengo d'occhio le ricette${name ? ", " + name : ""}.`), null, happy)],
+      [/who are you|what are you|your name\b|chi sei|come ti chiami/i, () => say(nick ? T(`I'm Goccio, but to you I'm ${nick}. I live on this page and keep an eye on the recipes${name ? ", " + name : ""}.`, `Sono Goccio, ma per te sono ${nick}. Vivo su questa pagina e tengo d'occhio le ricette${name ? ", " + name : ""}.`) : T(`I'm Goccio, the drop. I live on this page and keep an eye on the recipes${name ? ", " + name : ""}.`, `Sono Goccio, la goccia. Vivo su questa pagina e tengo d'occhio le ricette${name ? ", " + name : ""}.`), null, happy)],
       [/dance|music|balla|musica/i, () => { say(T("Don't mind if I do!", "Volentieri!"), null); setTimeout(() => { D.free(); dance(); littleMove("ag-dance"); setTimeout(() => littleMove("ag-dance"), 1400); }, 600); }, true],
       [/joke|make me laugh|funny|barzellett|fammi ridere/i, () => say(pick([T("What's a drop's favourite music? Drip-hop.", "Qual è la musica preferita di una goccia? Il drip-hop."),
         T("Why did the coffee file a police report? It got mugged.", "Perché il caffè è andato dalla polizia? L'hanno derubato della tazza."), T("I'd tell you a decaf joke, but it has no kick.", "Ti direi una barzelletta sul decaffeinato, ma non ha la carica.")]), null, happy)],
@@ -10854,7 +10856,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       return false; };
     const nice = () => say(T(`Nice to meet you, ${name}! Ask me anything about coffee.`, `Piacere, ${name}! Chiedimi qualsiasi cosa sul caffè.`), null, happy);
     let lastQ = "";
-    const ask = (q) => { q = String(q || "").trim(); if (!q) return; inEl.value = ""; lastQ = q; addMsg("me", q); prevTrick = lastTrick; lastTrick = null;
+    const ask = (q) => { q = String(q || "").trim(); const said = q; if (nick) { const nr = nick.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); q = q.replace(new RegExp("^((hey|hi|ciao|ok)\\s+)?" + nr + "[,:!\\s]+(?=\\S)", "i"), "") || q; } if (!q) return; inEl.value = ""; lastQ = q; addMsg("me", said); prevTrick = lastTrick; lastTrick = null;
       const rx = /tiramis|affogato|dessert|dolce|torta|cake/i.test(q) ? "🤤" : /\b(thanks?|thank you|thx|cheers|grazie|love (you|it|this)|ti amo|you'?re (great|the best|amazing|awesome|cute)|sei (bravo|fantastico|il migliore|carino)|well done|bravo|amazing|awesome|perfect|fantastic|brilliant|lovely|great job)\b/i.test(q) ? "❤️"
         : /\b(ha(ha)+|ah(ah)+|lol|lmao|rofl|fart|butt|bum|culo|scoreggi\w*|joke|barzellett\w*|funny|divertente)\b|😂|🤣/i.test(q) ? "😂"
         : /\b(scare|boo|wow|omg|whoa|woah|incredible|no way|davvero|incredibile|accidenti)\b|!{2,}/i.test(q) ? "‼️"
@@ -10874,6 +10876,13 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         const r = Math.random();
         if (r < .4) thinkNext = { lead: "", pre: "", ms: 1500 + Math.random() * 900 };
         else if (r < .7) thinkNext = { lead: "", pre: pick(T("Good question! |Ah, I love this one. |Great question. |Ooh, nice one. ", "Bella domanda! |Ah, questa mi piace. |Ottima domanda. |Oh, bella questa. ").split("|")), ms: 800 + Math.random() * 500 }; }
+      // a nickname for Goccio: "can I call you Bean?" It says yes and remembers
+      { const nk = q.match(/^(?:can|could|may) i call you\s+(.+?)[\s?.!]*$|^(?:i'?ll|i will|i'?m (?:going to|gonna)|let me|i want to) call you\s+(.+?)[\s?.!]*$|^(?:ti )?(?:posso|potrei) chiamar(?:ti|e)\s+(.+?)[\s?.!]*$|^ti chiamer[oò]\s+(.+?)[\s?.!]*$|^(?:your (?:new )?name is|from now on you'?re|you'?re now called|d'?ora in poi ti chiami)\s+(.+?)[\s?.!]*$/i);
+        if (nk) { const raw = nk.slice(1).find(Boolean) || "", n = raw.replace(/^(?:"|'|“|‘)|(?:"|'|”|’)$/g, "").replace(/[^\p{L}\p{N}\s'’-]/gu, " ").trim().split(/\s+/).filter(Boolean).slice(0, 3).map((x) => x[0].toUpperCase() + x.slice(1)).join(" ").slice(0, 24);
+          if (!n) return say(T("Call me what? Tell me the name.", "Chiamarmi come? Dimmi il nome."), null, curious);
+          if (/^goccio$/i.test(n)) { nick = ""; try { localStorage.removeItem("v60.gdNick"); } catch (e) {} return say(T("That's my name already! Goccio it is.", "È già il mio nome! Goccio, appunto."), null, happy); }
+          nick = n; try { localStorage.setItem("v60.gdNick", n); } catch (e) {} react("❤️", 200);
+          return say(pick([T(`${n}? I love it. ${n} it is, from now on.`, `${n}? Mi piace un sacco. Da ora sono ${n}.`), T(`Sure! Call me ${n}. I'll remember.`, `Certo! Chiamami ${n}. Me lo ricordo.`), T(`${n}. Has a nice ring to it. Deal!`, `${n}. Suona bene. Affare fatto!`)]), null, happy); } }
       // a name: "call me Fed", "my name is Fed", or the answer to "What should I call you?"
       const mn = q.match(/^(?:call me|my name is|you can call me|mi chiamo|chiamami)\s+(.+)$/i) || (askingName && q.match(/^(?:i'?m|i am|it'?s|sono)\s+(.+)$/i));
       if (mn && setName(mn[1])) { askingName = false; return nice(); }
@@ -10929,7 +10938,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const scrim = document.createElement("div"); scrim.className = "gd-scrim"; document.body.appendChild(scrim);
     const dim = (on, top) => { document.documentElement.classList.toggle("gd-open", on); document.documentElement.classList.toggle("gd-docked", !!(on && top)); };
     const place = (top) => { const want = top ? dock : home; if (talking) dim(true, top); if (top) fitDock(); if (talkEl.parentNode !== want) want.appendChild(talkEl); talkEl.classList.toggle("docked", !!top); };
-    openTalk = (top) => { if (talking) { place(top); return; } place(top); gdWords(); talking = true; dim(true, top); talkEl.hidden = false; el.setAttribute("aria-expanded", "true"); toBottom();
+    let openY = null; addEventListener("scroll", () => { if (talking && openY !== null && Math.abs(scrollY - openY) > 140) closeTalk(); }, { passive: true });   // scroll away from an open chat: it closes and the page clears
+    openTalk = (top) => { if (talking) { place(top); return; } openY = null; setTimeout(() => { openY = scrollY; }, 800); place(top); gdWords(); talking = true; dim(true, top); talkEl.hidden = false; el.setAttribute("aria-expanded", "true"); toBottom();
       const lastAt = msgs.length ? msgs[msgs.length - 1].at || 0 : 0; if (name && msgs.length && Date.now() - lastAt < 20 * 60000) { showChips(); return; }   // still mid-chat: carry on
       replyTo = null;   // a new hello answers nobody: it anchors to itself
       if (!name) { askingName = true; return say(T("Hi! I'm Goccio, the drop that knows coffee. What should I call you?", "Ciao! Sono Goccio, la goccia che sa tutto del caffè. Come ti chiamo?"), [T("Skip", "Salta")], happy); }
@@ -11024,8 +11034,19 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       if (!inEl.value && !/^(Try|Prova):/.test(inEl.placeholder)) set("gdIn", "placeholder", "Ask Goccio about coffee", "Chiedi a Goccio del caffè"); };
     gdWords(); window.gdWords = gdWords;
     const hint = $("gdHint"); let hinted = false;
+    // its entrance: it peeps out from under the top bar, looks this way and that, then drops into its place at the foot of the page
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    const enter = async () => { await wait(500); if (talking || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const bar = document.querySelector(".top"), r = el.getBoundingClientRect(), br = bar ? Math.max(0, bar.getBoundingClientRect().bottom) : 0;
+      const body = r.height * 0.59, hidden = br - r.bottom, peek = hidden + body * 0.72;
+      if (hidden > -40) return;   // already up by the bar: nowhere to fall from
+      el.style.transition = "none"; el.style.translate = `0 ${hidden}px`; el.getBoundingClientRect();
+      el.style.transition = "translate .7s cubic-bezier(.3,1.4,.5,1)"; el.style.translate = `0 ${peek}px`; await wait(800);
+      await D.curious(); await D.curious(); await wait(200);
+      el.style.transition = "translate .55s cubic-bezier(.5,0,1,.6)"; el.style.translate = "0 0"; await wait(560);
+      el.style.transition = ""; el.style.translate = ""; D.jumps && D.jumps(); await wait(500); };
     if (hint && "IntersectionObserver" in window) new IntersectionObserver((es) => { if (hinted || !es[0].isIntersecting || es[0].intersectionRatio < 0.9) return; hinted = true;
-      setTimeout(() => { if (talking) return; gdWords(); hint.hidden = false; document.documentElement.classList.add("gd-hello"); D.happy(); setTimeout(() => { hint.classList.add("out"); document.documentElement.classList.remove("gd-hello"); setTimeout(() => { hint.hidden = true; hint.classList.remove("out"); }, 400); }, 4200); }, 1300); }, { threshold: [0, 0.9] }).observe(el);
+      enter().then(() => { if (talking) return; gdWords(); hint.hidden = false; document.documentElement.classList.add("gd-hello"); D.happy(); setTimeout(() => { hint.classList.add("out"); document.documentElement.classList.remove("gd-hello"); setTimeout(() => { hint.hidden = true; hint.classList.remove("out"); }, 400); }, 4200); }); }, { threshold: [0, 0.9] }).observe(el);
     { let still = performance.now(), last = 0; const wake = () => { still = performance.now(); };
       ["pointermove", "pointerdown", "keydown", "input", "scroll", "touchstart"].forEach((t) => addEventListener(t, wake, { passive: true, capture: true }));
       setInterval(() => { const now = performance.now(); if (!talking || document.hidden || now - still < 15000 || now - last < 11000 || sayEl.querySelector(".gd-typing")) return; last = now;
