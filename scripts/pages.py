@@ -178,6 +178,22 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 .top .tr{display:flex;gap:5px}
 .pill.sq{width:32px;padding:0;justify-content:center;border:0;cursor:pointer;border-radius:50%}
 .pill.sq svg{width:17px;height:17px}
+/* coffee rows as on the main page: grey who and when, the name at 39 (63 on wide screens), then tags with coloured dots and grey notes */
+.list.rows li{padding:12px 0;border-bottom:1px solid var(--line)}
+.list.rows a{display:block}
+.list.rows .cw{margin:0 0 5px;color:var(--muted);line-height:19px}
+.list.rows .cw .ro{color:var(--ink);text-decoration:underline 1px;text-underline-offset:2px;text-decoration-color:color-mix(in srgb,currentColor 40%,transparent)}
+.list.rows .name{font-size:39px;line-height:1.05;letter-spacing:-.01em!important}
+@media (min-width:1000px){.list.rows .name{font-size:63px}}
+.list.rows a:hover .name{color:var(--muted)}
+.list.rows .tags{display:flex;flex-wrap:wrap;column-gap:20px;row-gap:2px;margin:6px 0 0;color:var(--muted);line-height:19px}
+.list.rows .tg{display:inline-flex;align-items:center;min-width:0;overflow-wrap:anywhere}
+.list.rows .tg::before{content:"";flex:none;width:12px;height:12px;margin-right:5px;border-radius:50%;background:var(--vc,var(--muted))}
+.list.rows .tg.pr::before{border-radius:3px}
+.list.rows .tg.vd::before{border-radius:2px;rotate:45deg;scale:.82}
+.p-nat{--vc:#af52de}.p-wash{--vc:#30b0c7}.p-honey{--vc:#ff9f0a}.p-exp{--vc:#ff2d55}.p-decaf{--vc:#a0703c}.p-other{--vc:#8a9a1b}.miss{--vc:#8e8e93}
+.list.rows .cn{margin:2px 0 0;color:var(--muted);line-height:19px}
+.nw-day{font-size:24px;line-height:1.1;margin:28px 0 0;padding-bottom:8px;border-bottom:1px solid var(--line);font-weight:500}
 """
 
 
@@ -207,10 +223,92 @@ def page(title, desc, path, body, extra_head="", nav=True, tight=False):
 """
 
 
-def coffee_list(cs, cpath):
-    # like the app's coffee list: the name, then origin and process (no prices: they change, the roaster's shop has them)
-    return '<ul class="list">' + "".join(f'<li><a href="{cpath[id(c)]}"><span class="name">{e(c["name"])}</span></a><span class="sub">'
-                                         + e(", ".join(x for x in [c.get("origin"), c.get("process")] if x)) + "</span></li>" for c in cs) + "</ul>"
+_OC = None
+
+
+def origin_colours():
+    # the main page's colour for each country, read from its own styles (index.html, or the stylesheet build.py split out)
+    global _OC
+    if _OC is None:
+        _OC, txt = {}, ""
+        import glob
+        for f in [os.path.join(SITE, "index.html")] + glob.glob(os.path.join(SITE, "assets", "app.*.css")):
+            try:
+                txt += open(f, encoding="utf-8").read()
+            except OSError:
+                pass
+        for sels, col in re.findall(r'((?:\[data-o="[^"]+"\]\s*,?\s*)+)\{\s*--oc:\s*(#[0-9a-fA-F]{3,8})', txt):
+            for o in re.findall(r'data-o="([^"]+)"', sels):
+                _OC.setdefault(o, col)
+    return _OC
+
+
+def _bucket(p):
+    p = (p or "").lower()
+    if re.search(r"decaf", p): return "p-decaf"
+    if re.search(r"anaerob|co-?ferment|carbonic|thermal|infus|double|yeast", p): return "p-exp"
+    if "natural" in p: return "p-nat"
+    if "honey" in p: return "p-honey"
+    if "washed" in p: return "p-wash"
+    return "p-other"
+
+
+def _var_colour(v):
+    # the same hue the main page gives this variety: its name hashed, h * 31 + each character
+    h = 0
+    for ch in v.lower().strip():
+        o = ord(ch)
+        if o > 0xFFFF:
+            o = 0xD800 + ((o - 0x10000) >> 10)
+        h = (h * 31 + o) & 0xFFFFFFFF
+    return f"hsl({h % 360} 62% 50%)"
+
+
+def _var_name(v):
+    t = str(v or "").strip()
+    if re.match(r"^74\s?/?\d{2,3}\b", t):
+        return "Ethiopian " + re.sub(r"74\s?/(\d)", r"74\1", t)
+    if re.match(r"^[\d\s,.]+$", t) or re.match(r"^\s*\d+\s?(?:g|gr|kg|oz|lb)\b", t, re.I):
+        return ""
+    return t
+
+
+def _day(c):
+    iso = (c.get("published") or c.get("found") or "")[:10]
+    d = ddmmyyyy(iso)
+    if not d:
+        return ""
+    return "Added " + (d[:-5] if iso[:4] == date.today().isoformat()[:4] else d)   # this year's dates without the year, as on the main page
+
+
+def coffee_row(c, cpath, roaster=True, day=True):
+    # one coffee as the main page draws it: who and when in grey, the name big, origin, process and variety with their coloured dots, then the notes
+    oc = origin_colours()
+    os_ = [x for x in str(c.get("origin") or "").split(" / ") if x]
+    tags = []
+    if os_:
+        reg = c.get("region") if len(os_) == 1 and c.get("region") else ""
+        tags.append(f'<span class="tg oc" style="--vc:{oc.get(os_[0], "var(--muted)")}">{e(" / ".join(os_))}{", " + e(reg) if reg else ""}</span>')
+    p = c.get("process")
+    tags.append(f'<span class="tg pr {_bucket(p)}">{e(p)}</span>' if p else '<span class="tg pr miss">Process not listed</span>')
+    v = _var_name(c.get("variety"))
+    if v:
+        tags.append(f'<span class="tg vd" style="--vc:{_var_colour(v)}">{e(" ".join(w[:1].upper() + w[1:] for w in v.split(" ")))}</span>')
+    ns = [n for n in (scan.tidy_note(x) for x in (c.get("notes") or []) if isinstance(x, str) and len(x) < 40) if n][:6]
+    ns = [re.sub(r"\b[A-Z](?=[a-z])", lambda m: m.group(0).lower(), n) for n in ns]
+    who = []
+    if roaster:
+        city = c.get("roaster_city") or ""
+        who.append(f'From <span class="ro">{e(c["roaster"])}</span>{", " + e(city) if city else ""}')
+    if day and _day(c):
+        who.append(f'<span class="dy">{_day(c)}</span>')
+    return (f'<li class="cr"><a href="{cpath[id(c)]}">' + (f'<p class="cw">{"<br>".join(who)}</p>' if who else "")
+            + f'<span class="name">{e(c["name"])}</span><p class="tags">{"".join(tags)}</p>'
+            + (f'<p class="cn">{e(cap(and_list(ns)))}</p>' if ns else "") + "</a></li>")
+
+
+def coffee_list(cs, cpath, roaster=False, day=True):
+    return '<ul class="list rows">' + "".join(coffee_row(c, cpath, roaster, day) for c in cs) + "</ul>"
 
 
 def write(rel, text):
@@ -301,7 +399,7 @@ def main():
                 ld = f'\n<script type="application/ld+json">{ld}</script>'
             else:
                 body[0] = body[0][:-len("</section>")] + go + "</section>"
-            others = [o for o in cs if o is not c][:12]
+            others = sorted([o for o in cs if o is not c], key=lambda o: (o.get('published') or o.get('found') or '')[:10], reverse=True)[:12]   # newest first, as on the main page
             if others:
                 body.append(f'<section><div class="sec-head"><span>More from {e(name)}.</span></div>' + coffee_list(others, cpath) + "</section>")
             bits = [x for x in [(process or "").lower(), c.get("origin")] if x]
@@ -321,7 +419,7 @@ def main():
                 f'<div class="spec wide ro"><h1>{e(name)}{", " + e(city) if city else ""}</h1>'
                 f'<span class="ro-n">{len(cs)} coffee{"s" if len(cs) != 1 else ""} on the list</span>'
                 + (f'<a class="pill ro-shop" href="{e(shop)}" rel="noopener">Their shop</a>' if shop else "") + "</div></div></section>"
-                f'<section><div class="sec-head"><span>Coffees.</span><span class="muted">Each with a V60 recipe</span></div>{coffee_list(cs, cpath)}</section>')
+                f'<section><div class="sec-head"><span>Coffees.</span><span class="muted">Each with a V60 recipe</span></div>{coffee_list(sorted(cs, key=lambda c: (c.get('published') or c.get('found') or '')[:10], reverse=True), cpath)}</section>')
         desc = f"{len(cs)} coffee{'s' if len(cs) != 1 else ''} from {name}{', ' + city if city else ''}, each with a V60 recipe: grind, dose, temperature and every pour."
         write(f"coffee/{rslug[name]}/index.html", page(f"{name}: coffees and V60 recipes", desc, f"/coffee/{rslug[name]}/", body, tight=True))
         urls.append((f"{BASE}/coffee/{rslug[name]}/", updated))
@@ -384,14 +482,11 @@ def main():
     for c in week:
         days.setdefault(when(c), []).append(c)
     for day, cs in days.items():
-        blocks.append(f'<h2 class="nw-day">{e(ddmmyyyy(day))}, {len(cs)} coffee{"s" if len(cs) != 1 else ""}</h2><ul class="list">' + "".join(
-            f'<li><a href="{cpath[id(c)]}"><span class="name">{e(c["name"])}</span></a><span class="sub">'
-            + e(", ".join(x for x in [c["roaster"], c.get("origin"), c.get("process")] if x)) + "</span></li>" for c in cs) + "</ul>")
+        blocks.append(f'<h2 class="nw-day">{e(ddmmyyyy(day))}, {len(cs)} coffee{"s" if len(cs) != 1 else ""}</h2>' + coffee_list(cs, cpath, roaster=True, day=False))
     feed_link = f'<link rel="alternate" type="application/rss+xml" title="Goccio: new coffees" href="{BASE}/new/feed.xml">'
     body = (f'<section><div class="specs"><div class="spec wide"><h1>New this week</h1></div></div>'
             f'<p class="r-read">{len(week):,} specialty coffees added in the last seven days, each with a V60 recipe. '
-            f'Follow them with the <a href="/new/feed.xml">feed</a> in any reader.</p>{"".join(blocks)}</section>'
-            '<style>.nw-day{font-size:var(--fs-m,24px);margin:28px 0 8px;font-weight:500;letter-spacing:-.02em}</style>')
+            f'Follow them with the <a href="/new/feed.xml">feed</a> in any reader.</p>{"".join(blocks)}</section>')
     write("new/index.html", page("New specialty coffees this week, with their recipes",
                                  f"{len(week):,} specialty coffees added in the last seven days, from {len({c['roaster'] for c in week})} roasters, each with a V60 recipe.",
                                  "/new/", body, extra_head=feed_link, tight=True))
