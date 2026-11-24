@@ -2727,6 +2727,17 @@ html.ro-page body #roFollow{display:inline-flex;flex:none;align-self:flex-start;
 html.ro-page body #shelves > .sec-head{flex-wrap:nowrap!important;align-items:flex-start!important;gap:12px}
 html.ro-page body #shelves > .sec-head > #sh{flex:1 1 auto;min-width:0}   /* a long name wraps beside Follow, which stays top right */
 html body #roHead{margin-top:-13px!important}   /* the place line as close under the roaster name as the notes are under the tags */
+/* a roaster's page: Visit shop and Follow side by side at the top right; the bottom bar is one wide Back to all coffees */
+html.ro-page body #shelves > .sec-head .ro-tools{display:inline-flex;gap:8px;flex:none;align-self:flex-start;margin-left:auto}
+html:not(.ro-page) body .ro-tools{display:none}
+html.ro-page body #roFollow{margin-left:0}
+html.ro-page body #roShopTop[hidden]{display:none!important}
+html body #roShopTop{text-decoration:none!important;color:var(--ink)}
+html.ro-page body .botnav [data-bn="ro-shop"]{display:none!important}
+html.ro-page:not(.brew-in) body .botnav [data-bn="ro-back"]{flex:1 1 100%!important;max-width:none!important;width:100%!important}
+/* the alert rides on top of the bottom bar, and comes down to the foot of the screen when the bar slides away */
+html body #toast{bottom:calc(var(--bot-h) + 8px);transition:opacity .25s ease,translate .25s ease,bottom .6s cubic-bezier(.4,0,.2,1)}
+html.nav-off body #toast{bottom:calc(env(safe-area-inset-bottom) + 12px)}
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
@@ -3101,7 +3112,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   </section>
 
   <section class="sec" id="shelves" aria-labelledby="sh">
-    <div class="sec-head"><span class="cap" id="sh" role="heading" aria-level="2"><span class="sh-t">Coffees.</span><span class="ro-title" id="roName" translate="no"></span></span><button type="button" class="chip ro-follow" id="roFollow" aria-pressed="false">Follow</button><button type="button" class="chip fy-pill" id="fyPill" aria-pressed="false">For you</button></div>
+    <div class="sec-head"><span class="cap" id="sh" role="heading" aria-level="2"><span class="sh-t">Coffees.</span><span class="ro-title" id="roName" translate="no"></span></span><span class="ro-tools"><a class="chip ro-shop-top" id="roShopTop" target="_blank" rel="noopener" hidden>Visit shop</a><button type="button" class="chip ro-follow" id="roFollow" aria-pressed="false">Follow</button></span><button type="button" class="chip fy-pill" id="fyPill" aria-pressed="false">For you</button></div>
     <p class="fy-note fy-top" id="followNote" hidden></p>
     <p class="fy-note fy-top" id="fyNote" role="status" hidden></p>
     <p class="shelf-meta" id="shelfMeta" hidden></p>
@@ -8926,7 +8937,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       setTimeout(() => old.remove(), 450); };
     let calm = false, i = -1; const t0 = Date.now();
     // what the box is for, with the size of the list in it: "Search 8,705 coffees" (the plain hint until the list is in)
-    const hintText = () => { if (typeof shelfRo !== "undefined" && shelfRo) { const k = shelf.filter((r) => r.roaster === shelfRo).length; return LANG === "it" ? `Cerca tra ${k} caffè` : `Search ${k} coffee${k === 1 ? "" : "s"}`; }   // on a roaster's page: that roaster's coffees
+    const hintText = () => { if (typeof shelfRo !== "undefined" && shelfRo) { const k0 = shelf.filter((r) => r.roaster === shelfRo).length, bx = document.getElementById("askIn"), narrow = bx && bx.clientWidth && bx.clientWidth < 330;
+        return LANG === "it" ? `Cerca in ${shelfRo}` : `Search ${shelfRo}`; }   /* on a roaster's page the box says whose coffees it searches */
+      if (false) { const k = shelf.filter((r) => r.roaster === shelfRo).length; return LANG === "it" ? `Cerca tra ${k} caffè` : `Search ${k} coffee${k === 1 ? "" : "s"}`; }   // on a roaster's page: that roaster's coffees
       const n = (typeof shelfPart !== "undefined" && shelfPart) || (typeof shelf !== "undefined" && shelf.length) || 0;   // the whole list, also while only its first part is in
       const box = document.getElementById("askIn"), nr = box && box.clientWidth && box.clientWidth < 290 ? 0 : (window.__roN || 0);   // and the roasters: "Search 8,757 coffees, 732 roasters" (a very narrow phone keeps just the coffees)
       return n ? (LANG === "it" ? `Cerca tra ${n.toLocaleString("it-IT")} caffè${nr ? `, ${nr.toLocaleString("it-IT")} torrefazioni` : ""}` : `Search ${n.toLocaleString("en-GB")} coffees${nr ? `, ${nr.toLocaleString("en-GB")} roasters` : ""}`) : T(HINT); };
@@ -9346,7 +9359,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   { const an = $("askNote"), fn = $("fyNote"); if (an && fn) { fn.after(an); an.classList.add("fy-note", "fy-top"); } }   /* what the search found sits where For you's line does, in the same pill */
   document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest('.botnav [data-bn^="ro-"]'); if (!b) return; e.preventDefault(); e.stopPropagation();
     if (b.dataset.bn === "ro-back") $("roBack").click(); else { const a = $("roShop"); if (a && a.href) window.open(a.href, "_blank", "noopener"); } }, true);
-  { const sync = () => { const s = document.querySelector('.botnav [data-bn="ro-shop"]'); if (s) s.hidden = $("roShop").hidden; }; sync(); new MutationObserver(sync).observe($("roShop"), { attributes: true, attributeFilter: ["hidden", "href"] }); }
+  { const sync = () => { const s = document.querySelector('.botnav [data-bn="ro-shop"]'); if (s) s.hidden = true;   // the shop is up by the name now, beside Follow
+      const t = $("roShopTop"); if (t) { t.hidden = $("roShop").hidden || !$("roShop").href; if ($("roShop").href) t.href = $("roShop").href; t.textContent = LANG === "it" ? "Negozio" : "Visit shop"; } };
+    sync(); new MutationObserver(sync).observe($("roShop"), { attributes: true, attributeFilter: ["hidden", "href"] }); }
   /* a companion to try, only with ?companion in the address: Goccio's own drop, which looks and leans toward the pointer or finger,
      squashes when pressed, blinks, and dips when the page scrolls. Nothing loads or runs without the flag */
   if (/[?&]companion\b/.test(location.search)) { try {
