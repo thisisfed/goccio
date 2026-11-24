@@ -7227,7 +7227,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const gbp = /£/.test(own) || !own || ccy === "GBP" ? null : r._p100 != null && r.bag_g ? r._p100 * r.bag_g / 100 : n0 && k0 ? n0 * k0 : null;
     const p = gbp != null ? `≈ £${gbp >= 10 ? Math.round(gbp) : gbp.toFixed(2)}` : own;
     if (priceOnly) return p;
-    return `<a class="pill buy-p" href="${esc(r.url)}" target="_blank" rel="noopener" aria-label="${it ? "Compra" : "Buy"} ${esc(r.name)} ${it ? "da" : "from"} ${esc(r.roaster)}">${it ? "Compra" : "Buy"}</a>`; };   // the price is said once, beside the date
+    return `<a class="pill buy-p" href="${esc(r.url)}" target="_blank" rel="noopener" aria-label="${it ? "Compra" : "Buy"} ${esc(r.name)} ${it ? "da" : "from"} ${esc(r.roaster)}">${it ? "Compra" : "Buy"}${p ? ` <span class="buy-pr">${p}</span>` : ""}</a>`; };   // the price is said once, on the pill that spends it
   let askWant = null, askRank = null, startFirst = null;   // startFirst: in a plain search, names that start as typed, ahead of names that only hold it
   // back again: one line under the intro picks up the last coffee where it was left
   function carryOn() { if (carryOn.done || !lastSeen || !shelf.length || shelfPart) return; carryOn.done = true;
@@ -7330,7 +7330,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       tagBits.push(...coffeeLabels(r, shown).map((l) => `<span class="tg lbl" style="--vc:${LABEL_DOT[l] || "#8e8e93"}">${l}</span>`));
       return `${head}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
         <div class="l">
-          <p class="c-where">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : !isSp && r.just_in ? `<span class="ji">${LANG === "it" ? "Nuovo" : "New"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : ""}<a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a>${r.roaster_city || r.roaster_country ? `<span class="rcity">, ${esc(r.roaster_city || "")}${r.roaster_country ? `${r.roaster_city ? " " : ""}(${esc(r.roaster_country === "GB" ? "UK" : r.roaster_country)})` : ""}</span>` : ""}<br class="rn-br"><span class="day">${day}</span>${cardBuy(r, true) ? `<span class="c-cost">, ${LANG === "it" ? "prezzo" : "price"}: ${cardBuy(r, true)}</span>` : ""}</p>
+          <p class="c-where">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : !isSp && r.just_in ? `<span class="ji">${LANG === "it" ? "Nuovo" : "New"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : ""}<a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a>${r.roaster_city || r.roaster_country ? `<span class="rcity">, ${esc(r.roaster_city || "")}${r.roaster_country ? `${r.roaster_city ? " " : ""}(${esc(r.roaster_country === "GB" ? "UK" : r.roaster_country)})` : ""}</span>` : ""}<br class="rn-br"><span class="day">${day}</span></p>
           <span class="name">${esc(capName(calm(shown)))}</span>
           <p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p>
           ${cardNotes(r)}${cardPrice(r)}
