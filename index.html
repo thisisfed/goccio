@@ -9999,7 +9999,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // it falls the first time it comes into view
     let fell = false;
     const fall = () => { if (fell || still()) return; fell = true; setTimeout(() => { phase = "fall"; round = 1; y = -90; vy = 0; go(); }, opt.delay || 0); };
-    if ("IntersectionObserver" in window) new IntersectionObserver((es) => { if (es[0].isIntersecting && es[0].intersectionRatio > 0.6) fall(); }, { threshold: [0, 0.6, 1] }).observe(el);
+    if (!opt.manualFall && "IntersectionObserver" in window) new IntersectionObserver((es) => { if (es[0].isIntersecting && es[0].intersectionRatio > 0.6) fall(); }, { threshold: [0, 0.6, 1] }).observe(el);
+    // let go from higher up (in its own units): it falls round, then lands with a splat that matches the speed, and rings
+    const fallFrom = (u) => { fell = true; if (still()) return; tween("aRest", 0, 120); phase = "fall"; round = 1; y = -u; vy = 0; go(); };
+    // hanging from something: drawn out a little, like a drop about to let go
+    const hang = (v) => tween("aRest", v, 500);
     // the page moving: a fast lift. It squashes as the page speeds up (it feels heavier), stretches tall as it slows (lighter),
     // and rings in between. Scrolling down carries it up the screen, like a lift going up
     let lastY = scrollY, lastT = performance.now(), lastV = 0, stopT = 0;
@@ -10152,14 +10156,14 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1; lookX = dx / d * 3; lookY = dy / d * 1.5; draw();
       setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900); }, { passive: true });
     el.addEventListener("click", () => { if (farted) { farted = false; return; } if (opt.tap) opt.tap(); else if (!acting) jumps(); });
-    return { S, busy: () => acting, free: () => { acting = false; }, bored, moon, fartBack, upside, boo, think, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, fart, draw,
+    return { S, busy: () => acting, free: () => { acting = false; }, fallFrom, hang, landed: () => phase !== "fall", bored, moon, fartBack, upside, boo, think, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, fart, draw,
       bob: () => { poke(-0.7 - Math.random() * 0.6); if (Math.random() < 0.3) { jv = -90; go(); } } }; };
     // ---- talking: tap the drop and ask it something. It answers in a bubble, the words typing themselves out while it bobs.
     // It knows a handful of things for certain (what's new, a coffee to try, sour or bitter, ratio, temperature, grind, the processes,
     // what Goccio means, how many coffees and roasters, the time, the weather where you are) and looks coffee words up in the list.
     // Anything else, it says it doesn't know
   { let talking = false, openTalk = () => {}, closeTalk = () => {}; const el = $("gdrop");
-    const D = makeBuddy(el, { paused: () => talking, tap: () => talking ? closeTalk() : openTalk() }), B = null;   // the coffee bean (makeBuddy with bean: true) is put away for now
+    const D = makeBuddy(el, { manualFall: true, paused: () => talking, tap: () => talking ? closeTalk() : openTalk() }), B = null;   // the coffee bean (makeBuddy with bean: true) is put away for now
     if (D) { const { happy, curious, yes, smile, hmm, surprised, dance } = D, still = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
     const IT = LANG === "it", T = (en, it) => IT ? it : en;
     const talkEl = $("gdTalk"), sayEl = $("gdSay"), chipsEl = $("gdChips"), inEl = $("gdIn");
@@ -11036,15 +11040,18 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const hint = $("gdHint"); let hinted = false;
     // its entrance: it peeps out from under the top bar, looks this way and that, then drops into its place at the foot of the page
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-    const enter = async () => { await wait(500); if (talking || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const show = () => { el.style.visibility = ""; };
+    if (hint && "IntersectionObserver" in window && !matchMedia("(prefers-reduced-motion: reduce)").matches) el.style.visibility = "hidden";   // out of sight until its entrance, so it never shows in its place first
+    const enter = async () => { await wait(200); if (talking || matchMedia("(prefers-reduced-motion: reduce)").matches) { show(); return D.fallFrom(90); }
       const bar = document.querySelector(".top"), r = el.getBoundingClientRect(), br = bar ? Math.max(0, bar.getBoundingClientRect().bottom) : 0;
       const body = r.height * 0.59, hidden = br - r.bottom, peek = hidden + body * 0.72;
-      if (hidden > -40) return;   // already up by the bar: nowhere to fall from
-      el.style.transition = "none"; el.style.translate = `0 ${hidden}px`; el.getBoundingClientRect();
-      el.style.transition = "translate .7s cubic-bezier(.3,1.4,.5,1)"; el.style.translate = `0 ${peek}px`; await wait(800);
-      await D.curious(); await D.curious(); await wait(200);
-      el.style.transition = "translate .55s cubic-bezier(.5,0,1,.6)"; el.style.translate = "0 0"; await wait(560);
-      el.style.transition = ""; el.style.translate = ""; D.jumps && D.jumps(); await wait(500); };
+      if (hidden > -40) { show(); D.fallFrom(90); await wait(900); return; }   // already up by the bar: just the usual little fall
+      el.style.transition = "none"; el.style.translate = `0 ${hidden}px`; el.getBoundingClientRect(); show();
+      D.hang(0.22); el.style.transition = "translate .9s cubic-bezier(.3,1.25,.5,1)"; el.style.translate = `0 ${peek}px`; await wait(950);
+      await D.curious(); await D.curious(); await wait(250);
+      // let go: from here the physics takes over, so it falls as a round drop and splats when it lands
+      const unit = r.width / 64; el.style.transition = "none"; el.style.translate = ""; D.fallFrom(-peek / unit);
+      for (let i = 0; i < 60 && !D.landed(); i++) await wait(50); await wait(700); };
     if (hint && "IntersectionObserver" in window) new IntersectionObserver((es) => { if (hinted || !es[0].isIntersecting || es[0].intersectionRatio < 0.9) return; hinted = true;
       enter().then(() => { if (talking) return; gdWords(); hint.hidden = false; document.documentElement.classList.add("gd-hello"); D.happy(); setTimeout(() => { hint.classList.add("out"); document.documentElement.classList.remove("gd-hello"); setTimeout(() => { hint.hidden = true; hint.classList.remove("out"); }, 400); }, 4200); }); }, { threshold: [0, 0.9] }).observe(el);
     { let still = performance.now(), last = 0; const wake = () => { still = performance.now(); };
