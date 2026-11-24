@@ -3695,6 +3695,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     .replace(/^[\s\-–—|,:;/&+.~]+|[\s\-–—|,:;/&+(~]+$/g, "").replace(/\s{2,}/g, " ").trim();
   return /\p{L}{2,}/u.test(s) && !/^(and|the|de|la|el|of|coffee|single origin|espresso|filter)$/i.test(s) ? s : name;
   };
+  /* a name left starting in small letters (the shop's own, or what is left once "Decaf" is trimmed off "Decaf but tasty") reads as a name: "But Tasty" */
+  const capName = (n) => { n = String(n || ""); if (!/^\p{Ll}/u.test(n)) return n; const ws = n.split(" "), small = new Set(["de", "del", "da", "do", "di", "of", "the", "and", "y", "e", "et", "en", "van", "von"]);
+    if (ws.some((w) => /^\p{Lu}\p{Ll}+$/u.test(w))) return n[0].toUpperCase() + n.slice(1);
+    return ws.map((w, i) => (i && small.has(w)) || w !== w.toLowerCase() ? w : w.charAt(0).toUpperCase() + w.slice(1)).join(" "); };
   const calm = (s) => String(s || "").replace(/\b[A-ZÀ-Ý]{4,}\b/g, (w) => (w.match(/[AEIOUYÀ-Ý]/g) || []).length >= 2 ? w[0] + w.slice(1).toLowerCase() : w);
   const titleCase = (s) => s ? String(s).replace(/\b\w/g, (m) => m.toUpperCase()).replace(/\bSl(\d)/g, "SL$1") : s;
   const dmy = (d) => { const x = d instanceof Date ? d : new Date(d); if (isNaN(x)) return ""; return `${x.getDate()} ${MON[typeof LANG !== "undefined" && LANG === "it" ? "it" : "en"][x.getMonth()]} ${x.getFullYear()}`; };   // 19 Nov 2026: the month in letters, never slashes
@@ -6779,15 +6783,16 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // no commas: each word on its own too (ethiopia floral), so long as the whole text isn't a family (frutti di bosco)
     if (parts.length === 1 && /\s/.test(parts[0]) && !tasteWords(parts[0])) parts = parts[0].split(/\s+/).filter((w) => !/^(with|con|di|of|the|a)$/.test(w));
     const tests = parts.map((t) => { const fam = tasteWords(t), stem = t.length > 4 ? t.replace(/(ies|y|s)$/, "") : t, nw = noteWord(stem);
-      const hw = wordAt(t);
+      const hw = wordIn(t);
       return (hay, notes) => hw.test(hay) || (fam ? fam.some((w) => notes.includes(w)) : nw.test(notes)) || FZ_STOP.test(t) || fzHas(hay, t); });
-    const nq = noteWord(q), hq = wordAt(q);
+    const nq = noteWord(q), hq = wordIn(q);
     return (r) => { const notes = tasteText(r), hay = [r.roaster, r.roaster_city, r.name, r.origin, r.region, r.process, r.variety].join(" ").toLowerCase();
       return hq.test(hay) || nq.test(notes) || tests.every((ok) => ok(hay, notes)) || fzHas([r.roaster, r.name].join(" "), q); }; };
   // a word typed against the tasting notes: from the start of a word, and a short one (3 letters or fewer) only as a whole
   // word, so "van" doesn't find vanilla, while "vanil" (on the way to vanilla) does
   // a word typed against roaster, name, origin…: from the start of a word ("ken" finds Kenya, "van" no longer finds AdVANced)
-  const wordAt = (t) => new RegExp(`(?<![\\p{L}\\d])${t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}${t.trim().length >= 3 ? "" : "(?![\\p{L}\\d])"}`, "iu");   // 2 letters or fewer: the whole word only. Three find a word's start: "ass" finds Kick-Ass and Assembly, never pASSenger
+  const wordAt = (t) => new RegExp(`(?<![\\p{L}\\d])${t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}${t.trim().length >= 3 ? "" : "(?![\\p{L}\\d])"}`, "iu");   // from a word's start (2 letters or fewer: the whole word only)
+  const wordIn = (t) => t.trim().length >= 3 ? new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "iu") : wordAt(t);   // three letters or more are found inside words too: "ass" finds Kick-Ass, Assembly and Passenger
   const noteWord = (t) => new RegExp(`(?<![a-z])${t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}${t.length >= 4 ? "" : "(?![a-z])"}`, "i");
   const EXTRAS = [["foryou", "For you"], ["light", "Light roast"], ["filter", "For filter"], ["value", "Good value"], ["top", "Top lots"], ["decaf", "Decaf"]];
   const extraOn = (v) => v === "foryou" ? shelfY : v === "light" ? shelfO === "light" : v === "top" ? shelfT : v === "value" ? shelfGV : v === "filter" ? shelfFi : shelfD;
@@ -7223,7 +7228,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const p = gbp != null ? `≈ £${gbp >= 10 ? Math.round(gbp) : gbp.toFixed(2)}` : own;
     if (priceOnly) return p;
     return `<a class="pill buy-p" href="${esc(r.url)}" target="_blank" rel="noopener" aria-label="${it ? "Compra" : "Buy"} ${esc(r.name)} ${it ? "da" : "from"} ${esc(r.roaster)}">${it ? "Compra" : "Buy"}</a>`; };   // the price is said once, beside the date
-  let askWant = null, askRank = null;
+  let askWant = null, askRank = null, startFirst = null;   // startFirst: in a plain search, names that start as typed, ahead of names that only hold it
   // back again: one line under the intro picks up the last coffee where it was left
   function carryOn() { if (carryOn.done || !lastSeen || !shelf.length || shelfPart) return; carryOn.done = true;
     const rec = lastSeen.url ? shelf.find((r) => r.url === lastSeen.url) : null; if (lastSeen.url && !rec) return;   // gone from the shop: nothing to offer
@@ -7234,16 +7239,18 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       if (rec) brewThis(rec); else { $("coffeeIn").value = lastSeen.text; surprisePick = null; build(); landBrewing(); } }; }
   function renderShelf() { try { carryOn(); } catch (e) {} try { const fp = $("fyPill"); if (fp) fp.hidden = !fyReady() && !shelfY; } catch (e) {}   /* For you shows once it has something to go on: three coffees saved or brewed */
     const t0 = performance.now();
-    const q = $("shelfQ").value.trim().toLowerCase();
+    const q = $("shelfQ").value.trim().toLowerCase(); startFirst = null;
     let list = shelf.filter((r) => inRegion(r) && (shelfF === "all" || bucket(r.process) === shelfF));
     renderRoHead();
-    if (shelfRo) list = shelf.filter((r) => r.roaster === shelfRo);   // a roaster's page: all its coffees, whatever the filters say
+    if (shelfRo) { list = shelf.filter((r) => r.roaster === shelfRo);   // a roaster's page: all its coffees, whatever the filters say
+      if (q) { const fit = searchFit(q); fzTypos = false; list = list.filter(fit); fzTypos = true; askWant = null; askRank = null; } }   // and a search made there looks among them
     else {
     if (q && isAsk(q)) { askWant = readAsk(q); const sc = askScore(askWant), rank = new Map();
       list.forEach((r) => { const v = sc(r); if (v > 0) rank.set(r, v); });
       list = list.filter((r) => rank.has(r)); askRank = rank; }
     else if (q) { const fit = searchFit(q); fzTypos = false; const sure = list.filter(fit); fzTypos = true;
-      list = sure.length ? sure : list.filter(fit); askWant = null; askRank = null; }   // names that start as typed come alone; near-misses only when nothing does
+      list = sure.length ? sure : list.filter(fit); askWant = null; askRank = null;
+      { const st = wordAt(q), hayOf = (r) => [r.roaster, r.name, r.origin, r.region, r.variety].join(" "); const a0 = [], b0 = []; list.forEach((r) => (st.test(hayOf(r)) ? a0 : b0).push(r)); startFirst = a0.length && b0.length ? new Map([...a0.map((r) => [r, 2]), ...b0.map((r) => [r, 1])]) : null; } }   // names that start as typed come first, those that only hold it after; near-misses only when nothing does
     else { askWant = null; askRank = null; }
     if (shelfV !== "all") list = list.filter(shelfFit());
     if (shelfO === "light") list = list.filter(isLight);
@@ -7271,11 +7278,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       if (!n.hidden && !fy) fyRead(n); else fyStop(); }
     { const secs = Math.max(0.01, (performance.now() - t0) / 1000), n0 = list.length;   // what it found, and how long the looking took
       const found = LANG === "it" ? `: ${n0.toLocaleString("it-IT")} caffè in ${secs.toFixed(2).replace(".", ",")} secondi` : `: ${n0.toLocaleString("en-GB")} coffee${n0 === 1 ? "" : "s"} in ${secs.toFixed(2)} seconds`;
-      var askFound = (q || askWant) && !shelfRo ? found : ""; }
-    { const n = $("askNote"), t = shelfRo || !q ? "" : (LANG === "it" ? `Ricerca “${$("shelfQ").value.trim()}”${askFound}` : `Searching for “${$("shelfQ").value.trim()}”${askFound}`)
+      var askFound = (q || askWant) ? found : ""; }
+    { const n = $("askNote"), t = !q ? "" : (LANG === "it" ? `Ricerca “${$("shelfQ").value.trim()}”${askFound}` : `Searching for “${$("shelfQ").value.trim()}”${askFound}`)
         + (askWant && list.length ? (LANG === "it" ? ". I più vicini per primi." : ". Best match first.") : ""); const f = $("fyNote");   // what the list is showing, in grey under Coffees (and read out to screen readers)   // with For you's line showing, the two read as one paragraph
       if (t && !f.hidden) { f.textContent = f.textContent.trim() + " " + t; n.hidden = true; n.textContent = ""; } else { n.hidden = !t; n.textContent = t; } }   // the search's lens in front, as in the box
-    list = shelfRo ? [...list].sort((a, b) => shelfDate(b).localeCompare(shelfDate(a))) : fy ? list : askRank ? [...list].sort((a, b) => (askRank.get(b) - askRank.get(a))
+    list = shelfRo ? [...list].sort((a, b) => shelfDate(b).localeCompare(shelfDate(a))) : fy ? list : startFirst && !askRank ? [...list].sort((a, b) => ((startFirst.get(b) || 0) - (startFirst.get(a) || 0)) || shelfDate(b).localeCompare(shelfDate(a))) : askRank ? [...list].sort((a, b) => (askRank.get(b) - askRank.get(a))
         || (askWant.dear ? (b._p100 ?? -1) - (a._p100 ?? -1) : askWant.cheap ? (a._p100 ?? 1e9) - (b._p100 ?? 1e9) : 0) || shelfDate(b).localeCompare(shelfDate(a)))
       : shelfT ? [...list].sort((a, b) => (b._p100 ?? -1) - (a._p100 ?? -1)) : shelfGV ? [...list].sort((a, b) => a._p100 - b._p100) : qf.price === "cheap" ? list : interleave(list);   // Cheapest first keeps its order: the mixing by roaster put dearer coffees among the first rows   // good value: cheapest first   // top lots: dearest first
     if (!shelfAll) shelfN = 5;   // a new filter or search starts again from the five newest
@@ -7317,28 +7324,31 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const origins = originTag(r.origin, r.region);
       const place = origins;
       const day = (() => { const iso = String(shelfDate(r) || "").slice(0, 10), ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`, now = new Date(), y = new Date(now); y.setDate(now.getDate() - 1);
-        return iso && iso === ymd(now) ? (LANG === "it" ? "Oggi" : "Today") : iso && iso === ymd(y) ? (LANG === "it" ? "Ieri" : "Yesterday") : isoDm(shelfDate(r)); })();   // today's and yesterday's coffees say so; older ones keep their date
+        const d0 = isoDm(shelfDate(r));   /* what the date is the date of: "Released yesterday", "Released on 12 Nov" */
+        return iso && iso === ymd(now) ? (LANG === "it" ? "Uscito oggi" : "Released today") : iso && iso === ymd(y) ? (LANG === "it" ? "Uscito ieri" : "Released yesterday") : d0 ? (LANG === "it" ? "Uscito il " : "Released on ") + d0 : ""; })();   // today's and yesterday's coffees say so; older ones keep their date
       const shown = (seen.get(r.roaster + "|" + String(nm(r)).toLowerCase() + tagKey(r)) || new Set()).size > 1 ? fullName(r) : nm(r);
       tagBits.push(...coffeeLabels(r, shown).map((l) => `<span class="tg lbl" style="--vc:${LABEL_DOT[l] || "#8e8e93"}">${l}</span>`));
       return `${head}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
         <div class="l">
           <p class="c-where">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : !isSp && r.just_in ? `<span class="ji">${LANG === "it" ? "Nuovo" : "New"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : ""}<a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a>${r.roaster_city || r.roaster_country ? `<span class="rcity">, ${esc(r.roaster_city || "")}${r.roaster_country ? `${r.roaster_city ? " " : ""}(${esc(r.roaster_country === "GB" ? "UK" : r.roaster_country)})` : ""}</span>` : ""}<br class="rn-br"><span class="day">${day}</span>${cardBuy(r, true) ? `<span class="c-cost">, ${LANG === "it" ? "prezzo" : "price"}: ${cardBuy(r, true)}</span>` : ""}</p>
-          <span class="name">${esc(calm(shown))}</span>
+          <span class="name">${esc(capName(calm(shown)))}</span>
           <p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p>
           ${cardNotes(r)}${cardPrice(r)}
         </div>
         <div class="r${rowOpen.has(rowKey(r)) ? " more-open" : ""}">
           <button class="btn" type="button" data-i="${i}">Brew</button><button type="button" class="row-more" data-more="${esc(rowKey(r))}" aria-expanded="${rowOpen.has(rowKey(r))}" aria-label="${LANG === "it" ? "Compra o salva" : "Buy or save"}"><svg viewBox="0 0 12 12" aria-hidden="true"><path class="tb-v" d="M6 2v8"/><path d="M2 6h8"/></svg></button>${cardBuy(r)}<a class="pill buy-p ro-all" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${LANG === "it" ? "Torrefattore" : "Roaster"}</a>
           <button type="button" class="pill bag-add ico${hasBag(r) ? " in" : ""}" data-b="${i}" aria-pressed="${hasBag(r)}" aria-label="${hasBag(r) ? (LANG === "it" ? "Nei miei sacchetti" : "In my bags") : (LANG === "it" ? "Salva nei miei sacchetti" : "Save to my bags")}">${BAG_ICO}</button>
-        </div></article>`; }).join("") : (() => { const msg = `${shelfV !== "all" ? `Try Everything under Made for, or` : `Try a taste, an origin or a roaster, or <a href="#" class="mail-me scan-me">scan the bag in front of you</a>.<br>Missing a roaster?`} <a href="#" class="mail-me" data-s="Missing coffee">${shelfV !== "all" ? "email me" : "Email me"}</a> and I’ll add it.`;
+        </div></article>`; }).join("") : (() => { if (shelfRo) { const an = $("askNote"), back = `<a href="#" class="ro-back-q">${LANG === "it" ? "Torna a tutti i caffè" : "Back to all coffees"}</a>`;
+            if (!an.hidden && an.textContent) { an.innerHTML = esc(an.textContent).replace(/([^.])$/, "$1.") + "<br>" + back + "."; return ""; } return `<p class="muted" style="padding:16px 0;margin:0">${back}.</p>`; }
+          const msg = `${shelfV !== "all" ? `Try Everything under Made for, or` : `Try a taste, an origin or a roaster, or <a href="#" class="mail-me scan-me">scan the bag in front of you</a>.<br>Missing a roaster?`} <a href="#" class="mail-me" data-s="Missing coffee">${shelfV !== "all" ? "email me" : "Email me"}</a> and I’ll add it.`;
           // a search found nothing: one paragraph with the Searching line, a line break between; three searches that do work, one tap each
           const tryQ = shelfV !== "all" ? "" : `<br>${LANG === "it" ? "Oppure prova" : "Or try"}: ` + (LANG === "it" ? ["fruttato", "Huila", "Etiopia lavato", "gesha", "cioccolato", "tostatura chiara", "decaffeinato", "Tokyo"] : ["blueberry", "Huila", "good value", "anaerobic", "gesha", "light roast", "decaf", "Tokyo"]   /* a flavour, a region, a price, a process, a variety, a roast, decaf, a city */).map((x) => `<a href="#" class="try-q" data-q="${x}">${x}</a>`).join(", ") + ".";
           const an = $("askNote"); if (!an.hidden && an.textContent) { an.innerHTML = esc(an.textContent).replace(/([^.])$/, "$1.") + "<br>" + msg + tryQ; return ""; }
           return `<p class="muted" style="padding:16px 0;margin:0">${msg}</p>`; })();
     const left = list.length - Math.min(shelfN, list.length);
     $("shelfMore").hidden = false; $("shelfMore").removeAttribute("aria-hidden");
-    $("shelfMore").textContent = left > 0 ? `Load ${Math.min(20, left)} more (${(shelfPart && !q && !qActive() ? shelfPart : list.length).toLocaleString("en-GB")} in total)` : !list.length && q && !shelfRo ? "Clear search" : !list.length && qActive() && !shelfRo ? "Clear the filters" : "Back to top";   // the end of the list: a way back up
-    $("shelfMore").dataset.top = left > 0 ? "" : "1"; $("shelfMore").dataset.clear = !list.length && q && !shelfRo ? "1" : ""; $("shelfMore").dataset.unfilter = !list.length && !q && qActive() && !shelfRo ? "1" : "";
+    $("shelfMore").textContent = left > 0 ? `Load ${Math.min(20, left)} more (${(shelfPart && !q && !qActive() ? shelfPart : list.length).toLocaleString("en-GB")} in total)` : !list.length && q ? "Clear search" : !list.length && qActive() && !shelfRo ? "Clear the filters" : "Back to top";   // the end of the list: a way back up
+    $("shelfMore").dataset.top = left > 0 ? "" : "1"; $("shelfMore").dataset.clear = !list.length && q ? "1" : ""; $("shelfMore").dataset.unfilter = !list.length && !q && qActive() && !shelfRo ? "1" : "";
     $("shelf").querySelectorAll("button[data-i]").forEach((b) => b.onclick = () => { const r = shelf[+b.dataset.i];
       if (brewIn && b.closest(".item.brewing")) { brewShut(); return; }   // Brew again on the open coffee: it folds
       brewThis(r, true, true); });
@@ -7502,7 +7512,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       return `<article class="item bag">
         <div class="l">
           ${b.roaster ? `<p class="c-where">${(shelf || []).some((r) => r.roaster === b.roaster) ? `<a class="rn" href="#roaster=${encodeURIComponent(b.roaster)}" data-bro="${esc(b.roaster)}">${esc(roasteryName(b.roaster))}</a>` : `<span class="rn">${esc(roasteryName(b.roaster))}</span>`}${bagCity(b) ? `<span class="rcity">, ${esc(bagCity(b))}${bagCC(b) ? ` (${esc(bagCC(b))})` : ""}</span>` : ""}</p>` : `<span class="who">Your coffee</span>`}
-          <span class="name">${esc(calm(b.roaster ? listName(b) : (b.name || b.text || "Coffee")))}</span>
+          <span class="name">${esc(capName(calm(b.roaster ? listName(b) : (b.name || b.text || "Coffee"))))}</span>
           ${tags ? `<p class="tags">${tags}</p>` : ""}
           <div class="bag-f">${bagNeedsRoast(b) ? `<div class="bag-rorow"><span>Roast</span><span class="bag-ro">${PHOTO_CHIP.replace('class="chip rp-go"', `class="chip rp-go" data-scan="${i}"`)}<span class="ro-chips" hidden>${OPTS_MORE[1].items.filter(([k]) => k !== "unsure").map(([k, t]) => `<button type="button" class="chip" data-ro="${i}" data-k="${k}">${t}</button>`).join("")}</span><button type="button" class="chip gear-more" data-rodd="${i}" aria-expanded="false" aria-label="${esc(tr("Choose the roast"))}">${plusN(5)}</button></span></span></div>` : ""}<label>Roasted<span class="bag-d${b.roasted ? "" : " empty"}"><input type="date" data-k="roasted" data-i="${i}" value="${esc(b.roasted || "")}"></span></label>
             <label>Coffee left<span class="bag-gw"><span class="bag-g${isLow(b) ? " low" : ""}"><input type="number" inputmode="numeric" min="0" max="5000" step="1" data-k="left" data-i="${i}" value="${b.left ?? ""}" style="--w:${String(b.left ?? "").length || 1}ch"><span>g</span></span>${buyAgain(b)}</span></label></div>
@@ -8790,7 +8800,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       setTimeout(() => old.remove(), 450); };
     let calm = false, i = -1; const t0 = Date.now();
     // what the box is for, with the size of the list in it: "Search 8,705 coffees" (the plain hint until the list is in)
-    const hintText = () => { const n = (typeof shelfPart !== "undefined" && shelfPart) || (typeof shelf !== "undefined" && shelf.length) || 0;   // the whole list, also while only its first part is in
+    const hintText = () => { if (typeof shelfRo !== "undefined" && shelfRo) { const k = shelf.filter((r) => r.roaster === shelfRo).length; return LANG === "it" ? `Cerca tra ${k} caffè` : `Search ${k} coffee${k === 1 ? "" : "s"}`; }   // on a roaster's page: that roaster's coffees
+      const n = (typeof shelfPart !== "undefined" && shelfPart) || (typeof shelf !== "undefined" && shelf.length) || 0;   // the whole list, also while only its first part is in
       return n ? (LANG === "it" ? `Cerca tra ${n.toLocaleString("it-IT")} caffè` : `Search ${n.toLocaleString("en-GB")} coffees`) : T(HINT); };
     const settle = () => { if (calm) return; calm = true; roll(hintText(), true); };
     addEventListener("scroll", () => { if (scrollY > 80) settle(); }, { passive: true });
@@ -9229,6 +9240,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       if (entering && !held && a.value.trim() && document.activeElement !== a) { held = { v: a.value, fy: a.dataset.fy, done: form.classList.contains("is-done") }; a.value = ""; delete a.dataset.fy; form.classList.remove("is-done"); poke(); }
       else if (!off && held) { const k = held; held = null; if (!a.value.trim() && $("shelfQ").value.trim()) { a.value = k.v; if (k.fy) a.dataset.fy = k.fy; form.classList.toggle("is-done", true); poke(); } } };
     if (a && form) new MutationObserver(sync).observe(h, { attributes: true, attributeFilter: ["class"] }); }
+  document.addEventListener("click", (e) => { const a = e.target.closest && e.target.closest(".ro-back-q"); if (!a) return; e.preventDefault();
+    const i = $("askIn"), q = $("shelfQ"); i.value = ""; q.value = ""; $("roBack").click(); });   /* the way out of a roaster's page offered with its search results */
+  new MutationObserver(() => { try { window.__searchHint && window.__searchHint(); } catch (e) {} }).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });   // the box's count follows the page it is on
   const mineOn = () => { if (document.documentElement.classList.contains("mine")) return; document.documentElement.classList.add("mine"); };   /* for this visit only: the next one starts without it again */
   /* and away again once back at the list or the opening screen, unless a coffee of your own has its recipe out */
   const mineOff = () => { const h = document.documentElement; if (h.classList.contains("mine") && !h.classList.contains("brew-in") && $("recipe").hidden) h.classList.remove("mine"); };
