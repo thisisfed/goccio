@@ -2576,7 +2576,7 @@ html body #shelves .fy-note.fy-top{margin:0 0 -2px!important;padding:12px 14px!i
 html body #shelves .fy-note.fy-top[hidden]{display:none}
 html body #shelfMore[data-clear="1"], html body #shelfMore[data-unfilter="1"]{margin-top:-12px!important}   /* Clear search: as far under the pill as the pill is under Coffees (14 px) */
 html body #shelves #askNote.fy-top{transform:none!important;position:static!important;pointer-events:auto}   /* the search's line in the same pill, in the same place */
-.item .c-where .ji{color:var(--hl)!important}   /* New in the accent, as For you is */
+.item .c-where .ji{color:var(--ink)!important}   /* New in the accent, as For you is */
 /* one empty line under the explanation */
 html.brew-in #fyNote{display:none!important}
 /* the recipe stands on a slightly lighter black than the list around it, edge to edge: a different room, no new colour */
@@ -2586,7 +2586,7 @@ html:not(.mine):not(.brew-in) .botnav [data-bn="coffee"]{display:none!important}
 /* until then the section keeps its full shape with the form unseen: "Brew something good." sits where it always does, just over the rule at the bottom */
 html:not(.mine) body #coffee > :not(.wb-sign){display:none!important}
 html:not(.mine) body #coffee#coffee#coffee{min-height:0!important;padding-top:0!important}
-html:not(.mine) body #coffee > .wb-sign{padding-top:86px!important;margin-top:0!important}   /* 43 px from Load more to the sign-off, as from the last coffee to Load more */
+html:not(.mine) body #coffee > .wb-sign{padding-top:21px!important;margin-top:0!important}   /* 43 px from Load more to the sign-off, as from the last coffee to Load more */
 html:not(.mine) body #coffee#coffee#coffee{height:auto!important;min-height:0!important;padding-bottom:0!important;margin-bottom:-87px!important}   /* 13 px from the sign-off to the rule under it, as when the form is out */   /* as far under Load more as Load more is under the last coffee; over the bottom rule exactly as before */
 /* tags stay on one line: a tag too long for it (a list of varieties) is cut with an ellipsis, the longest giving way first */
 html body .item .tags{column-gap:20px!important;display:flex!important;flex-wrap:nowrap!important;min-width:0;max-width:100%;overflow:hidden}
@@ -2615,7 +2615,7 @@ html body footer .foot-links a{text-decoration:underline!important}   /* every f
 /* one idea for the whole footer: links are grey, the words around them white */
 html body footer, html body footer p, html body footer li, html body footer .foot-note, html body footer details > :not(summary){color:var(--ink)!important}
 html body footer a, html body footer a *{color:var(--muted)!important;text-decoration-color:currentColor}
-html:not(.mine) body footer{margin-top:31px!important}   /* 13 px from the sign-off to the footer's rule */
+html:not(.mine) body footer{margin-top:-10px!important}   /* 13 px from the sign-off to the footer's rule */
 html body .shelf .item > .r > .btn:not(:hover){background:var(--pill)!important;color:var(--ink)!important}   /* and rests on the same grey */
 /* a shorter opening screen: the list's title and the top of the first coffee show without scrolling */
 @media (max-width:899px){ html body .wm-screen{min-height:500px!important;height:500px!important} }   /* phones and small screens only: on a wide one the name needs the whole screen */
@@ -2668,6 +2668,11 @@ html body .shelf .item .c-where a.rn{color:var(--ink)!important}   /* the roaste
 #specs .spec.chg b{animation:specChg 1.8s ease-out both}   /* the figure only: never its label or the grinder's name */
 @keyframes specChg{0%,45%{color:var(--hl)}100%{color:inherit}}
 
+html body .fy-pill[hidden]{display:none!important}
+/* orange is for the thing to press: "New" is white. Icon buttons are square, as every other pill is */
+html body .shelf .item > .r > .bag-add.ico, html body #recipe#recipe .share > .btn, html body #recipe#recipe .share > .btn.ico, html body .chip.gear-more, html body .tb-plus, html body #toolsBtn, html body .bv-x{border-radius:var(--r)!important}
+/* the roaster's name is a link and looks like one: the thin white line every link on the page has */
+html body .shelf .item .c-where a.rn{text-decoration:underline!important;text-decoration-thickness:1px!important;text-underline-offset:2px!important;text-decoration-color:currentColor!important}
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
@@ -7202,7 +7207,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     need.insertAdjacentHTML("afterend", `<p class="carry"><button type="button" class="chip" id="carryBtn">${LANG === "it" ? "Riprendi con" : "Carry on with"} <span translate="no">${esc(calm(label))}?</span><span class="gx" role="button" aria-label="${LANG === "it" ? "Togli" : "Remove"}"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 3l6 6M9 3l-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span></button></p>`);
     $("carryBtn").onclick = (ev) => { if (ev.target.closest(".gx")) { store.set("v60.last", null); $("carryBtn").parentNode.remove(); return; }   // the ×: forget it, and don't offer it again
       if (rec) brewThis(rec); else { $("coffeeIn").value = lastSeen.text; surprisePick = null; build(); landBrewing(); } }; }
-  function renderShelf() { try { carryOn(); } catch (e) {}
+  function renderShelf() { try { carryOn(); } catch (e) {} try { const fp = $("fyPill"); if (fp) fp.hidden = !fyReady() && !shelfY; } catch (e) {}   /* For you shows once it has something to go on: three coffees saved or brewed */
     const t0 = performance.now();
     const q = $("shelfQ").value.trim().toLowerCase();
     let list = shelf.filter((r) => inRegion(r) && (shelfF === "all" || bucket(r.process) === shelfF));
@@ -7234,7 +7239,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     if (qf.price === "cheap") list = list.filter((r) => r._p100 != null && r._p100 >= 2).sort((a, b) => a._p100 - b._p100);   // per 100 g, so bag sizes compare fairly
     const fyOn = !!fy;   // each pick carries For you where Just in would be
     // For you ticked: under the menu, why these (or, before it knows three coffees, what it needs; the list stays as it was)
-    { const fp = $("fyPill"); if (fp) { fp.setAttribute("aria-pressed", String(!!shelfY && !shelfRo)); fp.hidden = !!shelfRo; fp.textContent = LANG === "it" ? "Per te" : "For you"; } }
+    { const fp = $("fyPill"); if (fp) { fp.setAttribute("aria-pressed", String(!!shelfY && !shelfRo)); fp.hidden = !!shelfRo || (!shelfY && !fyReady()); fp.textContent = LANG === "it" ? "Per te" : "For you"; } }
     { const n = $("fyNote"); n.hidden = !(shelfY && !shelfRo); if (!n.hidden) n.textContent = fyWhy();
       // nothing to learn from yet: the note stays for as long as it takes to read it ON SCREEN (time scrolled away or with the
       // tab hidden doesn't count, so a scroll never cuts it short), then For you switches itself off and the note goes
