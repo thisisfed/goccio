@@ -2756,7 +2756,7 @@ html body #coffee .field:has(#go.on) #coffeeIn{padding-right:48px!important}
 /* the drop over Brew something good.: one drop of coffee, seen from a little way off. It falls when it comes into view, lands,
    rings and settles as a drop sitting on a surface; then it lives: blinks, looks, leans when you scroll, wobbles when touched */
 html body #coffee > .wb-sign{position:relative}
-html body .wb-sign .gdrop{position:absolute;left:50%;width:104px;height:97.5px;margin:0 0 0 -52px;bottom:calc(100% - var(--cup-at, 21px) + 1px);color:var(--ink);pointer-events:auto;touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:pointer}
+html body .wb-sign .gdrop{position:absolute;left:50%;width:104px;height:97.5px;margin:0 0 0 -88px;bottom:calc(100% - var(--cup-at, 21px) + 1px);color:var(--ink);pointer-events:auto;touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:pointer}
 html body .wb-sign .gdrop svg{display:block;width:100%;height:100%;overflow:visible}
 html body .wb-sign .gdrop .gd-b{fill:var(--hl)}   /* the one accent: a drop of the orange, with black eyes in both looks */
 html body .wb-sign .gdrop .gd-e{fill:#000}
@@ -2764,6 +2764,25 @@ html body .wb-sign .gdrop .gd-h{fill:#fff;opacity:.5}
 html body .wb-sign .gdrop .gd-s{fill:var(--hl)}
 html body .wb-sign .gdrop .gd-a,html body .wb-sign .gdrop .gd-sm{fill:none;stroke:#000;stroke-width:1.6;stroke-linecap:round;opacity:0}
 html body .wb-sign .gdrop .gd-ph{opacity:0}
+/* the coffee bean beside the drop: the same body, brown, with its crease; no bubble of its own */
+html body .wb-sign .gdrop.gbean{margin-left:-16px}
+html body .wb-sign .gbean .gd-b{fill:#8a5a3b}
+html body .wb-sign .gbean .gd-crease{fill:none;stroke:#4a2c19;stroke-width:1.6;stroke-linecap:round}
+html body .wb-sign .gbean .gd-h{opacity:.32}
+/* the bubble's tail points at the drop, which now sits left of centre */
+html body .wb-sign .gd-talk::after{left:calc(50% - 36px)!important}
+/* the first time it's seen: a small note over it saying what it's for */
+html body .wb-sign .gd-hint{position:absolute;left:calc(50% - 36px);bottom:calc(100% - var(--cup-at, 21px) + 66px);translate:-50% 0;z-index:39;white-space:nowrap;padding:6px 10px;border-radius:var(--r,4px);
+  background:var(--ink);color:var(--bg);font:500 15px/1.35 var(--sans);letter-spacing:0;animation:gdTalkIn .32s cubic-bezier(.3,1.45,.5,1);transition:opacity .35s ease}
+html body .wb-sign .gd-hint::after{content:"";position:absolute;left:50%;bottom:-5px;width:10px;height:10px;background:inherit;translate:-50% 0;rotate:45deg;border-radius:2px}
+html body .wb-sign .gd-hint[hidden]{display:none} html body .wb-sign .gd-hint.out{opacity:0}
+/* the close button: the site's own X, a square pill */
+html body .wb-sign .gd-x{position:absolute;top:8px;right:8px;width:32px;height:32px;padding:0;border:0;border-radius:var(--r,4px);display:inline-flex;align-items:center;justify-content:center;
+  background:color-mix(in srgb,var(--bg) 12%,var(--ink));color:var(--bg);opacity:1;cursor:pointer;font-size:0}
+html body .wb-sign .gd-x svg{width:12px;height:12px}
+html body .wb-sign .gd-say{padding-right:40px!important}
+/* What's brewing?: the arrow sits in the box, no fill of its own */
+html body #go.on{background:transparent!important;color:var(--ink)!important}
 /* the drop's bubble: over the drop, in the page's own ink with the page's colour for text, a tail pointing down at the drop */
 html body .wb-sign .gd-talk{position:absolute;left:50%;bottom:calc(100% - var(--cup-at, 21px) + 66px);width:min(340px,calc(100vw - 24px));z-index:40;display:grid;grid-template-columns:minmax(0,1fr);gap:12px;padding:14px 12px 12px;
   border-radius:var(--r,4px);background:var(--ink);color:var(--bg);text-align:left;font:500 15px/1.35 var(--sans);letter-spacing:0;translate:-50% 0;transform-origin:50% 100%;
@@ -3243,7 +3262,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       </details>
       <input type="file" accept="image/*" capture="environment" id="roastPhotoIn" hidden>
     </div>
-    <p class="wb-sign"><span class="gdrop" id="gdrop" role="button" tabindex="0" aria-label="Ask the drop about coffee" aria-expanded="false"><svg viewBox="-32 -56 64 60" aria-hidden="true"><g class="gd-all"><path class="gd-b" d=""/><ellipse class="gd-h" cx="0" cy="0" rx="3.4" ry="1.9"/><g class="gd-e"><ellipse class="gd-l" cx="-6" cy="-12" rx="2.4" ry="3.4"/><ellipse class="gd-r" cx="6" cy="-12" rx="2.4" ry="3.4"/><path class="gd-a" d="M -8.6 -11 Q -6 -14.6 -3.4 -11"/><path class="gd-a" d="M 3.4 -11 Q 6 -14.6 8.6 -11"/><ellipse class="gd-bl" cx="-10.5" cy="-7.4" rx="3" ry="1.7"/><ellipse class="gd-bl" cx="10.5" cy="-7.4" rx="3" ry="1.7"/></g><g class="gd-ph"><path class="gd-band" d=""/><rect class="gd-cup l" x="0" y="0" width="5" height="9" rx="2.2"/><rect class="gd-cup r" x="0" y="0" width="5" height="9" rx="2.2"/></g></g><g class="gd-n"></g></svg></span><span class="gd-talk" id="gdTalk" role="dialog" aria-label="The drop" hidden><button type="button" class="gd-x" id="gdX" aria-label="Close">×</button><span class="gd-say" id="gdSay" aria-live="polite"></span><span class="gd-chips" id="gdChips"></span><span class="gd-ask"><input id="gdIn" type="text" enterkeyhint="send" autocomplete="off" placeholder="Ask me about coffee" aria-label="Ask the drop"><button type="button" id="gdMic" aria-label="Speak"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="5.5" y="1.5" width="5" height="8.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 7.5a5 5 0 0 0 10 0M8 12.5v2.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button><button type="button" id="gdGo" aria-label="Ask"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" id="gdVoice" aria-pressed="true" aria-label="Voice on"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 6h2.5l3.5-3v10l-3.5-3H2.5z" fill="currentColor"/><path class="w" d="M11 5.5a3.5 3.5 0 0 1 0 5M12.8 3.6a6 6 0 0 1 0 8.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path class="x" d="M11 6l4 4M15 6l-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button></span></span>Brew something good.</p>
+    <p class="wb-sign"><span class="gdrop" id="gdrop" role="button" tabindex="0" aria-label="Ask the drop about coffee" aria-expanded="false"><svg viewBox="-32 -56 64 60" aria-hidden="true"><g class="gd-all"><path class="gd-b" d=""/><ellipse class="gd-h" cx="0" cy="0" rx="3.4" ry="1.9"/><g class="gd-e"><ellipse class="gd-l" cx="-6" cy="-12" rx="2.4" ry="3.4"/><ellipse class="gd-r" cx="6" cy="-12" rx="2.4" ry="3.4"/><path class="gd-a" d="M -8.6 -11 Q -6 -14.6 -3.4 -11"/><path class="gd-a" d="M 3.4 -11 Q 6 -14.6 8.6 -11"/><ellipse class="gd-bl" cx="-10.5" cy="-7.4" rx="3" ry="1.7"/><ellipse class="gd-bl" cx="10.5" cy="-7.4" rx="3" ry="1.7"/></g><g class="gd-ph"><path class="gd-band" d=""/><rect class="gd-cup l" x="0" y="0" width="5" height="9" rx="2.2"/><rect class="gd-cup r" x="0" y="0" width="5" height="9" rx="2.2"/></g></g><g class="gd-n"></g></svg></span><span class="gdrop gbean" id="gbean" aria-hidden="true"><svg viewBox="-32 -56 64 60"><g class="gd-all"><path class="gd-b" d=""/><path class="gd-crease" d=""/><ellipse class="gd-h" cx="0" cy="0" rx="3.4" ry="1.9"/><g class="gd-e"><ellipse class="gd-l" cx="-6" cy="-12" rx="2.4" ry="3.4"/><ellipse class="gd-r" cx="6" cy="-12" rx="2.4" ry="3.4"/><path class="gd-a" d="M -8.6 -11 Q -6 -14.6 -3.4 -11"/><path class="gd-a" d="M 3.4 -11 Q 6 -14.6 8.6 -11"/><ellipse class="gd-bl" cx="-10.5" cy="-7.4" rx="3" ry="1.7"/><ellipse class="gd-bl" cx="10.5" cy="-7.4" rx="3" ry="1.7"/></g><g class="gd-ph"><path class="gd-band" d=""/><rect class="gd-cup l" x="0" y="0" width="5" height="9" rx="2.2"/><rect class="gd-cup r" x="0" y="0" width="5" height="9" rx="2.2"/></g></g><g class="gd-n"></g></svg></span><span class="gd-hint" id="gdHint" hidden>Tap me, I answer coffee questions.</span><span class="gd-talk" id="gdTalk" role="dialog" aria-label="The drop" hidden><button type="button" class="gd-x" id="gdX" aria-label="Close"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 2l8 8M10 2l-8 8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button><span class="gd-say" id="gdSay" aria-live="polite"></span><span class="gd-chips" id="gdChips"></span><span class="gd-ask"><input id="gdIn" type="text" enterkeyhint="send" autocomplete="off" placeholder="Ask me about coffee" aria-label="Ask the drop"><button type="button" id="gdGo" aria-label="Ask"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></span></span>Brew something good.</p>
   </section>
 
   <section class="sec" id="recipe" aria-labelledby="rtitle">
@@ -9093,7 +9112,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   $("shelfQ").addEventListener("change", () => askBrewer($("shelfQ").value.trim().toLowerCase()));
   // "Or try: fruity": a search that does find something, one tap
   document.addEventListener("click", (e) => { const a = e.target.closest("a.try-q"); if (!a) return; e.preventDefault();
-    $("askIn").value = a.dataset.q; $("askForm").requestSubmit(); if (window.syncAskGo) setTimeout(window.syncAskGo, 0); });
+    $("askIn").value = a.dataset.q; $("askIn").dispatchEvent(new Event("input", { bubbles: true })); $("askForm").requestSubmit(); if (window.syncAskGo) setTimeout(window.syncAskGo, 0); });
   { const a = $("askIn"), f = $("askForm"), go = f.querySelector(".ask-go");
     const sync = () => { const v = a.value.trim(), on = !!v && document.activeElement !== a && $("shelfQ").value.trim() === v;
       f.classList.toggle("is-done", on); go.setAttribute("aria-label", on ? (LANG === "it" ? "Cancella la ricerca" : "Clear the search") : (LANG === "it" ? "Cerca" : "Find my coffee")); };
@@ -9800,7 +9819,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   // a 240 ms period and damping 0.3 (2 to 3 visible swings), its volume is kept (taller is narrower), it falls as a round drop
   // (small drops are spheres, never tear shapes), lands flat and recoils, and sits as a drop on a surface: a dome on a pinned base,
   // whose top lags behind when the page moves (the contact line holds, the body sways)
-  { const el = $("gdrop"), body = el && el.querySelector(".gd-b"), eyes = el && el.querySelector(".gd-e"), all = el && el.querySelector(".gd-all"); if (el && body && all) {
+  // one character, made twice: the drop (it talks) and a coffee bean beside it (it doesn't): the same liquid physics, the same faces
+  const makeBuddy = (el, opt = {}) => { const body = el && el.querySelector(".gd-b"), eyes = el && el.querySelector(".gd-e"), all = el && el.querySelector(".gd-all"); if (!el || !body || !all) return null;
     const still = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
     const W0 = 36, H0 = 24, R0 = 15.5;   // at rest: a dome 36 wide, 24 high; falling: a round drop of about the same volume
     const wS = 2 * Math.PI / 0.24, zS = 0.3, wL = 2 * Math.PI / 0.42, zL = 0.45, G = 2600;
@@ -9808,9 +9828,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const draw = () => {
       // the shape it has just before it falls: round. Squashed or stretched it keeps its volume (taller is narrower); its top
       // sways with the page; it sits on its lowest point
-      const k = Math.max(0.3, 1 + a), ry = R0 * k, rx = R0 / Math.sqrt(k), w = rx * 2, cx = lean * 0.6, bot = y, mid = bot - ry, top = bot - 2 * ry, sh = 0.552;
+      const k = Math.max(0.3, 1 + a), ry = R0 * k * (opt.bean ? 1.08 : 1), rx = R0 / Math.sqrt(k) * (opt.bean ? 0.86 : 1), w = rx * 2, cx = lean * 0.6, bot = y, mid = bot - ry, top = bot - 2 * ry, sh = 0.552;
       const d = `M ${-rx} ${mid} C ${-rx} ${mid - ry * sh} ${cx - rx * sh} ${top} ${cx} ${top} C ${cx + rx * sh} ${top} ${rx} ${mid - ry * sh} ${rx} ${mid} C ${rx} ${mid + ry * sh} ${rx * sh} ${bot} 0 ${bot} C ${-rx * sh} ${bot} ${-rx} ${mid + ry * sh} ${-rx} ${mid} Z`;
       body.setAttribute("d", d);
+      const cr = el.querySelector(".gd-crease"); if (cr) cr.setAttribute("d", `M ${(cx * 0.9).toFixed(2)} ${(top + ry * 0.22).toFixed(2)} C ${(cx * 0.7 + 3.2).toFixed(2)} ${(top + ry * 0.75).toFixed(2)} ${(cx * 0.3 - 3.2).toFixed(2)} ${(bot - ry * 0.75).toFixed(2)} ${(cx * 0.1).toFixed(2)} ${(bot - ry * 0.22).toFixed(2)}`);   /* the bean's crease, down its middle */
       const hl = el.querySelector(".gd-h"); if (hl) hl.setAttribute("transform", `translate(${(cx * 0.5 - rx * 0.45).toFixed(2)} ${(top + ry * 0.42).toFixed(2)}) rotate(-35)`);
       const ey = mid - 1, ex = cx * 0.55 + lookX;
       eyes.setAttribute("transform", `translate(${ex.toFixed(2)} ${(ey + 12 + lookY).toFixed(2)}) scale(${Math.min(1.25, w / 31).toFixed(3)} ${Math.min(1.3, k).toFixed(3)})`);
@@ -9856,7 +9877,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     draw();
     // it falls the first time it comes into view
     let fell = false;
-    const fall = () => { if (fell || still()) return; fell = true; phase = "fall"; round = 1; y = -90; vy = 0; go(); };
+    const fall = () => { if (fell || still()) return; fell = true; setTimeout(() => { phase = "fall"; round = 1; y = -90; vy = 0; go(); }, opt.delay || 0); };
     if ("IntersectionObserver" in window) new IntersectionObserver((es) => { if (es[0].isIntersecting && es[0].intersectionRatio > 0.6) fall(); }, { threshold: [0, 0.6, 1] }).observe(el);
     // the page moving: a fast lift. It squashes as the page speeds up (it feels heavier), stretches tall as it slows (lighter),
     // and rings in between. Scrolling down carries it up the screen, like a lift going up
@@ -9911,7 +9932,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         const dx = ptrX - (r.left + r.width / 2), dy = ptrY - (r.top + r.height * 0.6), d = Math.hypot(dx, dy) || 1, k = Math.min(1, d / 160);
         lookX = dx / d * 3.2 * k; lookY = dy / d * 2 * k; draw(); }); }, { passive: true });
     // its life at rest: something every few seconds, never on a beat. Mostly happy: smiles, happy eyes, yawns, a dance, a jump now and then
-    const idle = () => { setTimeout(idle, 2000 + Math.random() * 3600); if (document.hidden || still() || phase !== "rest" || acting || talking) return;
+    const idle = () => { setTimeout(idle, 2000 + Math.random() * 3600); if (document.hidden || still() || phase !== "rest" || acting || (opt.paused && opt.paused())) return;
       const r = Math.random(), rr = el.getBoundingClientRect(); if (rr.bottom < 0 || rr.top > innerHeight) return;
       const following = performance.now() - ptrT < 2500;   // the eyes are on your pointer: no looking round on its own
       if (r < 0.2) { const b = (k) => { blink = k; draw(); }; b(0.12); setTimeout(() => b(1), 130); if (Math.random() < 0.3) setTimeout(() => { b(0.12); setTimeout(() => b(1), 120); }, 300); }
@@ -9948,14 +9969,23 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     ["pointerup", "pointerleave", "pointercancel"].forEach((ev) => el.addEventListener(ev, () => clearTimeout(holdT)));
     el.addEventListener("contextmenu", (e) => e.preventDefault());   // a long press on a phone is the drop's, not the menu's
     // touched: it dances (or, already busy, just looks happy)
-    el.addEventListener("click", () => { if (farted) { farted = false; return; } talking ? closeTalk() : openTalk(); });
-    // ---- talking: tap the drop and ask it something. It answers in a bubble and out loud (the phone's own voice, nothing sent anywhere),
-    // bobbing as it speaks. It knows a handful of things for certain (what's new, a coffee to try, sour or bitter, ratio, temperature,
-    // grind, the processes, what Goccio means, how many coffees and roasters) and otherwise looks the words up in the list itself
+    // it glances at where you tap
+    addEventListener("pointerdown", (e) => { if (still() || e.pointerType === "mouse") return; const r = el.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;
+      const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1; lookX = dx / d * 3; lookY = dy / d * 1.5; draw();
+      setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900); }, { passive: true });
+    el.addEventListener("click", () => { if (farted) { farted = false; return; } if (opt.tap) opt.tap(); else if (!acting) jumps(); });
+    return { S, busy: () => acting, free: () => { acting = false; }, yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, fart, draw,
+      bob: () => { poke(-0.7 - Math.random() * 0.6); if (Math.random() < 0.3) { jv = -90; go(); } } }; };
+    // ---- talking: tap the drop and ask it something. It answers in a bubble, the words typing themselves out while it bobs.
+    // It knows a handful of things for certain (what's new, a coffee to try, sour or bitter, ratio, temperature, grind, the processes,
+    // what Goccio means, how many coffees and roasters, the time, the weather where you are) and looks coffee words up in the list.
+    // Anything else, it says it doesn't know
+  { let talking = false, openTalk = () => {}, closeTalk = () => {}; const el = $("gdrop");
+    const D = makeBuddy(el, { paused: () => talking, tap: () => talking ? closeTalk() : openTalk() }), B = makeBuddy($("gbean"), { bean: true, delay: 280 });
+    if (D) { const { happy, curious, yes, smile, hmm, surprised, dance } = D, still = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
     const IT = LANG === "it", T = (en, it) => IT ? it : en;
-    const talkEl = $("gdTalk"), sayEl = $("gdSay"), chipsEl = $("gdChips"), inEl = $("gdIn"), micEl = $("gdMic"), voiceEl = $("gdVoice");
-    let talking = false, typeT = 0, bobT = 0, voiceOn = true;
-    try { voiceOn = localStorage.getItem("v60.dropVoice") !== "0"; } catch (e) {}
+    const talkEl = $("gdTalk"), sayEl = $("gdSay"), chipsEl = $("gdChips"), inEl = $("gdIn");
+    let typeT = 0, bobT = 0;
     const coffees = () => (typeof shelf !== "undefined" && Array.isArray(shelf) ? shelf : []);
     const pick = (xs) => xs[Math.floor(Math.random() * xs.length)];
     const andList = (xs) => xs.length > 1 ? xs.slice(0, -1).join(", ") + T(" and ", " e ") + xs[xs.length - 1] : xs[0] || "";
@@ -9963,24 +9993,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const newest = () => { const cs = coffees(); let day = ""; for (const r of cs) { const d = String(r.found || "").slice(0, 10); if (d > day) day = d; } return { day, list: cs.filter((r) => String(r.found || "").slice(0, 10) === day) }; };
     const dayWord = (iso) => { const t = new Date(), y = new Date(); y.setDate(t.getDate() - 1); const f = (d) => d.toISOString().slice(0, 10);
       return iso === f(t) ? T("today", "oggi") : iso === f(y) ? T("yesterday", "ieri") : T("on ", "il ") + (typeof isoDm === "function" ? isoDm(iso) : iso); };
-    const search = (q) => { $("askIn").value = q; $("askForm").requestSubmit(); };
-    // a voice that suits a small drop: a little higher, a little quicker; English or Italian to match the page
-    let voice = null;
-    // the most human voice the device has: the neural ones first (Edge's "Natural", Apple's "Premium" and "Enhanced", which iPhones
-    // download in Settings > Accessibility > Spoken Content > Voices), then a British or Italian one, then any in the language
-    const findVoice = () => { const vs = window.speechSynthesis ? speechSynthesis.getVoices() : []; if (!vs.length) return null;
-      const lang = IT ? "it" : "en", fav = IT ? /Elsa|Isabella|Federica|Alice|Paola/ : /Sonia|Libby|Maisie|Ava|Zoe|Serena|Stephanie|Kate|Samantha|Jamie|Google UK English Female/;
-      const score = (v) => (v.lang.toLowerCase().indexOf(lang) === 0 ? 10 : -99) + (/natural|neural|premium|enhanced|online/i.test(v.name) ? 6 : 0) + (fav.test(v.name) ? 3 : 0)
-        + (v.lang.replace("_", "-").indexOf(IT ? "it-IT" : "en-GB") === 0 ? 2 : 0) + (v.localService === false ? 1 : 0) - (/compact|novelty|bells|bad news|boing|bubbles|cellos|whisper|zarvox|trinoids|albert|jester|organ|superstar|wobble|grandma|grandpa|eddy|flo|reed|rocko|sandy|shelley/i.test(v.name) ? 50 : 0);
-      return vs.slice().sort((a, b) => score(b) - score(a))[0] || null; };
-    if (window.speechSynthesis) { voice = findVoice(); speechSynthesis.onvoiceschanged = () => { voice = findVoice(); }; }
-    const bob = (on) => { clearInterval(bobT); if (on && !still()) bobT = setInterval(() => { poke(-0.7 - Math.random() * 0.6); if (Math.random() < 0.3) { jv = -90; go(); } }, 210); };
-    const speak = (text) => { if (!voiceOn || !window.speechSynthesis) { bob(true); setTimeout(() => bob(false), Math.min(4000, 60 * text.length)); return; }
-      try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text.replace(/[♪♫]/g, "")); if (voice) u.voice = voice; u.lang = IT ? "it-IT" : "en-GB"; u.pitch = 1.12; u.rate = 1.02;
-        u.onstart = () => bob(true); u.onend = u.onerror = () => bob(false); u.onboundary = () => poke(-1); speechSynthesis.speak(u); } catch (e) { bob(false); } };
-    // the answer types itself out as it is said
-    const say = (text, chips, mood) => { clearInterval(typeT); sayEl.textContent = ""; let k = 0; typeT = setInterval(() => { k += 2; sayEl.textContent = text.slice(0, k); if (k >= text.length) clearInterval(typeT); }, 24);
-      speak(text); showChips(chips); if (mood) mood(); };
+    const search = (q) => { const a = $("askIn"); a.value = q; a.dispatchEvent(new Event("input", { bubbles: true })); $("askForm").requestSubmit(); if (window.syncAskGo) setTimeout(window.syncAskGo, 0); };   /* the words fill the top bar, its hint gives way */
+    const bob = (on) => { clearInterval(bobT); if (on && !still()) bobT = setInterval(() => D.bob(), 210); };
+    // the answer types itself out, the drop bobbing as if it were saying it
+    const say = (text, chips, mood) => { clearInterval(typeT); sayEl.textContent = ""; let k = 0; bob(true); typeT = setInterval(() => { k += 2; sayEl.textContent = text.slice(0, k); if (k >= text.length) { clearInterval(typeT); bob(false); } }, 24);
+      showChips(chips); if (mood) mood(); };
     const SUGGEST = () => [T("What's new?", "Cosa c'è di nuovo?"), T("Surprise me", "Sorprendimi"), T("Why is it sour?", "Perché è aspro?"), T("Why is it bitter?", "Perché è amaro?"),
       T("How much coffee?", "Quanto caffè?"), T("What water temperature?", "Che temperatura?"), T("What does Goccio mean?", "Cosa vuol dire Goccio?"), T("Natural or washed?", "Naturale o lavato?"), T("Dance!", "Balla!")];
     const showChips = (list) => { chipsEl.textContent = ""; const xs = list || SUGGEST().sort(() => Math.random() - 0.5).slice(0, 4);
@@ -10008,41 +10025,48 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       [/who are you|what are you|your name|chi sei|come ti chiami/i, () => say(T("I'm the drop. I live at the bottom of Goccio and keep an eye on the recipes.", "Sono la goccia. Vivo in fondo a Goccio e tengo d'occhio le ricette."), null, happy)],
       [/how many|roasters|count|quanti|torrefazion/i, () => { const cs = coffees(), ro = new Set(cs.map((r) => r.roaster)).size;
         say(T(`Right now I know ${cs.length.toLocaleString("en-GB")} coffees from ${ro} roasters, and more arrive every day.`, `Adesso conosco ${cs.length.toLocaleString("it-IT")} caffè di ${ro} torrefazioni, e ogni giorno ne arrivano altri.`), null, surprised); }],
-      [/dance|music|balla|musica/i, () => { say(T("Don't mind if I do!", "Volentieri!"), null); setTimeout(() => { acting = false; dance(); }, 600); }],
+      [/\b(time|what time|ora|che ore|orario)\b/i, () => { const t = new Date().toLocaleTimeString(IT ? "it-IT" : "en-GB", { hour: "2-digit", minute: "2-digit" });
+        say(T(`It's ${t}.`, `Sono le ${t}.`), null, smile); }],
+      [/weather|rain|sunny|cold outside|hot outside|meteo|tempo fa|piove/i, () => weather()],
+      [/dance|music|balla|musica/i, () => { say(T("Don't mind if I do!", "Volentieri!"), null); setTimeout(() => { D.free(); dance(); }, 600); }],
       [/joke|funny|barzellett|ridere/i, () => say(T("What's a drop's favourite music? Drip-hop.", "Qual è la musica preferita di una goccia? Il drip-hop."), null, happy)],
       [/thank|grazie|cheers/i, () => say(T("Any time. Brew something good!", "Quando vuoi. Fatti un buon caffè!"), null, happy)],
     ];
+    // the weather where you are: your location (the browser asks you first), then today's from Open-Meteo, the town's name from BigDataCloud
+    const WX = { 0: ["clear", "sereno"], 1: ["mostly clear", "quasi sereno"], 2: ["partly cloudy", "poco nuvoloso"], 3: ["cloudy", "nuvoloso"], 45: ["foggy", "nebbia"], 48: ["foggy", "nebbia"],
+      51: ["drizzly", "pioviggine"], 53: ["drizzly", "pioviggine"], 55: ["drizzly", "pioviggine"], 61: ["raining a little", "pioggia leggera"], 63: ["raining", "pioggia"], 65: ["pouring", "pioggia forte"],
+      71: ["snowing a little", "un po' di neve"], 73: ["snowing", "neve"], 75: ["snowing hard", "neve forte"], 80: ["showery", "rovesci"], 81: ["showery", "rovesci"], 82: ["stormy showers", "rovesci forti"], 95: ["thundery", "temporale"], 96: ["thundery", "temporale"], 99: ["thundery", "temporale"] };
+    const weather = () => { if (!navigator.geolocation) return say(T("I can't tell where you are from here, sorry.", "Da qui non so dove sei, scusa."), null, hmm);
+      say(T("Let me look outside… (your browser will ask to share your location)", "Fammi guardare fuori… (il browser ti chiederà la posizione)"), [], curious);
+      navigator.geolocation.getCurrentPosition(async (p) => { const la = p.coords.latitude.toFixed(2), lo = p.coords.longitude.toFixed(2);
+        try { const [w, g] = await Promise.all([fetch(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&current=temperature_2m,weather_code&timezone=auto`).then((r) => r.json()),
+            fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${la}&longitude=${lo}&localityLanguage=${IT ? "it" : "en"}`).then((r) => r.json()).catch(() => ({}))]);
+          const c = w && w.current; if (!c) throw 0; const t = Math.round(c.temperature_2m), d = (WX[c.weather_code] || ["", ""])[IT ? 1 : 0], place = g.city || g.locality || "";
+          say(T(`It's ${t}°C${d ? " and " + d : ""}${place ? " in " + place : " where you are"}. ${t < 10 ? "Hot coffee weather." : t > 22 ? "Iced coffee weather?" : "Good coffee weather."}`,
+            `Ci sono ${t}°C${d ? ", " + d : ""}${place ? " a " + place : " dove sei"}. ${t < 10 ? "Tempo da caffè caldo." : t > 22 ? "Tempo da caffè freddo?" : "Tempo da caffè."}`), null, t < 10 ? hmm : happy);
+        } catch (e) { say(T("I couldn't get the weather just now, sorry.", "Non riesco a vedere il meteo adesso, scusa."), null, hmm); } },
+        () => say(T("No location, no weather. That's fair!", "Niente posizione, niente meteo. Giusto così!"), null, smile), { timeout: 10000, maximumAge: 600000 }); };
     const ask = (q) => { q = String(q || "").trim(); if (!q) return; inEl.value = "";
       // a country, a roaster or a variety in the question: it's a coffee to find, not a question to answer ("ethiopia natural")
       const ql = q.toLowerCase(), known = coffees().some((r) => [r.origin, r.roaster, r.variety].some((v) => v && String(v).length > 3 && ql.includes(String(v).toLowerCase().split(" / ")[0])));
-      if (!known) for (const [re, fn] of ANSWERS) if (re.test(q)) { acting = false; return fn(); }
+      if (!known) for (const [re, fn] of ANSWERS) if (re.test(q)) { D.free(); return fn(); }
       // not one it knows: look the words up in the list
       const w = q.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, " ").split(/\s+/).filter((x) => x.length > 2 && !/^(the|and|for|with|have|any|what|which|some|coffee|coffees|caff[eè]|una?|del|della|che)$/.test(x));
       const hit = w.length ? coffees().filter((r) => { const t = (r.name + " " + r.roaster + " " + (r.origin || "") + " " + (r.process || "") + " " + (r.variety || "") + " " + notesOf(r).join(" ")).toLowerCase(); return w.every((x) => t.includes(x)); }) : [];
       if (hit.length) return say(T(`I found ${hit.length} coffee${hit.length === 1 ? "" : "s"} for “${q}”.`, `Ho trovato ${hit.length} caffè per “${q}”.`), [{ t: T("Show me", "Fammeli vedere"), f: () => { closeTalk(); search(w.join(" ")); } }], happy);
-      say(T("Hmm, I'm only a drop: I know coffee things. Try one of these.", "Mmh, sono solo una goccia: so cose di caffè. Prova una di queste."), null, hmm); };
-    // voice in: the browser's own speech recognition, where there is one
-    const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!Rec) micEl.hidden = true;
-    micEl.onclick = () => { if (!Rec) return; try { const r = new Rec(); r.lang = IT ? "it-IT" : "en-GB"; r.interimResults = false; r.maxAlternatives = 1;
-      micEl.classList.add("on"); acting = false; face({ eyeSL: 1.3, eyeSR: 1.3 }, 160); sayEl.textContent = T("Listening…", "Ti ascolto…");
-      r.onresult = (e) => { const t = e.results[0][0].transcript; inEl.value = t; ask(t); }; r.onend = () => { micEl.classList.remove("on"); face({ eyeSL: 1, eyeSR: 1 }, 200); }; r.onerror = () => { sayEl.textContent = T("I didn't catch that. Type it instead?", "Non ho capito. Lo scrivi?"); }; r.start(); } catch (e) {} };
-    const syncVoice = () => { voiceEl.setAttribute("aria-pressed", String(voiceOn)); voiceEl.classList.toggle("off", !voiceOn); voiceEl.setAttribute("aria-label", voiceOn ? T("Voice on", "Voce attiva") : T("Voice off", "Voce spenta")); };
-    voiceEl.onclick = () => { voiceOn = !voiceOn; try { localStorage.setItem("v60.dropVoice", voiceOn ? "1" : "0"); } catch (e) {} if (!voiceOn && window.speechSynthesis) speechSynthesis.cancel(); syncVoice(); };
-    syncVoice();
+      say(T("I don't know that one, sorry. I'm a drop: I know coffee. Try one of these.", "Questa non la so, scusa. Sono una goccia: so di caffè. Prova una di queste."), null, hmm); };
     $("gdGo").onclick = () => ask(inEl.value);
     inEl.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); ask(inEl.value); } if (e.key === "Escape") closeTalk(); });
-    const openTalk = () => { if (talking) return; talking = true; talkEl.hidden = false; el.setAttribute("aria-expanded", "true");
+    openTalk = () => { if (talking) return; talking = true; talkEl.hidden = false; el.setAttribute("aria-expanded", "true");
       say(pick([T("Hi! Ask me about coffee.", "Ciao! Chiedimi del caffè."), T("Hello! What are we brewing?", "Ciao! Cosa prepariamo?"), T("Oh, hi! Need a hand with your coffee?", "Oh, ciao! Ti serve una mano col caffè?")]), null, happy); };
-    const closeTalk = () => { if (!talking) return; talking = false; talkEl.hidden = true; el.setAttribute("aria-expanded", "false"); clearInterval(typeT); bob(false); try { speechSynthesis.cancel(); } catch (e) {} };
+    closeTalk = () => { if (!talking) return; talking = false; talkEl.hidden = true; el.setAttribute("aria-expanded", "false"); clearInterval(typeT); bob(false); };
     $("gdX").onclick = closeTalk;
+    const hint = $("gdHint"); let hinted = false;
+    if (hint && "IntersectionObserver" in window) new IntersectionObserver((es) => { if (hinted || !es[0].isIntersecting || es[0].intersectionRatio < 0.9) return; hinted = true;
+      setTimeout(() => { if (talking) return; hint.hidden = false; D.happy(); setTimeout(() => { hint.classList.add("out"); setTimeout(() => { hint.hidden = true; hint.classList.remove("out"); }, 400); }, 4200); }, 1300); }, { threshold: [0, 0.9] }).observe(el);
     document.addEventListener("pointerdown", (e) => { if (talking && !talkEl.contains(e.target) && !el.contains(e.target)) closeTalk(); }, true);
     el.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); talking ? closeTalk() : openTalk(); } });
-    window.gdrop = { S, busy: () => acting, yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, fart, talk: () => openTalk() };   // for testing by hand
-    // it glances at where you tap
-    addEventListener("pointerdown", (e) => { if (still() || e.pointerType === "mouse") return; const r = el.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;
-      const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1; lookX = dx / d * 3; lookY = dy / d * 1.5; draw();
-      setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900); }, { passive: true }); } }
+    window.gdrop = D; window.gbean = B; } }
   // the hero film: silent, looping, and still (its first frame) for anyone who asks for less motion
   { const v = $("wmVideo"); if (v) { v.muted = true; v.defaultMuted = true; v.playsInline = true;
       const saveData = !!(navigator.connection && navigator.connection.saveData) || matchMedia("(prefers-reduced-data: reduce)").matches;   // Low Data mode: the still, not the film (half a megabyte saved)
