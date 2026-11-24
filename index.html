@@ -10202,7 +10202,17 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const offer = (text, chips) => { const a = (chips || []).find((x) => x && typeof x === "object" && x.f); if (!a) return [text, chips];
       const many = /coffees|their|his|them|caff[eè]$|suoi|loro/i.test(a.t); pendingYes = a.f;
       return [text + " " + (many ? T("Want to see them?", "Vuoi vederli?") : T("Want to see it?", "Vuoi vederlo?")), [{ t: T("Yes", "Sì"), q: T("Yes", "Sì") }, ...chips.filter((x) => x !== a)]]; };
-    const sayNow = (text, chips, mood) => { pendingYes = null; [text, chips] = offer(text, chips); text = tidy(text); sayGen++; finishTyping(); const m = addMsg("it", ""); m._rec.t = text; saveChat(); typing = { m, text, top: replyTo }; let k = 0; bob(true);
+    // no hint buttons in the chat, ever: when Goccio offers choices it says them ("…: clean and bright, rich and full or easy?"),
+    // and typing one (or something close) picks it, as a tap would have
+    let pendingOpts = [];
+    const KEEP_CAP = /^(V60|Chemex|AeroPress|French press|Kalita|Origami|Clever|Switch|Hario|Comandante|Yes|Sì)/;
+    const lc = (t) => KEEP_CAP.test(t) ? t : t.charAt(0).toLowerCase() + t.slice(1);
+    const orList = (xs) => xs.length < 2 ? xs.join("") : xs.slice(0, -1).join(", ") + T(" or ", " o ") + xs[xs.length - 1];
+    const voice = (text, chips) => { pendingOpts = (chips || []).filter((x) => x && !(typeof x === "object" && /^(yes|sì)$/i.test(x.t || "")));
+      const say1 = pendingOpts.map((x) => typeof x === "string" ? x : x.t).filter((t) => t && !/\?\s*$/.test(t) && !/^(another one|un altro|skip|salta)$/i.test(t));
+      if (say1.length < 2) return text; const list = orList(say1.map(lc));
+      return /\?\s*$/.test(text) ? text.replace(/\?\s*$/, ": " + list + "?") : text + " " + T("For example: ", "Per esempio: ") + list + "."; };
+    const sayNow = (text, chips, mood) => { pendingYes = null; [text, chips] = offer(text, chips); text = voice(text, chips); chips = null; text = tidy(text); sayGen++; finishTyping(); const m = addMsg("it", ""); m._rec.t = text; saveChat(); typing = { m, text, top: replyTo }; let k = 0; bob(true);
       const anchor = replyTo && replyTo.isConnected ? replyTo : m; requestAnimationFrame(() => toTop(anchor, true));   // your question at the top, the answer filling in below it
       // as the answer grows it keeps your question pinned at the top, until it reaches it or you scroll the chat yourself
       typeT = setInterval(() => { k += 2; m.textContent = text.slice(0, k); if (typing && !typing.free && k % 8 === 0) toTop(anchor); if (k >= text.length) { if (typing && !typing.free) toTop(anchor); finishTyping(); } }, 24);
@@ -10216,7 +10226,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const SUGGEST = () => { const P = POOL(), one = (k, not) => { const xs = P[k].filter((x) => !not.includes(x)); return xs[Math.floor(Math.random() * xs.length)]; }, out = [];
       out.push(one("find", out), one("fix", out), one("learn", out)); out.push(Math.random() < .5 ? one("fun", out) : one("learn", out));
       return out.sort(() => Math.random() - 0.5); };
-    const showChips = (list) => { chipsEl.textContent = ""; const xs = list || [];   // replies offered by an answer only: the sample questions come with the hello
+    const showChips = (list) => { chipsEl.textContent = ""; const xs = [];   // replies offered by an answer only: the sample questions come with the hello
       xs.forEach((x) => { const b = document.createElement("button"); b.type = "button"; if (typeof x === "string") { b.textContent = x; b.onclick = () => ask(x); } else if (x.q || x.a) { b.textContent = x.t; b.onclick = () => { if (x.q) ask(x.q); else { addMsg("me", x.t); x.a(); } }; } else { b.textContent = x.t; b.onclick = x.f; b.className = "on"; } chipsEl.appendChild(b); }); };
     // the empty box under the chips rotates through examples too, every few seconds while Goccio is open
     { let k = 0; const base = () => T("Ask Goccio about coffee", "Chiedi a Goccio del caffè");
@@ -10799,7 +10809,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         say(T(`${roasteryName(ro.name)} doesn't have that one on Goccio right now. ${others.length ? "It's from " + andList(others) + "." : ""}`, `${roasteryName(ro.name)} adesso non ce l'ha su Goccio. ${others.length ? "Ce l'ha " + andList(others) + "." : ""}`),
           [{ t: T("Show me", "Fammeli vedere"), f: () => { closeTalk(); search(cs[0].name); } }, { t: T("Their coffees", "I loro caffè"), f: () => openRoaster(ro.name) }], hmm); return true; }
       return false; };
-    const nice = () => say(T(`Nice to meet you, ${name}! Ask me anything about coffee.`, `Piacere, ${name}! Chiedimi qualsiasi cosa sul caffè.`), SUGGEST(), happy);
+    const nice = () => say(T(`Nice to meet you, ${name}! Ask me anything about coffee.`, `Piacere, ${name}! Chiedimi qualsiasi cosa sul caffè.`), null, happy);
     let lastQ = "";
     const ask = (q) => { q = String(q || "").trim(); if (!q) return; inEl.value = ""; lastQ = q; addMsg("me", q); prevTrick = lastTrick; lastTrick = null;
       const rx = /tiramis|affogato|dessert|dolce|torta|cake/i.test(q) ? "🤤" : /\b(thanks?|thank you|thx|cheers|grazie|love (you|it|this)|ti amo|you'?re (great|the best|amazing|awesome|cute)|sei (bravo|fantastico|il migliore|carino)|well done|bravo|amazing|awesome|perfect|fantastic|brilliant|lovely|great job)\b/i.test(q) ? "❤️"
@@ -10808,6 +10818,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         : /^(ok|okay|yes|yep|yeah|sure|cool|great|nice|sounds good|got it|va bene|sì|si|certo|perfetto|ottimo)\b[.!]*$/i.test(q) ? "👍" : "";
       if (rx) react(rx);
       if (wantCity) { wantCity = false; if (q.split(/\s+/).length <= 4 && !/\?|^(what|why|how|who|when|which|no|nope|skip|cancel|cos|perch|come|chi|quando)\b/i.test(q)) { setTimeout(() => wxCity(q.replace(/^(i'?m in|in|a|at|sono a)\s+/i, "")), 300); return; } }
+      if (pendingOpts.length) { const opts = pendingOpts; pendingOpts = []; const nq = norm(q);
+        const hit = opts.find((x) => { const t = norm(typeof x === "string" ? x : x.t); return t && (nq === t || (t.length >= 3 && (nq.includes(t) || (nq.length >= 3 && t.startsWith(nq))))); });
+        if (hit) { if (typeof hit === "string") { lastQ = q = hit; } else if (hit.a) { hit.a(); return; } else if (hit.f) { hit.f(); return; } else if (hit.q) { lastQ = q = hit.q; } } }
+      if (!pendingYes && /^(yes|yeah|yep|yup|sure|ok|okay|no|nope|nah|s[iì]|certo|va bene)\b[ .!]*$/i.test(q)) {   // a yes or no with nothing to answer
+        return say(pick([T("Noted! Ask me anything about coffee.", "Ricevuto! Chiedimi qualsiasi cosa sul caffè."), T("Got it. What shall we talk about?", "Capito. Di cosa parliamo?"), T("Okay! I'm all ears. Well, all drop.", "Ok! Sono tutto orecchi. Anzi, tutto goccia.")]), null, smile); }
       if (pendingYes) { const f = pendingYes; pendingYes = null; if (/^(yes|yeah|yep|yup|sure|ok|okay|please|go on|go ahead|show me|let'?s see|s[iì]|certo|dai|va bene|vediamo|fammi vedere)\b/i.test(q)) { react("👍", 200); setTimeout(f, 650); return; } }
       // only real questions, never the quick ones, the tricks or a reply to one of its own questions
       thinkNext = null;
@@ -10820,7 +10835,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const mn = q.match(/^(?:call me|my name is|you can call me|mi chiamo|chiamami)\s+(.+)$/i) || (askingName && q.match(/^(?:i'?m|i am|it'?s|sono)\s+(.+)$/i));
       if (mn && setName(mn[1])) { askingName = false; return nice(); }
       if (askingName) { askingName = false;
-        if (/^(skip|no thanks|later|not now|salta|dopo|no grazie)\b/i.test(q)) return say(T("No problem. Ask me anything about coffee.", "Nessun problema. Chiedimi qualcosa sul caffè."), SUGGEST(), smile);
+        if (/^(skip|no thanks|later|not now|salta|dopo|no grazie)\b/i.test(q)) return say(T("No problem. Ask me anything about coffee.", "Nessun problema. Chiedimi qualcosa sul caffè."), null, smile);
         if (q.split(/\s+/).length <= 3 && !/[?0-9]/.test(q) && !ANSWERS.some(([re]) => re.test(q)) && setName(q)) return nice(); }
       // a roaster or a coffee by name, from the list itself
       if (/^(again|do it again|do that again|one more( time)?|once more|encore|more|repeat|ancora( una volta)?|rifallo|rifai|di nuovo|un'?altra volta|bis)\b[ !.]*(please|per favore)?[ !.]*$/i.test(q)) { if (prevTrick) { const f = prevTrick; lastTrick = f; D.free(); f(); return; }
@@ -10875,7 +10890,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const lastAt = msgs.length ? msgs[msgs.length - 1].at || 0 : 0; if (name && msgs.length && Date.now() - lastAt < 20 * 60000) { showChips(); return; }   // still mid-chat: carry on
       replyTo = null;   // a new hello answers nobody: it anchors to itself
       if (!name) { askingName = true; return say(T("Hi! I'm Goccio, the drop that knows coffee. What should I call you?", "Ciao! Sono Goccio, la goccia che sa tutto del caffè. Come ti chiamo?"), [T("Skip", "Salta")], happy); }
-      say(pick([T(`Hi ${name}! Ask me about coffee.`, `Ciao ${name}! Chiedimi del caffè.`), T(`Hello ${name}! What are we brewing?`, `Ciao ${name}! Cosa prepariamo?`), T(`Oh, hi ${name}! Need a hand with your coffee?`, `Oh, ciao ${name}! Ti serve una mano col caffè?`)]), SUGGEST(), happy); };
+      say(pick([T(`Hi ${name}! Ask me about coffee.`, `Ciao ${name}! Chiedimi del caffè.`), T(`Hello ${name}! What are we brewing?`, `Ciao ${name}! Cosa prepariamo?`), T(`Oh, hi ${name}! Need a hand with your coffee?`, `Oh, ciao ${name}! Ti serve una mano col caffè?`)]), null, happy); };
     closeTalk = () => { if (!talking) return; talking = false; dim(false); talkEl.hidden = true; el.setAttribute("aria-expanded", "false"); clearInterval(typeT); bob(false); };
     $("gdX").onclick = closeTalk;
     // the top bar: the little Goccio opens it there; a question typed in the search box goes to Goccio instead of the list
