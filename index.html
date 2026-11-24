@@ -2665,6 +2665,9 @@ html body #recipe .share > #bagBtn{order:1!important}
 html body #recipe .share > #copyBtn{order:2!important}
 html body #recipe .share > #linkBtn{order:3!important}
 html body .shelf .item .c-where a.rn{color:var(--ink)!important}   /* the roaster's name in white; "from", the city and the date stay grey */
+#specs .spec.chg b, #specs .spec.key.chg .sub2{animation:specChg 1.8s ease-out both}
+@keyframes specChg{0%,45%{color:var(--hl)}100%{color:inherit}}
+
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
@@ -5452,6 +5455,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}${k === "key" && mill().words ? " wide" : ""}"><b>${v}${u ? `<small>${u === "-cup" ? u : " " + u}</small>` : ""}</b><span class="sub2">${l.charAt(0).toUpperCase() + l.slice(1)}${badge ? ` <span class="yr">${esc(badge)}</span>` : ""}</span>${k === "key" && isC40() && prefs.zero ? `<span class="zo">${sign(prefs.zero).replace(/^(.)/, "$1 ")} zero offset</span>` : ""}${k === "key" && K === "shot" && mill().noEsp ? `<span class="sub2">Not an espresso grinder</span>` : k === "key" && !isC40() && (onMill(r.clicks).atMax || onMill(r.clicks).atMin) ? `<span class="sub2">${onMill(r.clicks).atMax ? "Coarsest setting, may still run fast" : "Finest setting"}</span>` : ""}${k === "dose" ? (() => { const ds = BREWERS[r.brewer].doses, i = ds.findIndex(([v]) => v === r.dose); if (ds.length < 2 || i < 0) return "";
         const ic = (p) => `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="${p}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`, moka = r.brewer === "moka";
         return `<span class="dstep" role="group" aria-label="${esc(tr(moka ? "Pot size" : "Coffee dose"))}"><button type="button" class="chip gear-more" data-dstep="-1"${i === 0 ? " disabled" : ""} aria-label="${esc(tr(moka ? "Smaller pot" : "Less coffee"))}">${ic("M7.5 2.5 4 6l3.5 3.5")}</button><button type="button" class="chip gear-more" data-dstep="1"${i === ds.length - 1 ? " disabled" : ""} aria-label="${esc(tr(moka ? "Bigger pot" : "More coffee"))}">${ic("M4.5 2.5 8 6 4.5 9.5")}</button></span>`; })() : ""}${k === "ratio" && showRet && false ? `<span class="ret">(${r.water} g water − 2.1 × ${r.dose} g retained). Estimate only.</span>` : ""}</div>`).join("");
+    /* a roast or a process just picked: whatever it changed in the recipe (grind, kettle, time) shows orange for a moment, so the change is seen */
+    { const now = {}; $("specs").querySelectorAll(".spec").forEach((sp) => { const k = (sp.className.match(/\b(key|dose|water|temp|time|ratio)\b/) || [])[1]; if (!k) return;
+        now[k] = [...sp.querySelectorAll("b, .sub2")].map((x) => x.textContent.replace(/\s+/g, " ").trim()).join("|");
+        if (window.__specWas && performance.now() < (window.__specFlash || 0) && window.__specWas[k] !== undefined && window.__specWas[k] !== now[k]) sp.classList.add("chg"); });
+      window.__specWas = now; }
     { const ds = $("specs").querySelector(".dstep"), bb = ds && ds.parentNode.querySelector("b"); if (bb) { bb.classList.add("dstep-b"); bb.prepend(ds.querySelector('[data-dstep="-1"]')); bb.appendChild(ds.querySelector('[data-dstep="1"]')); ds.remove(); } }   // minus before the figure, plus after
     $("specs").querySelectorAll("[data-dstep]").forEach((x) => x.onclick = () => { const ds = BREWERS[r.brewer].doses, i = ds.findIndex(([v]) => v === r.dose), n = ds[i + Number(x.dataset.dstep)];
       if (!n) return; const d = Number(x.dataset.dstep); state.dose = n[0]; saveState(); renderAllOpts(); render();   // the figures simply change: the split-flap flip was tried and taken out
@@ -9177,6 +9185,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       ge.style.transform = `translate(${ex.toFixed(2)}px,${ey.toFixed(2)}px) scaleY(${(1 - Math.min(.9, blink)).toFixed(2)})`;
       requestAnimationFrame(tick); })(performance.now());
   } catch (e) {} }
+  document.addEventListener("click", (e) => { if (e.target.closest && e.target.closest('[data-roast], [data-proc], [id^="o-roast-"], [id^="o-process-"], #roastSkip')) window.__specFlash = performance.now() + 1500; }, true);
   const mineOn = () => { if (document.documentElement.classList.contains("mine")) return; document.documentElement.classList.add("mine"); };   /* for this visit only: the next one starts without it again */
   /* and away again once back at the list or the opening screen, unless a coffee of your own has its recipe out */
   const mineOff = () => { const h = document.documentElement; if (h.classList.contains("mine") && !h.classList.contains("brew-in") && $("recipe").hidden) h.classList.remove("mine"); };
