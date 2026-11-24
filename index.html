@@ -6162,7 +6162,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // three answers, and nothing about the person (functions/api/taste.js)
     { const t1 = picked.has("sour") && !picked.has("bitter") ? "sour" : picked.has("bitter") && !picked.has("sour") ? "bitter" : nailed ? "balanced" : "";
       const bg = state.bag;
-      if (t1 && bg && bg.url && !r.mine) try { fetch("/api/taste", { method: "POST", keepalive: true, headers: { "content-type": "application/json" },
+      if (!PREVIEW_TASTE && t1 && bg && bg.url && !r.mine) try { fetch("/api/taste", { method: "POST", keepalive: true, headers: { "content-type": "application/json" },
         body: JSON.stringify({ url: bg.url, roaster: bg.roaster || "", name: bg.name || "", brewer: r.brewer || "", taste: t1, clicks: r.clicks, temp: r.temp, ratio: r.ratio, dose: r.dose,
           drained: dd != null ? Math.round(dd) : null, roast: (r.c && r.c.roast) || "", process: (r.c && r.c.process) || "" }) }).catch(() => {}); } catch (e) {} }
     const at = new Date().toISOString(), undo = { key: r.mine ? null : r.key, d: {}, style: null };
@@ -6215,7 +6215,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     $("saveLog").textContent = "Saved"; setTimeout(() => ($("saveLog").textContent = "Save to journal"), 1400);
     logSaved();
   }
-  let softShut = false;   // an open coffee folded for the Journal, still chosen until its brew is logged
+  let softShut = false;
+  var PREVIEW_TASTE = /[?&]howwasit\b/.test(location.search) ? {} : null;   // the ?howwasit preview: nothing it answers is counted   // an open coffee folded for the Journal, still chosen until its brew is logged
   function logSaved() { brewDone = false; try { brewDoneUI(false); } catch (e) {} $("logBox").classList.add("saved"); journalOn();
     if (softShut) { softShut = false; state.text = ""; state.bag = null; state.roastPhoto = null; try { $("coffeeIn").value = ""; wbOpen = false; } catch (e) {} saveState(); renderAllOpts(); render(); journalOn(); } }
   // the Journal (and its link in the menu) only exists once there's a brew to write about: one that reached its end in this
@@ -9120,6 +9121,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       renderShelfV();
       renderShelf();
       document.documentElement.classList.remove("wait");
+      // ?howwasit: a look at the end of a brew without brewing. Opens the newest coffee and goes straight to its "How was it?"
+      // (answers given here are kept on this device only, never counted)
+      if (PREVIEW_TASTE && !PREVIEW_TASTE.done && !part) { PREVIEW_TASTE.done = true; setTimeout(() => { const b = $("shelf").querySelector(".item .btn[data-i]"); if (!b) return; b.click();
+          setTimeout(() => { brewDone = true; try { brewDoneUI(true); } catch (e) {} $("logBox").classList.remove("saved"); $("logBox").classList.add("quick"); $("suggest").hidden = true; journalOn(); toJournal(); }, 1200); }, 400); }
       $("shelf").classList.remove("loading"); $("shelf").removeAttribute("aria-busy");
       try { renderBags(); } catch (e) {}   // bags saved before the city was kept pick it up from the list
       };
