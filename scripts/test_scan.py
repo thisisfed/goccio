@@ -41,6 +41,9 @@ COFFEE_BODY = "Origin: Colombia\nProcess: Washed\nVariety: Caturra\nAltitude: 1,
 
 # (what was reported, check that must be True)
 CASES = [
+    # Sprout (24/11/2026): the same subtitle layout as Sl.ow, with the name in capitals ("LASSO LASSI", then "Lychee, Tropical, Lactic")
+    ("Sprout's 'Lychee, Tropical, Lactic' under 'LASSO LASSI' are the notes",
+     lambda: scan.page_notes("Skip to content\nShop\nLASSO LASSI\nLychee, Tropical, Lactic\n\u00a313.00\nSize\n250g\nAdd to cart\nComplex & fruity bang bang baby!", "Lasso Lassi") == ["Lychee", "Tropical", "Lactic"]),
     # Sl.ow (24/11/2026): the notes are an unlabelled subtitle right under the coffee's name
     ("Sl.ow's 'Lime, Pineapple, Red Apple' under the title 'Loco Lime' are the notes",
      lambda: scan.page_notes("Home\nShop\nMexico \u00b7 Honey\nLoco Lime\nLime, Pineapple, Red Apple\nNZ$53.99\nAdd to cart\nThis honey processed Geisha from Mexico is bright and juicy.", "Loco Lime") == ["Lime", "Pineapple", "Red Apple"]),
