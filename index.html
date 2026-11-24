@@ -2744,6 +2744,9 @@ html.nav-off body #toast{bottom:calc(env(safe-area-inset-bottom) + 12px)}
   html body .shelf .item::before,html body #bagList .item::before{content:"";position:absolute;inset:0 -8px;z-index:-1;border-radius:4px;background:var(--ink);opacity:0;transition:opacity .15s ease;pointer-events:none}
   html body .shelf .item:hover::before,html body #bagList .item:hover::before{opacity:.05}
 }
+/* Process not stated. / Roast not stated.: two lines set like the text under them (How to pour), no gap between them */
+html body #consTop{gap:0!important;row-gap:0!important}
+html body #consTop .cons-top{line-height:1.35!important;margin:0!important;padding:0!important}
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
@@ -9457,7 +9460,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     if ("ResizeObserver" in window) new ResizeObserver(fit).observe(live);
     [600, 1500, 3000].forEach((t) => setTimeout(fit, t)); })();   // the count arrives late (no observer on it: the probe would set it off)
   (function fitMark() {
-    // Goccio spans 0.618 of the width between the page margins (the golden share) with its letters' own ink, centred across the photo by that ink and
+    // Goccio is set at a size from the page's golden scale (15, 24, 39, 63, 102, 165, 267, 432): the biggest that fits between the page margins, with its letters' own ink, centred across the photo by that ink and
     // sitting at its foot, as far above the bottom as from either side (the font's spacing and the line box don't count)
     const w = $("wm"), p = w && w.parentElement, scr = p && p.parentElement; if (!scr) return;
     const cv = document.createElement("canvas").getContext("2d");
@@ -9467,7 +9470,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const room = scr.clientWidth - parseFloat(ss.paddingLeft) - parseFloat(ss.paddingRight);
       const ls = parseFloat(cs.letterSpacing) / parseFloat(cs.fontSize) || 0, gaps = w.textContent.length - 1;   // the tracking, as a share of the size
       const ink = m.actualBoundingBoxLeft + m.actualBoundingBoxRight + ls * 100 * gaps; if (!ink || !room) return;
-      const size = 100 * room / ink / 1.618, k = size / 100; p.style.fontSize = size.toFixed(2) + "px";
+      const fitS = 100 * room / ink, size = [39, 63, 102, 165, 267, 432, 699].filter((x) => x <= fitS).pop() || fitS, k = size / 100; p.style.fontSize = size.toFixed(2) + "px";
       const pr = document.createElement("span"); pr.style.cssText = "display:inline-block;width:0;height:0;vertical-align:baseline"; w.prepend(pr);
       const o = pr.getBoundingClientRect(); pr.remove();
       const L = o.left - m.actualBoundingBoxLeft * k, R = o.left + (m.actualBoundingBoxRight + ls * 100 * gaps) * k;
