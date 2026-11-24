@@ -2763,6 +2763,15 @@ html body .wb-sign .gdrop .gd-e{fill:#000}
 html body .wb-sign .gdrop .gd-h{fill:#fff;opacity:.5}
 html body .wb-sign .gdrop .gd-s{fill:var(--hl)}
 html body .wb-sign .gdrop .gd-a,html body .wb-sign .gdrop .gd-sm{fill:none;stroke:#000;stroke-width:1.6;stroke-linecap:round;opacity:0}
+html body .wb-sign .gdrop .gd-ph{opacity:0}
+html body .wb-sign .gdrop .gd-bl{fill:#ff2d55;opacity:0}
+html body .wb-sign .gdrop .gd-puff{fill:var(--muted);opacity:0;transform-box:fill-box;transform-origin:center;animation:gdpuff 1.2s ease-out forwards}
+@keyframes gdpuff{from{opacity:.75;transform:scale(.4)}to{opacity:0;transform:scale(1.8) translate(0,-6px)}}
+html body .wb-sign .gdrop{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+html body .wb-sign .gdrop .gd-band{fill:none;stroke:var(--ink);stroke-width:2.2;stroke-linecap:round}
+html body .wb-sign .gdrop .gd-cup{fill:var(--ink);stroke:#000;stroke-width:.8}
+html body .wb-sign .gdrop .gd-note{fill:var(--ink);font:600 9px/1 var(--sans);animation:gdnote 1.4s ease-out forwards}
+@keyframes gdnote{from{transform:translate(0,0);opacity:0}15%{opacity:1}to{transform:translate(4px,-26px);opacity:0}}
 html body .wb-sign .gdrop{z-index:30}   /* the light caught on its top: liquid, not a sticker */
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
@@ -3209,7 +3218,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       </details>
       <input type="file" accept="image/*" capture="environment" id="roastPhotoIn" hidden>
     </div>
-    <p class="wb-sign"><span class="gdrop" id="gdrop" aria-hidden="true"><svg viewBox="-32 -56 64 60"><path class="gd-b" d=""/><ellipse class="gd-h" cx="0" cy="0" rx="3.4" ry="1.9"/><g class="gd-e"><ellipse class="gd-l" cx="-6" cy="-12" rx="2.4" ry="3.4"/><ellipse class="gd-r" cx="6" cy="-12" rx="2.4" ry="3.4"/><path class="gd-a" d="M -8.6 -11 Q -6 -14.6 -3.4 -11"/><path class="gd-a" d="M 3.4 -11 Q 6 -14.6 8.6 -11"/><ellipse class="gd-m" cx="0" cy="-4.6" rx="0" ry="0"/><path class="gd-sm" d="M -3.4 -5.6 Q 0 -5.6 3.4 -5.6"/></g></svg></span>Brew something good.</p>
+    <p class="wb-sign"><span class="gdrop" id="gdrop" aria-hidden="true"><svg viewBox="-32 -56 64 60"><g class="gd-n"></g><g class="gd-all"><path class="gd-b" d=""/><ellipse class="gd-h" cx="0" cy="0" rx="3.4" ry="1.9"/><g class="gd-e"><ellipse class="gd-l" cx="-6" cy="-12" rx="2.4" ry="3.4"/><ellipse class="gd-r" cx="6" cy="-12" rx="2.4" ry="3.4"/><path class="gd-a" d="M -8.6 -11 Q -6 -14.6 -3.4 -11"/><path class="gd-a" d="M 3.4 -11 Q 6 -14.6 8.6 -11"/><ellipse class="gd-m" cx="0" cy="-4.6" rx="0" ry="0"/><path class="gd-sm" d="M -3.4 -5.6 Q 0 -5.6 3.4 -5.6"/><ellipse class="gd-bl" cx="-10.5" cy="-7.4" rx="3" ry="1.7"/><ellipse class="gd-bl" cx="10.5" cy="-7.4" rx="3" ry="1.7"/></g><g class="gd-ph"><path class="gd-band" d=""/><rect class="gd-cup l" x="0" y="0" width="5" height="9" rx="2.2"/><rect class="gd-cup r" x="0" y="0" width="5" height="9" rx="2.2"/></g></g></svg></span>Brew something good.</p>
   </section>
 
   <section class="sec" id="recipe" aria-labelledby="rtitle">
@@ -9766,13 +9775,13 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   // a 240 ms period and damping 0.3 (2 to 3 visible swings), its volume is kept (taller is narrower), it falls as a round drop
   // (small drops are spheres, never tear shapes), lands flat and recoils, and sits as a drop on a surface: a dome on a pinned base,
   // whose top lags behind when the page moves (the contact line holds, the body sways)
-  { const el = $("gdrop"), body = el && el.querySelector(".gd-b"), eyes = el && el.querySelector(".gd-e"); if (el && body) {
+  { const el = $("gdrop"), body = el && el.querySelector(".gd-b"), eyes = el && el.querySelector(".gd-e"), all = el && el.querySelector(".gd-all"); if (el && body && all) {
     const still = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
     const W0 = 36, H0 = 24, R0 = 15.5;   // at rest: a dome 36 wide, 24 high; falling: a round drop of about the same volume
     const wS = 2 * Math.PI / 0.24, zS = 0.3, wL = 2 * Math.PI / 0.42, zL = 0.45, G = 2600;
-    const S = { aRest: 0, eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1 }; let tws = [], a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
+    const S = { aRest: 0, eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, phones: 0, jx: 0, blush: 0, melt: 0 }; let jy = 0, jv = 0, ptrX = 0, ptrY = 0, ptrT = 0; let tws = [], a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
     const draw = () => {
-      const k = 1 + a, h = H0 * k, w = W0 / Math.sqrt(Math.max(0.3, k)), r = round;   // volume kept: taller is narrower
+      const mlt = S.melt, k = 1 + a, h = H0 * k * (1 - 0.7 * mlt), w = W0 / Math.sqrt(Math.max(0.3, k)) * (1 + 0.85 * mlt), r = round;   // volume kept: taller is narrower; melting, it spreads into a puddle
       // the resting dome (pinned base, rounded shoulders) blended toward a circle while falling
       const cx = lean * (1 - r), top = -h * (1 - r) - 2 * R0 * r + y, hw = w / 2 * (1 - r) + R0 * r, base = y - (r ? 0 : 0);
       const sh = 0.56 * (1 - r) + 0.552 * r;   // how full the shoulders are (0.552: a circle drawn with four curves)
@@ -9781,11 +9790,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         ? `M ${-hw} ${mid} C ${-hw} ${mid - hw * sh} ${cx - hw * sh} ${top} ${cx} ${top} C ${cx + hw * sh} ${top} ${hw} ${mid - hw * sh} ${hw} ${mid} C ${hw} ${mid + hw * sh} ${hw * sh} ${bot} 0 ${bot} C ${-hw * sh} ${bot} ${-hw} ${mid + hw * sh} ${-hw} ${mid} Z`
         // sitting: a drop, not a dome. Its widest point is a third of the way up and its base is narrower (the edge curls in
         // where it meets the surface, as water does on most surfaces), so it reads as liquid, not a ghost
-        : (() => { const bw = hw * 0.74; return `M ${-bw} ${bot} C ${-hw * 1.12} ${bot - h * 0.12} ${cx - hw * 0.82} ${top} ${cx} ${top} C ${cx + hw * 0.82} ${top} ${hw * 1.12} ${bot - h * 0.12} ${bw} ${bot} Q 0 ${bot + 0.6} ${-bw} ${bot} Z`; })();
+        : (() => { const bw = hw * (0.74 + 0.24 * mlt); return `M ${-bw} ${bot} C ${-hw * 1.12} ${bot - h * 0.12} ${cx - hw * 0.82} ${top} ${cx} ${top} C ${cx + hw * 0.82} ${top} ${hw * 1.12} ${bot - h * 0.12} ${bw} ${bot} Q 0 ${bot + 0.6} ${-bw} ${bot} Z`; })();
       body.setAttribute("d", d);
       const hl = el.querySelector(".gd-h"); if (hl) { const hx = r > 0.5 ? -hw * 0.42 : cx * 0.6 - hw * 0.42, hy = r > 0.5 ? top + hw * 0.45 : top + h * 0.28; hl.setAttribute("transform", `translate(${hx.toFixed(2)} ${hy.toFixed(2)}) rotate(-28)`); }
       const ey = r > 0.5 ? mid - 1 : bot - h * 0.5, ex = (r > 0.5 ? 0 : cx * 0.7) + lookX;
-      eyes.setAttribute("transform", `translate(${ex.toFixed(2)} ${(ey + 12 + lookY).toFixed(2)}) scale(${(w / W0).toFixed(3)} ${Math.min(1.3, k).toFixed(3)})`);
+      const es = 1 - 0.42 * mlt; eyes.setAttribute("transform", `translate(${ex.toFixed(2)} ${(ey + 12 * es + lookY * es).toFixed(2)}) scale(${(Math.min(1.25, w / W0) * es).toFixed(3)} ${(Math.min(1.3, k) * es).toFixed(3)})`);   /* melting: the face shrinks into the puddle */
       // the face: two eyes (each can open wider or close on its own), happy eyes (^ ^), a mouth that opens, a smile that curves up or down
       const L = el.querySelector(".gd-l"), R = el.querySelector(".gd-r"), op = 1 - S.happy;
       L.setAttribute("rx", (2.4 * S.eyeSL).toFixed(2)); L.setAttribute("ry", Math.max(0, 3.4 * blink * S.eyeL * S.eyeSL * op).toFixed(2));
@@ -9793,24 +9802,33 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       el.querySelectorAll(".gd-a").forEach((p) => p.style.opacity = S.happy.toFixed(2));
       const mo = el.querySelector(".gd-m"); mo.setAttribute("rx", (2.3 * S.mouth).toFixed(2)); mo.setAttribute("ry", (3.6 * S.mouth).toFixed(2));
       const sm = el.querySelector(".gd-sm"), c = Math.max(-1, Math.min(1, S.smile)); sm.style.opacity = Math.min(1, Math.abs(c) * 3).toFixed(2);
-      sm.setAttribute("d", `M -3.4 -5.6 Q 0 ${(-5.6 + 3.4 * c).toFixed(2)} 3.4 -5.6`); };
+      sm.setAttribute("d", `M -3.4 -5.6 Q 0 ${(-5.6 + 3.4 * c).toFixed(2)} 3.4 -5.6`);
+      // headphones: a band over the top of the head and a cup on each side, at the height of the eyes
+      el.querySelectorAll(".gd-bl").forEach((b) => b.style.opacity = (S.blush * 0.75).toFixed(2));
+      const ph = el.querySelector(".gd-ph"); ph.style.opacity = S.phones.toFixed(2);
+      if (S.phones > 0.01) { const hh = H0 * (1 + a), ww = W0 / Math.sqrt(Math.max(0.3, 1 + a)), lx = lean, cyp = y - hh * 0.5, tp = y - hh, ex2 = ww / 2 + 0.6, drop = (1 - S.phones) * -10;
+        el.querySelector(".gd-band").setAttribute("d", `M ${(-ex2 + 1.5 + lx * 0.4).toFixed(2)} ${(cyp + drop).toFixed(2)} C ${(-ex2 + lx * 0.6).toFixed(2)} ${(tp - 6 + drop).toFixed(2)} ${(ex2 + lx * 0.6).toFixed(2)} ${(tp - 6 + drop).toFixed(2)} ${(ex2 - 1.5 + lx * 0.4).toFixed(2)} ${(cyp + drop).toFixed(2)}`);
+        const cl = el.querySelector(".gd-cup.l"), cr = el.querySelector(".gd-cup.r");
+        cl.setAttribute("x", (-ex2 - 2.2 + lx * 0.35).toFixed(2)); cl.setAttribute("y", (cyp - 4.5 + drop).toFixed(2)); cr.setAttribute("x", (ex2 - 2.8 + lx * 0.35).toFixed(2)); cr.setAttribute("y", (cyp - 4.5 + drop).toFixed(2)); }
+      all.setAttribute("transform", `translate(${S.jx.toFixed(2)} ${jy.toFixed(2)})`); };
     // small timed changes (a lid closing, a mouth opening), eased in and out, run in the same frame loop as the physics
     const ease = (x) => x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
     const tween = (key, to, ms, delay = 0) => new Promise((res) => setTimeout(() => { tws = tws.filter((t) => { if (t.key !== key) return true; t.res(); return false; });   /* a change taken over still settles its promise */
       tws.push({ key, from: S[key], to, t0: performance.now(), ms, res }); go(); }, delay));
     const setK = (key, v) => { S[key] = v; };
     const face = (o, ms) => Promise.all(Object.entries(o).map(([k, v]) => tween(k, v, ms)));
-    const REST = { eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1 };
+    const REST = { eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, blush: 0 };
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     let acting = false;   // one expression at a time
     const act = async (fn) => { if (acting) return; acting = true; try { await fn(); } finally { await face(REST, 260); acting = false; } };
     const step = (t) => { raf = 0; const dt = Math.min(0.032, last ? (t - last) / 1000 : 0.016); last = t;
       tws = tws.filter((tw) => { const x = Math.min(1, (performance.now() - tw.t0) / tw.ms); setK(tw.key, tw.from + (tw.to - tw.from) * ease(x)); if (x >= 1) { tw.res(); return false; } return true; });
       if (phase === "fall") { vy += G * dt; y += vy * dt; if (y >= 0) { y = 0; phase = "rest"; round = 0; va = -Math.min(14, vy / 90); vy = 0; } }   // lands: flattens with the speed it had, then rings
+      if (jv || jy) { jv += G * 0.75 * dt; jy += jv * dt; if (jy >= 0) { jy = 0; if (jv > 50) va -= Math.min(4.5, jv / 80); jv = 0; } }   // a hop: up, then down with a little splat
       va += (-wS * wS * (a - S.aRest) - 2 * zS * wS * va) * dt; a += va * dt;
       vl += (-wL * wL * (lean - leanTo) - 2 * zL * wL * vl) * dt; lean += vl * dt; leanTo *= Math.pow(0.02, dt);
       draw();
-      const moving = tws.length > 0 || phase === "fall" || Math.abs(a - S.aRest) > 0.002 || Math.abs(a) > 0.002 || Math.abs(va) > 0.01 || Math.abs(lean) > 0.05 || Math.abs(vl) > 0.05 || Math.abs(leanTo) > 0.05;
+      const moving = jv !== 0 || jy !== 0 || tws.length > 0 || phase === "fall" || Math.abs(a - S.aRest) > 0.002 || Math.abs(a) > 0.002 || Math.abs(va) > 0.01 || Math.abs(lean) > 0.05 || Math.abs(vl) > 0.05 || Math.abs(leanTo) > 0.05;
       if (moving) raf = requestAnimationFrame(step); else { last = 0; a = S.aRest; va = 0; draw(); } };
     const go = () => { if (!raf) raf = requestAnimationFrame(step); };
     const poke = (amt) => { if (still()) return; va += amt; go(); };
@@ -9819,11 +9837,14 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     let fell = false;
     const fall = () => { if (fell || still()) return; fell = true; phase = "fall"; round = 1; y = -90; vy = 0; go(); };
     if ("IntersectionObserver" in window) new IntersectionObserver((es) => { if (es[0].isIntersecting && es[0].intersectionRatio > 0.6) fall(); }, { threshold: [0, 0.6, 1] }).observe(el);
-    // the page moving under it: the base holds, the top sways the other way, then rings back
-    let lastY = scrollY, lastT = performance.now();
-    addEventListener("scroll", () => { const now = performance.now(), v = (scrollY - lastY) / Math.max(8, now - lastT); lastY = scrollY; lastT = now;
-      if (still() || phase === "fall") return; const r = el.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;
-      leanTo = Math.max(-5, Math.min(5, leanTo + v * 2.2)); a = Math.max(-0.12, Math.min(0.12, a - Math.abs(v) * 0.01)); go(); }, { passive: true });
+    // the page moving: a fast lift. It squashes as the page speeds up (it feels heavier), stretches tall as it slows (lighter),
+    // and rings in between. Scrolling down carries it up the screen, like a lift going up
+    let lastY = scrollY, lastT = performance.now(), lastV = 0, stopT = 0;
+    const lift = () => { const now = performance.now(), v = (scrollY - lastY) / Math.max(8, now - lastT); lastY = scrollY; lastT = now;
+      if (still() || phase === "fall") return; const r = el.getBoundingClientRect(); if (r.bottom < -100 || r.top > innerHeight + 100) { lastV = v; return; }
+      const dv = Math.max(-3, Math.min(3, v - lastV)); lastV = v; va -= dv * 2.4; a = Math.max(-0.35, Math.min(0.45, a)); go();
+      clearTimeout(stopT); stopT = setTimeout(() => { if (Math.abs(lastV) > 0.05) { va += Math.max(-3, Math.min(3, lastV)) * 2.4; lastV = 0; go(); } }, 90); };   // the page stops: it stretches
+    addEventListener("scroll", lift, { passive: true });
     // touched: a squeeze, then it rings (6 to 9% of its size, as a real drop pushed gently)
     el.addEventListener("pointerdown", () => poke(-2.6));
     el.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") poke(-1.2); });
@@ -9846,26 +9867,74 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const curious = () => act(async () => { const s = Math.random() < 0.5 ? -1 : 1; lookX = s * 3; leanTo = s * 2.5; draw(); await face(s > 0 ? { eyeSR: 1.3, eyeSL: 0.85 } : { eyeSL: 1.3, eyeSR: 0.85 }, 220); await wait(1300); lookX = 0; leanTo = 0; draw(); });
     // hmm: looks up to one side, mouth a little crooked
     const hmm = () => act(async () => { lookX = 2.5; lookY = -2; draw(); await face({ smile: -0.35, eyeL: 0.85 }, 240); await wait(1300); lookX = 0; lookY = 0; draw(); });
-    // its life at rest: something every few seconds, never on a beat. Mostly blinks; now and then a face
+    // melting: it looks worried, slumps and spreads into a puddle, eyes peeking out of it; a moment later it pulls itself back up
+    const melt = () => act(async () => { await face({ smile: -0.3, eyeSL: 1.15, eyeSR: 1.15 }, 220); await wait(250);
+      await Promise.all([tween("melt", 1, 1500), face({ eyeL: 0.55, eyeR: 0.55, smile: 0 }, 1500)]);
+      await wait(500); lookX = -2.5; draw(); await wait(450); lookX = 2.5; draw(); await wait(450); lookX = 0; draw(); await wait(300);
+      await Promise.all([tween("melt", 0, 420), face({ eyeL: 1, eyeR: 1, eyeSL: 1, eyeSR: 1 }, 420)]); poke(-3.2); await face({ happy: 1, smile: 1 }, 160); await wait(900); });
+    const hop = (v, dx, ms) => { jv = -v; tween("jx", dx, ms); go(); return wait(ms + 60); };
+    // jumps: to one side, to the other, and home
+    const jumps = () => act(async () => { const s0 = Math.random() < 0.5 ? -1 : 1; await face({ smile: 0.7 }, 150); await hop(240, s0 * 9, 330); await wait(160); await hop(260, -s0 * 9, 360); await wait(160); await hop(200, 0, 300); await wait(200); });
+    // yes: two nods, eyes down and up with the body; no: two shakes of the head, eyes side to side
+    const yes = () => act(async () => { await face({ smile: 0.8 }, 150); for (let i = 0; i < 2; i++) { lookY = 2; tween("aRest", -0.08, 120); draw(); await wait(150); lookY = -0.5; tween("aRest", 0.03, 130); draw(); await wait(170); } lookY = 0; tween("aRest", 0, 150); draw(); await wait(500); });
+    const no = () => act(async () => { await face({ smile: -0.25 }, 150); for (let i = 0; i < 3; i++) { for (const s1 of [-1, 1]) { lookX = s1 * 3; leanTo = s1 * 2.5; draw(); go(); await wait(140); } } lookX = 0; leanTo = 0; draw(); await wait(450); });
+    // dancing: the headphones drop on, it bobs to the beat (two a second), sways and hops, eyes happy, notes float up; then they come off
+    const NS = "http://www.w3.org/2000/svg", notes = el.querySelector(".gd-n");
+    const note = () => { const t = document.createElementNS(NS, "text"); t.setAttribute("class", "gd-note"); t.textContent = Math.random() < 0.5 ? "♪" : "♫";
+      t.setAttribute("x", ((Math.random() < 0.5 ? -1 : 1) * (14 + Math.random() * 6)).toFixed(1)); t.setAttribute("y", "-26"); notes.appendChild(t); setTimeout(() => t.remove(), 1400); };
+    let dancing = false;
+    const dance = () => act(async () => { dancing = true; await tween("phones", 1, 260); await face({ happy: 1, smile: 1 }, 160);
+      for (let b = 0; b < 10; b++) { const s1 = b % 2 ? 1 : -1; poke(-2.2); leanTo = s1 * 3.5; lookX = s1 * 1.5; if (b % 2 === 0) note(); if (b === 4 || b === 8) { jv = -210; go(); } draw(); await wait(500); }
+      leanTo = 0; lookX = 0; await face({ happy: 0 }, 200); await tween("phones", 0, 300); dancing = false; });
+    // follows the pointer with its eyes, wherever it is on the page, no tap needed
+    let ptrRaf = 0;
+    addEventListener("pointermove", (e) => { if (still()) return; ptrX = e.clientX; ptrY = e.clientY; ptrT = performance.now();
+      if (ptrRaf) return; ptrRaf = requestAnimationFrame(() => { ptrRaf = 0; const r = el.getBoundingClientRect(); if (r.bottom < -200 || r.top > innerHeight + 200) return;
+        const dx = ptrX - (r.left + r.width / 2), dy = ptrY - (r.top + r.height * 0.6), d = Math.hypot(dx, dy) || 1, k = Math.min(1, d / 160);
+        lookX = dx / d * 3.2 * k; lookY = dy / d * 2 * k; draw(); }); }, { passive: true });
+    // its life at rest: something every few seconds, never on a beat. Mostly happy: smiles, happy eyes, yawns, a dance, a jump now and then
     const idle = () => { setTimeout(idle, 2000 + Math.random() * 3600); if (document.hidden || still() || phase !== "rest" || acting) return;
       const r = Math.random(), rr = el.getBoundingClientRect(); if (rr.bottom < 0 || rr.top > innerHeight) return;
-      if (r < 0.3) { const b = (k) => { blink = k; draw(); }; b(0.12); setTimeout(() => b(1), 130); if (Math.random() < 0.3) setTimeout(() => { b(0.12); setTimeout(() => b(1), 120); }, 300); }
-      else if (r < 0.38) wink();
-      else if (r < 0.45) yawn();
-      else if (r < 0.55) smile();
-      else if (r < 0.62) happy();
-      else if (r < 0.68) surprised();
-      else if (r < 0.73) sleepy();
-      else if (r < 0.8) curious();
-      else if (r < 0.85) hmm();
-      else if (r < 0.95) { lookX = (Math.random() < 0.5 ? -1 : 1) * 3; lookY = Math.random() < 0.4 ? -1.5 : 0; draw(); setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900 + Math.random() * 700); }
+      const following = performance.now() - ptrT < 2500;   // the eyes are on your pointer: no looking round on its own
+      if (r < 0.2) { const b = (k) => { blink = k; draw(); }; b(0.12); setTimeout(() => b(1), 130); if (Math.random() < 0.3) setTimeout(() => { b(0.12); setTimeout(() => b(1), 120); }, 300); }
+      else if (r < 0.34) happy();
+      else if (r < 0.46) smile();
+      else if (r < 0.58) yawn();
+      else if (r < 0.66) dance();
+      else if (r < 0.74) jumps();
+      else if (r < 0.79) yes();
+      else if (r < 0.84) no();
+      else if (r < 0.88) wink();
+      else if (r < 0.91) surprised();
+      else if (r < 0.93) curious();
+      else if (r < 0.945) sleepy();
+      else if (r < 0.97) melt();
+      else if (!following) { lookX = (Math.random() < 0.5 ? -1 : 1) * 3; lookY = Math.random() < 0.4 ? -1.5 : 0; draw(); setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900 + Math.random() * 700); }
       else poke(-0.9); };
     setTimeout(idle, 2500);
-    // touched: happy
-    el.addEventListener("click", () => happy());
-    window.gdrop = { S, busy: () => acting, yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm };   // for testing by hand
+    // held down too long: it farts. A jolt, a puff out the back, a small sound, then it's embarrassed: it blushes, looks away, shrinks a little
+    const pfft = () => { try { const A = window.__gdA || (window.__gdA = new (window.AudioContext || window.webkitAudioContext)()); if (A.state === "suspended") A.resume();
+        const t0 = A.currentTime, dur = 0.42, n = A.createBuffer(1, Math.ceil(A.sampleRate * dur), A.sampleRate), ch = n.getChannelData(0); for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1;
+        const src = A.createBufferSource(); src.buffer = n; const bp = A.createBiquadFilter(); bp.type = "bandpass"; bp.Q.value = 2.2; bp.frequency.setValueAtTime(150, t0); bp.frequency.exponentialRampToValueAtTime(70, t0 + dur);
+        const o = A.createOscillator(); o.type = "sawtooth"; o.frequency.setValueAtTime(95, t0); o.frequency.exponentialRampToValueAtTime(48, t0 + dur); const og = A.createGain(); og.gain.value = 0.12;
+        const g = A.createGain(); g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(0.22, t0 + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+        const lfo = A.createOscillator(), lg = A.createGain(); lfo.frequency.value = 26; lg.gain.value = 0.1; lfo.connect(lg).connect(g.gain);   // the flutter
+        src.connect(bp).connect(g); o.connect(og).connect(g); g.connect(A.destination); [src, o, lfo].forEach((x) => { x.start(t0); x.stop(t0 + dur); }); } catch (e) {} };
+    const puff = () => { const side = S.jx > 0 ? -1 : 1; for (let i = 0; i < 4; i++) { const c = document.createElementNS(NS, "circle"); c.setAttribute("class", "gd-puff");
+        c.setAttribute("cx", (side * (14 + i * 3.5)).toFixed(1)); c.setAttribute("cy", (-3 - i * 1.6).toFixed(1)); c.setAttribute("r", (2.2 + i * 0.9).toFixed(1)); c.style.animationDelay = i * 60 + "ms"; notes.appendChild(c); setTimeout(() => c.remove(), 1500); } };
+    const fart = () => { if (still()) return; acting = false; tws.forEach((t) => t.res()); tws = []; dancing = false; S.phones = 0;
+      act(async () => { jv = -150; poke(1.8); pfft(); puff(); await face({ eyeSL: 1.3, eyeSR: 1.3, mouth: 0.35 }, 90); await wait(420);
+        lookX = -2.6; lookY = 1.6; draw(); tween("aRest", -0.07, 300); await face({ mouth: 0, eyeSL: 1, eyeSR: 1, eyeL: 0.7, eyeR: 0.7, smile: 0.3, blush: 1 }, 320); await wait(1800);
+        lookX = 0; lookY = 0; tween("aRest", 0, 300); draw(); }); };
+    let holdT = 0, farted = false;
+    el.addEventListener("pointerdown", () => { farted = false; clearTimeout(holdT); holdT = setTimeout(() => { farted = true; fart(); }, 750); });
+    ["pointerup", "pointerleave", "pointercancel"].forEach((ev) => el.addEventListener(ev, () => clearTimeout(holdT)));
+    el.addEventListener("contextmenu", (e) => e.preventDefault());   // a long press on a phone is the drop's, not the menu's
+    // touched: it dances (or, already busy, just looks happy)
+    el.addEventListener("click", () => { if (farted) { farted = false; return; } if (!acting) dance(); });
+    window.gdrop = { S, busy: () => acting, yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, fart, melt };   // for testing by hand
     // it glances at where you tap
-    addEventListener("pointerdown", (e) => { if (still()) return; const r = el.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;
+    addEventListener("pointerdown", (e) => { if (still() || e.pointerType === "mouse") return; const r = el.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;
       const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1; lookX = dx / d * 3; lookY = dy / d * 1.5; draw();
       setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900); }, { passive: true }); } }
   // the hero film: silent, looping, and still (its first frame) for anyone who asks for less motion
