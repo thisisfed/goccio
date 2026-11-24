@@ -2588,7 +2588,7 @@ html:not(.mine):not(.brew-in) .botnav [data-bn="coffee"]{display:none!important}
 /* until then the section keeps its full shape with the form unseen: "Brew something good." sits where it always does, just over the rule at the bottom */
 html:not(.mine) body #coffee > :not(.wb-sign){display:none!important}
 html:not(.mine) body #coffee#coffee#coffee{min-height:0!important;padding-top:0!important}
-html:not(.mine) body #coffee > .wb-sign{padding-top:calc(21px + 57.5px * (var(--gs, 1) - 1))!important;margin-top:0!important}   /* 43 px from Load more to the sign-off, as from the last coffee to Load more */
+html:not(.mine) body #coffee > .wb-sign{padding-top:21px!important;margin-top:0!important}   /* 43 px from Load more to the sign-off, as from the last coffee to Load more */
 html:not(.mine) body #coffee#coffee#coffee{height:auto!important;min-height:0!important;padding-bottom:0!important;margin-bottom:-87px!important}   /* 13 px from the sign-off to the rule under it, as when the form is out */   /* as far under Load more as Load more is under the last coffee; over the bottom rule exactly as before */
 /* tags stay on one line: a tag too long for it (a list of varieties) is cut with an ellipsis, the longest giving way first */
 html body .item .tags{column-gap:20px!important;display:flex!important;flex-wrap:nowrap!important;min-width:0;max-width:100%;overflow:hidden}
@@ -2757,7 +2757,7 @@ html body #coffee .field:has(#go.on) #coffeeIn{padding-right:48px!important}
 /* the drop over Brew something good.: one drop of coffee, seen from a little way off. It falls when it comes into view, lands,
    rings and settles as a drop sitting on a surface; then it lives: blinks, looks, leans when you scroll, wobbles when touched */
 html body #coffee > .wb-sign{position:relative}
-:root{--gs:1.45} @media (min-width:900px){:root{--gs:2.2}}   /* the drop at the foot, as big to the eye as the Goccio wordmark's capitals (on a wide screen, a little less, or it would fill the page) */
+:root{--gs:1.45} @media (min-width:900px){:root{--gs:1.6}}   /* the drop at the foot, as big to the eye as the Goccio wordmark's capitals on a phone; it grows up into the space under Load more, so the sign-off stays where it was */
 html body .wb-sign .gdrop{position:absolute;left:50%;width:calc(104px * var(--gs, 1));height:calc(97.5px * var(--gs, 1));margin:0 0 0 calc(-52px * var(--gs, 1));bottom:calc(100% - var(--cup-at, 21px) + 1px);color:var(--ink);pointer-events:auto;touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:pointer}
 html body .wb-sign .gdrop svg{display:block;width:100%;height:100%;overflow:visible}
 html body .wb-sign .gdrop .gd-b,html body .wb-sign .gdrop .gd-arm{fill:url(#gdFill)}   /* a drop of V60 coffee: amber where the light comes through, brown at the edges, a little see-through */   /* the one accent: a drop of the orange, with black eyes in both looks */
@@ -10163,7 +10163,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // what Goccio means, how many coffees and roasters, the time, the weather where you are) and looks coffee words up in the list.
     // Anything else, it says it doesn't know
   { let talking = false, openTalk = () => {}, closeTalk = () => {}; const el = $("gdrop");
-    const D = makeBuddy(el, { manualFall: true, paused: () => talking, tap: () => talking ? closeTalk() : openTalk() }), B = null;   // the coffee bean (makeBuddy with bean: true) is put away for now
+    const D = makeBuddy(el, { paused: () => talking, tap: () => talking ? closeTalk() : openTalk() }), B = null;   // the coffee bean (makeBuddy with bean: true) is put away for now
     if (D) { const { happy, curious, yes, smile, hmm, surprised, dance } = D, still = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
     const IT = LANG === "it", T = (en, it) => IT ? it : en;
     const talkEl = $("gdTalk"), sayEl = $("gdSay"), chipsEl = $("gdChips"), inEl = $("gdIn");
@@ -10920,7 +10920,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       ["No idea, but I can tell you why your coffee's sour.", "Non lo so, ma posso dirti perché il tuo caffè è aspro."],
       ["I'm stumped. Shall we talk about grinders instead?", "Mi hai fregato. Parliamo di macinini?"]];
     let dunnoLast = -1;
-    const dunno = () => { react("❓", 900); let i; do { i = Math.floor(Math.random() * DUNNO.length); } while (i === dunnoLast && DUNNO.length > 1); dunnoLast = i; say(T(DUNNO[i][0], DUNNO[i][1]), null, Math.random() < 0.5 ? hmm : curious); };
+    const dunno = () => { if (Math.random() < 0.3) react("❓", 900);   /* now and then, not every time */ let i; do { i = Math.floor(Math.random() * DUNNO.length); } while (i === dunnoLast && DUNNO.length > 1); dunnoLast = i; say(T(DUNNO[i][0], DUNNO[i][1]), null, Math.random() < 0.5 ? hmm : curious); };
     $("gdGo").onclick = () => ask(inEl.value);
     { const mic = $("gdMic"), Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (mic && Rec) { mic.hidden = false; let rec = null;
@@ -11043,20 +11043,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       if (!inEl.value && !/^(Try|Prova):/.test(inEl.placeholder)) set("gdIn", "placeholder", "Ask Goccio about coffee", "Chiedi a Goccio del caffè"); };
     gdWords(); window.gdWords = gdWords;
     const hint = $("gdHint"); let hinted = false;
-    // its entrance: it peeps out from under the top bar, looks this way and that, then drops into its place at the foot of the page
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-    const show = () => { el.style.visibility = ""; };
-    if (hint && "IntersectionObserver" in window && !matchMedia("(prefers-reduced-motion: reduce)").matches) el.style.visibility = "hidden";   // out of sight until its entrance, so it never shows in its place first
-    const enter = async () => { await wait(200); if (talking || matchMedia("(prefers-reduced-motion: reduce)").matches) { show(); return D.fallFrom(90); }
-      const bar = document.querySelector(".top"), r = el.getBoundingClientRect(), br = bar ? Math.max(0, bar.getBoundingClientRect().bottom) : 0;
-      const body = r.height * 0.59, hidden = br - r.bottom, peek = hidden + body * 0.72;
-      if (hidden > -40) { show(); D.fallFrom(90); await wait(900); return; }   // already up by the bar: just the usual little fall
-      el.style.transition = "none"; el.style.translate = `0 ${hidden}px`; el.getBoundingClientRect(); show();
-      D.hang(0.22); el.style.transition = "translate .9s cubic-bezier(.3,1.25,.5,1)"; el.style.translate = `0 ${peek}px`; await wait(950);
-      await D.curious(); await D.curious(); await wait(250);
-      // let go: from here the physics takes over, so it falls as a round drop and splats when it lands
-      const unit = r.width / 64; el.style.transition = "none"; el.style.translate = ""; D.fallFrom(-peek / unit);
-      for (let i = 0; i < 60 && !D.landed(); i++) await wait(50); await wait(700); };
+    // its usual fall comes first (when it is well in view), then the hello
+    const enter = async () => { await wait(1300); for (let i = 0; i < 60 && !D.landed(); i++) await wait(50); };
     if (hint && "IntersectionObserver" in window) new IntersectionObserver((es) => { if (hinted || !es[0].isIntersecting || es[0].intersectionRatio < 0.9) return; hinted = true;
       enter().then(() => { if (talking) return; gdWords(); hint.hidden = false; document.documentElement.classList.add("gd-hello"); D.happy(); setTimeout(() => { hint.classList.add("out"); document.documentElement.classList.remove("gd-hello"); setTimeout(() => { hint.hidden = true; hint.classList.remove("out"); }, 400); }, 4200); }); }, { threshold: [0, 0.9] }).observe(el);
     { let still = performance.now(), last = 0; const wake = () => { still = performance.now(); };
