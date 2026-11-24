@@ -2696,6 +2696,7 @@ html body .shelf .item .c-notes, html body .shelf .item .c-notes:not(.c-typ){col
 html body #shelves.ro-on .item .c-where .ji{display:none!important}   /* on a roaster's page a row opens with "Released yesterday": no "New" before it */
 html body .item .c-where a.rn{transition:text-decoration-color .15s ease}
 @media (hover:hover){ html body .item .c-where a.rn:hover, html body #bagList .item .c-where a.rn:hover, html body .bag-head a[data-bro]:hover{text-decoration-color:transparent!important} }   /* the roaster's line goes on hover, like the footer's links */
+.buy-pr .pd{font-size:.62em;vertical-align:var(--pd-up,.43em);line-height:0;letter-spacing:0}   /* pence: small, their top level with the top of the pounds */
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
@@ -3008,7 +3009,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
 </head>
 <body>
 <!-- the hero film lies over the page top, the top bar included: its black is see-through, so the drop falls across the bar into the coffee -->
-<video class="wm-video" id="wmVideo" muted playsinline webkit-playsinline preload="auto" poster="/img/goccio-drop2.jpg?v=3" aria-hidden="true" tabindex="-1" disablepictureinpicture><source src="/img/goccio-drop2.mp4?v=5" type="video/mp4"></video><video class="wm-video" id="wmLoop" muted playsinline webkit-playsinline loop preload="none" aria-hidden="true" tabindex="-1" disablepictureinpicture style="visibility:hidden" data-src="/img/goccio-ripples.mp4?v=4"></video><canvas class="wm-video" id="wmFilm" width="640" height="360" aria-hidden="true" hidden></canvas>
+<video class="wm-video" id="wmVideo" muted playsinline webkit-playsinline preload="auto" poster="/img/goccio-drop2.jpg?v=3" aria-hidden="true" tabindex="-1" disablepictureinpicture><source src="/img/goccio-drop2.mp4?v=6" type="video/mp4"></video><video class="wm-video" id="wmLoop" muted playsinline webkit-playsinline loop preload="none" aria-hidden="true" tabindex="-1" disablepictureinpicture style="visibility:hidden" data-src="/img/goccio-ripples.mp4?v=4"></video><canvas class="wm-video" id="wmFilm" width="640" height="360" aria-hidden="true" hidden></canvas>
 <header class="top">
   <div class="top-in">
     <div class="mark" translate="no">Goccio</div>
@@ -7229,8 +7230,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const n0 = priceNum(own), k0 = GBP_PER[ccy];
     const gbp = /£/.test(own) || !own || ccy === "GBP" ? null : r._p100 != null && r.bag_g ? r._p100 * r.bag_g / 100 : n0 && k0 ? n0 * k0 : null;
     const p1 = gbp != null ? `≈ £${gbp >= 10 ? Math.round(gbp) : gbp.toFixed(2)}` : own;
-    const p = p1.replace(/(\d)[.,]00(?!\d)/g, "$1");   // whole pounds read whole: "£15", not "£15.00"
-    if (priceOnly) return p;
+    // always pounds and pence, the pence small and level with the top of the pounds: "£15.00", "£13.50"
+    const p = p1.replace(/(\d+)(?:([.,])(\d{1,2}))?(?!\d|[.,]\d)/, (m, a, sep, d) => `${a}<span class="pd">${sep || "."}${(d || "").padEnd(2, "0")}</span>`);
+    if (priceOnly) return p.replace(/<[^>]+>/g, "");
     return `<a class="pill buy-p" href="${esc(r.url)}" target="_blank" rel="noopener" aria-label="${it ? "Compra" : "Buy"} ${esc(r.name)} ${it ? "da" : "from"} ${esc(r.roaster)}">${it ? "Compra" : "Buy"}${p ? ` <span class="buy-pr">${p}</span>` : ""}</a>`; };   // the price is said once, on the pill that spends it
   /* ways on from a search that found nothing: one of each kind, picked afresh for every new search, each tested to find coffees (Nov 2026) */
   const TRY_POOLS = [
@@ -9565,11 +9567,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   // second) that nothing can block. Either way it plays once when the page shows and rests on its last frame
   let filmOnCanvas = false;
   const canvasFilm = () => { if (filmOnCanvas) return; filmOnCanvas = true; const c = $("wmFilm"), v = $("wmVideo"), g = c && c.getContext && c.getContext("2d"); if (!g) return;
-    const N = 96, LOOP = 71, FPS = 12, COLS = 4, PER = 12, W = 640, H = 360, sheets = [];   /* frames 0-70 the drop, the bead falling back and settling; 71-95 the ripples, looped */
+    const N = 74, LOOP = 49, FPS = 12, COLS = 4, PER = 12, W = 640, H = 360, sheets = [];   /* frames 0-48 the drop, its column falling back (the bead that flies off the top never returns); 49-73 the ripples, looped */
     const draw = (k) => { const im = sheets[Math.floor(k / PER)]; if (!im || !im.ok) return false; const n = k % PER; g.drawImage(im, (n % COLS) * W, Math.floor(n / COLS) * H, W, H, 0, 0, W, H);
       const old = Math.floor(k / PER) - 1; if (n === 0 && old >= 0 && (old + 1) * PER <= LOOP && sheets[old]) { sheets[old] = null; }   // a sheet that has played is let go
       return true; };
-    const load = (i) => { const im = new Image(); im.decoding = "async"; im.onload = () => { im.ok = true; if (i === 0) { draw(0); c.hidden = false; c.style.height = v ? v.style.height : ""; if (v) v.style.display = "none"; } if (i < 7) load(i + 1); }; im.src = `/img/goccio-film${i + 1}.jpg?v=5`; sheets[i] = im; };
+    const load = (i) => { const im = new Image(); im.decoding = "async"; im.onload = () => { im.ok = true; if (i === 0) { draw(0); c.hidden = false; c.style.height = v ? v.style.height : ""; if (v) v.style.display = "none"; } if (i < 6) load(i + 1); }; im.src = `/img/goccio-film${i + 1}.jpg?v=6`; sheets[i] = im; };
     load(0); let k = 0, last = 0;
     const tick = (t) => { if (document.documentElement.classList.contains("wait")) return requestAnimationFrame(tick);
       if (window.__heroOff) { last = t; return requestAnimationFrame(tick); }   // off screen: the ripples wait
@@ -9605,7 +9607,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         kick(); setTimeout(kick, 800); setTimeout(kick, 2500); { const iv = setInterval(() => { if (!document.documentElement.classList.contains("wait")) { clearInterval(iv); setTimeout(kick, 350); } }, 120); }
         // nothing loaded after four seconds (Safari gives up when a server answers its part-requests oddly): fetch the whole
         // film, 0.6 MB, and play it from memory
-        setTimeout(async () => { if (filmOnCanvas || (v.readyState >= 2 && !v.error)) return; try { const r = await fetch("/img/goccio-drop2.mp4?v=5"); if (!r.ok) return; fetch("/img/goccio-ripples.mp4?v=4").then((x) => x.ok && x.blob()).then((b) => { const lp = $("wmLoop"); if (b && lp) { lp.dataset.src = URL.createObjectURL(b); } }).catch(() => {});
+        setTimeout(async () => { if (filmOnCanvas || (v.readyState >= 2 && !v.error)) return; try { const r = await fetch("/img/goccio-drop2.mp4?v=6"); if (!r.ok) return; fetch("/img/goccio-ripples.mp4?v=4").then((x) => x.ok && x.blob()).then((b) => { const lp = $("wmLoop"); if (b && lp) { lp.dataset.src = URL.createObjectURL(b); } }).catch(() => {});
             v.src = URL.createObjectURL(await r.blob()); v.load(); kick(); } catch (e) {} }, 4000);
       } } }
   window.__v60 = { showReview, analyseBeans, decafGuard, parseCoffee, engine, suggest, cupNotes, cardImage, risks, recipeText, BASE, get recipe() { return recipe; }, get shelf() { return shelf; } };
