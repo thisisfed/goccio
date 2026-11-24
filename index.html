@@ -2693,6 +2693,10 @@ html body{padding-top:var(--top-h, 49px)}
 html body .shelf .item .c-where .ji{color:var(--muted)!important}
 html body .shelf .item .tags, html body .shelf .item .tags > *, html body .shelf .item .tags .tg{color:var(--muted)!important}
 html body .shelf .item .c-notes, html body .shelf .item .c-notes:not(.c-typ){color:var(--muted)!important}
+/* a try: "un goccio", a little, said with two emoji over the name, in place of the film */
+html body .wm-video{display:none!important}
+.wm-screen{position:relative}
+.wm-emoji{position:absolute;left:0;right:0;top:0;margin:0;display:flex;justify-content:center;align-items:center;gap:.12em;font-size:clamp(72px,24vw,150px);line-height:1;pointer-events:none;z-index:1;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
@@ -3028,6 +3032,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   <section class="sec hero-sec" aria-labelledby="h1">
     <div class="hero">
       <div class="wm-screen">
+        <p class="wm-emoji" id="wmEmoji" aria-hidden="true" translate="no"><span>🤏</span><span>☕️</span></p>
         <p class="wordmark" aria-hidden="true" translate="no"><span id="wm">Goccio</span></p>
         <div class="wm-more">
           <p class="wm-tagline">Your coffee companion</p>
@@ -9243,6 +9248,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   document.addEventListener("click", (e) => { const a = e.target.closest && e.target.closest(".ro-back-q"); if (!a) return; e.preventDefault();
     const i = $("askIn"), q = $("shelfQ"); i.value = ""; q.value = ""; $("roBack").click(); });   /* the way out of a roaster's page offered with its search results */
   new MutationObserver(() => { try { window.__searchHint && window.__searchHint(); } catch (e) {} }).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });   // the box's count follows the page it is on
+  { const em = $("wmEmoji"), sc = document.querySelector(".wm-screen"), wm = $("wm");   /* the two emoji sit midway between the top bar and the name, whatever the screen */
+    const lay = () => { try { const s = sc.getBoundingClientRect(), w = wm.getBoundingClientRect(), room = w.top - s.top; em.style.height = Math.max(0, room) + "px"; em.style.fontSize = Math.max(40, Math.min(room * .5, innerWidth * .26, 170)) + "px"; } catch (e) {} };
+    if (em && sc && wm) { lay(); addEventListener("resize", lay); [200, 700, 1500, 3000].forEach((t) => setTimeout(lay, t)); } }
   const mineOn = () => { if (document.documentElement.classList.contains("mine")) return; document.documentElement.classList.add("mine"); };   /* for this visit only: the next one starts without it again */
   /* and away again once back at the list or the opening screen, unless a coffee of your own has its recipe out */
   const mineOff = () => { const h = document.documentElement; if (h.classList.contains("mine") && !h.classList.contains("brew-in") && $("recipe").hidden) h.classList.remove("mine"); };
