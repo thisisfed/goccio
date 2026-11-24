@@ -2679,6 +2679,7 @@ html body .shelf .item > .r > .ro-all{display:none!important}   /* the roaster's
 html.brew-done .botnav [data-bn="coffee"].bn-go{display:none!important}
 html.brew-done.brew-in .botnav [data-bn="cancel"]{flex:1 1 0!important;width:auto!important;max-width:none!important}
 html body #bvClose{border-radius:var(--r)!important}   /* the brewing page's × is square too */
+@media (min-width:900px){ html body #shelves:not(.ro-on) .shelf > .item:not(.brewing), html body #shelves .shelf > .item:not(.brewing){display:flex!important;flex-direction:column} html body .shelf > .item:not(.brewing) > .r{margin-top:auto!important;align-self:stretch!important;width:100%} }   /* side by side, two coffees keep their buttons on one line whatever the length of their names */
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
@@ -5596,7 +5597,12 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     { let ct = $("consTop"); if (!ct) { ct = document.createElement("div"); ct.id = "consTop"; $("techLbl").before(ct); }
       const D = $("detected"); if (D && !D._home) D._home = { p: D.parentNode, n: D.nextSibling }; if (D && D.parentNode === ct) D._home.p.insertBefore(D, D._home.n && D._home.n.parentNode === D._home.p ? D._home.n : null);   /* the question goes home before this is re-drawn */
       ct.textContent = "";
-      $("why").querySelectorAll("li.cons").forEach((li) => { const p = document.createElement("p"); p.className = "cons-top"; while (li.firstChild) p.appendChild(li.firstChild); ct.appendChild(p); li.remove(); }); ct.hidden = !ct.childElementCount;
+      $("why").querySelectorAll("li.cons").forEach((li) => { const p = document.createElement("p"); p.className = "cons-top"; const a = li.querySelector(".why-ask");
+        /* over How to pour: one line. The full reasoning stays in Why this recipe, where it came from */
+        const t = li.textContent.replace(a ? a.textContent : "", "").trim(), head = /^roast/i.test(t) ? (LANG === "it" ? "Tostatura non indicata." : "Roast not stated.") : t.split(/[,:]/)[0].trim() + ".";
+        p.appendChild(document.createTextNode(head + " "));
+        if (a) { a.textContent = LANG === "it" ? "Di’ cosa dice la busta." : "Say what the bag says."; p.appendChild(a); }
+        ct.appendChild(p); }); ct.hidden = !ct.childElementCount;
       /* asked for: the words give way to the question itself, right here: Roast, Scan the beans, + 5 */
       if (D && bagAskShow && !D.hidden && D.textContent.trim() && !ct.hidden) { ct.textContent = ""; ct.appendChild(D); } }
     // "Label: text" lines bold the label; a line with no label (the roast note) is shown as it is
