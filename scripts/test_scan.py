@@ -101,6 +101,8 @@ CASES = [
              == ["Orange", "Sage", "Rose water", "Blood orange", "Cacao nibs", "Nutty", "Black tea"]),
     ("A German shop's list of brewers is not tasting notes ('Siebträger', 'Vollautomat', 'Herdkocher', 'Handfilter'), nor is 'Direkt vom Ursprung'",
      lambda: [scan.tidy_note(x) for x in ("Siebträger", "Vollautomat", "Herdkocher", "Handfilter", "French Press", "Direkt vom Ursprung", "Haselnuss")] == ["", "", "", "", "", "", "Haselnuss"]),
+    ("Röststätte: a sentence about the coffee is not its notes ('Perfekt für alle, die ihren Kaffee vollmundig und aromatisch lieben'), and 'Marzipan in' is Marzipan",
+     lambda: [scan.tidy_note(x) for x in ("Perfekt für alle", "Die ihren Kaffee vollmundig", "Aromatisch lieben", "Marzipan in", "Kaffeeblüte", "Red currant")] == ["", "", "", "Marzipan", "Kaffeeblüte", "Red currant"]),
     ("Drip coffee bags are still not beans", lambda: scan.EXCLUDE.search("Drip coffee bags x10") is not None),
     ("Um Coffee Co: 'Nanolotes | Wush Wush' is named Wush Wush", lambda: name("Nanolotes | Wush Wush", "Um Coffee Co", "Brazil") == "Wush Wush"),
     ("Um Coffee Co: 'Blend | Fruitbomb' is named Fruitbomb", lambda: name("Blend | Fruitbomb", "Um Coffee Co", "Brazil") == "Fruitbomb"),

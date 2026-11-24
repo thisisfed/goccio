@@ -1618,7 +1618,13 @@ def blend_parts(text):
 NOTE_BADGE = re.compile(r"^(?:new|new in|new arrival|just landed|sold out|out of stock|sale|on sale|best ?seller|limited(?: edition)?|pre-?order|back in stock)$", re.I)
 
 
+# a piece of a sentence about the coffee, not a flavour: "Perfekt für alle", "die ihren Kaffee vollmundig", "aromatisch lieben" (Röststätte)
+NOTE_SENT = re.compile(r"\b(?:für|ihren?|ihre|lieben|liebt|perfekt|unsere?[rsn]?|dieser?|dieses|wird|werden|sind|kaffee|perfect for|for those|who loves?|if you like)\b", re.I)
+
+
 def junk_note(n):
+    if NOTE_SENT.search(n or ""):
+        return True
     t = (n or "").strip(" .,;:!")
     return bool(NOTE_JUNK.search(n or "")) or bool(NOTE_BREW.match(t)) or bool(NOTE_BADGE.match(t))
 
@@ -1633,6 +1639,7 @@ def tidy_note(n):
         n = n.lower()   # shouted notes ("CHERRY YOGURT") read as "Cherry yogurt"
     n = NOTE_LEAD.sub("", n).strip()
     n = re.sub(r"^(?:a|an|the)\s+", "", n, flags=re.I)
+    n = re.sub(r"\s+(?:in|im|mit|und|and|with|of|von|de|et)$", "", n, flags=re.I)   # a list cut mid-phrase: "Marzipan in" -> "Marzipan"
     m = NOTE_STOP.search(n)
     if m:
         n = n[:m.start()].strip(" ,.;:-–")
