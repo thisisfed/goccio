@@ -41,6 +41,12 @@ COFFEE_BODY = "Origin: Colombia\nProcess: Washed\nVariety: Caturra\nAltitude: 1,
 
 # (what was reported, check that must be True)
 CASES = [
+    # Rum Baba's Winter Coffee (24/11/2026): the page labels "Processing: Anaerobic" but the shop tags say natural and thermal
+    ("A labelled 'Processing: Anaerobic' line beats shop tags saying natural",
+     lambda: (kept(item("Winter Coffee - Costa Rica", "Tasting notes: Frosted Cinnamon Bun\nArea: San José, Costa Rica\nFarm: Fernando Cordero, Cordillera de Fuego, Luis Campos\nVariety: Catuai\nProcessing: Anaerobic\nRoast level: Light",
+                       tags=("baking spice", "coffee", "costa rica", "natural", "thermal", "filter roast"))) or {}).get("process") == "Anaerobic"),
+    ("Rum Baba's 'Tasting notes: Frosted Cinnamon Bun' is read as the note",
+     lambda: (kept(item("Winter Coffee - Costa Rica", "Tasting notes: Frosted Cinnamon Bun\nArea: San José, Costa Rica\nVariety: Catuai\nProcessing: Anaerobic\nRoast level: Light")) or {}).get("notes") == ["Frosted Cinnamon Bun"]),
     # chocolate and other things that aren't coffee (Newground, 15/11/2026)
     ("Newground's 'Honduras 60% Milk' chocolate bar is not coffee",
      lambda: scan.not_coffee(item("Honduras 60% Milk", "Bean to bar milk chocolate from Honduras.")) is not None),
