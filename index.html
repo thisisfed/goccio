@@ -7226,7 +7226,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const ccy = ccyOf(r);
     const n0 = priceNum(own), k0 = GBP_PER[ccy];
     const gbp = /£/.test(own) || !own || ccy === "GBP" ? null : r._p100 != null && r.bag_g ? r._p100 * r.bag_g / 100 : n0 && k0 ? n0 * k0 : null;
-    const p = gbp != null ? `≈ £${gbp >= 10 ? Math.round(gbp) : gbp.toFixed(2)}` : own;
+    const p1 = gbp != null ? `≈ £${gbp >= 10 ? Math.round(gbp) : gbp.toFixed(2)}` : own;
+    const p = p1.replace(/(\d)[.,]00(?!\d)/g, "$1");   // whole pounds read whole: "£15", not "£15.00"
     if (priceOnly) return p;
     return `<a class="pill buy-p" href="${esc(r.url)}" target="_blank" rel="noopener" aria-label="${it ? "Compra" : "Buy"} ${esc(r.name)} ${it ? "da" : "from"} ${esc(r.roaster)}">${it ? "Compra" : "Buy"}${p ? ` <span class="buy-pr">${p}</span>` : ""}</a>`; };   // the price is said once, on the pill that spends it
   let askWant = null, askRank = null, startFirst = null;   // startFirst: in a plain search, names that start as typed, ahead of names that only hold it
@@ -7278,9 +7279,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       // tab hidden doesn't count, so a scroll never cuts it short), then For you switches itself off and the note goes
       if (!n.hidden && !fy) fyRead(n); else fyStop(); }
     { const secs = Math.max(0.01, (performance.now() - t0) / 1000), n0 = list.length;   // what it found, and how long the looking took
-      const found = LANG === "it" ? `: ${n0.toLocaleString("it-IT")} caffè in ${secs.toFixed(2).replace(".", ",")} secondi` : `: ${n0.toLocaleString("en-GB")} coffee${n0 === 1 ? "" : "s"} in ${secs.toFixed(2)} seconds`;
+      const found = LANG === "it" ? `${n0.toLocaleString("it-IT")} caffè§ in ${secs.toFixed(2).replace(".", ",")} secondi` : `${n0.toLocaleString("en-GB")} coffee${n0 === 1 ? "" : "s"}§ in ${secs.toFixed(2)} seconds`;
       var askFound = (q || askWant) ? found : ""; }
-    { const n = $("askNote"), t = !q ? "" : (LANG === "it" ? `Ricerca “${$("shelfQ").value.trim()}”${askFound}` : `Searching for “${$("shelfQ").value.trim()}”${askFound}`)
+    { const n = $("askNote"), t = !q ? "" : (() => { const qq = $("shelfQ").value.trim(), it = LANG === "it", f0 = typeof askFound === "string" && askFound ? askFound : "";   /* said as done: "200 coffees for “blueberry” in 0.12 seconds" */
+          return f0 ? f0.replace("§", it ? ` per “${qq}”` : ` for “${qq}”`) : (it ? `Ricerca “${qq}”` : `Searching for “${qq}”`); })()
         + (askWant && list.length ? (LANG === "it" ? ". I più vicini per primi." : ". Best match first.") : ""); const f = $("fyNote");   // what the list is showing, in grey under Coffees (and read out to screen readers)   // with For you's line showing, the two read as one paragraph
       if (t && !f.hidden) { f.textContent = f.textContent.trim() + " " + t; n.hidden = true; n.textContent = ""; } else { n.hidden = !t; n.textContent = t; } }   // the search's lens in front, as in the box
     list = shelfRo ? [...list].sort((a, b) => shelfDate(b).localeCompare(shelfDate(a))) : fy ? list : startFirst && !askRank ? [...list].sort((a, b) => ((startFirst.get(b) || 0) - (startFirst.get(a) || 0)) || shelfDate(b).localeCompare(shelfDate(a))) : askRank ? [...list].sort((a, b) => (askRank.get(b) - askRank.get(a))
