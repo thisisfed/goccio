@@ -2675,6 +2675,10 @@ html body .shelf .item > .r > .bag-add.ico, html body #recipe#recipe .share > .b
 html body .shelf .item .c-where a.rn{text-decoration:underline!important;text-decoration-thickness:1px!important;text-underline-offset:2px!important;text-decoration-color:currentColor!important}
 /* the search box has the same corners as every pill */
 html body .top .ask-box, html body .top #askForm, html body .top .ask-line, html body .top #askIn, html body .top .ask-go{border-radius:var(--r)!important}
+html body .shelf .item > .r > .ro-all{display:none!important}   /* the roaster's name over the coffee is the link: no second one under it */
+html.brew-done .botnav [data-bn="coffee"].bn-go{display:none!important}
+html.brew-done.brew-in .botnav [data-bn="cancel"]{flex:1 1 0!important;width:auto!important;max-width:none!important}
+html body #bvClose{border-radius:var(--r)!important}   /* the brewing page's × is square too */
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
@@ -6173,7 +6177,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     $("saveLog").textContent = "Saved"; setTimeout(() => ($("saveLog").textContent = "Save to journal"), 1400);
     logSaved();
   }
-  function logSaved() { brewDone = false; $("logBox").classList.add("saved"); journalOn(); }
+  function logSaved() { brewDone = false; try { brewDoneUI(false); } catch (e) {} $("logBox").classList.add("saved"); journalOn(); }
   // the Journal (and its link in the menu) only exists once there's a brew to write about: one that reached its end in this
   // visit, or an entry already saved
   let brewDone = false;   // this visit only: leave without saving an entry and the Journal is gone again next time
@@ -6393,7 +6397,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // Drained (Done for immersion) is live from the last step on
     const canDrain = idx === P.length - 1 && (bv.running || bv.paused > 0);
     $("bvDrain").hidden = !canDrain; $("bvReset").hidden = canDrain;
-    if (canDrain && !brewDone) { brewDone = true; $("logBox").classList.remove("saved"); $("suggest").hidden = true; journalOn(); }   // the last pour is in: the brew is at its end, the Journal appears
+    if (canDrain && !brewDone) { brewDone = true; try { brewDoneUI(true); } catch (e) {} $("logBox").classList.remove("saved"); $("suggest").hidden = true; journalOn(); }   // the last pour is in: the brew is at its end, the Journal appears
     if (bv.running && el > r.hi + 240) { stopLoop(); $("bvGo").textContent = "Resume"; }
   }
 
@@ -9193,6 +9197,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       requestAnimationFrame(tick); })(performance.now());
   } catch (e) {} }
   document.addEventListener("click", (e) => { if (e.target.closest && e.target.closest('[data-roast], [data-proc], [id^="o-roast-"], [id^="o-process-"], #roastSkip')) window.__specFlash = performance.now() + 1500; }, true);
+  /* the brew is finished: Start brewing has done its work and leaves the bottom bar; what was Cancel reads Done. A new coffee, a reset or a saved entry brings it back */
+  window.brewDoneUI = (on) => { document.documentElement.classList.toggle("brew-done", !!on); const c = document.querySelector('.botnav [data-bn="cancel"]'); if (c) { if (!c.dataset.t) c.dataset.t = c.textContent; c.textContent = on ? (LANG === "it" ? "Fatto" : "Done") : c.dataset.t; } };
+  document.addEventListener("click", (e) => { if (document.documentElement.classList.contains("brew-done") && e.target.closest && e.target.closest('.shelf .item .btn[data-i], #bags .btn, #bvReset, #wmBag, .botnav [data-bn="cancel"], #coffeeGo')) brewDoneUI(false); }, true);
   const mineOn = () => { if (document.documentElement.classList.contains("mine")) return; document.documentElement.classList.add("mine"); };   /* for this visit only: the next one starts without it again */
   /* and away again once back at the list or the opening screen, unless a coffee of your own has its recipe out */
   const mineOff = () => { const h = document.documentElement; if (h.classList.contains("mine") && !h.classList.contains("brew-in") && $("recipe").hidden) h.classList.remove("mine"); };
@@ -9202,7 +9209,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   if (/^#(?:coffee|r=|recipe)/.test(location.hash)) mineOn();
   
   /* the bottom bar is a way between sections: with one section to show there is nowhere to go, and no bar */
-  const navSync = () => { const n = document.querySelector(".botnav"); if (!n) return; const on = [...n.querySelectorAll(".chip")].filter((c) => !c.hidden && getComputedStyle(c).display !== "none").length >= 2 || (document.documentElement.classList.contains("ro-page") && !document.documentElement.classList.contains("brew-in"));
+  const navSync = () => { const n = document.querySelector(".botnav"); if (!n) return; const on = [...n.querySelectorAll(".chip")].filter((c) => !c.hidden && getComputedStyle(c).display !== "none").length >= 2 || document.documentElement.classList.contains("brew-in") || (document.documentElement.classList.contains("ro-page") && !document.documentElement.classList.contains("brew-in"));
     if (document.documentElement.classList.contains("nav-off") === on) document.documentElement.classList.toggle("nav-off", !on); };
   document.addEventListener("click", () => { setTimeout(navSync, 0); setTimeout(navSync, 400); });   /* and after any tap, should a change slip past the observers */
   navSync(); new MutationObserver(navSync).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
