@@ -2758,7 +2758,7 @@ html body #coffee .field:has(#go.on) #coffeeIn{padding-right:48px!important}
 html body #coffee > .wb-sign{position:relative}
 html body .wb-sign .gdrop{position:absolute;left:50%;width:104px;height:97.5px;margin:0 0 0 -52px;bottom:calc(100% - var(--cup-at, 21px) + 1px);color:var(--ink);pointer-events:auto;touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:pointer}
 html body .wb-sign .gdrop svg{display:block;width:100%;height:100%;overflow:visible}
-html body .wb-sign .gdrop .gd-b{fill:url(#gdFill)}   /* a drop of V60 coffee: amber where the light comes through, brown at the edges, a little see-through */   /* the one accent: a drop of the orange, with black eyes in both looks */
+html body .wb-sign .gdrop .gd-b,html body .wb-sign .gdrop .gd-arm{fill:url(#gdFill)}   /* a drop of V60 coffee: amber where the light comes through, brown at the edges, a little see-through */   /* the one accent: a drop of the orange, with black eyes in both looks */
 html body .wb-sign .gdrop .gd-e{fill:#000}
 html body .wb-sign .gdrop .gd-h{fill:#fff;opacity:.5}
 html body .wb-sign .gdrop .gd-s{fill:var(--hl)}
@@ -2820,6 +2820,21 @@ html body .wb-sign .gdrop .gd-cup{fill:var(--ink);stroke:#000;stroke-width:.8}
 html body .wb-sign .gdrop .gd-note{fill:var(--ink);paint-order:stroke;stroke:#6e3514;stroke-width:.6px;font:600 9px/1 var(--sans);animation:gdnote 1.4s ease-out forwards}
 @keyframes gdnote{from{transform:translate(0,0) scale(.5);opacity:0}20%{opacity:1}to{transform:translate(var(--dx,6px),-24px) scale(1.1);opacity:0}}
 html body .wb-sign .gdrop{z-index:30}   /* the light caught on its top: liquid, not a sticker */
+/* the drop's bubble and hint in the page's own colours: on the dark site a dark card, on the light site a light one; a hairline
+   edge and a soft shadow lift it off the page */
+:root{--gd-card:color-mix(in srgb,var(--ink) 7%,var(--bg))} :root[data-theme="light"]{--gd-card:var(--bg)}   /* dark site: a dark card; light site: white */
+html body .wb-sign .gd-talk,html body .wb-sign .gd-hint{background:var(--gd-card)!important;color:var(--ink)!important;
+  border:1px solid color-mix(in srgb,var(--ink) 16%,var(--bg));box-shadow:0 10px 34px rgba(0,0,0,.22)!important}
+html body .wb-sign .gd-talk::after,html body .wb-sign .gd-hint::after{background:var(--gd-card)!important;
+  border:solid color-mix(in srgb,var(--ink) 16%,var(--bg));border-width:0 1px 1px 0;bottom:-7px!important}
+html body .wb-sign .gd-say{color:var(--ink)!important}
+html body .wb-sign .gd-chips button:not(.on),html body .wb-sign .gd-ask input{background:var(--pill)!important;color:var(--ink)!important}
+html body .wb-sign .gd-ask input::placeholder{color:var(--muted)!important}
+@media (hover:hover){html body .wb-sign .gd-chips button:not(.on):hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))!important}}
+html body .wb-sign .gd-x{color:var(--ink)!important}
+/* the drop needs room of its own: well clear of Load more above it, so a tap on one never lands on the other */
+html body #shelfMore{margin-bottom:28px!important}
+html body .wb-sign .gdrop{pointer-events:none!important} html body .wb-sign .gdrop .gd-b{pointer-events:visiblePainted}   /* only the drop itself is tappable, not the empty box around it (it used to catch taps meant for Load more) */
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
@@ -3265,7 +3280,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       </details>
       <input type="file" accept="image/*" capture="environment" id="roastPhotoIn" hidden>
     </div>
-    <p class="wb-sign"><span class="gdrop" id="gdrop" role="button" tabindex="0" aria-label="Ask the drop about coffee" aria-expanded="false"><svg viewBox="-32 -56 64 60" aria-hidden="true"><defs><radialGradient id="gdFill" cx="0.56" cy="0.7" r="0.72" fx="0.58" fy="0.78"><stop offset="0" stop-color="#e3a05a" stop-opacity=".92"/><stop offset=".38" stop-color="#b8682c" stop-opacity=".9"/><stop offset=".78" stop-color="#6e3514" stop-opacity=".93"/><stop offset="1" stop-color="#3f1c08" stop-opacity=".97"/></radialGradient></defs><g class="gd-all"><path class="gd-b" d=""/><path class="gd-butt" d=""/><ellipse class="gd-h" cx="0" cy="0" rx="3.4" ry="1.9"/><g class="gd-e"><ellipse class="gd-l" cx="-6" cy="-12" rx="2.4" ry="3.4"/><ellipse class="gd-r" cx="6" cy="-12" rx="2.4" ry="3.4"/><path class="gd-a" d="M -8.6 -11 Q -6 -14.6 -3.4 -11"/><path class="gd-a" d="M 3.4 -11 Q 6 -14.6 8.6 -11"/><ellipse class="gd-bl" cx="-10.5" cy="-7.4" rx="3" ry="1.7"/><ellipse class="gd-bl" cx="10.5" cy="-7.4" rx="3" ry="1.7"/></g><g class="gd-ph"><path class="gd-band" d=""/><rect class="gd-cup l" x="0" y="0" width="5" height="9" rx="2.2"/><rect class="gd-cup r" x="0" y="0" width="5" height="9" rx="2.2"/></g></g><g class="gd-n"></g></svg></span><span class="gd-hint" id="gdHint" hidden>Tap me, I answer coffee questions.</span><span class="gd-talk" id="gdTalk" role="dialog" aria-label="The drop" hidden><button type="button" class="gd-x" id="gdX" aria-label="Close"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button><span class="gd-say" id="gdSay" aria-live="polite"></span><span class="gd-chips" id="gdChips"></span><span class="gd-ask"><input id="gdIn" type="text" enterkeyhint="send" autocomplete="off" placeholder="Ask me about coffee" aria-label="Ask the drop"><button type="button" id="gdGo" aria-label="Ask"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></span></span>Brew something good.</p>
+    <p class="wb-sign"><span class="gdrop" id="gdrop" role="button" tabindex="0" aria-label="Ask the drop about coffee" aria-expanded="false"><svg viewBox="-32 -56 64 60" aria-hidden="true"><defs><radialGradient id="gdFill" gradientUnits="userSpaceOnUse" cx="1.8" cy="-9.3" r="22.3" fx="2.5" fy="-6.8"><stop offset="0" stop-color="#e3a05a" stop-opacity=".92"/><stop offset=".38" stop-color="#b8682c" stop-opacity=".9"/><stop offset=".78" stop-color="#6e3514" stop-opacity=".93"/><stop offset="1" stop-color="#3f1c08" stop-opacity=".97"/></radialGradient></defs><g class="gd-all"><path class="gd-arm" d=""/><path class="gd-arm" d=""/><path class="gd-b" d=""/><path class="gd-butt" d=""/><ellipse class="gd-h" cx="0" cy="0" rx="3.4" ry="1.9"/><g class="gd-e"><ellipse class="gd-l" cx="-6" cy="-12" rx="2.4" ry="3.4"/><ellipse class="gd-r" cx="6" cy="-12" rx="2.4" ry="3.4"/><path class="gd-a" d="M -8.6 -11 Q -6 -14.6 -3.4 -11"/><path class="gd-a" d="M 3.4 -11 Q 6 -14.6 8.6 -11"/><ellipse class="gd-bl" cx="-10.5" cy="-7.4" rx="3" ry="1.7"/><ellipse class="gd-bl" cx="10.5" cy="-7.4" rx="3" ry="1.7"/></g><g class="gd-ph"><path class="gd-band" d=""/><rect class="gd-cup l" x="0" y="0" width="5" height="9" rx="2.2"/><rect class="gd-cup r" x="0" y="0" width="5" height="9" rx="2.2"/></g></g><g class="gd-n"></g></svg></span><span class="gd-hint" id="gdHint" hidden>Tap me, I answer coffee questions.</span><span class="gd-talk" id="gdTalk" role="dialog" aria-label="The drop" hidden><button type="button" class="gd-x" id="gdX" aria-label="Close"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button><span class="gd-say" id="gdSay" aria-live="polite"></span><span class="gd-chips" id="gdChips"></span><span class="gd-ask"><input id="gdIn" type="text" enterkeyhint="send" autocomplete="off" placeholder="Ask me about coffee" aria-label="Ask the drop"><button type="button" id="gdMic" aria-label="Ask out loud" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="5.5" y="1.5" width="5" height="8.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 7.5a5 5 0 0 0 10 0M8 12.5v2.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button><button type="button" id="gdGo" aria-label="Ask"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></span></span>Brew something good.</p>
   </section>
 
   <section class="sec" id="recipe" aria-labelledby="rtitle">
@@ -9827,13 +9842,19 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const still = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
     const W0 = 36, H0 = 24, R0 = 15.5;   // at rest: a dome 36 wide, 24 high; falling: a round drop of about the same volume
     const wS = 2 * Math.PI / 0.24, zS = 0.3, wL = 2 * Math.PI / 0.42, zL = 0.45, G = 2600;
-    const S = { aRest: 0, eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, phones: 0, jx: 0, blush: 0, turn: 0 }; let jy = 0, jv = 0, ptrX = 0, ptrY = 0, ptrT = 0; let tws = [], a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
+    const S = { aRest: 0, eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, phones: 0, jx: 0, blush: 0, turn: 0, armL: 0, armR: 0, armLa: 0, armRa: 0, flip: 0 }; let jy = 0, jv = 0, ptrX = 0, ptrY = 0, ptrT = 0; let tws = [], a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
     const draw = () => {
       // the shape it has just before it falls: round. Squashed or stretched it keeps its volume (taller is narrower); its top
       // sways with the page; it sits on its lowest point
       const k = Math.max(0.3, 1 + a), ry = R0 * k * (opt.bean ? 1.08 : 1), tc = Math.cos(S.turn * Math.PI), rx = R0 / Math.sqrt(k) * (opt.bean ? 0.86 : 1) * Math.max(0.08, Math.abs(tc)), w = rx * 2,   /* turning round: it narrows to its side, then widens showing its back */ cx = lean * 0.6, bot = y, mid = bot - ry, top = bot - 2 * ry, sh = 0.552;
       const d = `M ${-rx} ${mid} C ${-rx} ${mid - ry * sh} ${cx - rx * sh} ${top} ${cx} ${top} C ${cx + rx * sh} ${top} ${rx} ${mid - ry * sh} ${rx} ${mid} C ${rx} ${mid + ry * sh} ${rx * sh} ${bot} 0 ${bot} C ${-rx * sh} ${bot} ${-rx} ${mid + ry * sh} ${-rx} ${mid} Z`;
-      body.setAttribute("d", d);
+      // arms: liquid pushed out of its sides, wide where they leave the body, rounded at the tip, a little curve as if poured
+      const arm = (side, ext, ang) => { ext *= Math.abs(tc); if (ext < 0.03) return ""; const A = ang * Math.PI / 180, dx = side * Math.cos(A), dy = -Math.sin(A), nx = -dy, ny = dx;
+        const ox = side * rx * 0.78 + cx * 0.3, oy = mid - ry * 0.05, L = 4 + 15 * ext, wb = 4.4, rt = 2.1 + 0.4 * ext, bend = 2.2 * side * Math.sin(A + 0.6);
+        const tx = ox + dx * (rx * 0.22 + L), ty = oy + dy * (rx * 0.22 + L), f = (v) => v.toFixed(2);
+        return ` M ${f(ox + nx * wb)} ${f(oy + ny * wb)} C ${f(ox + dx * L * 0.55 + nx * (wb * 0.55 + bend))} ${f(oy + dy * L * 0.55 + ny * (wb * 0.55 + bend))} ${f(tx - dx * rt + nx * rt)} ${f(ty - dy * rt + ny * rt)} ${f(tx + nx * rt)} ${f(ty + ny * rt)}`
+          + ` Q ${f(tx + dx * rt * 1.5)} ${f(ty + dy * rt * 1.5)} ${f(tx - nx * rt)} ${f(ty - ny * rt)} C ${f(tx - dx * rt - nx * rt)} ${f(ty - dy * rt - ny * rt)} ${f(ox + dx * L * 0.55 - nx * (wb * 0.55 - bend))} ${f(oy + dy * L * 0.55 - ny * (wb * 0.55 - bend))} ${f(ox - nx * wb)} ${f(oy - ny * wb)} Z`; };
+      body.setAttribute("d", d); const AR = el.querySelectorAll(".gd-arm"); if (AR.length === 2) { AR[0].setAttribute("d", arm(-1, S.armL, S.armLa)); AR[1].setAttribute("d", arm(1, S.armR, S.armRa)); }   /* behind the body, so they flow out of it */
       const cr = el.querySelector(".gd-crease"); if (cr) cr.setAttribute("d", `M ${(cx * 0.9).toFixed(2)} ${(top + ry * 0.22).toFixed(2)} C ${(cx * 0.7 + 3.2).toFixed(2)} ${(top + ry * 0.75).toFixed(2)} ${(cx * 0.3 - 3.2).toFixed(2)} ${(bot - ry * 0.75).toFixed(2)} ${(cx * 0.1).toFixed(2)} ${(bot - ry * 0.22).toFixed(2)}`);   /* the bean's crease, down its middle */
       const hl = el.querySelector(".gd-h"); if (hl) hl.setAttribute("transform", `translate(${(cx * 0.5 - rx * 0.45).toFixed(2)} ${(top + ry * 0.42).toFixed(2)}) rotate(-35)`);
       const tm = ((S.turn % 2) + 2) % 2, back = tm > 0.5 && tm < 1.5; eyes.style.opacity = back ? "0" : "1";   /* turn 0→1 shows its back, 0→2 is a whole spin */
@@ -9858,7 +9879,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         el.querySelector(".gd-band").setAttribute("d", `M ${(-ex2 + 1.5 + lx * 0.4).toFixed(2)} ${(cyp + drop).toFixed(2)} C ${(-ex2 + lx * 0.6).toFixed(2)} ${(tp - 6 + drop).toFixed(2)} ${(ex2 + lx * 0.6).toFixed(2)} ${(tp - 6 + drop).toFixed(2)} ${(ex2 - 1.5 + lx * 0.4).toFixed(2)} ${(cyp + drop).toFixed(2)}`);
         const cl = el.querySelector(".gd-cup.l"), cr = el.querySelector(".gd-cup.r");
         cl.setAttribute("x", (-ex2 - 2.2 + lx * 0.35).toFixed(2)); cl.setAttribute("y", (cyp - 4.5 + drop).toFixed(2)); cr.setAttribute("x", (ex2 - 2.8 + lx * 0.35).toFixed(2)); cr.setAttribute("y", (cyp - 4.5 + drop).toFixed(2)); }
-      all.setAttribute("transform", `translate(${S.jx.toFixed(2)} ${jy.toFixed(2)})`); };
+      all.setAttribute("transform", `translate(${S.jx.toFixed(2)} ${jy.toFixed(2)})${S.flip ? ` rotate(${S.flip.toFixed(1)} 0 ${(-R0).toFixed(1)})` : ""}`); };   /* a backflip turns it about its middle */
     // small timed changes (a lid closing, an eye opening wide), eased in and out, run in the same frame loop as the physics
     const ease = (x) => x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
     const tween = (key, to, ms, delay = 0) => new Promise((res) => setTimeout(() => { tws = tws.filter((t) => { if (t.key !== key) return true; t.res(); return false; });   /* a change taken over still settles its promise */
@@ -9917,6 +9938,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const hmm = () => act(async () => { lookX = 2.5; lookY = -2; draw(); await face({ eyeL: 0.6, eyeSR: 1.15 }, 240); await wait(1300); lookX = 0; lookY = 0; draw(); });
     const moon = () => act(async () => { await tween("turn", 1, 420); for (let i = 0; i < 4; i++) { leanTo = i % 2 ? 2.4 : -2.4; poke(-0.8); draw(); await wait(170); } leanTo = 0; await wait(500);
       await tween("turn", 0, 380); await face({ blush: 1, happy: 1 }, 200); await wait(1100); });
+    // a backflip: it crouches, springs up, turns right over backwards in the air, and lands with a splat and happy eyes
+    const backflip = () => act(async () => { tween("aRest", -0.18, 170); await face({ eyeL: 0.6, eyeR: 0.6 }, 170);
+      tween("aRest", 0.14, 120); jv = -400; go(); await tween("flip", -360, 430); S.flip = 0; tween("aRest", 0, 200); poke(-3.4); await face({ happy: 1, eyeL: 1, eyeR: 1 }, 140); await wait(900); });
     const hop = (v, dx, ms) => { jv = -v; tween("jx", dx, ms); go(); return wait(ms + 60); };
     // jumps: to one side, to the other, and home
     const jumps = () => act(async () => { const s0 = Math.random() < 0.5 ? -1 : 1; await face({ smile: 0.7 }, 150); await hop(240, s0 * 9, 330); await wait(160); await hop(260, -s0 * 9, 360); await wait(160); await hop(200, 0, 300); await wait(200); });
@@ -9930,16 +9954,21 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const sd = Math.random() < 0.5 ? -1 : 1; t.setAttribute("x", (sd * (2 + Math.random() * 6)).toFixed(1)); t.setAttribute("y", (-12 - Math.random() * 8).toFixed(1));
       t.style.setProperty("--dx", (sd * (14 + Math.random() * 12)).toFixed(1) + "px"); notes.appendChild(t); setTimeout(() => t.remove(), 1500); };
     let dancing = false;
-    // dancing: no notes, just moves, on a 120 bpm beat. A bounce, a spin, side steps, a spin the other way, pumps, a jump with a double spin
+    // dancing, as a drop does Michael Jackson: liquid arms pushed out of its sides. The pose (one arm up, one down), a moonwalk
+    // gliding back with little flicks, a fast spin onto its toes, the lean, popping arms, and the pose again to finish
     const spin = (turns, ms) => { const to = S.turn + 2 * turns; return tween("turn", to, ms).then(() => { S.turn = 0; draw(); }); };
-    const dance = () => act(async () => { dancing = true; await face({ happy: 1, smile: 1 }, 160); const B = 500;
-      for (let b = 0; b < 2; b++) { poke(-2.4); leanTo = b ? 3.5 : -3.5; draw(); await wait(B); }   // bounce, bounce
-      jv = -170; go(); await spin(1, B); poke(-2);   // a spin with a little hop
-      await hop(200, -8, 260); poke(-1.6); await wait(B - 320); await hop(200, 8, 260); poke(-1.6); await wait(B - 320); await hop(150, 0, 220); poke(-1.2);   // side steps
-      await spin(-1, B); poke(-2);   // and back the other way
-      for (let b = 0; b < 4; b++) { tween("aRest", b % 2 ? -0.14 : 0.16, 200); leanTo = b % 2 ? -2.5 : 2.5; lookX = b % 2 ? -1.5 : 1.5; draw(); await wait(B / 2); }   // pumps, up and down
-      tween("aRest", 0, 160); lookX = 0; jv = -300; go(); await spin(2, 640); poke(-3.2);   // the big finish: a jump with a double spin
-      leanTo = 0; await wait(350); await face({ happy: 0 }, 200); dancing = false; });
+    const arms = (o, ms) => Promise.all(Object.entries(o).map(([k, v]) => tween(k, v, ms)));
+    const dance = () => act(async () => { dancing = true; await face({ happy: 1, smile: 1 }, 140); const B = 480;
+      await arms({ armL: 0.6, armR: 0.6, armLa: 10, armRa: 10 }, 160); poke(-2); await wait(B - 160);   // arms out
+      tween("aRest", 0.12, 220); await arms({ armR: 1, armRa: 62, armL: 0.75, armLa: -38 }, 220); await wait(B + 200);   // the pose
+      tween("aRest", 0, 200); await arms({ armR: 0.35, armRa: -50, armL: 0.35, armLa: -50 }, 200);   // arms in for the moonwalk
+      const glide = tween("jx", -11, 1300); for (let i = 0; i < 6; i++) { leanTo = i % 2 ? -1 : 2.6; poke(-0.5); draw(); await wait(210); } await glide; leanTo = 0;   // moonwalk, sliding back
+      await arms({ armL: 0.8, armR: 0.8, armLa: 5, armRa: 5 }, 140); tween("jx", 0, 600); await spin(2, 620);   // a fast double spin
+      tween("aRest", 0.24, 180); await arms({ armL: 0.2, armR: 0.2 }, 180); await wait(B);   // up on its toes
+      tween("aRest", 0, 200); leanTo = 7; await arms({ armL: 0.5, armR: 0.5, armLa: -25, armRa: -25 }, 220); await wait(B + 200); leanTo = 0;   // the lean
+      for (let b = 0; b < 4; b++) { const up = b % 2 === 0; poke(-1.8); await arms(up ? { armR: 1, armRa: 75, armL: 0.5, armLa: -45 } : { armL: 1, armLa: 75, armR: 0.5, armRa: -45 }, 110); await wait(B / 2); }   // popping
+      jv = -220; go(); await arms({ armR: 1.1, armRa: 68, armL: 0.15, armLa: -20 }, 200); poke(-2.6); await wait(800);   // the pose to finish
+      await arms({ armL: 0, armR: 0, armLa: 0, armRa: 0 }, 300); await face({ happy: 0 }, 200); dancing = false; });
     // follows the pointer with its eyes, wherever it is on the page, no tap needed
     let ptrRaf = 0;
     addEventListener("pointermove", (e) => { if (still()) return; ptrX = e.clientX; ptrY = e.clientY; ptrT = performance.now();
@@ -9958,6 +9987,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       else if (r < 0.74) jumps();
       else if (r < 0.79) yes();
       else if (r < 0.84) no();
+      else if (r < 0.86) backflip();
       else if (r < 0.88) wink();
       else if (r < 0.91) surprised();
       else if (r < 0.93) curious();
@@ -9989,7 +10019,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1; lookX = dx / d * 3; lookY = dy / d * 1.5; draw();
       setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900); }, { passive: true });
     el.addEventListener("click", () => { if (farted) { farted = false; return; } if (opt.tap) opt.tap(); else if (!acting) jumps(); });
-    return { S, busy: () => acting, free: () => { acting = false; }, moon, yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, fart, draw,
+    return { S, busy: () => acting, free: () => { acting = false; }, moon, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, fart, draw,
       bob: () => { poke(-0.7 - Math.random() * 0.6); if (Math.random() < 0.3) { jv = -90; go(); } } }; };
     // ---- talking: tap the drop and ask it something. It answers in a bubble, the words typing themselves out while it bobs.
     // It knows a handful of things for certain (what's new, a coffee to try, sour or bitter, ratio, temperature, grind, the processes,
@@ -10033,6 +10063,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       [/(no|have a|got a|where('?s| is) your) mouth|non hai (la )?bocca|dov'?è la (tua )?bocca/i, () => say(pick([T("I'm a drop! Drops don't need mouths: I just get drunk. Gently, please.", "Sono una goccia! Le gocce non hanno bisogno della bocca: mi si beve e basta. Con calma, per favore."),
         T("A mouth would make me a sip. I'd rather stay a drop.", "Con la bocca sarei un sorso. Preferisco restare una goccia."),
         T("My eyes do all the talking. Look: happy!", "Parlano i miei occhi. Guarda: felice!")]), null, happy)],
+      [/back ?flip|somersault|do a flip|capriola|salto (mortale|all'indietro)/i, () => { say(T("Watch this!", "Guarda qua!"), null); setTimeout(() => { D.free(); D.backflip(); }, 450); }],
       [/meaning of life|meaning of it all|why are we here|senso della vita|significato della vita/i, () => say(T("42, obviously. Or a really good cup of coffee, shared with someone you like. I'm a drop, I'm biased.", "42, ovvio. Oppure una tazza di caffè buonissimo, con qualcuno a cui vuoi bene. Sono una goccia, sono di parte."), null, happy)],
       [/\b(what time|the time|time is it)\b|che ore|che ora/i, () => { const t = new Date().toLocaleTimeString(IT ? "it-IT" : "en-GB", { hour: "2-digit", minute: "2-digit" }); say(T(`It's ${t}.`, `Sono le ${t}.`), null, smile); }],
       [/weather|raining|is it (cold|hot|warm|sunny)|cold outside|hot outside|meteo|che tempo|piove/i, () => weather()],
@@ -10041,7 +10072,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       [/dance|music|balla|musica/i, () => { say(T("Don't mind if I do!", "Volentieri!"), null); setTimeout(() => { D.free(); dance(); }, 600); }],
       [/joke|make me laugh|funny|barzellett|fammi ridere/i, () => say(pick([T("What's a drop's favourite music? Drip-hop.", "Qual è la musica preferita di una goccia? Il drip-hop."),
         T("Why did the coffee file a police report? It got mugged.", "Perché il caffè è andato dalla polizia? L'hanno derubato della tazza."), T("I'd tell you a decaf joke, but it has no kick.", "Ti direi una barzelletta sul decaffeinato, ma non ha la carica.")]), null, happy)],
-      [/thank|grazie|cheers|ta\b/i, () => say(T(`Any time${name ? ", " + name : ""}. Brew something good!`, `Quando vuoi${name ? ", " + name : ""}. Fatti un buon caffè!`), null, happy)],
+      [/thank|grazie|cheers|\bta\b/i, () => say(T(`Any time${name ? ", " + name : ""}. Brew something good!`, `Quando vuoi${name ? ", " + name : ""}. Fatti un buon caffè!`), null, happy)],
       // the list itself
       [/surprise|recommend|suggest|pick|choose|delicious|tasty|something good|what should i (try|buy|drink|get)|which coffee|consigli|sorprend|scegli|buono|quale caff/i, () => { const fresh = /new|recent|latest|release|this week|today|nuov|ultim|recent/i.test(lastQ), pool = fresh ? newest().list : coffees();
         const cs = pool.filter((x) => notesOf(x).length >= 2); if (!cs.length) return say(T("Give me a second, the coffees are still on their way.", "Un attimo, i caffè stanno arrivando."));
@@ -10060,6 +10091,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       F(/decaf|decaffeinat/i, "Decaf has at least 97% of its caffeine removed; in the EU, at most 0.1% is left in the roasted beans. The main methods: Swiss Water (just water), CO2, and ethyl acetate made from sugarcane.", "Il decaffeinato ha tolto almeno il 97% della caffeina; nell'UE ne resta al massimo lo 0,1% nei chicchi tostati. I metodi principali: Swiss Water (solo acqua), CO2, ed etilacetato dalla canna da zucchero.", smile),
       F(/light (roast)? ?(vs|or|versus) dark|more caffeine|caffeine in (light|dark)|più caffeina/i, "Gram for gram, light and dark roasts have about the same caffeine: roasting barely touches it. Light beans are denser, so by the scoop they have a little more.", "A parità di grammi, chiara e scura hanno circa la stessa caffeina: la tostatura quasi non la tocca. I chicchi chiari sono più densi, quindi a misurino ne hanno un po' di più.", smile),
       F(/how much caffeine|caffeine|caffeina/i, "A mug of filter coffee (about 240 ml) has roughly 80 to 120 mg of caffeine; a single espresso about 60 to 80 mg. Arabica beans are about 1.2 to 1.5% caffeine, robusta nearly twice that. The EU's food safety agency considers up to 400 mg a day fine for most healthy adults (200 mg in pregnancy).", "Una tazza grande di filtro (circa 240 ml) ha circa 80-120 mg di caffeina; un espresso 60-80 mg. L'arabica ha circa l'1,2-1,5% di caffeina, la robusta quasi il doppio. L'EFSA considera sicuri fino a 400 mg al giorno per la maggior parte degli adulti sani (200 mg in gravidanza).", smile),
+      [/\b(taste|tastes|like|known for|sa di|sapore)\b/i, () => { const ql = norm(lastQ), o = Object.keys(ORIGIN_NOTES).find((k) => ql.includes(norm(k)) || (DEMONYM[k] && ql.includes(norm(DEMONYM[k]))));
+        if (!o) return false; const ns = (ORIGIN_NOTES[o]._ || []).slice(0, 3), dm = DEMONYM[o] || o, w = ORIGIN_NOTES[o].washed, nat = ORIGIN_NOTES[o].natural;
+        say(T(`${dm} coffees often taste of ${andList(ns)}${w && nat ? `. Washed ones lean to ${andList(w)}; naturals to ${andList(nat)}` : ""}. Every farm and roast is different, so look at each coffee's own notes.`,
+          `I caffè di ${o} sanno spesso di ${andList(ns)}${w && nat ? `. I lavati tendono a ${andList(w)}; i naturali a ${andList(nat)}` : ""}. Ogni fattoria e tostatura è diversa: guarda le note di ogni caffè.`),
+          [{ t: T("Show me", "Fammeli vedere"), f: () => { closeTalk(); search(o); } }], smile); }],
       // something wrong in the cup
       F(/sour|too acidic|sharp|salty|aspr|salat/i, "Sour (or salty) means under-extracted: not enough came out of the grounds. Grind a little finer, or use hotter water, or pour more slowly. Change one thing at a time.", "Aspro (o salato) vuol dire sotto-estratto: dai grani è uscito troppo poco. Macina un po' più fine, o acqua più calda, o versa più piano. Cambia una cosa alla volta.", curious),
       F(/bitter|harsh|burnt|astringent|drying|amar|brucia|allappa/i, "Bitter and drying means over-extracted: too much came out. Grind a little coarser, use slightly cooler water, or finish sooner. Change one thing at a time.", "Amaro e che allappa vuol dire sovra-estratto: è uscito troppo. Macina un po' più grosso, acqua un po' meno calda, o finisci prima. Cambia una cosa alla volta.", curious),
@@ -10067,17 +10103,19 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       F(/too strong|strong|troppo forte|forte/i, "Too strong? Use a little less coffee or more water, around 1:17. If it's also bitter, grind coarser.", "Troppo forte? Un po' meno caffè o più acqua, verso 1:17. Se è anche amaro, macina più grosso.", curious),
       F(/(drains?|drawdown|flows?) (too )?(fast|quick)|too fast|troppo veloce/i, "A fast drawdown usually means the grind is too coarse. Go a little finer and the water spends longer with the coffee.", "Se scende troppo in fretta, la macinatura è troppo grossa. Vai un po' più fine e l'acqua resta più a lungo col caffè.", curious),
       F(/(drains?|drawdown|flows?) (too )?slow|stall|clog|too slow|troppo lent/i, "A slow or stalling drawdown means the grind is too fine (or too many fines). Go a little coarser and pour more gently.", "Se scende lentissimo o si blocca, la macinatura è troppo fine. Vai un po' più grosso e versa con più delicatezza.", curious),
+      F(/pre-?ground|ground coffee|grind (it )?fresh|macinato|how long does (ground|coffee) last/i, "Grind just before you brew: ground coffee loses much of its aroma within minutes to hours.", "Macina appena prima di estrarre: il caffè macinato perde gran parte dell'aroma in pochi minuti o ore.", smile),
       // brewing
       F(/how much|ratio|dose|how many grams|proporzion|rapporto|quanto caff/i, "Most pour-over sits between 1:15 and 1:17: about 15 g of coffee to 250 g of water. The SCA's Golden Cup is 55 g per litre, about 1:18. Each recipe here sets the ratio for that bag.", "La maggior parte dei filtri sta tra 1:15 e 1:17: circa 15 g di caffè per 250 g di acqua. Il Golden Cup della SCA è 55 g per litro, circa 1:18. Ogni ricetta qui lo imposta per quella busta.", yes),
       F(/temperature|how hot|degrees|°c|temperatur|gradi/i, "The SCA range for filter is 90.5 to 96°C. Light roasts want the hot end, 94 to 96°C; darker roasts taste better cooler, 88 to 92°C. Your recipe gives the exact number.", "Per il filtro la SCA indica 90,5-96°C. Le tostature chiare vogliono il massimo, 94-96°C; le più scure stanno meglio a 88-92°C. La ricetta ti dà il numero esatto.", yes),
-      F(/grind|grinder|micron|macina/i, "For a V60, medium-fine, like table salt, roughly 600 to 800 microns. Chemex a bit coarser, French press coarse like sea salt, espresso fine. Your recipe gives the clicks for your grinder.", "Per la V60, medio-fine, come sale da cucina, circa 600-800 micron. Chemex un po' più grosso, French press grosso come sale marino, espresso fine. La ricetta ti dà i click del tuo macinino.", yes),
+      F(/(which|what|best) grinder|grinder should|burr|blade grinder|macinino (comprare|migliore)/i, "Get a burr grinder, not a blade one: burrs cut even particles, blades smash them unevenly, and even grounds matter more than almost anything else. For pour-over, a good hand grinder beats a cheap electric one. Goccio gives the exact clicks for most popular grinders.", "Prendi un macinino a macine, non a lame: le macine fanno particelle uniformi, le lame le spaccano a caso, e l'uniformità conta più di quasi tutto. Per il filtro, un buon macinino manuale batte un elettrico economico. Goccio dà i click esatti per i macinini più diffusi.", yes),
+      F(/grind|micron|macina/i, "For a V60, medium-fine, like table salt, roughly 600 to 800 microns. Chemex a bit coarser, French press coarse like sea salt, espresso fine. Your recipe gives the clicks for your grinder.", "Per la V60, medio-fine, come sale da cucina, circa 600-800 micron. Chemex un po' più grosso, French press grosso come sale marino, espresso fine. La ricetta ti dà i click del tuo macinino.", yes),
       F(/bloom|pre-?infus|blooming/i, "The bloom: pour about twice the coffee's weight in water (30 g for 15 g) and wait 30 to 45 seconds. Fresh coffee releases CO2; letting it out first helps the water reach every grain evenly.", "La pre-infusione: versa circa il doppio del peso del caffè in acqua (30 g per 15 g) e aspetta 30-45 secondi. Il caffè fresco libera CO2: farla uscire prima aiuta l'acqua a bagnare tutto in modo uniforme.", yes),
-      F(/how long|brew time|total time|quanto tempo|tempo di estrazione/i, "A one-cup V60 usually finishes in 2:30 to 3:30. Much faster: grind finer. Much slower: grind coarser.", "Una V60 da una tazza finisce di solito tra 2:30 e 3:30. Molto più veloce: macina più fine. Molto più lenta: più grosso.", yes),
+      F(/how long (should|does|will) (it|a v60|the brew|brewing|my brew)|brew time|total time|quanto (tempo|dura)|tempo di estrazione/i, "A one-cup V60 usually finishes in 2:30 to 3:30. Much faster: grind finer. Much slower: grind coarser.", "Una V60 da una tazza finisce di solito tra 2:30 e 3:30. Molto più veloce: macina più fine. Molto più lenta: più grosso.", yes),
       F(/extraction|extract|estrazion/i, "Extraction is how much of the coffee dissolves into your cup. The sweet spot is 18 to 22% of the grounds' weight: under is sour and thin, over is bitter and drying.", "L'estrazione è quanto caffè si scioglie nella tazza. Il punto giusto è il 18-22% del peso dei grani: sotto è aspro e vuoto, sopra è amaro e allappa.", smile),
       F(/\btds\b|strength|refractometer|forza|rifrattometro/i, "Strength, or TDS, is how much coffee is dissolved in the water: about 1.15 to 1.45% for filter. A refractometer measures it.", "La forza, o TDS, è quanto caffè è disciolto nell'acqua: circa 1,15-1,45% per il filtro. Si misura col rifrattometro.", smile),
       F(/water|mineral|hard water|soft water|acqua/i, "Coffee is about 98% water, so it matters. The SCA aims for around 150 mg/L of minerals, moderate hardness and low alkalinity (about 40 mg/L). Very soft water tastes flat, very hard water dull. In hard-water places like London, a filter jug helps.", "Il caffè è acqua per il 98%, quindi conta. La SCA punta a circa 150 mg/L di minerali, durezza moderata e bassa alcalinità (circa 40 mg/L). Acqua troppo dolce dà un caffè piatto, troppo dura spento. Dove l'acqua è dura, una caraffa filtrante aiuta.", smile),
       F(/rinse|paper|filter paper|sciacqu|carta/i, "Rinse the paper with hot water first: it takes away the papery taste and warms the brewer. Pour that water away.", "Sciacqua la carta con acqua calda prima: toglie il sapore di carta e scalda il filtro. Poi butta quell'acqua.", yes),
-      F(/scale|weigh|bilancia|pesare/i, "Weigh, don't scoop: a scale makes any recipe repeatable. 0.1 g accuracy is plenty, and a timer helps.", "Pesa, non usare il misurino: con la bilancia ogni ricetta si ripete uguale. Basta la precisione di 0,1 g, e un timer aiuta.", yes),
+      F(/\b(scales?|weigh|weighing|bilancia|pesare)\b/i, "Weigh, don't scoop: a scale makes any recipe repeatable. 0.1 g accuracy is plenty, and a timer helps.", "Pesa, non usare il misurino: con la bilancia ogni ricetta si ripete uguale. Basta la precisione di 0,1 g, e un timer aiuta.", yes),
       F(/espresso/i, "A classic espresso is about 18 g in, 36 g out (1:2) in 25 to 30 seconds, at around 9 bar and 93°C. Goccio is about filter, though: the V60 is my home.", "Un espresso classico: circa 18 g dentro, 36 g fuori (1:2) in 25-30 secondi, a circa 9 bar e 93°C. Ma Goccio è filtro: casa mia è la V60.", smile),
       F(/cold brew/i, "Cold brew: coarse grind, cold water, 12 to 24 hours in the fridge, then filter. As a concentrate use 1:5 to 1:8 and dilute to taste. It comes out smooth and low in acidity.", "Cold brew: macinatura grossa, acqua fredda, 12-24 ore in frigo, poi filtra. Come concentrato 1:5-1:8, da diluire a piacere. Viene morbido e poco acido.", smile),
       F(/iced|ice|ghiaccio|freddo/i, "Iced pour-over: brew hot straight onto ice. Swap about 40% of the water for ice and keep the same coffee, a touch finer. Bright and fresh.", "Filtro con ghiaccio: estrai caldo direttamente sul ghiaccio. Sostituisci circa il 40% dell'acqua con ghiaccio, stesso caffè, un filo più fine. Fresco e brillante.", smile),
@@ -10089,7 +10127,6 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       // the beans
       F(/fresh|rest|roast date|how old|degas|scadenz|fresc|riposo/i, "Filter coffee usually tastes best from about one to five weeks after roasting. Very fresh beans are full of gas; a week's rest lets them settle.", "Il caffè da filtro di solito dà il meglio da una a cinque settimane dalla tostatura. Appena tostato è pieno di gas: una settimana di riposo lo calma.", smile),
       F(/store|storage|keep|freez|fridge|conserv|frigo|congel/i, "Keep beans whole, airtight, cool and dark. Not the fridge (it's damp and smelly). Freezing works well if it's airtight and in single doses you grind straight from frozen.", "Tieni i chicchi interi, ermetici, al fresco e al buio. Non in frigo (umido e odori). Il freezer va bene se ermetico e a dosi singole, da macinare ancora congelate.", smile),
-      F(/pre-?ground|ground coffee|grind (it )?fresh|macinato/i, "Grind just before you brew: ground coffee loses much of its aroma within minutes to hours.", "Macina appena prima di estrarre: il caffè macinato perde gran parte dell'aroma in pochi minuti o ore.", smile),
       F(/arabica|robusta/i, "Arabica is sweeter, with more acidity and aroma, and grows higher; it's about 60% of the world's coffee. Robusta is more bitter, has about twice the caffeine and is hardier. Goccio lists specialty arabica only.", "L'arabica è più dolce, con più acidità e aroma, e cresce più in alto: è circa il 60% del caffè mondiale. La robusta è più amara, ha quasi il doppio della caffeina ed è più resistente. Goccio elenca solo arabica specialty.", smile),
       F(/specialty|speciality|specialt/i, "Specialty coffee scores 80 or more out of 100 when cupped by trained tasters on the SCA scale, with no primary defects. Goccio lists only specialty.", "Lo specialty ottiene 80 punti o più su 100 nella valutazione degli assaggiatori sulla scala SCA, senza difetti primari. Goccio elenca solo specialty.", smile),
       F(/single origin|blend|monorigine|miscela/i, "Single origin means from one place: one country, often one farm or washing station. A blend mixes several, usually for balance.", "Monorigine vuol dire da un solo posto: un paese, spesso una fattoria o una stazione di lavaggio. Una miscela ne unisce diversi, di solito per equilibrio.", smile),
@@ -10133,7 +10170,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const ORIGIN_WORDS = () => { const s = new Set(); for (const r of coffees()) for (const w of norm((r.origin || "") + " " + (r.region || "") + " " + (r.process || "") + " " + (r.variety || "")).split(" ")) if (w.length >= 3) s.add(w); return s; };
     // ordinary words that some roasters are named after ("Recent Beans", "Caffeine Project"): such a name only counts when the
     // question is plainly about a roaster ("where is…", "from…", "roastery")
-    const COMMON = new Set("caffeine recent beans bean good best black white blue red green gold golden little small big square union north south east west city town home daily morning mountain river sea ocean island forest garden farm field fields hill hills rock stone fire light dark sun moon star wild free true fresh pure simple modern local social public grand royal kings queen crown bloom drip pour brew grind roast cup mug press kettle happy friends people story good better grounds bloom".split(" "));
+    const COMMON = new Set("caffeine recent beans bean good best black white blue red green gold golden little small big square union north south east west city town home daily morning mountain river sea ocean island forest garden farm field fields hill hills rock stone fire light dark sun moon star wild free true fresh pure simple modern local social public grand royal kings queen crown bloom drip pour brew grind roast cup mug press kettle happy friends people story good better grounds bloom clever method switch wave origin dripper filter kettle".split(" "));
     const findRoaster = (qn) => { const qw = new Set(qn.split(" ")), about = /\b(where|based|located|roaster|roastery|roasters|from|by|dove|sede|torrefazione|di|della)\b/.test(qn); let best = null;
       for (const o of roIndex().all) { if (!o.keys.every((k) => qw.has(k))) continue;   // every distinctive word of its name
         if (o.keys.every((k) => COMMON.has(k)) && !about) continue;
@@ -10178,14 +10215,14 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       // a question asks for an answer ("what is gesha?"); bare coffee words ask for coffees ("ethiopia natural")
       const ql = q.toLowerCase(), isQ = /\?|^(what|why|how|is|are|does|do|can|should|when|where|which|who|tell me|explain|my|i |cos|perch|come|quando|dove|qual|chi|quant|il mio)\b/i.test(q),
         qws = new Set(norm(q).split(" ")), known = coffees().some((r) => [r.origin, r.roaster, r.variety].some((v) => { const ws = norm(String(v || "").split(" / ")[0]).split(" ").filter((w) => w.length > 2 && !GENERIC.has(w)); return ws.length && ws.every((w) => qws.has(w)); }));
-      if (isQ || !known) for (const [re, fn] of ANSWERS) if (re.test(q)) { D.free(); return fn(); }
+      if (isQ || !known) for (const [re, fn] of ANSWERS) if (re.test(q)) { D.free(); if (fn() !== false) return; }
       // not one it knows: look the words up in the list
       const w = q.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, " ").split(/\s+/).filter((x) => x.length > 2 && !/^(the|and|for|with|have|any|what|which|some|coffee|coffees|caff[eè]|una?|del|della|che)$/.test(x));
       const hit = w.length ? coffees().filter((r) => { const t = (r.name + " " + r.roaster + " " + (r.origin || "") + " " + (r.process || "") + " " + (r.variety || "") + " " + notesOf(r).join(" ")).toLowerCase(); return w.every((x) => t.includes(x)); }) : [];
+      if (hit.length && isQ && !w.every((x) => ORIGIN_WORDS().has(x))) return dunno();
       if (hit.length) return say(T(`I found ${hit.length} coffee${hit.length === 1 ? "" : "s"} for “${q}”.`, `Ho trovato ${hit.length} caffè per “${q}”.`), [{ t: T("Show me", "Fammeli vedere"), f: () => { closeTalk(); search(w.join(" ")); } }], happy);
-      wiki(q); };
-    // not one it knows: it looks it up on Wikipedia (free, no key, read straight from the browser) and gives the first two sentences,
-    // with a link to the page (the credit Wikipedia's licence asks for). Nothing there: it says it doesn't know
+      dunno(); };
+    // not one it knows: it says so, never guesses
     const DUNNO = [["I don't know that one, sorry. I'm a drop: I know coffee. Try one of these.", "Questa non la so, scusa. Sono una goccia: so di caffè. Prova una di queste."],
       ["Hmm, no idea. Ask me something with beans in it?", "Mmh, non ne ho idea. Chiedimi qualcosa con dei chicchi dentro?"],
       ["That one's beyond my cup. Coffee, though, I can do.", "Questa va oltre la mia tazza. Ma di caffè posso parlare."],
@@ -10198,22 +10235,16 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       ["I'm stumped. Shall we talk about grinders instead?", "Mi hai fregato. Parliamo di macinini?"]];
     let dunnoLast = -1;
     const dunno = () => { let i; do { i = Math.floor(Math.random() * DUNNO.length); } while (i === dunnoLast && DUNNO.length > 1); dunnoLast = i; say(T(DUNNO[i][0], DUNNO[i][1]), null, Math.random() < 0.5 ? hmm : curious); };
-    let wikiN = 0;
-    const wiki = async (q) => { const n = ++wikiN, wl = IT ? "it" : "en";
-      const term = q.replace(/[?!.]+$/, "").replace(/^(please\s+)?(tell me (about|what)|explain|what('?s| is| are| was| were)|who('?s| is| was| were)|where('?s| is| was)|when (is|was|did)|why (is|are|do|does)|how (does|do|is|are)|define|cos'?è|cosa (è|sono)|chi (è|era)|dov'?è|dimmi)\s+/i, "").replace(/^(a|an|the|il|lo|la|i|gli|le|un|una|uno)\s+/i, "").trim();
-      if (term.length < 2) return dunno();
-      say(T("Let me look that up…", "Fammi controllare…"), [], curious);
-      try { const sr = await fetch(`https://${wl}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(term)}&srlimit=1&format=json&origin=*`).then((r) => r.json());
-        const hit = sr && sr.query && sr.query.search && sr.query.search[0]; if (n !== wikiN || !talking) return; if (!hit) return dunno();
-        const pg = await fetch(`https://${wl}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(hit.title.replace(/ /g, "_"))}`).then((r) => r.json());
-        if (n !== wikiN || !talking) return; if (!pg || pg.type === "disambiguation" || !pg.extract) return dunno();
-        const about = norm(pg.title + " " + pg.extract), ask_ = norm(term).split(" ").filter((w) => w.length >= 3 && !/^(and|the|for|with|based|located|from|does|did|was|were|are|who|what|where|how|una|del|della|che|per)$/.test(w));
-        if (!ask_.length || !ask_.every((w) => about.includes(w))) return dunno();   /* "where is Climpson based" found a novel's character: not what was asked */
-        const two = (pg.extract.match(/[^.!?]+[.!?]+(\s|$)/g) || [pg.extract]).slice(0, 2).join("").trim().slice(0, 320);
-        const url = (pg.content_urls && pg.content_urls.mobile && pg.content_urls.mobile.page) || `https://${wl}.wikipedia.org/wiki/${encodeURIComponent(hit.title)}`;
-        say(two, [{ t: T("From Wikipedia", "Da Wikipedia"), f: () => window.open(url, "_blank", "noopener") }], smile);
-      } catch (e) { if (n === wikiN && talking) dunno(); } };
     $("gdGo").onclick = () => ask(inEl.value);
+    { const mic = $("gdMic"), Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (mic && Rec) { mic.hidden = false; let rec = null;
+        mic.onclick = () => { if (rec) { try { rec.stop(); } catch (e) {} return; }
+          try { rec = new Rec(); rec.lang = IT ? "it-IT" : "en-GB"; rec.interimResults = true; rec.maxAlternatives = 1; } catch (e) { rec = null; return; }
+          mic.classList.add("on"); sayEl.textContent = T("Listening…", "Ti ascolto…"); D.curious();
+          rec.onresult = (e) => { const r0 = e.results[e.results.length - 1]; inEl.value = r0[0].transcript; if (r0.isFinal) { const t = inEl.value; try { rec.stop(); } catch (er) {} ask(t); } };
+          rec.onerror = (e) => { sayEl.textContent = e.error === "not-allowed" ? T("I need the microphone for that. You can type instead.", "Mi serve il microfono. Puoi anche scrivere.") : T("I didn't catch that. Try again or type it?", "Non ho capito. Riprova o scrivilo?"); };
+          rec.onend = () => { mic.classList.remove("on"); rec = null; };
+          try { rec.start(); } catch (e) { mic.classList.remove("on"); rec = null; } }; } }
     inEl.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); ask(inEl.value); } if (e.key === "Escape") closeTalk(); });
     openTalk = () => { if (talking) return; talking = true; talkEl.hidden = false; el.setAttribute("aria-expanded", "true");
       if (!name) { askingName = true; return say(T("Hi! I'm the drop. What should I call you?", "Ciao! Sono la goccia. Come ti chiamo?"), [T("Skip", "Salta")], happy); }
