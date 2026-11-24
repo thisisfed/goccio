@@ -96,6 +96,11 @@ CASES = [
     ("Passage had no notes: a bracketed heading '【Taste Note】' with the list on the line under it",
      lambda: scan.find_notes({"body": "【COMMENT】\nHe is the winning producer of the Colombia Washed Coffee Festival 2026.\n\n【Taste Note】\n\nAlmond, Red apple, Orange, Plum, Clean\n\n【PROFILE】\nPRODUCER：Rubiera Velasquez\n", "title": "Colombia Rubiera Velazquez", "tags": []})
              == ["Almond", "Red apple", "Orange", "Plum", "Clean"]),
+    ("German notes in English: 'Orange, Salbei, Rosenwasser' reads Orange, Sage, Rose water; Blutorange, Kakaonibs, nussig too",
+     lambda: __import__("flavours").english_notes(["Orange", "Salbei", "Rosenwasser", "Blutorange", "Kakaonibs", "Nussig", "Schwarzer Tee"])
+             == ["Orange", "Sage", "Rose water", "Blood orange", "Cacao nibs", "Nutty", "Black tea"]),
+    ("A German shop's list of brewers is not tasting notes ('Siebträger', 'Vollautomat', 'Herdkocher', 'Handfilter'), nor is 'Direkt vom Ursprung'",
+     lambda: [scan.tidy_note(x) for x in ("Siebträger", "Vollautomat", "Herdkocher", "Handfilter", "French Press", "Direkt vom Ursprung", "Haselnuss")] == ["", "", "", "", "", "", "Haselnuss"]),
     ("Drip coffee bags are still not beans", lambda: scan.EXCLUDE.search("Drip coffee bags x10") is not None),
     ("Um Coffee Co: 'Nanolotes | Wush Wush' is named Wush Wush", lambda: name("Nanolotes | Wush Wush", "Um Coffee Co", "Brazil") == "Wush Wush"),
     ("Um Coffee Co: 'Blend | Fruitbomb' is named Fruitbomb", lambda: name("Blend | Fruitbomb", "Um Coffee Co", "Brazil") == "Fruitbomb"),

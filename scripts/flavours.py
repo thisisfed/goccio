@@ -71,6 +71,18 @@ _add("biele|biela|biely|bílé|bílá|bílý", "white", "a"); _add("zelené|zele
 _add("sladké|sladká|sladký", "sweet", "a"); _add("zrelé|zrelá|zrelý|zralé|zralá|zralý", "ripe", "a"); _add("sušené|sušená|sušený", "dried", "a")
 _add("tropické|tropická|tropický", "tropical", "a"); _add("kvetinové|kvetinová|kvetinový|květinové|květinová|květinový", "floral", "a")
 
+# German, as roasters in Germany, Austria and Switzerland write them
+_add("salbei", "sage"); _add("rosenwasser", "rose water"); _add("kakaonibs|kakao nibs", "cacao nibs"); _add("pekannuss|pekannüsse", "pecan"); _add("blutorange|blutorangen", "blood orange")
+_add("waldbeeren|waldbeere", "forest berries"); _add("vollmilchschokolade", "milk chocolate"); _add("schoggi", "chocolate"); _add("weingummi", "wine gum"); _add("gebrannte mandeln", "candied almonds")
+_add("geröstete nüsse", "roasted nuts"); _add("nuss|nüsse", "nut"); _add("maracuja", "passion fruit"); _add("süßer apfel|süsser apfel", "sweet apple"); _add("bratapfel", "baked apple")
+_add("muscovado zucker|muscovadozucker", "muscovado sugar"); _add("zitronengras", "lemongrass"); _add("karamellisierter pfirsich", "caramelised peach"); _add("kaffeeblüte", "coffee blossom")
+_add("spekulatius", "speculoos"); _add("hauch von zimt", "cinnamon"); _add("ceylon tee|ceylontee", "Ceylon tea"); _add("schwarzer tee|schwarztee", "black tea"); _add("kirschlikör", "cherry liqueur")
+_add("stachelbeere|stachelbeeren", "gooseberry"); _add("litschi", "lychee"); _add("rosine|rosinen", "raisin"); _add("rosmarin", "rosemary"); _add("pflaumenmus", "plum jam"); _add("glühwein", "mulled wine")
+_add("hagebutte", "rosehip"); _add("mirabelle|mirabellen", "mirabelle plum"); _add("florale noten", "floral"); _add("blütenhonig", "blossom honey"); _add("holunder", "elderberry")
+_add("nussig", "nutty", "a"); _add("schokoladig", "chocolatey", "a"); _add("fruchtig", "fruity", "a"); _add("beerig", "berry-like", "a"); _add("süss|süß|süßlich|süsslich", "sweet", "a"); _add("weich|sanft|geschmeidig", "soft", "a")
+_add("kräftig|intensiv", "bold", "a"); _add("spritzig", "sparkling", "a"); _add("vollmundig", "full-bodied", "a"); _add("ausgewogen", "balanced", "a"); _add("aromatisch", "aromatic", "a"); _add("malzig", "malty", "a")
+_add("erdig", "earthy", "a"); _add("rauchig", "smoky", "a"); _add("rund", "round", "a"); _add("klar", "clean", "a")
+
 # French, as Fève writes them
 _add("orange sanguine|oranges sanguines", "blood orange"); _add("poivre (baies roses)|poivre (baies roses|baies roses|baie rose", "pink peppercorn")
 _add("pointe ananas|pointe d'ananas|pointe d’ananas", "pineapple"); _add("fruits jaunes", "yellow fruit"); _add("fruité", "fruity"); _add("sucré", "sweet")

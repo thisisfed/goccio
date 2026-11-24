@@ -1594,7 +1594,10 @@ NOTE_JUNK = re.compile(r"[<>]|=\s*[\"'“”]|https?:|//|\.(?:png|jpe?g|gif|svg|
 
 # a brew guide's headings read as notes ("Ratios, dose, bloom"; The Source): how to brew it, not how it tastes
 NOTE_BREW = re.compile(r"^(?:ratios?|brew(?:ing)? ratios?|dos(?:e|es|age)|bloom(?:ing)?|brew(?:ing)? (?:time|guide|method|recipe|temp(?:erature)?)|grind(?: size)?|water(?: temp(?:erature)?)?|"
-                       r"temp(?:erature)?|yield|recipe|pours?|time|timings?|method|agitation|filter papers?)$", re.I)
+                       r"temp(?:erature)?|yield|recipe|pours?|time|timings?|method|agitation|filter papers?|"
+                       # the brewers a German shop says a coffee suits, and where it ships from: not flavours
+                       r"siebtr[äa]ger(?:maschine)?|vollautomat|herdkocher|herdkanne|handfilter|filter(?:kaffee)?maschine|french ?press|pour[- ]?over|aero ?press|kaffeekapseln|kapseln|lungo|"
+                       r"direkt vom ursprung|deutschland|germany)$", re.I)
 
 
 # what a blend is made of, as the shop spells it out: "50% Bookkisa Natural / 50% El Higuerón" (Square Mile's Sweetshop). The same
