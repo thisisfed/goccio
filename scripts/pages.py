@@ -311,7 +311,7 @@ def coffee_row(c, cpath, roaster=True, day=True):
         city, cc = c.get("roaster_city") or "", c.get("roaster_country") or ""
         cc = "UK" if cc == "GB" else cc
         where = (", " + e(city) if city else "") + (f'{" " if city else ", "}({e(cc)})' if cc else "")   # Hamburg (DE), as on the main page
-        who.append(f'From <span class="ro">{e(bits.get("ro") or c["roaster"])}</span>{where}')
+        who.append(f'<span class="ro">{e(bits.get("ro") or c["roaster"])}</span>{where}')
     if day and _day(c):
         who.append(f'<span class="dy">{_day(c)}</span>')
     return (f'<li class="cr"><a href="{cpath[id(c)]}">' + (f'<p class="cw">{"<br>".join(who)}</p>' if who else "")
