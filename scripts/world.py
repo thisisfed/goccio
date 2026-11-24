@@ -12,7 +12,8 @@ Up to 100 shops are tried a run; the first 25 that pass are added (Nov 2026: was
     python3 scripts/world.py            # one run
     python3 scripts/world.py --dry      # report only, change nothing
 """
-import json, random, re, sys, urllib.parse, urllib.request
+import json, os, random, re, sys, urllib.parse, urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -25,7 +26,8 @@ SEEN = ROOT / "data" / "world_seen.json"
 OVERPASS = "https://overpass-api.de/api/interpreter"
 OVERPASS_ALSO = ["https://overpass.kumi.systems/api/interpreter", "https://overpass.private.coffee/api/interpreter"]   # the same open map, other public servers: tried when the main one is busy
 QUERY = '[out:json][timeout:240];nwr["craft"="coffee_roaster"][~"^(website|contact:website|url)$"~"."];out tags;'
-MAX_ADD, MAX_TRY, RECHECK_DAYS = 25, 100, 120
+MAX_ADD, MAX_TRY, RECHECK_DAYS = int(os.environ.get("WORLD_MAX_ADD") or 25), int(os.environ.get("WORLD_MAX_TRY") or 100), 120   # a run by hand can ask for more (the workflow's inputs)
+WORKERS = 8   # shops checked side by side: each is a different site, read at the scan's own gentle pace
 
 EUROPE = set("AD AL AT BA BE BG BY CH CY CZ DE DK EE ES FI FO FR GI GR HR HU IE IS IT LI LT LU LV MC MD ME MK MT NL NO PL PT RO RS SE SI SK SM UA VA XK".split())
 NORTH_AMERICA = {"US", "CA", "MX"}
@@ -118,11 +120,14 @@ def main():
     random.Random(today.isoformat()).shuffle(new)   # a different handful each day, the whole world in turn
     print(f"{len(cands)} roasteries with a website on the map, {len(new)} not on the list and not checked lately")
     added, tried = [], 0
-    for c in new:
-        if len(added) >= MAX_ADD or tried >= MAX_TRY:
+    batch = new[:MAX_TRY]
+    with ThreadPoolExecutor(max_workers=WORKERS) as pool:
+        results = list(pool.map(check, batch))   # read side by side, then taken in the day's order
+    for c, res in zip(batch, results):
+        if len(added) >= MAX_ADD:
             break
         tried += 1
-        kind, n, origins, gate = check(c)
+        kind, n, origins, gate = res
         seen[discover.host(c["shop"])] = today.isoformat()
         ok = kind and n >= 3 and origins >= 2 and not gate   # specialty only (scan.specialty_gate)
         print(f"  {'ADD ' if ok else 'skip'} {c['name']} ({c['shop']}, {c['country'] or '?'}): {kind or 'unreadable'}, {n} coffees, {origins} with an origin{'; not specialty: ' + gate if kind and gate else ''}")

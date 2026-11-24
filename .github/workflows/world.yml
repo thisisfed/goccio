@@ -6,6 +6,13 @@ on:
   schedule:
     - cron: "17 2 * * *"
   workflow_dispatch:
+    inputs:
+      max_add:
+        description: "Most roasters to add this run"
+        default: "25"
+      max_try:
+        description: "Most shops to try this run"
+        default: "100"
 
 permissions:
   contents: write
@@ -17,7 +24,7 @@ concurrency:
 jobs:
   world:
     runs-on: ubuntu-latest
-    timeout-minutes: 150   # up to 100 shops tried a run, about a minute each
+    timeout-minutes: 180   # eight shops at a time, about a minute each
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -25,6 +32,9 @@ jobs:
           python-version: "3.12"
       - name: Find and check
         run: python scripts/world.py
+        env:
+          WORLD_MAX_ADD: ${{ inputs.max_add }}
+          WORLD_MAX_TRY: ${{ inputs.max_try }}
       - name: Save
         run: |
           git add data/roasters.json data/world_seen.json 2>/dev/null || true
