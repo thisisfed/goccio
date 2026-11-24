@@ -9834,7 +9834,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       body.setAttribute("d", d);
       const cr = el.querySelector(".gd-crease"); if (cr) cr.setAttribute("d", `M ${(cx * 0.9).toFixed(2)} ${(top + ry * 0.22).toFixed(2)} C ${(cx * 0.7 + 3.2).toFixed(2)} ${(top + ry * 0.75).toFixed(2)} ${(cx * 0.3 - 3.2).toFixed(2)} ${(bot - ry * 0.75).toFixed(2)} ${(cx * 0.1).toFixed(2)} ${(bot - ry * 0.22).toFixed(2)}`);   /* the bean's crease, down its middle */
       const hl = el.querySelector(".gd-h"); if (hl) hl.setAttribute("transform", `translate(${(cx * 0.5 - rx * 0.45).toFixed(2)} ${(top + ry * 0.42).toFixed(2)}) rotate(-35)`);
-      const back = S.turn > 0.5; eyes.style.opacity = back ? "0" : "1";
+      const tm = ((S.turn % 2) + 2) % 2, back = tm > 0.5 && tm < 1.5; eyes.style.opacity = back ? "0" : "1";   /* turn 0→1 shows its back, 0→2 is a whole spin */
       const bt = el.querySelector(".gd-butt"); if (bt) { bt.style.opacity = back ? "1" : "0"; bt.setAttribute("d", `M ${cx * 0.2} ${(bot - ry * 0.62).toFixed(2)} Q ${(cx * 0.2 + 1.2).toFixed(2)} ${(bot - ry * 0.3).toFixed(2)} 0 ${(bot - 1.2).toFixed(2)}`); }   /* its back: no face, just a little crease */
       if (hl && back) hl.setAttribute("transform", `translate(${(rx * 0.45).toFixed(2)} ${(top + ry * 0.42).toFixed(2)}) rotate(35)`);
       const ey = mid - 1, ex = cx * 0.55 + lookX;
@@ -9928,9 +9928,16 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const sd = Math.random() < 0.5 ? -1 : 1; t.setAttribute("x", (sd * (2 + Math.random() * 6)).toFixed(1)); t.setAttribute("y", (-12 - Math.random() * 8).toFixed(1));
       t.style.setProperty("--dx", (sd * (14 + Math.random() * 12)).toFixed(1) + "px"); notes.appendChild(t); setTimeout(() => t.remove(), 1500); };
     let dancing = false;
-    const dance = () => act(async () => { dancing = true; await face({ happy: 1, smile: 1 }, 160);
-      for (let b = 0; b < 10; b++) { const s1 = b % 2 ? 1 : -1; poke(-2.2); leanTo = s1 * 3.5; lookX = s1 * 1.5; note(); if (b % 3 === 0) note(); if (b === 4 || b === 8) { jv = -210; go(); } draw(); await wait(500); }
-      leanTo = 0; lookX = 0; await face({ happy: 0 }, 200); dancing = false; });
+    // dancing: no notes, just moves, on a 120 bpm beat. A bounce, a spin, side steps, a spin the other way, pumps, a jump with a double spin
+    const spin = (turns, ms) => { const to = S.turn + 2 * turns; return tween("turn", to, ms).then(() => { S.turn = 0; draw(); }); };
+    const dance = () => act(async () => { dancing = true; await face({ happy: 1, smile: 1 }, 160); const B = 500;
+      for (let b = 0; b < 2; b++) { poke(-2.4); leanTo = b ? 3.5 : -3.5; draw(); await wait(B); }   // bounce, bounce
+      jv = -170; go(); await spin(1, B); poke(-2);   // a spin with a little hop
+      await hop(200, -8, 260); poke(-1.6); await wait(B - 320); await hop(200, 8, 260); poke(-1.6); await wait(B - 320); await hop(150, 0, 220); poke(-1.2);   // side steps
+      await spin(-1, B); poke(-2);   // and back the other way
+      for (let b = 0; b < 4; b++) { tween("aRest", b % 2 ? -0.14 : 0.16, 200); leanTo = b % 2 ? -2.5 : 2.5; lookX = b % 2 ? -1.5 : 1.5; draw(); await wait(B / 2); }   // pumps, up and down
+      tween("aRest", 0, 160); lookX = 0; jv = -300; go(); await spin(2, 640); poke(-3.2);   // the big finish: a jump with a double spin
+      leanTo = 0; await wait(350); await face({ happy: 0 }, 200); dancing = false; });
     // follows the pointer with its eyes, wherever it is on the page, no tap needed
     let ptrRaf = 0;
     addEventListener("pointermove", (e) => { if (still()) return; ptrX = e.clientX; ptrY = e.clientY; ptrT = performance.now();
