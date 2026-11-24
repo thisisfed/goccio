@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 270   # the scan saves by 240 minutes (scripts/scan.py STOP_MINUTES); GitHub allows 360, free on a public repo
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 50
       - name: Skip if today's full scan is already in
@@ -40,7 +40,7 @@ jobs:
           if git log --format=%s | grep -qx "Roaster scan $(date -u +'%d %b %Y')"; then
             echo "Today's scan is already in, nothing to do"; echo "skip=1" >> "$GITHUB_OUTPUT"
           fi
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         if: steps.guard.outputs.skip != '1'
         with:
           python-version: "3.12"
