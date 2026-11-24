@@ -227,7 +227,7 @@ NOTES_CHECK = 10   # pages read for notes with these rules (10: elbgold's "Noten
 # A fix for one shop's page layout re-reads only that shop: raise its number here (above NOTES_CHECK), not NOTES_CHECK,
 # which re-reads every coffee without notes everywhere (thousands of pages). Raise NOTES_CHECK only for a change to the
 # rules every shop goes through
-NOTES_RECHECK = {"Climpson & Sons": 10, "Sydrip": 10, "Fève": 10, "Passage": 10, "The Source": 10, "Terraform": 11, "Lucid Coffee Roasters": 11, "James Gourmet Coffee": 11, "Sl.ow": 11, "Sprout": 11}   # e.g. {"Monmouth": 10}
+NOTES_RECHECK = {"Climpson & Sons": 10, "Sydrip": 10, "Fève": 10, "Passage": 10, "The Source": 10, "Terraform": 11, "Lucid Coffee Roasters": 11, "James Gourmet Coffee": 11, "Sl.ow": 11, "Sprout": 11, "Rogue Wave": 11, "Dayglow": 11, "Established Coffee": 11}   # e.g. {"Monmouth": 10}
 notes_ver = lambda shop: max(NOTES_CHECK, NOTES_RECHECK.get(shop, 0))
 NOTES_V = 2       # page notes read under these list rules; a short list (two or fewer) read under older ones is read once more
 
@@ -774,7 +774,7 @@ def _fetch_shopify(shop, base, extra=""):
             if isinstance(tags, str):
                 tags = [t.strip() for t in tags.split(",")]
             variants = p.get("variants") or []
-            prices = [float(v["price"]) for v in variants if v.get("price") not in (None, "")]
+            prices = shop_prices(variants)
             items.append({
                 "title": p.get("title", ""),
                 "type": p.get("product_type", ""),
@@ -1510,7 +1510,7 @@ def page_notes(text, name, meta=""):
     for st in starts:
         win = description_window(text, st)
         ns = find_notes({"body": win, "title": name, "tags": []})
-        if not ns and win[:len(name)].lower() == name.lower() and "\n" in win[:len(name) + 3]:
+        if not ns and win.lower().startswith(name.lower()) and "\n" in win[:len(name) + 60]:
             # the window opens on the name itself, so the line under the title is never the first line: try it from there
             # (Sl.ow's "Loco Lime" then "Lime, Pineapple, Red Apple" as a subtitle, 24/11/2026)
             ns = find_notes({"body": win.split("\n", 1)[1], "title": name, "tags": []})
@@ -1738,10 +1738,38 @@ def ja_notes(text):
 NOTES_WITH = re.compile(r"^[ \t\xa0]*(?:taste|tasting|flavou?r) notes[ \t\xa0]*:[ \t\xa0]*([A-Za-z][\w'’ -]{2,30}?)[ \t]+with[ \t]+(?:[\w-]+[ \t]+){0,2}notes of[ \t]+([^\n.:]{3,120}?)[ \t\xa0.]*$", re.I | re.M)
 
 
+TASTE_LIKE = re.compile(r"(?:\blike|reminds? (?:us|me) of|reminiscent of)\s+" + NOTES_SENT.pattern.split(r")\s+", 1)[1], re.I)
+NOTES_LEAD_LIST = re.compile(r"(?:notes?|flavou?rs?|tastes?)\b[^\n<.]{0,60}?(?:remind(?:s|ing)?(?:\s+\w+)?\s+of|reminiscent of|such as|like|include|including)\s*:", re.I)
+
 def find_notes(item):
     text = item["body"]
     # a bracketed heading with the list under it: "【Taste Note】" then "Almond, Red apple, Orange, Plum, Clean" (Passage)
     text = re.sub(r"[【\[]\s*(?:taste|tasting|flavou?r|cup)\s+notes?\s*[】\]][ \t\xa0]*\n\s*", "Tasting notes: ", text, flags=re.I)
+    # "Taste notes" over a sentence, not a list: "We taste beautiful florals like lavender and lilac, with a…" (Dayglow): the list after "like"
+    tp = re.search(r"(?:^|\n)\s*taste notes\s*:?\s*\n?\s*([^\n]{10,400})", text, re.I)
+    if tp and re.match(r"(?:we|it|this|you|expect|think|imagine)\b", tp.group(1), re.I):   # a sentence, not a list
+        lk = TASTE_LIKE.search(tp.group(1))
+        if lk:
+            parts = [NOTES_TAIL.sub("", x).strip() for x in re.split(r",|&|\band\b", lk.group(1))]
+            parts = [x for x in parts if x and not re.match(r"(?:with|a|an|the|its|this|some|more|plus|which|that)\b", x, re.I)]
+            if len(parts) >= 2:
+                text = "Tasting notes: " + ", ".join(parts) + "\n" + text
+    # a sentence that ends by introducing a list: "…with notes that remind us of:" then the notes one per line or bullet (Rogue Wave)
+    lead = NOTES_LEAD_LIST.search(text)
+    if lead:
+        after = text[lead.end():lead.end() + 600]
+        ul = re.match(r"\s*(?:</\w+>\s*)*<ul[^>]*>(.*?)</ul>", after, re.S | re.I)
+        items = [strip_html(x).strip() for x in re.findall(r"<li\b[^>]*>(.*?)</li>", ul.group(1), re.S | re.I)] if ul else []
+        if not items:
+            for ln in strip_html(after).split("\n"):
+                ln = ln.strip(" \t\xa0•·-*")
+                if not ln:
+                    continue
+                if len(ln.split()) > 3 or re.search(r"\d|:", ln) or re.match(r"(?:size|sizes|quantity|qty|grind|weight|price|add to|buy|sold out|subscribe|subscription|wholebean|whole bean|ground|choose|select|options?|roast|origin|process|variety|regular price|sale price)\b", ln, re.I):
+                    break   # the list ends where the shop's options or details begin ("Size", "340 g")
+                items.append(ln)
+        if 2 <= len(items) <= 10:
+            text = "Tasting notes: " + ", ".join(items[:8]) + "\n" + text
     cands = [m.group(1) for m in (rx.search(text) for rx in (NOTES_CELL, NOTES_NEXT, NOTES_RE, NOTES_LINE)) if m]   # a line that is only the label and its list is the surest
     w = NOTES_WITH.search(text)
     if w:   # "Buttery with creamy notes of A and B" inside a labelled line reads best as the with-list; elsewhere (a recipe step) it comes last
@@ -2057,6 +2085,19 @@ def calm_caps(name):
 
 BAG_W = re.compile(r"(\d+(?:[.,]\d+)?)\s?(kg|kilos?|g|gr|gms?|grams?|oz|lbs?)\b", re.I)   # "250gms" (Proud Mary) too
 
+
+def shop_prices(variants):
+    """Variant prices, leaving out sample sizes under 50 g, so the price matches the bag size (Rogue Wave's 40 g sample
+    at CA$7 was shown as the price of its 340 g bag, 24/11/2026). If every size is a sample, they all count."""
+    def grams(t):
+        m = BAG_W.search(t or "")
+        if not m:
+            return None
+        v = float(m.group(1).replace(",", ".")); u = m.group(2).lower()
+        return v * 1000 if u.startswith("k") else v * 28.35 if u == "oz" else v * 453.6 if u.startswith("lb") else v
+    all_ = [(float(v["price"]), grams(v.get("title"))) for v in variants if v.get("price") not in (None, "")]
+    keep = [p for p, g in all_ if g is None or g >= 50]
+    return keep or [p for p, _ in all_]
 
 def bag_grams(item):
     """The bag size in grams: the smallest bag in the sizes on sale (the listed price is the cheapest, so the smallest bag),
