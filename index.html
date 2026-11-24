@@ -10067,6 +10067,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // a backflip: it crouches, springs up, turns right over backwards in the air, and lands with a splat and happy eyes
     const backflip = () => act(async () => { tween("aRest", -0.18, 170); await face({ eyeL: 0.6, eyeR: 0.6 }, 170);
       tween("aRest", 0.14, 120); jv = -400; go(); await tween("flip", -360, 430); S.flip = 0; tween("aRest", 0, 200); poke(-3.4); await face({ happy: 1, eyeL: 1, eyeR: 1 }, 140); await wait(900); });
+    // roll: like a ball, it turns as it goes (the distance matches the turn, so it doesn't skid), off to one side, all the way across to the other, and home
+    const roll = () => act(async () => { const s0 = Math.random() < 0.5 ? -1 : 1, deg = 200, d = deg * Math.PI / 180 * R0; await face({ eyeSL: 1.1, eyeSR: 1.1 }, 150); tween("aRest", -0.06, 200);
+      await Promise.all([tween("flip", s0 * deg, 700), tween("jx", s0 * d, 700)]); await wait(140);
+      await Promise.all([tween("flip", -s0 * deg, 1150), tween("jx", -s0 * d, 1150)]); await wait(140);
+      await Promise.all([tween("flip", 0, 700), tween("jx", 0, 700)]); S.flip = 0; tween("aRest", 0, 200); poke(-2); await face({ happy: 1 }, 140); await wait(700); });
     const hop = (v, dx, ms) => { jv = -v; tween("jx", dx, ms); go(); return wait(ms + 60); };
     // jumps: to one side, to the other, and home
     const jumps = () => act(async () => { const s0 = Math.random() < 0.5 ? -1 : 1; await face({ smile: 0.7 }, 150); await hop(240, s0 * 9, 330); await wait(160); await hop(260, -s0 * 9, 360); await wait(160); await hop(200, 0, 300); await wait(200); });
@@ -10127,6 +10132,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       else if (r < 0.79) yes();
       else if (r < 0.84) no();
       else if (r < 0.86) backflip();
+      else if (r < 0.865) roll();
       else if (r < 0.875) upside();   // now and then: head over heels, a look round, and back
       else if (r < 0.879 && performance.now() - ptrT > 6000) boo();   // rarely, and only when you've gone quiet: boo!
       else if (r < 0.88) wink();
@@ -10168,7 +10174,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1; lookX = dx / d * 3; lookY = dy / d * 1.5; draw();
       setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900); }, { passive: true });
     el.addEventListener("click", () => { if (farted) { farted = false; return; } if (opt.tap) opt.tap(); else if (!acting) jumps(); });
-    return { S, busy: () => acting, free: () => { acting = false; }, fallFrom, hang, landed: () => phase !== "fall", bored, moon, fartBack, upside, boo, think, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, fart, draw,
+    return { S, busy: () => acting, free: () => { acting = false; }, roll, fallFrom, hang, landed: () => phase !== "fall", bored, moon, fartBack, upside, boo, think, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, fart, draw,
       bob: () => { poke(-0.7 - Math.random() * 0.6); if (Math.random() < 0.3) { jv = -90; go(); } } }; };
     // ---- talking: tap the drop and ask it something. It answers in a bubble, the words typing themselves out while it bobs.
     // It knows a handful of things for certain (what's new, a coffee to try, sour or bitter, ratio, temperature, grind, the processes,
@@ -10393,6 +10399,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       [/(no|have a|got a|where('?s| is) your) mouth|non hai (la )?bocca|dov'?è la (tua )?bocca/i, () => say(pick([T("I'm a drop! Drops don't need mouths: I just get drunk. Gently, please.", "Sono una goccia! Le gocce non hanno bisogno della bocca: mi si beve e basta. Con calma, per favore."),
         T("A mouth would make me a sip. I'd rather stay a drop.", "Con la bocca sarei un sorso. Preferisco restare una goccia."),
         T("My eyes do all the talking. Look: happy!", "Parlano i miei occhi. Guarda: felice!")]), null, happy)],
+      [/\broll\b|rolling|rotola|rotolare|fai una rotolata/i, () => { say(T("Wheee!", "Uiii!"), null); setTimeout(() => { D.free(); D.roll(); littleMove("ag-spin"); }, 450); }, true],
       [/back ?flip|somersault|do a flip|capriola|salto (mortale|all'indietro)/i, () => { say(T("Watch this!", "Guarda qua!"), null); setTimeout(() => { D.free(); D.backflip(); littleMove("ag-flip"); }, 450); }, true],
       [/\bspin\b|twirl|giravolta|gira su te stesso/i, () => { say(T("Wheee!", "Uiii!"), null); setTimeout(() => { D.free(); D.dance(); littleMove("ag-spin"); }, 450); }, true],
       [/\b(jump|hop)\b|salta/i, () => { say(T("Boing!", "Boing!"), null); setTimeout(() => { D.free(); D.jumps(); littleMove("ag-hops"); }, 400); }, true],
