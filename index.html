@@ -9951,7 +9951,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const draw = () => {
       // the shape it has just before it falls: round. Squashed or stretched it keeps its volume (taller is narrower); its top
       // sways with the page; it sits on its lowest point
-      const k = Math.max(0.3, 1 + a), ry = R0 * k * (opt.bean ? 1.08 : 1), tc = Math.cos(S.turn * Math.PI), rx = R0 / Math.sqrt(k) * (opt.bean ? 0.86 : 1) * Math.max(0.08, Math.abs(tc)), w = rx * 2,   /* turning round: it narrows to its side, then widens showing its back */ cx = lean * 0.6, bot = y, mid = bot - ry, top = bot - 2 * ry, sh = 0.552;
+      const k = Math.max(0.3, 1 + a), ry = R0 * k * (opt.bean ? 1.08 : 1), tc = Math.cos(S.turn * Math.PI), rx = R0 / Math.sqrt(k) * (opt.bean ? 0.86 : 1), w = rx * 2, ts = Math.sin(S.turn * Math.PI),   /* turning round: it narrows to its side, then widens showing its back */ cx = lean * 0.6, bot = y, mid = bot - ry, top = bot - 2 * ry, sh = 0.552;
       const d = `M ${-rx} ${mid} C ${-rx} ${mid - ry * sh} ${cx - rx * sh} ${top} ${cx} ${top} C ${cx + rx * sh} ${top} ${rx} ${mid - ry * sh} ${rx} ${mid} C ${rx} ${mid + ry * sh} ${rx * sh} ${bot} 0 ${bot} C ${-rx * sh} ${bot} ${-rx} ${mid + ry * sh} ${-rx} ${mid} Z`;
       // arms: liquid pushed out of its sides, wide where they leave the body, rounded at the tip, a little curve as if poured
       const arm = (side, ext, ang) => { ext *= Math.abs(tc); if (ext < 0.03) return ""; const A = ang * Math.PI / 180, dx = side * Math.cos(A), dy = -Math.sin(A), nx = -dy, ny = dx;
@@ -9965,8 +9965,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const tm = ((S.turn % 2) + 2) % 2, back = tm > 0.5 && tm < 1.5; eyes.style.opacity = back ? "0" : "1";   /* turn 0→1 shows its back, 0→2 is a whole spin */
       const bt = el.querySelector(".gd-butt"); if (bt) { bt.style.opacity = back ? "1" : "0"; bt.setAttribute("d", `M ${cx * 0.2} ${(bot - ry * 0.62).toFixed(2)} Q ${(cx * 0.2 + 1.2).toFixed(2)} ${(bot - ry * 0.3).toFixed(2)} 0 ${(bot - 1.2).toFixed(2)}`); }   /* its back: no face, just a little crease */
       if (hl && back) hl.setAttribute("transform", `translate(${(rx * 0.45).toFixed(2)} ${(top + ry * 0.42).toFixed(2)}) rotate(35)`);
-      const ey = mid - 1, ex = cx * 0.55 + lookX;
-      eyes.setAttribute("transform", `translate(${ex.toFixed(2)} ${(ey + 12 + lookY).toFixed(2)}) scale(${Math.min(1.25, w / 31).toFixed(3)} ${Math.min(1.3, k).toFixed(3)})`);
+      const ey = mid - 1, ex = cx * 0.55 + lookX + ts * rx * 0.58;   /* turning round, it stays a round drop: the face slides round to its side and out of sight, as on a ball */
+      eyes.setAttribute("transform", `translate(${ex.toFixed(2)} ${(ey + 12 + lookY).toFixed(2)}) scale(${(Math.min(1.25, w / 31) * Math.max(0.06, Math.abs(tc))).toFixed(3)} ${Math.min(1.3, k).toFixed(3)})`);
       // the face: two eyes (each can open wider or close on its own), happy eyes (^ ^), cheeks that blush. No mouth: the eyes say it all
       const L = el.querySelector(".gd-l"), R = el.querySelector(".gd-r"), op = 1 - S.happy;
       L.setAttribute("rx", (2.4 * S.eyeSL).toFixed(2)); L.setAttribute("ry", Math.max(0, 3.4 * blink * S.eyeL * S.eyeSL * op).toFixed(2));
