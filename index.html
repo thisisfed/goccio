@@ -2903,6 +2903,9 @@ html body .gd-scrim{z-index:17}
 html body .gd-dock .gd-talk{z-index:1}
 /* docked on a phone the chat spans the pills, so its right edge is the +'s right edge: a 32px X at right -1px (inside the 1px border) shares the +'s centre line */
 html body .gd-dock.wide .gd-x{right:-1px!important}
+/* the chat's column ends where the microphone ends: bubbles (yours too) and reply chips line up with it, leaving the send button's column clear */
+html body .wb-sign .gd-talk .gd-say{padding-right:38px!important} html body .wb-sign .gd-talk .gd-chips{padding-right:38px;box-sizing:border-box}
+html body .gd-m{max-width:100%}
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
@@ -10164,18 +10167,21 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const MAX_MSG = 40, CHAT_KEY = "v60.gdChat"; let msgs = [], typing = null, lastMine = null;
     const saveChat = () => { try { sessionStorage.setItem(CHAT_KEY, JSON.stringify(msgs.slice(-MAX_MSG))); } catch (e) {} };
     const toBottom = () => { sayEl.scrollTop = sayEl.scrollHeight; };
+    ["wheel", "touchstart"].forEach((ev) => sayEl.addEventListener(ev, () => { if (typing) typing.free = true; }, { passive: true }));
+    const toTop = (m, smooth) => { if (!m || !m.isConnected) return toBottom(); const d = m.getBoundingClientRect().top - sayEl.getBoundingClientRect().top - (m.querySelector(".gd-tb") ? 18 : 2);   /* room for a tapback on its corner */ sayEl.scrollTo({ top: sayEl.scrollTop + d, behavior: smooth ? "smooth" : "auto" }); };
     const bubble = (who, text, rx) => { const m = document.createElement("span"); m.className = "gd-m " + (who === "me" ? "gd-me" : "gd-it"); m.textContent = text;
       if (rx) { const t = document.createElement("span"); t.className = "gd-tb"; t.textContent = rx; m.appendChild(t); m.classList.add("has-tb"); }
-      sayEl.appendChild(m); while (sayEl.children.length > MAX_MSG) sayEl.firstChild.remove(); toBottom(); return m; };
-    const addMsg = (who, text) => { const m = bubble(who, text); const rec = { w: who, t: text, at: Date.now() }; msgs.push(rec); m._rec = rec; saveChat(); if (who === "me") lastMine = m; return m; };
-    const finishTyping = () => { if (typing) { clearInterval(typeT); typing.m.textContent = typing.text; typing = null; bob(false); toBottom(); } };
+      sayEl.appendChild(m); while (sayEl.children.length > MAX_MSG) sayEl.firstChild.remove(); if (who === "me") toBottom(); return m; };
+    let replyTo = null;
+    const addMsg = (who, text) => { const m = bubble(who, text); const rec = { w: who, t: text, at: Date.now() }; msgs.push(rec); m._rec = rec; saveChat(); if (who === "me") { lastMine = m; replyTo = m; } return m; };
+    const finishTyping = () => { if (typing) { clearInterval(typeT); typing.m.textContent = typing.text; typing = null; bob(false); } };
     // a tapback on your last message: a heart for thanks, a laugh for jokes, a ‼️ for a fright, a ❓ when it doesn't know
     const react = (emoji, delay) => { const m = lastMine; if (!m || m.querySelector(".gd-tb")) return; setTimeout(() => { if (m.querySelector(".gd-tb")) return;
       const t = document.createElement("span"); t.className = "gd-tb"; t.textContent = emoji; m.appendChild(t); m.classList.add("has-tb"); if (m._rec) { m._rec.r = emoji; saveChat(); } }, delay == null ? 450 : delay); };
     try { (JSON.parse(sessionStorage.getItem(CHAT_KEY) || "[]") || []).forEach((r) => { const m = bubble(r.w, r.t, r.r); m._rec = r; msgs.push(r); if (r.w === "me") lastMine = m; }); } catch (e) {}
     const say = (text, chips, mood) => { const th = thinkNext; thinkNext = null; if (!th) return sayNow(text, chips, mood); const g = ++sayGen;
       finishTyping(); chipsEl.textContent = ""; const tb = bubble("it", th.lead); tb.classList.add("gd-typing"); const dots = document.createElement("span"); dots.className = "gd-dots"; dots.innerHTML = "<i></i><i></i><i></i>"; tb.appendChild(dots); toBottom();
-      if (D && !still()) { D.free(); D.think(th.ms); } setTimeout(() => { tb.remove(); if (g === sayGen) sayNow(th.pre + text, chips, mood); }, th.ms); };
+      toTop(lastMine, true); if (D && !still()) { D.free(); D.think(th.ms); } setTimeout(() => { tb.remove(); if (g === sayGen) sayNow(th.pre + text, chips, mood); }, th.ms); };
     // long answers read like a well-written message, not a wall: numbered steps on their own lines, and the rest in short
     // paragraphs of a sentence or two. Text that already has its own line breaks is left as it is
     const tidy = (t) => { t = String(t); if (/\n/.test(t) || t.length < 200) return t;
@@ -10188,8 +10194,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const offer = (text, chips) => { const a = (chips || []).find((x) => x && typeof x === "object" && x.f); if (!a) return [text, chips];
       const many = /coffees|their|his|them|caff[eè]$|suoi|loro/i.test(a.t); pendingYes = a.f;
       return [text + " " + (many ? T("Want to see them?", "Vuoi vederli?") : T("Want to see it?", "Vuoi vederlo?")), [{ t: T("Yes", "Sì"), q: T("Yes", "Sì") }, ...chips.filter((x) => x !== a)]]; };
-    const sayNow = (text, chips, mood) => { pendingYes = null; [text, chips] = offer(text, chips); text = tidy(text); sayGen++; finishTyping(); const m = addMsg("it", ""); m._rec.t = text; saveChat(); typing = { m, text }; let k = 0; bob(true);
-      typeT = setInterval(() => { k += 2; m.textContent = text.slice(0, k); if (k % 12 === 0) toBottom(); if (k >= text.length) finishTyping(); }, 24);
+    const sayNow = (text, chips, mood) => { pendingYes = null; [text, chips] = offer(text, chips); text = tidy(text); sayGen++; finishTyping(); const m = addMsg("it", ""); m._rec.t = text; saveChat(); typing = { m, text, top: replyTo }; let k = 0; bob(true);
+      const anchor = replyTo && replyTo.isConnected ? replyTo : m; requestAnimationFrame(() => toTop(anchor, true));   // your question at the top, the answer filling in below it
+      // as the answer grows it keeps your question pinned at the top, until it reaches it or you scroll the chat yourself
+      typeT = setInterval(() => { k += 2; m.textContent = text.slice(0, k); if (typing && !typing.free && k % 8 === 0) toTop(anchor); if (k >= text.length) { if (typing && !typing.free) toTop(anchor); finishTyping(); } }, 24);
       showChips(chips); if (mood) mood(); };
     // the sample questions: a fresh mix each time, one from each kind, so you get an idea of everything it knows
     const POOL = () => ({
@@ -10832,6 +10840,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const place = (top) => { const want = top ? dock : home; if (talking) dim(true, top); if (top) fitDock(); if (talkEl.parentNode !== want) want.appendChild(talkEl); talkEl.classList.toggle("docked", !!top); };
     openTalk = (top) => { if (talking) { place(top); return; } place(top); gdWords(); talking = true; dim(true, top); talkEl.hidden = false; el.setAttribute("aria-expanded", "true"); toBottom();
       const lastAt = msgs.length ? msgs[msgs.length - 1].at || 0 : 0; if (name && msgs.length && Date.now() - lastAt < 20 * 60000) { showChips(); return; }   // still mid-chat: carry on
+      replyTo = null;   // a new hello answers nobody: it anchors to itself
       if (!name) { askingName = true; return say(T("Hi! I'm Goccio, the drop that knows coffee. What should I call you?", "Ciao! Sono Goccio, la goccia che sa tutto del caffè. Come ti chiamo?"), [T("Skip", "Salta")], happy); }
       say(pick([T(`Hi ${name}! Ask me about coffee.`, `Ciao ${name}! Chiedimi del caffè.`), T(`Hello ${name}! What are we brewing?`, `Ciao ${name}! Cosa prepariamo?`), T(`Oh, hi ${name}! Need a hand with your coffee?`, `Oh, ciao ${name}! Ti serve una mano col caffè?`)]), SUGGEST(), happy); };
     closeTalk = () => { if (!talking) return; talking = false; dim(false); talkEl.hidden = true; el.setAttribute("aria-expanded", "false"); clearInterval(typeT); bob(false); };
