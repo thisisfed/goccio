@@ -6599,8 +6599,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     let country = r0.roaster_country || "";
     try { country = country ? new Intl.DisplayNames([LANG === "it" ? "it" : "en"], { type: "region" }).of(country) : ""; } catch (e) {}
     $("roName").textContent = shelfRo + ".";
-    $("roWhere").textContent = [r0.roaster_city, country].filter(Boolean).join(", ");
-    $("roCount").textContent = mine.length === 1 ? "1 coffee" : `${mine.length} coffees`;
+    /* one line, written as the list writes it: "Paris (FR), 18 coffees" */
+    { const cc = r0.roaster_country === "GB" ? "UK" : (r0.roaster_country || ""), place = r0.roaster_city ? r0.roaster_city + (cc ? ` (${cc})` : "") : country;
+      $("roWhere").textContent = [place, mine.length === 1 ? (LANG === "it" ? "1 caffè" : "1 coffee") : `${mine.length} ${LANG === "it" ? "caffè" : "coffees"}`].filter(Boolean).join(", "); }
+    $("roCount").textContent = ""; $("roCount").hidden = true;
     const shop = roShops.get(shelfRo) || (() => { try { return new URL(r0.url).origin; } catch (e) { return ""; } })();
     $("roShop").hidden = !shop; if (shop) $("roShop").href = shop;
   }
