@@ -66,6 +66,9 @@ def cap(s):
 
 
 # ---------- the recipes, from the app itself ----------
+ROW_BITS = {}
+
+
 def recipes(coffees):
     from playwright.sync_api import sync_playwright
 
@@ -89,6 +92,9 @@ def recipes(coffees):
             out = []
             for i in range(0, len(coffees), 500):
                 out += pg.evaluate("(xs) => xs.map((x) => { try { return bagRecipe(x); } catch (err) { return null; } })", coffees[i:i + 500])
+            for i in range(0, len(coffees), 500):   # each row's taste line and roaster name, written by the main page itself
+                for c, bits in zip(coffees[i:i + 500], pg.evaluate("(xs) => xs.map((x) => window.rowBits ? rowBits(x) : null)", coffees[i:i + 500])):
+                    ROW_BITS[id(c)] = bits or {}
             b.close()
             return out
     finally:
@@ -295,17 +301,22 @@ def coffee_row(c, cpath, roaster=True, day=True):
     v = _var_name(c.get("variety"))
     if v:
         tags.append(f'<span class="tg vd" style="--vc:{_var_colour(v)}">{e(" ".join(w[:1].upper() + w[1:] for w in v.split(" ")))}</span>')
-    ns = [n for n in (scan.tidy_note(x) for x in (c.get("notes") or []) if isinstance(x, str) and len(x) < 40) if n][:6]
-    ns = [re.sub(r"\b[A-Z](?=[a-z])", lambda m: m.group(0).lower(), n) for n in ns]
+    bits = ROW_BITS.get(id(c)) or {}
+    taste = re.sub(r"<[^>]+>", "", bits.get("notes") or "").strip()   # the main page's own taste line: the roaster's notes, or what the origin usually tastes of
+    if not taste:
+        ns = [n for n in (scan.tidy_note(x) for x in (c.get("notes") or []) if isinstance(x, str) and len(x) < 40) if n][:6]
+        taste = e(cap(and_list([re.sub(r"\b[A-Z](?=[a-z])", lambda m: m.group(0).lower(), n) for n in ns])))
     who = []
     if roaster:
-        city = c.get("roaster_city") or ""
-        who.append(f'From <span class="ro">{e(c["roaster"])}</span>{", " + e(city) if city else ""}')
+        city, cc = c.get("roaster_city") or "", c.get("roaster_country") or ""
+        cc = "UK" if cc == "GB" else cc
+        where = (", " + e(city) if city else "") + (f'{" " if city else ", "}({e(cc)})' if cc else "")   # Hamburg (DE), as on the main page
+        who.append(f'From <span class="ro">{e(bits.get("ro") or c["roaster"])}</span>{where}')
     if day and _day(c):
         who.append(f'<span class="dy">{_day(c)}</span>')
     return (f'<li class="cr"><a href="{cpath[id(c)]}">' + (f'<p class="cw">{"<br>".join(who)}</p>' if who else "")
             + f'<span class="name">{e(c["name"])}</span><p class="tags">{"".join(tags)}</p>'
-            + (f'<p class="cn">{e(cap(and_list(ns)))}</p>' if ns else "") + "</a></li>")
+            + (f'<p class="cn">{taste}</p>' if taste else "") + "</a></li>")
 
 
 def coffee_list(cs, cpath, roaster=False, day=True):
