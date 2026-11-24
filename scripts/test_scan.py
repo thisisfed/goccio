@@ -41,6 +41,12 @@ COFFEE_BODY = "Origin: Colombia\nProcess: Washed\nVariety: Caturra\nAltitude: 1,
 
 # (what was reported, check that must be True)
 CASES = [
+    # Lucid (24/11/2026): "Tasting:" is a list of descriptors (fruity, high sweetness); the notes are under "Flavours like:"
+    ("Lucid's 'Flavours like: Cherry, Apricot, Cola' are the notes, not the 'Tasting: Fruity, High sweetness' descriptors",
+     lambda: scan.find_notes({"body": "Origin: Rwanda\nProcess: Washed\nTasting: Fruity, High sweetness, Medium Acidity, Juicy\nFlavours like: Cherry, Apricot, Cola", "title": "Rwanda Shyira", "tags": []}) == ["Cherry", "Apricot", "Cola"]),
+    # James Gourmet (24/11/2026): "Aromatics: Floral, melon and raspberry | Body: … | Acidity: …"
+    ("James Gourmet's 'Aromatics: Floral, melon and raspberry |' gives the three notes and stops at the next label",
+     lambda: scan.find_notes({"body": "BREWING AND RECIPES\nAromatics: Floral, melon and raspberry | Body: Creamy on cooling| Acidity: Ripe, Wild, Boozy, Citric |\nRipe soft fruit and orange land in your mug.", "title": "Ethiopian Bekele Yutute", "tags": []}) == ["Floral", "Melon", "Raspberry"]),
     # Terraform (24/11/2026): "Tasting Note" in the singular, and the notes joined with plus signs, in a Basic Info block
     ("Terraform's 'Tasting Note' block with notes joined by ' + ' gives the four notes",
      lambda: scan.find_notes({"body": "BASIC INFO\nTasting Note\nGardenia + Pomelo + Orange soda + Yellow peach\nRegion\nCosta Rica\nVariety\nGesha (COE Washed Rank 2)\nProcess\nWashed\nAltitude\n2050 masl\nHarvest\nMarch 2026", "title": "El Roble", "tags": []}) == ["Gardenia", "Pomelo", "Orange soda", "Yellow peach"]),
