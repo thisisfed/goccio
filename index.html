@@ -2625,6 +2625,7 @@ html body #recipe table.pours.steps{margin-bottom:-14px!important}   /* the last
 #detected .miss.miss-ro > .mr-l{display:flex!important;align-items:center;height:var(--pill-h);line-height:1!important}   /* the label keeps to the first line of pills when they open onto more */
 #consTop{display:grid;gap:8px;margin:0;border-top:1px solid var(--line);padding-top:14px}
 #consTop[hidden]{display:none}
+#consTop > #detected{margin:0!important}
 #consTop .cons-top{margin:0;padding:0;background:none;color:var(--ink);font-size:var(--fs-s);line-height:1.35}   /* plain words, as How to pour is: no pill round them */
 #consTop .why-ask{color:inherit;text-decoration:underline;text-underline-offset:2px}
 #detected .miss.miss-ro > .mr-l{color:var(--muted)}
@@ -5571,13 +5572,14 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     { const li = [...$("why").querySelectorAll("li.cons")].pop(); if (li && cons.length) { const a = document.createElement("a"); a.href = "#"; a.className = "why-ask"; a.textContent = li.textContent; li.textContent = ""; li.appendChild(a);
         // with a note before it ("Roast not sure, so it plays safe…"), the line joins that note's box, one line down
         { const pv = li.previousElementSibling; if (pv && pv.classList.contains("cons")) { pv.appendChild(document.createElement("br")); pv.appendChild(a); li.remove(); } }
-        a.onclick = (ev) => { ev.preventDefault(); const y0 = $("consTop") ? $("consTop").getBoundingClientRect().top : null; bagAskShow = true; render();
-          /* the roast row has just appeared higher up and pushed everything down: hold the page where it was (Safari does not), so the glide up starts from rest */
-          try { const c = $("consTop"), dy = c && y0 !== null ? c.getBoundingClientRect().top - y0 : 0; if (Math.abs(dy) > 1) { const h = document.documentElement, sb = h.style.scrollBehavior; h.style.scrollBehavior = "auto"; scrollBy(0, dy); h.style.scrollBehavior = sb; } } catch (e) {}
-          const d = $("detected"); if (d && !d.hidden) requestAnimationFrame(() => jumpTo(d)); }; } }
+        a.onclick = (ev) => { ev.preventDefault(); bagAskShow = true; render(); }; } }   /* the pills take the words' place: nothing to scroll to */
     /* those notes (Roast not sure, so it plays safe…) are read before the pour, not folded away under it: they sit over How to pour */
-    { let ct = $("consTop"); if (!ct) { ct = document.createElement("div"); ct.id = "consTop"; $("techLbl").before(ct); } ct.textContent = "";
-      $("why").querySelectorAll("li.cons").forEach((li) => { const p = document.createElement("p"); p.className = "cons-top"; while (li.firstChild) p.appendChild(li.firstChild); ct.appendChild(p); li.remove(); }); ct.hidden = !ct.childElementCount; }
+    { let ct = $("consTop"); if (!ct) { ct = document.createElement("div"); ct.id = "consTop"; $("techLbl").before(ct); }
+      const D = $("detected"); if (D && !D._home) D._home = { p: D.parentNode, n: D.nextSibling }; if (D && D.parentNode === ct) D._home.p.insertBefore(D, D._home.n && D._home.n.parentNode === D._home.p ? D._home.n : null);   /* the question goes home before this is re-drawn */
+      ct.textContent = "";
+      $("why").querySelectorAll("li.cons").forEach((li) => { const p = document.createElement("p"); p.className = "cons-top"; while (li.firstChild) p.appendChild(li.firstChild); ct.appendChild(p); li.remove(); }); ct.hidden = !ct.childElementCount;
+      /* asked for: the words give way to the question itself, right here: Roast, Scan the beans, + 5 */
+      if (D && bagAskShow && !D.hidden && D.textContent.trim() && !ct.hidden) { ct.textContent = ""; ct.appendChild(D); } }
     // "Label: text" lines bold the label; a line with no label (the roast note) is shown as it is
     // the roaster's notes (or the typical ones) lead, then the rest, all in view
     const xli = (w) => { const i = w.indexOf(": "); if (i < 1 || i > 60) return `<li>${esc(w)}</li>`;
