@@ -2889,6 +2889,13 @@ html body .gd-typing .gd-dots{margin-left:4px}
 @keyframes gdMsgIn{from{scale:.85;opacity:0}to{scale:1;opacity:1}}
 @keyframes gdTb{from{scale:0}to{scale:1}}
 @media (prefers-reduced-motion:reduce){html body .gd-m,html body .gd-tb{animation:none}}
+/* the chat open: the page behind dims and blurs a little. Over the drop, the drop and its chat stay bright; from the top bar, the bar stays too */
+html body .gd-scrim{position:fixed;inset:0;z-index:35;background:rgba(0,0,0,.62);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .25s ease}
+:root[data-theme="light"] body .gd-scrim{background:rgba(20,20,20,.38)}
+html.gd-open body .gd-scrim{opacity:1;pointer-events:auto}
+html.gd-open body .wb-sign .gdrop{z-index:41}
+html.gd-docked body .top{z-index:58}
+@media (prefers-reduced-motion:reduce){html body .gd-scrim{transition:none}}
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
@@ -10700,12 +10707,15 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const fitDock = () => { const a = document.querySelector(".top .ask-box"), p = $("toolsBtn"); if (!a || !p) return; const ar = a.getBoundingClientRect(), pr = p.getBoundingClientRect();
       const wide = ar.left < 40; dock.classList.toggle("wide", wide); if (wide) { dock.style.setProperty("--dl", ar.left + "px"); dock.style.setProperty("--dr", (innerWidth - pr.right) + "px"); } };
     addEventListener("resize", fitDock, { passive: true });
-    const place = (top) => { const want = top ? dock : home; if (top) fitDock(); if (talkEl.parentNode !== want) want.appendChild(talkEl); talkEl.classList.toggle("docked", !!top); };
-    openTalk = (top) => { if (talking) { place(top); return; } place(top); gdWords(); talking = true; talkEl.hidden = false; el.setAttribute("aria-expanded", "true"); toBottom();
+    // while the chat is open the page behind it dims and softens, so the conversation stands out; a tap on it closes the chat
+    const scrim = document.createElement("div"); scrim.className = "gd-scrim"; document.body.appendChild(scrim);
+    const dim = (on, top) => { document.documentElement.classList.toggle("gd-open", on); document.documentElement.classList.toggle("gd-docked", !!(on && top)); };
+    const place = (top) => { const want = top ? dock : home; if (talking) dim(true, top); if (top) fitDock(); if (talkEl.parentNode !== want) want.appendChild(talkEl); talkEl.classList.toggle("docked", !!top); };
+    openTalk = (top) => { if (talking) { place(top); return; } place(top); gdWords(); talking = true; dim(true, top); talkEl.hidden = false; el.setAttribute("aria-expanded", "true"); toBottom();
       const lastAt = msgs.length ? msgs[msgs.length - 1].at || 0 : 0; if (name && msgs.length && Date.now() - lastAt < 20 * 60000) { showChips(); return; }   // still mid-chat: carry on
       if (!name) { askingName = true; return say(T("Hi! I'm Goccio, the drop that knows coffee. What should I call you?", "Ciao! Sono Goccio, la goccia che sa tutto del caffè. Come ti chiamo?"), [T("Skip", "Salta")], happy); }
       say(pick([T(`Hi ${name}! Ask me about coffee.`, `Ciao ${name}! Chiedimi del caffè.`), T(`Hello ${name}! What are we brewing?`, `Ciao ${name}! Cosa prepariamo?`), T(`Oh, hi ${name}! Need a hand with your coffee?`, `Oh, ciao ${name}! Ti serve una mano col caffè?`)]), SUGGEST(), happy); };
-    closeTalk = () => { if (!talking) return; talking = false; talkEl.hidden = true; el.setAttribute("aria-expanded", "false"); clearInterval(typeT); bob(false); };
+    closeTalk = () => { if (!talking) return; talking = false; dim(false); talkEl.hidden = true; el.setAttribute("aria-expanded", "false"); clearInterval(typeT); bob(false); };
     $("gdX").onclick = closeTalk;
     // the top bar: the little Goccio opens it there; a question typed in the search box goes to Goccio instead of the list
     { const tb = $("askGoccio"); if (tb) tb.onclick = () => { window.gdMotion && window.gdMotion(); talking ? closeTalk() : openTalk(true); tb.hop && tb.hop(); }; }
