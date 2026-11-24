@@ -2833,9 +2833,19 @@ html body .wb-sign .gd-chips button:not(.on),html body .wb-sign .gd-ask input{ba
 html body .wb-sign .gd-ask input::placeholder{color:var(--muted)!important}
 @media (hover:hover){html body .wb-sign .gd-chips button:not(.on):hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))!important}}
 html body .wb-sign .gd-x{color:var(--ink)!important}
+html body .wb-sign .gd-ask button:not(#gdGo){background:var(--pill)!important;color:var(--ink)!important}
 /* the drop needs room of its own: well clear of Load more above it, so a tap on one never lands on the other */
 html body #shelfMore{margin-bottom:28px!important}
 html body .wb-sign .gdrop{pointer-events:none!important} html body .wb-sign .gdrop .gd-b{pointer-events:visiblePainted}   /* only the drop itself is tappable, not the empty box around it (it used to catch taps meant for Load more) */
+/* Ask Goccio: a little Goccio beside the search box */
+html body .ask-line .ask-goccio{flex:none;width:var(--pill-h,32px);height:var(--pill-h,32px);padding:0;margin:0 0 0 6px;border:0;border-radius:var(--r,4px);background:var(--pill);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;align-self:center}
+html body .ask-line .ask-goccio svg{width:22px;height:22px;fill:#000}
+@media (hover:hover){html body .ask-line .ask-goccio:hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))}}
+html body .ask-line{display:flex;align-items:center} html body .ask-line > .ask-box{flex:1;min-width:0}
+/* asked from the top bar: the bubble docks under it, centred, wherever you are on the page */
+html body .gd-dock{position:fixed;left:0;right:0;top:calc(var(--top-h, 49px) + 10px);height:0;z-index:60;margin:0!important;padding:0!important}
+html body .gd-dock .gd-talk{top:0!important;bottom:auto!important}
+html body .gd-dock .gd-talk::after{display:none!important}
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
@@ -3163,6 +3173,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   <form class="ask-line" id="askForm" role="search" autocomplete="off">
     <label for="askIn" class="ask-q">How do you want your coffee today?</label>
     <div class="ask-box"><div class="ask-sug" id="askSug" hidden></div><input type="search" id="askIn" placeholder="Fruity, under £15" enterkeyhint="search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"><button type="submit" class="ask-go" aria-label="Find my coffee"><svg class="ask-lens" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10.4 10.4l3.6 3.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><svg class="ask-xi" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div>
+    <button type="button" class="ask-goccio" id="askGoccio" aria-label="Ask Goccio"><svg viewBox="-20 -20 40 40" aria-hidden="true"><defs><radialGradient id="agFill" gradientUnits="userSpaceOnUse" cx="1.5" cy="4" r="17"><stop offset="0" stop-color="#e3a05a"/><stop offset=".45" stop-color="#b8682c"/><stop offset=".85" stop-color="#6e3514"/><stop offset="1" stop-color="#3f1c08"/></radialGradient></defs><circle r="15" fill="url(#agFill)"/><ellipse cx="-6.5" cy="-8" rx="3.4" ry="1.8" transform="rotate(-35 -6.5 -8)" fill="#fff" opacity=".55"/><ellipse cx="-5" cy="-1" rx="2.3" ry="3.2"/><ellipse cx="5" cy="-1" rx="2.3" ry="3.2"/></svg></button>
   </form>
   <div class="sec-list" id="secList" inert aria-hidden="true"><div class="sec-list-in"><button type="button" class="sec-p" data-jump="shelves" data-sec="shelves">Coffees</button><button type="button" class="sec-p" data-jump="bags" data-sec="bags">My bags</button><button type="button" class="sec-p" data-jump="coffee" data-sec="coffee">What’s brewing?</button><button type="button" class="sec-p" data-jump="recipe" data-sec="recipe">Recipe</button><button type="button" class="sec-p" data-jump="journal" data-sec="journal">Journal</button></div></div>
 </header>
@@ -9044,7 +9055,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       if (false) { const k = shelf.filter((r) => r.roaster === shelfRo).length; return LANG === "it" ? `Cerca tra ${k} caffè` : `Search ${k} coffee${k === 1 ? "" : "s"}`; }   // on a roaster's page: that roaster's coffees
       const n = (typeof shelfPart !== "undefined" && shelfPart) || (typeof shelf !== "undefined" && shelf.length) || 0;   // the whole list, also while only its first part is in
       const box = document.getElementById("askIn"), nr = box && box.clientWidth && box.clientWidth < 290 ? 0 : (window.__roN || 0);   // and the roasters: "Search 8,757 coffees, 732 roasters" (a very narrow phone keeps just the coffees)
-      return n ? (LANG === "it" ? `Cerca tra ${n.toLocaleString("it-IT")} caffè${nr ? `, ${nr.toLocaleString("it-IT")} torrefazioni` : ""}` : `Search ${n.toLocaleString("en-GB")} coffees${nr ? `, ${nr.toLocaleString("en-GB")} roasters` : ""}`) : T(HINT); };
+      // one box for both: coffees to find, or a question for Goccio
+      const narrowAsk = box && box.clientWidth && box.clientWidth < 360;   /* a phone: the short form, so it never ends in "…" */
+      return n ? (LANG === "it" ? (narrowAsk ? "Cerca o chiedi a Goccio" : `Cerca tra ${n.toLocaleString("it-IT")} caffè o chiedi a Goccio`) : (narrowAsk ? "Search or ask Goccio" : `Search ${n.toLocaleString("en-GB")} coffees or ask Goccio`)) : T(HINT); };
     const settle = () => { if (calm) return; calm = true; roll(hintText(), true); };
     addEventListener("scroll", () => { if (scrollY > 80) settle(); }, { passive: true });
     a.addEventListener("focus", settle);
@@ -10039,7 +10052,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const newest = () => { const cs = coffees(); let day = ""; for (const r of cs) { const d = String(r.found || "").slice(0, 10); if (d > day) day = d; } return { day, list: cs.filter((r) => String(r.found || "").slice(0, 10) === day) }; };
     const dayWord = (iso) => { const t = new Date(), y = new Date(); y.setDate(t.getDate() - 1); const f = (d) => d.toISOString().slice(0, 10);
       return iso === f(t) ? T("today", "oggi") : iso === f(y) ? T("yesterday", "ieri") : T("on ", "il ") + (typeof isoDm === "function" ? isoDm(iso) : iso); };
-    const search = (q) => { const a = $("askIn"); a.value = q; a.dispatchEvent(new Event("input", { bubbles: true })); $("askForm").requestSubmit(); if (window.syncAskGo) setTimeout(window.syncAskGo, 0); };   /* the words fill the top bar, its hint gives way */
+    const search = (q) => { const a = $("askIn"); window.__gdSearching = true; setTimeout(() => { window.__gdSearching = false; }, 0); a.value = q; a.dispatchEvent(new Event("input", { bubbles: true })); $("askForm").requestSubmit(); if (window.syncAskGo) setTimeout(window.syncAskGo, 0); };   /* the words fill the top bar, its hint gives way */
     const bob = (on) => { clearInterval(bobT); if (on && !still()) bobT = setInterval(() => D.bob(), 210); };
     // the answer types itself out, the drop bobbing as if it were saying it
     const say = (text, chips, mood) => { clearInterval(typeT); sayEl.textContent = ""; let k = 0; bob(true); typeT = setInterval(() => { k += 2; sayEl.textContent = text.slice(0, k); if (k >= text.length) { clearInterval(typeT); bob(false); } }, 24);
@@ -10289,16 +10302,25 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           rec.onend = () => { mic.classList.remove("on"); rec = null; };
           try { rec.start(); } catch (e) { mic.classList.remove("on"); rec = null; } }; } }
     inEl.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); ask(inEl.value); } if (e.key === "Escape") closeTalk(); });
-    openTalk = () => { if (talking) return; talking = true; talkEl.hidden = false; el.setAttribute("aria-expanded", "true");
+    // the bubble lives over the drop; asked from the top bar it docks under the bar instead, wherever you are on the page
+    const home = talkEl.parentNode, dock = document.createElement("div"); dock.className = "wb-sign gd-dock"; document.body.appendChild(dock);
+    const place = (top) => { const want = top ? dock : home; if (talkEl.parentNode !== want) want.appendChild(talkEl); talkEl.classList.toggle("docked", !!top); };
+    openTalk = (top) => { if (talking) { place(top); return; } place(top); talking = true; talkEl.hidden = false; el.setAttribute("aria-expanded", "true");
       if (!name) { askingName = true; return say(T("Hi! I'm Goccio, the drop that knows coffee. What should I call you?", "Ciao! Sono Goccio, la goccia che sa tutto del caffè. Come ti chiamo?"), [T("Skip", "Salta")], happy); }
       say(pick([T(`Hi ${name}! Ask me about coffee.`, `Ciao ${name}! Chiedimi del caffè.`), T(`Hello ${name}! What are we brewing?`, `Ciao ${name}! Cosa prepariamo?`), T(`Oh, hi ${name}! Need a hand with your coffee?`, `Oh, ciao ${name}! Ti serve una mano col caffè?`)]), null, happy); };
     closeTalk = () => { if (!talking) return; talking = false; talkEl.hidden = true; el.setAttribute("aria-expanded", "false"); clearInterval(typeT); bob(false); };
     $("gdX").onclick = closeTalk;
+    // the top bar: the little Goccio opens it there; a question typed in the search box goes to Goccio instead of the list
+    { const tb = $("askGoccio"); if (tb) tb.onclick = () => { talking ? closeTalk() : openTalk(true); }; }
+    const isQuestion = (t) => /\?\s*$/.test(t) || /^(goccio\b|hey goccio|hi goccio|ciao goccio|what|why|how|who|where|when|which|is it|are|does|do i|can|should|tell me|explain|cos|perch[eé]|come mai|come si|quando|dove|chi|quant[oai])\b/i.test(t.trim());
+    $("askForm").addEventListener("submit", (e) => { const a = $("askIn"), t = a.value.trim(); if (window.__gdSearching || !t || !isQuestion(t)) return;
+      e.preventDefault(); e.stopImmediatePropagation(); a.value = ""; a.dispatchEvent(new Event("input", { bubbles: true })); a.blur();
+      const q = t.replace(/^(hey |hi |ciao )?goccio[,:!\s]*/i, "").trim() || t; openTalk(true); setTimeout(() => ask(q), 350); }, true);
     const hint = $("gdHint"); let hinted = false;
     if (hint && "IntersectionObserver" in window) new IntersectionObserver((es) => { if (hinted || !es[0].isIntersecting || es[0].intersectionRatio < 0.9) return; hinted = true;
       setTimeout(() => { if (talking) return; hint.hidden = false; D.happy(); setTimeout(() => { hint.classList.add("out"); setTimeout(() => { hint.hidden = true; hint.classList.remove("out"); }, 400); }, 4200); }, 1300); }, { threshold: [0, 0.9] }).observe(el);
     // a tap elsewhere closes it; a scroll doesn't (a finger that moves is scrolling, and a scroll never makes a click)
-    document.addEventListener("click", (e) => { if (talking && !talkEl.contains(e.target) && !el.contains(e.target)) closeTalk(); }, true);
+    document.addEventListener("click", (e) => { if (talking && !talkEl.contains(e.target) && !el.contains(e.target) && !e.target.closest("#askGoccio, #askForm")) closeTalk(); }, true);
     el.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); talking ? closeTalk() : openTalk(); } });
     window.gdrop = D; window.gbean = B; } }
   // the hero film: silent, looping, and still (its first frame) for anyone who asks for less motion
