@@ -9955,12 +9955,16 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const still = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
     const W0 = 36, H0 = 24, R0 = 15.5;   // at rest: a dome 36 wide, 24 high; falling: a round drop of about the same volume
     const wS = 2 * Math.PI / 0.24, zS = 0.3, wL = 2 * Math.PI / 0.42, zL = 0.45, G = 2600;
-    const S = { aRest: 0, eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, phones: 0, fone: 0, umb: 0, scroll: 0, jx: 0, blush: 0, turn: 0, armL: 0, armR: 0, armLa: 0, armRa: 0, flip: 0, specs: 0 }; let jy = 0, jv = 0, ptrX = 0, ptrY = 0, ptrT = 0; let tws = [], a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
+    const S = { aRest: 0, eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, phones: 0, fone: 0, umb: 0, scroll: 0, jx: 0, blush: 0, turn: 0, armL: 0, armR: 0, armLa: 0, armRa: 0, flip: 0, specs: 0 }; let flatS = 1, jy = 0, jv = 0, ptrX = 0, ptrY = 0, ptrT = 0; let tws = [], a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
     const draw = () => {
       // the shape it has just before it falls: round. Squashed or stretched it keeps its volume (taller is narrower); its top
       // sways with the page; it sits on its lowest point
-      const k = Math.max(0.3, 1 + a), ry = R0 * k * (opt.bean ? 1.08 : 1), tc = Math.cos(S.turn * Math.PI), rx = R0 / Math.sqrt(k) * (opt.bean ? 0.86 : 1), w = rx * 2, ts = Math.sin(S.turn * Math.PI),   /* turning round: it narrows to its side, then widens showing its back */ cx = lean * 0.6, bot = y, mid = bot - ry, top = bot - 2 * ry, sh = 0.552;
-      const d = `M ${-rx} ${mid} C ${-rx} ${mid - ry * sh} ${cx - rx * sh} ${top} ${cx} ${top} C ${cx + rx * sh} ${top} ${rx} ${mid - ry * sh} ${rx} ${mid} C ${rx} ${mid + ry * sh} ${rx * sh} ${bot} 0 ${bot} C ${-rx * sh} ${bot} ${-rx} ${mid + ry * sh} ${-rx} ${mid} Z`;
+      // resting, it's a drop sitting on the page: gravity flattens it into a dome, wider than tall, with a flatter base where it touches;
+      // falling, it pulls itself round (surface tension wins). The change is eased so landing reads as a splat settling into a dome
+      flatS += ((phase === "fall" || jy < -2 ? 0 : 1) - flatS) * 0.25; const fl = opt.bean ? 0 : flatS;
+      const k = Math.max(0.3, 1 + a), ry = R0 * k * (opt.bean ? 1.08 : 1) * (1 - 0.13 * fl), tc = Math.cos(S.turn * Math.PI), rx = R0 / Math.sqrt(k) * (opt.bean ? 0.86 : 1) * (1 + 0.09 * fl), w = rx * 2, ts = Math.sin(S.turn * Math.PI),   /* turning round: it narrows to its side, then widens showing its back */ cx = lean * 0.6, bot = y, mid = bot - ry, top = bot - 2 * ry, sh = 0.552;
+      const bs = sh + 0.2 * fl, bv = sh - 0.08 * fl;   /* the base: flatter, its handles reaching further out along the ground */
+      const d = `M ${-rx} ${mid} C ${-rx} ${mid - ry * sh} ${cx - rx * sh} ${top} ${cx} ${top} C ${cx + rx * sh} ${top} ${rx} ${mid - ry * sh} ${rx} ${mid} C ${rx} ${mid + ry * bv} ${rx * bs} ${bot} 0 ${bot} C ${-rx * bs} ${bot} ${-rx} ${mid + ry * bv} ${-rx} ${mid} Z`;
       // arms: liquid pushed out of its sides, wide where they leave the body, rounded at the tip, a little curve as if poured
       const arm = (side, ext, ang) => { ext *= Math.abs(tc); if (ext < 0.03) return ""; const A = ang * Math.PI / 180, dx = side * Math.cos(A), dy = -Math.sin(A), nx = -dy, ny = dx;
         const ox = side * rx * 0.78 + cx * 0.3, oy = mid - ry * 0.05, L = 4 + 15 * ext, wb = 4.4, rt = 2.1 + 0.4 * ext, bend = 2.2 * side * Math.sin(A + 0.6);
