@@ -2865,6 +2865,8 @@ html body .gd-intro{position:fixed;top:calc(var(--top-h, 49px) + 10px);width:min
 html body .gd-intro::before{content:"";position:absolute;top:-6px;right:calc(var(--tip, 20px) - 5px);width:10px;height:10px;background:var(--gd-card);rotate:45deg;border-radius:2px;
   border:solid color-mix(in srgb,var(--ink) 16%,var(--bg));border-width:1px 0 0 1px}
 html body .gd-intro.out{opacity:0}
+html body .gd-dock.wide .gd-talk{left:var(--dl,12px)!important;right:var(--dr,12px)!important;width:auto!important;translate:none!important;max-width:none!important}   /* phone: as wide as the top bar's pills */
+html body .wb-sign .gd-ask input{font-size:15px!important}   /* one size in the bubble: answer, chips and box all 15 px. iOS won't zoom: maximum-scale is set there (see the head) */
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
@@ -10389,7 +10391,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     inEl.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); ask(inEl.value); } if (e.key === "Escape") closeTalk(); });
     // the bubble lives over the drop; asked from the top bar it docks under the bar instead, wherever you are on the page
     const home = talkEl.parentNode, dock = document.createElement("div"); dock.className = "wb-sign gd-dock"; document.body.appendChild(dock);
-    const place = (top) => { const want = top ? dock : home; if (talkEl.parentNode !== want) want.appendChild(talkEl); talkEl.classList.toggle("docked", !!top); };
+    // on a phone, where the top bar is just its pills, the docked bubble spans exactly from the search pill's left edge to the +'s right edge
+    const fitDock = () => { const a = document.querySelector(".top .ask-box"), p = $("toolsBtn"); if (!a || !p) return; const ar = a.getBoundingClientRect(), pr = p.getBoundingClientRect();
+      const wide = ar.left < 40; dock.classList.toggle("wide", wide); if (wide) { dock.style.setProperty("--dl", ar.left + "px"); dock.style.setProperty("--dr", (innerWidth - pr.right) + "px"); } };
+    addEventListener("resize", fitDock, { passive: true });
+    const place = (top) => { const want = top ? dock : home; if (top) fitDock(); if (talkEl.parentNode !== want) want.appendChild(talkEl); talkEl.classList.toggle("docked", !!top); };
     openTalk = (top) => { if (talking) { place(top); return; } place(top); gdWords(); talking = true; talkEl.hidden = false; el.setAttribute("aria-expanded", "true");
       if (!name) { askingName = true; return say(T("Hi! I'm Goccio, the drop that knows coffee. What should I call you?", "Ciao! Sono Goccio, la goccia che sa tutto del caffè. Come ti chiamo?"), [T("Skip", "Salta")], happy); }
       say(pick([T(`Hi ${name}! Ask me about coffee.`, `Ciao ${name}! Chiedimi del caffè.`), T(`Hello ${name}! What are we brewing?`, `Ciao ${name}! Cosa prepariamo?`), T(`Oh, hi ${name}! Need a hand with your coffee?`, `Oh, ciao ${name}! Ti serve una mano col caffè?`)]), null, happy); };
@@ -10438,7 +10444,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         try { localStorage.setItem("v60.gdIntro", "1"); } catch (e) {}
         const b = document.createElement("div"); b.className = "gd-intro"; b.setAttribute("role", "status");
         b.innerHTML = T("Hi, I’m Goccio, a little drop of coffee. Type in the box to search the coffees, or ask me anything about coffee. Tap me any time.", "Ciao, sono Goccio, una gocciolina di caffè. Scrivi nella barra per cercare tra i caffè, o chiedimi qualsiasi cosa sul caffè. Toccami quando vuoi.");
-        const right = Math.max(12, innerWidth - r.right - 6); b.style.right = right + "px"; b.style.setProperty("--tip", (innerWidth - right - (r.left + r.width / 2)) + "px");
+        const ab = document.querySelector(".top .ask-box"), pb = $("toolsBtn"), wide = ab && pb && ab.getBoundingClientRect().left < 40;   // phone: as wide as the pills
+        const right = wide ? innerWidth - pb.getBoundingClientRect().right : Math.max(12, innerWidth - r.right - 6); b.style.right = right + "px"; b.style.setProperty("--tip", (innerWidth - right - (r.left + r.width / 2)) + "px");
+        if (wide) { b.style.left = ab.getBoundingClientRect().left + "px"; b.style.width = "auto"; }
         document.body.appendChild(b); tb.hop && tb.hop();
         let t = 0; const bye = () => { clearTimeout(t); removeEventListener("pointerdown", bye, true); removeEventListener("keydown", bye, true); b.classList.add("out"); setTimeout(() => b.remove(), 400); };
         t = setTimeout(bye, 9000); setTimeout(() => { addEventListener("pointerdown", bye, true); addEventListener("keydown", bye, true); }, 300); }, 1600); }
