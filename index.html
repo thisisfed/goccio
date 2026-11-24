@@ -7392,7 +7392,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const day = (() => { const iso = String(shelfDate(r) || "").slice(0, 10), ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`, now = new Date(), y = new Date(now); y.setDate(now.getDate() - 1);
         const d0 = isoDm(shelfDate(r));
         /* what the date is the date of. "Released" only where the shop itself dates the coffee; where it does not, the date is the day Goccio first saw it, and it says "Added" */
-        const w = r.published ? (LANG === "it" ? "Uscito" : "Released") : (LANG === "it" ? "Aggiunto" : "Added");
+        const w = LANG === "it" ? "Aggiunto" : "Added";   // one word for every coffee: the shop's own date when it gives one, else the day Goccio first saw it (Nov 2026: was Released or Added)
         return iso && iso === ymd(now) ? `${w} ${LANG === "it" ? "oggi" : "today"}` : iso && iso === ymd(y) ? `${w} ${LANG === "it" ? "ieri" : "yesterday"}` : d0 ? `${w} ${LANG === "it" ? "il " : ""}${d0}` : ""; })();   // today's and yesterday's coffees say so; older ones keep their date
       const shown = (seen.get(r.roaster + "|" + String(nm(r)).toLowerCase() + tagKey(r)) || new Set()).size > 1 ? fullName(r) : nm(r);
       tagBits.push(...coffeeLabels(r, shown).map((l) => `<span class="tg lbl" style="--vc:${LABEL_DOT[l] || "#8e8e93"}">${l}</span>`));
