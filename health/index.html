@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow">
+<title>Goccio: health</title>
+<style>
+@font-face{font-family:"ALT Riviera";src:url("/fonts/alt-medium.woff2") format("woff2");font-weight:100 900;font-display:swap}
+:root{--ink:#fff;--muted:#8c8c8c;--line:#595959;--pill:#222;--hl:#ff5a14}
+*{box-sizing:border-box}body{margin:0;background:#000;color:var(--ink);font:500 15px/1.35 "ALT Riviera",Helvetica,Arial,sans-serif;letter-spacing:-.01em}
+main{max-width:720px;margin:0 auto;padding:16px 12px 48px}
+h1{font-size:39px;line-height:1.05;margin:8px 0 4px;letter-spacing:-.03em;font-weight:500}
+h2{font-size:24px;margin:28px 0 8px;font-weight:500;letter-spacing:-.02em;border-top:1px solid var(--line);padding-top:16px}
+p{margin:4px 0}.m{color:var(--muted)}a{color:var(--ink);text-underline-offset:2px}
+.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:8px 0}
+.c{background:var(--pill);border-radius:4px;padding:10px 12px}.c b{display:block;font-size:24px;font-weight:500;letter-spacing:-.02em}.c span{color:var(--muted)}
+.bad b{color:var(--hl)}
+ul{list-style:none;margin:0;padding:0}li{padding:8px 0;border-bottom:1px solid #222}li .m{display:block;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+</style></head><body><main>
+<h1>Goccio, health.</h1>
+<p class="m" id="when">Loading…</p>
+<h2>Last scan</h2><div class="g" id="scan"></div><p class="m" id="limits"></p>
+<h2>Brew answers</h2><div class="g" id="taste"></div><ul id="top"></ul>
+<h2>New roasters, last 7 days</h2><ul id="newro"></ul>
+<h2>Shops the scan couldn't read</h2><p class="m" id="badn"></p><ul id="bad"></ul>
+<p class="m" style="margin-top:28px">Not linked anywhere and hidden from search engines. Counts only: nothing about any visitor.</p>
+</main>
+<script>
+const $ = (id) => document.getElementById(id), esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], d = (iso) => { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || ""); return m ? `${+m[3]} ${MON[+m[2] - 1]} ${m[1]}` : "—"; };
+const card = (n, label, bad) => `<div class="c${bad ? " bad" : ""}"><b>${typeof n === "number" ? n.toLocaleString("en-GB") : esc(n)}</b><span>${esc(label)}</span></div>`;
+const sum = (o) => o ? (o.sour || 0) + (o.balanced || 0) + (o.bitter || 0) : 0;
+(async () => {
+  const [rep, rel, ta] = await Promise.all([
+    fetch("/data/scan_report.json", { cache: "no-cache" }).then((r) => r.ok ? r.json() : null).catch(() => null),
+    fetch("/data/releases.json", { cache: "no-cache" }).then((r) => r.ok ? r.json() : null).catch(() => null),
+    fetch("/api/taste?stats=1", { cache: "no-cache" }).then((r) => r.ok ? r.json() : null).catch(() => null)]);
+  $("when").textContent = rel ? `Coffee list updated ${d(rel.updated)}. Page read ${new Date().toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}.` : "Couldn't read the coffee list.";
+  if (rep) {
+    const notReached = (rep.roasters_not_reached || []).length;
+    $("scan").innerHTML = card(d(rep.date), "scanned") + card(rep.minutes, "minutes (stops at 240)", rep.minutes > 220) + card(rep.roasters_ok, `of ${rep.roasters} roasters read`)
+      + card(rep.coffees, "coffees") + card(Math.round(100 * rep.with_notes / Math.max(1, rep.coffees)) + "%", "with tasting notes") + card(notReached, "roasters not reached in time", notReached > 0);
+    const lim = Object.entries(rep.limits || {}).filter(([, v]) => v).map(([k]) => k.replace(/_/g, " "));
+    $("limits").textContent = notReached ? `Not reached: ${rep.roasters_not_reached.join(", ")}. They go first in the next scan.` : lim.length ? `Limits touched: ${lim.join(", ")}.` : "";
+  } else $("scan").innerHTML = card("—", "no scan report");
+  if (ta && ta.db) {
+    $("taste").innerHTML = card(sum(ta.today), "today") + card(sum(ta.week), "last 7 days") + card(sum(ta.all), "all time")
+      + card((ta.all && ta.all.balanced) || 0, "just right") + card((ta.all && ta.all.sour) || 0, "too sour") + card((ta.all && ta.all.bitter) || 0, "too bitter");
+    $("top").innerHTML = (ta.top || []).map((t) => `<li>${esc(t.name)}<span class="m">${esc(t.roaster)}: ${t.n} brews, ${t.right} just right</span></li>`).join("");
+  } else $("taste").innerHTML = card("—", ta && ta.db === false ? "database not connected" : "couldn't read the answers", true);
+  if (rel) {
+    const ros = rel.roasters || [], wk = new Date(Date.now() - 6 * 864e5).toISOString().slice(0, 10);
+    const nw = ros.filter((r) => (r.first_seen || "") >= wk).sort((a, b) => (b.first_seen || "").localeCompare(a.first_seen || ""));
+    $("newro").innerHTML = nw.length ? nw.map((r) => `<li><a href="${esc(r.shop)}" rel="noopener">${esc(r.name)}</a><span class="m">${esc(d(r.first_seen))}, ${r.coffees || 0} coffees, ${esc(r.platform || "")}</span></li>`).join("") : '<li class="m">None this week.</li>';
+    const bad = ros.filter((r) => r.error);
+    $("badn").textContent = `${bad.length} of ${ros.length} roasters on the list.`;
+    $("bad").innerHTML = bad.map((r) => `<li><a href="${esc(r.shop)}" rel="noopener">${esc(r.name)}</a><span class="m" title="${esc(r.error)}">${esc(String(r.error).split(";")[0].slice(0, 90))}</span></li>`).join("");
+  }
+})();
+</script>
+</body></html>

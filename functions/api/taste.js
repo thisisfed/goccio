@@ -38,9 +38,24 @@ export async function onRequestPost({ request, env }) {
   } catch (e) { return json({ ok: false }, 500); }
 }
 
-// totals for one coffee: how many said sour, just right, bitter
+// totals for one coffee: how many said sour, just right, bitter. With ?stats=1: totals for the health page (counts only)
 export async function onRequestGet({ request, env }) {
-  const u = new URL(request.url).searchParams.get("u") || "";
+  const q = new URL(request.url).searchParams;
+  if (q.get("stats")) {
+    if (!env.TASTE) return json({ db: false });
+    try {
+      await table(env.TASTE);
+      const today = new Date().toISOString().slice(0, 10), week = new Date(Date.now() - 6 * 864e5).toISOString().slice(0, 10);
+      const one = async (sql, ...b) => (await env.TASTE.prepare(sql).bind(...b).all()).results || [];
+      const by = (rows) => Object.fromEntries(rows.map((r) => [r.taste, r.n]));
+      return json({ db: true,
+        all: by(await one("SELECT taste, COUNT(*) AS n FROM taste GROUP BY taste")),
+        week: by(await one("SELECT taste, COUNT(*) AS n FROM taste WHERE day >= ? GROUP BY taste", week)),
+        today: by(await one("SELECT taste, COUNT(*) AS n FROM taste WHERE day = ? GROUP BY taste", today)),
+        top: await one("SELECT roaster, name, COUNT(*) AS n, SUM(taste = 'balanced') AS right FROM taste GROUP BY url ORDER BY n DESC LIMIT 10") });
+    } catch (e) { return json({ db: true, error: true }); }
+  }
+  const u = q.get("u") || "";
   if (!env.TASTE || !/^https?:\/\//.test(u)) return json({ sour: 0, balanced: 0, bitter: 0, db: !!env.TASTE });
   try {
     await table(env.TASTE);
