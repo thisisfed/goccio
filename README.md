@@ -164,6 +164,12 @@ One coffee's totals, as the site sees them: `https://www.goccio.co.uk/api/taste?
 Free plan: 100,000 answers written and 5 million rows read a day. Over that, answers are dropped until midnight UTC; nothing
 is ever charged.
 
+## Health page
+
+**www.goccio.co.uk/health/** (not linked anywhere, hidden from search engines): the last scan (when, how long, roasters
+read, coffees, notes, roasters not reached), brew answers (today, this week, all time, the most brewed coffees), roasters
+added in the last 7 days and every shop the scan couldn't read, with the reason. Counts only.
+
 ## Publishing
 
 **Publish to Cloudflare** runs on every change to the main branch, after every daily scan and after a promotion. It copies
