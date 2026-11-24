@@ -41,6 +41,9 @@ COFFEE_BODY = "Origin: Colombia\nProcess: Washed\nVariety: Caturra\nAltitude: 1,
 
 # (what was reported, check that must be True)
 CASES = [
+    # Sl.ow (24/11/2026): the notes are an unlabelled subtitle right under the coffee's name
+    ("Sl.ow's 'Lime, Pineapple, Red Apple' under the title 'Loco Lime' are the notes",
+     lambda: scan.page_notes("Home\nShop\nMexico \u00b7 Honey\nLoco Lime\nLime, Pineapple, Red Apple\nNZ$53.99\nAdd to cart\nThis honey processed Geisha from Mexico is bright and juicy.", "Loco Lime") == ["Lime", "Pineapple", "Red Apple"]),
     # Lucid (24/11/2026): "Tasting:" is a list of descriptors (fruity, high sweetness); the notes are under "Flavours like:"
     ("Lucid's 'Flavours like: Cherry, Apricot, Cola' are the notes, not the 'Tasting: Fruity, High sweetness' descriptors",
      lambda: scan.find_notes({"body": "Origin: Rwanda\nProcess: Washed\nTasting: Fruity, High sweetness, Medium Acidity, Juicy\nFlavours like: Cherry, Apricot, Cola", "title": "Rwanda Shyira", "tags": []}) == ["Cherry", "Apricot", "Cola"]),
