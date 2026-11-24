@@ -23,6 +23,7 @@ import discover  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 SEEN = ROOT / "data" / "world_seen.json"
+MAP = ROOT / "data" / "world_map.json"   # the last list the map gave: used when every map server is busy
 OVERPASS = "https://overpass-api.de/api/interpreter"
 OVERPASS_ALSO = ["https://overpass.kumi.systems/api/interpreter", "https://overpass.private.coffee/api/interpreter"]   # the same open map, other public servers: tried when the main one is busy
 QUERY = '[out:json][timeout:240];nwr["craft"="coffee_roaster"][~"^(website|contact:website|url)$"~"."];out tags;'
@@ -114,8 +115,13 @@ def main():
     fresh = lambda h: h in seen and seen[h] >= (today - timedelta(days=RECHECK_DAYS)).isoformat()
     try:
         cands = candidates()
+        MAP.write_text(json.dumps(cands, ensure_ascii=False, indent=0) + "\n")
     except Exception as e:  # noqa: BLE001
-        print(f"map not reachable this time ({type(e).__name__}): nothing changes until the next run"); return
+        try:
+            cands = json.loads(MAP.read_text())
+            print(f"map not reachable this time ({type(e).__name__}): using its last list ({len(cands)} roasteries)")
+        except (OSError, ValueError):
+            print(f"map not reachable this time ({type(e).__name__}) and no saved list: nothing changes until the next run"); return
     new = [c for c in cands if discover.host(c["shop"]) not in have and discover.norm(c["name"]) not in names and not fresh(discover.host(c["shop"]))]
     random.Random(today.isoformat()).shuffle(new)   # a different handful each day, the whole world in turn
     print(f"{len(cands)} roasteries with a website on the map, {len(new)} not on the list and not checked lately")
