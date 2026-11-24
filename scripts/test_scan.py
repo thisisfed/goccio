@@ -41,6 +41,20 @@ COFFEE_BODY = "Origin: Colombia\nProcess: Washed\nVariety: Caturra\nAltitude: 1,
 
 # (what was reported, check that must be True)
 CASES = [
+    # Rogue Wave (24/11/2026): sizes 340 g, 1 kg, 2.5 kg and a 40 g sample; the sample's price was shown for the 340 g bag
+    ("A 40 g sample's price is not the price of the 340 g bag",
+     lambda: min(scan.shop_prices([{"title": "340 g", "price": "24.00"}, {"title": "1 kg", "price": "60.00"}, {"title": "2.5 kg", "price": "140.00"}, {"title": "40 g", "price": "7.00"}])) == 24.0),
+    # Dayglow (24/11/2026): "Taste notes" over a sentence: the list after "like"
+    ("Dayglow's 'Taste notes: We taste beautiful florals like lavender and lilac, with…' gives Lavender, Lilac",
+     lambda: [x.lower() for x in scan.find_notes({"body": "Taste notes\nWe taste beautiful florals like lavender and lilac, with a sweet sugary finish.\nDetails\nVariety: Geisha\nProcessing: Anaerobic Washed", "title": "Sugar Dust", "tags": []})] == ["lavender", "lilac"]),
+    # Established (24/11/2026): the notes in capitals under the name line "EL LIMONAR - COLOMBIA", which carries the country after the name
+    ("Established's 'NECTARINE, BAKED APPLES, BLACK TEA' under 'EL LIMONAR - COLOMBIA' are the notes",
+     lambda: scan.page_notes("Shop\nEl Limonar - Colombia\n\u00a314.00\nSize\n250g\nAdd to cart\nEL LIMONAR - COLOMBIA\nNECTARINE, BAKED APPLES, BLACK TEA\nPROCESS: WASHED\nVARIETAL: ARUSI\nCOUNTRY: COLOMBIA", "El Limonar") == ["Nectarine", "Baked apples", "Black tea"]),
+    # Rogue Wave (24/11/2026): "…with notes that remind us of:" then the notes as bullets, then the size picker
+    ("Rogue Wave's list after 'notes that remind us of:' gives the six notes (bullets)",
+     lambda: scan.find_notes({"body": "<p>This natural coffee is sweet and floral with notes that remind us of:</p><ul><li>Tangerine</li><li>Strawberry</li><li>Blackberry</li><li>Watermelon</li><li>Grape</li><li>Floral</li></ul>", "title": "Mullugeta Muntasha Arbegona", "tags": []}) == ["Tangerine", "Strawberry", "Blackberry", "Watermelon", "Grape", "Floral"]),
+    ("…and as lines on the page, stopping at 'Size'",
+     lambda: scan.find_notes({"body": "This natural coffee is sweet and floral with notes that remind us of:\nTangerine\nStrawberry\nBlackberry\nWatermelon\nGrape\nFloral\nSize\n340 g", "title": "Mullugeta Muntasha Arbegona", "tags": []}) == ["Tangerine", "Strawberry", "Blackberry", "Watermelon", "Grape", "Floral"]),
     # Sprout (24/11/2026): the same subtitle layout as Sl.ow, with the name in capitals ("LASSO LASSI", then "Lychee, Tropical, Lactic")
     ("Sprout's 'Lychee, Tropical, Lactic' under 'LASSO LASSI' are the notes",
      lambda: scan.page_notes("Skip to content\nShop\nLASSO LASSI\nLychee, Tropical, Lactic\n\u00a313.00\nSize\n250g\nAdd to cart\nComplex & fruity bang bang baby!", "Lasso Lassi") == ["Lychee", "Tropical", "Lactic"]),
