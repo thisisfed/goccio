@@ -237,9 +237,10 @@ def origin_colours():
                 txt += open(f, encoding="utf-8").read()
             except OSError:
                 pass
-        for sels, col in re.findall(r'((?:\[data-o="[^"]+"\]\s*,?\s*)+)\{\s*--oc:\s*(#[0-9a-fA-F]{3,8})', txt):
-            for o in re.findall(r'data-o="([^"]+)"', sels):
-                _OC.setdefault(o, col)
+        # the minified stylesheet drops the quotes where it can: [data-o=Ethiopia], but [data-o="Costa Rica"]
+        for sels, col in re.findall(r'((?:\[data-o=(?:"[^"]+"|[\w-]+)\]\s*,?\s*)+)\{\s*--oc:\s*(#[0-9a-fA-F]{3,8})', txt):
+            for q, b in re.findall(r'data-o=(?:"([^"]+)"|([\w-]+))', sels):
+                _OC.setdefault(q or b, col)
     return _OC
 
 
