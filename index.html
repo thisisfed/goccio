@@ -2813,7 +2813,7 @@ html body .wb-sign .gd-x{position:absolute!important;top:6px!important;right:6px
 html body .wb-sign .gd-x svg{width:13px!important;height:13px!important}
 @media (hover:hover){html body .wb-sign .gd-x:hover{opacity:.55!important}}
 html body .wb-sign .gdrop:focus-visible{outline:2px solid var(--hl);outline-offset:4px;border-radius:50%}
-html body .wb-sign .gdrop .gd-bl{fill:#ff2d55;opacity:0}
+html body .wb-sign .gdrop .gd-bl{fill:url(#gdBlush);opacity:0}   /* soft blush, like make-up: rosy in the middle, fading into the body, tucked under the eyes */
 html body .wb-sign .gdrop .gd-puff{fill:var(--muted);opacity:0;transform-box:fill-box;transform-origin:center;animation:gdpuff 1.2s ease-out forwards}
 @keyframes gdpuff{from{opacity:.75;transform:scale(.4)}to{opacity:0;transform:scale(1.8) translate(0,-6px)}}
 html body .wb-sign .gdrop{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
@@ -2895,6 +2895,7 @@ html body .gd-typing .gd-dots{margin-left:4px}
 html body .gd-scrim{position:fixed;inset:0;z-index:35;background:rgba(0,0,0,.62);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .25s ease}
 :root[data-theme="light"] body .gd-scrim{background:rgba(20,20,20,.38)}
 html.gd-open body .gd-scrim{opacity:1;pointer-events:auto}
+html.gd-hello:not(.gd-open) body .gd-scrim{opacity:.85;-webkit-backdrop-filter:blur(1.5px);backdrop-filter:blur(1.5px);transition-duration:.6s}   /* the big one says hello: the rest of the page fades back until the greeting goes */
 html.gd-open body .wb-sign .gdrop{z-index:41}
 html.gd-docked body .top{z-index:58}
 @media (prefers-reduced-motion:reduce){html body .gd-scrim{transition:none}}
@@ -3367,7 +3368,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       </details>
       <input type="file" accept="image/*" capture="environment" id="roastPhotoIn" hidden>
     </div>
-    <p class="wb-sign"><span class="gdrop" id="gdrop" role="button" tabindex="0" aria-label="Ask Goccio about coffee" aria-expanded="false"><svg viewBox="-32 -56 64 60" aria-hidden="true"><defs><radialGradient id="gdFill" gradientUnits="userSpaceOnUse" cx="1.8" cy="-9.3" r="22.3" fx="2.5" fy="-6.8"><stop offset="0" stop-color="#e3a05a" stop-opacity=".92"/><stop offset=".38" stop-color="#b8682c" stop-opacity=".9"/><stop offset=".78" stop-color="#6e3514" stop-opacity=".93"/><stop offset="1" stop-color="#3f1c08" stop-opacity=".97"/></radialGradient></defs><g class="gd-all"><path class="gd-arm" d=""/><path class="gd-arm" d=""/><path class="gd-b" d=""/><path class="gd-butt" d=""/><ellipse class="gd-h" cx="0" cy="0" rx="3.4" ry="1.9"/><g class="gd-e"><ellipse class="gd-l" cx="-6" cy="-12" rx="2.4" ry="3.4"/><ellipse class="gd-r" cx="6" cy="-12" rx="2.4" ry="3.4"/><path class="gd-a" d="M -8.6 -11 Q -6 -14.6 -3.4 -11"/><path class="gd-a" d="M 3.4 -11 Q 6 -14.6 8.6 -11"/><ellipse class="gd-bl" cx="-10.5" cy="-7.4" rx="3" ry="1.7"/><ellipse class="gd-bl" cx="10.5" cy="-7.4" rx="3" ry="1.7"/></g><g class="gd-ph"><path class="gd-band" d=""/><rect class="gd-cup l" x="0" y="0" width="5" height="9" rx="2.2"/><rect class="gd-cup r" x="0" y="0" width="5" height="9" rx="2.2"/></g></g><g class="gd-n"></g></svg></span><span class="gd-hint" id="gdHint" hidden>I’m Goccio. Tap me, I answer coffee questions.</span><span class="gd-talk" id="gdTalk" role="dialog" aria-label="Goccio" hidden><button type="button" class="gd-x" id="gdX" aria-label="Close"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button><span class="gd-say" id="gdSay" aria-live="polite"></span><span class="gd-chips" id="gdChips"></span><span class="gd-ask"><input id="gdIn" type="text" enterkeyhint="send" autocomplete="off" placeholder="Ask Goccio about coffee" aria-label="Ask Goccio"><button type="button" id="gdMic" aria-label="Ask out loud" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="5.5" y="1.5" width="5" height="8.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 7.5a5 5 0 0 0 10 0M8 12.5v2.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button><button type="button" id="gdGo" aria-label="Ask"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></span></span>Brew something good.</p>
+    <p class="wb-sign"><span class="gdrop" id="gdrop" role="button" tabindex="0" aria-label="Ask Goccio about coffee" aria-expanded="false"><svg viewBox="-32 -56 64 60" aria-hidden="true"><defs><radialGradient id="gdFill" gradientUnits="userSpaceOnUse" cx="1.8" cy="-9.3" r="22.3" fx="2.5" fy="-6.8"><stop offset="0" stop-color="#e3a05a" stop-opacity=".92"/><stop offset=".38" stop-color="#b8682c" stop-opacity=".9"/><stop offset=".78" stop-color="#6e3514" stop-opacity=".93"/><stop offset="1" stop-color="#3f1c08" stop-opacity=".97"/></radialGradient><radialGradient id="gdBlush"><stop offset="0" stop-color="#ff7a8f" stop-opacity=".95"/><stop offset=".45" stop-color="#f2557a" stop-opacity=".55"/><stop offset="1" stop-color="#e0446c" stop-opacity="0"/></radialGradient></defs><g class="gd-all"><path class="gd-arm" d=""/><path class="gd-arm" d=""/><path class="gd-b" d=""/><path class="gd-butt" d=""/><ellipse class="gd-h" cx="0" cy="0" rx="3.4" ry="1.9"/><g class="gd-e"><ellipse class="gd-l" cx="-6" cy="-12" rx="2.4" ry="3.4"/><ellipse class="gd-r" cx="6" cy="-12" rx="2.4" ry="3.4"/><path class="gd-a" d="M -8.6 -11 Q -6 -14.6 -3.4 -11"/><path class="gd-a" d="M 3.4 -11 Q 6 -14.6 8.6 -11"/><ellipse class="gd-bl" cx="-8.7" cy="-6.3" rx="3.4" ry="2.3"/><ellipse class="gd-bl" cx="8.7" cy="-6.3" rx="3.4" ry="2.3"/></g><g class="gd-ph"><path class="gd-band" d=""/><rect class="gd-cup l" x="0" y="0" width="5" height="9" rx="2.2"/><rect class="gd-cup r" x="0" y="0" width="5" height="9" rx="2.2"/></g></g><g class="gd-n"></g></svg></span><span class="gd-hint" id="gdHint" hidden>I’m Goccio. Tap me, I answer coffee questions.</span><span class="gd-talk" id="gdTalk" role="dialog" aria-label="Goccio" hidden><button type="button" class="gd-x" id="gdX" aria-label="Close"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button><span class="gd-say" id="gdSay" aria-live="polite"></span><span class="gd-chips" id="gdChips"></span><span class="gd-ask"><input id="gdIn" type="text" enterkeyhint="send" autocomplete="off" placeholder="Ask Goccio about coffee" aria-label="Ask Goccio"><button type="button" id="gdMic" aria-label="Ask out loud" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="5.5" y="1.5" width="5" height="8.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 7.5a5 5 0 0 0 10 0M8 12.5v2.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button><button type="button" id="gdGo" aria-label="Ask"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></span></span>Brew something good.</p>
   </section>
 
   <section class="sec" id="recipe" aria-labelledby="rtitle">
@@ -9964,7 +9965,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       L.setAttribute("ry", (parseFloat(L.getAttribute("ry")) * (1 - 0.38 * lift)).toFixed(2)); R.setAttribute("ry", (parseFloat(R.getAttribute("ry")) * (1 - 0.38 * lift)).toFixed(2));
       L.setAttribute("transform", `translate(0 ${(-1.1 * lift + 1.4 * sad).toFixed(2)}) rotate(${(-28 * sad).toFixed(1)} -6 -12)`); R.setAttribute("transform", `translate(0 ${(-1.1 * lift + 1.4 * sad).toFixed(2)}) rotate(${(28 * sad).toFixed(1)} 6 -12)`);   /* sad: tipped and a little lower */
       // headphones: a band over the top of the head and a cup on each side, at the height of the eyes
-      el.querySelectorAll(".gd-bl").forEach((b) => b.style.opacity = (S.blush * 0.75).toFixed(2));
+      el.querySelectorAll(".gd-bl").forEach((b) => b.style.opacity = (S.blush * 0.95).toFixed(2));
       const sp = null; if (sp) { sp.style.opacity = S.specs.toFixed(2); sp.setAttribute("transform", `translate(0 ${((1 - S.specs) * -6).toFixed(2)})`); }   /* glasses slide down onto its eyes */
       const ph = el.querySelector(".gd-ph"); ph.style.opacity = S.phones.toFixed(2);
       if (S.phones > 0.01) { const hh = 2 * R0 * Math.max(0.3, 1 + a), ww = 2 * R0 / Math.sqrt(Math.max(0.3, 1 + a)), lx = lean, cyp = y - hh * 0.5, tp = y - hh, ex2 = ww / 2 + 0.6, drop = (1 - S.phones) * -10;
@@ -10038,6 +10039,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const sleepy = () => act(async () => { await face({ eyeL: 0.35, eyeR: 0.35 }, 900); leanTo = 2; await wait(700); await face({ eyeL: 0.12, eyeR: 0.12 }, 600); leanTo = 3; await wait(900);
       leanTo = 0; poke(-1.6); await face({ eyeL: 1, eyeR: 1, eyeSL: 1.3, eyeSR: 1.3 }, 120); await wait(500); });
     // curious: one eye opens wider, it tilts and looks to one side
+    // bored: heavy lids, a slow look away to one side, then the other, a little slump
+    const bored = () => act(async () => { const s = Math.random() < 0.5 ? -1 : 1; await face({ eyeL: 0.42, eyeR: 0.42 }, 600); lookX = s * 2.6; lookY = 1.6; leanTo = s * 1.4; draw(); await wait(1900);
+      lookX = -s * 2.6; leanTo = -s * 1.4; draw(); await wait(1700); lookX = 0; lookY = 0; leanTo = 0; draw(); });
     const curious = () => act(async () => { const s = Math.random() < 0.5 ? -1 : 1; lookX = s * 3; leanTo = s * 2.5; draw(); await face(s > 0 ? { eyeSR: 1.3, eyeSL: 0.85 } : { eyeSL: 1.3, eyeSR: 0.85 }, 220); await wait(1300); lookX = 0; leanTo = 0; draw(); });
     // hmm: looks up to one side, one eye narrowed
     const hmm = () => act(async () => { lookX = 2.5; lookY = -2; draw(); await face({ eyeL: 0.6, eyeSR: 1.15 }, 240); await wait(1300); lookX = 0; lookY = 0; draw(); });
@@ -10147,7 +10151,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1; lookX = dx / d * 3; lookY = dy / d * 1.5; draw();
       setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900); }, { passive: true });
     el.addEventListener("click", () => { if (farted) { farted = false; return; } if (opt.tap) opt.tap(); else if (!acting) jumps(); });
-    return { S, busy: () => acting, free: () => { acting = false; }, moon, fartBack, upside, boo, think, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, fart, draw,
+    return { S, busy: () => acting, free: () => { acting = false; }, bored, moon, fartBack, upside, boo, think, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, fart, draw,
       bob: () => { poke(-0.7 - Math.random() * 0.6); if (Math.random() < 0.3) { jv = -90; go(); } } }; };
     // ---- talking: tap the drop and ask it something. It answers in a bubble, the words typing themselves out while it bobs.
     // It knows a handful of things for certain (what's new, a coffee to try, sour or bitter, ratio, temperature, grind, the processes,
@@ -10937,14 +10941,14 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // the little Goccio in the pill is alive too: it leans and looks towards the pointer (or your finger), blinks, and looks around when nobody moves
     { const tb = $("askGoccio"), bo = tb && tb.querySelector(".ag-b"), ey = tb && tb.querySelector(".ag-e");
       if (bo && ey && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        let tx = 0, ty = 0, x = 0, y = 0, blink = 1, hopT = 0, idle = 0, run = 0, wide = 1, wideTo = 1;
+        let tx = 0, ty = 0, x = 0, y = 0, blink = 1, hopT = 0, idle = 0, run = 0, wide = 1, wideTo = 1, lid = 1, lidTo = 1;
         const loop = (t) => { x += (tx - x) * .16; y += (ty - y) * .16; const k = hopT ? Math.max(0, 1 - (t - hopT) / 520) : 0, up = k ? Math.sin((1 - k) * Math.PI) * 6 : 0;
           if (!k) hopT = 0;
           // squash a touch against the way it leans, like the big one
           const lean = Math.hypot(x, y), sx = 1 + lean * .012 - up * .01, sy = 1 - lean * .01 + up * .02;
           bo.setAttribute("transform", `translate(${(x * .45).toFixed(2)} ${(y * .3 - up).toFixed(2)}) scale(${sx.toFixed(3)} ${sy.toFixed(3)})`);
-          wide += (wideTo - wide) * .2; ey.setAttribute("transform", `translate(${(x * 1.1).toFixed(2)} ${(y * 1.1).toFixed(2)}) translate(0 -1) scale(${wide.toFixed(3)} ${(blink * wide).toFixed(3)}) translate(0 1)`);
-          if (Math.abs(tx - x) + Math.abs(ty - y) > .02 || Math.abs(wideTo - wide) > .01 || hopT) run = requestAnimationFrame(loop); else run = 0; };
+          wide += (wideTo - wide) * .2; lid += (lidTo - lid) * .08; ey.setAttribute("transform", `translate(${(x * 1.1).toFixed(2)} ${(y * 1.1).toFixed(2)}) translate(0 -1) scale(${wide.toFixed(3)} ${(blink * wide * lid).toFixed(3)}) translate(0 1)`);
+          if (Math.abs(tx - x) + Math.abs(ty - y) > .02 || Math.abs(wideTo - wide) > .01 || Math.abs(lidTo - lid) > .01 || hopT) run = requestAnimationFrame(loop); else run = 0; };
         const go = () => { if (!run) run = requestAnimationFrame(loop); };
         const aim = (cx, cy) => { const r = tb.getBoundingClientRect(); if (!r.width) return; const dx = cx - (r.left + r.width / 2), dy = cy - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1, m = Math.min(1, d / 160) * 3.2;
           tx = dx / d * m; ty = dy / d * m; idle = performance.now(); go(); };
@@ -10955,6 +10959,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         // nobody about: look this way and that, then back to you
         setInterval(() => { if (document.hidden || performance.now() - idle < 4000) return; const a = Math.random() * Math.PI * 2; tx = Math.cos(a) * 2.6; ty = Math.sin(a) * 1.8; go(); setTimeout(() => { if (performance.now() - idle >= 4000) { tx = 0; ty = 0; go(); } }, 1400); }, 3500);
         tb.hop = () => { hopT = performance.now(); go(); };
+        // bored: heavy lids, eyes drift down to one side, then the other, then back
+        tb.bored = () => { const s = Math.random() < 0.5 ? -1 : 1; lidTo = .45; tx = s * 2.4; ty = 1.6; go(); setTimeout(() => { tx = -s * 2.4; go(); }, 1900);
+          setTimeout(() => { lidTo = 1; tx = 0; ty = 0; go(); }, 3600); };
+        addEventListener("pointermove", () => { if (lidTo < 1) { lidTo = 1; go(); } }, { passive: true });
         // the little one has a life too: now and then a dance, a backflip, a spin, a double hop or a wink, never while you're moving the pointer
         const svg = tb.querySelector("svg"), MOVES = [["ag-dance", 1300, 30], ["ag-flip", 800, 18], ["ag-spin", 900, 14], ["ag-hops", 700, 22], ["ag-wink", 500, 16]];
         tb.move = (name) => { if (!svg || svg.className.baseVal) return; const m = name ? MOVES.find((x) => x[0] === name) : null; let pickd = m;
@@ -11017,7 +11025,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     gdWords(); window.gdWords = gdWords;
     const hint = $("gdHint"); let hinted = false;
     if (hint && "IntersectionObserver" in window) new IntersectionObserver((es) => { if (hinted || !es[0].isIntersecting || es[0].intersectionRatio < 0.9) return; hinted = true;
-      setTimeout(() => { if (talking) return; gdWords(); hint.hidden = false; D.happy(); setTimeout(() => { hint.classList.add("out"); setTimeout(() => { hint.hidden = true; hint.classList.remove("out"); }, 400); }, 4200); }, 1300); }, { threshold: [0, 0.9] }).observe(el);
+      setTimeout(() => { if (talking) return; gdWords(); hint.hidden = false; document.documentElement.classList.add("gd-hello"); D.happy(); setTimeout(() => { hint.classList.add("out"); document.documentElement.classList.remove("gd-hello"); setTimeout(() => { hint.hidden = true; hint.classList.remove("out"); }, 400); }, 4200); }, 1300); }, { threshold: [0, 0.9] }).observe(el);
+    { let still = performance.now(), last = 0; const wake = () => { still = performance.now(); };
+      ["pointermove", "pointerdown", "keydown", "input", "scroll", "touchstart"].forEach((t) => addEventListener(t, wake, { passive: true, capture: true }));
+      setInterval(() => { const now = performance.now(); if (!talking || document.hidden || now - still < 15000 || now - last < 11000 || sayEl.querySelector(".gd-typing")) return; last = now;
+        if (document.documentElement.classList.contains("gd-docked")) { const tb = $("askGoccio"); if (tb && tb.bored) tb.bored(); } else if (!D.busy()) D.bored(); }, 1000); }
     // a tap elsewhere closes it; a scroll doesn't (a finger that moves is scrolling, and a scroll never makes a click)
     document.addEventListener("click", (e) => { if (talking && !talkEl.contains(e.target) && !el.contains(e.target) && !e.target.closest("#askGoccio, #askForm")) closeTalk(); }, true);
     el.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); talking ? closeTalk() : openTalk(); } });
