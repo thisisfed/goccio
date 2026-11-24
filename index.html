@@ -9146,6 +9146,35 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest('.botnav [data-bn^="ro-"]'); if (!b) return; e.preventDefault(); e.stopPropagation();
     if (b.dataset.bn === "ro-back") $("roBack").click(); else { const a = $("roShop"); if (a && a.href) window.open(a.href, "_blank", "noopener"); } }, true);
   { const sync = () => { const s = document.querySelector('.botnav [data-bn="ro-shop"]'); if (s) s.hidden = $("roShop").hidden; }; sync(); new MutationObserver(sync).observe($("roShop"), { attributes: true, attributeFilter: ["hidden", "href"] }); }
+  /* a companion to try, only with ?companion in the address: Goccio's own drop, which looks and leans toward the pointer or finger,
+     squashes when pressed, blinks, and dips when the page scrolls. Nothing loads or runs without the flag */
+  if (/[?&]companion\b/.test(location.search)) { try {
+    const c = document.createElement("div"); c.id = "gocc"; c.setAttribute("aria-hidden", "true");
+    c.innerHTML = `<svg viewBox="-32 -40 64 76" width="56" height="66"><g class="gb"><path class="gs" d="M0-34C9-20 24-8 24 9A24 24 0 0 1-24 9C-24-8-9-20 0-34Z"/><g class="ge"><ellipse class="gl" cx="-8" cy="8" rx="3.2" ry="4.2"/><ellipse class="gr" cx="8" cy="8" rx="3.2" ry="4.2"/></g></g></svg>`;
+    const st = document.createElement("style"); st.textContent = `#gocc{position:fixed;right:14px;bottom:calc(var(--bot-h, 0px) + 14px);z-index:28;width:56px;height:66px;touch-action:none;cursor:grab;-webkit-tap-highlight-color:transparent}
+      #gocc svg{overflow:visible;display:block}#gocc .gs{fill:var(--ink)}#gocc .gl,#gocc .gr{fill:var(--bg)}#gocc .gb{transform-origin:0 30px}#gocc .ge{transform-box:fill-box;transform-origin:center}`;
+    document.head.appendChild(st); document.body.appendChild(c);
+    const gb = c.querySelector(".gb"), ge = c.querySelector(".ge"), gs = c.querySelector(".gs");
+    let px = innerWidth / 2, py = innerHeight / 2, lean = 0, vl = 0, sq = 0, vs = 0, ex = 0, ey = 0, blink = 0, nextBlink = performance.now() + 1500, press = false, dip = 0, lastY = scrollY, idle = performance.now();
+    const at = (e) => { px = e.clientX; py = e.clientY; idle = performance.now(); };
+    addEventListener("pointermove", at, { passive: true }); addEventListener("pointerdown", at, { passive: true });
+    c.addEventListener("pointerdown", () => { press = true; }); addEventListener("pointerup", () => { if (press) { press = false; vs -= .9; } });
+    addEventListener("scroll", () => { dip += Math.max(-1, Math.min(1, (scrollY - lastY) / 60)); lastY = scrollY; idle = performance.now(); }, { passive: true });
+    const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    (function tick(now) { const r = c.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height * .6;
+      let dx = px - cx, dy = py - cy; const d = Math.hypot(dx, dy) || 1;
+      if (now - idle > 4000) { dx = Math.sin(now / 1700) * 120; dy = Math.cos(now / 2300) * 60 - 40; }   /* left alone, it looks about on its own */
+      const dd = Math.hypot(dx, dy) || 1, k = Math.min(1, dd / 220);
+      ex += ((dx / dd) * 4.2 * k - ex) * .18; ey += ((dy / dd) * 3.4 * k - ey) * .18;
+      const tl = Math.max(-14, Math.min(14, (dx / dd) * 14 * k)); vl += (tl - lean) * .09; vl *= .78; lean += vl;
+      const ts = press ? .22 : 0; vs += (ts - sq) * .22; vs *= .72; sq += vs; dip *= .88;
+      if (now > nextBlink) { blink = 1; nextBlink = now + 2200 + Math.random() * 3800; } blink *= .72;
+      const breathe = still ? 0 : Math.sin(now / 900) * .012, sy = 1 - sq - breathe + dip * .06, sx = 1 + sq * .7 + breathe - dip * .04;
+      gb.style.transform = `rotate(${still ? 0 : lean}deg) scale(${sx},${sy})`;
+      gs.setAttribute("d", `M${(lean * .5).toFixed(2)}-34C${(9 + lean * .3).toFixed(2)}-20 24-8 24 9A24 24 0 0 1-24 9C-24-8${(-9 + lean * .3).toFixed(2)}-20 ${(lean * .5).toFixed(2)}-34Z`);   /* the tip bends the way it leans */
+      ge.style.transform = `translate(${ex.toFixed(2)}px,${ey.toFixed(2)}px) scaleY(${(1 - Math.min(.9, blink)).toFixed(2)})`;
+      requestAnimationFrame(tick); })(performance.now());
+  } catch (e) {} }
   const mineOn = () => { if (document.documentElement.classList.contains("mine")) return; document.documentElement.classList.add("mine"); };   /* for this visit only: the next one starts without it again */
   /* and away again once back at the list or the opening screen, unless a coffee of your own has its recipe out */
   const mineOff = () => { const h = document.documentElement; if (h.classList.contains("mine") && !h.classList.contains("brew-in") && $("recipe").hidden) h.classList.remove("mine"); };
