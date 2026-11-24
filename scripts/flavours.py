@@ -76,7 +76,7 @@ _add("salbei", "sage"); _add("rosenwasser", "rose water"); _add("kakaonibs|kakao
 _add("waldbeeren|waldbeere", "forest berries"); _add("vollmilchschokolade", "milk chocolate"); _add("schoggi", "chocolate"); _add("weingummi", "wine gum"); _add("gebrannte mandeln", "candied almonds")
 _add("geröstete nüsse", "roasted nuts"); _add("nuss|nüsse", "nut"); _add("maracuja", "passion fruit"); _add("süßer apfel|süsser apfel", "sweet apple"); _add("bratapfel", "baked apple")
 _add("muscovado zucker|muscovadozucker", "muscovado sugar"); _add("zitronengras", "lemongrass"); _add("karamellisierter pfirsich", "caramelised peach"); _add("kaffeeblüte", "coffee blossom")
-_add("spekulatius", "speculoos"); _add("hauch von zimt", "cinnamon"); _add("ceylon tee|ceylontee", "Ceylon tea"); _add("schwarzer tee|schwarztee", "black tea"); _add("kirschlikör", "cherry liqueur")
+_add("spekulatius", "speculoos"); _add("hauch von zimt", "cinnamon"); _add("ceylon tee|ceylontee", "Ceylon tea"); _add("schwarzer tee|schwarztee", "black tea"); _add("kirschlikör", "cherry liqueur"); _add("süß|süss|süßer|süsser", "sweet"); _add("schokoladig|schokoladiger", "chocolatey")
 _add("stachelbeere|stachelbeeren", "gooseberry"); _add("litschi", "lychee"); _add("rosine|rosinen", "raisin"); _add("rosmarin", "rosemary"); _add("pflaumenmus", "plum jam"); _add("glühwein", "mulled wine")
 _add("hagebutte", "rosehip"); _add("mirabelle|mirabellen", "mirabelle plum"); _add("florale noten", "floral"); _add("blütenhonig", "blossom honey"); _add("holunder", "elderberry")
 _add("nussig", "nutty", "a"); _add("schokoladig", "chocolatey", "a"); _add("fruchtig", "fruity", "a"); _add("beerig", "berry-like", "a"); _add("süss|süß|süßlich|süsslich", "sweet", "a"); _add("weich|sanft|geschmeidig", "soft", "a")

@@ -101,6 +101,9 @@ CASES = [
              == ["Orange", "Sage", "Rose water", "Blood orange", "Cacao nibs", "Nutty", "Black tea"]),
     ("A German shop's list of brewers is not tasting notes ('Siebträger', 'Vollautomat', 'Herdkocher', 'Handfilter'), nor is 'Direkt vom Ursprung'",
      lambda: [scan.tidy_note(x) for x in ("Siebträger", "Vollautomat", "Herdkocher", "Handfilter", "French Press", "Direkt vom Ursprung", "Haselnuss")] == ["", "", "", "", "", "", "Haselnuss"]),
+    ("Hoppenworth & Ploch: notes for filter and for espresso, keep the filter ones and no '(Espresso' left over",
+     lambda: scan.find_notes({"body": "Geschmack: Strawberry, Holunder (Filter); Kirsche, Peach, Blütenhonig\xa0 (Espresso)\n", "title": "Bombe", "tags": []}) == ["Strawberry", "Holunder"]
+     and scan.find_notes({"body": "Geschmack: Sour cherry, Cola, Mango, Kirschlikör\xa0 (Espresso)\n", "title": "Sakami", "tags": []}) == ["Sour cherry", "Cola", "Mango", "Kirschlikör"]),
     ("Röststätte: a sentence about the coffee is not its notes ('Perfekt für alle, die ihren Kaffee vollmundig und aromatisch lieben'), and 'Marzipan in' is Marzipan",
      lambda: [scan.tidy_note(x) for x in ("Perfekt für alle", "Die ihren Kaffee vollmundig", "Aromatisch lieben", "Marzipan in", "Kaffeeblüte", "Red currant")] == ["", "", "", "Marzipan", "Kaffeeblüte", "Red currant"]),
     ("Drip coffee bags are still not beans", lambda: scan.EXCLUDE.search("Drip coffee bags x10") is not None),

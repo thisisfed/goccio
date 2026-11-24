@@ -1619,7 +1619,7 @@ NOTE_BADGE = re.compile(r"^(?:new|new in|new arrival|just landed|sold out|out of
 
 
 # a piece of a sentence about the coffee, not a flavour: "Perfekt für alle", "die ihren Kaffee vollmundig", "aromatisch lieben" (Röststätte)
-NOTE_SENT = re.compile(r"\b(?:für|ihren?|ihre|lieben|liebt|perfekt|unsere?[rsn]?|dieser?|dieses|wird|werden|sind|kaffee|perfect for|for those|who loves?|if you like)\b", re.I)
+NOTE_SENT = re.compile(r"\b(?:für|ihren?|ihre|lieben|liebt|perfekt|unsere?[rsn]?|dieser?|dieses|wird|werden|sind|kaffee|viel|wenig|klassisch|blend|perfect for|for those|who loves?|if you like)\b", re.I)
 
 
 def junk_note(n):
@@ -1745,6 +1745,11 @@ def find_notes(item):
                 raw = (raw + ", " if raw else "") + mm.group(1)
     if not raw:
         return []
+    # notes for each brew: "Strawberry, Holunder (Filter); Kirsche, Peach, Blütenhonig (Espresso)" (Hoppenworth & Ploch). Goccio is filter, so the filter list
+    mf = re.search(r"^(.*?)\(\s*filter\s*\)", raw, re.I | re.S)
+    if mf and mf.group(1).strip(" ,;"):
+        raw = mf.group(1)
+    raw = re.sub(r"\(\s*(?:filter|espresso|omni)\b\s*\)?", " ", raw, flags=re.I).replace("\xa0", " ")
     raw = re.split(r"\s(?:[A-Z][\w]+(?:\s[a-z]+)?):\s", raw)[0]   # "Lychee • Peach • Candied Cherry Roast: Omni — …": the list ends at the next label
     if re.search(r" [-–] ", raw) and "," in raw:   # a dash list ends at a comma: "Fraise - Myrtille - Figue Direction le Panama, à la…" (Tanat)
         raw = raw.split(",")[0]
