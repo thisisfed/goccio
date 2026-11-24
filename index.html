@@ -2723,8 +2723,6 @@ html body .wm-screen::after{background:linear-gradient(180deg, rgba(0,0,0,0) 45%
 :root[data-theme="light"] body .wm-screen::after{background:linear-gradient(180deg, rgba(255,255,255,0) 45%, rgba(255,255,255,.5) 100%)!important}
 /* the film starts at the very top of the screen, under a see-through top bar, and ends on the rule over Coffees */
 html body .wm-video{transform:none!important}
-html body .top{background:rgba(0,0,0,.55)!important;-webkit-backdrop-filter:blur(16px) saturate(1.3);backdrop-filter:blur(16px) saturate(1.3)}
-:root[data-theme="light"] body .top{background:rgba(255,255,255,.55)!important}
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
@@ -3037,7 +3035,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
 </head>
 <body>
 <!-- the hero film lies over the page top, the top bar included: its black is see-through, so the drop falls across the bar into the coffee -->
-<video class="wm-video" id="wmVideo" muted playsinline webkit-playsinline preload="auto" poster="/img/goccio-drop2.jpg?v=3" aria-hidden="true" tabindex="-1" disablepictureinpicture><source src="/img/goccio-drop2.mp4?v=6" type="video/mp4"></video><video class="wm-video" id="wmLoop" muted playsinline webkit-playsinline loop preload="none" aria-hidden="true" tabindex="-1" disablepictureinpicture style="visibility:hidden" data-src="/img/goccio-ripples.mp4?v=4"></video><canvas class="wm-video" id="wmFilm" width="640" height="360" aria-hidden="true" hidden></canvas>
+<video class="wm-video" id="wmVideo" muted playsinline webkit-playsinline preload="auto" poster="/img/goccio-drop2.jpg?v=3" aria-hidden="true" tabindex="-1" disablepictureinpicture><source src="/img/goccio-drop2.mp4?v=7" type="video/mp4"></video><video class="wm-video" id="wmLoop" muted playsinline webkit-playsinline loop preload="none" aria-hidden="true" tabindex="-1" disablepictureinpicture style="visibility:hidden" data-src="/img/goccio-ripples.mp4?v=4"></video><canvas class="wm-video" id="wmFilm" width="640" height="360" aria-hidden="true" hidden></canvas>
 <header class="top">
   <div class="top-in">
     <div class="mark" translate="no">Goccio</div>
@@ -9638,11 +9636,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   // second) that nothing can block. Either way it plays once when the page shows and rests on its last frame
   let filmOnCanvas = false;
   const canvasFilm = () => { if (filmOnCanvas) return; filmOnCanvas = true; const c = $("wmFilm"), v = $("wmVideo"), g = c && c.getContext && c.getContext("2d"); if (!g) return;
-    const N = 74, LOOP = 49, FPS = 12, COLS = 4, PER = 12, W = 640, H = 360, sheets = [];   /* frames 0-48 the drop, its column falling back (the bead that flies off the top never returns); 49-73 the ripples, looped */
+    const N = 96, LOOP = 71, FPS = 12, COLS = 4, PER = 12, W = 640, H = 360, sheets = [];   /* frames 0-70 the whole drop, the second drop included, until the surface settles; 71-95 the ripples, looped */
     const draw = (k) => { const im = sheets[Math.floor(k / PER)]; if (!im || !im.ok) return false; const n = k % PER; g.drawImage(im, (n % COLS) * W, Math.floor(n / COLS) * H, W, H, 0, 0, W, H);
       const old = Math.floor(k / PER) - 1; if (n === 0 && old >= 0 && (old + 1) * PER <= LOOP && sheets[old]) { sheets[old] = null; }   // a sheet that has played is let go
       return true; };
-    const load = (i) => { const im = new Image(); im.decoding = "async"; im.onload = () => { im.ok = true; if (i === 0) { draw(0); c.hidden = false; c.style.height = v ? v.style.height : ""; if (v) v.style.display = "none"; } if (i < 6) load(i + 1); }; im.src = `/img/goccio-film${i + 1}.jpg?v=6`; sheets[i] = im; };
+    const load = (i) => { const im = new Image(); im.decoding = "async"; im.onload = () => { im.ok = true; if (i === 0) { draw(0); c.hidden = false; c.style.height = v ? v.style.height : ""; if (v) v.style.display = "none"; } if (i < 7) load(i + 1); }; im.src = `/img/goccio-film${i + 1}.jpg?v=7`; sheets[i] = im; };
     load(0); let k = 0, last = 0;
     const tick = (t) => { if (document.documentElement.classList.contains("wait")) return requestAnimationFrame(tick);
       if (window.__heroOff) { last = t; return requestAnimationFrame(tick); }   // off screen: the ripples wait
@@ -9683,7 +9681,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         kick(); setTimeout(kick, 800); setTimeout(kick, 2500); { const iv = setInterval(() => { if (!document.documentElement.classList.contains("wait")) { clearInterval(iv); setTimeout(kick, 350); } }, 120); }
         // nothing loaded after four seconds (Safari gives up when a server answers its part-requests oddly): fetch the whole
         // film, 0.6 MB, and play it from memory
-        setTimeout(async () => { if (filmOnCanvas || (v.readyState >= 2 && !v.error)) return; try { const r = await fetch("/img/goccio-drop2.mp4?v=6"); if (!r.ok) return; fetch("/img/goccio-ripples.mp4?v=4").then((x) => x.ok && x.blob()).then((b) => { const lp = $("wmLoop"); if (b && lp) { lp.dataset.src = URL.createObjectURL(b); } }).catch(() => {});
+        setTimeout(async () => { if (filmOnCanvas || (v.readyState >= 2 && !v.error)) return; try { const r = await fetch("/img/goccio-drop2.mp4?v=7"); if (!r.ok) return; fetch("/img/goccio-ripples.mp4?v=4").then((x) => x.ok && x.blob()).then((b) => { const lp = $("wmLoop"); if (b && lp) { lp.dataset.src = URL.createObjectURL(b); } }).catch(() => {});
             v.src = URL.createObjectURL(await r.blob()); v.load(); kick(); } catch (e) {} }, 4000);
       } } }
   window.__v60 = { showReview, analyseBeans, decafGuard, parseCoffee, engine, suggest, cupNotes, cardImage, risks, recipeText, BASE, get recipe() { return recipe; }, get shelf() { return shelf; } };
