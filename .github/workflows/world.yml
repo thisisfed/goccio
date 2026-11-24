@@ -41,6 +41,16 @@ jobs:
           if ! git diff --cached --quiet; then
             git config user.name "github-actions[bot]"
             git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+            # the run's own copies first: if main moved meanwhile and the rebase clashes, its finds are put back on top of the newer files
+            mkdir -p /tmp/world_ours && cp data/roasters.json data/world_seen.json /tmp/world_ours/ && { cp data/world_map.json /tmp/world_ours/ 2>/dev/null || true; }
             git commit -qm "New roasters worldwide $(date -u +'%d %b %Y')"
-            for i in 1 2 3; do git pull -q --rebase && git push -q && break; sleep 5; done
+            for i in 1 2 3 4; do
+              if git pull -q --rebase && git push -q; then break; fi
+              git rebase --abort 2>/dev/null || true
+              git fetch -q origin main && git reset -q --hard origin/main
+              python3 scripts/merge_world.py /tmp/world_ours
+              git add data/roasters.json data/world_seen.json data/world_map.json 2>/dev/null || true
+              git diff --cached --quiet || git commit -qm "New roasters worldwide $(date -u +'%d %b %Y')"
+              sleep 5
+            done
           fi
