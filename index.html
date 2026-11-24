@@ -2756,7 +2756,7 @@ html body #coffee .field:has(#go.on) #coffeeIn{padding-right:48px!important}
 /* the drop over Brew something good.: one drop of coffee, seen from a little way off. It falls when it comes into view, lands,
    rings and settles as a drop sitting on a surface; then it lives: blinks, looks, leans when you scroll, wobbles when touched */
 html body #coffee > .wb-sign{position:relative}
-html body .wb-sign .gdrop{position:absolute;left:50%;width:64px;height:60px;margin:0 0 0 -32px;bottom:calc(100% - var(--cup-at, 21px) + 10px);color:var(--ink);pointer-events:auto;touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:pointer}
+html body .wb-sign .gdrop{position:absolute;left:50%;width:80px;height:75px;margin:0 0 0 -40px;bottom:calc(100% - var(--cup-at, 21px) + 1px);color:var(--ink);pointer-events:auto;touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:pointer}
 html body .wb-sign .gdrop svg{display:block;width:100%;height:100%;overflow:visible}
 html body .wb-sign .gdrop .gd-b{fill:var(--hl)}   /* the one accent: a drop of the orange, with black eyes in both looks */
 html body .wb-sign .gdrop .gd-e{fill:#000}
@@ -3206,7 +3206,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       </details>
       <input type="file" accept="image/*" capture="environment" id="roastPhotoIn" hidden>
     </div>
-    <p class="wb-sign"><span class="gdrop" id="gdrop" aria-hidden="true"><svg viewBox="-32 -56 64 60"><path class="gd-b" d=""/><ellipse class="gd-h" cx="0" cy="0" rx="3.4" ry="1.9"/><g class="gd-e"><ellipse cx="-6" cy="-12" rx="2.4" ry="3.4"/><ellipse cx="6" cy="-12" rx="2.4" ry="3.4"/></g></svg></span>Brew something good.</p>
+    <p class="wb-sign"><span class="gdrop" id="gdrop" aria-hidden="true"><svg viewBox="-32 -56 64 60"><path class="gd-b" d=""/><ellipse class="gd-h" cx="0" cy="0" rx="3.4" ry="1.9"/><g class="gd-e"><ellipse class="gd-l" cx="-6" cy="-12" rx="2.4" ry="3.4"/><ellipse class="gd-r" cx="6" cy="-12" rx="2.4" ry="3.4"/><ellipse class="gd-m" cx="0" cy="-4.6" rx="0" ry="0"/></g></svg></span>Brew something good.</p>
   </section>
 
   <section class="sec" id="recipe" aria-labelledby="rtitle">
@@ -9767,7 +9767,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const still = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
     const W0 = 36, H0 = 24, R0 = 15.5;   // at rest: a dome 36 wide, 24 high; falling: a round drop of about the same volume
     const wS = 2 * Math.PI / 0.24, zS = 0.3, wL = 2 * Math.PI / 0.42, zL = 0.45, G = 2600;
-    let a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
+    let aRest = 0, eyeL = 1, eyeR = 1, mouth = 0, tws = [], a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
     const draw = () => {
       const k = 1 + a, h = H0 * k, w = W0 / Math.sqrt(Math.max(0.3, k)), r = round;   // volume kept: taller is narrower
       // the resting dome (pinned base, rounded shoulders) blended toward a circle while falling
@@ -9782,14 +9782,22 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       body.setAttribute("d", d);
       const hl = el.querySelector(".gd-h"); if (hl) { const hx = r > 0.5 ? -hw * 0.42 : cx * 0.6 - hw * 0.42, hy = r > 0.5 ? top + hw * 0.45 : top + h * 0.28; hl.setAttribute("transform", `translate(${hx.toFixed(2)} ${hy.toFixed(2)}) rotate(-28)`); }
       const ey = r > 0.5 ? mid - 1 : bot - h * 0.5, ex = (r > 0.5 ? 0 : cx * 0.7) + lookX;
-      eyes.setAttribute("transform", `translate(${ex.toFixed(2)} ${(ey + 12 + lookY).toFixed(2)}) scale(${(w / W0).toFixed(3)} ${(blink * Math.min(1.3, k)).toFixed(3)})`); };
+      eyes.setAttribute("transform", `translate(${ex.toFixed(2)} ${(ey + 12 + lookY).toFixed(2)}) scale(${(w / W0).toFixed(3)} ${Math.min(1.3, k).toFixed(3)})`);
+      el.querySelector(".gd-l").setAttribute("ry", (3.4 * blink * eyeL).toFixed(2)); el.querySelector(".gd-r").setAttribute("ry", (3.4 * blink * eyeR).toFixed(2));
+      const mo = el.querySelector(".gd-m"); mo.setAttribute("rx", (2.3 * mouth).toFixed(2)); mo.setAttribute("ry", (3.6 * mouth).toFixed(2)); };
+    // small timed changes (a lid closing, a mouth opening), eased in and out, run in the same frame loop as the physics
+    const ease = (x) => x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+    const tween = (key, to, ms, delay = 0) => new Promise((res) => setTimeout(() => { const from = { aRest, eyeL, eyeR, mouth }[key]; tws = tws.filter((t) => t.key !== key);
+      tws.push({ key, from, to, t0: performance.now(), ms, res }); go(); }, delay));
+    const setK = (key, v) => { if (key === "aRest") aRest = v; else if (key === "eyeL") eyeL = v; else if (key === "eyeR") eyeR = v; else mouth = v; };
     const step = (t) => { raf = 0; const dt = Math.min(0.032, last ? (t - last) / 1000 : 0.016); last = t;
+      tws = tws.filter((tw) => { const x = Math.min(1, (performance.now() - tw.t0) / tw.ms); setK(tw.key, tw.from + (tw.to - tw.from) * ease(x)); if (x >= 1) { tw.res(); return false; } return true; });
       if (phase === "fall") { vy += G * dt; y += vy * dt; if (y >= 0) { y = 0; phase = "rest"; round = 0; va = -Math.min(14, vy / 90); vy = 0; } }   // lands: flattens with the speed it had, then rings
-      va += (-wS * wS * a - 2 * zS * wS * va) * dt; a += va * dt;
+      va += (-wS * wS * (a - aRest) - 2 * zS * wS * va) * dt; a += va * dt;
       vl += (-wL * wL * (lean - leanTo) - 2 * zL * wL * vl) * dt; lean += vl * dt; leanTo *= Math.pow(0.02, dt);
       draw();
-      const moving = phase === "fall" || Math.abs(a) > 0.002 || Math.abs(va) > 0.01 || Math.abs(lean) > 0.05 || Math.abs(vl) > 0.05 || Math.abs(leanTo) > 0.05;
-      if (moving) raf = requestAnimationFrame(step); else { last = 0; a = va = 0; draw(); } };
+      const moving = tws.length > 0 || phase === "fall" || Math.abs(a - aRest) > 0.002 || Math.abs(a) > 0.002 || Math.abs(va) > 0.01 || Math.abs(lean) > 0.05 || Math.abs(vl) > 0.05 || Math.abs(leanTo) > 0.05;
+      if (moving) raf = requestAnimationFrame(step); else { last = 0; a = aRest; va = 0; draw(); } };
     const go = () => { if (!raf) raf = requestAnimationFrame(step); };
     const poke = (amt) => { if (still()) return; va += amt; go(); };
     draw();
@@ -9808,10 +9816,20 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // its life at rest: a blink now and then, a look round, a small breath. Never on a beat
     const idle = () => { setTimeout(idle, 2200 + Math.random() * 3800); if (document.hidden || still() || phase !== "rest") return;
       const r = Math.random(), rr = el.getBoundingClientRect(); if (rr.bottom < 0 || rr.top > innerHeight) return;
-      if (r < 0.5) { const b = (k) => { blink = k; draw(); }; b(0.12); setTimeout(() => b(1), 130); if (Math.random() < 0.3) setTimeout(() => { b(0.12); setTimeout(() => b(1), 120); }, 300); }
-      else if (r < 0.8) { lookX = (Math.random() < 0.5 ? -1 : 1) * 3; lookY = Math.random() < 0.4 ? -1.5 : 0; draw(); setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900 + Math.random() * 700); }
+      if (r < 0.4) { const b = (k) => { blink = k; draw(); }; b(0.12); setTimeout(() => b(1), 130); if (Math.random() < 0.3) setTimeout(() => { b(0.12); setTimeout(() => b(1), 120); }, 300); }
+      else if (r < 0.5) wink();
+      else if (r < 0.62) yawn();
+      else if (r < 0.82) { lookX = (Math.random() < 0.5 ? -1 : 1) * 3; lookY = Math.random() < 0.4 ? -1.5 : 0; draw(); setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900 + Math.random() * 700); }
       else poke(-0.9); };
     setTimeout(idle, 2500);
+    // a wink: one lid down and up, a little lean towards that side
+    const wink = () => { const right = Math.random() < 0.6, k = right ? "eyeR" : "eyeL"; leanTo = right ? 1.5 : -1.5; tween(k, 0.08, 110).then(() => tween(k, 1, 160, 220)); poke(-0.5); };
+    // a yawn: it stretches up and the mouth opens slowly while the eyes squeeze, holds, then lets go with a small shake
+    let yawning = false;
+    const yawn = () => { if (yawning) return; yawning = true;
+      tween("aRest", 0.16, 650); tween("mouth", 1, 650); tween("eyeL", 0.22, 450); tween("eyeR", 0.22, 450);
+      setTimeout(() => { tween("aRest", 0, 420); tween("mouth", 0, 380); tween("eyeL", 1, 420); tween("eyeR", 1, 420).then(() => { yawning = false; }); setTimeout(() => poke(-1.4), 300); }, 1250); };
+    window.gdrop = { yawn, wink, poke };   // for testing by hand
     // it glances at where you tap
     addEventListener("pointerdown", (e) => { if (still()) return; const r = el.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;
       const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1; lookX = dx / d * 3; lookY = dy / d * 1.5; draw();
