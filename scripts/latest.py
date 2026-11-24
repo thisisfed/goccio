@@ -35,6 +35,7 @@ else:
     day = max((r.get("found") or "" for r in rel), default="")   # the last scan's day, and how many coffees it added
     out.write_text(json.dumps({"updated": d.get("updated"), "total": len(rel), "roasters_n": len({r["roaster"] for r in rel}),
                                "added_day": day, "added_n": sum(1 for r in rel if r.get("found") == day),
+                               "added_roasters_n": sum(1 for x in d.get("roasters", []) if x and x.get("first_seen") == day),
                                "roasters": [x for x in d.get("roasters", []) if x and x.get("name") in names], "releases": keep},
                               ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"latest.json: {len(keep)} coffees, {out.stat().st_size // 1024} KB")

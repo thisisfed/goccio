@@ -8846,7 +8846,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // what the box is for, with the size of the list in it: "Search 8,705 coffees" (the plain hint until the list is in)
     const hintText = () => { if (typeof shelfRo !== "undefined" && shelfRo) { const k = shelf.filter((r) => r.roaster === shelfRo).length; return LANG === "it" ? `Cerca tra ${k} caffè` : `Search ${k} coffee${k === 1 ? "" : "s"}`; }   // on a roaster's page: that roaster's coffees
       const n = (typeof shelfPart !== "undefined" && shelfPart) || (typeof shelf !== "undefined" && shelf.length) || 0;   // the whole list, also while only its first part is in
-      return n ? (LANG === "it" ? `Cerca tra ${n.toLocaleString("it-IT")} caffè` : `Search ${n.toLocaleString("en-GB")} coffees`) : T(HINT); };
+      const box = document.getElementById("askIn"), nr = box && box.clientWidth && box.clientWidth < 290 ? 0 : (window.__roN || 0);   // and the roasters: "Search 8,757 coffees, 732 roasters" (a very narrow phone keeps just the coffees)
+      return n ? (LANG === "it" ? `Cerca tra ${n.toLocaleString("it-IT")} caffè${nr ? `, ${nr.toLocaleString("it-IT")} torrefazioni` : ""}` : `Search ${n.toLocaleString("en-GB")} coffees${nr ? `, ${nr.toLocaleString("en-GB")} roasters` : ""}`) : T(HINT); };
     const settle = () => { if (calm) return; calm = true; roll(hintText(), true); };
     addEventListener("scroll", () => { if (scrollY > 80) settle(); }, { passive: true });
     a.addEventListener("focus", settle);
@@ -9116,8 +9117,13 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           const aDay = part && d.added_day ? d.added_day : shelf.reduce((m, x) => (x.found || "") > m ? x.found : m, ""), aN = part && d.added_n != null ? d.added_n : shelf.filter((x) => x.found === aDay).length;
           const ymd0 = (k) => { const t = new Date(); t.setDate(t.getDate() - k); return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`; };
           const it0 = LANG === "it", when = aDay === ymd0(0) ? (it0 ? "oggi" : "today") : aDay === ymd0(1) ? (it0 ? "ieri" : "yesterday") : aDay ? (it0 ? "il " : "on ") + isoDm(aDay) : "";
-          const added = aN > 0 && when ? (it0 ? `, ${aN.toLocaleString("it-IT")} caffè aggiunti ${when}.` : `, ${aN.toLocaleString("en-GB")} coffee${aN === 1 ? "" : "s"} added ${when}.`) : "";
-          if ($("wmLive")) { $("wmLiveT").textContent = added ? `${nR.toLocaleString(it0 ? "it-IT" : "en-GB")} ${it0 ? "torrefazioni" : "roasters"}${added}` : `${nR.toLocaleString("en-GB")} roasters, updated daily.`;   /* the number of coffees is in the search box */ $("wmLive").hidden = false; } } }
+          // and how many roasters joined that day (the totals are in the search box): "202 coffees and 12 roasters added yesterday."
+          const aR = part && d.added_roasters_n != null ? d.added_roasters_n : (d.roasters || []).filter((x) => x && x.first_seen === aDay).length;
+          window.__roN = nR;
+          const loc0 = it0 ? "it-IT" : "en-GB", cN = `${aN.toLocaleString(loc0)} ${it0 ? "caffè" : "coffee" + (aN === 1 ? "" : "s")}`, rN = aR > 0 ? ` ${it0 ? "e" : "and"} ${aR.toLocaleString(loc0)} ${it0 ? (aR === 1 ? "torrefazione" : "torrefazioni") : "roaster" + (aR === 1 ? "" : "s")}` : "";
+          const added = aN > 0 && when ? `${cN}${rN} ${it0 ? (aR > 0 || aN !== 1 ? "aggiunti" : "aggiunto") : "added"} ${when}.` : "";
+          if (window.__searchHint) try { window.__searchHint(); } catch (e) {}
+          if ($("wmLive")) { $("wmLiveT").textContent = added || `${nR.toLocaleString("en-GB")} roasters, updated daily.`;   /* the number of coffees is in the search box */ $("wmLive").hidden = false; } } }
       renderShelfV();
       renderShelf();
       document.documentElement.classList.remove("wait");
