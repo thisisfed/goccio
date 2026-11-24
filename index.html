@@ -7163,7 +7163,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   // a note as the roaster wrote it, tidied: stray brackets, stars and dashes at either end go ("Vanilla[" reads Vanilla)
   const noteClean = (n) => String(n).replace(/^[\s\[\](){}*•·|:;,.\-–—"'“”]+|[\s\[\](){}*•·|:;,.\-–—"'“”]+$/g, "").replace(/\s{2,}/g, " ");
   // never shown as a taste: page markup the scanner once kept (an image's address, a tag) and a brew guide's headings (Ratios, dose, bloom)
-  const NOTE_SENT = /(?:^|[^\p{L}])(?:für|ihren?|ihre|lieben|liebt|perfekt|unsere?[rsn]?|dieser?|dieses|wird|werden|sind|kaffee|viel|wenig|klassisch|blend|perfect for|for those|who loves?|if you like)(?![\p{L}])/iu, NOTE_BADGE = /^(?:new|new in|new arrival|just landed|sold out|out of stock|sale|on sale|best ?seller|limited(?: edition)?|pre-?order|back in stock)!?$/i, NOTE_JUNK = /[<>]|=\s*["'“”]|https?:|\/\/|\.(?:png|jpe?g|gif|svg|webp|avif)\b|\b\d{2,4}w\b|\bsizes=|\bsrcset\b/i, NOTE_BREW = /^(?:ratios?|brew(?:ing)? ratios?|dos(?:e|es|age)|bloom(?:ing)?|grind(?: size)?|water(?: temp(?:erature)?)?|temp(?:erature)?|yield|recipe|pours?|time|timings?|method|agitation|siebtr[äa]ger(?:maschine)?|vollautomat|herdkocher|herdkanne|handfilter|filter(?:kaffee)?maschine|french ?press|pour[- ]?over|aero ?press|kaffeekapseln|kapseln|lungo|direkt vom ursprung|deutschland|germany)$/i;
+  const NOTE_SENT = /(?:^(?:group|profile)_|vc_column|^order$|^journal$|^(?:corp|aciditate)\s)|(?:^|[^\p{L}])(?:instagram|facebook|blog|twitter|tiktok|newsletter|jetzt|erleben|convinced|apparent|imagine|create|für|ihren?|ihre|lieben|liebt|perfekt|unsere?[rsn]?|dieser?|dieses|wird|werden|sind|kaffee|viel|wenig|klassisch|blend|perfect for|for those|who loves?|if you like)(?![\p{L}])/iu, NOTE_BADGE = /^(?:new|new in|new arrival|just landed|sold out|out of stock|sale|on sale|best ?seller|limited(?: edition)?|pre-?order|back in stock)!?$/i, NOTE_JUNK = /[<>]|=\s*["'“”]|https?:|\/\/|\.(?:png|jpe?g|gif|svg|webp|avif)\b|\b\d{2,4}w\b|\bsizes=|\bsrcset\b/i, NOTE_BREW = /^(?:ratios?|brew(?:ing)? ratios?|dos(?:e|es|age)|bloom(?:ing)?|grind(?: size)?|water(?: temp(?:erature)?)?|temp(?:erature)?|yield|recipe|pours?|time|timings?|method|agitation|siebtr[äa]ger(?:maschine)?|vollautomat|herdkocher|herdkanne|handfilter|filter(?:kaffee)?maschine|french ?press|pour[- ]?over|aero ?press|kaffeekapseln|kapseln|lungo|direkt vom ursprung|deutschland|germany)$/i;
   const cardNotes = (r) => { const ns = (Array.isArray(r.notes) ? r.notes : []).filter((n) => !NOTE_JUNK.test(n) && !NOTE_BREW.test(String(n).trim()) && !NOTE_BADGE.test(String(n).trim()) && !NOTE_SENT.test(String(n))).map(noteClean).filter((n) => /\p{L}/u.test(n)); if (!ns.length) return cardTypical(r);   // every note the roaster lists, not the first three
     if (ns.length === 1) { const t = cardTypical(r); if (t) return t; }   // a single word ("Nuts") says less than what the origin usually gives
     const reE = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -7230,6 +7230,25 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const p = p1.replace(/(\d)[.,]00(?!\d)/g, "$1");   // whole pounds read whole: "£15", not "£15.00"
     if (priceOnly) return p;
     return `<a class="pill buy-p" href="${esc(r.url)}" target="_blank" rel="noopener" aria-label="${it ? "Compra" : "Buy"} ${esc(r.name)} ${it ? "da" : "from"} ${esc(r.roaster)}">${it ? "Compra" : "Buy"}${p ? ` <span class="buy-pr">${p}</span>` : ""}</a>`; };   // the price is said once, on the pill that spends it
+  /* ways on from a search that found nothing: one of each kind, picked afresh for every new search, each tested to find coffees (Nov 2026) */
+  const TRY_POOLS = [
+    ["blueberry", "strawberry", "peach", "jasmine", "chocolate", "caramel", "mango", "raspberry", "bergamot", "lychee", "hazelnut", "cherry", "pineapple", "hibiscus", "floral", "juicy", "tea-like"],
+    ["Huila", "Yirgacheffe", "Sidamo", "Guji", "Cauca", "Tarrazú", "Cerrado", "Huehuetenango", "Nyeri"],
+    ["good value", "under £10", "cheap"],
+    ["anaerobic", "natural", "washed", "honey", "carbonic maceration", "co-fermented", "thermal shock", "yeast"],
+    ["gesha", "pink bourbon", "SL28", "sidra", "typica", "pacamara", "wush wush", "caturra", "bourbon"],
+    ["light roast", "dark roast", "espresso", "omni"],
+    ["decaf", "sugarcane decaf"],
+    ["Tokyo", "London", "Berlin", "Copenhagen", "Paris", "Oslo", "Melbourne", "Glasgow", "Bristol", "Milan", "Amsterdam", "Stockholm", "Dublin"],
+    ["Ethiopia", "Kenya", "Colombia", "Rwanda", "Panama", "Yemen", "Burundi", "Guatemala", "Peru"]];
+  const TRY_POOLS_IT = [["fruttato", "cioccolato"], TRY_POOLS[1], ["Etiopia lavato"], TRY_POOLS[4], ["tostatura chiara"], ["decaffeinato"], TRY_POOLS[7]];
+  let tryMemo = { k: null, v: null };
+  const tryPicks = (it) => { const k = (it ? "it|" : "") + ($("shelfQ") ? $("shelfQ").value.trim().toLowerCase() : "");
+    if (tryMemo.k === k && tryMemo.v) return tryMemo.v;   // the same search keeps its examples; a new one gets new ones
+    const one = (a) => a[Math.floor(Math.random() * a.length)];
+    let pools = (it ? TRY_POOLS_IT : TRY_POOLS).slice();
+    if (!it) { pools.sort(() => Math.random() - 0.5); pools = pools.slice(0, 8); }
+    const v = pools.map(one); tryMemo = { k, v }; return v; };
   let askWant = null, askRank = null, startFirst = null;   // startFirst: in a plain search, names that start as typed, ahead of names that only hold it
   // back again: one line under the intro picks up the last coffee where it was left
   function carryOn() { if (carryOn.done || !lastSeen || !shelf.length || shelfPart) return; carryOn.done = true;
@@ -7346,7 +7365,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         </div></article>`; }).join("") : (() => { if (shelfRo) { const an = $("askNote"), back = `<a href="#" class="ro-back-q">${LANG === "it" ? "Torna a tutti i caffè" : "Back to all coffees"}</a>`;
             if (!an.hidden && an.textContent) { an.innerHTML = esc(an.textContent).replace(/([^.])$/, "$1.") + "<br>" + back + "."; return ""; } return `<p class="muted" style="padding:16px 0;margin:0">${back}.</p>`; }
           /* nothing found: one sentence with ways on, searches that work in it; then, on its own line, the way to ask for a roaster */
-          const tries = (LANG === "it" ? ["fruttato", "Huila", "Etiopia lavato", "gesha", "cioccolato", "tostatura chiara", "decaffeinato", "Tokyo"] : ["blueberry", "Huila", "good value", "anaerobic", "gesha", "light roast", "decaf", "Tokyo"]   /* a flavour, a region, a price, a process, a variety, a roast, decaf, a city */).map((x) => `<a href="#" class="try-q" data-q="${x}">${x}</a>`).join(", ");
+          const tries = tryPicks(LANG === "it").map((x) => `<a href="#" class="try-q" data-q="${x}">${x}</a>`).join(", ");
           const mail = `<a href="#" class="mail-me" data-s="Missing coffee">${shelfV !== "all" ? "email me" : "Email me"}</a> and I’ll add it.`;
           const msg = shelfV !== "all" ? `Try Everything under Made for, or ${mail}` : `Try: ${tries} or <a href="#" class="mail-me scan-me">scan the bag in front of you</a>.<br>Missing a roaster? ${mail}`;
           const tryQ = "";
