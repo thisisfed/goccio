@@ -1,4 +1,4 @@
-"""Find new specialty coffee roasters anywhere in the world and add up to 10 a run to data/roasters.json.
+"""Find new specialty coffee roasters anywhere in the world and add up to 25 a run to data/roasters.json.
 
 Where they come from: OpenStreetMap, the open map anyone can edit (ODbL), which tags roasteries as craft=coffee_roaster
 with their website. One query a run to its public Overpass API. Shops already on the list, or that asked to be removed,
@@ -7,7 +7,7 @@ are left out, and so is every shop checked in the last 120 days (data/world_seen
 How a shop gets in: it is read exactly as the daily scan reads it (Shopify, WooCommerce, Squarespace, a sitemap; robots.txt
 and the same gentle pace), and it must sell coffee beans the scanner can read: at least 3 coffees, at least 2 of them
 naming their origin (single origins are what specialty roasters sell; a shop of blends called House and Italian isn't).
-Up to 40 shops are tried a run; the first 10 that pass are added. None found: nothing changes until the next run.
+Up to 100 shops are tried a run; the first 25 that pass are added (Nov 2026: was 10 of 40, to reach 1,500 roasters sooner). None found: nothing changes until the next run.
 
     python3 scripts/world.py            # one run
     python3 scripts/world.py --dry      # report only, change nothing
@@ -23,8 +23,9 @@ import discover  # noqa: E402
 ROOT = Path(__file__).resolve().parent.parent
 SEEN = ROOT / "data" / "world_seen.json"
 OVERPASS = "https://overpass-api.de/api/interpreter"
+OVERPASS_ALSO = ["https://overpass.kumi.systems/api/interpreter", "https://overpass.private.coffee/api/interpreter"]   # the same open map, other public servers: tried when the main one is busy
 QUERY = '[out:json][timeout:240];nwr["craft"="coffee_roaster"][~"^(website|contact:website|url)$"~"."];out tags;'
-MAX_ADD, MAX_TRY, RECHECK_DAYS = 10, 40, 120
+MAX_ADD, MAX_TRY, RECHECK_DAYS = 25, 100, 120
 
 EUROPE = set("AD AL AT BA BE BG BY CH CY CZ DE DK EE ES FI FO FR GI GR HR HU IE IS IT LI LT LU LV MC MD ME MK MT NL NO PL PT RO RS SE SI SK SM UA VA XK".split())
 NORTH_AMERICA = {"US", "CA", "MX"}
@@ -46,10 +47,19 @@ def country(tags, shop):
 
 def candidates():
     """(name, shop, city, country) for every roastery on the map with a website."""
-    req = urllib.request.Request(OVERPASS, data=urllib.parse.urlencode({"data": QUERY}).encode(),
-                                 headers={"User-Agent": scan.UA, "Accept": "application/json"})
-    with urllib.request.urlopen(req, timeout=300) as r:
-        els = json.loads(r.read()).get("elements", [])
+    els, err = None, None
+    for url in [OVERPASS] + OVERPASS_ALSO:
+        req = urllib.request.Request(url, data=urllib.parse.urlencode({"data": QUERY}).encode(),
+                                     headers={"User-Agent": scan.UA, "Accept": "application/json"})
+        try:
+            with urllib.request.urlopen(req, timeout=300) as r:
+                els = json.loads(r.read()).get("elements", [])
+            break
+        except Exception as e:  # noqa: BLE001
+            err = e
+            print(f"map server busy ({url.split('/')[2]}: {type(e).__name__}), trying the next")
+    if els is None:
+        raise err
     out, seen = [], set()
     for el in els:
         t = el.get("tags") or {}
