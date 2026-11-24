@@ -2944,7 +2944,8 @@ def main():
     try:
         last = json.loads(REPORT_FILE.read_text()) if REPORT_FILE.exists() else {}
         waiting = {k: v for k, v in (last.get("pages_waiting_by_shop") or {}).items()}
-        roasters.sort(key=lambda r_: -waiting.get(r_["name"], 0))
+        behind = set(last.get("roasters_not_reached") or [])   # not reached last time: first in line today, so a longer list never leaves the same shops out twice
+        roasters.sort(key=lambda r_: (r_["name"] not in behind, -waiting.get(r_["name"], 0)))
     except Exception:  # noqa: BLE001
         pass
     scanned_ok = set()
