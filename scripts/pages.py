@@ -191,7 +191,9 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 .list.rows .cw .ro{color:var(--ink);text-decoration:underline 1px;text-underline-offset:2px;text-decoration-color:color-mix(in srgb,currentColor 40%,transparent)}
 .list.rows .name{font-size:39px;line-height:1.05;letter-spacing:-.01em!important}
 @media (min-width:1000px){.list.rows .name{font-size:63px}}
-.list.rows a:hover .name{color:var(--muted)}
+.list.rows li{position:relative;isolation:isolate}
+.list.rows li::before{content:"";position:absolute;inset:0 -8px;z-index:-1;border-radius:4px;background:var(--ink);opacity:0;transition:opacity .15s ease;pointer-events:none}
+@media (hover:hover) and (pointer:fine){.list.rows li:hover::before{opacity:.05}}
 .list.rows .tags{display:flex;flex-wrap:wrap;column-gap:20px;row-gap:2px;margin:6px 0 0;color:var(--muted);line-height:19px}
 .list.rows .tg{display:inline-flex;align-items:center;min-width:0;overflow-wrap:anywhere}
 .list.rows .tg::before{content:"";flex:none;width:12px;height:12px;margin-right:5px;border-radius:50%;background:var(--vc,var(--muted))}
