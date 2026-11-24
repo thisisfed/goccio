@@ -8913,7 +8913,14 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     checkWrap(); addEventListener("resize", checkWrap); if (document.fonts && document.fonts.ready) document.fonts.ready.then(checkWrap);
     addEventListener("scroll", syncShelfBar, { passive: true }); }
   const loadMore = () => { shelfN += 20; renderShelf(); };
-  $("shelfMore").onclick = () => $("shelfMore").dataset.unfilter ? (qk.clear(), Object.keys(qf).forEach((k) => delete qf[k]), qOpen = null, shelfN = 5, renderShelf()) : $("shelfMore").dataset.clear ? document.querySelector(".ask-go").click() : $("shelfMore").dataset.top ? jumpTo($("shelves")) : loadMore();
+  /* Clear search with the keyboard out: the tap is taken as the finger lifts, on the button it went down on. Waiting for the click lost the
+     first tap (the keyboard folding moved the button away) and let the second fall through onto a coffee's Brew once the list came back */
+  { const m = $("shelfMore"); let dn = null, eat = 0;
+    m.addEventListener("pointerdown", (e) => { dn = (m.dataset.clear || m.dataset.unfilter) ? { x: e.clientX, y: e.clientY } : null; });
+    m.addEventListener("pointerup", (e) => { const d = dn; dn = null; if (!d || Math.hypot(e.clientX - d.x, e.clientY - d.y) > 12 || !(m.dataset.clear || m.dataset.unfilter)) return;
+      eat = performance.now() + 700; try { document.activeElement && document.activeElement.blur(); } catch (er) {} m.onclick(); });
+    document.addEventListener("click", (e) => { if (performance.now() < eat && e.isTrusted) { e.stopPropagation(); e.preventDefault(); } }, true); }
+  $("shelfMore").onclick = () => $("shelfMore").dataset.unfilter ? (qk.clear(), Object.keys(qf).forEach((k) => delete qf[k]), qOpen = null, shelfN = 5, renderShelf()) : $("shelfMore").dataset.clear ? (() => { const a = $("askIn"), q = $("shelfQ"); try { a.blur(); } catch (e) {} a.value = ""; delete a.dataset.fy; q.value = ""; q.dispatchEvent(new Event("input")); try { window.syncAskGo && syncAskGo(); } catch (e) {} a.dispatchEvent(new Event("blur")); })() :   /* cleared outright: with the cursor still in the box, the box's own button means Search, and "clearing" ran the search again */ $("shelfMore").dataset.top ? jumpTo($("shelves")) : loadMore();
   const cfSet = (v) => { cfLift = true; try { localStorage.setItem(CF_KEY, v); } catch (e) {} shelfAll = false; renderShelfO(); renderShelf(); cfNudge(); };
   // after 2 pm, a caffeinated coffee in the recipe: one gentle line, a way to the decafs, and a way past it (for the night, or for good)
   function cfNudge() { const n = $("cfNudge"); if (!n) return; let show = false;
