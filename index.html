@@ -5825,7 +5825,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   var wbOpen = false;
   function jumpTo(el, center) {
     if (el && el.id === "coffee" && el.hidden) { wbOpen = true; el.hidden = false; try { window.syncSecs && syncSecs(); } catch (e) {} }   // asked for: there from now on
-    if (el && document.documentElement.classList.contains("brew-in") && el.offsetParent === null && !el.closest(".item.brewing")) brewShut();   // it's behind the open coffee: fold that first
+    if (el && document.documentElement.classList.contains("brew-in") && el.offsetParent === null && !el.closest(".item.brewing")) { if (brewDone) { brewIn = false; brewHome(); brewKeep = null; softShut = true; } else brewShut(); }   // it's behind the open coffee: fold that first. A brew just ended (to the Journal): the coffee stays chosen until it's logged, so the log adjusts this coffee's recipe
     if (!el) return; const gen = ++jumpGen, html = document.documentElement;
     // the coffee filter bar keeps one shape for the whole jump, so nothing changes size on the way and the target stays put.
     // Passing through the list it stays stuck under the top bar with its dropdowns, as when you scroll; it opens up again on landing
@@ -6198,7 +6198,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       logSaved(); return;
     }
     const a = recipe, diff = [];
-    if (a.clicks !== before.clicks) diff.push(isC40() ? `${before.clicks} → <b>${a.clicks} clicks</b>` : `${esc(onMill(before.clicks).txt)} → <b>${esc(onMill(a.clicks).txt)} ${esc(mill().short)}</b>`);
+    if (a.clicks !== before.clicks) { const t0 = isC40() ? "" : onMill(before.clicks).txt, t1 = isC40() ? "" : onMill(a.clicks).txt;
+      diff.push(isC40() ? `${before.clicks} → <b>${a.clicks} clicks</b>` : t0 === t1 && s ? `<b>${esc(s.text.replace(/\.$/, "").replace(/^./, (c) => c.toLowerCase()))}</b>` : `${esc(t0)} → <b>${esc(t1)} ${esc(mill().short)}</b>`); }   // a grinder named in words: "Medium → Medium" says nothing, the fix itself does
     if (a.temp !== before.temp && a.temp != null) diff.push(`${before.temp} → <b>${a.temp}°C</b>`);
     if (a.ratio !== before.ratio) diff.push(`1:${before.ratio} → <b>1:${a.ratio}</b>`);
     const box = $("suggest"); box.hidden = false;
@@ -6207,7 +6208,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     $("saveLog").textContent = "Saved"; setTimeout(() => ($("saveLog").textContent = "Save to journal"), 1400);
     logSaved();
   }
-  function logSaved() { brewDone = false; try { brewDoneUI(false); } catch (e) {} $("logBox").classList.add("saved"); journalOn(); }
+  let softShut = false;   // an open coffee folded for the Journal, still chosen until its brew is logged
+  function logSaved() { brewDone = false; try { brewDoneUI(false); } catch (e) {} $("logBox").classList.add("saved"); journalOn();
+    if (softShut) { softShut = false; state.text = ""; state.bag = null; state.roastPhoto = null; try { $("coffeeIn").value = ""; wbOpen = false; } catch (e) {} saveState(); renderAllOpts(); render(); journalOn(); } }
   // the Journal (and its link in the menu) only exists once there's a brew to write about: one that reached its end in this
   // visit, or an entry already saved
   let brewDone = false;   // this visit only: leave without saving an entry and the Journal is gone again next time
