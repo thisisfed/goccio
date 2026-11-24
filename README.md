@@ -48,10 +48,17 @@ The **Get your roastery listed** page (`/list/`) asks for the shop's address and
 ## New roasters, found automatically
 
 - **New roasters worldwide** (every night at 02:17 UTC, or by hand): looks at roasteries on OpenStreetMap
-  (`craft=coffee_roaster` with a website) that aren't on the list, reads up to 40 shops the way the daily scan does, and
-  adds the first **10** that sell at least 3 coffees with at least 2 naming their origin. None found: nothing changes.
-  Shops already checked are skipped for 120 days (`data/world_seen.json`). Script: `scripts/world.py`.
-- **Find new roasters** (by hand): reads the public UK roaster directory and writes candidates for review.
+  (`craft=coffee_roaster` with a website) that aren't on the list, reads up to **100** shops the way the daily scan does
+  (eight at a time), and adds the first **25** that sell at least 3 coffees with at least 2 naming their origin. Nothing
+  to approve: they go straight onto the list. Run by hand, it asks how many to try and how many to add.
+  - **To see what it did:** Actions → **New roasters worldwide** → the run → **Find and check**. Each shop has a line:
+    `ADD` (added, with its platform and how many coffees) or `skip` (and why: unreadable, too few coffees, not specialty).
+    The last line says `added N: …` with the names.
+  - When the map's servers are all busy, it works from the last list they gave (`data/world_map.json`).
+  - Shops already checked are skipped for 120 days (`data/world_seen.json`). Script: `scripts/world.py`.
+- **Find new roasters** (by hand): reads the public UK roaster directory and checks each new shop. Nothing is added.
+  **To see them:** Actions → **Find new roasters** → the run → **Artifacts** → `candidates` (a zip with `candidates.json`).
+  Add the ones you want as in "Adding or removing a roaster by hand" below.
 
 The order of roasters in `data/roasters.json` doesn't matter: the coffee list is sorted by date, and coffees from the
 same day take turns by roaster. A newly added roaster doesn't flood the top: its coffees are dated by when its shop listed them.
