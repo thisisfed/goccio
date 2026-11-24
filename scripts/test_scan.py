@@ -41,6 +41,11 @@ COFFEE_BODY = "Origin: Colombia\nProcess: Washed\nVariety: Caturra\nAltitude: 1,
 
 # (what was reported, check that must be True)
 CASES = [
+    # Terraform (24/11/2026): "Tasting Note" in the singular, and the notes joined with plus signs, in a Basic Info block
+    ("Terraform's 'Tasting Note' block with notes joined by ' + ' gives the four notes",
+     lambda: scan.find_notes({"body": "BASIC INFO\nTasting Note\nGardenia + Pomelo + Orange soda + Yellow peach\nRegion\nCosta Rica\nVariety\nGesha (COE Washed Rank 2)\nProcess\nWashed\nAltitude\n2050 masl\nHarvest\nMarch 2026", "title": "El Roble", "tags": []}) == ["Gardenia", "Pomelo", "Orange soda", "Yellow peach"]),
+    ("'Tasting Note: A + B' on one line is read the same way",
+     lambda: scan.find_notes({"body": "Tasting Note: Gardenia + Pomelo + Orange soda + Yellow peach\nRegion: Costa Rica", "title": "El Roble", "tags": []}) == ["Gardenia", "Pomelo", "Orange soda", "Yellow peach"]),
     # Rum Baba's Winter Coffee (24/11/2026): the page labels "Processing: Anaerobic" but the shop tags say natural and thermal
     ("A labelled 'Processing: Anaerobic' line beats shop tags saying natural",
      lambda: (kept(item("Winter Coffee - Costa Rica", "Tasting notes: Frosted Cinnamon Bun\nArea: San José, Costa Rica\nFarm: Fernando Cordero, Cordillera de Fuego, Luis Campos\nVariety: Catuai\nProcessing: Anaerobic\nRoast level: Light",
