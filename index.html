@@ -10031,9 +10031,17 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         src.connect(bp).connect(g); o.connect(og).connect(g); g.connect(A.destination); [src, o, lfo].forEach((x) => { x.start(t0); x.stop(t0 + dur); }); } catch (e) {} };
     const puff = () => { const side = S.jx > 0 ? -1 : 1; for (let i = 0; i < 4; i++) { const c = document.createElementNS(NS, "circle"); c.setAttribute("class", "gd-puff");
         c.setAttribute("cx", (side * (14 + i * 3.5)).toFixed(1)); c.setAttribute("cy", (-3 - i * 1.6).toFixed(1)); c.setAttribute("r", (2.2 + i * 0.9).toFixed(1)); c.style.animationDelay = i * 60 + "ms"; notes.appendChild(c); setTimeout(() => c.remove(), 1500); } };
+    const puffMid = () => { for (let i = 0; i < 5; i++) { const c = document.createElementNS(NS, "circle"); c.setAttribute("class", "gd-puff");
+        c.setAttribute("cx", ((i % 2 ? 1 : -1) * i * 2.2).toFixed(1)); c.setAttribute("cy", (6 + i * 1.2).toFixed(1)); c.setAttribute("r", (2.4 + i * 0.8).toFixed(1)); c.style.animationDelay = i * 55 + "ms"; notes.appendChild(c); setTimeout(() => c.remove(), 1500); } };
     const fart = () => { if (still()) return; acting = false; tws.forEach((t) => t.res()); tws = []; dancing = false; S.phones = 0;
       act(async () => { jv = -150; poke(1.8); pfft(); puff(); await face({ eyeSL: 1.4, eyeSR: 1.4 }, 90); await wait(420);
         lookX = -2.6; lookY = 1.6; draw(); tween("aRest", -0.07, 300); await face({ eyeSL: 1, eyeSR: 1, eyeL: 0.7, eyeR: 0.7, smile: 0.5, blush: 1 }, 320); await wait(1800);
+        lookX = 0; lookY = 0; tween("aRest", 0, 300); draw(); }); };
+    // asked to fart: it turns its back, lets one go (the puff comes out of the middle, at you), turns round again and smiles, embarrassed
+    const fartBack = () => { if (still()) return; acting = false; tws.forEach((t) => t.res()); tws = []; dancing = false; S.phones = 0;
+      return act(async () => { await tween("turn", 1, 420); await wait(350); jv = -150; poke(1.8); pfft(); puffMid(); await wait(650);
+        await tween("turn", 0, 380); lookX = -2.4; lookY = 1.4; draw(); tween("aRest", -0.07, 300);
+        await face({ eyeSL: 1, eyeSR: 1, eyeL: 0.7, eyeR: 0.7, smile: 0.8, blush: 1 }, 320); await wait(1900);
         lookX = 0; lookY = 0; tween("aRest", 0, 300); draw(); }); };
     let holdT = 0, farted = false;
     el.addEventListener("pointerdown", () => { farted = false; clearTimeout(holdT); holdT = setTimeout(() => { farted = true; fart(); }, 750); });
@@ -10045,7 +10053,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1; lookX = dx / d * 3; lookY = dy / d * 1.5; draw();
       setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900); }, { passive: true });
     el.addEventListener("click", () => { if (farted) { farted = false; return; } if (opt.tap) opt.tap(); else if (!acting) jumps(); });
-    return { S, busy: () => acting, free: () => { acting = false; }, moon, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, fart, draw,
+    return { S, busy: () => acting, free: () => { acting = false; }, moon, fartBack, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, fart, draw,
       bob: () => { poke(-0.7 - Math.random() * 0.6); if (Math.random() < 0.3) { jv = -90; go(); } } }; };
     // ---- talking: tap the drop and ask it something. It answers in a bubble, the words typing themselves out while it bobs.
     // It knows a handful of things for certain (what's new, a coffee to try, sour or bitter, ratio, temperature, grind, the processes,
@@ -10085,6 +10093,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       [/^(hi|hello|hey|hiya|ciao|salve|buongiorno|buonasera|yo)\b/i, () => say(name ? T(`Hi ${name}! What are we brewing?`, `Ciao ${name}! Cosa prepariamo?`) : T("Hi! I'm Goccio. Ask me anything about coffee.", "Ciao! Sono Goccio. Chiedimi qualcosa sul caffè."), null, happy)],
       [/what('?s| is) my name|who am i|come mi chiamo|sai il mio nome/i, () => { if (!name) askingName = true; say(name ? T(`You're ${name}. I never forget a friend.`, `Sei ${name}. Non dimentico mai un amico.`) : T("You haven't told me yet. What should I call you?", "Non me l'hai ancora detto. Come ti chiamo?"), null, name ? happy : curious); }],
       [/forget my name|dimentica il mio nome/i, () => { name = ""; try { localStorage.removeItem("v60.dropName"); } catch (e) {} say(T("Done, forgotten. Still friends?", "Fatto, dimenticato. Amici come prima?"), null, smile); }],
+      // a secret, like the butt: never suggested anywhere, only if you ask
+      [/\b(fart|farts|farting|toot|pass gas|break wind|parp)\b|scor+eg+i|\bpet(o|ino)\b/i, () => { say(T("Not in front of everyone… fine, hold on.", "Non davanti a tutti… va bene, aspetta."), null); setTimeout(() => { D.free(); D.fartBack(); }, 500);
+        setTimeout(() => say(pick([T("Pardon me. Must have been the beans.", "Scusate. Saranno stati i chicchi."), T("That never happened.", "Non è mai successo."), T("Ahem. Lightly fermented.", "Ehm. Leggermente fermentata.")]), null), 3400); }],
       [/\b(butt|bum|bottom|booty|behind|backside|derriere|turn around)\b|culo|sedere|girati/i, () => { say(T("Oh, fine… just a quick peek!", "Uffa… solo una sbirciatina!"), null); setTimeout(() => { D.free(); D.moon(); }, 500); }],
       // coffee people whose recipes Goccio brews with
       F(/\bhoff?man+\b/i, "James Hoffmann is a British coffee expert: 2007 World Barista Champion, co-founder of Square Mile Coffee Roasters in London, author of The World Atlas of Coffee and How to Make the Best Coffee at Home, and the biggest coffee channel on YouTube. Many of my recipes are his: the Better 1-Cup and Ultimate V60, and his Ultimate AeroPress, French Press, Clever and moka pot techniques.", "James Hoffmann è un esperto di caffè inglese: campione del mondo baristi nel 2007, cofondatore di Square Mile Coffee Roasters a Londra, autore di The World Atlas of Coffee e How to Make the Best Coffee at Home, e il canale di caffè più seguito su YouTube. Tante mie ricette sono sue: la Better 1-Cup e la Ultimate V60, e le sue tecniche Ultimate per AeroPress, French Press, Clever e moka.", smile),
