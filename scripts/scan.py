@@ -6,6 +6,8 @@ product at /products.json. WooCommerce shops expose /wp-json/wc/store/v1/product
 Anything else is skipped and reported in data/releases.json -> roasters[].
 
 Usage: python3 scripts/scan.py            (writes data/releases.json)
+       python3 scripts/scan.py --shard 0/4 --part p0.json   (one quarter of the roasters, saved as a part)
+       python3 scripts/scan.py --merge parts/               (the parts put together, writes data/releases.json)
        python3 scripts/scan.py --fixture f.json --shop https://x  (offline parse test)
 """
 import html
@@ -2975,8 +2977,50 @@ def main():
                     rec["roast"], rec["roast_from"] = r["roast"], "roaster"
         return kind, err, recs
 
-    with ThreadPoolExecutor(max_workers=16) as pool:
-        results = list(pool.map(run, roasters))
+    # A split scan: four machines each read a quarter of the roasters at once (--shard k/4 --part file), and one more puts the
+    # quarters together (--merge folder) and writes the list. Each quarter is every fourth roaster of the same ordered list, so the
+    # shops left behind last time are spread over all four. A quarter that never arrives counts as not reached: yesterday's coffees stay
+    global SCAN_T0
+    if "--shard" in args:
+        k, n = (int(x) for x in args[args.index("--shard") + 1].split("/"))
+        mine = [r for j, r in enumerate(roasters) if j % n == k]
+        with ThreadPoolExecutor(max_workers=16) as pool:
+            res = list(pool.map(run, mine))
+        part = {"minutes": round((time.monotonic() - SCAN_T0) / 60), "report": REPORT, "drops": DROPS, "rejected": REJECTED, "price_diag": PRICE_DIAG,
+                "roasters": {r["name"]: {"kind": kind, "err": err, "recs": recs, "note": r.get("_note"), "ccy": r.get("_ccy")}
+                             for r, (kind, err, recs) in zip(mine, res)}}
+        out = Path(args[args.index("--part") + 1]); out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(part, ensure_ascii=False, default=lambda o: sorted(o) if isinstance(o, (set, frozenset)) else str(o)))
+        for r, (kind, err, recs) in zip(mine, res):
+            print(f"{r['name']:<26} {kind or 'FAILED':<12} {len(recs):>3} {err or ''}")
+        print(f"\nPart {k + 1} of {n}: {len(mine)} roasters, {sum(len(x[2]) for x in res)} coffees, {part['minutes']} min -> {out}")
+        return
+    if "--merge" in args:
+        got, mins = {}, 0
+        for f in sorted(Path(args[args.index("--merge") + 1]).rglob("*.json")):
+            try:
+                p = json.loads(f.read_text())
+            except (OSError, ValueError):
+                continue
+            got.update(p.get("roasters") or {}); mins = max(mins, p.get("minutes") or 0)
+            for key in ("page_time", "page_cap", "price_time", "price_cap"):
+                REPORT[key].update((p.get("report") or {}).get(key) or {})
+            REPORT["not_reached"].extend((p.get("report") or {}).get("not_reached") or [])
+            DROPS.update(p.get("drops") or {}); REJECTED.extend(p.get("rejected") or []); PRICE_DIAG.update(p.get("price_diag") or {})
+        SCAN_T0 = time.monotonic() - mins * 60   # the report gives the longest quarter's time
+        results = []
+        for r in roasters:
+            g = got.get(r["name"])
+            if g is None:
+                REPORT["not_reached"].append(r["name"])
+                results.append((None, "its part of today's scan didn't finish: yesterday's coffees kept", []))
+            else:
+                r["_note"], r["_ccy"] = g.get("note"), g.get("ccy")
+                results.append((g.get("kind"), g.get("err"), g.get("recs") or []))
+        print(f"Put together {len(got)} of {len(roasters)} roasters from the parts, longest part {mins} min")
+    else:
+        with ThreadPoolExecutor(max_workers=16) as pool:
+            results = list(pool.map(run, roasters))
     for r, (kind, err, recs) in zip(roasters, results):
         kept = len(recs)
         if kind:

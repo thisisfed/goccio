@@ -26,38 +26,95 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  scan:
+  # 1. check: today's scan not in yet, and the scanner still passes every reported mistake. All parts then read the same commit
+  prep:
     runs-on: ubuntu-latest
-    timeout-minutes: 270   # the scan saves by 240 minutes (scripts/scan.py STOP_MINUTES); GitHub allows 360, free on a public repo
+    outputs:
+      skip: ${{ steps.guard.outputs.skip }}
+      sha: ${{ steps.sha.outputs.sha }}
     steps:
       - uses: actions/checkout@v5
         with:
+          ref: main
           fetch-depth: 50
+      - id: sha
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - name: Skip if today's full scan is already in
         id: guard
-        if: github.event_name == 'schedule'
+        env:
+          INSPECT: ${{ github.event.inputs.inspect }}
         run: |
-          if git log --format=%s | grep -qx "Roaster scan $(date -u +'%d %b %Y')"; then
+          if [ "${{ github.event_name }}" = "schedule" ] && git log --format=%s | grep -qx "Roaster scan $(date -u +'%d %b %Y')"; then
             echo "Today's scan is already in, nothing to do"; echo "skip=1" >> "$GITHUB_OUTPUT"
           fi
+          if [ -n "$INSPECT" ]; then echo "skip=1" >> "$GITHUB_OUTPUT"; fi
       - uses: actions/setup-python@v6
-        if: steps.guard.outputs.skip != '1'
         with:
           python-version: "3.12"
       - name: Check the scanner against every reported mistake
         # if an old mistake is back, the scan stops here and yesterday's list stays up
-        if: steps.guard.outputs.skip != '1'
         run: python3 scripts/test_scan.py
-      - name: Scan roasters
-        if: steps.guard.outputs.skip != '1'
+      - name: Inspect pages (nothing is saved)
+        if: github.event.inputs.inspect != ''
+        env:
+          INSPECT: ${{ github.event.inputs.inspect }}
+        run: python3 scripts/scan.py --inspect "$INSPECT"
+
+  # 2. four machines at once, each reading every fourth roaster; each has its own 4 hours (free on a public repo)
+  part:
+    needs: prep
+    if: needs.prep.outputs.skip != '1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 270   # a part saves by 240 minutes (scripts/scan.py STOP_MINUTES); GitHub allows 360
+    strategy:
+      fail-fast: false   # one part failing never stops the others: its roasters keep yesterday's coffees
+      matrix:
+        k: [0, 1, 2, 3]
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.prep.outputs.sha }}
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Scan a quarter of the roasters
         env:
           ONLY: ${{ github.event.inputs.only }}
-          INSPECT: ${{ github.event.inputs.inspect }}
         run: |
-          if [ -n "$INSPECT" ]; then python3 scripts/scan.py --inspect "$INSPECT"; exit 0; fi
-          if [ -n "$ONLY" ]; then python3 scripts/scan.py --only "$ONLY"; else python3 scripts/scan.py; fi
+          if [ -n "$ONLY" ]; then python3 scripts/scan.py --only "$ONLY" --shard ${{ matrix.k }}/4 --part parts/part-${{ matrix.k }}.json
+          else python3 scripts/scan.py --shard ${{ matrix.k }}/4 --part parts/part-${{ matrix.k }}.json; fi
+      - uses: actions/upload-artifact@v6
+        with:
+          name: part-${{ matrix.k }}
+          path: parts/
+          retention-days: 3
+
+  # 3. put the parts together on the newest main, write the list and save it. The only job that commits, so no clashes
+  merge:
+    needs: [prep, part]
+    if: always() && needs.prep.result == 'success' && needs.prep.outputs.skip != '1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 50
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: part-*
+          path: parts
+        continue-on-error: true   # no parts at all: every roaster keeps yesterday's coffees
+      - name: Put the parts together
+        env:
+          ONLY: ${{ github.event.inputs.only }}
+        run: |
+          mkdir -p parts
+          if [ -n "$ONLY" ]; then python3 scripts/scan.py --only "$ONLY" --merge parts; else python3 scripts/scan.py --merge parts; fi
       - name: Commit updated list
-        if: steps.guard.outputs.skip != '1'
         env:
           ONLY: ${{ github.event.inputs.only }}
         run: |
@@ -72,6 +129,6 @@ jobs:
           else
             # a partial rescan is labelled differently so it never counts as the day's full scan
             if [ -n "$ONLY" ]; then git commit -m "Roaster rescan ($ONLY) $(date -u +'%d %b %Y')"; else git commit -m "Roaster scan $(date -u +'%d %b %Y')"; fi
-            # main may have moved while the scan ran (a site change merged meanwhile)
-            git pull --rebase -q && git push
+            # main may have moved while the parts were being put together (a site change merged meanwhile)
+            git pull --rebase -q -X theirs && git push   # during a rebase "theirs" is this scan: today's list wins
           fi
