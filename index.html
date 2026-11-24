@@ -2712,6 +2712,7 @@ html body .wm-video{transform:none!important}
 html body footer .refs.meth li{color:var(--muted)!important;margin:0 0 12px}
 html body footer .refs.meth li:last-child{margin-bottom:0}
 html body footer .refs.meth .rt{display:block;color:var(--ink)!important;margin-bottom:2px}
+#crowd{margin:-10px 0 0;text-align:center;color:var(--muted);font-size:var(--fs-s)}   /* "12 brews logged: 9 just right, 2 too sour, 1 too bitter." under Recipe for … */
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
@@ -3161,6 +3162,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
 
   <section class="sec" id="recipe" aria-labelledby="rtitle">
     <div class="sec-head"><span class="cap" role="heading" aria-level="2"><span id="recTitle">Recipe.</span></span><span class="cap" id="rsource"></span></div>
+    <p class="crowd" id="crowd" hidden></p>
     <div class="r-title">
       <div class="r-kick"><span class="method" id="rmethod"></span><span class="cap" id="rgoal"></span><span class="zero-pill" id="rzero" hidden></span></div>
       <h2 id="rtitle"></h2>
@@ -5500,6 +5502,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     renderMine(r);
     const showRet = r.tds != null;
     { const bn = BREWERS[r.brewer].name; $("recTitle").textContent = LANG === "it" ? `Ricetta per ${bn}` : `Recipe for ${bn}`; }   // the brewer, in the title
+    crowdFor(state.bag);   // how everyone's brews of this coffee came out, once there are enough
     const noMillYet = !!mill().words;
     $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}${k === "key" && mill().words ? " wide" : ""}"><b>${v}${u ? `<small>${u === "-cup" ? u : " " + u}</small>` : ""}</b><span class="sub2">${l.charAt(0).toUpperCase() + l.slice(1)}${badge ? ` <span class="yr">${esc(badge)}</span>` : ""}</span>${k === "key" && isC40() && prefs.zero ? `<span class="zo">${sign(prefs.zero).replace(/^(.)/, "$1 ")} zero offset</span>` : ""}${k === "key" && K === "shot" && mill().noEsp ? `<span class="sub2">Not an espresso grinder</span>` : k === "key" && !isC40() && (onMill(r.clicks).atMax || onMill(r.clicks).atMin) ? `<span class="sub2">${onMill(r.clicks).atMax ? "Coarsest setting, may still run fast" : "Finest setting"}</span>` : ""}${k === "dose" ? (() => { const ds = BREWERS[r.brewer].doses, i = ds.findIndex(([v]) => v === r.dose); if (ds.length < 2 || i < 0) return "";
         const ic = (p) => `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="${p}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`, moka = r.brewer === "moka";
@@ -6228,6 +6231,17 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     $("saveLog").textContent = "Saved"; setTimeout(() => ($("saveLog").textContent = "Save to journal"), 1400);
     logSaved();
   }
+  // how this coffee's brews came out for everyone who logged one (functions/api/taste.js): said once there are CROWD_MIN answers
+  const CROWD_MIN = 5, crowdSeen = new Map();
+  function crowdFor(bag) { const el = $("crowd"); if (!el) return; const u = bag && bag.url;
+    const show = (t) => { const n = t ? (t.sour || 0) + (t.balanced || 0) + (t.bitter || 0) : 0; if (n < CROWD_MIN) { el.hidden = true; return; }
+      const it = LANG === "it", bits = [[t.balanced, it ? "perfetto" : "just right"], [t.sour, it ? "troppo acido" : "too sour"], [t.bitter, it ? "troppo amaro" : "too bitter"]].filter((x) => x[0]);
+      el.textContent = (it ? `${n} preparazioni registrate: ` : `${n} brews logged: `) + bits.map((x) => `${x[0]} ${x[1]}`).join(", ") + ".";
+      el.hidden = false; };
+    if (!u) { el.hidden = true; return; }
+    if (crowdSeen.has(u)) return show(crowdSeen.get(u));
+    el.hidden = true; crowdSeen.set(u, null);
+    fetch("/api/taste?u=" + encodeURIComponent(u)).then((r) => r.ok ? r.json() : null).then((t) => { crowdSeen.set(u, t); if (state.bag && state.bag.url === u) show(t); }).catch(() => {}); }
   let softShut = false;
   var PREVIEW_TASTE = /[?&]howwasit\b/.test(location.search) ? {} : null;   // the ?howwasit preview: nothing it answers is counted   // an open coffee folded for the Journal, still chosen until its brew is logged
   function logSaved() { brewDone = false; try { brewDoneUI(false); } catch (e) {} $("logBox").classList.add("saved"); journalOn();
