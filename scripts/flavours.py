@@ -297,6 +297,12 @@ PHRASES.update({
     "crema de zahar ars": "crème caramel", "cremă de zahăr ars": "crème caramel", "dulce amarui": "bittersweet", "dulce amărui": "bittersweet",
     "ceai de trandafiri": "rose tea", "compot de piersici": "peach compote", "cirese galbene": "yellow cherry", "cireșe galbene": "yellow cherry",
     "gem de fragi": "wild strawberry jam", "nuci pecan": "pecan",
+    # Dropshot (Romania, 24/11/2026): left in Romanian, one of them misspelt on the shop's own page
+    "ciuocolata cu lapte": "milk chocolate", "portocala coapta": "ripe orange", "portocală coaptă": "ripe orange", "mar verde": "green apple", "măr verde": "green apple",
+    "miere acacia": "acacia honey", "miere de acacia": "acacia honey", "miere de salcam": "acacia honey", "miere de salcâm": "acacia honey",
+    "portocale confiate": "candied orange", "prune galbene": "yellow plum", "gem de visine": "sour cherry jam", "gem de vişine": "sour cherry jam", "gem de vișine": "sour cherry jam",
+    "tort de ciocolata neagra": "dark chocolate cake", "tort de ciocolată neagră": "dark chocolate cake", "turta dulce": "gingerbread", "turtă dulce": "gingerbread",
+    "napolitane cu alune": "hazelnut wafers", "peel de lime": "lime peel", "elderflower flowers": "elderflower",
     "tropisk frukt": "tropical fruit", "tørket frukt": "dried fruit", "grönt äpple": "green apple", "röd grape": "red grape", "torkade tranbär": "dried cranberry",
     "torkade fikon": "dried fig", "låg syra": "low acidity",
     "fiore d'arancio": "orange blossom", "fiore d’arancio": "orange blossom", "fiori d’arancio": "orange blossom", "fiore di caffè": "coffee blossom",

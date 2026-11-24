@@ -132,8 +132,8 @@ COUNTRIES = ["Ethiopia", "Kenya", "Colombia", "Panama", "Costa Rica", "Guatemala
 GROWING_HOME = {"BR": "Brazil", "CO": "Colombia", "PE": "Peru", "EC": "Ecuador", "BO": "Bolivia", "MX": "Mexico"}
 COUNTRY_ALIASES = {
     "Etiopia": "Ethiopia", "Äthiopien": "Ethiopia", "Éthiopie": "Ethiopia", "Ethiopie": "Ethiopia", "Etiopien": "Ethiopia", "Ethiopië": "Ethiopia",
-    "Colombie": "Colombia", "Kolumbien": "Colombia", "Kolumbia": "Colombia", "Colombië": "Colombia",
-    "Kenia": "Kenya", "Brasile": "Brazil", "Brasilien": "Brazil", "Brésil": "Brazil", "Brasil": "Brazil", "Brazylia": "Brazil",
+    "Colombie": "Colombia", "Kolumbien": "Colombia", "Kolumbia": "Colombia", "Colombië": "Colombia", "Columbia": "Colombia",
+    "Kenia": "Kenya", "Brasile": "Brazil", "Brasilien": "Brazil", "Brésil": "Brazil", "Brasil": "Brazil", "Brazylia": "Brazil", "Brazilia": "Brazil",
     "Canastra": "Brazil", "Mantiqueira": "Brazil", "Cerrado Mineiro": "Brazil", "Sul de Minas": "Brazil", "Mogiana": "Brazil",
     "Chapada Diamantina": "Brazil", "Caparaó": "Brazil", "Matas de Minas": "Brazil",
     "Perù": "Peru", "Pérou": "Peru", "Perú": "Peru", "Panamá": "Panama", "Ruanda": "Rwanda", "Messico": "Mexico", "Mexiko": "Mexico",
