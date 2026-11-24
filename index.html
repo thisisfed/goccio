@@ -9184,7 +9184,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       // the whole list is big: today's new coffees (a small file made when the site is published) go on screen first,
       // and the full list takes over as soon as it's in. With no small file, it's the full list as before
       // the full list starts once the small first file is in, so the two don't share a slow connection (the first screen comes sooner)
-      const startFull = () => { const f = fetch("/data/releases.json", { cache: "no-cache" }).then((res) => { if (!res.ok) throw new Error(res.status); return res.json(); }); f.catch(() => {}); return f; };
+      const getList = (u) => fetch(u, { cache: "no-cache" }).then((res) => { if (!res.ok) throw new Error(res.status); return res.json(); });
+      const startFull = () => { const f = getList("/data/list.json").catch(() => getList("/data/releases.json")); f.catch(() => {}); return f; };   // list.json: the list without the fields the page never reads (scripts/build.py); releases.json when it isn't there
       let full = null;
       const apply = (d, part) => {
       shelfPart = part ? (d.total || 0) : 0;
@@ -9709,7 +9710,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       ["playing", "timeupdate", "ended", "pause"].forEach((ev) => v.addEventListener(ev, air)); } }
   // the hero film: silent, looping, and still (its first frame) for anyone who asks for less motion
   { const v = $("wmVideo"); if (v) { v.muted = true; v.defaultMuted = true; v.playsInline = true;
-      if (matchMedia("(prefers-reduced-motion: reduce)").matches) { v.removeAttribute("autoplay"); v.pause(); }
+      const saveData = !!(navigator.connection && navigator.connection.saveData) || matchMedia("(prefers-reduced-data: reduce)").matches;   // Low Data mode: the still, not the film (half a megabyte saved)
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches || saveData) { v.removeAttribute("autoplay"); v.pause(); }
       else {
         // phones are fussy about films that start by themselves: ask again when it has loaded, when the page is shown, and on the
         // first touch or scroll (a touch always lets a silent film start, Low Power Mode included)
