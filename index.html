@@ -10942,7 +10942,12 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const scrim = document.createElement("div"); scrim.className = "gd-scrim"; document.body.appendChild(scrim);
     const dim = (on, top) => { document.documentElement.classList.toggle("gd-open", on); document.documentElement.classList.toggle("gd-docked", !!(on && top)); };
     const place = (top) => { const want = top ? dock : home; if (talking) dim(true, top); if (top) fitDock(); if (talkEl.parentNode !== want) want.appendChild(talkEl); talkEl.classList.toggle("docked", !!top); };
-    let openY = null; addEventListener("scroll", () => { if (talking && openY !== null && Math.abs(scrollY - openY) > 140) closeTalk(); }, { passive: true });   // scroll away from an open chat: it closes and the page clears
+    let openY = null, kbT = 0; const kb = () => { kbT = performance.now(); if (openY !== null) openY = scrollY; };
+    // typing: the keyboard coming up (or going down) scrolls the page by itself, which isn't you scrolling away
+    ["focusin", "focusout"].forEach((t) => talkEl.addEventListener(t, kb)); if (window.visualViewport) visualViewport.addEventListener("resize", kb);
+    addEventListener("scroll", () => { if (!talking || openY === null) return;
+      if (talkEl.contains(document.activeElement) || performance.now() - kbT < 1200) { openY = scrollY; return; }
+      if (Math.abs(scrollY - openY) > 140) closeTalk(); }, { passive: true });   // scroll away from an open chat: it closes and the page clears
     openTalk = (top) => { if (talking) { place(top); return; } openY = null; setTimeout(() => { openY = scrollY; }, 800); place(top); gdWords(); talking = true; dim(true, top); talkEl.hidden = false; el.setAttribute("aria-expanded", "true"); toBottom();
       const lastAt = msgs.length ? msgs[msgs.length - 1].at || 0 : 0; if (name && msgs.length && Date.now() - lastAt < 20 * 60000) { showChips(); return; }   // still mid-chat: carry on
       replyTo = null;   // a new hello answers nobody: it anchors to itself
