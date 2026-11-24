@@ -3173,7 +3173,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   <form class="ask-line" id="askForm" role="search" autocomplete="off">
     <label for="askIn" class="ask-q">How do you want your coffee today?</label>
     <div class="ask-box"><div class="ask-sug" id="askSug" hidden></div><input type="search" id="askIn" placeholder="Fruity, under £15" enterkeyhint="search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"><button type="submit" class="ask-go" aria-label="Find my coffee"><svg class="ask-lens" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10.4 10.4l3.6 3.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><svg class="ask-xi" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div>
-    <button type="button" class="ask-goccio" id="askGoccio" aria-label="Ask Goccio"><svg viewBox="-20 -20 40 40" aria-hidden="true"><defs><radialGradient id="agFill" gradientUnits="userSpaceOnUse" cx="1.5" cy="4" r="17"><stop offset="0" stop-color="#e3a05a"/><stop offset=".45" stop-color="#b8682c"/><stop offset=".85" stop-color="#6e3514"/><stop offset="1" stop-color="#3f1c08"/></radialGradient></defs><circle r="15" fill="url(#agFill)"/><ellipse cx="-6.5" cy="-8" rx="3.4" ry="1.8" transform="rotate(-35 -6.5 -8)" fill="#fff" opacity=".55"/><ellipse cx="-5" cy="-1" rx="2.3" ry="3.2"/><ellipse cx="5" cy="-1" rx="2.3" ry="3.2"/></svg></button>
+    <button type="button" class="ask-goccio" id="askGoccio" aria-label="Ask Goccio"><svg viewBox="-20 -20 40 40" aria-hidden="true"><defs><radialGradient id="agFill" gradientUnits="userSpaceOnUse" cx="1.5" cy="4" r="17"><stop offset="0" stop-color="#e3a05a"/><stop offset=".45" stop-color="#b8682c"/><stop offset=".85" stop-color="#6e3514"/><stop offset="1" stop-color="#3f1c08"/></radialGradient></defs><g class="ag-b"><circle r="15" fill="url(#agFill)"/><ellipse cx="-6.5" cy="-8" rx="3.4" ry="1.8" transform="rotate(-35 -6.5 -8)" fill="#fff" opacity=".55"/><g class="ag-e"><ellipse cx="-5" cy="-1" rx="2.3" ry="3.2"/><ellipse cx="5" cy="-1" rx="2.3" ry="3.2"/></g></g></svg></button>
   </form>
   <div class="sec-list" id="secList" inert aria-hidden="true"><div class="sec-list-in"><button type="button" class="sec-p" data-jump="shelves" data-sec="shelves">Coffees</button><button type="button" class="sec-p" data-jump="bags" data-sec="bags">My bags</button><button type="button" class="sec-p" data-jump="coffee" data-sec="coffee">What’s brewing?</button><button type="button" class="sec-p" data-jump="recipe" data-sec="recipe">Recipe</button><button type="button" class="sec-p" data-jump="journal" data-sec="journal">Journal</button></div></div>
 </header>
@@ -10311,7 +10311,29 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     closeTalk = () => { if (!talking) return; talking = false; talkEl.hidden = true; el.setAttribute("aria-expanded", "false"); clearInterval(typeT); bob(false); };
     $("gdX").onclick = closeTalk;
     // the top bar: the little Goccio opens it there; a question typed in the search box goes to Goccio instead of the list
-    { const tb = $("askGoccio"); if (tb) tb.onclick = () => { talking ? closeTalk() : openTalk(true); }; }
+    { const tb = $("askGoccio"); if (tb) tb.onclick = () => { talking ? closeTalk() : openTalk(true); tb.hop && tb.hop(); }; }
+    // the little Goccio in the pill is alive too: it leans and looks towards the pointer (or your finger), blinks, and looks around when nobody moves
+    { const tb = $("askGoccio"), bo = tb && tb.querySelector(".ag-b"), ey = tb && tb.querySelector(".ag-e");
+      if (bo && ey && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        let tx = 0, ty = 0, x = 0, y = 0, blink = 1, hopT = 0, idle = 0, run = 0;
+        const loop = (t) => { x += (tx - x) * .16; y += (ty - y) * .16; const k = hopT ? Math.max(0, 1 - (t - hopT) / 520) : 0, up = k ? Math.sin((1 - k) * Math.PI) * 6 : 0;
+          if (!k) hopT = 0;
+          // squash a touch against the way it leans, like the big one
+          const lean = Math.hypot(x, y), sx = 1 + lean * .012 - up * .01, sy = 1 - lean * .01 + up * .02;
+          bo.setAttribute("transform", `translate(${(x * .45).toFixed(2)} ${(y * .3 - up).toFixed(2)}) scale(${sx.toFixed(3)} ${sy.toFixed(3)})`);
+          ey.setAttribute("transform", `translate(${(x * 1.1).toFixed(2)} ${(y * 1.1).toFixed(2)}) translate(0 -1) scale(1 ${blink}) translate(0 1)`);
+          if (Math.abs(tx - x) + Math.abs(ty - y) > .02 || hopT) run = requestAnimationFrame(loop); else run = 0; };
+        const go = () => { if (!run) run = requestAnimationFrame(loop); };
+        const aim = (cx, cy) => { const r = tb.getBoundingClientRect(); if (!r.width) return; const dx = cx - (r.left + r.width / 2), dy = cy - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1, m = Math.min(1, d / 160) * 3.2;
+          tx = dx / d * m; ty = dy / d * m; idle = performance.now(); go(); };
+        addEventListener("pointermove", (e) => aim(e.clientX, e.clientY), { passive: true });
+        addEventListener("pointerdown", (e) => aim(e.clientX, e.clientY), { passive: true });
+        const blinkOnce = () => { blink = .12; go(); setTimeout(() => { blink = 1; go(); }, 120); };
+        (function nextBlink() { setTimeout(() => { if (!document.hidden) { blinkOnce(); if (Math.random() < .2) setTimeout(blinkOnce, 260); } nextBlink(); }, 2400 + Math.random() * 3600); })();
+        // nobody about: look this way and that, then back to you
+        setInterval(() => { if (document.hidden || performance.now() - idle < 4000) return; const a = Math.random() * Math.PI * 2; tx = Math.cos(a) * 2.6; ty = Math.sin(a) * 1.8; go(); setTimeout(() => { if (performance.now() - idle >= 4000) { tx = 0; ty = 0; go(); } }, 1400); }, 3500);
+        tb.hop = () => { hopT = performance.now(); go(); };
+        go(); } }
     const isQuestion = (t) => /\?\s*$/.test(t) || /^(goccio\b|hey goccio|hi goccio|ciao goccio|what|why|how|who|where|when|which|is it|are|does|do i|can|should|tell me|explain|cos|perch[eé]|come mai|come si|quando|dove|chi|quant[oai])\b/i.test(t.trim());
     $("askForm").addEventListener("submit", (e) => { const a = $("askIn"), t = a.value.trim(); if (window.__gdSearching || !t || !isQuestion(t)) return;
       e.preventDefault(); e.stopImmediatePropagation(); a.value = ""; a.dispatchEvent(new Event("input", { bubbles: true })); a.blur();
