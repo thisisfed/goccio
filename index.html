@@ -2852,8 +2852,12 @@ html body .ask-line .ask-goccio{transition:width .45s cubic-bezier(.5,0,.2,1),ma
 html body .ask-line .ask-goccio.ag-gone{width:0;margin-left:-16px;transform:translateX(18px) scale(.25);opacity:0;pointer-events:none;transition:width .45s cubic-bezier(.5,0,.2,1) .05s,margin .45s cubic-bezier(.5,0,.2,1) .05s,transform .35s cubic-bezier(.6,0,.4,1),opacity .15s ease .22s}
 html body .top #toolsBtn{position:relative;z-index:1}
 html body .top #toolsBtn.gulp{animation:agGulp .45s cubic-bezier(.3,1.6,.5,1)}
+html body .ask-line .ask-goccio.ag-out svg{animation:agOut .8s cubic-bezier(.3,.7,.4,1) both}   /* only the drop wobbles; its pill just slides out */
+html body .top #toolsBtn.spit{animation:agSpit .4s cubic-bezier(.3,1.5,.5,1)}
+@keyframes agOut{0%{transform:translateX(10px) scale(.3,.5);opacity:0}18%{opacity:1}40%{transform:translateX(-3px) scale(1.25,.78)}58%{transform:translateX(1px) scale(.88,1.12)}74%{transform:scale(1.06,.95)}88%{transform:scale(.98,1.02)}100%{transform:none;opacity:1}}
+@keyframes agSpit{0%{scale:1}30%{scale:.88 1.1}65%{scale:1.05 .97}100%{scale:1}}
 @keyframes agGulp{0%{scale:1}35%{scale:1.14 .9}70%{scale:.96 1.05}100%{scale:1}}
-@media (prefers-reduced-motion:reduce){html body .ask-line .ask-goccio,html body .ask-line .ask-goccio.ag-gone{transition:none}html body .top #toolsBtn.gulp{animation:none}}
+@media (prefers-reduced-motion:reduce){html body .ask-line .ask-goccio,html body .ask-line .ask-goccio.ag-gone{transition:none}html body .top #toolsBtn.gulp,html body .top #toolsBtn.spit,html body .ask-line .ask-goccio.ag-out svg{animation:none}}
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
@@ -10352,9 +10356,12 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       if (tb && plus && "IntersectionObserver" in window) {
         let gone = false;
         const set = (g) => { if (g === gone) return; gone = g; tb.classList.toggle("ag-gone", g); tb.setAttribute("aria-hidden", g ? "true" : "false"); tb.tabIndex = g ? -1 : 0;
-          if (g) { plus.classList.remove("gulp"); void plus.offsetWidth; setTimeout(() => plus.classList.add("gulp"), 260); } };
+          if (g) { tb.classList.remove("ag-out"); plus.classList.remove("gulp", "spit"); void plus.offsetWidth; setTimeout(() => plus.classList.add("gulp"), 260); }
+          // coming back it's still liquid: the + squeezes it out and it lands with a wobble, like a drop settling
+          else { plus.classList.remove("gulp", "spit"); tb.classList.remove("ag-out"); void plus.offsetWidth; plus.classList.add("spit"); tb.classList.add("ag-out"); } };
+        tb.addEventListener("animationend", (e) => { if (e.animationName === "agOut") tb.classList.remove("ag-out"); });   // bubbles up from the svg
         new IntersectionObserver((es) => es.forEach((e) => set(e.isIntersecting)), { threshold: .3 }).observe(el);
-        plus.addEventListener("animationend", (e) => { if (e.animationName === "agGulp") plus.classList.remove("gulp"); }); } }
+        plus.addEventListener("animationend", (e) => { if (e.animationName === "agGulp" || e.animationName === "agSpit") plus.classList.remove("gulp", "spit"); }); } }
     const isQuestion = (t) => /\?\s*$/.test(t) || /^(goccio\b|hey goccio|hi goccio|ciao goccio|what|why|how|who|where|when|which|is it|are|does|do i|can|should|tell me|explain|cos|perch[eé]|come mai|come si|quando|dove|chi|quant[oai])\b/i.test(t.trim());
     $("askForm").addEventListener("submit", (e) => { const a = $("askIn"), t = a.value.trim(); if (window.__gdSearching || !t || !isQuestion(t)) return;
       e.preventDefault(); e.stopImmediatePropagation(); a.value = ""; a.dispatchEvent(new Event("input", { bubbles: true })); a.blur();
