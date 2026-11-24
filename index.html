@@ -10134,7 +10134,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const hint = $("gdHint"); let hinted = false;
     if (hint && "IntersectionObserver" in window) new IntersectionObserver((es) => { if (hinted || !es[0].isIntersecting || es[0].intersectionRatio < 0.9) return; hinted = true;
       setTimeout(() => { if (talking) return; hint.hidden = false; D.happy(); setTimeout(() => { hint.classList.add("out"); setTimeout(() => { hint.hidden = true; hint.classList.remove("out"); }, 400); }, 4200); }, 1300); }, { threshold: [0, 0.9] }).observe(el);
-    document.addEventListener("pointerdown", (e) => { if (talking && !talkEl.contains(e.target) && !el.contains(e.target)) closeTalk(); }, true);
+    // a tap elsewhere closes it; a scroll doesn't (a finger that moves is scrolling, and a scroll never makes a click)
+    document.addEventListener("click", (e) => { if (talking && !talkEl.contains(e.target) && !el.contains(e.target)) closeTalk(); }, true);
     el.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); talking ? closeTalk() : openTalk(); } });
     window.gdrop = D; window.gbean = B; } }
   // the hero film: silent, looping, and still (its first frame) for anyone who asks for less motion
