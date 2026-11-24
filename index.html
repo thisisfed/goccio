@@ -2878,6 +2878,7 @@ html body .gd-intro-move button{flex:none;height:32px;padding:0 12px;border:0;bo
 /* the chat: a kept thread of bubbles, yours on the right in orange, Goccio's on the left, with tapback reactions */
 html body .wb-sign .gd-talk .gd-say{display:flex!important;flex-direction:column;gap:8px;min-height:0!important;max-height:min(46vh,380px);overflow-y:auto;overscroll-behavior:contain;padding:2px 0 2px!important;margin-top:26px;scrollbar-width:none}
 html body .wb-sign .gd-talk .gd-say::-webkit-scrollbar{display:none}
+html body .wb-sign .gd-talk .gd-say{margin-top:-14px!important;padding-top:12px!important;border-radius:var(--r,4px) var(--r,4px) 0 0}   /* no strip above the messages: they scroll right up to the box's top edge, the X floats over the right margin */
 html body .wb-sign .gd-talk .gd-say:empty{display:none!important}
 html body .gd-m{position:relative;max-width:86%;padding:8px 12px;border-radius:16px;font:500 15px/1.35 var(--sans);letter-spacing:0;white-space:pre-wrap;overflow-wrap:anywhere;animation:gdMsgIn .26s cubic-bezier(.3,1.4,.5,1)}
 html body .gd-it{align-self:flex-start;background:var(--pill);color:var(--ink);border-bottom-left-radius:4px;transform-origin:0 100%}
@@ -10176,7 +10177,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const saveChat = () => { try { sessionStorage.setItem(CHAT_KEY, JSON.stringify(msgs.slice(-MAX_MSG))); } catch (e) {} };
     const toBottom = () => { sayEl.scrollTop = sayEl.scrollHeight; };
     ["wheel", "touchstart"].forEach((ev) => sayEl.addEventListener(ev, () => { if (typing) typing.free = true; }, { passive: true }));
-    const toTop = (m, smooth) => { if (!m || !m.isConnected) return toBottom(); const d = m.getBoundingClientRect().top - sayEl.getBoundingClientRect().top - (m.querySelector(".gd-tb") ? 18 : 2);   /* room for a tapback on its corner */ sayEl.scrollTo({ top: sayEl.scrollTop + d, behavior: smooth ? "smooth" : "auto" }); };
+    const toTop = (m, smooth) => { if (!m || !m.isConnected) return toBottom(); const d = m.getBoundingClientRect().top - sayEl.getBoundingClientRect().top - (m.querySelector(".gd-tb") ? 26 : 12);   /* room for a tapback on its corner */ sayEl.scrollTo({ top: sayEl.scrollTop + d, behavior: smooth ? "smooth" : "auto" }); };
     const bubble = (who, text, rx) => { const m = document.createElement("span"); m.className = "gd-m " + (who === "me" ? "gd-me" : "gd-it"); m.textContent = text;
       if (rx) { const t = document.createElement("span"); t.className = "gd-tb"; t.textContent = rx; m.appendChild(t); m.classList.add("has-tb"); }
       sayEl.appendChild(m); while (sayEl.children.length > MAX_MSG) sayEl.firstChild.remove(); if (who === "me") toBottom(); return m; };
