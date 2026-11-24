@@ -2618,8 +2618,7 @@ html body footer a, html body footer a *{color:var(--muted)!important;text-decor
 html:not(.mine) body footer{margin-top:31px!important}   /* 13 px from the sign-off to the footer's rule */
 html body .shelf .item > .r > .btn:not(:hover){background:var(--pill)!important;color:var(--ink)!important}   /* and rests on the same grey */
 /* a shorter opening screen: the list's title and the top of the first coffee show without scrolling */
-html body .wm-screen{min-height:500px!important;height:500px!important}
-@media (min-width:900px){ html body .wm-screen{min-height:min(62svh,620px)!important;height:min(62svh,620px)!important} }
+@media (max-width:899px){ html body .wm-screen{min-height:500px!important;height:500px!important} }   /* phones and small screens only: on a wide one the name needs the whole screen */
 html body #recipe table.pours.steps{margin-bottom:-14px!important}   /* the last step sits as far over the next rule as every step sits over its own */
 /* the roast, when the bag didn't say: just its name, Scan the beans and the + 5, set out as the other rows are */
 #detected .miss.miss-ro{display:grid!important;grid-template-columns:70px minmax(0,1fr);gap:12px;align-items:start}
@@ -5548,7 +5547,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     { const li = [...$("why").querySelectorAll("li.cons")].pop(); if (li && cons.length) { const a = document.createElement("a"); a.href = "#"; a.className = "why-ask"; a.textContent = li.textContent; li.textContent = ""; li.appendChild(a);
         // with a note before it ("Roast not sure, so it plays safe…"), the line joins that note's box, one line down
         { const pv = li.previousElementSibling; if (pv && pv.classList.contains("cons")) { pv.appendChild(document.createElement("br")); pv.appendChild(a); li.remove(); } }
-        a.onclick = (ev) => { ev.preventDefault(); bagAskShow = true; render(); const d = $("detected"); if (d && !d.hidden) jumpTo(d); }; } }
+        a.onclick = (ev) => { ev.preventDefault(); const y0 = $("consTop") ? $("consTop").getBoundingClientRect().top : null; bagAskShow = true; render();
+          /* the roast row has just appeared higher up and pushed everything down: hold the page where it was (Safari does not), so the glide up starts from rest */
+          try { const c = $("consTop"), dy = c && y0 !== null ? c.getBoundingClientRect().top - y0 : 0; if (Math.abs(dy) > 1) { const h = document.documentElement, sb = h.style.scrollBehavior; h.style.scrollBehavior = "auto"; scrollBy(0, dy); h.style.scrollBehavior = sb; } } catch (e) {}
+          const d = $("detected"); if (d && !d.hidden) requestAnimationFrame(() => jumpTo(d)); }; } }
     /* those notes (Roast not sure, so it plays safe…) are read before the pour, not folded away under it: they sit over How to pour */
     { let ct = $("consTop"); if (!ct) { ct = document.createElement("div"); ct.id = "consTop"; $("techLbl").before(ct); } ct.textContent = "";
       $("why").querySelectorAll("li.cons").forEach((li) => { const p = document.createElement("p"); p.className = "cons-top"; while (li.firstChild) p.appendChild(li.firstChild); ct.appendChild(p); li.remove(); }); ct.hidden = !ct.childElementCount; }
@@ -8980,7 +8982,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       scanDay = (d.updated || "").slice(0, 10);
       { const nR = part && d.roasters_n ? d.roasters_n : new Set(shelf.map((x) => x.roaster)).size, nC = part && d.total ? d.total : shelf.length;   // roasters with at least one coffee on the list today
         if (shelf.length && nR && $("heroLive")) { $("heroLiveT").textContent = `${nR.toLocaleString("en-GB")} roasters, ${nC.toLocaleString("en-GB")} coffees`; $("heroLive").hidden = false;
-          if ($("wmLive")) { $("wmLiveT").textContent = `${nR.toLocaleString("en-GB")} roasters, ${nC.toLocaleString("en-GB")} coffees, updated daily`; $("wmLive").hidden = false; } } }
+          if ($("wmLive")) { $("wmLiveT").textContent = `${nR.toLocaleString("en-GB")} roasters, updated daily.`;   /* the number of coffees is in the search box */ $("wmLive").hidden = false; } } }
       renderShelfV();
       renderShelf();
       document.documentElement.classList.remove("wait");
