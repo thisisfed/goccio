@@ -7685,13 +7685,14 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     /* measured in the page's own coordinates, not the screen's: on an iPhone still gliding from a flick, scrollTo has not landed yet, and a
        measure taken from the screen pushed the coffee a third of a screen down. Checked again once the page has settled */
     const top0 = () => { try { scrollTo({ top: 0, left: 0, behavior: "instant" }); } catch (e) { scrollTo(0, 0); } };
-    const fit = (first) => { try { if (!row.isConnected || !row.classList.contains("brewing")) return; const sh = $("shelves"), cw = row.querySelector(".c-where") || row, tp = document.querySelector(".top"); if (first) sh.style.removeProperty("margin-top");
+    const fit = (first) => { try { if (!row.isConnected || !row.classList.contains("brewing")) return;
+      if (!first && row.getAnimations && row.getAnimations().some((a) => a.playState === "running")) return;   /* never measured mid-travel: the travel moves the coffee, and a measure taken then set the wrong margin three times over */ const sh = $("shelves"), cw = row.querySelector(".c-where") || row, tp = document.querySelector(".top"); if (first) sh.style.removeProperty("margin-top");
       const side = Math.max(8, row.getBoundingClientRect().left), gap = cw.getBoundingClientRect().top + scrollY + 4 - tp.getBoundingClientRect().bottom;   // + 4: the line box's top to the capitals
       if (Math.abs(gap - side) > .5) sh.style.setProperty("margin-top", (parseFloat(getComputedStyle(sh).marginTop) + side - gap) + "px", "important"); if (first || scrollY < 0) top0(); } catch (e) {} };
     fit(true); requestAnimationFrame(() => fit(false)); setTimeout(() => fit(false), 350); setTimeout(() => fit(false), 1000);
     // the coffee travels from where it was tapped to the top of the page, unhurried: no jump cut
     try { const dy = y0 - row.getBoundingClientRect().top; if (Math.abs(dy) > 2 && !matchMedia("(prefers-reduced-motion: reduce)").matches) { const dur = Math.min(900, 420 + Math.abs(dy) * .6), an = row.animate([{ transform: `translateY(${dy}px)` }, { transform: "none" }], { duration: dur, easing: "cubic-bezier(.3,.7,.2,1)" });
-        setTimeout(() => { try { if (an.playState !== "finished") an.finish(); } catch (e) {} }, dur + 150); } } catch (e) {} }   /* a travel that stalls (a phone saving power) is ended: the coffee never rests part-way down */
+        setTimeout(() => { try { if (an.playState !== "finished") an.finish(); } catch (e) {} }, dur + 150); an.finished.then(() => fit(false)).catch(() => {}); } } catch (e) {} }   /* a travel that stalls (a phone saving power) is ended: the coffee never rests part-way down */
   function brewThis(r, jump = true, inRow = false) {
     brewIn = !!inRow; bagAskShow = false; brewFresh = !!inRow;
     if (jump) surprisePick = null;
