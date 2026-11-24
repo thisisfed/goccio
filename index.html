@@ -2721,6 +2721,11 @@ html body footer .refs.meth .rt{display:block;color:var(--ink)!important;margin-
 html body #roFollow{flex:none;border:0!important;outline:0!important;box-shadow:none!important}
 html body #roFollow[aria-pressed="true"]{background:var(--ink)!important;color:var(--bg)!important}
 #followNote a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+/* Follow sits at the right of the roaster's name, on the line under the rule, like For you on the list */
+html body #roFollow{display:none}
+html.ro-page body #roFollow{display:inline-flex;flex:none;align-self:flex-start;margin-left:auto}
+html.ro-page body #shelves > .sec-head{flex-wrap:nowrap!important;align-items:flex-start!important;gap:12px}
+html.ro-page body #shelves > .sec-head > #sh{flex:1 1 auto;min-width:0}   /* a long name wraps beside Follow, which stays top right */
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
@@ -3095,7 +3100,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   </section>
 
   <section class="sec" id="shelves" aria-labelledby="sh">
-    <div class="sec-head"><span class="cap" id="sh" role="heading" aria-level="2"><span class="sh-t">Coffees.</span><span class="ro-title" id="roName" translate="no"></span></span><button type="button" class="chip fy-pill" id="fyPill" aria-pressed="false">For you</button></div>
+    <div class="sec-head"><span class="cap" id="sh" role="heading" aria-level="2"><span class="sh-t">Coffees.</span><span class="ro-title" id="roName" translate="no"></span></span><button type="button" class="chip ro-follow" id="roFollow" aria-pressed="false">Follow</button><button type="button" class="chip fy-pill" id="fyPill" aria-pressed="false">For you</button></div>
     <p class="fy-note fy-top" id="followNote" hidden></p>
     <p class="fy-note fy-top" id="fyNote" role="status" hidden></p>
     <p class="shelf-meta" id="shelfMeta" hidden></p>
@@ -3113,7 +3118,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       </div>
     </div>
     <div class="ro-head" id="roHead" hidden>
-      <div class="ro-line"><p class="ro-v" id="roWhere" translate="no"></p><button type="button" class="chip ro-follow" id="roFollow" aria-pressed="false">Follow</button></div>
+      <div class="ro-line"><p class="ro-v" id="roWhere" translate="no"></p></div>
       <p class="ro-v" id="roCount"></p>
       <p class="ro-acts"><a class="ro-pill" id="roShop" target="_blank" rel="noopener">Visit shop</a><button type="button" class="ro-pill" id="roBack">Back to all coffees</button></p>
     </div>
@@ -6743,7 +6748,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const mine = shelf.filter((r) => r.roaster === shelfRo), r0 = mine[0];
     let country = r0.roaster_country || "";
     try { country = country ? new Intl.DisplayNames([LANG === "it" ? "it" : "en"], { type: "region" }).of(country) : ""; } catch (e) {}
-    $("roName").textContent = shelfRo + ".";
+    $("roName").textContent = roasteryName(shelfRo) + ".";   // "People Possession Roastery.", as the list writes it
     /* one line, written as the list writes it: "Paris (FR), 18 coffees" */
     { const cc = r0.roaster_country === "GB" ? "UK" : (r0.roaster_country || ""), place = r0.roaster_city ? r0.roaster_city + (cc ? ` (${cc})` : "") : country;
       $("roWhere").textContent = [place, mine.length === 1 ? (LANG === "it" ? "1 caffè" : "1 coffee") : `${mine.length} ${LANG === "it" ? "caffè" : "coffees"}`].filter(Boolean).join(", "); }
