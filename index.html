@@ -9998,6 +9998,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       await face({ eyeSL: 1.7, eyeSR: 1.7, eyeL: 1.2, eyeR: 1.2 }, 90); el.style.scale = "2.6"; poke(2.6); await wait(260); poke(-2.2); await wait(700);
       el.style.transition = "scale .45s cubic-bezier(.4,0,.2,1)"; el.style.scale = "1"; await face({ eyeSL: 1, eyeSR: 1, eyeL: 1, eyeR: 1, happy: 1, blush: 0.6 }, 300); await wait(450);
       for (let i = 0; i < 3; i++) { jv = -140; go(); await wait(170); } await wait(500); await face({ happy: 0, blush: 0 }, 300); el.style.zIndex = ""; el.style.transition = ""; });
+    // thinking: the eyes drift up and to one side, then the other, with a slow half-blink and a little lean, for as long as the thought takes
+    const think = (ms) => act(async () => { const end = performance.now() + (ms || 1500); let side = Math.random() < 0.5 ? -1 : 1;
+      await face({ eyeL: 0.8, eyeR: 0.8 }, 200);
+      while (performance.now() < end - 250) { lookX = side * 2.6; lookY = -2.2; leanTo = side * 0.8; draw(); await wait(Math.min(650, end - performance.now() - 250)); side = -side; if (Math.random() < 0.35) { blink = 0.35; draw(); await wait(160); blink = 1; draw(); } }
+      lookX = 0; lookY = 0; leanTo = 0; draw(); await face({ eyeL: 1, eyeR: 1 }, 150); });
     // upside down: it tips its whole head over, has a look around the world that way up, then rights itself with a wobble
     const upside = () => act(async () => { const d = Math.random() < 0.5 ? 1 : -1; await tween("flip", 180 * d, 460); lookX = 2.4; draw(); await wait(500); lookX = -2.4; draw(); await wait(500); lookX = 0; draw();
       await face({ happy: 1 }, 160); await wait(450); await face({ happy: 0 }, 160); await tween("flip", 0, 420); poke(d * -2.4); });
@@ -10045,8 +10050,12 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         lookX = dx / d * 3.2 * k; lookY = dy / d * 2 * k; draw();
         // far away, it can't see you: on go the glasses. Close again, off they come
         const far = d > Math.max(420, Math.hypot(innerWidth, innerHeight) * 0.42);
-        if (far && !specsOn) { specsOn = true; tween("specs", 1, 260); tween("eyeSL", 0.85, 200); tween("eyeSR", 0.85, 200); }
-        else if (!far && specsOn && d < Math.max(320, Math.hypot(innerWidth, innerHeight) * 0.32)) { specsOn = false; tween("specs", 0, 220); tween("eyeSL", 1, 200); tween("eyeSR", 1, 200); } }); }, { passive: true });
+        if (far && !specsOn) { specsOn = true;   // it can't see you: a squint first, then on go the glasses, then a wide "oh, there you are!" before settling
+          tween("eyeL", 0.3, 180); tween("eyeR", 0.3, 180); tween("eyeSL", 0.92, 180); tween("eyeSR", 0.92, 180);
+          setTimeout(() => { if (!specsOn) return; tween("specs", 1, 280);
+            setTimeout(() => { if (!specsOn) return; tween("eyeL", 1, 140); tween("eyeR", 1, 140); tween("eyeSL", 1.22, 150); tween("eyeSR", 1.22, 150); poke(-0.9);
+              setTimeout(() => { if (!specsOn) return; tween("eyeSL", 0.85, 260); tween("eyeSR", 0.85, 260); }, 520); }, 320); }, 700); }
+        else if (!far && specsOn && d < Math.max(320, Math.hypot(innerWidth, innerHeight) * 0.32)) { specsOn = false; tween("specs", 0, 220); tween("eyeSL", 1, 200); tween("eyeSR", 1, 200); tween("eyeL", 1, 160); tween("eyeR", 1, 160); } }); }, { passive: true });
     // the phone moving: tilt it and the drop leans and slides its eyes downhill, like liquid in a glass; shake it and it sloshes and looks startled.
     // iPhones ask permission first (on the first tap of a Goccio); other phones just start
     let g0 = null, tiltT = 0, shakeT = 0;
@@ -10118,7 +10127,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1; lookX = dx / d * 3; lookY = dy / d * 1.5; draw();
       setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900); }, { passive: true });
     el.addEventListener("click", () => { if (farted) { farted = false; return; } if (opt.tap) opt.tap(); else if (!acting) jumps(); });
-    return { S, busy: () => acting, free: () => { acting = false; }, moon, fartBack, upside, boo, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, fart, draw,
+    return { S, busy: () => acting, free: () => { acting = false; }, moon, fartBack, upside, boo, think, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, fart, draw,
       bob: () => { poke(-0.7 - Math.random() * 0.6); if (Math.random() < 0.3) { jv = -90; go(); } } }; };
     // ---- talking: tap the drop and ask it something. It answers in a bubble, the words typing themselves out while it bobs.
     // It knows a handful of things for certain (what's new, a coffee to try, sour or bitter, ratio, temperature, grind, the processes,
@@ -10159,7 +10168,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     try { (JSON.parse(sessionStorage.getItem(CHAT_KEY) || "[]") || []).forEach((r) => { const m = bubble(r.w, r.t, r.r); m._rec = r; msgs.push(r); if (r.w === "me") lastMine = m; }); } catch (e) {}
     const say = (text, chips, mood) => { const th = thinkNext; thinkNext = null; if (!th) return sayNow(text, chips, mood); const g = ++sayGen;
       finishTyping(); chipsEl.textContent = ""; const tb = bubble("it", th.lead); tb.classList.add("gd-typing"); const dots = document.createElement("span"); dots.className = "gd-dots"; dots.innerHTML = "<i></i><i></i><i></i>"; tb.appendChild(dots); toBottom();
-      if (D && !still()) hmm(); setTimeout(() => { tb.remove(); if (g === sayGen) sayNow(th.pre + text, chips, mood); }, th.ms); };
+      if (D && !still()) { D.free(); D.think(th.ms); } setTimeout(() => { tb.remove(); if (g === sayGen) sayNow(th.pre + text, chips, mood); }, th.ms); };
     // long answers read like a well-written message, not a wall: numbered steps on their own lines, and the rest in short
     // paragraphs of a sentence or two. Text that already has its own line breaks is left as it is
     const tidy = (t) => { t = String(t); if (/\n/.test(t) || t.length < 200) return t;
@@ -10167,7 +10176,12 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const ss = t.replace(/([.!?])\s+(?=[A-ZÀ-Ü0-9"'‘“(])/g, "$1\u0001").split("\u0001"), out = []; let cur = "";
       for (const x of ss) { if (cur && (cur.length + x.length > 170 || (cur.match(/[.!?](\s|$)/g) || []).length >= 2)) { out.push(cur); cur = x; } else cur = cur ? cur + " " + x : x; }
       if (cur) out.push(cur); return out.join("\n\n"); };
-    const sayNow = (text, chips, mood) => { text = tidy(text); sayGen++; finishTyping(); const m = addMsg("it", ""); m._rec.t = text; saveChat(); typing = { m, text }; let k = 0; bob(true);
+    // an answer that could show you something asks first ("Want to see it?"), and a yes shows it, typed or tapped
+    let pendingYes = null;
+    const offer = (text, chips) => { const a = (chips || []).find((x) => x && typeof x === "object" && x.f); if (!a) return [text, chips];
+      const many = /coffees|their|his|them|caff[eè]$|suoi|loro/i.test(a.t); pendingYes = a.f;
+      return [text + " " + (many ? T("Want to see them?", "Vuoi vederli?") : T("Want to see it?", "Vuoi vederlo?")), [{ t: T("Yes", "Sì"), q: T("Yes", "Sì") }, ...chips.filter((x) => x !== a)]]; };
+    const sayNow = (text, chips, mood) => { pendingYes = null; [text, chips] = offer(text, chips); text = tidy(text); sayGen++; finishTyping(); const m = addMsg("it", ""); m._rec.t = text; saveChat(); typing = { m, text }; let k = 0; bob(true);
       typeT = setInterval(() => { k += 2; m.textContent = text.slice(0, k); if (k % 12 === 0) toBottom(); if (k >= text.length) finishTyping(); }, 24);
       showChips(chips); if (mood) mood(); };
     // the sample questions: a fresh mix each time, one from each kind, so you get an idea of everything it knows
@@ -10651,12 +10665,13 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         : /\b(scare|boo|wow|omg|whoa|woah|incredible|no way|davvero|incredibile|accidenti)\b|!{2,}/i.test(q) ? "‼️"
         : /^(ok|okay|yes|yep|yeah|sure|cool|great|nice|sounds good|got it|va bene|sì|si|certo|perfetto|ottimo)\b[.!]*$/i.test(q) ? "👍" : "";
       if (rx) react(rx);
+      if (pendingYes) { const f = pendingYes; pendingYes = null; if (/^(yes|yeah|yep|yup|sure|ok|okay|please|go on|go ahead|show me|let'?s see|s[iì]|certo|dai|va bene|vediamo|fammi vedere)\b/i.test(q)) { react("👍", 200); setTimeout(f, 650); return; } }
       // only real questions, never the quick ones, the tricks or a reply to one of its own questions
       thinkNext = null;
       if (!askingName && q.split(/\s+/).length >= 4 && /\?\s*$|^(what|why|how|is|are|does|do|can|should|which|who|when|where|tell me|explain|cos|perch|come|qual|chi|quant)\b/i.test(q)
         && !/\b(time|ore|ora|weather|meteo|tempo fa|name|nome|fart|butt|bum|dance|balla|flip|capriola|joke|barzellett|surprise|sorprend|another|altro|new|nuov)\b/i.test(q)) {
         const r = Math.random();
-        if (r < .4) thinkNext = { lead: pick(T("Mmm, let me think about this one|Hmm, good one. Thinking|Ooh. Give me a second|Let me stir that around", "Mmm, fammi pensare|Bella domanda, ci penso|Oh. Dammi un secondo|Fammela mescolare un attimo").split("|")), pre: "", ms: 1500 + Math.random() * 700 };
+        if (r < .4) thinkNext = { lead: "", pre: "", ms: 1500 + Math.random() * 900 };
         else if (r < .7) thinkNext = { lead: "", pre: pick(T("Good question! |Ah, I love this one. |Great question. |Ooh, nice one. ", "Bella domanda! |Ah, questa mi piace. |Ottima domanda. |Oh, bella questa. ").split("|")), ms: 800 + Math.random() * 500 }; }
       // a name: "call me Fed", "my name is Fed", or the answer to "What should I call you?"
       const mn = q.match(/^(?:call me|my name is|you can call me|mi chiamo|chiamami)\s+(.+)$/i) || (askingName && q.match(/^(?:i'?m|i am|it'?s|sono)\s+(.+)$/i));
