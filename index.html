@@ -2680,6 +2680,10 @@ html.brew-done .botnav [data-bn="coffee"].bn-go{display:none!important}
 html.brew-done.brew-in .botnav [data-bn="cancel"]{flex:1 1 0!important;width:auto!important;max-width:none!important}
 html body #bvClose{border-radius:var(--r)!important}   /* the brewing page's × is square too */
 @media (min-width:900px){ html body #shelves:not(.ro-on) .shelf > .item:not(.brewing), html body #shelves .shelf > .item:not(.brewing){display:flex!important;flex-direction:column} html body .shelf > .item:not(.brewing) > .r{margin-top:auto!important;align-self:stretch!important;width:100%} }   /* side by side, two coffees keep their buttons on one line whatever the length of their names */
+/* a bag's roaster line is written as the list writes it: the name white and underlined, then the city in grey */
+html body #bagList .item .c-where .rn{color:var(--ink)!important}
+html body #bagList .item .c-where a.rn{text-decoration:underline!important;text-decoration-thickness:1px!important;text-underline-offset:2px!important}
+html body #bagList .item > .r > .bag-fzp:not([aria-pressed="true"]){border:0!important;outline:0!important;box-shadow:none!important;background:var(--pill)!important;color:var(--ink)!important}   /* Freeze looks like Brew and Remove until it is on */
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
@@ -7433,6 +7437,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   let bags = []; try { bags = JSON.parse(localStorage.getItem(BAGS_KEY) || "[]"); if (!Array.isArray(bags)) bags = []; } catch (e) { bags = []; }
   const saveBags = () => { try { localStorage.setItem(BAGS_KEY, JSON.stringify(bags)); } catch (e) {} };
   // the roaster's city: saved with the bag, or found in today's list for bags saved before it was kept
+  const bagCC = (b) => { const c = b.roaster_country || ((shelf || []).find((r) => r.roaster === b.roaster && r.roaster_country) || {}).roaster_country || ""; return c === "GB" ? "UK" : c; };
   const bagCity = (b) => b.city || ((shelf || []).find((r) => r.roaster === b.roaster && r.roaster_city) || {}).roaster_city || "";
   const bagId = (r) => r.url ? "u:" + r.url : "t:" + norm([r.roaster, r.name].filter(Boolean).join(" ") || r.text || "");
   const hasBag = (r) => bags.some((b) => b.id === bagId(r));
@@ -7486,7 +7491,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         rk ? `<span class="tg">${esc(cap1(ROAST[rk].label))} roast</span>` : ""].join("");
       return `<article class="item bag">
         <div class="l">
-          ${b.roaster ? `<p class="c-where">${bagCity(b) ? `<span class="rcity">${esc(bagCity(b))}</span><br class="rn-br">` : ""}<span class="rn">${esc(roasteryName(b.roaster))}</span></p>` : `<span class="who">Your coffee</span>`}
+          ${b.roaster ? `<p class="c-where">${(shelf || []).some((r) => r.roaster === b.roaster) ? `<a class="rn" href="#roaster=${encodeURIComponent(b.roaster)}" data-bro="${esc(b.roaster)}">${esc(roasteryName(b.roaster))}</a>` : `<span class="rn">${esc(roasteryName(b.roaster))}</span>`}${bagCity(b) ? `<span class="rcity">, ${esc(bagCity(b))}${bagCC(b) ? ` (${esc(bagCC(b))})` : ""}</span>` : ""}</p>` : `<span class="who">Your coffee</span>`}
           <span class="name">${esc(calm(b.roaster ? listName(b) : (b.name || b.text || "Coffee")))}</span>
           ${tags ? `<p class="tags">${tags}</p>` : ""}
           <div class="bag-f">${bagNeedsRoast(b) ? `<div class="bag-rorow"><span>Roast</span><span class="bag-ro">${PHOTO_CHIP.replace('class="chip rp-go"', `class="chip rp-go" data-scan="${i}"`)}<span class="ro-chips" hidden>${OPTS_MORE[1].items.filter(([k]) => k !== "unsure").map(([k, t]) => `<button type="button" class="chip" data-ro="${i}" data-k="${k}">${t}</button>`).join("")}</span><button type="button" class="chip gear-more" data-rodd="${i}" aria-expanded="false" aria-label="${esc(tr("Choose the roast"))}">${plusN(5)}</button></span></span></div>` : ""}<label>Roasted<span class="bag-d${b.roasted ? "" : " empty"}"><input type="date" data-k="roasted" data-i="${i}" value="${esc(b.roasted || "")}"></span></label>
@@ -7502,6 +7507,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // Roast: a dropdown pill that opens into all the roast pills in place (like the grinder); a pick saves it and the row goes
     $("bagList").querySelectorAll("button[data-rodd]").forEach((x) => x.onclick = () => { const ch = x.closest(".bag-ro").querySelector(".ro-chips"), open = ch.hidden; ch.hidden = !open; x.setAttribute("aria-expanded", String(open));   // the same + as the roast question under the coffee
       x.innerHTML = open ? PN_MINUS : plusN(5); });
+    $("bagList").querySelectorAll("a[data-bro]").forEach((x) => x.onclick = (e) => { e.preventDefault(); openRoaster(x.dataset.bro); });   // the roaster's name is the same link it is in the list
     $("bagList").querySelectorAll("button[data-ro]").forEach((x) => x.onclick = () => { const b = bags[+x.dataset.ro]; if (!b) return; b.roast = x.dataset.k; b.roastYou = true; saveBags(); renderBags();
       // the bag being brewed: its roast is the recipe's too, so What's brewing stops asking for it
       // (picked from the list, from your bags or typed: whichever it is, the recipe's coffee is this bag), and its request goes
@@ -9206,6 +9212,15 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   /* the brew is finished: Start brewing has done its work and leaves the bottom bar; what was Cancel reads Done. A new coffee, a reset or a saved entry brings it back */
   window.brewDoneUI = (on) => { document.documentElement.classList.toggle("brew-done", !!on); const c = document.querySelector('.botnav [data-bn="cancel"]'); if (c) { if (!c.dataset.t) c.dataset.t = c.textContent; c.textContent = on ? (LANG === "it" ? "Fatto" : "Done") : c.dataset.t; } };
   document.addEventListener("click", (e) => { if (document.documentElement.classList.contains("brew-done") && e.target.closest && e.target.closest('.shelf .item .btn[data-i], #bags .btn, #bvReset, #wmBag, .botnav [data-bn="cancel"], #coffeeGo')) brewDoneUI(false); }, true);
+  /* a roaster's page and an open coffee are not the search's results: the box does not go on showing the search there. It is put back,
+     untouched, on returning to the list (the list itself never stopped being filtered) */
+  { const a = $("askIn"), form = a && a.closest("form"), h = document.documentElement; let held = null, was = false;
+    const poke = () => { try { if (document.activeElement !== a) a.dispatchEvent(new Event("blur")); } catch (e) {} };
+    const sync = () => { if (!a || !form) return; const off = h.classList.contains("ro-page") || h.classList.contains("brew-in");
+      const entering = off && !was; was = off;   /* only what was in the box on arriving: a search typed on a roaster's page is its own and stays */
+      if (entering && !held && a.value.trim() && document.activeElement !== a) { held = { v: a.value, fy: a.dataset.fy, done: form.classList.contains("is-done") }; a.value = ""; delete a.dataset.fy; form.classList.remove("is-done"); poke(); }
+      else if (!off && held) { const k = held; held = null; if (!a.value.trim() && $("shelfQ").value.trim()) { a.value = k.v; if (k.fy) a.dataset.fy = k.fy; form.classList.toggle("is-done", true); poke(); } } };
+    if (a && form) new MutationObserver(sync).observe(h, { attributes: true, attributeFilter: ["class"] }); }
   const mineOn = () => { if (document.documentElement.classList.contains("mine")) return; document.documentElement.classList.add("mine"); };   /* for this visit only: the next one starts without it again */
   /* and away again once back at the list or the opening screen, unless a coffee of your own has its recipe out */
   const mineOff = () => { const h = document.documentElement; if (h.classList.contains("mine") && !h.classList.contains("brew-in") && $("recipe").hidden) h.classList.remove("mine"); };
