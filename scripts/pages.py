@@ -247,7 +247,7 @@ def main():
 
     recs = recipes(coffees)
     rec = {id(c): r for c, r in zip(coffees, recs)}
-    urls = [(BASE + "/", updated), (BASE + "/coffee/", updated), (BASE + "/list/", updated), (BASE + "/privacy/", updated)]
+    urls = [(BASE + "/", updated), (BASE + "/it/", updated), (BASE + "/coffee/", updated), (BASE + "/list/", updated), (BASE + "/privacy/", updated)]
 
     # ---------- a page per coffee ----------
     for name, cs in by_roaster.items():
