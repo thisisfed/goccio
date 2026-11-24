@@ -215,15 +215,15 @@ NOTES_LINE = re.compile(r"(?:tasting notes|flavou?r notes|flavou?r composition|f
 # Also a bare label ("Notes", "Flavor", "Aroma", "Tastes like") and other languages ("Note de degustare", "NOTES DE DÉGUSTATIONS"),
 # with the list split by commas, spaced dashes or bullets ("Fraise - Myrtille - Mûre - Figue"; Tanat, Mabó, Dropshot, Coffea Circulor)
 NOTES_CELL = re.compile(r"^[ \t\xa0]*(?:tasting notes|tastes?(?![ \t]+like)|flavou?r notes|flavou?r composition|flavou?r descriptions?|cup profile|flavou?r profile|notes? de d[ée]gustations?|d[ée]gustation|note de degustare|note di degustazione|notas de cata|"
-                        r"sensory profile|cup(?:ping)? notes|tastes like|smaksnoter|smagsnoter|smaksnotater|geschmacksnoten|flavou?rs?|aromas?|notes)[ \t\xa0]*:?[ \t\xa0]+"
+                        r"sensory profile|cup(?:ping)? notes|tastes like|smaksnoter|smagsnoter|smaksnotater|geschmacksnoten|flavou?rs?|aromas?|noten|notes)[ \t\xa0]*:?[ \t\xa0]+"
                         r"(?!(?:of|are|is|include|from|with|that|we|you|and|the|a|an)\b)(?![^\n]*\b(?:coffee|roasters?|roastery|caf[ée])\b)"
-                        r"([^\n.:]{3,120}?(?:,|&|\band\b|\s[-–•·]\s|\s?//\s?)[^\n.:]{2,160}?)[ \t\xa0]*\.?[ \t\xa0]*$", re.I | re.M)
+                        r"([^\n.:]{3,120}?(?:,|&|\band\b|\s[-–•·]\s|\s?//\s?|\s\|\s)[^\n.:]{2,160}?)[ \t\xa0]*\.?[ \t\xa0]*$", re.I | re.M)
 # the same label alone on its line and the list alone on the next ("Notes\nGem de fragi, Mar rosu, Stafide"; Dropshot, Mabó, Inverness)
 NOTES_NEXT = re.compile(r"^[ \t\xa0]*(?:tasting notes|tastes?(?![ \t]+like)|flavou?r notes|flavou?r composition|flavou?r descriptions?|cup profile|flavou?r profile|notes? de d[ée]gustations?|d[ée]gustation|note de degustare|note di degustazione|notas de cata|"
-                        r"sensory profile|cup(?:ping)? notes|tastes like|smaksnoter|smagsnoter|smaksnotater|geschmacksnoten|flavou?rs?|aromas?|notes)[ \t\xa0]*:?[ \t\xa0]*\n[ \t\xa0]*"
+                        r"sensory profile|cup(?:ping)? notes|tastes like|smaksnoter|smagsnoter|smaksnotater|geschmacksnoten|flavou?rs?|aromas?|noten|notes)[ \t\xa0]*:?[ \t\xa0]*\n[ \t\xa0]*"
                         r"(?!(?:of|are|is|include|from|with|that|we|you|and|the|a|an)\b)(?![^\n]*\b(?:coffee|roasters?|roastery|caf[ée])\b)"
-                        r"([^\n.:]{3,120}?(?:,|&|\band\b|\s[-–•·]\s|\s?//\s?)[^\n.:]{2,160}?)[ \t\xa0]*$", re.I | re.M)
-NOTES_CHECK = 9   # pages read for notes with these rules; a coffee checked under older rules gets one more read
+                        r"([^\n.:]{3,120}?(?:,|&|\band\b|\s[-–•·]\s|\s?//\s?|\s\|\s)[^\n.:]{2,160}?)[ \t\xa0]*$", re.I | re.M)
+NOTES_CHECK = 10   # pages read for notes with these rules (10: elbgold's "Noten:" line, Nov 2026); a coffee checked under older rules gets one more read
 # A fix for one shop's page layout re-reads only that shop: raise its number here (above NOTES_CHECK), not NOTES_CHECK,
 # which re-reads every coffee without notes everywhere (thousands of pages). Raise NOTES_CHECK only for a change to the
 # rules every shop goes through
@@ -1674,6 +1674,15 @@ def first_line_notes(text):
         return None
     if any(not b or len(b.split()) > 3 or NOT_A_NOTE.search(b) or first(COUNTRIES, b) for b in bits):
         return None
+    # with no label, at least half of it must be words a cup is described with: a heading ("Tradition, Handwerk &
+    # Temperaturkontrolle", elbgold) is a list of nouns too
+    def known(b):
+        b = b.strip().lower()
+        return bool(FLAVOUR_WORD.search(b)) or b in flavours.W or b in flavours.EN_WORDS or any(w in flavours.W or w in flavours.EN_WORDS for w in b.split()) \
+            or flavours.to_english(b).lower() != b
+    parts = [p for p in re.split(r",|&", line) if p.strip()]
+    if sum(known(p) for p in parts) * 2 < len(parts):
+        return None
     return line
 
 
@@ -1728,11 +1737,20 @@ def find_notes(item):
     text = item["body"]
     # a bracketed heading with the list under it: "【Taste Note】" then "Almond, Red apple, Orange, Plum, Clean" (Passage)
     text = re.sub(r"[【\[]\s*(?:taste|tasting|flavou?r|cup)\s+notes?\s*[】\]][ \t\xa0]*\n\s*", "Tasting notes: ", text, flags=re.I)
+    cands = [m.group(1) for m in (rx.search(text) for rx in (NOTES_CELL, NOTES_NEXT, NOTES_RE, NOTES_LINE)) if m]   # a line that is only the label and its list is the surest
     w = NOTES_WITH.search(text)
-    if w:
-        text = "Tasting notes: %s, %s\n" % (w.group(1), re.sub(r"\s+and\s+", ", ", w.group(2)))
-    m = NOTES_CELL.search(text) or NOTES_NEXT.search(text) or NOTES_RE.search(text) or NOTES_LINE.search(text)   # a line that is only the label and its list is the surest
-    raw = m.group(1) if m else None
+    if w:   # "Buttery with creamy notes of A and B" inside a labelled line reads best as the with-list; elsewhere (a recipe step) it comes last
+        wl = "%s, %s" % (w.group(1), re.sub(r"\s+and\s+", ", ", w.group(2)))
+        if any(w.group(1) in c for c in cands) or not cands:
+            cands.insert(0, wl)
+        else:
+            cands.append(wl)
+    if len(cands) > 1 and not item.get("_one"):   # the first that gives a list wins; a labelled line that gives nothing doesn't hide the next one
+        for c in cands:
+            got = find_notes({**item, "body": "Tasting notes: " + c.strip() + "\n", "_one": True})
+            if got:
+                return got
+    raw = cands[0] if cands else None
     if not raw:
         raw = dot_notes(text)
     if not raw:

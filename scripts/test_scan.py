@@ -349,6 +349,15 @@ CASES = [
     ("Morgon's Holiday Coffee kept one note of three: 'Taste notes: Buttery with creamy notes of chocolate Santas and ripe juicy plum'",
      lambda: scan.find_notes({"body": "BUTTERY - CHOCOLATE SANTAS - PLUM\nVariety: Catuai\nProcessing: Honey\nAltitude: 1900 m.a.s.l.\nHarvested: March 2026\nTaste notes: Buttery with creamy notes of chocolate Santas and ripe juicy plum\n250 grams of whole coffee beans roasted for filter.", "title": "Holiday Coffee", "tags": []})
              == ["Buttery", "Chocolate Santas", "Ripe juicy plum"]),
+    ("The Source: 'cup profile: blood orange - yuzu - hibiscus' was lost to a recipe step further down ('Fermentation: ... with specific yeast')",
+     lambda: scan.find_notes({"title": "Thermal Shock Orange Gesha", "tags": [], "body": "variety: orange gesha\n process: thermal shock + yeast inoculation\n region: huila, colombia\n cup profile: blood orange - yuzu - hibiscus\n We sourced this stunning orange gesha from Mi Cafe.\n 6. Fermentation: For 62 hours at temperatures below 25°C with specific yeast. 7. Fermentation completion: After 62 hours, the cherries are dried.\n"})
+             == ["Blood orange", "Yuzu", "Hibiscus"]),
+    ("elbgold: 'Noten: Nougat | Biscuit | Pflaume' (German label, a list split by bars) was missed",
+     lambda: scan.find_notes({"title": "La Pradera", "tags": [], "body": "FILTER - DIREKTHANDEL\nProduzent: Oscar Daza\nUrsprung: Kolumbien | Santander | Aratoca\nAnbauhöhe: 1800m\nVarietät: Tabi\nAufbereitung: Honey\nNoten: Nougat | Biscuit | Pflaume\nMenge:\n"})
+             == ["Nougat", "Biscuit", "Pflaume"]),
+    ("elbgold La Dalia: a heading 'Tradition, Handwerk & Temperaturkontrolle' was taken as tasting notes",
+     lambda: scan.find_notes({"title": "La Dalia", "tags": [], "body": "Tradition, Handwerk & Temperaturkontrolle\nDie Finca La Dalia liegt im Norden Nicaraguas.\n"}) == []
+       and scan.first_line_notes("Florals, Mandarin, Raspberry") == "Florals, Mandarin, Raspberry"),
     ("Counter Culture and Coffee Bean Shop: tags and attributes are not tasting notes ('<svg', 'Class=\"', 'Alt=\"Chocolate')",
      lambda: [scan.tidy_note(x) for x in ("<svg", 'Class="', 'Alt="Chocolate', '<img', "Black currant")] == ["", "", "", "", "Black currant"]),
     ("The Source: a brew guide's headings are not tasting notes ('Ratios', 'Dose', 'Bloom'), and real ones still are",
