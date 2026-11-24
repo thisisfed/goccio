@@ -7316,7 +7316,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       ];
       const origins = originTag(r.origin, r.region);
       const place = origins;
-      const day = isoDm(shelfDate(r));
+      const day = (() => { const iso = String(shelfDate(r) || "").slice(0, 10), ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`, now = new Date(), y = new Date(now); y.setDate(now.getDate() - 1);
+        return iso && iso === ymd(now) ? (LANG === "it" ? "Oggi" : "Today") : iso && iso === ymd(y) ? (LANG === "it" ? "Ieri" : "Yesterday") : isoDm(shelfDate(r)); })();   // today's and yesterday's coffees say so; older ones keep their date
       const shown = (seen.get(r.roaster + "|" + String(nm(r)).toLowerCase() + tagKey(r)) || new Set()).size > 1 ? fullName(r) : nm(r);
       tagBits.push(...coffeeLabels(r, shown).map((l) => `<span class="tg lbl" style="--vc:${LABEL_DOT[l] || "#8e8e93"}">${l}</span>`));
       return `${head}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
