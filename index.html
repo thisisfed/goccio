@@ -2893,6 +2893,13 @@ html body .gd-tb{position:absolute;top:-14px;left:-10px;min-width:28px;height:28
 html body .gd-typing .gd-dots{margin-left:4px}
 @keyframes gdMsgIn{from{scale:.85;opacity:0}to{scale:1;opacity:1}}
 @keyframes gdTb{from{scale:0}to{scale:1}}
+html body .gd-it .gd-tb{left:auto;right:-10px}   /* your tapback on its message sits on its other corner */
+html body .gd-it{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}   /* hold for tapbacks, as in Messages */
+html body .gd-pick{position:absolute;left:0;bottom:calc(100% + 6px);z-index:3;display:flex;gap:2px;padding:4px;border-radius:22px;background:var(--gd-card);border:1px solid color-mix(in srgb,var(--ink) 16%,var(--bg));box-shadow:0 6px 20px rgba(0,0,0,.3);animation:gdTb .3s cubic-bezier(.3,1.6,.5,1);transform-origin:20% 100%}
+html body .gd-pick.below{bottom:auto;top:calc(100% + 6px);transform-origin:20% 0}
+html body .gd-pick button{width:36px;height:36px;padding:0;border:0;border-radius:18px;background:none;font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+html body .gd-pick button.on{background:var(--hl)}
+@media (hover:hover){html body .gd-pick button:hover{background:color-mix(in srgb,var(--ink) 12%,transparent)}}
 @media (prefers-reduced-motion:reduce){html body .gd-m,html body .gd-tb{animation:none}}
 /* the chat open: the page behind dims and blurs a little. Over the drop, the drop and its chat stay bright; from the top bar, the bar stays too */
 html body .gd-scrim{position:fixed;inset:0;z-index:35;background:rgba(0,0,0,.62);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .25s ease}
@@ -10199,6 +10206,28 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // a tapback on your last message: a heart for thanks, a laugh for jokes, a ‼️ for a fright, a ❓ when it doesn't know
     const react = (emoji, delay) => { const m = lastMine; if (!m || m.querySelector(".gd-tb")) return; setTimeout(() => { if (m.querySelector(".gd-tb")) return;
       const t = document.createElement("span"); t.className = "gd-tb"; t.textContent = emoji; m.appendChild(t); m.classList.add("has-tb"); if (m._rec) { m._rec.r = emoji; saveChat(); } }, delay == null ? 450 : delay); };
+    // your tapbacks on its messages, like iMessage: double-tap or hold one of its bubbles, pick an emoji, and it reacts
+    const TAPS = ["❤️", "👍", "👎", "😂", "‼️", "❓"];
+    const feel = (e) => { const docked = document.documentElement.classList.contains("gd-docked");
+      if (docked) { littleMove(e === "😂" ? "ag-hops" : e === "❤️" ? "ag-wink" : e === "‼️" ? "ag-flip" : e === "👍" ? "ag-dance" : null); }
+      else if (D && !still()) { D.free(); (e === "❤️" ? (D.blushy || D.happy) : e === "👍" ? D.happy : e === "😂" ? D.jumps : e === "‼️" ? D.surprised : e === "❓" ? D.hmm : D.no)(); }
+      if (e === "👎" && Math.random() < 0.7) setTimeout(() => sayNow(pick([T("Oops, sorry! Try asking me another way?", "Ops, scusa! Prova a chiedermelo in un altro modo?"), T("Fair. I'm still learning, one drop at a time.", "Giusto. Sto ancora imparando, una goccia alla volta.")]), null, null), 700);
+      else if (e === "❓" && Math.random() < 0.6) setTimeout(() => sayNow(pick([T("Too much? Ask me again in fewer words and I'll keep it simple.", "Troppo? Richiedimelo in poche parole e te lo spiego semplice."), T("Hmm, which bit? Ask me about any part of it.", "Mmm, quale parte? Chiedimi di qualsiasi pezzo.")]), null, null), 700);
+      else if (e === "❤️" && Math.random() < 0.35) setTimeout(() => sayNow(pick([T("Aww. ☺️", "Ooh. ☺️"), T("Right back at you!", "Anche io!")]), null, null), 700); };
+    let picker = null; const unpick = () => { if (picker) { picker.remove(); picker = null; } };
+    const tapOn = (m, e) => { const old = m.querySelector(".gd-tb"); if (old) old.remove(); m.classList.remove("has-tb");
+      if (!m._rec || m._rec.r !== e) { const t = document.createElement("span"); t.className = "gd-tb"; t.textContent = e; m.appendChild(t); m.classList.add("has-tb"); if (m._rec) m._rec.r = e; feel(e); } else if (m._rec) delete m._rec.r;
+      saveChat(); };
+    const pickFor = (m) => { unpick(); if (!m || !m.classList.contains("gd-it") || m.classList.contains("gd-typing")) return; picker = document.createElement("span"); picker.className = "gd-pick"; picker.setAttribute("role", "group"); picker.setAttribute("aria-label", T("React", "Reagisci"));
+      TAPS.forEach((e) => { const b = document.createElement("button"); b.type = "button"; b.textContent = e; if (m._rec && m._rec.r === e) b.className = "on"; b.onclick = (ev) => { ev.stopPropagation(); tapOn(m, e); unpick(); }; picker.appendChild(b); });
+      if (m.getBoundingClientRect().top - sayEl.getBoundingClientRect().top < 52) picker.classList.add("below"); m.appendChild(picker); if (navigator.vibrate) try { navigator.vibrate(8); } catch (e) {} };
+    { let holdT = 0, lastTap = 0, lastEl = null; const it = (e) => e.target.closest && e.target.closest(".gd-it");
+      sayEl.addEventListener("pointerdown", (e) => { const m = it(e); if (!m || e.target.closest(".gd-pick")) return; clearTimeout(holdT); holdT = setTimeout(() => pickFor(m), 450); });
+      ["pointerup", "pointercancel", "pointerleave"].forEach((t) => sayEl.addEventListener(t, () => clearTimeout(holdT)));
+      sayEl.addEventListener("scroll", () => { clearTimeout(holdT); }, { passive: true });
+      sayEl.addEventListener("click", (e) => { if (e.target.closest(".gd-pick")) return; const m = it(e), now = Date.now(); if (m && m === lastEl && now - lastTap < 350) { pickFor(m); lastTap = 0; return; } lastTap = now; lastEl = m; if (!m) unpick(); });
+      document.addEventListener("pointerdown", (e) => { if (picker && !picker.contains(e.target)) setTimeout(() => { if (picker && !picker.matches(":hover")) unpick(); }, 0); }, true);
+      sayEl.addEventListener("contextmenu", (e) => { if (it(e)) e.preventDefault(); }); }
     try { (JSON.parse(sessionStorage.getItem(CHAT_KEY) || "[]") || []).forEach((r) => { const m = bubble(r.w, r.t, r.r); m._rec = r; msgs.push(r); if (r.w === "me") lastMine = m; }); } catch (e) {}
     const say = (text, chips, mood) => { const th = thinkNext; thinkNext = null; if (!th) return sayNow(text, chips, mood); const g = ++sayGen;
       finishTyping(); chipsEl.textContent = ""; const tb = bubble("it", th.lead); tb.classList.add("gd-typing"); const dots = document.createElement("span"); dots.className = "gd-dots"; dots.innerHTML = "<i></i><i></i><i></i>"; tb.appendChild(dots); toBottom();
@@ -10866,7 +10895,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const rx = /tiramis|affogato|dessert|dolce|torta|cake/i.test(q) ? "🤤" : /\b(thanks?|thank you|thx|cheers|grazie|love (you|it|this)|ti amo|you'?re (great|the best|amazing|awesome|cute)|sei (bravo|fantastico|il migliore|carino)|well done|bravo|amazing|awesome|perfect|fantastic|brilliant|lovely|great job)\b/i.test(q) ? "❤️"
         : /\b(ha(ha)+|ah(ah)+|lol|lmao|rofl|fart|butt|bum|culo|scoreggi\w*|joke|barzellett\w*|funny|divertente)\b|😂|🤣/i.test(q) ? "😂"
         : /\b(scare|boo|wow|omg|whoa|woah|incredible|no way|davvero|incredibile|accidenti)\b|!{2,}/i.test(q) ? "‼️"
-        : /^(ok|okay|yes|yep|yeah|sure|cool|great|nice|sounds good|got it|va bene|sì|si|certo|perfetto|ottimo)\b[.!]*$/i.test(q) ? "👍" : "";
+        : /^(ok|okay|yes|yep|yeah|sure|cool|great|nice|sounds good|got it|va bene|sì|si|certo|perfetto|ottimo)\b[.!]*$/i.test(q) ? "👍"
+        : Math.random() < 0.7 ? (/martini|negroni|cocktail|carajillo|white russian|black russian|corretto|grappa|whisk(e)?y|revolver|old fashioned|liqueur|liquore/i.test(q) ? "🍸"
+          : /\b(italian|italy|italia|italiano|italiani|nonna)\b/i.test(q) ? "🤌" : /\bsugar|zucchero/i.test(q) ? "🙈" : /\b(poo|poop|cacca|toilet|loo)\b/i.test(q) ? "💩"
+          : /\b(tired|sleepy|stanc[oa]|sonno|bored|annoiat[oa])\b/i.test(q) ? "🥱" : /\b(iced|cold brew|ice)\b|freddo/i.test(q) ? "🧊" : /\b(dance|balla|ballare)\b/i.test(q) ? "💃"
+          : /\b(goat|capra|kaldi)\b|who (invented|discovered) coffee/i.test(q) ? "🐐" : /\b(birthday|compleanno)\b/i.test(q) ? "🎂" : /\b(love|amo|adoro)\b/i.test(q) ? "🥰" : "") : "";
       if (rx) react(rx);
       if (wantCity) { wantCity = false; if (q.split(/\s+/).length <= 4 && !/\?|^(what|why|how|who|when|which|no|nope|skip|cancel|cos|perch|come|chi|quando)\b/i.test(q)) { setTimeout(() => wxCity(q.replace(/^(i'?m in|in|a|at|sono a)\s+/i, "")), 300); return; } }
       if (pendingOpts.length) { const opts = pendingOpts; pendingOpts = []; const nq = norm(q);
