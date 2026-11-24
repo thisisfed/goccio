@@ -7517,9 +7517,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     $("bagList").querySelectorAll("button[data-scan]").forEach((x) => x.onclick = () => { const b = bags[+x.dataset.scan]; if (!b) return; bagScanId = b.id; beanScan("bagRp-" + x.dataset.scan); });
     // two taps, no pop-up: Remove, then Sure? in red
     $("bagList").querySelectorAll("[data-rm]").forEach((x) => x.onclick = () => {
-      if (x.dataset.armed) { bags.splice(+x.dataset.rm, 1); saveBags(); renderBags(); renderShelf(); return; }
-      x.dataset.armed = "1"; x.dataset.was = x.textContent; x.textContent = "Sure?"; x.classList.add("armed");
-      cdRun(x, 5000, () => { delete x.dataset.armed; x.textContent = "Remove"; x.classList.remove("armed"); }); });
+      bags.splice(+x.dataset.rm, 1); saveBags(); renderBags(); renderShelf(); });   // at once, no "Sure?": the bookmark in the list puts a coffee back in one tap
     $("bagList").querySelectorAll("[data-brew]").forEach((x) => x.onclick = () => { const b = bags[+x.dataset.brew];
       if (b.text && !b.roaster) { state.text = b.text; state.bag = null; state.roastPhoto = null; $("coffeeIn").value = b.text; saveState(); renderAllOpts(); render(); jumpTo($("coffee")); }
       else brewThis(b); });
