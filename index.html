@@ -2685,6 +2685,10 @@ html body #bagList .item .c-where .rn{color:var(--ink)!important}
 html body #bagList .item .c-where a.rn{text-decoration:underline!important;text-decoration-thickness:1px!important;text-underline-offset:2px!important}
 html body #bagList .item > .r > .bag-fzp:not([aria-pressed="true"]){border:0!important;outline:0!important;box-shadow:none!important;background:var(--pill)!important;color:var(--ink)!important}   /* Freeze looks like Brew and Remove until it is on */
 html body #recipe#recipe#recipe .share > #mUse{display:none!important}   /* no way in to "my own recipe" from here: the site's job is the right recipe. Recipes already made your own keep working, with their Edit and Use the suggested recipe */
+/* the top bar is fixed to the screen, not stuck to the page: on an iPhone a stuck bar rides with the page when it bounces or the browser's own bars fold */
+html body .top .chip, html body .top button, html body .top .tb-pill{border-radius:var(--r)!important}   /* IT and the theme pill are square too */
+html body .top{position:fixed!important;top:0!important;left:0!important;right:0!important;width:auto!important}
+html body{padding-top:var(--top-h, 49px)}
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
@@ -6779,7 +6783,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   // a word typed against the tasting notes: from the start of a word, and a short one (3 letters or fewer) only as a whole
   // word, so "van" doesn't find vanilla, while "vanil" (on the way to vanilla) does
   // a word typed against roaster, name, origin…: from the start of a word ("ken" finds Kenya, "van" no longer finds AdVANced)
-  const wordAt = (t) => new RegExp(`(?<![\\p{L}\\d])${t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}${t.trim().length >= 4 ? "" : "(?![\\p{L}\\d])"}`, "iu");   // 3 letters or fewer: the whole word only
+  const wordAt = (t) => new RegExp(`(?<![\\p{L}\\d])${t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}${t.trim().length >= 3 ? "" : "(?![\\p{L}\\d])"}`, "iu");   // 2 letters or fewer: the whole word only. Three find a word's start: "ass" finds Kick-Ass and Assembly, never pASSenger
   const noteWord = (t) => new RegExp(`(?<![a-z])${t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}${t.length >= 4 ? "" : "(?![a-z])"}`, "i");
   const EXTRAS = [["foryou", "For you"], ["light", "Light roast"], ["filter", "For filter"], ["value", "Good value"], ["top", "Top lots"], ["decaf", "Decaf"]];
   const extraOn = (v) => v === "foryou" ? shelfY : v === "light" ? shelfO === "light" : v === "top" ? shelfT : v === "value" ? shelfGV : v === "filter" ? shelfFi : shelfD;
