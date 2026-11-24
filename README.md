@@ -54,7 +54,10 @@ The **Get your roastery listed** page (`/list/`) asks for the shop's address and
   - **To see what it did:** Actions → **New roasters worldwide** → the run → **Find and check**. Each shop has a line:
     `ADD` (added, with its platform and how many coffees) or `skip` (and why: unreadable, too few coffees, not specialty).
     The last line says `added N: …` with the names.
-  - When the map's servers are all busy, it works from the last list they gave (`data/world_map.json`).
+  - **Three sources**, so a night the map is down still brings roasters: the open map (asked region by region, each region
+    retried, and a region that can't be reached uses its last answer, saved in `data/world_map.json`), the public UK roaster
+    directory (roasterlist.pages.dev), and Wikidata (items described as a coffee roaster, roastery or specialty coffee
+    company, with an official website). Every shop, whatever its source, passes the same check before it's added.
   - Shops already checked are skipped for 120 days (`data/world_seen.json`). Script: `scripts/world.py`.
 - **Find new roasters** (by hand): reads the public UK roaster directory and checks each new shop. Nothing is added.
   **To see them:** Actions → **Find new roasters** → the run → **Artifacts** → `candidates` (a zip with `candidates.json`).

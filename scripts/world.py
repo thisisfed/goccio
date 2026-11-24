@@ -12,7 +12,7 @@ Up to 100 shops are tried a run; the first 25 that pass are added (Nov 2026: was
     python3 scripts/world.py            # one run
     python3 scripts/world.py --dry      # report only, change nothing
 """
-import json, os, random, re, sys, urllib.parse, urllib.request
+import json, os, random, re, sys, time, urllib.parse, urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, timedelta
 from pathlib import Path
@@ -26,7 +26,14 @@ SEEN = ROOT / "data" / "world_seen.json"
 MAP = ROOT / "data" / "world_map.json"   # the last list the map gave: used when every map server is busy
 OVERPASS = "https://overpass-api.de/api/interpreter"
 OVERPASS_ALSO = ["https://overpass.kumi.systems/api/interpreter", "https://overpass.private.coffee/api/interpreter"]   # the same open map, other public servers: tried when the main one is busy
-QUERY = '[out:json][timeout:240];nwr["craft"="coffee_roaster"][~"^(website|contact:website|url)$"~"."];out tags;'
+QUERY = '[out:json][timeout:240];nwr["craft"="coffee_roaster"][~"^(website|contact:website|url)$"~"."];out tags;'   # the whole world at once (kept for reference)
+# the world in pieces: a small question gets through where the whole world times out; a piece that fails uses its last answer
+REGIONS = {"Europe": (34, -25, 72, 45), "North America": (5, -170, 75, -50), "South America": (-57, -90, 13, -30),
+           "Africa and the Middle East": (-36, -20, 38, 60), "Asia": (0, 45, 60, 100), "East Asia and Oceania": (-50, 100, 60, 180)}
+def region_query(b):
+    s, w, n, e = b
+    site = '[~"^(website|contact:website|url)$"~"."]'
+    return f'[out:json][timeout:180];(nwr["craft"="coffee_roaster"]{site}({s},{w},{n},{e});nwr["shop"="coffee_roasting"]{site}({s},{w},{n},{e}););out tags;'
 MAX_ADD, MAX_TRY, RECHECK_DAYS = int(os.environ.get("WORLD_MAX_ADD") or 25), int(os.environ.get("WORLD_MAX_TRY") or 100), 120   # a run by hand can ask for more (the workflow's inputs)
 WORKERS = 8   # shops checked side by side: each is a different site, read at the scan's own gentle pace
 
@@ -48,21 +55,113 @@ def country(tags, shop):
     return TLD.get(end, end.upper() if len(end) == 2 and end not in ("co", "io", "me", "tv", "ai", "cc") else "")
 
 
+def ask_map(query):
+    """One question to the open map: each server in turn, then once more after a pause (busy servers often clear)."""
+    err = None
+    for rnd in range(2):
+        for url in [OVERPASS] + OVERPASS_ALSO:
+            req = urllib.request.Request(url, data=urllib.parse.urlencode({"data": query}).encode(),
+                                         headers={"User-Agent": scan.UA, "Accept": "application/json"})
+            try:
+                with urllib.request.urlopen(req, timeout=120) as r:
+                    return json.loads(r.read()).get("elements", [])
+            except Exception as e:  # noqa: BLE001
+                err = e
+                print(f"  map server busy ({url.split('/')[2]}: {type(e).__name__})")
+        if rnd == 0:
+            time.sleep(20)
+    raise err
+
+
 def candidates():
-    """(name, shop, city, country) for every roastery on the map with a website."""
-    els, err = None, None
-    for url in [OVERPASS] + OVERPASS_ALSO:
-        req = urllib.request.Request(url, data=urllib.parse.urlencode({"data": QUERY}).encode(),
-                                     headers={"User-Agent": scan.UA, "Accept": "application/json"})
+    """(name, shop, city, country) for every roastery on the map with a website, asked region by region. A region the map
+    can't answer today uses its last answer (data/world_map.json); only when every region fails with nothing saved does it raise."""
+    try:
+        saved = json.loads(MAP.read_text())
+    except (OSError, ValueError):
+        saved = {}
+    if isinstance(saved, list):
+        saved = {"all": saved}   # the first saved list was the whole world in one
+    out, ok, fresh_, need_all = [], 0, {}, False
+    for reg, box in REGIONS.items():
         try:
-            with urllib.request.urlopen(req, timeout=300) as r:
-                els = json.loads(r.read()).get("elements", [])
-            break
+            got = parse_map(ask_map(region_query(box)))
+            fresh_[reg] = got; ok += 1
+            print(f"map, {reg}: {len(got)} roasteries with a website")
         except Exception as e:  # noqa: BLE001
-            err = e
-            print(f"map server busy ({url.split('/')[2]}: {type(e).__name__}), trying the next")
-    if els is None:
-        raise err
+            got = saved.get(reg) or []
+            if not got:
+                need_all = True
+            print(f"map, {reg}: not reachable ({type(e).__name__}), using its last answer ({len(got)})")
+        out += got
+    if not ok and not any(saved.values()):
+        raise RuntimeError("no map region reachable and nothing saved")
+    if need_all:
+        out += saved.get("all") or []   # a region with no answer of its own: the whole-world list saved before regions
+    if fresh_:
+        keep = {k: v for k, v in saved.items() if k != "all"}
+        keep.update(fresh_)
+        MAP.write_text(json.dumps(keep, ensure_ascii=False, indent=0) + "\n")
+    seen, uniq = set(), []
+    for c in out:
+        h = discover.host(c["shop"])
+        if h not in seen:
+            seen.add(h); uniq.append(c)
+    return uniq
+
+
+def from_uk_directory(have, names, limit=150):
+    """Second source: the public UK roaster directory (roasterlist.pages.dev), the same list the "Find new roasters" run reads.
+    Only roasters not on the list have their directory page read, for their own website; at most `limit` a run."""
+    try:
+        listed = discover.directory()
+    except Exception as e:  # noqa: BLE001
+        print(f"UK directory not reachable ({type(e).__name__})"); return []
+    todo = [x for x in listed if discover.norm(x["name"]) not in names][:limit]
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        got = list(pool.map(discover.website, todo))
+    out = [{"name": g["name"], "shop": g["shop"], "city": g.get("place") or "", "country": "GB"} for g in got if g.get("shop") and discover.host(g["shop"]) not in have]
+    print(f"UK directory: {len(listed)} roasters, {len(todo)} not on the list looked up, {len(out)} with a website")
+    return out
+
+
+WIKIDATA = "https://query.wikidata.org/sparql"
+WD_QUERY = """SELECT ?item ?itemLabel ?site ?cc ?cityLabel WHERE {
+  SERVICE wikibase:mwapi { bd:serviceParam wikibase:endpoint "www.wikidata.org"; wikibase:api "Search";
+    mwapi:srsearch "\\"coffee roaster\\" OR \\"coffee roastery\\" OR \\"coffee roasting company\\" OR \\"specialty coffee\\" OR \\"speciality coffee\\" haswbstatement:P856"; mwapi:srlimit "max".
+    ?item wikibase:apiOutputItem mwapi:title. }
+  ?item wdt:P856 ?site.
+  OPTIONAL { ?item wdt:P17 ?c. ?c wdt:P297 ?cc. }
+  OPTIONAL { ?item wdt:P159 ?city. }
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+}"""
+
+
+def from_wikidata(have):
+    """Third source: Wikidata, the open database behind Wikipedia: items described as a coffee roaster with an official website."""
+    try:
+        req = urllib.request.Request(WIKIDATA + "?" + urllib.parse.urlencode({"query": WD_QUERY, "format": "json"}),
+                                     headers={"User-Agent": scan.UA, "Accept": "application/sparql-results+json"})
+        with urllib.request.urlopen(req, timeout=120) as r:
+            rows = json.loads(r.read())["results"]["bindings"]
+    except Exception as e:  # noqa: BLE001
+        print(f"Wikidata not reachable ({type(e).__name__})"); return []
+    out, seen = [], set()
+    for b in rows:
+        site, name = b.get("site", {}).get("value", ""), b.get("itemLabel", {}).get("value", "")
+        if not site.startswith("http") or not name or re.fullmatch(r"Q\d+", name):
+            continue
+        u = urllib.parse.urlparse(site); shop = f"{u.scheme}://{u.netloc}"; h = discover.host(shop)
+        if not h or h in seen or h in have:
+            continue
+        seen.add(h)
+        out.append({"name": name, "shop": shop, "city": b.get("cityLabel", {}).get("value", "") if not re.fullmatch(r"Q\d+", b.get("cityLabel", {}).get("value", "")) else "",
+                    "country": (b.get("cc", {}).get("value") or "").upper() or country({}, shop)})
+    print(f"Wikidata: {len(rows)} items, {len(out)} with a website not on the list")
+    return out
+
+
+def parse_map(els):
     out, seen = [], set()
     for el in els:
         t = el.get("tags") or {}
@@ -115,13 +214,16 @@ def main():
     fresh = lambda h: h in seen and seen[h] >= (today - timedelta(days=RECHECK_DAYS)).isoformat()
     try:
         cands = candidates()
-        MAP.write_text(json.dumps(cands, ensure_ascii=False, indent=0) + "\n")
     except Exception as e:  # noqa: BLE001
-        try:
-            cands = json.loads(MAP.read_text())
-            print(f"map not reachable this time ({type(e).__name__}): using its last list ({len(cands)} roasteries)")
-        except (OSError, ValueError):
-            print(f"map not reachable this time ({type(e).__name__}) and no saved list: nothing changes until the next run"); return
+        print(f"map not reachable this time ({type(e).__name__}) and nothing saved: the other sources only"); cands = []
+    # three sources, so a night the map is down still brings roasters: the map, the UK directory, Wikidata
+    cands += from_uk_directory(have, names) + from_wikidata(have)
+    seen_h, uniq = set(), []
+    for c in cands:   # the same shop from two sources is tried once
+        h = discover.host(c["shop"])
+        if h not in seen_h:
+            seen_h.add(h); uniq.append(c)
+    cands = uniq
     new = [c for c in cands if discover.host(c["shop"]) not in have and discover.norm(c["name"]) not in names and not fresh(discover.host(c["shop"]))]
     random.Random(today.isoformat()).shuffle(new)   # a different handful each day, the whole world in turn
     print(f"{len(cands)} roasteries with a website on the map, {len(new)} not on the list and not checked lately")
