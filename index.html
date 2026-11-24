@@ -2738,6 +2738,12 @@ html.ro-page:not(.brew-in) body .botnav [data-bn="ro-back"]{flex:1 1 100%!import
 /* the alert rides on top of the bottom bar, and comes down to the foot of the screen when the bar slides away */
 html body #toast{bottom:calc(var(--bot-h) + 8px);transition:opacity .25s ease,translate .25s ease,bottom .6s cubic-bezier(.4,0,.2,1)}
 html.nav-off body #toast{bottom:calc(env(safe-area-inset-bottom) + 12px)}
+/* a mouse over a coffee: the row lights up a touch, so you can feel which one you're on. Computers only: a phone has no hover, and a tapped row would stay lit */
+@media (hover:hover) and (pointer:fine){
+  html body .shelf .item,html body #bagList .item{position:relative;isolation:isolate}
+  html body .shelf .item::before,html body #bagList .item::before{content:"";position:absolute;inset:0 -8px;z-index:-1;border-radius:4px;background:var(--ink);opacity:0;transition:opacity .15s ease;pointer-events:none}
+  html body .shelf .item:hover::before,html body #bagList .item:hover::before{opacity:.05}
+}
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
@@ -9717,10 +9723,14 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   { const v = $("wmVideo"), h = document.querySelector(".wm-screen"); if (v && h) { const fit = () => {
         // the film reaches down to the first rule under the hero (the line over Coffees.), not just to the foot of the first screen.
         // It is pulled up by a share of its own height, so its foot is found by measuring once and scaling
-        const rule = document.querySelector(".hero-sec ~ .sec .sec-head, .sec-head"), want = rule ? rule.getBoundingClientRect().top + scrollY : h.getBoundingClientRect().bottom + scrollY;
-        let H = Math.round(h.getBoundingClientRect().bottom + scrollY); v.style.height = H + "px";
-        const foot = v.getBoundingClientRect().bottom + scrollY; if (foot > 0 && want > 0) { H = Math.round(H * want / foot); v.style.height = H + "px"; } const lp = $("wmLoop"); if (lp) lp.style.height = v.style.height; const c = $("wmFilm"); if (c) c.style.height = v.style.height; };
-      fit(); addEventListener("resize", fit); setTimeout(fit, 400); setTimeout(fit, 2000); if (document.fonts) document.fonts.ready.then(fit);
+        // measured on the page's own layout (offsets), never against the screen: on an iPhone the screen resizes while you scroll
+        // (the address bar folds away) and a measure taken mid-scroll stretched the film down after you, zoomed in (Nov 2026)
+        const docTop = (el) => { let y = 0; for (let e = el; e; e = e.offsetParent) y += e.offsetTop; return y; };
+        const rule = document.querySelector(".hero-sec ~ .sec .sec-head, .sec-head"), want = rule ? docTop(rule) : docTop(h) + h.offsetHeight;
+        let H = Math.round(docTop(h) + h.offsetHeight); v.style.height = H + "px";
+        const foot = docTop(v) + v.offsetHeight; if (foot > 0 && want > 0) { H = Math.round(H * want / foot); v.style.height = H + "px"; } const lp = $("wmLoop"); if (lp) lp.style.height = v.style.height; const c = $("wmFilm"); if (c) c.style.height = v.style.height; };
+      let fw = innerWidth; fit(); addEventListener("resize", () => { if (innerWidth !== fw) { fw = innerWidth; fit(); } });   // only a new width re-fits: a phone's address bar folding away is not one
+      setTimeout(fit, 400); setTimeout(fit, 2000); if (document.fonts) document.fonts.ready.then(fit);
       const sc = () => document.documentElement.classList.toggle("scrolled", scrollY > 2); sc(); addEventListener("scroll", sc, { passive: true });
       // while the drop is in the air it stays in front of the bar, scrolled or not (on a phone the film often starts with the first scroll)
       const air = () => document.documentElement.classList.toggle("dropping", !v.paused && !v.ended && v.currentTime < 1.5);
