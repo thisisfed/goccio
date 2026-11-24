@@ -41,6 +41,11 @@ COFFEE_BODY = "Origin: Colombia\nProcess: Washed\nVariety: Caturra\nAltitude: 1,
 
 # (what was reported, check that must be True)
 CASES = [
+    # Dropshot (Romania, 24/11/2026): notes left in Romanian, one misspelt ("Ciuocolata"); "Columbia" and "Brazilia" in names are Colombia and Brazil
+    ("Dropshot's Romanian notes come out in English",
+     lambda: scan.flavours.english_notes(["Ciuocolata cu lapte", "Portocala coapta", "Gem de Vişine", "Tort de Ciocolată Neagră", "Turta Dulce", "Miere Acacia"]) == ["Milk chocolate", "Ripe orange", "Sour cherry jam", "Dark chocolate cake", "Gingerbread", "Acacia honey"]),
+    ("'Columbia Magnum Sidra' is from Colombia, 'Brazilia Samba' from Brazil",
+     lambda: scan.find_origin("Columbia Magnum Sidra") == "Colombia" and scan.find_origin("Brazilia Samba") == "Brazil"),
     # Rogue Wave (24/11/2026): sizes 340 g, 1 kg, 2.5 kg and a 40 g sample; the sample's price was shown for the 340 g bag
     ("A 40 g sample's price is not the price of the 340 g bag",
      lambda: min(scan.shop_prices([{"title": "340 g", "price": "24.00"}, {"title": "1 kg", "price": "60.00"}, {"title": "2.5 kg", "price": "140.00"}, {"title": "40 g", "price": "7.00"}])) == 24.0),
