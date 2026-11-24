@@ -287,3 +287,62 @@ def english_notes(notes):
         if e and e.lower() not in (o.lower() for o in out):
             out.append(e)
     return out
+
+
+# Romanian, Swedish, Norwegian, Danish, Italian, Portuguese, Spanish, German and French notes found untranslated (Nov 2026 check)
+PHRASES.update({
+    "ciocolata cu lapte": "milk chocolate", "ciocolată cu lapte": "milk chocolate", "ciocolata neagra": "dark chocolate", "ciocolată neagră": "dark chocolate",
+    "zahar brun": "brown sugar", "zahăr brun": "brown sugar", "coacaze negre": "blackcurrant", "coacăze negre": "blackcurrant", "alune de padure": "hazelnut",
+    "alune de pădure": "hazelnut", "fructe de padure": "forest fruits", "fructe de pădure": "forest fruits", "portocale coapte": "ripe orange",
+    "crema de zahar ars": "crème caramel", "cremă de zahăr ars": "crème caramel", "dulce amarui": "bittersweet", "dulce amărui": "bittersweet",
+    "ceai de trandafiri": "rose tea", "compot de piersici": "peach compote", "cirese galbene": "yellow cherry", "cireșe galbene": "yellow cherry",
+    "gem de fragi": "wild strawberry jam", "nuci pecan": "pecan",
+    "tropisk frukt": "tropical fruit", "tørket frukt": "dried fruit", "grönt äpple": "green apple", "röd grape": "red grape", "torkade tranbär": "dried cranberry",
+    "torkade fikon": "dried fig", "låg syra": "low acidity",
+    "fiore d'arancio": "orange blossom", "fiore d’arancio": "orange blossom", "fiori d’arancio": "orange blossom", "fiore di caffè": "coffee blossom",
+    "albicocche secche": "dried apricot", "wafer alla nocciola": "hazelnut wafer", "latte condensato": "condensed milk", "miele in favo": "honeycomb",
+    "milkshake alla vaniglia": "vanilla milkshake", "plumcake allo yogurt": "yogurt cake", "purea di mele": "apple purée", "earl gray": "Earl Grey",
+    "uva-passa": "raisin", "algodón de azúcar": "cotton candy", "algodon de azucar": "cotton candy", "vino oporto": "port wine",
+    "fruta deshidratada": "dried fruit", "jugo de manzana": "apple juice", "agua de rosas": "rose water", "jugo de fresa": "strawberry juice",
+    "fresa liofilizada": "freeze-dried strawberry", "volles aroma": "full flavour", "haselnuss-noten": "hazelnut", "harmonisch süss": "sweet",
+    "harmonisch süß": "sweet", "fèves de cacao": "cacao nibs", "bonbon cerise": "cherry sweets", "bonbons aux fruits rouges": "red fruit sweets",
+    "cafe glace": "iced coffee", "café glacé": "iced coffee",
+})
+for _w, _e in {"ciocolata": "chocolate", "ciocolată": "chocolate", "caise": "apricot", "vanilie": "vanilla", "mure": "blackberry", "nuci": "nuts",
+               "coacaze": "currant", "coacăze": "currant", "citronela": "lemongrass", "piersici": "peach", "visine": "sour cherry", "vișine": "sour cherry",
+               "rom": "rum", "arahide": "peanut", "cirese": "cherry", "cireșe": "cherry", "fructat": "fruity",
+               "søt": "sweet", "söt": "sweet", "fruktig": "fruity", "fruktigt": "fruity", "smakrik": "flavourful", "mjölkchoklad": "milk chocolate",
+               "balanserad": "balanced", "balansert": "balanced", "fyllig": "full-bodied", "fyldig": "full-bodied", "bergamott": "bergamot", "mjuk": "smooth",
+               "viol": "violet", "kraftig": "bold", "vanilj": "vanilla", "dadlar": "dates", "stenfrukt": "stone fruit", "chokladig": "chocolatey",
+               "kraftfull": "bold", "mustig": "full-bodied", "mustigt": "full-bodied", "bärig": "berry", "strukturert": "structured", "bær": "berry",
+               "melkesjokolade": "milk chocolate", "nypon": "rosehip", "maraschinokörsbär": "maraschino cherry", "jordgubbssylt": "strawberry jam",
+               "pekan": "pecan", "romrussin": "rum raisin", "muskovadosocker": "muscovado sugar", "friskt": "fresh", "juicigt": "juicy", "nektarin": "nectarine",
+               "citrusgodis": "citrus sweets", "skogsbär": "forest fruits", "hjortron": "cloudberry", "grapefrukt": "grapefruit", "paranöt": "Brazil nut",
+               "oolongte": "oolong tea", "örtkryddor": "herbs", "nötter": "nuts", "bittersöt": "bittersweet", "eldig": "fiery", "blodapelsin": "blood orange",
+               "nötig": "nutty", "blommig": "floral",
+               "papaja": "papaya", "osmanto": "osmanthus", "tamarindo": "tamarind", "viola": "violet", "pomodoro": "tomato", "mangostano": "mangosteen",
+               "savoiardi": "ladyfingers", "polline": "pollen",
+               "mascavo": "muscovado", "amêndoas": "almonds", "málico": "malic", "frutado": "fruity", "suave": "smooth", "sedoso": "silky", "melado": "molasses",
+               "intenso": "intense", "encorpado": "full-bodied",
+               "limoncillo": "lemongrass", "gominola": "gummy sweets", "especias": "spices", "nata": "cream", "golosinas": "sweets", "romero": "rosemary", "kaki": "persimmon",
+               "voluminös": "full-bodied", "heidelbeeraromen": "blueberry", "tabaknoten": "tobacco", "holznoten": "woody", "pfeifentabak": "pipe tobacco",
+               "praliné": "praline", "groseilles": "redcurrant", "chèvrefeuille": "honeysuckle", "coquelicot": "poppy", "chamomille": "chamomile"}.items():
+    PHRASES.setdefault(_w, _e)
+for _w, _e in {"naturelles toastées": "toasted nuts", "caramélisées": "caramelised", "melata": "honeydew honey", "ananas séché": "dried pineapple",
+               "roses séchées": "dried roses", "lait d'amande": "almond milk", "bonbon citron": "lemon sweets", "arancia_rossa": "blood orange", "arancia rossa": "blood orange",
+               "lichia": "lychee", "søde kirsebær": "sweet cherry", "røde bær": "red berries", "mælkechokolade": "milk chocolate", "fructe uscate": "dried fruit",
+               "caju": "cashew", "fructe cu sâmburi": "stone fruit", "roiboos": "rooibos", "miel salvaje": "wild honey", "sødmefull": "sweet", "kompleks": "complex",
+               "căpsuni": "strawberry", "capsune": "strawberry", "zumo de manzana": "apple juice", "castanhas": "chestnuts", "raison secs": "raisins", "raisins secs": "raisins",
+               "azúcar morena": "brown sugar", "biscuiti cu unt": "butter biscuits", "aroma intenso": "intense aroma", "flores amarelas": "yellow flowers",
+               "cidreira": "lemon balm", "milkshake goyave": "guava milkshake", "flori de portocal": "orange blossom", "flori de portocale": "orange blossom",
+               "musetel": "chamomile", "mușețel": "chamomile", "bonbons aux fruits jaunes": "yellow fruit sweets", "mangues": "mango", "ferskener": "peaches",
+               "friske pærer": "fresh pears", "hyldeblomst": "elderflower", "earl grey te": "Earl Grey tea", "svarta vinbär": "blackcurrant", "eucalipto": "eucalyptus",
+               "eucalipt": "eucalyptus", "rosmarino": "rosemary", "pasas golden": "golden raisins", "juodieji serbentai": "blackcurrant", "avietės": "raspberry",
+               "apelsinai": "orange", "melasa": "molasses", "syltig": "jammy", "zmeura": "raspberry", "zmeură": "raspberry", "piersica": "peach", "piersică": "peach",
+               "piersica alba": "white peach", "prune uscate": "prunes", "smochine": "figs", "almibarado": "syrupy", "almibarada": "syrupy", "salvia": "sage",
+               "struguri": "grapes", "portocale": "orange", "vinoso": "winey", "madreselva": "honeysuckle", "cremet vanilje": "creamy vanilla", "läskande": "refreshing",
+               "nöt": "nuts", "bayas deshidratadas": "dried berries", "naturelles de prune": "plum", "bomboane": "sweets", "choco negro": "dark chocolate", "krokant": "brittle",
+               "zedernholz": "cedar", "würziger charakter": "spicy", "bizcocho": "sponge cake", "passiflora": "passion fruit", "limonade": "lemonade",
+               "appricot": "apricot", "quava": "guava", "mayer lemon": "Meyer lemon", "soft abricot": "soft apricot", "pure cherrie": "cherry", "cacaonibs": "cacao nibs",
+               "fiori d'arancio": "orange blossom"}.items():
+    PHRASES.setdefault(_w, _e)

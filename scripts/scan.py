@@ -1619,7 +1619,7 @@ NOTE_BADGE = re.compile(r"^(?:new|new in|new arrival|just landed|sold out|out of
 
 
 # a piece of a sentence about the coffee, not a flavour: "Perfekt für alle", "die ihren Kaffee vollmundig", "aromatisch lieben" (Röststätte)
-NOTE_SENT = re.compile(r"\b(?:für|ihren?|ihre|lieben|liebt|perfekt|unsere?[rsn]?|dieser?|dieses|wird|werden|sind|kaffee|viel|wenig|klassisch|blend|perfect for|for those|who loves?|if you like)\b", re.I)
+NOTE_SENT = re.compile(r"(?:^(?:group|profile)_|vc_column|\bicon\b|^order$|^journal$|^droplets$|^producers$|^farm$|^harvest|additional information|flavou?r series|bryggkaffe|^(?:corp|aciditate|correcta acidez)|koffeinfri|dekaffinert|\bund zeigt|gute fülle|^(?:notes?|noted|finishing|coffee|fun|long|too|old|really|along|combined|coupled|paired|unique|expressive|so expressive|such|mittel|voller|intensives)$|^la que)|\b(?:instagram|facebook|blog|twitter|tiktok|newsletter|jetzt|erleben|convinced|apparent|imagine|create|für|ihren?|ihre|lieben|liebt|perfekt|unsere?[rsn]?|dieser?|dieses|wird|werden|sind|kaffee|viel|wenig|klassisch|blend|perfect for|for those|who loves?|if you like)\b", re.I)
 
 
 def junk_note(n):
@@ -1632,9 +1632,15 @@ def junk_note(n):
 def tidy_note(n):
     """One tasting note, without the sentence it was cut from: 'Juicy notes of nectarine' -> 'Nectarine', 'A hint of caramel' -> 'Caramel',
     'Butterscotch followed by' -> 'Butterscotch', 'A caramel finish' -> 'Caramel finish', 'Rounded out by' and 'Hints of' -> '' (dropped)."""
+    n = re.sub(r"[\xa0\u2009\u202f\s]+", " ", re.sub(r"[\u200b-\u200d\ufeff]", "", n or "")).strip()   # no-break spaces: "Blood\xa0orange"
+    n = re.sub(r"^[^\w\s(\"'“<]+\s*", "", n)   # an emoji in front: "🍫Chocolate" -> "Chocolate"
+    n = re.sub(r"^(?:imagine|tasting notes?|notes?|taste|with)\s*:?\s+", "", n, flags=re.I)
+    n = re.sub(r"^notes_", "", n, flags=re.I)   # a shop's tag: "Notes_Caramel" -> "Caramel" (York Coffee Emporium)   # "Imagine lollipop!", "Tasting Notes: Plum"
+    n = re.sub(r"\s*[(\[][^)\]]*$", "", n)   # an aside the list cut open: "Tropical fruits (pineapple" -> "Tropical fruits"
+    n = re.sub(r"\s*!+$", "", n)   # "Lemon cake!" -> "Lemon cake"
     if junk_note(n):
         return ""
-    n = (n or "").split("\n")[0].strip(" .;:-–[](){}*•|\"'“”")   # stray brackets and stars too: "Vanilla[" -> "Vanilla"
+    n = n.split("\n")[0].strip(" .;:-–[](){}*•|\"'“”")   # stray brackets and stars too: "Vanilla[" -> "Vanilla"
     if n.isupper() and len(n) > 3:
         n = n.lower()   # shouted notes ("CHERRY YOGURT") read as "Cherry yogurt"
     n = NOTE_LEAD.sub("", n).strip()
