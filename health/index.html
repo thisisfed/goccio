@@ -19,7 +19,8 @@ ul{list-style:none;margin:0;padding:0}li{padding:8px 0;border-bottom:1px solid #
 <p class="m" id="when">Loading…</p>
 <h2>Last scan</h2><div class="g" id="scan"></div><p class="m" id="limits"></p>
 <h2>Brew answers</h2><div class="g" id="taste"></div><ul id="top"></ul>
-<h2>New roasters, last 7 days</h2><ul id="newro"></ul>
+<h2>Roasters added</h2><div class="g" id="added"></div><ul id="addl"></ul>
+<h2>New roasters, first scanned in the last 7 days</h2><ul id="newro"></ul>
 <h2>Shops the scan couldn't read</h2><p class="m" id="badn"></p><ul id="bad"></ul>
 <p class="m" style="margin-top:28px">Not linked anywhere and hidden from search engines. Counts only: nothing about any visitor.</p>
 </main>
@@ -29,10 +30,19 @@ const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","
 const card = (n, label, bad) => `<div class="c${bad ? " bad" : ""}"><b>${typeof n === "number" ? n.toLocaleString("en-GB") : esc(n)}</b><span>${esc(label)}</span></div>`;
 const sum = (o) => o ? (o.sour || 0) + (o.balanced || 0) + (o.bitter || 0) : 0;
 (async () => {
-  const [rep, rel, ta] = await Promise.all([
+  const [rep, rel, ta, ros0] = await Promise.all([
     fetch("/data/scan_report.json", { cache: "no-cache" }).then((r) => r.ok ? r.json() : null).catch(() => null),
     fetch("/data/releases.json", { cache: "no-cache" }).then((r) => r.ok ? r.json() : null).catch(() => null),
-    fetch("/api/taste?stats=1", { cache: "no-cache" }).then((r) => r.ok ? r.json() : null).catch(() => null)]);
+    fetch("/api/taste?stats=1", { cache: "no-cache" }).then((r) => r.ok ? r.json() : null).catch(() => null),
+    fetch("/data/roasters.json", { cache: "no-cache" }).then((r) => r.ok ? r.json() : null).catch(() => null)]);
+  // roasters added to the list by the roaster finder (data/roasters.json "added"), before or after the scan first reads them
+  if (Array.isArray(ros0)) {
+    const ago = (n) => new Date(Date.now() - n * 864e5).toISOString().slice(0, 10), today = ago(0);
+    const withDate = ros0.filter((r) => r && r.added), wk = withDate.filter((r) => r.added >= ago(6));
+    $("added").innerHTML = card(ros0.length, "roasters on the list") + card(withDate.filter((r) => r.added === today).length, "added today") + card(wk.length, "added in the last 7 days");
+    $("addl").innerHTML = wk.length ? wk.sort((a, b) => b.added.localeCompare(a.added) || a.name.localeCompare(b.name)).map((r) => `<li><a href="${esc(r.shop)}" rel="noopener">${esc(r.name)}</a><span class="m">${esc(d(r.added))}, ${esc([r.city, r.country].filter(Boolean).join(", "))}, from ${esc(r.source || "the map")}</span></li>`).join("")
+      : '<li class="m">None dated yet: roasters the finder adds are dated from its next run on.</li>';
+  }
   $("when").textContent = rel ? `Coffee list updated ${d(rel.updated)}. Page read ${new Date().toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}.` : "Couldn't read the coffee list.";
   if (rep) {
     const notReached = (rep.roasters_not_reached || []).length;

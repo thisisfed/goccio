@@ -120,7 +120,7 @@ def from_uk_directory(have, names, limit=150):
     todo = [x for x in listed if discover.norm(x["name"]) not in names][:limit]
     with ThreadPoolExecutor(max_workers=4) as pool:
         got = list(pool.map(discover.website, todo))
-    out = [{"name": g["name"], "shop": g["shop"], "city": g.get("place") or "", "country": "GB"} for g in got if g.get("shop") and discover.host(g["shop"]) not in have]
+    out = [{"name": g["name"], "shop": g["shop"], "city": g.get("place") or "", "country": "GB", "src": "UK directory"} for g in got if g.get("shop") and discover.host(g["shop"]) not in have]
     print(f"UK directory: {len(listed)} roasters, {len(todo)} not on the list looked up, {len(out)} with a website")
     return out
 
@@ -155,7 +155,7 @@ def from_wikidata(have):
         if not h or h in seen or h in have:
             continue
         seen.add(h)
-        out.append({"name": name, "shop": shop, "city": b.get("cityLabel", {}).get("value", "") if not re.fullmatch(r"Q\d+", b.get("cityLabel", {}).get("value", "")) else "",
+        out.append({"src": "Wikidata", "name": name, "shop": shop, "city": b.get("cityLabel", {}).get("value", "") if not re.fullmatch(r"Q\d+", b.get("cityLabel", {}).get("value", "")) else "",
                     "country": (b.get("cc", {}).get("value") or "").upper() or country({}, shop)})
     print(f"Wikidata: {len(rows)} items, {len(out)} with a website not on the list")
     return out
@@ -240,7 +240,8 @@ def main():
         ok = kind and n >= 3 and origins >= 2 and not gate   # specialty only (scan.specialty_gate)
         print(f"  {'ADD ' if ok else 'skip'} {c['name']} ({c['shop']}, {c['country'] or '?'}): {kind or 'unreadable'}, {n} coffees, {origins} with an origin{'; not specialty: ' + gate if kind and gate else ''}")
         if ok:
-            r = {"name": c["name"], "shop": c["shop"], "city": c["city"], "country": c["country"], "region": region(c["country"])}
+            r = {"name": c["name"], "shop": c["shop"], "city": c["city"], "country": c["country"], "region": region(c["country"]),
+                 "added": today.isoformat(), "source": c.get("src") or "map"}   # when and where it was found (the health page lists them)
             if c["country"] == "GB":
                 r["nation"] = discover.nation(c["city"])
             roasters.append(r); added.append(c["name"])
