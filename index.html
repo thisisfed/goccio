@@ -2847,6 +2847,13 @@ html body .gd-dock{position:fixed;left:0;right:0;top:calc(var(--top-h, 49px) + 1
 html body .gd-dock .gd-talk{top:0!important;bottom:auto!important}
 html body .gd-dock .gd-talk::after{display:none!important}
 html body #millOpt{scroll-margin-top:63px}   /* "Add your grinder" lands with room above the grinder row: the row above shows whole, never cut by the bar */
+/* the little Goccio slides into the + when the big one is on screen; the search bar grows into its room */
+html body .ask-line .ask-goccio{transition:width .45s cubic-bezier(.5,0,.2,1),margin .45s cubic-bezier(.5,0,.2,1),transform .4s cubic-bezier(.6,0,.4,1),opacity .2s ease .2s;transform-origin:50% 50%;position:relative;z-index:0}
+html body .ask-line .ask-goccio.ag-gone{width:0;margin-left:-16px;transform:translateX(18px) scale(.25);opacity:0;pointer-events:none;transition:width .45s cubic-bezier(.5,0,.2,1) .05s,margin .45s cubic-bezier(.5,0,.2,1) .05s,transform .35s cubic-bezier(.6,0,.4,1),opacity .15s ease .22s}
+html body .top #toolsBtn{position:relative;z-index:1}
+html body .top #toolsBtn.gulp{animation:agGulp .45s cubic-bezier(.3,1.6,.5,1)}
+@keyframes agGulp{0%{scale:1}35%{scale:1.14 .9}70%{scale:.96 1.05}100%{scale:1}}
+@media (prefers-reduced-motion:reduce){html body .ask-line .ask-goccio,html body .ask-line .ask-goccio.ag-gone{transition:none}html body .top #toolsBtn.gulp{animation:none}}
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
 html.nav-off{--bot-h:env(safe-area-inset-bottom, 0px)!important}
@@ -10335,6 +10342,15 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         setInterval(() => { if (document.hidden || performance.now() - idle < 4000) return; const a = Math.random() * Math.PI * 2; tx = Math.cos(a) * 2.6; ty = Math.sin(a) * 1.8; go(); setTimeout(() => { if (performance.now() - idle >= 4000) { tx = 0; ty = 0; go(); } }, 1400); }, 3500);
         tb.hop = () => { hopT = performance.now(); go(); };
         go(); } }
+    // two Goccios never on screen at once: when the big one comes into view, the little one slides into the + and the + gulps it;
+    // scroll the big one away and it pops back out
+    { const tb = $("askGoccio"), plus = $("toolsBtn");
+      if (tb && plus && "IntersectionObserver" in window) {
+        let gone = false;
+        const set = (g) => { if (g === gone) return; gone = g; tb.classList.toggle("ag-gone", g); tb.setAttribute("aria-hidden", g ? "true" : "false"); tb.tabIndex = g ? -1 : 0;
+          if (g) { plus.classList.remove("gulp"); void plus.offsetWidth; setTimeout(() => plus.classList.add("gulp"), 260); } };
+        new IntersectionObserver((es) => es.forEach((e) => set(e.isIntersecting)), { threshold: .3 }).observe(el);
+        plus.addEventListener("animationend", (e) => { if (e.animationName === "agGulp") plus.classList.remove("gulp"); }); } }
     const isQuestion = (t) => /\?\s*$/.test(t) || /^(goccio\b|hey goccio|hi goccio|ciao goccio|what|why|how|who|where|when|which|is it|are|does|do i|can|should|tell me|explain|cos|perch[eé]|come mai|come si|quando|dove|chi|quant[oai])\b/i.test(t.trim());
     $("askForm").addEventListener("submit", (e) => { const a = $("askIn"), t = a.value.trim(); if (window.__gdSearching || !t || !isQuestion(t)) return;
       e.preventDefault(); e.stopImmediatePropagation(); a.value = ""; a.dispatchEvent(new Event("input", { bubbles: true })); a.blur();
