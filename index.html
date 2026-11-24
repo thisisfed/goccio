@@ -2665,7 +2665,7 @@ html body #recipe .share > #bagBtn{order:1!important}
 html body #recipe .share > #copyBtn{order:2!important}
 html body #recipe .share > #linkBtn{order:3!important}
 html body .shelf .item .c-where a.rn{color:var(--ink)!important}   /* the roaster's name in white; "from", the city and the date stay grey */
-#specs .spec.chg b, #specs .spec.key.chg .sub2{animation:specChg 1.8s ease-out both}
+#specs .spec.chg b{animation:specChg 1.8s ease-out both}   /* the figure only: never its label or the grinder's name */
 @keyframes specChg{0%,45%{color:var(--hl)}100%{color:inherit}}
 
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
@@ -5457,7 +5457,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         return `<span class="dstep" role="group" aria-label="${esc(tr(moka ? "Pot size" : "Coffee dose"))}"><button type="button" class="chip gear-more" data-dstep="-1"${i === 0 ? " disabled" : ""} aria-label="${esc(tr(moka ? "Smaller pot" : "Less coffee"))}">${ic("M7.5 2.5 4 6l3.5 3.5")}</button><button type="button" class="chip gear-more" data-dstep="1"${i === ds.length - 1 ? " disabled" : ""} aria-label="${esc(tr(moka ? "Bigger pot" : "More coffee"))}">${ic("M4.5 2.5 8 6 4.5 9.5")}</button></span>`; })() : ""}${k === "ratio" && showRet && false ? `<span class="ret">(${r.water} g water − 2.1 × ${r.dose} g retained). Estimate only.</span>` : ""}</div>`).join("");
     /* a roast or a process just picked: whatever it changed in the recipe (grind, kettle, time) shows orange for a moment, so the change is seen */
     { const now = {}; $("specs").querySelectorAll(".spec").forEach((sp) => { const k = (sp.className.match(/\b(key|dose|water|temp|time|ratio)\b/) || [])[1]; if (!k) return;
-        now[k] = [...sp.querySelectorAll("b, .sub2")].map((x) => x.textContent.replace(/\s+/g, " ").trim()).join("|");
+        now[k] = [...sp.querySelectorAll("b")].map((x) => x.textContent.replace(/\s+/g, " ").trim()).join("|");
         if (window.__specWas && performance.now() < (window.__specFlash || 0) && window.__specWas[k] !== undefined && window.__specWas[k] !== now[k]) sp.classList.add("chg"); });
       window.__specWas = now; }
     { const ds = $("specs").querySelector(".dstep"), bb = ds && ds.parentNode.querySelector("b"); if (bb) { bb.classList.add("dstep-b"); bb.prepend(ds.querySelector('[data-dstep="-1"]')); bb.appendChild(ds.querySelector('[data-dstep="1"]')); ds.remove(); } }   // minus before the figure, plus after
