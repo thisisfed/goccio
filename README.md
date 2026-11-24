@@ -7,7 +7,7 @@ copied or reused without written permission. See [LICENSE](LICENSE).
 
 New specialty coffees from roasters in the UK, Europe and beyond, read every day from their own shops, each with a recipe for
 your brewer and your grinder: grind setting, dose, water, temperature and every step, with a brew-along screen, a journal
-that learns, My bags and a bag scanner. No accounts, no tracking, no API keys; everything you save stays on your device.
+that learns, My bags and a bag scanner. No accounts, no tracking, no API keys; everything you save stays on your device. The one thing counted, anonymously, is how a brew of a listed coffee tasted (see below).
 
 Everything below is done from GitHub: open the **goccio** repo, tap **Actions**, pick the workflow on the left, then
 **Run workflow**. In the GitHub phone app: repo, **Actions**, workflow, **Run workflow**.
@@ -80,6 +80,79 @@ domain to `data/removed.json`. After the next scan, `data/releases.json → roas
 - **Tasting-notes audit:** Run workflow with `inspect` = `audit:60` to see, for 60 roasters whose coffees have no notes,
   what their pages say near words like notes or flavour.
 - Every scanner mistake ever reported is a test in `scripts/test_scan.py` (`python3 scripts/test_scan.py`).
+
+## How brews tasted (the data Goccio collects)
+
+After a brew of a coffee from the list, the site asks "How was it?": too sour, just right or too bitter. Each answer is one row
+in a free Cloudflare D1 database called **goccio-taste**, bound to the Pages project as `TASTE` (`functions/api/taste.js`).
+Coffees people type or scan, their notes and anything about the person are never sent. The privacy page says the same.
+
+Each row holds:
+
+| column | what it is |
+|---|---|
+| `day` | the day of the brew, `2026-11-24` |
+| `url`, `roaster`, `name` | the coffee: its shop link, roaster and name |
+| `brewer` | `v60`, `aeropress`, `chemex`… |
+| `taste` | `sour`, `balanced` (just right) or `bitter` |
+| `clicks`, `temp`, `ratio`, `dose` | the recipe they brewed: grind in Comandante clicks, °C, 1:ratio, grams |
+| `drained` | when the brew finished, in seconds (pour overs) |
+| `roast`, `process` | what the recipe assumed: `light`, `unsure`…; `washed`, `natural`… |
+
+**To read it:** Cloudflare dashboard, **Storage & Databases**, **D1 SQL Database**, **goccio-taste**, **Console**. Paste one of
+these and tap **Execute**.
+
+How many answers so far, by answer:
+
+```sql
+SELECT taste, COUNT(*) AS n FROM taste GROUP BY taste;
+```
+
+The latest 50:
+
+```sql
+SELECT day, roaster, name, brewer, taste, clicks, temp, ratio, drained FROM taste ORDER BY rowid DESC LIMIT 50;
+```
+
+Each coffee's score, most brewed first:
+
+```sql
+SELECT roaster, name, COUNT(*) AS n,
+       SUM(taste = 'balanced') AS just_right, SUM(taste = 'sour') AS sour, SUM(taste = 'bitter') AS bitter
+FROM taste GROUP BY url ORDER BY n DESC LIMIT 50;
+```
+
+Where the recipes miss, by process and roast (worst first, at least 5 answers): mostly sour means grind finer or hotter for
+that kind of coffee, mostly bitter means coarser or cooler.
+
+```sql
+SELECT process, roast, COUNT(*) AS n, ROUND(100.0 * SUM(taste = 'balanced') / COUNT(*)) AS pct_just_right,
+       SUM(taste = 'sour') AS sour, SUM(taste = 'bitter') AS bitter, ROUND(AVG(clicks), 1) AS avg_clicks, ROUND(AVG(temp), 1) AS avg_temp
+FROM taste GROUP BY process, roast HAVING n >= 5 ORDER BY pct_just_right;
+```
+
+The same by brewer:
+
+```sql
+SELECT brewer, COUNT(*) AS n, ROUND(100.0 * SUM(taste = 'balanced') / COUNT(*)) AS pct_just_right
+FROM taste GROUP BY brewer ORDER BY n DESC;
+```
+
+Answers a day, last 30 days:
+
+```sql
+SELECT day, COUNT(*) AS n FROM taste GROUP BY day ORDER BY day DESC LIMIT 30;
+```
+
+One coffee's totals, as the site sees them: `https://www.goccio.co.uk/api/taste?u=<the coffee's shop link>`. It answers
+`{"sour":…,"balanced":…,"bitter":…,"db":true}`; `"db":false` means the database isn't bound and answers are being dropped.
+
+**To download everything** (on a computer with Node): `npx wrangler login` once, then
+`npx wrangler d1 export goccio-taste --remote --output taste.sql`, or one query as JSON:
+`npx wrangler d1 execute goccio-taste --remote --json --command "SELECT * FROM taste"`.
+
+Free plan: 100,000 answers written and 5 million rows read a day. Over that, answers are dropped until midnight UTC; nothing
+is ever charged.
 
 ## Publishing
 

@@ -41,12 +41,12 @@ export async function onRequestPost({ request, env }) {
 // totals for one coffee: how many said sour, just right, bitter
 export async function onRequestGet({ request, env }) {
   const u = new URL(request.url).searchParams.get("u") || "";
-  if (!env.TASTE || !/^https?:\/\//.test(u)) return json({ sour: 0, balanced: 0, bitter: 0 });
+  if (!env.TASTE || !/^https?:\/\//.test(u)) return json({ sour: 0, balanced: 0, bitter: 0, db: !!env.TASTE });
   try {
     await table(env.TASTE);
     const { results } = await env.TASTE.prepare("SELECT taste, COUNT(*) AS n FROM taste WHERE url = ? GROUP BY taste").bind(u.slice(0, 400)).all();
-    const out = { sour: 0, balanced: 0, bitter: 0 };
+    const out = { sour: 0, balanced: 0, bitter: 0, db: true };
     for (const r of results || []) if (r.taste in out) out[r.taste] = r.n;
     return new Response(JSON.stringify(out), { headers: { "content-type": "application/json; charset=utf-8", "cache-control": "public, max-age=300" } });
-  } catch (e) { return json({ sour: 0, balanced: 0, bitter: 0 }); }
+  } catch (e) { return json({ sour: 0, balanced: 0, bitter: 0, db: true, error: true }); }
 }
