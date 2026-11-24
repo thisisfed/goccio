@@ -10333,7 +10333,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           : h < 23 ? ["Evening. Decaf time, if anything.", "Sera. Ora del decaffeinato, semmai.", D.yawn]
           : [pick(["Nearly bedtime. I'm already yawning.", "Late! Sweet dreams, coffee tomorrow."]), pick(["Quasi ora di dormire. Io sbadiglio già.", "Tardi! Sogni d'oro, caffè domani."]), D.sleepy];
         say(T(`It's ${t}. ${en}`, `Sono le ${t}. ${it}`), null, mood); }],
-      [/weather|raining|is it (cold|hot|warm|sunny)|cold outside|hot outside|meteo|che tempo|piove/i, () => weather()],
+      [/weather|raining|is it (cold|hot|warm|sunny)|cold outside|hot outside|meteo|che tempo|piove/i, () => weather(lastQ)],
       [/what (does|is) (the word |the name )?goccio mean|meaning of goccio|why (is it |are you )?called goccio|cosa (vuol dire|significa) goccio|perch[eé] (ti chiami|si chiama) goccio|^(hey |hi |ciao )?goccio[!?.]*$/i, () => say(T("Goccio is Italian for a little drop, a splash. That's me: I'm Goccio!", "Goccio vuol dire un goccio, un pochino. Sono io: mi chiamo Goccio!"), null, happy)],
       [/what('?s| is) goccio|what (does|can) goccio do|cos'?è goccio|a cosa serve goccio/i, () => say(T("Goccio finds new specialty coffees every day, from hundreds of roasters, and gives each one the right recipe for your brewer and grinder. 'Goccio' is Italian for a little drop, and that's me: ask me anything about coffee.", "Goccio trova ogni giorno caffè specialty nuovi, da centinaia di torrefazioni, e dà a ognuno la ricetta giusta per il tuo metodo e il tuo macinino. 'Goccio' vuol dire un pochino, una goccia, e sono io: chiedimi qualsiasi cosa sul caffè."), null, happy)],
       [/who are you|what are you|your name\b|chi sei|come ti chiami/i, () => say(T(`I'm Goccio, the drop. I live on this page and keep an eye on the recipes${name ? ", " + name : ""}.`, `Sono Goccio, la goccia. Vivo su questa pagina e tengo d'occhio le ricette${name ? ", " + name : ""}.`), null, happy)],
@@ -10705,25 +10705,39 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const WX = { 0: ["clear", "sereno"], 1: ["mostly clear", "quasi sereno"], 2: ["partly cloudy", "poco nuvoloso"], 3: ["cloudy", "nuvoloso"], 45: ["foggy", "nebbia"], 48: ["foggy", "nebbia"],
       51: ["drizzly", "pioviggine"], 53: ["drizzly", "pioviggine"], 55: ["drizzly", "pioviggine"], 61: ["raining a little", "pioggia leggera"], 63: ["raining", "pioggia"], 65: ["pouring", "pioggia forte"],
       71: ["snowing a little", "un po' di neve"], 73: ["snowing", "neve"], 75: ["snowing hard", "neve forte"], 80: ["showery", "rovesci"], 81: ["showery", "rovesci"], 82: ["stormy showers", "rovesci forti"], 95: ["thundery", "temporale"], 96: ["thundery", "temporale"], 99: ["thundery", "temporale"] };
-    const weather = () => { if (!navigator.geolocation) return say(T("I can't tell where you are from here, sorry.", "Da qui non so dove sei, scusa."), null, hmm);
-      say(T("Let me look outside… (your browser will ask to share your location)", "Fammi guardare fuori… (il browser ti chiederà la posizione)"), [], curious);
-      navigator.geolocation.getCurrentPosition(async (p) => { const la = p.coords.latitude.toFixed(2), lo = p.coords.longitude.toFixed(2);
-        try { const [w, g] = await Promise.all([fetch(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&current=temperature_2m,weather_code,is_day&timezone=auto`).then((r) => r.json()),
-            fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${la}&longitude=${lo}&localityLanguage=${LANG === "it" ? "it" : "en"}`).then((r) => r.json()).catch(() => ({}))]);
-          const c = w && w.current; if (!c) throw 0; const t = Math.round(c.temperature_2m), wc = c.weather_code, day = c.is_day !== 0, d = (WX[wc] || ["", ""])[LANG === "it" ? 1 : 0], place = g.city || g.locality || "";
+    // the weather: where you are if the phone shares it, or a town you name ("weather in Rome"), or the last town you told me.
+    // If location is off (common on iPhones: Safari's own setting), it says how to turn it on and asks for your town instead
+    let wantCity = false; const CITY_KEY = "v60.gdCity";
+    const wxReport = async (la, lo, placeIn) => {
+      const [w, g] = await Promise.all([fetch(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&current=temperature_2m,weather_code,is_day&timezone=auto`).then((r) => r.json()),
+        placeIn ? Promise.resolve({}) : fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${la}&longitude=${lo}&localityLanguage=${LANG === "it" ? "it" : "en"}`).then((r) => r.json()).catch(() => ({}))]);
+      const c = w && w.current; if (!c) throw 0; const t = Math.round(c.temperature_2m), wc = c.weather_code, day = c.is_day !== 0, d = (WX[wc] || ["", ""])[LANG === "it" ? 1 : 0], place = placeIn || g.city || g.locality || "";
           // react to it: storms, snow, rain, fog, frost, heat, a clear night, a sunny day
-          const [en, it, mood] = wc >= 95 ? ["A storm! Stay in and brew something good.", "Un temporale! Resta dentro e preparati qualcosa di buono.", surprised]
-            : (wc >= 71 && wc <= 77) || wc === 85 || wc === 86 ? ["Snow! Warm your hands on a big mug of filter.", "Neve! Scaldati le mani con una bella tazza di filtro.", surprised]
-            : (wc >= 51 && wc <= 67) || (wc >= 80 && wc <= 82) ? ["Rainy. Perfect for a slow pour-over by the window.", "Piove. Perfetto per un pour-over lento vicino alla finestra.", hmm]
-            : wc === 45 || wc === 48 ? ["Foggy. A bright, citrusy coffee to cut through it?", "Nebbia. Un caffè brillante e agrumato per bucarla?", curious]
-            : t <= 3 ? ["Freezing! Hot coffee, both hands round the cup.", "Si gela! Caffè bollente, con tutte e due le mani attorno alla tazza.", hmm]
-            : t >= 24 ? ["Hot out there. Iced pour-over time: brew it straight onto ice.", "Fa caldo. È l'ora del pour-over freddo: versalo direttamente sul ghiaccio.", D.dance]
-            : !day ? ["A quiet night. Decaf, maybe, and a good book.", "Una notte tranquilla. Un decaffeinato, magari, e un buon libro.", D.yawn]
-            : wc <= 1 ? ["Sunny! Take your cup outside.", "Sole! Porta la tazza fuori.", happy]
-            : t < 10 ? ["Chilly. Hot coffee weather.", "Fresco. Tempo da caffè caldo.", smile] : ["Good coffee weather.", "Tempo da caffè.", smile];
-          say(T(`It's ${t}°C${d ? " and " + d : ""}${place ? " in " + place : " where you are"}. ${en}`, `Ci sono ${t}°C${d ? ", " + d : ""}${place ? " a " + place : " dove sei"}. ${it}`), null, mood);
-        } catch (e) { say(T("I couldn't get the weather just now, sorry.", "Non riesco a vedere il meteo adesso, scusa."), null, hmm); } },
-        () => say(T("No location, no weather. That's fair!", "Niente posizione, niente meteo. Giusto così!"), null, smile), { timeout: 10000, maximumAge: 600000 }); };
+      const [en, it, mood] = wc >= 95 ? ["A storm! Stay in and brew something good.", "Un temporale! Resta dentro e preparati qualcosa di buono.", surprised]
+        : (wc >= 71 && wc <= 77) || wc === 85 || wc === 86 ? ["Snow! Warm your hands on a big mug of filter.", "Neve! Scaldati le mani con una bella tazza di filtro.", surprised]
+        : (wc >= 51 && wc <= 67) || (wc >= 80 && wc <= 82) ? ["Rainy. Perfect for a slow pour-over by the window.", "Piove. Perfetto per un pour-over lento vicino alla finestra.", hmm]
+        : wc === 45 || wc === 48 ? ["Foggy. A bright, citrusy coffee to cut through it?", "Nebbia. Un caffè brillante e agrumato per bucarla?", curious]
+        : t <= 3 ? ["Freezing! Hot coffee, both hands round the cup.", "Si gela! Caffè bollente, con tutte e due le mani attorno alla tazza.", hmm]
+        : t >= 24 ? ["Hot out there. Iced pour-over time: brew it straight onto ice.", "Fa caldo. È l'ora del pour-over freddo: versalo direttamente sul ghiaccio.", D.dance]
+        : !day ? ["A quiet night. Decaf, maybe, and a good book.", "Una notte tranquilla. Un decaffeinato, magari, e un buon libro.", D.yawn]
+        : wc <= 1 ? ["Sunny! Take your cup outside.", "Sole! Porta la tazza fuori.", happy]
+        : t < 10 ? ["Chilly. Hot coffee weather.", "Fresco. Tempo da caffè caldo.", smile] : ["Good coffee weather.", "Tempo da caffè.", smile];
+      say(T(`It's ${t}°C${d ? " and " + d : ""}${place ? " in " + place : " where you are"}. ${en}`, `Ci sono ${t}°C${d ? ", " + d : ""}${place ? " a " + place : " dove sei"}. ${it}`), null, mood); };
+    const wxCity = async (name) => { wantCity = false; say(T(`Checking the sky over ${name}…`, `Guardo il cielo su ${name}…`), [], curious);
+      try { const g = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=1&language=${LANG === "it" ? "it" : "en"}`).then((r) => r.json()); const p = g && g.results && g.results[0];
+        if (!p) { wantCity = true; return say(T(`I couldn't find ${name} on my map. Try another spelling, or a bigger town nearby?`, `Non trovo ${name} sulla mia mappa. Prova a scriverlo diversamente, o una città vicina più grande?`), null, hmm); }
+        try { localStorage.setItem(CITY_KEY, p.name); } catch (e) {}
+        await wxReport(p.latitude.toFixed(2), p.longitude.toFixed(2), p.name); } catch (e) { say(T("I couldn't get the weather just now, sorry.", "Non riesco a vedere il meteo adesso, scusa."), null, hmm); } };
+    const weather = (q) => { const m = String(q || "").match(/\b(?:in|at|for|a|ad|su)\s+([A-Za-zÀ-ÿ' .-]{2,40}?)\s*[?!.]*$/i), named = m && !/^(the )?(morning|afternoon|evening|night|weekend|moment|week|today|tomorrow|mattina|sera|notte)$/i.test(m[1].trim()) ? m[1].trim() : "";
+      if (named) return wxCity(named);
+      let last = ""; try { last = localStorage.getItem(CITY_KEY) || ""; } catch (e) {}
+      const noLoc = (code) => { if (last) return wxCity(last); wantCity = true;
+        say(code === 1 ? T("Your phone isn't sharing its location with this site. Tell me your town and I'll check, or allow it: on iPhone, Settings, Privacy & Security, Location Services, Safari Websites, then 'While Using the App'.", "Il telefono non condivide la posizione con questo sito. Dimmi la tua città e controllo, oppure consentila: su iPhone, Impostazioni, Privacy e sicurezza, Localizzazione, Siti web di Safari, poi 'Mentre usi l'app'.")
+          : T("I couldn't find where you are. Which town are you in?", "Non riesco a capire dove sei. In che città sei?"), null, curious); };
+      if (!navigator.geolocation) return noLoc(2);
+      say(T("Let me look outside… (your browser may ask to share your location)", "Fammi guardare fuori… (il browser potrebbe chiederti la posizione)"), [], curious);
+      navigator.geolocation.getCurrentPosition(async (p) => { try { await wxReport(p.coords.latitude.toFixed(2), p.coords.longitude.toFixed(2)); } catch (e) { say(T("I couldn't get the weather just now, sorry.", "Non riesco a vedere il meteo adesso, scusa."), null, hmm); } },
+        (e) => noLoc(e && e.code), { timeout: 12000, maximumAge: 600000 }); };
     // ---- coffees and roasters by name: "where is Climpson based?", "how does Uraga from Climpson taste?" ----
     // Answered from the list itself, never guessed: a roaster's town and how many coffees it has; a coffee's origin, process,
     // variety, notes and price; and, when a roaster doesn't have the coffee asked for, who does
@@ -10777,6 +10791,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         : /\b(scare|boo|wow|omg|whoa|woah|incredible|no way|davvero|incredibile|accidenti)\b|!{2,}/i.test(q) ? "‼️"
         : /^(ok|okay|yes|yep|yeah|sure|cool|great|nice|sounds good|got it|va bene|sì|si|certo|perfetto|ottimo)\b[.!]*$/i.test(q) ? "👍" : "";
       if (rx) react(rx);
+      if (wantCity) { wantCity = false; if (q.split(/\s+/).length <= 4 && !/\?|^(what|why|how|who|when|which|no|nope|skip|cancel|cos|perch|come|chi|quando)\b/i.test(q)) { setTimeout(() => wxCity(q.replace(/^(i'?m in|in|a|at|sono a)\s+/i, "")), 300); return; } }
       if (pendingYes) { const f = pendingYes; pendingYes = null; if (/^(yes|yeah|yep|yup|sure|ok|okay|please|go on|go ahead|show me|let'?s see|s[iì]|certo|dai|va bene|vediamo|fammi vedere)\b/i.test(q)) { react("👍", 200); setTimeout(f, 650); return; } }
       // only real questions, never the quick ones, the tricks or a reply to one of its own questions
       thinkNext = null;
