@@ -2798,6 +2798,21 @@ html body .wb-sign .gdrop .gd-butt{display:none;fill:none;stroke:#3f1c08;stroke-
 /* the first time it's seen: a small note over it saying what it's for */
 html body .wb-sign .gd-beta{position:absolute;left:calc(50% + 50.4px * var(--gs, 1.45) * 0.5 + 6px);bottom:calc(100% - var(--cup-at, 21px) + 57.5px * var(--gs, 1.45) * 0.78);z-index:18;padding:3px 7px;border:1px solid var(--line);border-radius:var(--r,4px);color:var(--muted);font:500 15px/1 var(--sans);letter-spacing:0;pointer-events:none;white-space:nowrap}   /* Goccio is in beta: a small tag by its shoulder */
 html.gd-open body .wb-sign .gd-beta{opacity:0}
+/* laser eyes: red eyes, two beams, a burning trail round the tag, sparks; then a scorch and smoke where it was */
+html body .wb-sign .gdrop.laser .gd-e{fill:#ff2a14}
+html body .wb-sign .gd-fx{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:40}
+html body .gd-fx .fx-beam{stroke:#ffd9cc;stroke-width:1.3;stroke-linecap:round}
+html body .gd-fx .fx-beam-glow{stroke:#ff2a14;stroke-width:4.5;stroke-linecap:round;opacity:.55}
+html body .gd-fx .fx-hot{fill:#fff3c4}
+html body .gd-fx .fx-spark{fill:#ffb347}
+html body .gd-fx .fx-trail{fill:none;stroke:#ff8a2a;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:stroke 1.2s ease,stroke-width 1.2s ease}
+html body .gd-fx .fx-trail.cold{stroke:#2a1608;stroke-width:3}
+html body .gd-fx .fx-flash{fill:#ffcf7a}
+html body .gd-fx .fx-scorch{fill:#140a04;stroke:#3a1d0c;stroke-width:1.5;opacity:0}
+html body .gd-fx .fx-smoke{transform-box:fill-box;transform-origin:center}
+html body .wb-sign .gd-beta.burnt{opacity:0!important;transition:opacity .12s}
+html body .wb-sign .gd-beta.back{animation:beta-back .6s cubic-bezier(.3,1.5,.5,1)}
+@keyframes beta-back{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
 html body .wb-sign .gd-hint{position:absolute;left:50%;bottom:calc(100% - var(--cup-at, 21px) + 57.5px * var(--gs, 1) + 8.5px);translate:-50% 0;z-index:39;white-space:nowrap;padding:6px 10px;border-radius:var(--r,4px);
   background:var(--ink);color:var(--bg);font:500 15px/1.35 var(--sans);letter-spacing:0;animation:gdTalkIn .32s cubic-bezier(.3,1.45,.5,1);transition:opacity .35s ease}
 html body .wb-sign .gd-hint::after{content:"";position:absolute;left:50%;bottom:-5px;width:10px;height:10px;background:inherit;translate:-50% 0;rotate:45deg;border-radius:2px}
@@ -8246,7 +8261,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // no brewer saved yet: ask what you brew with first (once a visit), then on to the recipe
     // on the choices, not past them: the roast question when there is one, then brewer, cup, grinder and water. The recipe is right under them
     if ($("recipe").hidden) return goRecipe();
-    if (bagLand && $("askLbl") && $("askLbl").offsetParent) return jumpTo($("askLbl"));
+    if (bagLand && $("askLbl") && $("askLbl").offsetParent) return jumpTo($("coffee"));   // the section, so What’s brewing? keeps the usual room over it
     const d = $("detected"), t = d && d.textContent.trim() && d.offsetParent ? d : $("moreOpts") && $("moreOpts").offsetParent ? $("moreOpts") : $("kit");
     jumpTo(t && t.offsetParent ? t : $("recipe"));
   }
@@ -10258,6 +10273,51 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       await face({ happy: 1, smile: 1, blush: 0.55 }, 200);
       for (let i = 0; i < 8; i++) { tween("aRest", i % 2 ? -0.11 : 0.09, 110); leanTo = i % 2 ? 1.6 : -1.6; if (i % 3 === 0) poke(-1.3); go(); await wait(125); }
       tween("aRest", 0, 200); leanTo = 0; lookX = 0; draw(); go(); await wait(300); await face({ happy: 0, smile: 0, blush: 0, eyeL: 1, eyeR: 1 }, 380); });
+    // laser eyes: he stares at his Beta tag, his eyes go red, two beams run round its border and burn it away: sparks while they
+    // cut, then a flash, a scorch and smoke where it was. A few seconds later the tag is back, as if nothing happened
+    const laserBeta = () => act(async () => { const host = el.parentElement, tag = host && host.querySelector(".gd-beta");
+      if (!tag || still() || !tag.offsetWidth || tag.classList.contains("burnt") || getComputedStyle(tag).opacity === "0") return;
+      const NS = "http://www.w3.org/2000/svg", mk = (n, a, p0) => { const e = document.createElementNS(NS, n); Object.entries(a).forEach(([k, v]) => e.setAttribute(k, v)); (p0 || fx).appendChild(e); return e; };
+      lookX = 3.4; lookY = -2.9; leanTo = 1.2; draw(); go(); await face({ eyeL: 0.72, eyeR: 0.72, smile: -0.25 }, 240); await wait(380);   // eyes narrowed on it
+      el.classList.add("laser"); await wait(420);   // they glow red
+      const fx = document.createElementNS(NS, "svg"); fx.setAttribute("class", "gd-fx"); fx.setAttribute("aria-hidden", "true"); host.appendChild(fx);
+      const H0 = () => host.getBoundingClientRect(), rel = (r) => { const h = H0(); return { x: r.left - h.left, y: r.top - h.top, w: r.width, h: r.height }; };
+      const eyeAt = (c) => { const r = el.querySelector(c).getBoundingClientRect(), h = H0(); return [r.left + r.width / 2 - h.left, r.top + r.height / 2 - h.top]; };
+      const t0 = rel(tag.getBoundingClientRect()), rad = Math.min(parseFloat(getComputedStyle(tag).borderTopLeftRadius) || 4, t0.h / 2);
+      // the tag's border as a path, walked from its top left corner, clockwise
+      const { x, y, w, h } = t0, edge = mk("path", { d: `M ${x + rad} ${y} H ${x + w - rad} A ${rad} ${rad} 0 0 1 ${x + w} ${y + rad} V ${y + h - rad} A ${rad} ${rad} 0 0 1 ${x + w - rad} ${y + h} H ${x + rad} A ${rad} ${rad} 0 0 1 ${x} ${y + h - rad} V ${y + rad} A ${rad} ${rad} 0 0 1 ${x + rad} ${y} Z`, fill: "none", stroke: "none" });
+      const len = edge.getTotalLength();
+      const trail = mk("path", { class: "fx-trail", d: "" }), beams = [0, 1].map(() => [mk("line", { class: "fx-beam-glow" }), mk("line", { class: "fx-beam" })]), hot = mk("circle", { class: "fx-hot", r: "3.2" });
+      const sparks = []; let pts = [], last = performance.now();
+      const T0 = performance.now(), DUR = 1500;
+      await new Promise((done) => { const step = (now) => { const k = Math.min(1, (now - T0) / DUR), pt = edge.getPointAtLength(k * len), dt = Math.min(50, now - last) / 1000; last = now;
+          pts.push(`${pt.x.toFixed(1)} ${pt.y.toFixed(1)}`); trail.setAttribute("d", "M " + pts.join(" L "));
+          [".gd-l", ".gd-r"].forEach((c, i) => { const [ex, ey] = eyeAt(c); beams[i].forEach((b) => { b.setAttribute("x1", ex.toFixed(1)); b.setAttribute("y1", ey.toFixed(1)); b.setAttribute("x2", pt.x.toFixed(1)); b.setAttribute("y2", pt.y.toFixed(1)); }); });
+          hot.setAttribute("cx", pt.x.toFixed(1)); hot.setAttribute("cy", pt.y.toFixed(1)); hot.setAttribute("r", (2.6 + Math.random() * 1.4).toFixed(1));
+          for (let i = 0; i < 2; i++) { const a = Math.random() * Math.PI * 2, v = 40 + Math.random() * 90; sparks.push({ x: pt.x, y: pt.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 30, life: 0.35 + Math.random() * 0.3, e: mk("circle", { class: "fx-spark", r: (0.6 + Math.random() * 0.9).toFixed(1) }) }); }
+          sparks.forEach((p0) => { p0.life -= dt; p0.vy += 260 * dt; p0.x += p0.vx * dt; p0.y += p0.vy * dt; p0.e.setAttribute("cx", p0.x.toFixed(1)); p0.e.setAttribute("cy", p0.y.toFixed(1)); p0.e.style.opacity = Math.max(0, p0.life * 2.4).toFixed(2); if (p0.life <= 0) p0.e.remove(); });
+          for (let i = sparks.length - 1; i >= 0; i--) if (sparks[i].life <= 0) sparks.splice(i, 1);
+          if (Math.random() < 0.3) poke(0.12);   // a little shudder from the effort
+          if (k < 1) requestAnimationFrame(step); else done(); };
+        requestAnimationFrame(step); });
+      // cut all round: beams off, the tag goes in a flash, a scorch and smoke stay behind
+      beams.flat().forEach((b) => b.remove()); hot.remove(); sparks.forEach((p0) => p0.e.remove()); el.classList.remove("laser");
+      const flash = mk("rect", { class: "fx-flash", x: x - 4, y: y - 4, width: w + 8, height: h + 8, rx: rad + 4 });
+      flash.animate([{ opacity: 0.95 }, { opacity: 0 }], { duration: 420, easing: "ease-out", fill: "forwards" });
+      tag.classList.add("burnt"); trail.classList.add("cold");
+      const scorch = mk("rect", { class: "fx-scorch", x: x + 1, y: y + 1, width: w - 2, height: h - 2, rx: rad });
+      scorch.animate([{ opacity: 0 }, { opacity: 0.9 }], { duration: 300, fill: "forwards" });
+      const smokeId = "fxs" + Math.random().toString(36).slice(2, 6), sg = mk("radialGradient", { id: smokeId }, mk("defs", {}));   // soft puffs: grey in the middle, gone at the edge
+      [[0, 0.75], [0.55, 0.35], [1, 0]].forEach(([o, a]) => mk("stop", { offset: o, "stop-color": "#9a948e", "stop-opacity": a }, sg));
+      for (let i = 0; i < 14; i++) { const sx = x + w * (0.1 + 0.8 * Math.random()), sy = y + h * (0.2 + 0.6 * Math.random()), dx = (Math.random() - 0.5) * 18, rise = 26 + Math.random() * 34;
+        const pf = mk("circle", { class: "fx-smoke", cx: sx.toFixed(1), cy: sy.toFixed(1), r: (3 + Math.random() * 2.5).toFixed(1), fill: `url(#${smokeId})` });
+        pf.animate([{ transform: "translate(0,0) scale(1)", opacity: 0 }, { opacity: 0.55, offset: 0.15 }, { transform: `translate(${dx.toFixed(1)}px,${(-rise).toFixed(1)}px) scale(${(3 + Math.random() * 2).toFixed(1)})`, opacity: 0 }],
+          { duration: 1800 + Math.random() * 1400, delay: i * 90, easing: "ease-out", fill: "forwards" }); }
+      lookX = 0.8; lookY = -0.6; draw(); await face({ eyeL: 1, eyeR: 1, smile: 0.6, happy: 0.6 }, 260); leanTo = 0; go(); await wait(900);
+      await face({ happy: 0, smile: 0 }, 300); lookX = 0; lookY = 0; draw(); go();
+      // a little later the scorch fades and the tag is back
+      setTimeout(() => { [scorch, trail].forEach((e) => e.animate([{ opacity: e === scorch ? 0.9 : 1 }, { opacity: 0 }], { duration: 900, fill: "forwards" }));
+        setTimeout(() => { fx.remove(); tag.classList.remove("burnt"); tag.classList.add("back"); setTimeout(() => tag.classList.remove("back"), 700); }, 900); }, 2600); });
     const crossEyes = (ms) => act(async () => { await tween("cross", 1, 260); for (let i = 0; i < 3; i++) { leanTo = i % 2 ? 1 : -1; go(); await wait((ms || 1500) / 3); } leanTo = 0;
       await tween("cross", 0, 220); blink = 0.12; draw(); await wait(120); blink = 1; draw(); });
     // coming up to you: it grows from its base as if nearer and travels to the middle of the screen, in front of everything.
@@ -10361,7 +10421,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const quiet = performance.now() - ptrT > 6000, closeOk = performance.now() - lastAct > 10000 && !document.documentElement.classList.contains("brew-in"), MOVES = [   /* coming right up to you: only when you've been still for 10 s */
         [20, () => { const b = (k) => { blink = k; draw(); }; b(0.12); setTimeout(() => b(1), 130); if (Math.random() < 0.3) setTimeout(() => { b(0.12); setTimeout(() => b(1), 120); }, 300); }],
         [14, happy], [12, smile], [10, yawn], [8, dance], [8, jumps], [5, yes], [5, no], [3, curious], [2.5, hmm], [2, () => think(1800)], [2, bored], [2, surprised],
-        [2, wink], [1.4, betaLaugh], [1.6, crossEyes], [1.6, sleepy], [1.6, doze], [1.2, onPhone], [1.2, backflip], [0.8, roll], [closeOk ? 0.8 : 0, rolypoly], [0.8, upside],
+        [2, wink], [1.4, betaLaugh], [0.9, laserBeta], [1.6, crossEyes], [1.6, sleepy], [1.6, doze], [1.2, onPhone], [1.2, backflip], [0.8, roll], [closeOk ? 0.8 : 0, rolypoly], [0.8, upside],
         [closeOk ? 0.7 : 0, closeLook], [closeOk ? 0.7 : 0, boop], [0.5, () => umbrella(4200)], [0.5, () => cold(1400)], [0.5, () => hot(1500)], [quiet ? 0.4 : 0, boo],
         [following ? 0 : 5, () => { lookX = (Math.random() < 0.5 ? -1 : 1) * 3; lookY = Math.random() < 0.4 ? -1.5 : 0; draw(); setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900 + Math.random() * 700); }],
         [2, () => poke(-0.9)]];
@@ -10399,7 +10459,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1; lookX = dx / d * 3; lookY = dy / d * 1.5; draw();
       setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900); }, { passive: true });
     el.addEventListener("click", () => { if (farted) { farted = false; return; } if (opt.tap) opt.tap(); else if (!acting) jumps(); });
-    return { S, busy: () => acting, free: () => { acting = false; }, betaLaugh, doze, cold, hot, text, rolypoly, crossEyes, closeLook, boop, look, tilt: (v) => tween("aRest", v, 320), umbrella, onPhone, roll, landed: () => phase !== "fall", bored, moon, fartBack, upside, boo, think, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, fart, draw,
+    return { S, busy: () => acting, free: () => { acting = false; }, betaLaugh, laserBeta, doze, cold, hot, text, rolypoly, crossEyes, closeLook, boop, look, tilt: (v) => tween("aRest", v, 320), umbrella, onPhone, roll, landed: () => phase !== "fall", bored, moon, fartBack, upside, boo, think, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, fart, draw,
       bob: () => { poke(-0.7 - Math.random() * 0.6); if (Math.random() < 0.3) { jv = -90; go(); } } }; };
     // ---- talking: tap the drop and ask it something. It answers in a bubble, the words typing themselves out while it bobs.
     // It knows a handful of things for certain (what's new, a coffee to try, sour or bitter, ratio, temperature, grind, the processes,
@@ -10986,6 +11046,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       [/\b(come (closer|here|nearer)|get closer|look at me|vieni (qui|qua|vicino)|avvicinati|più vicino)\b/i, () => { say(pick([T("Hello there.", "Ciao, eh."), T("Let me have a proper look at you.", "Fammi guardare bene.")]), null); setTimeout(() => { D.free(); D.closeLook(); }, 450); }, true],
       [/\b(boop|kiss|smooch|mwah|bacio|bacino|baciami)\b/i, () => { say(pick([T("Mwah!", "Muah!"), T("Boop!", "Bup!")]), null); setTimeout(() => { D.free(); D.boop(); }, 450); }, true],
       [/\b(cross[- ]?eyed|cross (your|ur|the) eyes|cross eyes|strabico|occhi storti|incrocia gli occhi)\b/i, () => { say(pick([T("Like this?", "Così?"), T("Now I can see my nose. I don't have a nose.", "Adesso vedo il mio naso. Non ho il naso.")]), null); setTimeout(() => { D.free(); D.crossEyes(1800); }, 450); }, true],
+      [/\blasers?\b|laser eyes|occhi laser|(destroy|burn|zap|kill|blast|delete) (the |your |that )?beta|(distruggi|brucia) (la |il )?beta/i, () => { say(pick([T("Stand back.", "State indietro."), T("Pew pew.", "Piu piu.")]), null, curious);
+        setTimeout(() => { closeTalk(); const g0 = $("gdrop"); if (g0) g0.scrollIntoView({ block: "center", behavior: "smooth" }); setTimeout(() => { D.free(); D.laserBeta(); }, 900); }, 900); }, true],
       [/\b(rol+(y|ie)[ -]?pol+(y|ie)|somersault|forward roll|tumble|capriol\w*|fai una capriola)\b/i, () => { say(pick([T("Weee!", "Uiii!"), T("Head over heels!", "A gambe all'aria!")]), null); setTimeout(() => { D.free(); D.rolypoly(); littleMove("ag-flip"); }, 450); }, true],
       [/\broll\b|rolling|rotola|rotolare|fai una rotolata/i, () => { say(T("Wheee!", "Uiii!"), null); setTimeout(() => { D.free(); D.roll(); littleMove("ag-spin"); }, 450); }, true],
       [/back ?flip|somersault|do a flip|capriola|salto (mortale|all'indietro)/i, () => { say(T("Watch this!", "Guarda qua!"), null); setTimeout(() => { D.free(); D.backflip(); littleMove("ag-flip"); }, 450); }, true],
