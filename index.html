@@ -10729,7 +10729,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // the empty box under the chips rotates through examples too, every few seconds while Goccio is open
     { let k = 0; const base = () => T("Ask Goccio about coffee", "Chiedi a Goccio del caffè");
       setInterval(() => { if (!talking || inEl.value || document.activeElement === inEl || document.hidden) return; const all = Object.values(POOL()).flat().filter((x) => /\?$/.test(x));
-        k = (k + 1) % 4; inEl.placeholder = k ? T("Try: ", "Prova: ") + all[Math.floor(Math.random() * all.length)] : base(); }, 3200); }
+        k = 0; inEl.placeholder = base(); }, 3200); }
     // what it knows
     // its friend's name: asked the first time, kept on this device only (never sent anywhere)
     let name = "", askingName = false; try { name = localStorage.getItem("v60.dropName") || ""; } catch (e) {}
@@ -10906,8 +10906,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           : [pick(["Nearly bedtime. I'm already yawning.", "Late! Sweet dreams, coffee tomorrow."]), pick(["Quasi ora di dormire. Io sbadiglio già.", "Tardi! Sogni d'oro, caffè domani."]), D.sleepy];
         say(T(`It's ${t}. ${en}`, `Sono le ${t}. ${it}`), null, mood); }],
       [/weather|raining|is it (cold|hot|warm|sunny)|cold outside|hot outside|meteo|che tempo|piove/i, () => weather(lastQ)],
-      [/what (does|is) (the word |the name )?goccio mean|meaning of goccio|why (is it |are you )?called goccio|cosa (vuol dire|significa) goccio|perch[eé] (ti chiami|si chiama) goccio|^(hey |hi |ciao )?goccio[!?.]*$/i, () => say(T("Goccio is Italian for a little drop, a splash. That's me: I'm Goccio!", "Goccio vuol dire un goccio, un pochino. Sono io: mi chiamo Goccio!"), null, happy)],
-      [/what('?s| is) goccio|what (does|can) goccio do|cos'?è goccio|a cosa serve goccio/i, () => say(T("Goccio finds new specialty coffees every day, from hundreds of roasters, and gives each one the right recipe for your brewer and grinder. 'Goccio' is Italian for a little drop, and that's me: ask me anything about coffee.", "Goccio trova ogni giorno caffè specialty nuovi, da centinaia di torrefazioni, e dà a ognuno la ricetta giusta per il tuo metodo e il tuo macinino. 'Goccio' vuol dire un pochino, una goccia, e sono io: chiedimi qualsiasi cosa sul caffè."), null, happy)],
+      [/what (does|is) (the word |the name )?goccio mean|meaning of goccio|why (is it |are you )?called goccio|cosa (vuol dire|significa) goccio|perch[eé] (ti chiami|si chiama) goccio|^(hey |hi |ciao )?goccio[!?.]*$/i, () => say(T("Goccio is Italian for a nip: a small splash of something to drink, like when an Italian asks for 'un goccio di vino'. Not a drop: that's 'goccia'. That's me, a nip of coffee: I'm Goccio!", "Goccio vuol dire un sorso, un pochino da bere, come in 'un goccio di vino'. Non una goccia: quella è un'altra parola. Sono io, un goccio di caffè: mi chiamo Goccio!"), null, happy)],
+      [/what('?s| is) goccio|what (does|can) goccio do|cos'?è goccio|a cosa serve goccio/i, () => say(T("Goccio finds new specialty coffees every day, from hundreds of roasters, and gives each one the right recipe for your brewer and grinder. 'Goccio' is Italian for a nip, a small splash of something to drink, and that's me: ask me anything about coffee.", "Goccio trova ogni giorno caffè specialty nuovi, da centinaia di torrefazioni, e dà a ognuno la ricetta giusta per il tuo metodo e il tuo macinino. 'Goccio' vuol dire un sorso, un pochino da bere, e sono io: chiedimi qualsiasi cosa sul caffè."), null, happy)],
       [/who are you|what are you|your name\b|chi sei|come ti chiami/i, () => say(nick ? T(`I'm Goccio, but to you I'm ${nick}. I live on this page and keep an eye on the recipes${name ? ", " + name : ""}.`, `Sono Goccio, ma per te sono ${nick}. Vivo su questa pagina e tengo d'occhio le ricette${name ? ", " + name : ""}.`) : T(`I'm Goccio, the drop. I live on this page and keep an eye on the recipes${name ? ", " + name : ""}.`, `Sono Goccio, la goccia. Vivo su questa pagina e tengo d'occhio le ricette${name ? ", " + name : ""}.`), null, happy)],
       [/dance|music|balla|musica/i, () => { say(T("Don't mind if I do!", "Volentieri!"), null); setTimeout(() => { D.free(); dance(); littleMove("ag-dance"); setTimeout(() => littleMove("ag-dance"), 1400); }, 600); }, true],
       [/joke|make me laugh|funny|barzellett|fammi ridere/i, () => say(pick([T("What's a drop's favourite music? Drip-hop.", "Qual è la musica preferita di una goccia? Il drip-hop."),
@@ -11626,40 +11626,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         tb.addEventListener("animationend", (e) => { if (e.animationName === "agOut") tb.classList.remove("ag-out"); });   // bubbles up from the svg
         new IntersectionObserver((es) => es.forEach((e) => set(e.isIntersecting)), { threshold: .3 }).observe(el);
         plus.addEventListener("animationend", (e) => { if (e.animationName === "agGulp" || e.animationName === "agSpit" || (e.animationName === "drop-p" && plus.classList.contains("spit"))) plus.classList.remove("gulp", "spit"); }); } }
-    // first visit: the little Goccio introduces itself under the top bar, once, so "Search or ask Goccio" makes sense.
-    // Any tap or key closes it, or it fades after 9 seconds
-    { const tb = $("askGoccio"); let seen = "1"; try { seen = localStorage.getItem("v60.gdIntro"); } catch (e) {}
-      { const ts0 = tb && tb.querySelector("svg"); if (ts0 && !seen && !matchMedia("(prefers-reduced-motion: reduce)").matches) { ts0.style.opacity = "0"; setTimeout(() => { if (!document.querySelector(".gd-fly")) ts0.style.opacity = ""; }, 9000); } }   /* first visit: the pill stays empty until the big one flies into it */
-      const flyIn = (then) => { const ts = tb.querySelector("svg"), c = cloneBig(); if (!c || !ts || matchMedia("(prefers-reduced-motion: reduce)").matches || talking || scrollY > 80 || !(window.gdOnce && window.gdOnce())) { if (ts) ts.style.opacity = ""; return then(); }
-        const gs = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--gs")) || 1.45, W = 64 * gs, Hh = 60 * gs;
-        const dim = document.createElement("div"); dim.className = "gd-peek-dim"; document.body.appendChild(dim);
-        const f = document.createElement("div"); f.className = "gd-fly"; f.style.width = W + "px"; f.style.height = Hh + "px"; f.style.left = (innerWidth / 2 - W / 2) + "px"; f.style.top = (Math.max(140, innerHeight * 0.33) - Hh) + "px";   /* up in the film, over the name, where the drop falls */ f.appendChild(c);
-        const hi = document.createElement("span"); hi.className = "gd-fly-hi"; hi.textContent = T(`Hi! I'm Goccio.`, "Ciao! Sono Goccio."); f.appendChild(hi); document.body.appendChild(f);
-        ts.style.opacity = "0";   // the little one isn't there yet: it's this one
-        requestAnimationFrame(() => requestAnimationFrame(() => { f.classList.add("in"); dim.classList.add("in"); }));
-        setTimeout(() => hi.classList.add("in"), 900);
-        setTimeout(() => { hi.classList.remove("in");
-          // up into the pill: its body lands on the little one's, shrinking to its size on the way
-          const R = ts.getBoundingClientRect(), fr = f.getBoundingClientRect(), bx = fr.left + fr.width / 2, by = fr.top + fr.height * (41 / 60), sc = (R.width * 30 / 40) / (31 * gs);
-          f.style.transition = "transform .9s cubic-bezier(.5,-0.25,.3,1.1), opacity .25s ease .78s"; f.style.transformOrigin = `50% ${(41 / 60) * 100}%`;
-          f.style.transform = `translate(${(R.left + R.width / 2 - bx).toFixed(1)}px, ${(R.top + R.height / 2 - by).toFixed(1)}px) scale(${sc.toFixed(3)})`; f.style.opacity = "0"; dim.classList.remove("in");
-          setTimeout(() => { ts.style.opacity = ""; tb.hop && tb.hop(); tb.move && tb.move("ag-spin"); f.remove(); dim.remove(); setTimeout(then, 500); }, 900); }, 3400); };
-      if (tb && !seen) setTimeout(() => flyIn(() => { const r = tb.getBoundingClientRect(); if (talking || !r.width || tb.classList.contains("ag-gone")) return;
-        try { localStorage.setItem("v60.gdIntro", "1"); } catch (e) {}
-        const b = document.createElement("div"); b.className = "gd-intro"; b.setAttribute("role", "status");
-        b.innerHTML = T("Hi, I’m Goccio, a little drop of coffee. Type in the box to search the coffees, or ask me anything about coffee. Tap me any time.", "Ciao, sono Goccio, una gocciolina di caffè. Scrivi nella barra per cercare tra i caffè, o chiedimi qualsiasi cosa sul caffè. Toccami quando vuoi.");
-        const ab = document.querySelector(".top .ask-box"), pb = $("toolsBtn"), wide = ab && pb && ab.getBoundingClientRect().left < 40;   // phone: as wide as the pills
-        const right = wide ? innerWidth - pb.getBoundingClientRect().right : Math.max(12, innerWidth - r.right - 6); b.style.right = right + "px"; b.style.setProperty("--tip", (innerWidth - right - (r.left + r.width / 2)) + "px");
-        if (wide) { b.style.left = ab.getBoundingClientRect().left + "px"; b.style.width = "auto"; }
-        // on a phone that asks before sharing motion (iPhone), the hello also asks: one tap opens the system's own permission prompt
-        const askMove = window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === "function" && matchMedia("(pointer: coarse)").matches;
-        if (askMove) { const row = document.createElement("span"); row.className = "gd-intro-move";
-          row.innerHTML = `<span>${T("Tilt your phone and I’ll slosh about.", "Inclina il telefono e mi muovo come un liquido.")}</span><button type="button">${T("Allow motion", "Consenti movimento")}</button>`;
-          row.querySelector("button").onclick = () => { window.gdMotion && window.gdMotion(true); tb.hop && tb.hop(); bye(); }; b.appendChild(row); }
-        document.body.appendChild(b); tb.hop && tb.hop();
-        let t = 0; const bye = (e) => { if (e && e.target && b.contains(e.target) && e.target.closest("button")) return;   // the Allow button does its own closing
-          clearTimeout(t); removeEventListener("pointerdown", bye, true); removeEventListener("keydown", bye, true); b.classList.add("out"); setTimeout(() => b.remove(), 400); };
-        t = setTimeout(bye, askMove ? 15000 : 9000); setTimeout(() => { addEventListener("pointerdown", bye, true); addEventListener("keydown", bye, true); }, 300); }), 1600); }
+    // the little Goccio is simply in its pill from the first moment: no fly-in, no hello bubble, no hints
     const isQuestion = (t) => /\?\s*$/.test(t) || /^(goccio\b|hey goccio|hi goccio|ciao goccio|what|why|how|who|where|when|which|is it|are|does|do i|can|should|tell me|explain|cos|perch[eé]|come mai|come si|quando|dove|chi|quant[oai])\b/i.test(t.trim());
     $("askForm").addEventListener("submit", (e) => { const a = $("askIn"), t = a.value.trim(); if (window.__gdSearching || !t || !isQuestion(t)) return;
       e.preventDefault(); e.stopImmediatePropagation(); a.value = ""; a.dispatchEvent(new Event("input", { bubbles: true })); a.blur();
@@ -11669,7 +11636,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       set("gdHint", null, "Hi, I’m Goccio and I answer your coffee questions.", "Ciao, sono Goccio e rispondo alle tue domande sul caffè.");
       set("gdrop", "aria-label", "Ask Goccio about coffee", "Chiedi a Goccio del caffè"); set("askGoccio", "aria-label", "Ask Goccio", "Chiedi a Goccio");
       set("gdX", "aria-label", "Close", "Chiudi"); set("gdMic", "aria-label", "Ask out loud", "Chiedi a voce"); set("gdGo", "aria-label", "Ask", "Chiedi");
-      if (!inEl.value && !/^(Try|Prova):/.test(inEl.placeholder)) set("gdIn", "placeholder", "Ask Goccio about coffee", "Chiedi a Goccio del caffè"); };
+      if (!inEl.value) set("gdIn", "placeholder", "Ask Goccio about coffee", "Chiedi a Goccio del caffè"); };
     gdWords(); window.gdWords = gdWords;
     const hint = $("gdHint"); let hinted = false;
     // the greeting rides along with the drop: always the same small gap above its body, up when it jumps or stretches, down when it squashes
@@ -11683,7 +11650,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     sizeUp(); addEventListener("resize", sizeUp, { passive: true }); if (document.fonts && document.fonts.ready) document.fonts.ready.then(sizeUp);
     // its usual fall comes first (when it is well in view), then the hello
     const enter = async () => { await wait(1300); for (let i = 0; i < 60 && !D.landed(); i++) await wait(50); };
-    if (hint && "IntersectionObserver" in window) new IntersectionObserver((es) => { if (hinted || !es[0].isIntersecting || es[0].intersectionRatio < 0.9) return; hinted = true;
+    if (false && hint && "IntersectionObserver" in window) new IntersectionObserver((es) => { if (hinted || !es[0].isIntersecting || es[0].intersectionRatio < 0.9) return; hinted = true;
       enter().then(() => { const H0 = document.documentElement; if (talking || msgs.length || H0.classList.contains("brew-in") || H0.classList.contains("gd-set") || !(window.gdOnce && window.gdOnce())) return;   /* the visit's one interruption */   /* already chatting, or brewing: no hello, and the page never fades */
         gdWords(); hint.hidden = false; stick(); document.documentElement.classList.add("gd-hello"); D.happy(); setTimeout(() => { hint.classList.add("out"); document.documentElement.classList.remove("gd-hello"); setTimeout(() => { hint.hidden = true; hint.classList.remove("out"); }, 400); }, 4200); }); }, { threshold: [0, 0.9] }).observe(el);
     { let still = performance.now(), last = 0; const wake = () => { still = performance.now(); };
