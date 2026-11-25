@@ -2545,9 +2545,7 @@ html.brew-in .shelf > .item.brewing{padding-bottom:14px!important}
 .pours.steps.timed tr:not(.act) td.to{font:500 var(--fs-s)/1.35 var(--sans)!important;letter-spacing:0!important;white-space:nowrap}
 /* first screen: the two buttons come straight after the slogan, "Read the bag. Goccio does the rest.", and the text closes it */
 .wm-more .wm-ctas{margin:0 0 20px!important}
-/* 25/11/2026: the line under the tagline is gone for good, and the two buttons take the place of the rule over Coffees */
-html body .wm-more .wm-lead{display:none!important}
-html body .wm-more .wm-ctas{margin:0!important}
+/* 25/11/2026: no rule over Coffees: the two buttons and the line under them close the first screen */
 html body #shelves > .sec-head{border-top:0!important}
 .wm-more .wm-tagline{margin-bottom:20px!important}   /* the tagline as far over the two buttons as they are over the text under them; Goccio comes down with it */
 /* the first screen's two buttons are the bottom bar's two pills exactly: same height, corners, gap and width */
@@ -3456,8 +3454,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         <div class="wm-more">
           <p class="wm-tagline">Read the bag. Goccio does the rest.</p>
           <p class="wm-live wm-tot" id="wmTot" hidden></p>
-          <h1 class="wm-lead" hidden>Every new coffee, with its recipe before you buy.</h1>
           <p class="wm-ctas"><button type="button" class="btn wm-go" id="wmFind">Find a coffee</button><button type="button" class="btn wm-bag" id="wmBag">I have a coffee</button></p>
+          <h1 class="wm-lead">Every new coffee, with its recipe before you buy.</h1>
           <p class="wm-live" id="wmLive" hidden><i class="live-dot" aria-hidden="true"></i><span id="wmLiveT"></span></p>
         </div>
       </div>
@@ -10214,7 +10212,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // a mouth: the whole lower third of the body, a wide grin that opens with joy and shuts tight when sad
     const W0 = 36, H0 = 24, R0 = 15.5;   // at rest: a dome 36 wide, 24 high; falling: a round drop of about the same volume
     const wS = 2 * Math.PI / 0.24, zS = 0.3, wL = 2 * Math.PI / 0.42, zL = 0.45, G = 2600;
-    const S = { aRest: 0, eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, fone: 0, umb: 0, scroll: 0, jx: 0, blush: 0, turn: 0, armL: 0, armR: 0, armLa: 0, armRa: 0, flip: 0, cold: 0, hot: 0, tumble: 0, cross: 0, float: 0 }; let rigid = false, rollU = 0, jy = 0, jv = 0, ptrX = 0, ptrY = 0, ptrT = 0; let tws = [], a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
+    const S = { aRest: 0, eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, fone: 0, umb: 0, scroll: 0, jx: 0, blush: 0, turn: 0, armL: 0, armR: 0, armLa: 0, armRa: 0, flip: 0, cold: 0, hot: 0, tumble: 0, cross: 0, float: 0 }; let rigid = false, rollU = 0, gX = 0, gY = 0, inStep = false, jy = 0, jv = 0, ptrX = 0, ptrY = 0, ptrT = 0; let tws = [], a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
     const draw = () => {
       // the shape it has just before it falls: round. Squashed or stretched it keeps its volume (taller is narrower); its top
       // sways with the page; it sits on its lowest point
@@ -10232,8 +10230,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const tm = ((S.turn % 2) + 2) % 2, back = tm > 0.5 && tm < 1.5, tbA = S.tumble * Math.PI * 2, tv = Math.cos(tbA), tw = Math.sin(tbA); const zf = Math.min(tc, tv); eyes.style.opacity = back && tv >= 0 ? "0" : Math.max(0, Math.min(1, (zf - 0.03) / 0.22)).toFixed(3);   /* how much they face you: a soft fade at the rim, not a blink out */   /* a roly-poly: the face rolls down and under, round the back, and comes back over the top */   /* turn 0→1 shows its back, 0→2 is a whole spin */
       const bt = el.querySelector(".gd-butt"); if (bt) { bt.style.opacity = back ? "1" : "0"; bt.setAttribute("d", `M ${cx * 0.2} ${(bot - ry * 0.62).toFixed(2)} Q ${(cx * 0.2 + 1.2).toFixed(2)} ${(bot - ry * 0.3).toFixed(2)} 0 ${(bot - 1.2).toFixed(2)}`); }   /* its back: no face, just a little crease */
 
-      const ey = mid - 1, ex = cx * 0.55 + lookX + ts * rx * 0.92;   /* turning round, it stays a round drop: the face slides round to its side and out of sight, as on a ball */
-      eyes.setAttribute("transform", `translate(${ex.toFixed(2)} ${(ey + 12 + lookY + tw * ry * 0.92).toFixed(2)}) scale(${(Math.min(1.25, w / 31) * Math.max(0.06, Math.abs(tc))).toFixed(3)} ${Math.min(1.3, k).toFixed(3)}) translate(0 -12) scale(1 ${Math.max(0.06, Math.abs(tv)).toFixed(3)}) translate(0 12)`);
+      if (!inStep && !raf && Math.abs(gX - lookX) + Math.abs(gY - lookY) > 0.01) requestAnimationFrame(() => go());   /* a new place to look: the loop eases the eyes there */
+      const ey = mid - 1, ex = cx * 0.55 + gX + ts * rx * 0.92;   /* turning round, it stays a round drop: the face slides round to its side and out of sight, as on a ball */
+      eyes.setAttribute("transform", `translate(${ex.toFixed(2)} ${(ey + 12 + gY + tw * ry * 0.92).toFixed(2)}) scale(${(Math.min(1.25, w / 31) * Math.max(0.06, Math.abs(tc))).toFixed(3)} ${Math.min(1.3, k).toFixed(3)}) translate(0 -12) scale(1 ${Math.max(0.06, Math.abs(tv)).toFixed(3)}) translate(0 12)`);
       // the face: two eyes (each can open wider or close on its own), happy eyes (^ ^), cheeks that blush. No mouth: the eyes say it all
       // happy: no more ^ ^ arches. The eyes stay round, grow a touch, lift a little and light up with two sparkles each
       const L = el.querySelector(".gd-l"), R = el.querySelector(".gd-r"), op = 1 - 0.12 * S.happy, big = 1 + 0.14 * S.happy;
@@ -10267,15 +10266,16 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     let wantText = false;   // typing an answer: the phone comes out, but a trick puts it away first and it comes back after
     const act = async (fn, alone) => { if (acting) return; acting = true; solo = !!alone; if (texting) { texting = false; clearInterval(texT); tween("fone", 0, 140); }
       try { await fn(); } finally { await face(REST, 260); acting = false; solo = false; if (wantText && !texting) text(true); } };
-    const step = (t) => { raf = 0; const dt = Math.min(0.032, last ? (t - last) / 1000 : 0.016); last = t;
+    const step = (t) => { raf = 0; inStep = true; const dt = Math.min(0.032, last ? (t - last) / 1000 : 0.016); last = t;
       tws = tws.filter((tw) => { const x = Math.min(1, (performance.now() - tw.t0) / tw.ms); setK(tw.key, tw.from + (tw.to - tw.from) * ease(x)); if (x >= 1) { tw.res(); return false; } return true; });
       if (phase === "fall") { vy += G * dt; y += vy * dt; if (y >= 0) { y = 0; phase = "rest"; round = 0; va = -Math.min(14, vy / 90); vy = 0; if (!landedOnce) { landedOnce = true; setTimeout(showOff, 1600); } } }   // lands: flattens with the speed it had, then rings
       if (jv || jy) { const dh = dt / 1.45; jv += G * 0.75 * dh; jy += jv * dh; if (jy >= 0) { jy = 0; if (jv > 50) va -= Math.min(4.5, jv / 80); jv = 0; } }   // a hop: up, then down with a little splat
       va += (-wS * wS * (a - S.aRest) - 2 * zS * wS * va) * dt; a += va * dt;
       vl += (-wL * wL * (lean - leanTo) - 2 * zL * wL * vl) * dt; lean += vl * dt; leanTo *= Math.pow(0.02, dt);
+      { const f = 1 - Math.exp(-dt / 0.24); gX += (lookX - gX) * f; gY += (lookY - gY) * f; }   // his eyes glide to where he looks, never snap
       draw();
-      const moving = jv !== 0 || jy !== 0 || tws.length > 0 || phase === "fall" || Math.abs(a - S.aRest) > 0.002 || Math.abs(a) > 0.002 || Math.abs(va) > 0.01 || Math.abs(lean) > 0.05 || Math.abs(vl) > 0.05 || Math.abs(leanTo) > 0.05;
-      if (moving) raf = requestAnimationFrame(step); else { last = 0; a = S.aRest; va = 0; draw(); } };
+      const moving = jv !== 0 || jy !== 0 || tws.length > 0 || phase === "fall" || Math.abs(a - S.aRest) > 0.002 || Math.abs(a) > 0.002 || Math.abs(va) > 0.01 || Math.abs(lean) > 0.05 || Math.abs(vl) > 0.05 || Math.abs(leanTo) > 0.05 || Math.abs(gX - lookX) + Math.abs(gY - lookY) > 0.01;
+      inStep = false; if (moving) raf = requestAnimationFrame(step); else { last = 0; a = S.aRest; va = 0; gX = lookX; gY = lookY; draw(); } };
     const go = () => { if (!raf) raf = requestAnimationFrame(step); };
     const poke = (amt) => { if (still()) return; va += amt; go(); };
     draw();
@@ -12047,7 +12047,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     { const tb = $("askGoccio"), bo = tb && tb.querySelector(".ag-b"), ey = tb && tb.querySelector(".ag-e"), shy = tb && tb.querySelector(".ag-shy");
       if (bo && ey && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
         let tx = 0, ty = 0, x = 0, y = 0, blink = 1, hopT = 0, idle = -1e9, run = 0, wide = 1, wideTo = 1, lid = 1, lidTo = 1;
-        const loop = (t) => { x += (tx - x) * .16; y += (ty - y) * .16; const k = hopT ? Math.max(0, 1 - (t - hopT) / 520) : 0, up = k ? Math.sin((1 - k) * Math.PI) * 6 : 0;
+        let lt = 0; const loop = (t) => { const dt = lt ? Math.min(0.05, (t - lt) / 1000) : 0.016; lt = t; const f = 1 - Math.exp(-dt / 0.24); x += (tx - x) * f; y += (ty - y) * f;   /* eases where he looks, at the same pace on any screen */ const k = hopT ? Math.max(0, 1 - (t - hopT) / 520) : 0, up = k ? Math.sin((1 - k) * Math.PI) * 6 : 0;
           if (!k) hopT = 0;
           // squash a touch against the way it leans, like the big one
           const lean = Math.hypot(x, y), sx = 1 + lean * .012 - up * .01, sy = 1 - lean * .01 + up * .02;
@@ -12057,7 +12057,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           { const hd = document.querySelector(".gd-head svg"); if (hd) { const hb = hd.querySelector(".ag-b"), he = hd.querySelector(".ag-e"), hs = hd.querySelector(".ag-shy");
               if (hb) hb.setAttribute("transform", bo.getAttribute("transform")); if (he) he.setAttribute("transform", ey.getAttribute("transform")); if (hs && shy) hs.setAttribute("transform", shy.getAttribute("transform")); } }
           wide += (wideTo - wide) * .2; lid += (lidTo - lid) * .08; ey.setAttribute("transform", `translate(${(x * 1.1).toFixed(2)} ${(y * 1.1).toFixed(2)}) translate(0 -1) scale(${wide.toFixed(3)} ${(blink * wide * lid < 0.26 ? 0 : blink * wide * lid).toFixed(3)}) translate(0 1)`);   /* shut eyes vanish, no slit */
-          if (Math.abs(tx - x) + Math.abs(ty - y) > .02 || Math.abs(wideTo - wide) > .01 || Math.abs(lidTo - lid) > .01 || hopT) run = requestAnimationFrame(loop); else run = 0; };
+          if (Math.abs(tx - x) + Math.abs(ty - y) > .02 || Math.abs(wideTo - wide) > .01 || Math.abs(lidTo - lid) > .01 || hopT) run = requestAnimationFrame(loop); else { run = 0; lt = 0; } };
         const go = () => { if (!run) run = requestAnimationFrame(loop); };
         const aim = (cx, cy) => { const r = tb.getBoundingClientRect(); if (!r.width) return; const dx = cx - (r.left + r.width / 2), dy = cy - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1, m = Math.min(1, d / 160) * 3.2;
           tx = dx / d * m; ty = dy / d * m; idle = performance.now(); go(); };
