@@ -6,7 +6,7 @@
 /* the page shows once the coffee list has loaded (roasters and coffees counted), never later than 6 s */
 document.documentElement.classList.add("wait");
 /* the drop film plays on the first visit of the day; later visits that day get its still in a shorter header, so the coffees come up sooner */
-try { var fd = new Date(), fday = fd.getFullYear() + "-" + (fd.getMonth() + 1) + "-" + fd.getDate(); if (localStorage.getItem("v60.filmDay") === fday && !/[?&]film\b/.test(location.search)) document.documentElement.classList.add("film-off"); } catch (e) {}
+try { var fd = new Date(), fday = fd.getFullYear() + "-" + (fd.getMonth() + 1) + "-" + fd.getDate(); if (localStorage.getItem("v60.filmDay") === fday && !/[?&]film\b/.test(location.search)) document.documentElement.classList.add("film-off"); else localStorage.setItem("v60.filmDay", fday); } catch (e) {}   /* noted as the page opens, not when the film starts: an iPhone in Low Power Mode refuses to play it and the page draws it frame by frame instead, so "playing" never came and every visit played it again */
 /* the Italian words, only for the Italian page: goccio.co.uk/it, or Italian picked on this device */
 try { if (/^\/it(\/|$)/.test(location.pathname) || localStorage.getItem("v60.lang") === "it") document.write('<script src="/lib/it.js?v=1"><\/script>'); } catch (e) {}
 setTimeout(() => document.documentElement.classList.remove("wait"), 6000);
