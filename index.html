@@ -10210,7 +10210,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // a mouth: the whole lower third of the body, a wide grin that opens with joy and shuts tight when sad
     const W0 = 36, H0 = 24, R0 = 15.5;   // at rest: a dome 36 wide, 24 high; falling: a round drop of about the same volume
     const wS = 2 * Math.PI / 0.24, zS = 0.3, wL = 2 * Math.PI / 0.42, zL = 0.45, G = 2600;
-    const S = { aRest: 0, eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, fone: 0, umb: 0, scroll: 0, jx: 0, blush: 0, turn: 0, armL: 0, armR: 0, armLa: 0, armRa: 0, flip: 0, cold: 0, hot: 0, tumble: 0, cross: 0, float: 0 }; let rigid = false, jy = 0, jv = 0, ptrX = 0, ptrY = 0, ptrT = 0; let tws = [], a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
+    const S = { aRest: 0, eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, fone: 0, umb: 0, scroll: 0, jx: 0, blush: 0, turn: 0, armL: 0, armR: 0, armLa: 0, armRa: 0, flip: 0, cold: 0, hot: 0, tumble: 0, cross: 0, float: 0 }; let rigid = false, rollU = 0, jy = 0, jv = 0, ptrX = 0, ptrY = 0, ptrT = 0; let tws = [], a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
     const draw = () => {
       // the shape it has just before it falls: round. Squashed or stretched it keeps its volume (taller is narrower); its top
       // sways with the page; it sits on its lowest point
@@ -10248,7 +10248,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           }   /* its back faces you, all black: you only see it light up the face */
         if (gl) { if (S.fone > 0.01) { if (!tvRaf) tvRaf = requestAnimationFrame(tvTick); } else gl.style.opacity = "0"; }
         eyes.style.fill = ""; }
-      all.setAttribute("transform", `translate(${S.jx.toFixed(2)} ${(jy - S.float).toFixed(2)})${S.flip ? ` rotate(${S.flip.toFixed(1)} 0 ${(-R0).toFixed(1)})` : ""}`);
+      if (rollU) el.style.translate = `${(S.jx * rollU).toFixed(1)}px 0`;   /* rolling across the screen: the whole drop travels, so nothing of him is ever outside his own box (Safari cut him off on the right) */
+      all.setAttribute("transform", `translate(${(rollU ? 0 : S.jx).toFixed(2)} ${(jy - S.float).toFixed(2)})${S.flip ? ` rotate(${S.flip.toFixed(1)} 0 ${(-R0).toFixed(1)})` : ""}`);
       };   /* a backflip turns it about its middle */
     // small timed changes (a lid closing, an eye opening wide), eased in and out, run in the same frame loop as the physics
     const ease = (x) => x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
@@ -10278,7 +10279,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // just landed for the first time: a big show first, a roly-poly, laser eyes on his tag, a roll or a backflip, before the quieter life begins
     let landedOnce = false;
     const showOff = () => { if (still() || (opt.paused && opt.paused()) || solo) return; acting = false;   /* the hello's smile gives way to the show */ const r0 = el.getBoundingClientRect(); if (r0.bottom < 0 || r0.top > innerHeight) return;
-      const tag0 = el.parentElement && el.parentElement.querySelector(".gd-beta"); if (tag0 && tag0.offsetWidth && Math.random() < 0.35) return laserDraw();   /* now and then the first show is the laser eyes on his tag */
+      const tag0 = el.parentElement && el.parentElement.querySelector(".gd-beta"); if (tag0 && tag0.offsetWidth && Math.random() < 0.35) return laserPoke();   /* now and then the first show is the laser eyes, on the + in the top bar or a footer arrow */
       (window.gdOnce && window.gdOnce() ? rolypoly : [roll, backflip][Math.floor(Math.random() * 2)])(); };   /* the big show (coming right up to you) only if nothing has interrupted yet; otherwise a roll or a flip in its place */
     // the first time it comes into view it's simply there (it used to drop in from above): a moment later, its first show
     let fell = false;
@@ -10338,9 +10339,6 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       await face({ eyeL: 0.8, eyeR: 0.8 }, 200);
       while (performance.now() < end - 250) { lookX = side * 2.6; lookY = -2.2; leanTo = side * 0.8; draw(); await wait(Math.min(650, end - performance.now() - 250)); side = -side; if (Math.random() < 0.35) { blink = 0.35; draw(); await wait(160); blink = 1; draw(); } }
       lookX = 0; lookY = 0; leanTo = 0; draw(); await face({ eyeL: 1, eyeR: 1 }, 150); });
-    // upside down: it tips its whole head over, has a look around the world that way up, then rights itself with a wobble
-    const upside = () => act(async () => { const d = Math.random() < 0.5 ? 1 : -1; await tween("flip", 180 * d, 460); lookX = 2.4; draw(); await wait(500); lookX = -2.4; draw(); await wait(500); lookX = 0; draw();
-      await face({ happy: 1 }, 160); await wait(450); await face({ happy: 0 }, 160); await tween("flip", 0, 420); poke(d * -2.4); });
     const surprised = () => act(async () => { tween("aRest", 0.1, 140); await face({ eyeSL: 1.4, eyeSR: 1.4 }, 140); await wait(900); tween("aRest", 0, 300); poke(-0.8); });
     // sleepy: lids droop slowly, it leans and nods off, then wakes with a start
     const sleepy = () => act(async () => { await face({ eyeL: 0.35, eyeR: 0.35 }, 900); leanTo = 2; await wait(700); await face({ eyeL: 0.12, eyeR: 0.12 }, 600); leanTo = 3; await wait(900);
@@ -10369,10 +10367,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       // from where he sits; the turn matches the distance, so he rolls rather than slides
       const sv = el.querySelector("svg"), sr = sv && sv.getBoundingClientRect(), bb = body.getBoundingClientRect(), u = sr && sr.width ? sr.width / 64 : 3, half = bb.width / 2 / u, pad = 20 / u;   /* a little off the edge: his rolling outline is wider than at rest */
       const toL = Math.max(8, (bb.left + bb.width / 2) / u - half - pad), toR = Math.max(8, (innerWidth - (bb.left + bb.width / 2)) / u - half - pad);
-      const far1 = s0 < 0 ? toL : toR, far2 = s0 < 0 ? toR : toL, spin = (x) => x / R0 * 180 / Math.PI, ms = (x) => Math.max(600, Math.min(1900, x * 15));
+      rollU = u; const far1 = s0 < 0 ? toL : toR, far2 = s0 < 0 ? toR : toL, spin = (x) => x / R0 * 180 / Math.PI, ms = (x) => Math.max(600, Math.min(1900, x * 15));
       await Promise.all([tween("flip", s0 * spin(far1), ms(far1)), tween("jx", s0 * far1, ms(far1))]); poke(-1.2); await wait(220);
       await Promise.all([tween("flip", -s0 * spin(far2), ms(far1 + far2)), tween("jx", -s0 * far2, ms(far1 + far2))]); poke(-1.2); await wait(220);
-      await Promise.all([tween("flip", 0, ms(far2)), tween("jx", 0, ms(far2))]); S.flip = 0; rigid = false; poke(-2); await face({ happy: 1 }, 140); await wait(700); });
+      await Promise.all([tween("flip", 0, ms(far2)), tween("jx", 0, ms(far2))]); S.flip = 0; S.jx = 0; rollU = 0; el.style.translate = ""; rigid = false; poke(-2); await face({ happy: 1 }, 140); await wait(700); });
     // roly-poly: a crouch, then forward roly-polies in place, the face rolling under and coming back over the top; a splat and happy eyes
     const rolypoly = () => act(async () => { tween("aRest", -0.16, 180); await face({ eyeL: 0.7, eyeR: 0.7 }, 180); rigid = true; a = S.aRest = 0; va = 0; lean = 0; vl = 0; leanTo = 0;
       // each roll brings it towards you: it grows and comes a little down the screen, as if nearer
@@ -10407,7 +10405,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const plus = document.getElementById("toolsBtn"), arrows = [...document.querySelectorAll("footer details > summary")].filter((x) => !x.classList.contains("arrow-burnt"));
       const inView = (e) => { if (!e || !e.offsetWidth) return false; const r = e.getBoundingClientRect(); return r.bottom > 60 && r.top < innerHeight - 70 && r.width > 0; };
       // any footer arrow on screen (Disclaimer, Methods, Sources…), most of the time; the + in the top bar now and then
-      const seen = arrows.filter(inView), pick = seen.length && (Math.random() < 0.8 || !inView(plus)) ? seen : [inView(plus) && !(plus.closest(".top") || plus).classList.contains("tools-open") ? plus : null].filter(Boolean);
+      const seen = arrows.filter(inView), pick = seen.length && (Math.random() < 0.8 || !inView(plus)) ? seen : [inView(plus) ? plus : null].filter(Boolean);
       if (!pick.length) return; const tg = pick[Math.floor(Math.random() * pick.length)], disc = tg !== plus ? tg : null;
       const NS = "http://www.w3.org/2000/svg", mk = (n, a, p0) => { const e = document.createElementNS(NS, n); Object.entries(a).forEach(([k, v]) => e.setAttribute(k, v)); (p0 || fx).appendChild(e); return e; };
       const aimAt = () => { const r = tg === disc ? (() => { const q = disc.getBoundingClientRect(), cs = getComputedStyle(disc, "::after"); return { left: q.right - 16, top: q.top, width: 16, height: q.height }; })() : tg.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
@@ -10624,8 +10622,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // boop: it rushes up and squashes its face against your screen like glass, holds, then peels off and falls back with a wobble
     const boop = () => act(async () => { if (still()) return; await face({ eyeSL: 1.2, eyeSR: 1.2 }, 150); await nearTo(3, 80, 520, "cubic-bezier(.5,0,.9,.6)");
       el.style.transition = "scale .12s ease-out"; el.style.scale = "3.6 3.25"; rigid = true; await face({ eyeL: 0.45, eyeR: 0.45, eyeSL: 1.45, eyeSR: 1.45, blush: 0.8 }, 120); await wait(900);
-      rigid = false; el.style.transition = "scale .18s ease-in"; el.style.scale = "2.7"; await wait(180); poke(3.4); await face({ eyeL: 1, eyeR: 1, eyeSL: 1, eyeSR: 1 }, 200);
-      await nearTo(1, 0, 650, "cubic-bezier(.3,.7,.4,1)"); poke(-2.4); await face({ happy: 1, blush: 0 }, 160); await wait(600); nearDone(); }, true);
+      rigid = false; face({ eyeL: 1, eyeR: 1, eyeSL: 1, eyeSR: 1 }, 300);
+      await nearTo(1, 0, 900, "cubic-bezier(.3,.7,.4,1)"); /* back home in one move, no stop on the way */ poke(-2.4); await face({ happy: 1, blush: 0 }, 160); await wait(600); nearDone(); }, true);
     // dozing: so tired its head drops to one side as the eyes close, then it jerks back up wide awake. Twice, the second time deeper
     // meditating: eyes closed, a small calm smile, he rises off the ground and floats slowly up and down, then comes back down and opens his eyes
     const meditate = (ms) => act(async () => { lookX = 0; lookY = 0; draw(); await face({ eyeL: 0.05, eyeR: 0.05, smile: 0.3 }, 900); await wait(300);
@@ -10705,7 +10703,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const quiet = performance.now() - ptrT > 6000, closeOk = performance.now() - lastAct > 10000 && !document.documentElement.classList.contains("brew-in"), MOVES = [   /* coming right up to you: only when you've been still for 10 s */
         [20, () => { blinkSoft().then(() => { if (Math.random() < 0.3) setTimeout(() => blinkSoft(), 160); }); }],
         [14, happy], [12, smile], [10, yawn], [8, dance], [8, jumps], [5, yes], [5, no], [3, curious], [2.5, hmm], [2, () => think(1800)], [2, bored], [2, surprised],
-        [2, wink], [1.4, betaLaugh], [1.2, betaAsk], [0.8, hypno], [0.7, meditate], [1.8, laserDraw], [0.6, crossEyes], [1.6, sleepy], [1.6, doze], [1.2, onPhone], [1.2, backflip], [0.8, roll], [closeOk ? 0.8 : 0, rolypoly], [0.8, upside],
+        [2, wink], [1.4, betaLaugh], [1.2, betaAsk], [0.8, hypno], [0.7, meditate], [1.8, laserPoke], [0.6, crossEyes], [1.6, sleepy], [1.6, doze], [1.2, onPhone], [1.2, backflip], [0.8, roll], [closeOk ? 0.8 : 0, rolypoly],
         [closeOk ? 0.7 : 0, closeLook], [closeOk ? 0.7 : 0, boop], [quiet ? 0.4 : 0, boo],
         [following ? 0 : 5, () => { lookX = (Math.random() < 0.5 ? -1 : 1) * 3; lookY = Math.random() < 0.4 ? -1.5 : 0; draw(); setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900 + Math.random() * 700); }],
         [2, () => poke(-0.9)]];
@@ -10725,7 +10723,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1; lookX = dx / d * 3; lookY = dy / d * 1.5; draw();
       setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900); }, { passive: true });
     el.addEventListener("click", () => { if (opt.tap) opt.tap(); else if (!acting) jumps(); });
-    return { S, busy: () => acting, free: () => { if (!solo) acting = false; }, betaLaugh, betaAsk, laserBeta, laserWord, laserPoke, laserDraw, hypno, meditate, doze, text, rolypoly, crossEyes, closeLook, boop, look, tilt: (v) => tween("aRest", v, 320), onPhone, roll, landed: () => phase !== "fall", bored, moon, upside, boo, think, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, draw,
+    return { S, busy: () => acting, free: () => { if (!solo) acting = false; }, betaLaugh, betaAsk, laserBeta, laserWord, laserPoke, laserDraw, hypno, meditate, doze, text, rolypoly, crossEyes, closeLook, boop, look, tilt: (v) => tween("aRest", v, 320), onPhone, roll, landed: () => phase !== "fall", bored, moon, boo, think, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, draw,
       bob: () => { poke(-0.7 - Math.random() * 0.6); if (Math.random() < 0.3) { jv = -90; go(); } } }; };
     // ---- talking: tap the drop and ask it something. It answers in a bubble, the words typing themselves out while it bobs.
     // It knows a handful of things for certain (what's new, a coffee to try, sour or bitter, ratio, temperature, grind, the processes,
@@ -11336,10 +11334,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         setTimeout(() => { closeTalk(); const g0 = $("gdrop"); if (g0) g0.scrollIntoView({ block: "center", behavior: "smooth" }); setTimeout(() => { D.free(); D.meditate(); }, 900); }, 1100); }, true],
       [/\b(shake|shaking|tilt|tilting|motion|movement|scuot\w*|inclin\w*|movimento)\b/i, () => { if (window.__gdMotionOn) return say(T("I can already feel it: give your phone a shake.", "Lo sento già: dai una scossa al telefono."), null, happy);
           say(T("I can feel it when you tilt or shake your phone. Your phone will ask you first.", "Posso sentire quando inclini o scuoti il telefono. Il telefono te lo chiederà prima."), [{ t: T("Yes", "Sì"), ask: T("Want me to?", "Vuoi?"), f: () => { window.gdMotion && window.gdMotion(true); say(T("Now tilt your phone. Or shake it!", "Ora inclina il telefono. O scuotilo!"), null, happy); } }], curious); }],
-      // his laser only draws now: ask for it, or for a drawing ("draw me a heart", "draw a star"), and he draws on the page
-      [/\blasers?\b|laser eyes|occhi laser|\bdraw\b|disegna|(destroy|burn|zap|kill|blast|delete) (the |your |that )?beta|(distruggi|brucia) (la |il )?beta/i, () => { const q0 = lastQ || "", w = /heart|cuore/i.test(q0) ? "heart" : /star|stella/i.test(q0) ? "star" : /smil|faccina|sorriso/i.test(q0) ? "smiley" : /circle|ring|cerchio/i.test(q0) ? "ring" : /underline|line|sottolinea/i.test(q0) ? "wave" : "";
-        say(/burn|destroy|zap|kill|blast|delete|distruggi|brucia/i.test(q0) ? T("I don't burn things any more. I draw. Watch.", "Non brucio più niente. Disegno. Guarda.") : pick([T("Watch this.", "Guarda qui."), T("For you.", "Per te.")]), null, smile);
-        setTimeout(() => { closeTalk(); const g0 = $("gdrop"); if (g0) g0.scrollIntoView({ block: "center", behavior: "smooth" }); setTimeout(() => { D.free(); D.laserDraw(w); }, 900); }, 900); }, true],
+      // his laser: ask for it and he zaps the + (or −) in the top bar or a footer arrow; he doesn't draw on the page
+      [/\blasers?\b|laser eyes|occhi laser|(destroy|burn|zap|kill|blast|delete) (the |your |that )?beta|(distruggi|brucia) (la |il )?beta/i, () => { const q0 = lastQ || "";
+        say(pick([T("Watch this.", "Guarda qui."), T("Pew.", "Pew.")]), null, smile);
+        setTimeout(() => { closeTalk(); const g0 = $("gdrop"); if (g0) g0.scrollIntoView({ block: "center", behavior: "smooth" }); setTimeout(() => { D.free(); D.laserPoke(); }, 900); }, 900); }, true],
       [/\b(rol+(y|ie)[ -]?pol+(y|ie)|somersault|forward roll|tumble|capriol\w*|fai una capriola)\b/i, () => { say(pick([T("Weee!", "Uiii!"), T("Head over heels!", "A gambe all'aria!")]), null); setTimeout(() => { D.free(); D.rolypoly(); littleMove("ag-flip"); }, 450); }, true],
       [/\broll\b|rolling|rotola|rotolare|fai una rotolata/i, () => { say(T("Wheee!", "Uiii!"), null); setTimeout(() => { D.free(); D.roll(); littleMove("ag-spin"); }, 450); }, true],
       [/back ?flip|somersault|do a flip|capriola|salto (mortale|all'indietro)/i, () => { say(T("Watch this!", "Guarda qua!"), null); setTimeout(() => { D.free(); D.backflip(); littleMove("ag-flip"); }, 450); }, true],
