@@ -1995,6 +1995,17 @@ footer .refs a:hover, footer #credit a:hover, footer .foot-all a:hover, .item .w
 .shelf .item > .r > .bag-add:not(.in):not(.armed):hover, .bag-fz:not(.in):hover, .bag-f .bag-g:hover, .bag-buy:hover, #bagList .item .bag-rm:not(.armed):hover{
   background-color:color-mix(in srgb, var(--pill) 80%, var(--ink))!important;opacity:1!important;filter:none!important}
 .grp.bare{padding:0!important;min-height:0!important;height:0;margin-top:-13px}
+/* desktop recipe in two columns: the numbers on the left, staying in view, the pours and the notes on the right (Start brewing is already a bar at the foot) */
+@media (min-width:1100px){
+  html body #recipe #rbody{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:48px;align-items:start}
+  html body #recipe #rbody > *{grid-column:2;min-width:0}
+  html body #recipe #rbody > #specs{grid-column:1;grid-row:1 / span 30;position:sticky;top:calc(var(--top-h,49px) + 16px)}
+  html body #recipe #rbody > #techLbl{margin-top:0}
+}
+/* the day the coffees below it were added, said once */
+html body .shelf .grp.day-g{margin:0;padding:22px 0 0;border:0;font:500 var(--fs-s)/1.3 var(--sans);color:var(--muted);letter-spacing:0}
+html body .shelf .grp.day-g + .item{border-top:0!important}
+html body .shelf > .grp.bare + .grp.day-g, html body .shelf > .grp.day-g:first-child{padding-top:4px}
 .shelf > .grp.bare + .item{margin-top:-10px}   /* the first coffee 14 px under the rule, as the rule is under the last filter */   /* the rule under the filters as far below them as the top rule is above "Coffees." */
 /* the page waits for the coffee list, then fades in */
 html.wait body{opacity:0}
@@ -2894,17 +2905,6 @@ html body .top.ask-on .ask-line:not(:has(.ask-goccio.ag-gone)) > .ask-box{margin
   html body .top #toolsBtn{transition:scale .941s linear(0,0.065,0.213,0.39,0.564,0.715,0.836,0.924,0.984,1.021,1.039,1.045,1.043,1.037,1.029,1.021,1.014,1.008,1.004,1.001,0.999,0.998,0.998,0.998,0.998), transform .941s linear(0,0.065,0.213,0.39,0.564,0.715,0.836,0.924,0.984,1.021,1.039,1.045,1.043,1.037,1.029,1.021,1.014,1.008,1.004,1.001,0.999,0.998,0.998,0.998,0.998), opacity .3s ease, background .2s ease}
 }
 @media (prefers-reduced-motion:reduce){html body .top .ask-line,html body .top .ask-line .ask-goccio svg,html body .top #toolsBtn{transition:none!important}}
-/* the little Goccio peeking in from the side when you pick a coffee: it slides out from the right edge, leaning, with its offer beside it */
-html body .gd-peek{position:fixed;right:0;z-index:28;display:flex;align-items:flex-end;gap:8px;padding:0;margin:0;border:0;background:none;cursor:pointer;transform:translateX(calc(100% + 10px));transition:transform .6s cubic-bezier(.3,1.35,.5,1)}
-html body .gd-peek.in{transform:translateX(18px)}
-html body .gd-peek svg{width:calc(64px * var(--gs,1.45));height:calc(60px * var(--gs,1.45));margin-right:calc(-10px * var(--gs,1.45));flex:none;rotate:-18deg;overflow:visible;transform-origin:50% 100%;transition:rotate .6s cubic-bezier(.3,1.5,.5,1) .15s}
-html body .gd-peek.in svg{animation:gpBreathe 2.6s ease-in-out .7s infinite}
-html body .gd-peek .gd-e{transform-box:fill-box;transform-origin:center;animation:gpBlink 4.2s 1.4s infinite}
-@keyframes gpBreathe{0%,100%{scale:1 1}50%{scale:1.03 .97}}
-@keyframes gpBlink{0%,92%,100%{scale:1 1}95%{scale:1 .1}}
-html body .gd-peek.in svg{rotate:-8deg}
-html body .gd-peek .gp-say{max-width:210px;margin-bottom:calc(18px * var(--gs,1.45));padding:8px 12px;border-radius:16px;border-bottom-right-radius:4px;background:var(--gd-card,var(--pill));color:var(--ink);font:500 15px/1.35 var(--sans);text-align:left;box-shadow:0 1px 2px color-mix(in srgb,#000 35%,transparent);opacity:0;transition:opacity .3s ease .45s}
-html body .gd-peek.in .gp-say{opacity:1}
 /* first visit: the big Goccio drops in, says hi, then flies up into the little pill */
 html body .gd-fly{position:fixed;z-index:60;pointer-events:none;transform:translateY(-70vh);transition:transform .8s cubic-bezier(.3,1.35,.5,1)}
 html body .gd-fly.in{transform:none}
@@ -2914,19 +2914,15 @@ html body .gd-fly-hi.in{opacity:1;transform:none}
 /* the offer stands out: the page dims a little behind it; a tap on the page lets it go */
 html body .gd-peek-dim{position:fixed;inset:0;z-index:27;background:#000;opacity:0;transition:opacity .45s ease}
 html body .gd-peek-dim.in{opacity:.45}
-/* from the left: mirrored, the offer on its right */
-html body .gd-peek.from-left{right:auto;left:0;flex-direction:row-reverse;transform:translateX(calc(-100% - 10px))}
-html body .gd-peek.from-left.in{transform:translateX(-18px)}
-html body .gd-peek.from-left svg{rotate:18deg;margin-right:0;margin-left:calc(-10px * var(--gs,1.45))}
-html body .gd-peek.from-left.in svg{rotate:8deg}
-html body .gd-peek.from-left .gp-say{border-bottom-right-radius:16px;border-bottom-left-radius:4px}
-/* from the bottom: it rises from behind the bar, the offer above it */
-html body .gd-peek.from-bottom{right:auto;left:50%;flex-direction:column-reverse;align-items:center;gap:4px;transform:translate(-50%, calc(100% + 40px))}
-html body .gd-peek.from-bottom.in{transform:translate(-50%, 0)}
-html body .gd-peek.from-bottom svg{rotate:0deg;margin:0}
-html body .gd-peek.from-bottom.in svg{rotate:0deg}
-html body .gd-peek.from-bottom .gp-say{margin-bottom:0;border-bottom-right-radius:16px;text-align:center}
 @media (prefers-reduced-motion:reduce){html body .gd-peek,html body .gd-peek svg,html body .gd-peek-dim{transition:none}}
+/* the brew offer: a row in the page just above the recipe, the little Goccio sliding in at its start */
+html body .gd-offer{display:flex;align-items:center;gap:10px;width:100%;margin:0 0 14px;padding:10px 12px;border:0;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1.3 var(--sans);text-align:left;cursor:pointer;overflow:hidden;max-height:0;opacity:0;transform:translateY(-6px);transition:max-height .45s cubic-bezier(.3,.7,.4,1),opacity .3s ease .1s,transform .45s cubic-bezier(.3,1.4,.5,1),margin .45s ease}
+html body .gd-offer.in{max-height:80px;opacity:1;transform:none}
+html body .gd-offer svg{width:28px;height:28px;flex:none;transform:translateX(-40px) rotate(-30deg);transition:transform .7s cubic-bezier(.3,1.5,.5,1) .2s}
+html body .gd-offer.in svg{transform:none}
+html body .gd-offer .go-t{flex:1;min-width:0} html body .gd-offer .go-a{flex:none;color:var(--hl)}
+@media (hover:hover){html body .gd-offer:hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))}}
+@media (prefers-reduced-motion:reduce){html body .gd-offer,html body .gd-offer svg,html body .gd-peek-dim{transition:none}}
 @keyframes agSpinFast{0%{transform:rotate(-720deg) scale(.5)}60%{transform:rotate(-40deg) scale(1.08)}100%{transform:none}}
 @keyframes agSpit{0%{scale:1}30%{scale:.88 1.1}65%{scale:1.05 .97}100%{scale:1}}
 @keyframes agGulp{0%{scale:1}35%{scale:1.14 .9}70%{scale:.96 1.05}100%{scale:1}}
@@ -7703,7 +7699,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     shown.forEach((r) => { const k = r.roaster + "|" + String(nm(r)).toLowerCase() + tagKey(r); if (seen.has(k)) return;
       seen.set(k, new Set((shelf._byRo.get(r.roaster) || []).filter((o) => inList.has(o) && String(nm(o)).toLowerCase() === String(nm(r)).toLowerCase() && tagKey(o) === tagKey(r)).map((o) => String(o.name).toLowerCase()))); });
     const fullName = (r) => String(r.name || "").replace(/^\s*(?:espresso|filter|filtro|omni)\s*[-–—:|]\s*/i, "").replace(/["“”]/g, "").replace(/\s{2,}/g, " ").trim();
-    let lastGroup = null;
+    let lastGroup = null, lastDay = null; const byDay = !q;   // in date order (no search), the day is said once, as a heading over that day's coffees, not on every card
     brewHome();   // the recipe sits inside a row while a listed coffee is being brewed: out before the rows are redrawn, back in after
     $("shelf").innerHTML = shown.length ? shown.map((r) => {
       const i = shelf.indexOf(r);
@@ -7725,10 +7721,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         const w = LANG === "it" ? "Aggiunto" : "Added";   // one word for every coffee: the shop's own date when it gives one, else the day Goccio first saw it (Nov 2026: was Released or Added)
         return iso && iso === ymd(now) ? `${w} ${LANG === "it" ? "oggi" : "today"}` : iso && iso === ymd(y) ? `${w} ${LANG === "it" ? "ieri" : "yesterday"}` : d0 ? `${w} ${LANG === "it" ? "il " : ""}${d0}` : ""; })();   // today's and yesterday's coffees say so; older ones keep their date
       const shown = (seen.get(r.roaster + "|" + String(nm(r)).toLowerCase() + tagKey(r)) || new Set()).size > 1 ? fullName(r) : nm(r);
+      const dayHead = byDay && !isSp && day && day !== lastDay ? `<h3 class="grp day-g">${day}</h3>` : ""; if (byDay && !isSp && day) lastDay = day;
       tagBits.push(...coffeeLabels(r, shown).map((l) => `<span class="tg lbl" style="--vc:${LABEL_DOT[l] || "#8e8e93"}">${l}</span>`));
-      return `${head}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
+      return `${head}${dayHead}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
         <div class="l">
-          <p class="c-where">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : ""}<a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a>${r.roaster_city || r.roaster_country ? `<span class="rcity">${r.roaster_city ? ", " : " "}${esc(cityL(r.roaster_city))}${r.roaster_country ? `${r.roaster_city ? " " : ""}(${esc(r.roaster_country === "GB" ? "UK" : r.roaster_country)})` : ""}</span>` : ""}<br class="rn-br"><span class="day">${day}</span></p>
+          <p class="c-where">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : ""}<a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a>${r.roaster_city || r.roaster_country ? `<span class="rcity">${r.roaster_city ? ", " : " "}${esc(cityL(r.roaster_city))}${r.roaster_country ? `${r.roaster_city ? " " : ""}(${esc(r.roaster_country === "GB" ? "UK" : r.roaster_country)})` : ""}</span>` : ""}${byDay && !isSp ? "" : `<br class="rn-br"><span class="day">${day}</span>`}</p>
           <span class="name">${esc(capName(calm(shown)))}</span>
           <p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p>
           ${cardNotes(r)}${cardPrice(r)}
@@ -10096,10 +10093,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const go = () => { if (!raf) raf = requestAnimationFrame(step); };
     const poke = (amt) => { if (still()) return; va += amt; go(); };
     draw();
+    let lastAct = 0; ["scroll", "pointerdown", "keydown"].forEach((t) => addEventListener(t, () => { lastAct = performance.now(); }, { passive: true, capture: true }));
     // just landed for the first time: a big show first, a roly-poly, a roll or a backflip, before the quieter life begins
     let landedOnce = false;
     const showOff = () => { if (still() || (opt.paused && opt.paused())) return; acting = false;   /* the hello's smile gives way to the show */ const r0 = el.getBoundingClientRect(); if (r0.bottom < 0 || r0.top > innerHeight) return;
-      [rolypoly, roll, backflip][Math.floor(Math.random() * 3)](); };
+      (window.gdOnce && window.gdOnce() ? rolypoly : [roll, backflip][Math.floor(Math.random() * 2)])(); };   /* the big show (coming right up to you) only if nothing has interrupted yet; otherwise a roll or a flip in its place */
     // it falls the first time it comes into view
     let fell = false;
     const fall = () => { if (fell || still()) return; fell = true; setTimeout(() => { phase = "fall"; round = 1; y = -90; vy = 0; go(); }, opt.delay || 0); };
@@ -10282,11 +10280,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const r = Math.random(), rr = el.getBoundingClientRect(); if (rr.bottom < 0 || rr.top > innerHeight) return;
       const following = performance.now() - ptrT < 2500;   // the eyes are on your pointer: no looking round on its own
       // every move it has can turn up on its own, the small ones often, the big ones now and then (the secret tricks stay secret)
-      const quiet = performance.now() - ptrT > 6000, MOVES = [
+      const quiet = performance.now() - ptrT > 6000, closeOk = performance.now() - lastAct > 10000 && !document.documentElement.classList.contains("brew-in"), MOVES = [   /* coming right up to you: only when you've been still for 10 s */
         [20, () => { const b = (k) => { blink = k; draw(); }; b(0.12); setTimeout(() => b(1), 130); if (Math.random() < 0.3) setTimeout(() => { b(0.12); setTimeout(() => b(1), 120); }, 300); }],
         [14, happy], [12, smile], [10, yawn], [8, dance], [8, jumps], [5, yes], [5, no], [3, curious], [2.5, hmm], [2, () => think(1800)], [2, bored], [2, surprised],
-        [2, wink], [1.6, crossEyes], [1.6, sleepy], [1.6, doze], [1.2, onPhone], [1.2, backflip], [0.8, roll], [0.8, rolypoly], [0.8, upside],
-        [0.7, closeLook], [0.7, boop], [0.5, () => umbrella(4200)], [0.5, () => cold(1400)], [0.5, () => hot(1500)], [quiet ? 0.4 : 0, boo],
+        [2, wink], [1.6, crossEyes], [1.6, sleepy], [1.6, doze], [1.2, onPhone], [1.2, backflip], [0.8, roll], [closeOk ? 0.8 : 0, rolypoly], [0.8, upside],
+        [closeOk ? 0.7 : 0, closeLook], [closeOk ? 0.7 : 0, boop], [0.5, () => umbrella(4200)], [0.5, () => cold(1400)], [0.5, () => hot(1500)], [quiet ? 0.4 : 0, boo],
         [following ? 0 : 5, () => { lookX = (Math.random() < 0.5 ? -1 : 1) * 3; lookY = Math.random() < 0.4 ? -1.5 : 0; draw(); setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900 + Math.random() * 700); }],
         [2, () => poke(-0.9)]];
       let w = r * MOVES.reduce((t, m) => t + m[0], 0); for (const [k, f] of MOVES) { if ((w -= k) < 0) { f(); break; } } };
@@ -10583,25 +10581,21 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       { const o = [src, ...src.querySelectorAll("*")], k = [c, ...c.querySelectorAll("*")]; o.forEach((x, i) => { const cs = getComputedStyle(x), y = k[i]; if (!y || /^(defs|stop|radialgradient|lineargradient|clippath)$/i.test(x.tagName)) return; ["fill", "stroke", "opacity", "display", "visibility"].forEach((pr) => y.style.setProperty(pr, cs.getPropertyValue(pr))); }); }
       c.removeAttribute("id"); const ren = {}, sfx = "C" + Math.random().toString(36).slice(2, 6); c.querySelectorAll("[id]").forEach((x) => { if (/gradient|filter/i.test(x.tagName)) { ren[x.id] = x.id + sfx; x.id += sfx; } else x.removeAttribute("id"); });
       c.querySelectorAll("*").forEach((y) => { const f = y.style.getPropertyValue("fill"); const m = /url\("?#([^")]+)"?\)/.exec(f || ""); if (m && ren[m[1]]) y.style.setProperty("fill", `url(#${ren[m[1]]})`); const fa = y.getAttribute("filter"); const m2 = /url\(#([^)]+)\)/.exec(fa || ""); if (m2 && ren[m2[1]]) y.setAttribute("filter", `url(#${ren[m2[1]]})`); }); return c; };
-    // picked a coffee: the little Goccio peeks in from the side of the screen and offers to brew it with you. Once a visit; a tap starts brewing together
-    { let shown = false, pk = null, hideT = 0;
+    // picked a coffee: Goccio offers, in the page itself, just above the recipe, to brew it with you. It never covers the recipe and never dims the page.
+    // Counts as the visit's one interruption; a tap starts brewing together
+    { let shown = false, pk = null;
       const coffeeOpen = () => { const b = state && state.bag; if (!b || !b.name) return null; return (typeof shelf !== "undefined" ? shelf : []).find((r) => r.name === b.name && r.roaster === b.roaster) || null; };
-      let dim = null;
-      const hide = () => { clearTimeout(hideT); if (dim) { const d0 = dim; dim = null; d0.classList.remove("in"); setTimeout(() => d0.remove(), 500); } if (!pk) return; const p0 = pk; pk = null; p0.classList.remove("in"); setTimeout(() => p0.remove(), 600); removeEventListener("scroll", onScroll); };
-      let y0 = 0; const onScroll = () => { if (Math.abs(scrollY - y0) > 260) hide(); };
-      const peek = () => { if (shown || talking || !document.documentElement.classList.contains("brew-in") || document.documentElement.classList.contains("gd-set") || document.documentElement.classList.contains("brew-on")) return;
-        const r = coffeeOpen(); if (!r) return; shown = true;
-        const nav = document.querySelector(".dock:not([hidden]), .botnav"), bot = nav ? Math.max(70, innerHeight - nav.getBoundingClientRect().top + 14) : 90;
-        const side = ["right", "left", "bottom"][Math.floor(Math.random() * 3)];   // it comes in from a different place each time
-        dim = document.createElement("div"); dim.className = "gd-peek-dim"; dim.onclick = hide; document.body.appendChild(dim);
-        pk = document.createElement("button"); pk.type = "button"; pk.className = "gd-peek from-" + side; pk.style.bottom = (side === "bottom" ? bot - 26 : bot) + "px";
-        pk.innerHTML = `<span class="gp-say">${T("Need a hand? I can brew this with you.", "Ti serve una mano? Lo prepariamo insieme.")}</span>`; { const c = cloneBig(); if (c) { c.classList.add("gp-drop"); pk.appendChild(c); } }   /* the big Goccio itself, as it is right now */
+      const hide = () => { if (!pk) return; const p0 = pk; pk = null; p0.classList.remove("in"); setTimeout(() => p0.remove(), 450); };
+      const peek = () => { const H = document.documentElement; if (shown || talking || !H.classList.contains("brew-in") || H.classList.contains("gd-set") || H.classList.contains("brew-on")) return;
+        const r = coffeeOpen(), head = document.querySelector(".item.brewing #recipe .sec-head"); if (!r || !head || !(window.gdOnce && window.gdOnce("offer"))) return; shown = true;
+        pk = document.createElement("button"); pk.type = "button"; pk.className = "gd-offer";
+        const sv = $("askGoccio") && $("askGoccio").querySelector("svg"); if (sv) { const c = sv.cloneNode(true); c.style.opacity = ""; pk.appendChild(c); }
+        pk.insertAdjacentHTML("beforeend", `<span class="go-t">${T("Need a hand? I can brew this with you.", "Ti serve una mano? Lo prepariamo insieme.")}</span><span class="go-a" aria-hidden="true">→</span>`);
         pk.setAttribute("aria-label", T("Brew this with Goccio", "Preparalo con Goccio"));
         pk.onclick = () => { hide(); openTalk(true); setTimeout(() => gbStart(r), 350); };
-        document.body.appendChild(pk); requestAnimationFrame(() => requestAnimationFrame(() => { if (pk) pk.classList.add("in"); if (dim) dim.classList.add("in"); }));
-        y0 = scrollY; addEventListener("scroll", onScroll, { passive: true }); hideT = setTimeout(hide, 8000); };
-      // a coffee's Brew tapped by you (not by the chat): a moment to look at the recipe, then the offer
-      document.addEventListener("click", (e) => { if (!e.isTrusted || shown) return; if (e.target.closest && e.target.closest("#shelf .item .btn[data-i], #bags .btn")) setTimeout(peek, 1800); }, true);
+        head.before(pk); requestAnimationFrame(() => requestAnimationFrame(() => pk && pk.classList.add("in"))); };
+      // a coffee's Brew tapped by you (not by the chat): a moment to take in the recipe, then the offer
+      document.addEventListener("click", (e) => { if (!e.isTrusted || shown) return; if (e.target.closest && e.target.closest("#shelf .item .btn[data-i], #bags .btn")) setTimeout(peek, 1500); }, true);
       new MutationObserver(() => { if (pk && !document.documentElement.classList.contains("brew-in")) hide(); }).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] }); }
     // an answer to the question asked; false hands the message back to the rest of the chat
     const gbAnswer = (q) => { const g = gbs; let ql = q.toLowerCase().trim();
@@ -11614,7 +11608,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // Any tap or key closes it, or it fades after 9 seconds
     { const tb = $("askGoccio"); let seen = "1"; try { seen = localStorage.getItem("v60.gdIntro"); } catch (e) {}
       { const ts0 = tb && tb.querySelector("svg"); if (ts0 && !seen && !matchMedia("(prefers-reduced-motion: reduce)").matches) { ts0.style.opacity = "0"; setTimeout(() => { if (!document.querySelector(".gd-fly")) ts0.style.opacity = ""; }, 9000); } }   /* first visit: the pill stays empty until the big one flies into it */
-      const flyIn = (then) => { const ts = tb.querySelector("svg"), c = cloneBig(); if (!c || !ts || matchMedia("(prefers-reduced-motion: reduce)").matches || talking || scrollY > 80) { if (ts) ts.style.opacity = ""; return then(); }
+      const flyIn = (then) => { const ts = tb.querySelector("svg"), c = cloneBig(); if (!c || !ts || matchMedia("(prefers-reduced-motion: reduce)").matches || talking || scrollY > 80 || !(window.gdOnce && window.gdOnce())) { if (ts) ts.style.opacity = ""; return then(); }
         const gs = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--gs")) || 1.45, W = 64 * gs, Hh = 60 * gs;
         const dim = document.createElement("div"); dim.className = "gd-peek-dim"; document.body.appendChild(dim);
         const f = document.createElement("div"); f.className = "gd-fly"; f.style.width = W + "px"; f.style.height = Hh + "px"; f.style.left = (innerWidth / 2 - W / 2) + "px"; f.style.top = (Math.max(140, innerHeight * 0.33) - Hh) + "px";   /* up in the film, over the name, where the drop falls */ f.appendChild(c);
@@ -11668,7 +11662,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // its usual fall comes first (when it is well in view), then the hello
     const enter = async () => { await wait(1300); for (let i = 0; i < 60 && !D.landed(); i++) await wait(50); };
     if (hint && "IntersectionObserver" in window) new IntersectionObserver((es) => { if (hinted || !es[0].isIntersecting || es[0].intersectionRatio < 0.9) return; hinted = true;
-      enter().then(() => { const H0 = document.documentElement; if (talking || msgs.length || H0.classList.contains("brew-in") || H0.classList.contains("gd-set")) return;   /* already chatting, or brewing: no hello, and the page never fades */
+      enter().then(() => { const H0 = document.documentElement; if (talking || msgs.length || H0.classList.contains("brew-in") || H0.classList.contains("gd-set") || !(window.gdOnce && window.gdOnce())) return;   /* the visit's one interruption */   /* already chatting, or brewing: no hello, and the page never fades */
         gdWords(); hint.hidden = false; stick(); document.documentElement.classList.add("gd-hello"); D.happy(); setTimeout(() => { hint.classList.add("out"); document.documentElement.classList.remove("gd-hello"); setTimeout(() => { hint.hidden = true; hint.classList.remove("out"); }, 400); }, 4200); }); }, { threshold: [0, 0.9] }).observe(el);
     { let still = performance.now(), last = 0; const wake = () => { still = performance.now(); };
       ["pointermove", "pointerdown", "keydown", "input", "scroll", "touchstart"].forEach((t) => addEventListener(t, wake, { passive: true, capture: true }));
@@ -11723,6 +11717,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       raf = requestAnimationFrame(step); };
     if (ai && top) { ai.addEventListener("focus", () => { clearTimeout(offT); top.classList.remove("ask-off"); top.classList.add("ask-on"); necks(true); });
       ai.addEventListener("blur", () => { if (!top.classList.contains("ask-on")) return; top.classList.remove("ask-on"); top.classList.add("ask-off"); necks(false); clearTimeout(offT); offT = setTimeout(() => top.classList.remove("ask-off"), 1150); }); } }
+  // Goccio interrupts at most once a visit (the first-visit fly-in, the big one's hello, its show on landing, the brew offer): the coffee comes first
+  window.gdOnce = () => { try { if (sessionStorage.getItem("v60.gdOnce")) return false; sessionStorage.setItem("v60.gdOnce", "1"); } catch (e) {} return true; };
   window.__v60 = { showReview, analyseBeans, decafGuard, parseCoffee, engine, suggest, cupNotes, cardImage, risks, recipeText, BASE, get recipe() { return recipe; }, get shelf() { return shelf; } };
 })();
 </script>
