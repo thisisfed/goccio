@@ -41,6 +41,11 @@ COFFEE_BODY = "Origin: Colombia\nProcess: Washed\nVariety: Caturra\nAltitude: 1,
 
 # (what was reported, check that must be True)
 CASES = [
+    ("North Star: a coffee sold ground for the French press, and a coffee with a travel mug, are not bags of beans; the filter-roast one is",
+     lambda: scan.EXCLUDE.search("City Bloc x Brazil Montanari - French Press (250G)") is not None
+     and scan.EXCLUDE.search("Brazil Montanari + Flat White Life Travel") is not None
+     and not scan.EXCLUDE.search("City Bloc x Brazil Montanari - Filter (250G)") and not scan.EXCLUDE.search("French Press Blend")
+     and not scan.EXCLUDE.search("Ethiopia Guji - Filter")),
     ("Crosby: '<strong>Tasting notes:</strong> Pomelo, Brazil Nut' is two notes: the bold label doesn't eat the first, Brazil nut is not the country, pomelo stays pomelo",
      lambda: scan.flavours.english_notes(scan.find_notes(item("Honduras Santa Rosa", "<ul><li><strong>Origin:</strong> Honduras</li><li><strong>Region:</strong> Santa Rosa</li><li><strong>Tasting notes:</strong> Pomelo, Brazil Nut</li><li><strong>Process:</strong> Washed</li><li><strong>Cup Score:</strong> 84</li></ul>")))
      == ["Pomelo", "Brazil Nut"]),
