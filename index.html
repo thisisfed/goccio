@@ -2005,12 +2005,11 @@ footer .refs a:hover, footer #credit a:hover, footer .foot-all a:hover, .item .w
   html body #recipe #rbody > #techLbl{margin-top:0}
 }
 /* the day the coffees below it were added, said once */
-html body .shelf .grp.day-g{position:relative;top:calc(var(--top-h,49px) + 12px);z-index:4;display:flex;align-items:center;gap:10px;margin:0 0 0;padding:0 0 11px;border:0;background:var(--bg);font:500 var(--fs-s,15px)/1.3 var(--sans);color:var(--ink);letter-spacing:0}   /* the size of the search box's words */   /* the day stands out from the names under it, and stays pinned under the top bar while you scroll that day's coffees */
+html body .shelf .grp.day-g{position:sticky;top:calc(var(--top-h,49px) + 12px);z-index:4;display:flex;align-items:center;gap:10px;margin:0 0 0;padding:0 0 11px;border:0;background:var(--bg);font:500 var(--fs-s,15px)/1.3 var(--sans);color:var(--ink);letter-spacing:0}   /* the size of the search box's words */   /* the day stands out from the names under it, and stays pinned under the top bar while you scroll that day's coffees */
 html body .shelf .grp.day-g:not(:first-child){margin-top:40px}
 html body .shelf .grp.day-g::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:13px;background:var(--bg);display:none}   /* pinned, the strip between it and the top bar is filled, so what scrolls under doesn't show there */
 html body .shelf .grp.day-g.stuck::before{display:block}
-html body .shelf .grp.day-g .day-what{display:none}   /* it sits under Coffees, which says what it counts */
-html body .shelf .grp.day-g{transform:none!important;top:auto!important} html body .shelf .grp.day-g.stuck::before{display:none!important} html body .shelf .grp.day-g.stuck::after{left:0!important;width:100%!important}   /* no longer pinned: never pushed or stretched */   /* "230 added today" under Coffees; "230 coffees added today" once pinned */
+html body .shelf .grp.day-g .day-what{display:none} html body .shelf .grp.day-g.say-what .day-what{display:inline}   /* "230 added today" under Coffees; "230 coffees added today" once pinned with the title gone */   /* "230 added today" under Coffees; "230 coffees added today" once pinned */
 html body .shelf .grp.day-g::after{content:"";position:absolute;left:0;width:100%;bottom:0;height:1px;background:var(--line);pointer-events:none;transition:left .32s cubic-bezier(.2,.8,.2,1),width .32s cubic-bezier(.2,.8,.2,1)}   /* in the list its line is as long as the one over "Coffees." */
 html body .shelf .grp.day-g.stuck::after{left:calc(50% - 50vw);width:100vw}   /* pinned under the top bar, it stretches out from edge to edge, like the bar's own line */
 @media (prefers-reduced-motion:reduce){html body .shelf .grp.day-g::after{transition:none}}
@@ -2813,6 +2812,7 @@ html body .gd-fx .fx-beam-glow{fill:#ff2a14;opacity:.5}
 html body .gd-fx .fx-hot{fill:#fff3c4}
 html body .gd-fx .fx-spark{fill:#ffb347}
 html body .gd-fx .fx-trail{fill:none;stroke:#ff8a2a;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:stroke 1.2s ease,stroke-width 1.2s ease}
+html body .gd-fx .fx-trail.fx-draw.done{stroke:#ff2a14;stroke-width:2.6;filter:drop-shadow(0 0 4px rgba(255,42,20,.8))}   /* what he drew, glowing red once done */
 html body .gd-fx .fx-trail.cold{stroke:#2a1608;stroke-width:3}
 html body .gd-fx .fx-scorch-dot{fill:#2a1608;filter:blur(1.5px)}
 footer details > summary.arrow-burnt::after{border-color:#5a3826!important;filter:drop-shadow(0 0 3px #ff5a14);rotate:12deg;scale:.85;transition:border-color .2s,filter 1.4s,rotate .4s,scale .4s}   /* a footer arrow burnt by his laser: blackened and bent, embers cooling */
@@ -7854,7 +7854,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const dN = dayN.get(String(shelfDate(r) || "").slice(0, 10)) || 0, it1 = LANG === "it", rest = day.replace(/^(Added|Aggiunto)\s+/, "");
       // pinned under the bar, the Coffees title is gone from view: the heading then says what it counts ("230 coffees added today")
       const dayT = !dN ? day : it1 ? `${dN.toLocaleString("it-IT")}<span class="day-what"> caffè</span> ${dN === 1 ? "aggiunto" : "aggiunti"} ${rest}` : `${dN.toLocaleString("en-GB")}<span class="day-what"> ${dN === 1 ? "coffee" : "coffees"}</span> added ${/^\d/.test(rest) ? "on " : ""}${rest}`;
-      // only the first day's count, under the Coffees title ("230 added today"): no heading over each later day, and it doesn't pin
+      // only the first day's count, under the Coffees title ("230 added today"), pinned under the bar as you scroll: no heading over each later day
       const dayHead = byDay && !isSp && day && lastDay === null ? `<h3 class="grp day-g"><span class="day-t">${dayT}</span></h3>` : ""; if (byDay && !isSp && day) lastDay = day;   // one span: the heading lays out its children in a row
       tagBits.push(...coffeeLabels(r, shown).map((l) => `<span class="tg lbl" style="--vc:${LABEL_DOT[l] || "#8e8e93"}">${l}</span>`));
       return `${head}${dayHead}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
@@ -10243,7 +10243,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       L.setAttribute("transform", `translate(${(1.6 * S.cross).toFixed(2)} ${(-1.1 * lift + 1.4 * sad - 0.6 * S.happy + 0.25 * S.cross).toFixed(2)}) rotate(${(-28 * sad + 9 * S.cross).toFixed(1)} -6 -12)`); R.setAttribute("transform", `translate(${(-1.6 * S.cross).toFixed(2)} ${(-1.1 * lift + 1.4 * sad - 0.6 * S.happy + 0.25 * S.cross).toFixed(2)}) rotate(${(28 * sad - 9 * S.cross).toFixed(1)} 6 -12)`);   /* cross-eyed: both drift a little towards each other and tip in slightly */   /* sad: tipped and a little lower */
       // (no cheeks: the shy blush was taken out, 25/11/2026)
       // its phone: held low in front, screen lit; the light tints its eyes and lights its face from below
-      { const fo = el.querySelector(".gd-fone"), gl = el.querySelector(".gd-glow"); if (fo) { fo.style.opacity = S.fone.toFixed(2); fo.setAttribute("transform", `translate(${(lean * 0.4).toFixed(2)} ${(y - 3.5 + (1 - S.fone) * 9).toFixed(2)}) rotate(${(-8 + lean * 0.6).toFixed(1)})`);
+      { const fo = el.querySelector(".gd-fone"), gl = el.querySelector(".gd-glow"); if (fo) { fo.style.opacity = S.fone.toFixed(2); fo.setAttribute("transform", `translate(${(lean * 0.4).toFixed(2)} ${(y - 3.5 + (1 - S.fone) * 9).toFixed(2)}) rotate(0)`);   /* held straight up */
           }   /* its back faces you, all black: you only see it light up the face */
         if (gl) { if (S.fone > 0.01) { if (!tvRaf) tvRaf = requestAnimationFrame(tvTick); } else gl.style.opacity = "0"; }
         eyes.style.fill = ""; }
@@ -10277,7 +10277,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // just landed for the first time: a big show first, a roly-poly, laser eyes on his tag, a roll or a backflip, before the quieter life begins
     let landedOnce = false;
     const showOff = () => { if (still() || (opt.paused && opt.paused()) || solo) return; acting = false;   /* the hello's smile gives way to the show */ const r0 = el.getBoundingClientRect(); if (r0.bottom < 0 || r0.top > innerHeight) return;
-      const tag0 = el.parentElement && el.parentElement.querySelector(".gd-beta"); if (tag0 && tag0.offsetWidth && Math.random() < 0.35) return laserBeta(false);   /* now and then the first show is the laser eyes on his tag */
+      const tag0 = el.parentElement && el.parentElement.querySelector(".gd-beta"); if (tag0 && tag0.offsetWidth && Math.random() < 0.35) return laserDraw();   /* now and then the first show is the laser eyes on his tag */
       (window.gdOnce && window.gdOnce() ? rolypoly : [roll, backflip][Math.floor(Math.random() * 2)])(); };   /* the big show (coming right up to you) only if nothing has interrupted yet; otherwise a roll or a flip in its place */
     // the first time it comes into view it's simply there (it used to drop in from above): a moment later, its first show
     let fell = false;
@@ -10524,6 +10524,53 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       lookX = 0.8; lookY = -0.6; tween("aRest", 0, 240); draw(); await face({ eyeL: 1, eyeR: 1, smile: 0.6, happy: 0.6 }, 260); await wait(1100); await face({ happy: 0, smile: 0 }, 300); lookX = 0; lookY = 0; draw(); fx.remove();
       // a moment later the word is back, letter by letter
       await wait(1200); for (const l of letters) { l.classList.remove("ash"); await wait(60); } await wait(400); restore(); }, true);
+    // his laser only ever draws (never burns): he picks something near him and draws on the page round it, a heart round "good",
+    // a ring round his Beta tag, a star by a coffee's name, a wavy line under a heading, or a little smiley in a free spot. The line
+    // glows red once done, he smiles, and it fades
+    const laserDraw = (want) => act(async () => { const host = el.parentElement; if (!host || still()) return;
+      const h0 = host.getBoundingClientRect(), b0 = el.getBoundingClientRect(), vis = (r) => r && r.width > 4 && r.top > 70 && r.bottom < innerHeight - 70;
+      const rel = (r) => ({ x: r.left - h0.left, y: r.top - h0.top, w: r.width, h: r.height });
+      let good = null; { const w = document.createTreeWalker(host, NodeFilter.SHOW_TEXT); for (let n = w.nextNode(); n && !good; n = w.nextNode()) { if (n.parentElement.closest("svg, .gd-beta, .gd-say, .gd-tip")) continue; const m = /\b(good|buono)\b/i.exec(n.textContent); if (m) { const rg = document.createRange(); rg.setStart(n, m.index); rg.setEnd(n, m.index + m[0].length); good = rg.getBoundingClientRect(); } } }
+      const tag = host.querySelector(".gd-beta"), tagR = tag && tag.offsetWidth ? tag.getBoundingClientRect() : null;
+      const near = (e) => { const r = e.getBoundingClientRect(); return vis(r) && Math.hypot(r.left + r.width / 2 - (b0.left + b0.width / 2), r.top - b0.top) < 460; };
+      const names = [...document.querySelectorAll("#shelf .item .name, .sec-head .cap")].filter((e) => e.offsetWidth && !e.closest("[hidden]") && near(e));
+      const nameR = names.length ? (() => { const e = names[Math.floor(Math.random() * names.length)], rg = document.createRange(); rg.selectNodeContents(e); return rg.getBoundingClientRect(); })() : null;
+      // the shapes, as strokes of points relative to the host
+      const heart = (r) => { const c = rel(r), cx = c.x + c.w / 2, cy = c.y + c.h * 0.52, sx = Math.max(c.w, 40) * 1.5 / 32, sy = sx * 0.78, pts = [];
+        for (let i = 0; i <= 90; i++) { const t = Math.PI + (i / 90) * Math.PI * 2 * -1; pts.push([cx + sx * 16 * Math.pow(Math.sin(t), 3), cy - sy * (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t) + 1.5)]); } return [pts]; };
+      const ring = (r) => { const c = rel(r), cx = c.x + c.w / 2, cy = c.y + c.h / 2, ax = c.w / 2 + 10, ay = c.h / 2 + 8, pts = []; for (let i = 0; i <= 72; i++) { const t = -Math.PI / 2 + (i / 72) * Math.PI * 2.1; pts.push([cx + ax * Math.cos(t), cy + ay * Math.sin(t)]); } return [pts]; };
+      const star = (r) => { const c = rel(r), R = 13, cx = Math.min(h0.width + 40, c.x + c.w + R + 8), cy = c.y + c.h * 0.35, pts = []; for (let i = 0; i <= 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? R * 0.45 : R; pts.push([cx + rr * Math.cos(a), cy + rr * Math.sin(a)]); } return [pts]; };
+      const wave = (r) => { const c = rel(r), y = c.y + c.h + 5, pts = []; for (let i = 0; i <= 60; i++) { const x = c.x + c.w * i / 60; pts.push([x, y + 2.4 * Math.sin(i / 60 * Math.PI * 6)]); } return [pts]; };
+      const smiley = () => { const cx = b0.left - h0.left - 46, cy = b0.top - h0.top + b0.height * 0.35, R = 18, face = [], mouth = [];
+        for (let i = 0; i <= 60; i++) { const t = (i / 60) * Math.PI * 2; face.push([cx + R * Math.cos(t), cy + R * Math.sin(t)]); }
+        for (let i = 0; i <= 20; i++) { const t = Math.PI * 0.15 + (i / 20) * Math.PI * 0.7; mouth.push([cx + R * 0.6 * Math.cos(t), cy + R * 0.6 * Math.sin(t)]); }
+        const eye = (x) => [[cx + x, cy - R * 0.3], [cx + x, cy - R * 0.1]]; return [face, eye(-R * 0.35), eye(R * 0.35), mouth]; };
+      const opts = [good && vis(good) ? ["heart", () => heart(good)] : null, tagR && vis(tagR) ? ["ring", () => ring(tagR)] : null, nameR ? ["star", () => star(nameR)] : null, nameR ? ["wave", () => wave(nameR)] : null, ["smiley", smiley]].filter(Boolean);
+      const pickd = opts.find((o) => o[0] === want) || opts[Math.floor(Math.random() * opts.length)]; const strokes = pickd[1]();
+      const flat = strokes.flat(), first = flat[0];
+      const look = (px, py) => { const bb = body.getBoundingClientRect(), dx = px - (bb.left + bb.width / 2), dy = py - (bb.top + bb.height * 0.42), dd = Math.hypot(dx, dy) || 1; lookX = 4.4 * dx / dd; lookY = 4.4 * dy / dd; draw(); };
+      look(first[0] + h0.left, first[1] + h0.top); tween("aRest", 0.04, 240); go(); await face({ eyeL: 0.85, eyeR: 0.85, smile: 0.4 }, 260); await wait(360);
+      el.classList.add("laser"); await wait(380);
+      const NS = "http://www.w3.org/2000/svg", fx = document.createElementNS(NS, "svg"); fx.setAttribute("class", "gd-fx"); fx.setAttribute("aria-hidden", "true"); host.appendChild(fx);
+      const mk = (n, a) => { const e = document.createElementNS(NS, n); Object.entries(a).forEach(([k, v]) => e.setAttribute(k, v)); fx.appendChild(e); return e; };
+      const H0 = () => host.getBoundingClientRect(), eyeAt = (c) => { const r = el.querySelector(c).getBoundingClientRect(), h = H0(); return [r.left + r.width / 2 - h.left, r.top + r.height / 2 - h.top, Math.max(1, Math.min(r.width, r.height) / 2)]; };
+      const cone = (e0, ex, ey, r0, px, py, r1) => { const dx = px - ex, dy = py - ey, dd = Math.hypot(dx, dy) || 1, nx = -dy / dd, ny = dx / dd;
+        e0.setAttribute("points", [[ex + nx * r0, ey + ny * r0], [px + nx * r1, py + ny * r1], [px - nx * r1, py - ny * r1], [ex - nx * r0, ey - ny * r0]].map((q) => q[0].toFixed(1) + "," + q[1].toFixed(1)).join(" ")); };
+      const lines = strokes.map(() => mk("path", { class: "fx-trail fx-draw", d: "" })), beams = [0, 1].map(() => [mk("polygon", { class: "fx-beam-glow" }), mk("polygon", { class: "fx-beam" })]), hot = mk("circle", { class: "fx-hot", r: "3" }), sparks = [];
+      const lens = strokes.map((st) => st.reduce((a, p, i) => a + (i ? Math.hypot(p[0] - st[i - 1][0], p[1] - st[i - 1][1]) : 0), 0)), total = lens.reduce((a, b) => a + b, 0) || 1;
+      const T0 = performance.now(), DUR = Math.max(1200, Math.min(2600, total * 6)); let last = T0;
+      await new Promise((done) => { const step = (now) => { const k = Math.min(1, (now - T0) / DUR), dt = Math.min(50, now - last) / 1000; last = now; let left = k * total, pt = first;
+          strokes.forEach((st, si) => { if (left <= 0) { return; } const drawn = [st[0]]; let ln = 0; for (let i = 1; i < st.length; i++) { const sl = Math.hypot(st[i][0] - st[i - 1][0], st[i][1] - st[i - 1][1]); if (ln + sl <= left) { drawn.push(st[i]); ln += sl; } else { const f = (left - ln) / (sl || 1); drawn.push([st[i - 1][0] + (st[i][0] - st[i - 1][0]) * f, st[i - 1][1] + (st[i][1] - st[i - 1][1]) * f]); ln = left; break; } }
+            lines[si].setAttribute("d", "M " + drawn.map((q) => q[0].toFixed(1) + " " + q[1].toFixed(1)).join(" L ")); pt = drawn[drawn.length - 1]; left -= lens[si]; });
+          [".gd-l", ".gd-r"].forEach((c, j) => { const [ex, ey, er] = eyeAt(c); cone(beams[j][0], ex, ey, er * 1.25, pt[0], pt[1], 2.4); cone(beams[j][1], ex, ey, er * 0.55, pt[0], pt[1], 0.7); });
+          hot.setAttribute("cx", pt[0].toFixed(1)); hot.setAttribute("cy", pt[1].toFixed(1)); { const h1 = H0(); look(pt[0] + h1.left, pt[1] + h1.top); }
+          if (Math.random() < 0.6) { const a = Math.random() * Math.PI * 2, v = 30 + Math.random() * 60; sparks.push({ x: pt[0], y: pt[1], vx: Math.cos(a) * v, vy: Math.sin(a) * v - 20, life: 0.3 + Math.random() * 0.25, e: mk("circle", { class: "fx-spark", r: (0.5 + Math.random() * 0.8).toFixed(1) }) }); }
+          sparks.forEach((p0) => { p0.life -= dt; p0.vy += 240 * dt; p0.x += p0.vx * dt; p0.y += p0.vy * dt; p0.e.setAttribute("cx", p0.x.toFixed(1)); p0.e.setAttribute("cy", p0.y.toFixed(1)); p0.e.style.opacity = Math.max(0, p0.life * 2.6).toFixed(2); if (p0.life <= 0) p0.e.remove(); });
+          for (let j = sparks.length - 1; j >= 0; j--) if (sparks[j].life <= 0) sparks.splice(j, 1);
+          if (k < 1) requestAnimationFrame(step); else done(); }; requestAnimationFrame(step); });
+      beams.flat().forEach((b) => b.remove()); hot.remove(); sparks.forEach((p0) => p0.e.remove()); el.classList.remove("laser"); lines.forEach((l) => l.classList.add("done"));
+      lookX = 0; lookY = 0; tween("aRest", 0, 240); draw(); await face({ eyeL: 1, eyeR: 1, smile: 1, happy: 1 }, 320); go(); await wait(1500);
+      lines.forEach((l) => l.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 1100, fill: "forwards" })); await face({ happy: 0, smile: 0 }, 400); await wait(800); fx.remove(); }, true);
     // he looks at his Beta tag, then at you, then at the tag again, as if asking you what it's about; the last look at you
     // with both eyes a little wider
     const betaAsk = () => act(async () => {
@@ -10652,7 +10699,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const quiet = performance.now() - ptrT > 6000, closeOk = performance.now() - lastAct > 10000 && !document.documentElement.classList.contains("brew-in"), MOVES = [   /* coming right up to you: only when you've been still for 10 s */
         [20, () => { blinkSoft().then(() => { if (Math.random() < 0.3) setTimeout(() => blinkSoft(), 160); }); }],
         [14, happy], [12, smile], [10, yawn], [8, dance], [8, jumps], [5, yes], [5, no], [3, curious], [2.5, hmm], [2, () => think(1800)], [2, bored], [2, surprised],
-        [2, wink], [1.4, betaLaugh], [1.2, betaAsk], [0.8, hypno], [0.7, meditate], [0.9, laserBeta], [0.7, laserWord], [0.7, laserPoke], [0.6, crossEyes], [1.6, sleepy], [1.6, doze], [1.2, onPhone], [1.2, backflip], [0.8, roll], [closeOk ? 0.8 : 0, rolypoly], [0.8, upside],
+        [2, wink], [1.4, betaLaugh], [1.2, betaAsk], [0.8, hypno], [0.7, meditate], [1.8, laserDraw], [0.6, crossEyes], [1.6, sleepy], [1.6, doze], [1.2, onPhone], [1.2, backflip], [0.8, roll], [closeOk ? 0.8 : 0, rolypoly], [0.8, upside],
         [closeOk ? 0.7 : 0, closeLook], [closeOk ? 0.7 : 0, boop], [quiet ? 0.4 : 0, boo],
         [following ? 0 : 5, () => { lookX = (Math.random() < 0.5 ? -1 : 1) * 3; lookY = Math.random() < 0.4 ? -1.5 : 0; draw(); setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900 + Math.random() * 700); }],
         [2, () => poke(-0.9)]];
@@ -10672,7 +10719,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1; lookX = dx / d * 3; lookY = dy / d * 1.5; draw();
       setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900); }, { passive: true });
     el.addEventListener("click", () => { if (opt.tap) opt.tap(); else if (!acting) jumps(); });
-    return { S, busy: () => acting, free: () => { if (!solo) acting = false; }, betaLaugh, betaAsk, laserBeta, laserWord, laserPoke, hypno, meditate, doze, text, rolypoly, crossEyes, closeLook, boop, look, tilt: (v) => tween("aRest", v, 320), onPhone, roll, landed: () => phase !== "fall", bored, moon, upside, boo, think, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, draw,
+    return { S, busy: () => acting, free: () => { if (!solo) acting = false; }, betaLaugh, betaAsk, laserBeta, laserWord, laserPoke, laserDraw, hypno, meditate, doze, text, rolypoly, crossEyes, closeLook, boop, look, tilt: (v) => tween("aRest", v, 320), onPhone, roll, landed: () => phase !== "fall", bored, moon, upside, boo, think, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, draw,
       bob: () => { poke(-0.7 - Math.random() * 0.6); if (Math.random() < 0.3) { jv = -90; go(); } } }; };
     // ---- talking: tap the drop and ask it something. It answers in a bubble, the words typing themselves out while it bobs.
     // It knows a handful of things for certain (what's new, a coffee to try, sour or bitter, ratio, temperature, grind, the processes,
@@ -11283,8 +11330,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         setTimeout(() => { closeTalk(); const g0 = $("gdrop"); if (g0) g0.scrollIntoView({ block: "center", behavior: "smooth" }); setTimeout(() => { D.free(); D.meditate(); }, 900); }, 1100); }, true],
       [/\b(shake|shaking|tilt|tilting|motion|movement|scuot\w*|inclin\w*|movimento)\b/i, () => { if (window.__gdMotionOn) return say(T("I can already feel it: give your phone a shake.", "Lo sento già: dai una scossa al telefono."), null, happy);
           say(T("I can feel it when you tilt or shake your phone. Your phone will ask you first.", "Posso sentire quando inclini o scuoti il telefono. Il telefono te lo chiederà prima."), [{ t: T("Yes", "Sì"), ask: T("Want me to?", "Vuoi?"), f: () => { window.gdMotion && window.gdMotion(true); say(T("Now tilt your phone. Or shake it!", "Ora inclina il telefono. O scuotilo!"), null, happy); } }], curious); }],
-      [/\blasers?\b|laser eyes|occhi laser|(destroy|burn|zap|kill|blast|delete) (the |your |that )?beta|(distruggi|brucia) (la |il )?beta/i, () => { say(pick([T("Stand back.", "State indietro."), T("Pew pew.", "Piu piu.")]), null, curious);
-        setTimeout(() => { closeTalk(); const g0 = $("gdrop"); if (g0) g0.scrollIntoView({ block: "center", behavior: "smooth" }); setTimeout(() => { D.free(); D.laserBeta(!/beta/i.test(lastQ)); }, 900); }, 900); }, true],
+      // his laser only draws now: ask for it, or for a drawing ("draw me a heart", "draw a star"), and he draws on the page
+      [/\blasers?\b|laser eyes|occhi laser|\bdraw\b|disegna|(destroy|burn|zap|kill|blast|delete) (the |your |that )?beta|(distruggi|brucia) (la |il )?beta/i, () => { const q0 = lastQ || "", w = /heart|cuore/i.test(q0) ? "heart" : /star|stella/i.test(q0) ? "star" : /smil|faccina|sorriso/i.test(q0) ? "smiley" : /circle|ring|cerchio/i.test(q0) ? "ring" : /underline|line|sottolinea/i.test(q0) ? "wave" : "";
+        say(/burn|destroy|zap|kill|blast|delete|distruggi|brucia/i.test(q0) ? T("I don't burn things any more. I draw. Watch.", "Non brucio più niente. Disegno. Guarda.") : pick([T("Watch this.", "Guarda qui."), T("For you.", "Per te.")]), null, smile);
+        setTimeout(() => { closeTalk(); const g0 = $("gdrop"); if (g0) g0.scrollIntoView({ block: "center", behavior: "smooth" }); setTimeout(() => { D.free(); D.laserDraw(w); }, 900); }, 900); }, true],
       [/\b(rol+(y|ie)[ -]?pol+(y|ie)|somersault|forward roll|tumble|capriol\w*|fai una capriola)\b/i, () => { say(pick([T("Weee!", "Uiii!"), T("Head over heels!", "A gambe all'aria!")]), null); setTimeout(() => { D.free(); D.rolypoly(); littleMove("ag-flip"); }, 450); }, true],
       [/\broll\b|rolling|rotola|rotolare|fai una rotolata/i, () => { say(T("Wheee!", "Uiii!"), null); setTimeout(() => { D.free(); D.roll(); littleMove("ag-spin"); }, 450); }, true],
       [/back ?flip|somersault|do a flip|capriola|salto (mortale|all'indietro)/i, () => { say(T("Watch this!", "Guarda qua!"), null); setTimeout(() => { D.free(); D.backflip(); littleMove("ag-flip"); }, 450); }, true],
