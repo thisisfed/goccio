@@ -2,8 +2,9 @@ name: Daily roaster scan
 
 on:
   schedule:
-    # every morning at 05:31 UTC (05:31 UK in winter, 06:31 in summer). GitHub can delay or skip scheduled runs,
-    # so two backups follow; each one skips itself once today's full scan is in.
+    # every morning at 05:31 UTC (05:31 UK in winter, 06:31 in summer). GitHub runs its schedules late when it's busy
+    # (often by hours), so the scan clock, a Cloudflare Worker (workers/scan-clock), starts it on time; these stay as
+    # backups and skip themselves once today's full scan is in.
     - cron: "31 5 * * *"
     - cron: "13 7 * * *"
     - cron: "47 9 * * *"
@@ -11,6 +12,10 @@ on:
     inputs:
       only:
         description: "Rescan only these roasters (comma-separated names). Leave empty for all."
+        required: false
+        default: ""
+      daily:
+        description: "Set by the scan clock (Cloudflare): skip if today's scan is already in."
         required: false
         default: ""
       inspect:
@@ -44,7 +49,7 @@ jobs:
         env:
           INSPECT: ${{ github.event.inputs.inspect }}
         run: |
-          if [ "${{ github.event_name }}" = "schedule" ] && git log --format=%s | grep -qx "Roaster scan $(date -u +'%d %b %Y')"; then
+          if { [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event.inputs.daily }}" = "1" ]; } && git log --format=%s | grep -qx "Roaster scan $(date -u +'%d %b %Y')"; then
             echo "Today's scan is already in, nothing to do"; echo "skip=1" >> "$GITHUB_OUTPUT"
           fi
           if [ -n "$INSPECT" ]; then echo "skip=1" >> "$GITHUB_OUTPUT"; fi
