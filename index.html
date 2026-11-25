@@ -11097,6 +11097,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       [/\b(come (closer|here|nearer)|get closer|look at me|vieni (qui|qua|vicino)|avvicinati|più vicino)\b/i, () => { say(pick([T("Hello there.", "Ciao, eh."), T("Let me have a proper look at you.", "Fammi guardare bene.")]), null); setTimeout(() => { D.free(); D.closeLook(); }, 450); }, true],
       [/\b(boop|kiss|smooch|mwah|bacio|bacino|baciami)\b/i, () => { say(pick([T("Mwah!", "Muah!"), T("Boop!", "Bup!")]), null); setTimeout(() => { D.free(); D.boop(); }, 450); }, true],
       [/\b(cross[- ]?eyed|cross (your|ur|the) eyes|cross eyes|strabico|occhi storti|incrocia gli occhi)\b/i, () => { say(pick([T("Like this?", "Così?"), T("Now I can see my nose. I don't have a nose.", "Adesso vedo il mio naso. Non ho il naso.")]), null); setTimeout(() => { D.free(); D.crossEyes(1800); }, 450); }, true],
+      [/\bhypno\w*|hypnoti[sz]e|mesmeri[sz]e|look into (my|your) eyes|ipno\w*|guardami negli occhi/i, () => { say(pick([T("Look into my eyes…", "Guardami negli occhi…"), T("You are getting sleepy…", "Stai diventando sonnolento…")]), null, curious);
+        setTimeout(() => { closeTalk(); const g0 = $("gdrop"); if (g0) g0.scrollIntoView({ block: "center", behavior: "smooth" }); setTimeout(() => { D.free(); D.hypno(); }, 900); }, 1100); }, true],
       [/\blasers?\b|laser eyes|occhi laser|(destroy|burn|zap|kill|blast|delete) (the |your |that )?beta|(distruggi|brucia) (la |il )?beta/i, () => { say(pick([T("Stand back.", "State indietro."), T("Pew pew.", "Piu piu.")]), null, curious);
         setTimeout(() => { closeTalk(); const g0 = $("gdrop"); if (g0) g0.scrollIntoView({ block: "center", behavior: "smooth" }); setTimeout(() => { D.free(); D.laserBeta(!/beta/i.test(lastQ)); }, 900); }, 900); }, true],
       [/\b(rol+(y|ie)[ -]?pol+(y|ie)|somersault|forward roll|tumble|capriol\w*|fai una capriola)\b/i, () => { say(pick([T("Weee!", "Uiii!"), T("Head over heels!", "A gambe all'aria!")]), null); setTimeout(() => { D.free(); D.rolypoly(); littleMove("ag-flip"); }, 450); }, true],
@@ -11898,7 +11900,12 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // a tap elsewhere closes it; a scroll doesn't (a finger that moves is scrolling, and a scroll never makes a click)
     document.addEventListener("click", (e) => { if (talking && !talkEl.contains(e.target) && !el.contains(e.target) && !e.target.closest("#askGoccio, #askForm")) closeTalk(); }, true);
     el.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); talking ? closeTalk() : openTalk(); } });
-    window.gdrop = D; } }
+    window.gdrop = D;
+    // to try a move out: ?move=hypno (or any of his moves: laserBeta, betaAsk, rolypoly, boop…) brings him into view and plays it,
+    // then again every 9 seconds, for as long as the page is open with it
+    { const mv = (new URLSearchParams(location.search).get("move") || (location.hash.match(/move=(\w+)/) || [])[1] || "").trim();
+      if (mv && typeof D[mv] === "function") { const run = () => { const r0 = el.getBoundingClientRect(); if (r0.bottom < 60 || r0.top > innerHeight - 60) el.scrollIntoView({ block: "center" });
+          setTimeout(() => { D.free(); D[mv](); }, 600); setTimeout(run, 9000); }; setTimeout(run, 3500); } } } }
   // the hero film: silent, looping, and still (its first frame) for anyone who asks for less motion
   { const v = $("wmVideo"); if (v) { v.muted = true; v.defaultMuted = true; v.playsInline = true;
       const saveData = !!(navigator.connection && navigator.connection.saveData) || matchMedia("(prefers-reduced-data: reduce)").matches;   // Low Data mode: the still, not the film (half a megabyte saved)
