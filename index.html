@@ -10803,8 +10803,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         if (mb && !g.noMem) { g.yn = true; return T(`What are you brewing with? Your ${RECIPE_BREWERS[mb].name} again?`, `Con cosa lo prepari? Ancora il tuo ${RECIPE_BREWERS[mb].name}?`); }
         return T("What are you brewing with?", "Con cosa lo prepari?"); }
       if (!g.mill) { g.step = "mill"; const known = prefs.mill && prefs.mill !== "words" && GRINDERS[prefs.mill];
-        if (known && !g.noMill) { g.yn = true; return T(`And the grinder? Still the ${GRINDERS[prefs.mill].name}?`, `E il macinino? Sempre il ${GRINDERS[prefs.mill].name}?`) + "\n" + gbList(g, [[T(`Yes, the ${GRINDERS[prefs.mill].short || GRINDERS[prefs.mill].name}`, `Sì, il ${GRINDERS[prefs.mill].short || GRINDERS[prefs.mill].name}`), "yes"], [T("A different one", "Un altro"), "no"]]); }
-        return T("Which grinder?", "Quale macinino?") + "\n" + gbList(g, [["Comandante C40", "comandante c40"], ["1Zpresso K-Ultra", "k-ultra"], ["Timemore C3", "timemore c3"], ["Baratza Encore ESP", "encore esp"], ["Fellow Opus", "fellow opus"], [T("None, it's pre-ground", "Nessuno, è già macinato"), "none"]]) + "\n" + T("Or name another.", "O dimmene un altro."); }
+        // no list here either: any grinder named is looked up; "don't know" gets the grind in words, from fine to coarse
+        if (known && !g.noMill) { g.yn = true; return T(`And the grinder? Still the ${GRINDERS[prefs.mill].name}?`, `E il macinino? Sempre il ${GRINDERS[prefs.mill].name}?`); }
+        return T("Which grinder?", "Quale macinino?"); }
       const B = RECIPE_BREWERS[g.brewer];
       if (!g.dose && !B.cup && B.doses.length > 1) { g.step = "dose"; return T(`How much coffee? The ${B.name} takes:`, `Quanto caffè? Il ${B.name} ne prende:`) + "\n" + gbList(g, gbDoses(B)) + "\n" + T("Pick a number, or say the grams.", "Scegli un numero, o dimmi i grammi."); }
       const miss = gbMissing(g);
@@ -10858,7 +10859,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         const tb = $("askGoccio"), tr = tb && !tb.classList.contains("ag-gone") ? tb.getBoundingClientRect() : null;
         if (tr && tr.width > 20 && tr.bottom > 0 && tr.bottom < 120) {
           pk = document.createElement("button"); pk.type = "button"; pk.className = "gd-tip";
-          pk.style.top = Math.round(tr.bottom + 12) + "px"; pk.style.right = Math.max(8, Math.round(innerWidth - tr.right - 6)) + "px"; pk.style.setProperty("--tail", Math.round(tr.width / 2 + 6) + "px");
+          { const bar = document.querySelector(".top"), bb = bar ? bar.getBoundingClientRect().bottom : tr.bottom + 9; pk.style.top = Math.round(bb + Math.max(6, bb - 1 - tr.bottom)) + "px"; }   /* under the bar's line by as much as the pills sit above it */ pk.style.right = Math.max(8, Math.round(innerWidth - tr.right - 6)) + "px"; pk.style.setProperty("--tail", Math.round(tr.width / 2 + 6) + "px");
           pk.textContent = T("Need a hand? I can brew this with you.", "Ti serve una mano? Lo prepariamo insieme.");
           pk.setAttribute("aria-label", T("Brew this with Goccio", "Preparalo con Goccio"));
           pk.onclick = () => { hide(); openTalk(true); setTimeout(() => gbStart(r), 350); };
@@ -10900,6 +10901,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         if (!k) { g.tries++; if (isQ || g.tries > 2) { gbs = null; return false; } say(gbNoBrewer(), null, hmm); return true; } g.brewer = k; g.tries = 0; gbGo(g, pick([T("Nice.", "Bello."), T("Good one.", "Ottimo."), T("Lovely.", "Perfetto.")])); return true; }
       if (g.step === "mill") { let k = gbMill(q);
         if (!k && yes && prefs.mill && GRINDERS[prefs.mill]) k = prefs.mill;
+        if (!k && unsure && !/\b(have|own)\b/i.test(ql)) { g.mill = "words"; g.millNote = T("grind in words", "macinatura a parole"); g.tries = 0; gbGo(g, T("No problem: I'll give the grind in words, from fine to coarse.", "Nessun problema: ti do la macinatura a parole, da fine a grossa.")); return true; }
         if (!k && /\b(none|no grinder|don'?t have|pre.?ground|ground|nessuno|non ce l'?ho|gi[aà] macinato|macinato)\b/i.test(ql)) { g.mill = "words"; g.millNote = T("pre-ground", "già macinato"); g.tries = 0; gbGo(g, T(`No grinder, no problem: ask the roaster to grind it for ${RECIPE_BREWERS[g.brewer].name}.`, `Senza macinino va bene: chiedi alla torrefazione di macinarlo per ${RECIPE_BREWERS[g.brewer].name}.`)); return true; }
         if (!k) { if (isQ) return miss(); g.mill = "words"; g.millNote = T("grind in words", "macinatura a parole"); g.tries = 0; gbGo(g, T("I don't have a chart for that one, so I'll give the grind in Comandante clicks and in words.", "Non ho la tabella per quello, quindi ti do la macinatura in scatti Comandante e a parole.")); return true; }
         g.mill = k; g.tries = 0; gbGo(g, T(`The ${GRINDERS[k].short || GRINDERS[k].name}, great.`, `Il ${GRINDERS[k].short || GRINDERS[k].name}, ottimo.`)); return true; }
