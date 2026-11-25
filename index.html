@@ -10030,6 +10030,13 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           stops.forEach(([o, c0]) => { const st = document.createElementNS(NS0, "stop"); st.setAttribute("offset", o); st.setAttribute("stop-color", c0); gr.appendChild(st); }); df.appendChild(gr); }
         const c = document.createElementNS(NS0, "path"); c.setAttribute("class", "gd-" + name); c.setAttribute("fill", svg0 ? `url(#${gid})` : flat); c.style.opacity = "0"; c.style.pointerEvents = "none"; body.after(c); return c; } catch (e) { return null; } };
     const coldP = tintLayer("cold", [[0, "#d8ecfc"], [0.45, "#86bdf0"], [0.85, "#3f78b8"], [1, "#1f3f6a"]], "#86bdf0");
+    // sunken eyes: each eye sits in a soft socket, shadowed under the brow and catching a little light on its lower rim, so it looks set into the drop
+    const socks = (() => { try { const NS0 = "http://www.w3.org/2000/svg", svg0 = body.ownerSVGElement, id = "gdSoft" + Math.random().toString(36).slice(2, 6); if (!svg0) return null;
+        let df = svg0.querySelector("defs"); if (!df) { df = document.createElementNS(NS0, "defs"); svg0.prepend(df); }
+        const fl = document.createElementNS(NS0, "filter"); fl.id = id; fl.setAttribute("x", "-50%"); fl.setAttribute("y", "-50%"); fl.setAttribute("width", "200%"); fl.setAttribute("height", "200%");
+        const gb = document.createElementNS(NS0, "feGaussianBlur"); gb.setAttribute("stdDeviation", "0.75"); fl.appendChild(gb); df.appendChild(fl);
+        return [".gd-l", ".gd-r"].map((q) => { const eye = el.querySelector(q); if (!eye) return null; const mk = (cls, fill, op) => { const e = document.createElementNS(NS0, "ellipse"); e.setAttribute("class", cls); e.setAttribute("fill", fill); e.setAttribute("opacity", op); e.setAttribute("filter", `url(#${id})`); e.style.pointerEvents = "none"; eye.before(e); return e; };
+          const rim = mk("gd-rim", "#ffd2a0", ".28"), sock = mk("gd-sock", "#2a0f03", ".6"); return { eye, rim, sock }; }).filter(Boolean); } catch (e) { return null; } })();
     const hotP = tintLayer("hot", [[0, "#ffb08a"], [0.45, "#f0563a"], [0.85, "#b5201a"], [1, "#6a0d0b"]], "#f0563a");
     // a mouth: the whole lower third of the body, a wide grin that opens with joy and shuts tight when sad
     const W0 = 36, H0 = 24, R0 = 15.5;   // at rest: a dome 36 wide, 24 high; falling: a round drop of about the same volume
@@ -10064,6 +10071,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const c = Math.max(-1, Math.min(1, S.smile)), lift = c > 0 ? c : 0, sad = c < 0 ? -c : 0;
       L.setAttribute("ry", (parseFloat(L.getAttribute("ry")) * (1 - 0.38 * lift)).toFixed(2)); R.setAttribute("ry", (parseFloat(R.getAttribute("ry")) * (1 - 0.38 * lift)).toFixed(2));
       L.setAttribute("transform", `translate(${(3.3 * S.cross).toFixed(2)} ${(-1.1 * lift + 1.4 * sad - 0.6 * S.happy + 0.9 * S.cross).toFixed(2)}) rotate(${(-28 * sad + 24 * S.cross).toFixed(1)} -6 -12)`); R.setAttribute("transform", `translate(${(-3.3 * S.cross).toFixed(2)} ${(-1.1 * lift + 1.4 * sad - 0.6 * S.happy + 0.9 * S.cross).toFixed(2)}) rotate(${(28 * sad - 24 * S.cross).toFixed(1)} 6 -12)`);   /* cross-eyed: both slide in towards the middle, a touch down, tipped inwards */   /* sad: tipped and a little lower */
+      if (socks) socks.forEach(({ eye, rim, sock }, i) => { const cx0 = +eye.getAttribute("cx"), cy0 = +eye.getAttribute("cy"), ws = i ? S.eyeSR : S.eyeSL, tr = eye.getAttribute("transform") || "";
+        sock.setAttribute("cx", cx0); sock.setAttribute("cy", (cy0 - 0.7).toFixed(2)); sock.setAttribute("rx", (3.3 * Math.max(0.9, ws)).toFixed(2)); sock.setAttribute("ry", (4.1 * Math.max(0.9, Math.min(1.2, ws))).toFixed(2)); sock.setAttribute("transform", tr);
+        rim.setAttribute("cx", cx0); rim.setAttribute("cy", (cy0 + 1.5).toFixed(2)); rim.setAttribute("rx", (3.4 * Math.max(0.9, ws)).toFixed(2)); rim.setAttribute("ry", (3.6 * Math.max(0.9, Math.min(1.2, ws))).toFixed(2)); rim.setAttribute("transform", tr); });
       el.querySelectorAll(".gd-bl").forEach((b) => b.style.opacity = (S.blush * 0.95).toFixed(2));
       { const um = el.querySelector(".gd-umb"); if (um) { um.style.opacity = S.umb.toFixed(2); const uu = um.querySelector(".gu-u"); if (uu) uu.setAttribute("transform", `translate(0 ${((1 - S.umb) * -8).toFixed(2)}) rotate(${(-21 + lean * 1.2).toFixed(1)} 19 -15)`); } }
       // its phone: held low in front, screen lit; the light tints its eyes and lights its face from below
@@ -10579,8 +10589,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // (the page's sit in a section that's hidden while a recipe is open, and a hidden gradient paints nothing)
     const cloneBig = () => { const src = el.querySelector("svg"); if (!src) return null; const c = src.cloneNode(true);
       { const o = [src, ...src.querySelectorAll("*")], k = [c, ...c.querySelectorAll("*")]; o.forEach((x, i) => { const cs = getComputedStyle(x), y = k[i]; if (!y || /^(defs|stop|radialgradient|lineargradient|clippath)$/i.test(x.tagName)) return; ["fill", "stroke", "opacity", "display", "visibility"].forEach((pr) => y.style.setProperty(pr, cs.getPropertyValue(pr))); }); }
-      c.removeAttribute("id"); const ren = {}, sfx = "C" + Math.random().toString(36).slice(2, 6); c.querySelectorAll("[id]").forEach((x) => { if (/gradient/i.test(x.tagName)) { ren[x.id] = x.id + sfx; x.id += sfx; } else x.removeAttribute("id"); });
-      c.querySelectorAll("*").forEach((y) => { const f = y.style.getPropertyValue("fill"); const m = /url\("?#([^")]+)"?\)/.exec(f || ""); if (m && ren[m[1]]) y.style.setProperty("fill", `url(#${ren[m[1]]})`); }); return c; };
+      c.removeAttribute("id"); const ren = {}, sfx = "C" + Math.random().toString(36).slice(2, 6); c.querySelectorAll("[id]").forEach((x) => { if (/gradient|filter/i.test(x.tagName)) { ren[x.id] = x.id + sfx; x.id += sfx; } else x.removeAttribute("id"); });
+      c.querySelectorAll("*").forEach((y) => { const f = y.style.getPropertyValue("fill"); const m = /url\("?#([^")]+)"?\)/.exec(f || ""); if (m && ren[m[1]]) y.style.setProperty("fill", `url(#${ren[m[1]]})`); const fa = y.getAttribute("filter"); const m2 = /url\(#([^)]+)\)/.exec(fa || ""); if (m2 && ren[m2[1]]) y.setAttribute("filter", `url(#${ren[m2[1]]})`); }); return c; };
     // picked a coffee: the little Goccio peeks in from the side of the screen and offers to brew it with you. Once a visit; a tap starts brewing together
     { let shown = false, pk = null, hideT = 0;
       const coffeeOpen = () => { const b = state && state.bag; if (!b || !b.name) return null; return (typeof shelf !== "undefined" ? shelf : []).find((r) => r.name === b.name && r.roaster === b.roaster) || null; };
@@ -11600,7 +11610,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // first visit: the little Goccio introduces itself under the top bar, once, so "Search or ask Goccio" makes sense.
     // Any tap or key closes it, or it fades after 9 seconds
     { const tb = $("askGoccio"); let seen = "1"; try { seen = localStorage.getItem("v60.gdIntro"); } catch (e) {}
-      const flyIn = (then) => { const ts = tb.querySelector("svg"), c = cloneBig(); if (!c || !ts || matchMedia("(prefers-reduced-motion: reduce)").matches || talking || scrollY > 80) return then();
+      { const ts0 = tb && tb.querySelector("svg"); if (ts0 && !seen && !matchMedia("(prefers-reduced-motion: reduce)").matches) { ts0.style.opacity = "0"; setTimeout(() => { if (!document.querySelector(".gd-fly")) ts0.style.opacity = ""; }, 9000); } }   /* first visit: the pill stays empty until the big one flies into it */
+      const flyIn = (then) => { const ts = tb.querySelector("svg"), c = cloneBig(); if (!c || !ts || matchMedia("(prefers-reduced-motion: reduce)").matches || talking || scrollY > 80) { if (ts) ts.style.opacity = ""; return then(); }
         const gs = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--gs")) || 1.45, W = 64 * gs, Hh = 60 * gs;
         const dim = document.createElement("div"); dim.className = "gd-peek-dim"; document.body.appendChild(dim);
         const f = document.createElement("div"); f.className = "gd-fly"; f.style.width = W + "px"; f.style.height = Hh + "px"; f.style.left = (innerWidth / 2 - W / 2) + "px"; f.style.top = (Math.max(140, innerHeight * 0.33) - Hh) + "px";   /* up in the film, over the name, where the drop falls */ f.appendChild(c);
