@@ -9322,7 +9322,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     let calm = false, i = -1; const t0 = Date.now();
     // what the box is for, with the size of the list in it: "Search 8,705 coffees" (the plain hint until the list is in)
     const hintText = () => { if (typeof shelfRo !== "undefined" && shelfRo) { const k0 = shelf.filter((r) => r.roaster === shelfRo).length, bx = document.getElementById("askIn"), narrow = bx && bx.clientWidth && bx.clientWidth < 330;
-        return LANG === "it" ? `Cerca in ${shelfRo}` : `Search ${shelfRo}`; }   /* on a roaster's page the box says whose coffees it searches */
+        return LANG === "it" ? `Caffè di ${shelfRo}` : `Coffees from ${shelfRo}`; }   /* on a roaster's page the box says whose coffees it holds (no "Search": asked 25/11/2026) */
       if (false) { const k = shelf.filter((r) => r.roaster === shelfRo).length; return LANG === "it" ? `Cerca tra ${k} caffè` : `Search ${k} coffee${k === 1 ? "" : "s"}`; }   // on a roaster's page: that roaster's coffees
       const n = window.__coN || (typeof shelfPart !== "undefined" && shelfPart) || (typeof shelf !== "undefined" && shelf.length) || 0;   // the whole list, also while only its first part is in
       const box = document.getElementById("askIn"), nr = box && box.clientWidth && box.clientWidth < 290 ? 0 : (window.__roN || 0);   // and the roasters: "Search 8,757 coffees, 732 roasters" (a very narrow phone keeps just the coffees)
@@ -9330,10 +9330,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const r0 = window.__roN || 0, g = { useGrouping: "always" };
       if (!n) return T(HINT);
       const it = LANG === "it", N = n.toLocaleString(it ? "it-IT" : "en-GB", g), R = r0.toLocaleString(it ? "it-IT" : "en-GB", g);
-      // the whole line where it fits; a phone too narrow for it drops "Search", then the roasters, rather than ending in "…"
-      const forms = !r0 ? [it ? `Cerca tra ${N} caffè` : `Search ${N} coffees`]
-        : it ? [`Cerca tra ${N} caffè di ${R} torrefazioni`, `${N} caffè di ${R} torrefazioni`, `Cerca tra ${N} caffè`]
-             : [`Search ${N} coffees from ${R} roasters`, `${N} coffees from ${R} roasters`, `Search ${N} coffees`];
+      // the whole line where it fits; a phone too narrow for it drops the roasters, rather than ending in "…"
+      const forms = !r0 ? [it ? `${N} caffè` : `${N} coffees`]   /* the numbers alone, no "Search" in front */
+        : it ? [`${N} caffè di ${R} torrefazioni`, `${N} caffè`] : [`${N} coffees from ${R} roasters`, `${N} coffees`];
       const room = ph.clientWidth; if (!room) return forms[0];
       const m = document.createElement("span"); m.className = "ph-t ph-q"; m.style.cssText = "position:absolute;visibility:hidden;white-space:nowrap;width:auto"; ph.appendChild(m);
       const pick = forms.find((t) => { m.textContent = t; return m.scrollWidth <= room; }) || forms[forms.length - 1]; m.remove(); return pick; };
