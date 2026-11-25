@@ -10275,7 +10275,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     let pendingYes = null;
     // what the chat is about right now, so a short follow-up ("best one?", "another", "V60") makes sense: set from what Goccio just said
     let ctx = null, picked = new Set(), lastCo = null;   // lastCo: the coffee it last talked about, for "why that one?", "how do I brew it?"
-    const BREW_ASK = /\b(how (should|do|can|would|shall) (i|we) (brew|make|prepare)|how to (brew|make)|recipe|brew (it|this|that)|best way to brew|ricetta|come (lo|la) (preparo|faccio|estraggo)|come si prepara)\b/i;
+    const BREW_ASK = /^(let'?s |please |can you |can we |could you )?(brew|make|prepare|start brewing)\b|\bbrew me\b|^prepara(mi|mo)?\b|\b(how (should|do|can|would|shall) (i|we) (brew|make|prepare)|how to (brew|make)|recipe|brew (it|this|that)|best way to brew|ricetta|come (lo|la) (preparo|faccio|estraggo)|come si prepara)\b/i;
     // its recipe: the coffee's own Brew, opened from the list
     const brewIt = (r) => { closeTalk(); search(r.name + " " + r.roaster); setTimeout(() => { const b = [...document.querySelectorAll("#shelf button[data-i]")].find((x) => shelf[+x.dataset.i] === r); if (b && !b.closest(".item.brewing")) b.click(); }, 500); };
     // why it likes a coffee: what the bag says, in plain words
@@ -11049,7 +11049,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         say(T(`${roasteryName(ro.name)} is ${w ? "based in " + w : "on Goccio, though it doesn't say where it's based"}. ${n} coffee${n === 1 ? "" : "s"} from them on Goccio right now.`, `${roasteryName(ro.name)} ${w ? "ha sede a " + w : "è su Goccio, ma non dice dove ha sede"}. Adesso ha ${n} caffè su Goccio.`),
           [{ t: T("See their coffees", "Vedi i loro caffè"), f: () => openRoaster(ro.name) }], happy); return true; }
       if (mine.length) { const r = mine[0], more = mine.length - 1; lastCo = { r, at: Date.now() };
-        if (BREW_ASK.test(q)) { say(T(`${r.name} from ${roasteryName(r.roaster)}, lovely. Here's how to brew it.`, `${r.name} della ${roasteryName(r.roaster)}, buonissimo. Ecco come prepararlo.`), null, happy); setTimeout(() => brewIt(r), 1400); return true; }
+        if (BREW_ASK.test(q) || (ctx && ctx.t === "brewwhich")) { ctx = null; say(T(`${r.name} from ${roasteryName(r.roaster)}, lovely. Here's how to brew it.`, `${r.name} della ${roasteryName(r.roaster)}, buonissimo. Ecco come prepararlo.`), null, happy); setTimeout(() => brewIt(r), 1400); return true; }
         say(describe(r) + (more ? T(` (${more} more with that name.)`, ` (Altri ${more} con quel nome.)`) : ""), [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); search(r.name + (ro ? "" : " " + r.roaster)); } }], happy); return true; }
       if (ro && cs.length) { const others = [...new Set(cs.map((r) => r.roaster))].slice(0, 3).map(roasteryName);
         say(T(`${roasteryName(ro.name)} doesn't have that one on Goccio right now. ${others.length ? "It's from " + andList(others) + "." : ""}`, `${roasteryName(ro.name)} adesso non ce l'ha su Goccio. ${others.length ? "Ce l'ha " + andList(others) + "." : ""}`),
@@ -11074,7 +11074,14 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       if (!pendingYes && /^(yes|yeah|yep|yup|sure|ok|okay|no|nope|nah|s[iì]|certo|va bene)\b[ .!]*$/i.test(q)) {   // a yes or no with nothing to answer
         return say(pick([T("Noted! Ask me anything about coffee.", "Ricevuto! Chiedimi qualsiasi cosa sul caffè."), T("Got it. What shall we talk about?", "Capito. Di cosa parliamo?"), T("Okay! I'm all ears. Well, all drop.", "Ok! Sono tutto orecchi. Anzi, tutto goccia.")]), null, smile); }
       if (pendingYes) { const f = pendingYes; pendingYes = null; if (/^(yes|yeah|yep|yup|sure|ok|okay|please|go on|go ahead|show me|let'?s see|s[iì]|certo|dai|va bene|vediamo|fammi vedere)\b/i.test(q)) { react("👍", 200); setTimeout(f, 650); return; } }
-      if (aboutCo(q) || follow(q)) return; if (ctx && ctx.t !== "which") ctx = null;
+      // brewing from the chat: "start brewing" with a recipe open starts it; "let's brew" with nothing named asks which coffee
+      { const recipeOpen = $("recipe") && !$("recipe").hidden && $("startBrew");
+        if (/^(ok |okay |right |go |now )?(let'?s )?(start( brewing| the (timer|brew))?|go|begin|brew( now)?|inizia(mo)?|via|partiamo)[ !.]*$/i.test(q) && recipeOpen) { say(T("Here we go. Tare with the coffee in, then press Start as you begin to pour.", "Si parte. Tara con il caffè dentro, poi premi Start quando inizi a versare."), null, happy); setTimeout(() => { closeTalk(); $("startBrew").click(); }, 900); return; }
+        if (/^(let'?s |time to |can we |i want to |voglio )?(brew|make (a )?coffee|make some coffee|preparare un caff[eè]|prepariamo)( something| now| time)?[ !.?]*$/i.test(q) && !(lastCo && Date.now() - lastCo.at < 300000)) {
+          if (recipeOpen) { say(T("Your recipe's open. Say 'start' when the kettle's ready.", "La ricetta è aperta. Di' 'inizia' quando l'acqua è pronta."), null, happy); return; }
+          say(T("Lovely. Which coffee? Tell me its name, or say 'pick one' and I'll choose from today's.", "Bello. Quale caffè? Dimmi il nome, o di' 'scegline uno' e scelgo tra quelli di oggi."), null, curious); ctx = { t: "brewwhich", at: Date.now() }; return; }
+        if (ctx && ctx.t === "brewwhich" && /^(pick( one)?|you (pick|choose)|surprise me|scegli(ne uno)?|sorprendimi)[ !.]*$/i.test(q)) { ctx = null; pickNew(false, mem.brewer); return; } }
+      if (aboutCo(q) || follow(q)) return; if (ctx && ctx.t !== "which" && ctx.t !== "brewwhich") ctx = null;
       { const ql0 = q.toLowerCase();
         if (/what do you (know|remember) about me|do you remember me|what('?s| is) my (brewer|taste)|cosa (sai|ricordi) di me|ti ricordi di me/i.test(ql0)) { const bits = [mem.brewer ? T(`you brew with a ${brewName(mem.brewer)}`, `prepari il caffè con ${brewName(mem.brewer)}`) : "", (mem.likes || []).length ? T(`you like ${andList(mem.likes.map(likeName))} coffees`, `ti piacciono i caffè ${andList(mem.likes.map(likeName))}`) : ""].filter(Boolean);
           return say(bits.length ? T(`I know you're ${name || "you"}, ${andList(bits)}. It stays on this device. Say "forget me" and I will.`, `So che sei ${name || "tu"}, che ${andList(bits)}. Resta su questo dispositivo. Di' "dimenticami" e lo dimentico.`) : T(`Just your name${name ? ", " + name : ""}. Tell me your brewer or the flavours you like and I'll remember.`, `Solo il tuo nome${name ? ", " + name : ""}. Dimmi che metodo usi o che sapori ti piacciono e me li ricordo.`), null, happy); }
