@@ -10197,10 +10197,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const face = (o, ms) => Promise.all(Object.entries(o).map(([k, v]) => tween(k, v, ms)));
     const REST = { eyeL: 1, eyeR: 1, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, blush: 0, cross: 0 };
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-    let acting = false, texT = 0, texting = false;   // one expression at a time
+    let acting = false, solo = false, texT = 0, texting = false;   // one expression at a time; a "solo" (laser eyes, hypnosis, coming up close) can't be cut short by anything
     let wantText = false;   // typing an answer: the phone comes out, but a trick puts it away first and it comes back after
-    const act = async (fn) => { if (acting) return; acting = true; if (texting) { texting = false; clearInterval(texT); tween("fone", 0, 140); }
-      try { await fn(); } finally { await face(REST, 260); acting = false; if (wantText && !texting) text(true); } };
+    const act = async (fn, alone) => { if (acting) return; acting = true; solo = !!alone; if (texting) { texting = false; clearInterval(texT); tween("fone", 0, 140); }
+      try { await fn(); } finally { await face(REST, 260); acting = false; solo = false; if (wantText && !texting) text(true); } };
     const step = (t) => { raf = 0; const dt = Math.min(0.032, last ? (t - last) / 1000 : 0.016); last = t;
       tws = tws.filter((tw) => { const x = Math.min(1, (performance.now() - tw.t0) / tw.ms); setK(tw.key, tw.from + (tw.to - tw.from) * ease(x)); if (x >= 1) { tw.res(); return false; } return true; });
       if (phase === "fall") { vy += G * dt; y += vy * dt; if (y >= 0) { y = 0; phase = "rest"; round = 0; va = -Math.min(14, vy / 90); vy = 0; if (!landedOnce) { landedOnce = true; setTimeout(showOff, 1600); } } }   // lands: flattens with the speed it had, then rings
@@ -10216,7 +10216,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     let lastAct = 0; ["scroll", "pointerdown", "keydown"].forEach((t) => addEventListener(t, () => { lastAct = performance.now(); }, { passive: true, capture: true }));
     // just landed for the first time: a big show first, a roly-poly, laser eyes on his tag, a roll or a backflip, before the quieter life begins
     let landedOnce = false;
-    const showOff = () => { if (still() || (opt.paused && opt.paused())) return; acting = false;   /* the hello's smile gives way to the show */ const r0 = el.getBoundingClientRect(); if (r0.bottom < 0 || r0.top > innerHeight) return;
+    const showOff = () => { if (still() || (opt.paused && opt.paused()) || solo) return; acting = false;   /* the hello's smile gives way to the show */ const r0 = el.getBoundingClientRect(); if (r0.bottom < 0 || r0.top > innerHeight) return;
       const tag0 = el.parentElement && el.parentElement.querySelector(".gd-beta"); if (tag0 && tag0.offsetWidth && Math.random() < 0.35) return laserBeta(false);   /* now and then the first show is the laser eyes on his tag */
       (window.gdOnce && window.gdOnce() ? rolypoly : [roll, backflip][Math.floor(Math.random() * 2)])(); };   /* the big show (coming right up to you) only if nothing has interrupted yet; otherwise a roll or a flip in its place */
     // it falls the first time it comes into view
@@ -10310,7 +10310,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       S.tumble = 0; rigid = false; poke(-3); await face({ happy: 1, eyeL: 1, eyeR: 1 }, 140); await wait(450);
       // then hops back to its place: two hops, shrinking back
       if (near) { const H = "cubic-bezier(.3,.7,.4,1)"; jv = -260; go(); nearTo(2, 0.5, 380, H); await wait(420); jv = -240; go(); nearTo(1.35, 0.18, 380, H); await wait(420); jv = -200; go(); await nearTo(1, 0, 400, H); poke(-1.8); nearDone(); }
-      await wait(300); });
+      await wait(300); }, true);
     // cross-eyed: both eyes slide in and meet in the middle, a little wobble, then back with a blink
     // he glances up at his own "Beta 0.9.42-λ" tag (up on his right), holds it a moment, then has a good laugh: happy eyes, a little blush,
     // shaking side to side and bouncing, then he settles
@@ -10375,9 +10375,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           { duration: 1800 + Math.random() * 1400, delay: i * 90, easing: "ease-out", fill: "forwards" }); }
       lookX = 0.8; lookY = -0.6; tween("aRest", 0, 240); draw(); await face({ eyeL: 1, eyeR: 1, smile: 0.6, happy: 0.6 }, 260); leanTo = 0; go(); await wait(900);
       await face({ happy: 0, smile: 0 }, 300); lookX = 0; lookY = 0; draw(); go();
-      // a little later the scorch fades and the tag is back
-      setTimeout(() => { [scorch, trail].forEach((e) => e.animate([{ opacity: e === scorch ? 0.9 : 1 }, { opacity: 0 }], { duration: 900, fill: "forwards" }));
-        setTimeout(() => { fx.remove(); const bk = tag.classList.contains("gd-beta") ? "back" : "gd-unzap"; tag.classList.remove("burnt", "gd-zapped"); tag.classList.add(bk); setTimeout(() => tag.classList.remove(bk), 700); }, 900); }, 2600); });
+      // a little later the scorch fades and the tag is back; he does nothing else until it is
+      await wait(1400); [scorch, trail].forEach((e) => e.animate([{ opacity: e === scorch ? 0.9 : 1 }, { opacity: 0 }], { duration: 900, fill: "forwards" }));
+      await wait(900); fx.remove(); const bk = tag.classList.contains("gd-beta") ? "back" : "gd-unzap"; tag.classList.remove("burnt", "gd-zapped"); tag.classList.add(bk);
+      await wait(700); tag.classList.remove(bk); }, true);
     // he looks at his Beta tag, then at you, then at the tag again, as if asking you what it's about; the last look at you
     // with both eyes a little wider
     const betaAsk = () => act(async () => {
@@ -10403,7 +10404,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const closeLook = () => act(async () => { if (still()) return; lookX = 0; lookY = 0; draw(); await face({ eyeL: 0.55, eyeR: 0.55 }, 300); await nearTo(2.6, 60, 1300);
       for (const s1 of [-1, 1, 0]) { tween("flip", s1 * 9, 380); await wait(650); }
       blink = 0.12; draw(); await wait(130); blink = 1; draw(); await face({ eyeL: 1.1, eyeR: 1.1, eyeSL: 1.15, eyeSR: 1.15 }, 160); await wait(350);
-      await nearTo(1, 0, 900, "cubic-bezier(.3,.7,.4,1)"); S.flip = 0; poke(-1.4); nearDone(); });
+      await nearTo(1, 0, 900, "cubic-bezier(.3,.7,.4,1)"); S.flip = 0; poke(-1.4); nearDone(); }, true);
     // hypnosis: he goes still and stares straight at you while his eyes turn into slow white spirals, one each way ("you are getting
     // sleepy…"); then a blink and they're gone. The spirals follow his eyes' shape, so a blink closes them too
     let gazeLock = false;   // while he hypnotises, his eyes stay on you, whatever the pointer does
@@ -10417,12 +10418,12 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           g.setAttribute("transform", `${e0.getAttribute("transform") || ""} translate(${cx} ${cy}) scale(${(rx / 2.4).toFixed(3)} ${(ry / 2.4).toFixed(3)})`); }); requestAnimationFrame(follow); }; follow();
       sp.forEach(([, g]) => g.classList.add("in"));
       await wait(4600);   // still, straight at you, the spirals turning
-      blink = 0.12; draw(); await wait(140); sp.forEach(([, g]) => g.remove()); cp.remove(); on = false; blink = 1; draw(); gazeLock = false; });
+      blink = 0.12; draw(); await wait(140); sp.forEach(([, g]) => g.remove()); cp.remove(); on = false; blink = 1; draw(); gazeLock = false; }, true);
     // boop: it rushes up and squashes its face against your screen like glass, holds, then peels off and falls back with a wobble
     const boop = () => act(async () => { if (still()) return; await face({ eyeSL: 1.2, eyeSR: 1.2 }, 150); await nearTo(3, 80, 520, "cubic-bezier(.5,0,.9,.6)");
       el.style.transition = "scale .12s ease-out"; el.style.scale = "3.6 3.25"; rigid = true; await face({ eyeL: 0.45, eyeR: 0.45, eyeSL: 1.45, eyeSR: 1.45, blush: 0.8 }, 120); await wait(900);
       rigid = false; el.style.transition = "scale .18s ease-in"; el.style.scale = "2.7"; await wait(180); poke(3.4); await face({ eyeL: 1, eyeR: 1, eyeSL: 1, eyeSR: 1 }, 200);
-      await nearTo(1, 0, 650, "cubic-bezier(.3,.7,.4,1)"); poke(-2.4); await face({ happy: 1, blush: 0 }, 160); await wait(600); nearDone(); });
+      await nearTo(1, 0, 650, "cubic-bezier(.3,.7,.4,1)"); poke(-2.4); await face({ happy: 1, blush: 0 }, 160); await wait(600); nearDone(); }, true);
     // dozing: so tired its head drops to one side as the eyes close, then it jerks back up wide awake. Twice, the second time deeper
     const doze = () => act(async () => { const s1 = Math.random() < 0.5 ? -1 : 1;
       for (let i = 0; i < 2; i++) { const deep = i === 1, ms = deep ? 1700 : 1300;
@@ -10523,12 +10524,12 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         c.setAttribute("cx", (side * (14 + i * 3.5)).toFixed(1)); c.setAttribute("cy", (-3 - i * 1.6).toFixed(1)); c.setAttribute("r", (2.2 + i * 0.9).toFixed(1)); c.style.animationDelay = i * 60 + "ms"; notes.appendChild(c); setTimeout(() => c.remove(), 1500); } };
     const puffMid = () => { for (let i = 0; i < 5; i++) { const c = document.createElementNS(NS, "circle"); c.setAttribute("class", "gd-puff");
         c.setAttribute("cx", ((i % 2 ? 1 : -1) * i * 2.2).toFixed(1)); c.setAttribute("cy", (6 + i * 1.2).toFixed(1)); c.setAttribute("r", (2.4 + i * 0.8).toFixed(1)); c.style.animationDelay = i * 55 + "ms"; notes.appendChild(c); setTimeout(() => c.remove(), 1500); } };
-    const fart = () => { if (still()) return; acting = false; tws.forEach((t) => t.res()); tws = []; dancing = false; S.fone = 0;
+    const fart = () => { if (still() || solo) return; acting = false; tws.forEach((t) => t.res()); tws = []; dancing = false; S.fone = 0;
       act(async () => { jv = -150; poke(1.8); pfft(); puff(); await face({ eyeSL: 1.4, eyeSR: 1.4 }, 90); await wait(420);
         lookX = -2.6; lookY = 1.6; draw(); tween("aRest", -0.07, 300); await face({ eyeSL: 1, eyeSR: 1, eyeL: 0.7, eyeR: 0.7, smile: 0.5, blush: 1 }, 320); await wait(1800);
         lookX = 0; lookY = 0; tween("aRest", 0, 300); draw(); }); };
     // asked to fart: it turns its back, lets one go (the puff comes out of the middle, at you), turns round again and smiles, embarrassed
-    const fartBack = () => { if (still()) return; acting = false; tws.forEach((t) => t.res()); tws = []; dancing = false; S.fone = 0;
+    const fartBack = () => { if (still() || solo) return; acting = false; tws.forEach((t) => t.res()); tws = []; dancing = false; S.fone = 0;
       return act(async () => { await tween("turn", 1, 420); await wait(350); jv = -150; poke(1.8); pfft(); puffMid(); await wait(650);
         await tween("turn", 0, 380); lookX = -2.4; lookY = 1.4; draw(); tween("aRest", -0.07, 300);
         await face({ eyeSL: 1, eyeSR: 1, eyeL: 0.7, eyeR: 0.7, smile: 0.8, blush: 1 }, 320); await wait(1900);
@@ -10543,7 +10544,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1; lookX = dx / d * 3; lookY = dy / d * 1.5; draw();
       setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900); }, { passive: true });
     el.addEventListener("click", () => { if (farted) { farted = false; return; } if (opt.tap) opt.tap(); else if (!acting) jumps(); });
-    return { S, busy: () => acting, free: () => { acting = false; }, betaLaugh, betaAsk, laserBeta, hypno, doze, cold, hot, text, rolypoly, crossEyes, closeLook, boop, look, tilt: (v) => tween("aRest", v, 320), umbrella, onPhone, roll, landed: () => phase !== "fall", bored, moon, fartBack, upside, boo, think, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, fart, draw,
+    return { S, busy: () => acting, free: () => { if (!solo) acting = false; }, betaLaugh, betaAsk, laserBeta, hypno, doze, cold, hot, text, rolypoly, crossEyes, closeLook, boop, look, tilt: (v) => tween("aRest", v, 320), umbrella, onPhone, roll, landed: () => phase !== "fall", bored, moon, fartBack, upside, boo, think, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, fart, draw,
       bob: () => { poke(-0.7 - Math.random() * 0.6); if (Math.random() < 0.3) { jv = -90; go(); } } }; };
     // ---- talking: tap the drop and ask it something. It answers in a bubble, the words typing themselves out while it bobs.
     // It knows a handful of things for certain (what's new, a coffee to try, sour or bitter, ratio, temperature, grind, the processes,
