@@ -10180,9 +10180,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const poke = (amt) => { if (still()) return; va += amt; go(); };
     draw();
     let lastAct = 0; ["scroll", "pointerdown", "keydown"].forEach((t) => addEventListener(t, () => { lastAct = performance.now(); }, { passive: true, capture: true }));
-    // just landed for the first time: a big show first, a roly-poly, a roll or a backflip, before the quieter life begins
+    // just landed for the first time: a big show first, a roly-poly, laser eyes on his tag, a roll or a backflip, before the quieter life begins
     let landedOnce = false;
     const showOff = () => { if (still() || (opt.paused && opt.paused())) return; acting = false;   /* the hello's smile gives way to the show */ const r0 = el.getBoundingClientRect(); if (r0.bottom < 0 || r0.top > innerHeight) return;
+      const tag0 = el.parentElement && el.parentElement.querySelector(".gd-beta"); if (tag0 && tag0.offsetWidth && Math.random() < 0.35) return laserBeta();   /* now and then the first show is the laser eyes on his tag */
       (window.gdOnce && window.gdOnce() ? rolypoly : [roll, backflip][Math.floor(Math.random() * 2)])(); };   /* the big show (coming right up to you) only if nothing has interrupted yet; otherwise a roll or a flip in its place */
     // it falls the first time it comes into view
     let fell = false;
@@ -10278,7 +10279,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const laserBeta = () => act(async () => { const host = el.parentElement, tag = host && host.querySelector(".gd-beta");
       if (!tag || still() || !tag.offsetWidth || tag.classList.contains("burnt") || getComputedStyle(tag).opacity === "0") return;
       const NS = "http://www.w3.org/2000/svg", mk = (n, a, p0) => { const e = document.createElementNS(NS, n); Object.entries(a).forEach(([k, v]) => e.setAttribute(k, v)); (p0 || fx).appendChild(e); return e; };
-      lookX = 3.4; lookY = -2.9; leanTo = 1.2; draw(); go(); await face({ eyeL: 0.72, eyeR: 0.72, smile: -0.25 }, 240); await wait(380);   // eyes narrowed on it
+      // his eyes on the tag itself, wherever it sits: aimed at it, then following the cut as it goes round
+      const aim = (px, py) => { const b0 = body.getBoundingClientRect(), dx = px - (b0.left + b0.width / 2), dy = py - (b0.top + b0.height * 0.42), d = Math.hypot(dx, dy) || 1; lookX = 4.4 * dx / d; lookY = 4.4 * dy / d; draw(); };
+      { const tr = tag.getBoundingClientRect(); aim(tr.left + tr.width / 2, tr.top + tr.height / 2); } leanTo = 1.2; tween("aRest", -0.06, 240); go();
+      await face({ eyeL: 0.72, eyeR: 0.72, smile: -0.25 }, 240); await wait(420);   // eyes narrowed on it
       el.classList.add("laser"); await wait(420);   // they glow red
       const fx = document.createElementNS(NS, "svg"); fx.setAttribute("class", "gd-fx"); fx.setAttribute("aria-hidden", "true"); host.appendChild(fx);
       const H0 = () => host.getBoundingClientRect(), rel = (r) => { const h = H0(); return { x: r.left - h.left, y: r.top - h.top, w: r.width, h: r.height }; };
@@ -10293,6 +10297,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       await new Promise((done) => { const step = (now) => { const k = Math.min(1, (now - T0) / DUR), pt = edge.getPointAtLength(k * len), dt = Math.min(50, now - last) / 1000; last = now;
           pts.push(`${pt.x.toFixed(1)} ${pt.y.toFixed(1)}`); trail.setAttribute("d", "M " + pts.join(" L "));
           [".gd-l", ".gd-r"].forEach((c, i) => { const [ex, ey] = eyeAt(c); beams[i].forEach((b) => { b.setAttribute("x1", ex.toFixed(1)); b.setAttribute("y1", ey.toFixed(1)); b.setAttribute("x2", pt.x.toFixed(1)); b.setAttribute("y2", pt.y.toFixed(1)); }); });
+          { const h1 = H0(); aim(h1.left + pt.x, h1.top + pt.y); }
           hot.setAttribute("cx", pt.x.toFixed(1)); hot.setAttribute("cy", pt.y.toFixed(1)); hot.setAttribute("r", (2.6 + Math.random() * 1.4).toFixed(1));
           for (let i = 0; i < 2; i++) { const a = Math.random() * Math.PI * 2, v = 40 + Math.random() * 90; sparks.push({ x: pt.x, y: pt.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 30, life: 0.35 + Math.random() * 0.3, e: mk("circle", { class: "fx-spark", r: (0.6 + Math.random() * 0.9).toFixed(1) }) }); }
           sparks.forEach((p0) => { p0.life -= dt; p0.vy += 260 * dt; p0.x += p0.vx * dt; p0.y += p0.vy * dt; p0.e.setAttribute("cx", p0.x.toFixed(1)); p0.e.setAttribute("cy", p0.y.toFixed(1)); p0.e.style.opacity = Math.max(0, p0.life * 2.4).toFixed(2); if (p0.life <= 0) p0.e.remove(); });
@@ -10313,7 +10318,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         const pf = mk("circle", { class: "fx-smoke", cx: sx.toFixed(1), cy: sy.toFixed(1), r: (3 + Math.random() * 2.5).toFixed(1), fill: `url(#${smokeId})` });
         pf.animate([{ transform: "translate(0,0) scale(1)", opacity: 0 }, { opacity: 0.55, offset: 0.15 }, { transform: `translate(${dx.toFixed(1)}px,${(-rise).toFixed(1)}px) scale(${(3 + Math.random() * 2).toFixed(1)})`, opacity: 0 }],
           { duration: 1800 + Math.random() * 1400, delay: i * 90, easing: "ease-out", fill: "forwards" }); }
-      lookX = 0.8; lookY = -0.6; draw(); await face({ eyeL: 1, eyeR: 1, smile: 0.6, happy: 0.6 }, 260); leanTo = 0; go(); await wait(900);
+      lookX = 0.8; lookY = -0.6; tween("aRest", 0, 240); draw(); await face({ eyeL: 1, eyeR: 1, smile: 0.6, happy: 0.6 }, 260); leanTo = 0; go(); await wait(900);
       await face({ happy: 0, smile: 0 }, 300); lookX = 0; lookY = 0; draw(); go();
       // a little later the scorch fades and the tag is back
       setTimeout(() => { [scorch, trail].forEach((e) => e.animate([{ opacity: e === scorch ? 0.9 : 1 }, { opacity: 0 }], { duration: 900, fill: "forwards" }));
