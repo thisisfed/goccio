@@ -11725,17 +11725,30 @@ void main(){
     // phones: the chat is a full-screen sheet, like a messaging app: Goccio as the contact at the top, the box on the keyboard. Nothing behind it
     // can scroll or be tapped, so it never closes by accident; the X, Escape or a swipe down on its top closes it
     const fullMQ = matchMedia("(max-width: 640px)"), isFull = () => fullMQ.matches;
-    const fullFit = () => { if (!document.documentElement.classList.contains("gd-full")) { talkEl.style.top = ""; talkEl.style.height = ""; return; } const vv = window.visualViewport; if (vv) { talkEl.style.top = vv.offsetTop + "px"; talkEl.style.height = vv.height + "px"; } };
+    let pinY = null;
+    const pin = (on) => { const b = document.body.style, H = document.documentElement;
+      if (on && pinY === null) { pinY = scrollY; b.position = "fixed"; b.top = -pinY + "px"; b.left = "0"; b.right = "0"; b.width = "100%"; }
+      else if (!on && pinY !== null) { const y = pinY; pinY = null; b.position = b.top = b.left = b.right = b.width = ""; const sb = H.style.scrollBehavior; H.style.scrollBehavior = "auto"; scrollTo(0, y); H.style.scrollBehavior = sb; } };
+    const fullFit = () => { if (!document.documentElement.classList.contains("gd-full")) { talkEl.style.top = ""; talkEl.style.height = ""; return; } const vv = window.visualViewport; if (vv) { talkEl.style.top = vv.offsetTop + "px"; talkEl.style.height = vv.height + "px"; } toBottom(); };
+    // iPhone: as the keyboard comes up, Safari slides what you see down the page to show the box, and it doesn't always say when it
+    // has finished (the last slide can come after its own events). So while you type, and for a moment after the keyboard comes or
+    // goes, the sheet is checked against what you can see every frame and moved to match: it never ends up above the screen
+    { const inF = $("gdIn"); let fr = 0, until = 0, lastK = "";
+      const loop = () => { fr = 0; if (!document.documentElement.classList.contains("gd-full")) return; const vv = window.visualViewport;
+        if (vv) { const k = Math.round(vv.offsetTop) + "|" + Math.round(vv.height); if (k !== lastK) { lastK = k; fullFit(); } }
+        if (document.activeElement === inF || performance.now() < until) fr = requestAnimationFrame(loop); };
+      window.gdFitWatch = (ms) => { until = Math.max(until, performance.now() + (ms || 1200)); if (!fr) fr = requestAnimationFrame(loop); };
+      if (inF) { inF.addEventListener("focus", () => window.gdFitWatch(1800)); inF.addEventListener("blur", () => window.gdFitWatch(1400)); } }
     if (window.visualViewport) { visualViewport.addEventListener("resize", fullFit); visualViewport.addEventListener("scroll", fullFit); }
     const fullHead = () => { if (talkEl.querySelector(".gd-head")) return; const h = document.createElement("span"); h.className = "gd-head"; const sv = $("askGoccio") && $("askGoccio").querySelector("svg"); if (sv) { const c = sv.cloneNode(true); c.style.opacity = ""; h.appendChild(c); }
       h.insertAdjacentHTML("beforeend", `<span class="gh-n">Goccio</span><span class="gh-b">Beta 0.9</span>`); talkEl.prepend(h);
       let y0 = null; h.addEventListener("touchstart", (e) => { y0 = e.touches[0].clientY; }, { passive: true }); h.addEventListener("touchmove", (e) => { if (y0 != null && e.touches[0].clientY - y0 > 70) { y0 = null; closeTalk(); } }, { passive: true }); };
-    openTalk = (top) => { if (talking) { place(top || isFull()); return; } if (isFull()) { top = true; fullHead(); document.documentElement.classList.add("gd-full"); } openY = null; setTimeout(() => { openY = scrollY; }, 800); place(top); gdWords(); talking = true; dim(true, top); talkEl.hidden = false; el.setAttribute("aria-expanded", "true"); fullFit(); toBottom();
+    openTalk = (top) => { if (talking) { place(top || isFull()); return; } if (isFull()) { top = true; fullHead(); pin(true); document.documentElement.classList.add("gd-full"); } openY = null; setTimeout(() => { openY = scrollY; }, 800); place(top); gdWords(); talking = true; dim(true, top); talkEl.hidden = false; el.setAttribute("aria-expanded", "true"); fullFit(); if (window.gdFitWatch) window.gdFitWatch(1000); toBottom();
       const lastAt = msgs.length ? msgs[msgs.length - 1].at || 0 : 0; if (name && msgs.length && Date.now() - lastAt < 20 * 60000) { showChips(); return; }   // still mid-chat: carry on
       replyTo = null;   // a new hello answers nobody: it anchors to itself
       if (!name) { askingName = true; return say(T("Hi! I'm Goccio, the drop that knows coffee. What should I call you?", "Ciao! Sono Goccio, la goccia che sa tutto del caffè. Come ti chiamo?"), [T("Skip", "Salta")], happy); }
       hello(); };
-    closeTalk = () => { if (!talking) return; talking = false; document.documentElement.classList.remove("gd-full"); fullFit(); dim(false); talkEl.hidden = true; el.setAttribute("aria-expanded", "false"); clearInterval(typeT); bob(false); };
+    closeTalk = () => { if (!talking) return; talking = false; document.documentElement.classList.remove("gd-full"); fullFit(); pin(false); dim(false); talkEl.hidden = true; el.setAttribute("aria-expanded", "false"); clearInterval(typeT); bob(false); };
     $("gdX").onclick = closeTalk;
     // the top bar: the little Goccio opens it there; a question typed in the search box goes to Goccio instead of the list
     { const tb = $("askGoccio"); if (tb) tb.onclick = () => { window.gdMotion && window.gdMotion(); talking ? closeTalk() : openTalk(true); tb.hop && tb.hop(); }; }
