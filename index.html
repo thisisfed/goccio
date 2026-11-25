@@ -2870,20 +2870,23 @@ html body .top #toolsBtn.spit{animation:agSpit .4s cubic-bezier(.3,1.5,.5,1)}
   html body .ask-line .ask-goccio.ag-out svg{animation:agSpinFast .7s cubic-bezier(.15,.7,.3,1) both}   /* out of the +: a fast spin as it lands in place */
 }
 @keyframes agOut{0%{transform:translateX(10px) scale(.3,.5);opacity:0}18%{opacity:1}40%{transform:translateX(-3px) scale(1.25,.78)}58%{transform:translateX(1px) scale(.88,1.12)}74%{transform:scale(1.06,.95)}88%{transform:scale(.98,1.02)}100%{transform:none;opacity:1}}
-/* typing in the search box: it takes the whole bar, flowing on over the pills on its right. The pills keep their size and place: liquid
-   necks bridge the gaps as the box runs into them, as the pills do going back into the +. Leaving, the box draws back and the necks thin and snap */
+/* typing in the search box: the pills on its right run into it, the + catching up with the little Goccio, liquid necks swelling between
+   them as they meet (the same metaball bridges as the + and its pills), and slip in under it; then the box flows on over the whole bar.
+   Leaving, the box draws back, the pills spring out of it, and the necks stretch, thin and snap as they part */
 html body .top .ask-br{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:0}
 html body .top.ask-on #toolsBtn, html body .top.ask-on .ask-line .ask-goccio:not(.ag-gone){pointer-events:none}
-html body .top.ask-on .ask-line{right:12px!important}
+html body .top.ask-on .ask-line{right:12px!important;transition:opacity .25s ease, transform .25s ease, right .941s linear(0,0.065,0.213,0.39,0.564,0.715,0.836,0.924,0.984,1.021,1.039,1.045,1.043,1.037,1.029,1.021,1.014,1.008,1.004,1.001,0.999,0.998,0.998,0.998,0.998) .2s, visibility 0s linear 0s!important}
+html body .top.ask-on .ask-line .ask-goccio:not(.ag-gone){transform:translateX(calc(-1 * var(--pill-h,32px) - 8px));transition:transform .42s cubic-bezier(.55,0,.8,.3)}
+html body .top.ask-on #toolsBtn{transform:translateX(calc(-2 * var(--pill-h,32px) - 16px));transition:transform .42s cubic-bezier(.55,0,.8,.3)}
 html body .top:is(.ask-on,.ask-off) .ask-line{z-index:5!important} html body .top:is(.ask-on,.ask-off) .ask-line > .ask-box{position:relative;z-index:2} html body .top:is(.ask-on,.ask-off) .ask-line .ask-goccio{z-index:0}   /* the pills slip in under the box, never over it */
 html body .top .ask-line > .ask-box{transition:margin-right .941s linear(0,0.065,0.213,0.39,0.564,0.715,0.836,0.924,0.984,1.021,1.039,1.045,1.043,1.037,1.029,1.021,1.014,1.008,1.004,1.001,0.999,0.998,0.998,0.998,0.998)}
-html body .top.ask-on .ask-line > .ask-box{margin-right:calc(-1 * var(--pill-h,32px) - 4px)}   /* the box runs on over the little Goccio's pill; the pills keep their size and slip in under it */
+html body .top.ask-on .ask-line > .ask-box{margin-right:calc(-1 * var(--pill-h,32px) - 4px);transition:margin-right .941s linear(0,0.065,0.213,0.39,0.564,0.715,0.836,0.924,0.984,1.021,1.039,1.045,1.043,1.037,1.029,1.021,1.014,1.008,1.004,1.001,0.999,0.998,0.998,0.998,0.998) .2s}   /* the box runs on over the little Goccio's pill; the pills keep their size and slip in under it */
 @media (prefers-reduced-motion:reduce){html body .top.ask-on #toolsBtn, html body .top.ask-on .ask-line .ask-goccio, html body .top.ask-off #toolsBtn, html body .top.ask-off .ask-line .ask-goccio{animation:none}}
 @supports (transition-timing-function:linear(0,1)){
   html body .top .ask-line{transition:opacity .25s ease, transform .25s ease, right .941s linear(0,0.065,0.213,0.39,0.564,0.715,0.836,0.924,0.984,1.021,1.039,1.045,1.043,1.037,1.029,1.021,1.014,1.008,1.004,1.001,0.999,0.998,0.998,0.998,0.998), visibility 0s linear 0s!important}
   html body .top .ask-line .ask-goccio svg{transition:scale .941s linear(0,0.065,0.213,0.39,0.564,0.715,0.836,0.924,0.984,1.021,1.039,1.045,1.043,1.037,1.029,1.021,1.014,1.008,1.004,1.001,0.999,0.998,0.998,0.998,0.998)}
   html body .top #toolsBtn{transition:scale .941s linear(0,0.065,0.213,0.39,0.564,0.715,0.836,0.924,0.984,1.021,1.039,1.045,1.043,1.037,1.029,1.021,1.014,1.008,1.004,1.001,0.999,0.998,0.998,0.998,0.998), background .2s ease}
-  html body .top #toolsBtn{transition:scale .941s linear(0,0.065,0.213,0.39,0.564,0.715,0.836,0.924,0.984,1.021,1.039,1.045,1.043,1.037,1.029,1.021,1.014,1.008,1.004,1.001,0.999,0.998,0.998,0.998,0.998), opacity .3s ease, background .2s ease}
+  html body .top #toolsBtn{transition:scale .941s linear(0,0.065,0.213,0.39,0.564,0.715,0.836,0.924,0.984,1.021,1.039,1.045,1.043,1.037,1.029,1.021,1.014,1.008,1.004,1.001,0.999,0.998,0.998,0.998,0.998), transform .941s linear(0,0.065,0.213,0.39,0.564,0.715,0.836,0.924,0.984,1.021,1.039,1.045,1.043,1.037,1.029,1.021,1.014,1.008,1.004,1.001,0.999,0.998,0.998,0.998,0.998), opacity .3s ease, background .2s ease}
 }
 @media (prefers-reduced-motion:reduce){html body .top .ask-line,html body .top .ask-line .ask-goccio svg,html body .top #toolsBtn{transition:none!important}}
 @keyframes agSpinFast{0%{transform:rotate(-720deg) scale(.5)}60%{transform:rotate(-40deg) scale(1.08)}100%{transform:none}}
@@ -11604,18 +11607,17 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // the necks: the box's round end to the little Goccio's pill, and that pill to the +, drawn with the same metaball bridge as the + uses
     const NS = "http://www.w3.org/2000/svg", sv = document.createElementNS(NS, "svg"); sv.setAttribute("class", "drop-br ask-br"); sv.setAttribute("aria-hidden", "true");
     const P = [document.createElementNS(NS, "path"), document.createElementNS(NS, "path")]; P.forEach((x) => sv.appendChild(x)); if (top) top.prepend(sv);
-    const necks = (merging) => { cancelAnimationFrame(raf); if (!window.__bridge || matchMedia("(prefers-reduced-motion: reduce)").matches) return; const t0 = performance.now(), G = 9, gone = [false, false];
+    const necks = (merging) => { cancelAnimationFrame(raf); if (!window.__bridge || matchMedia("(prefers-reduced-motion: reduce)").matches) return; const t0 = performance.now(), G = 7, gone = [false, false];
       const step = (now) => { const t = now - t0, o = sv.getBoundingClientRect(), box = top.querySelector(".ask-box"), g = $("askGoccio"), pl = $("toolsBtn"); if (!box || !pl) return;
         const pills = [box, g && g.offsetWidth && !g.classList.contains("ag-gone") ? g : null, pl].filter(Boolean);
         [0, 1].forEach((i) => { let d = ""; const A0 = pills[i], B0 = pills[i + 1];
           if (A0 && B0 && !gone[i]) { const A = A0.getBoundingClientRect(), B = B0.getBoundingClientRect(), r = Math.min(A.height, B.height) / 2, gap = B.left - A.right;
             // a gap closing fattens the neck; between two pills that don't move it swells in over time (merging) or thins and snaps (parting)
-            let v = gap <= 0 ? 0.5 : gap >= G ? 0 : Math.max(0.06, 0.5 * Math.pow(1 - gap / G, 2 / 3));
-            if (i === 1 || A0 !== box) v = merging ? 0.5 * Math.min(1, Math.sqrt(t / 260)) : Math.max(0, 0.5 * (1 - t / 380));
-            if (!merging && v <= 0.06 && t > 120) gone[i] = true;
+            const v = gap <= 0 ? 0.5 : gap >= G ? 0 : Math.max(0.06, 0.5 * Math.pow(1 - gap / G, 2 / 3));
+            if (!merging && gap >= G && t > 160) gone[i] = true;   // parted: the neck has snapped and stays gone
             if (v > 0 && !gone[i]) d = window.__bridge([A.right - r - o.left, A.top + A.height / 2 - o.top], r, [B.left + B.width / 2 - o.left, B.top + B.height / 2 - o.top], B.height / 2, v); }
           P[i].setAttribute("d", d); });
-        if (t < 1000) raf = requestAnimationFrame(step); else P.forEach((x) => x.setAttribute("d", "")); };
+        if (t < 1300) raf = requestAnimationFrame(step); else P.forEach((x) => x.setAttribute("d", "")); };
       raf = requestAnimationFrame(step); };
     if (ai && top) { ai.addEventListener("focus", () => { clearTimeout(offT); top.classList.remove("ask-off"); top.classList.add("ask-on"); necks(true); });
       ai.addEventListener("blur", () => { if (!top.classList.contains("ask-on")) return; top.classList.remove("ask-on"); top.classList.add("ask-off"); necks(false); clearTimeout(offT); offT = setTimeout(() => top.classList.remove("ask-off"), 950); }); } }
