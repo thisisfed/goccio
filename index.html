@@ -3479,7 +3479,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   </section>
 
   <section class="sec" id="shelves" aria-labelledby="sh">
-    <div class="sec-head"><span class="cap" id="sh" role="heading" aria-level="2"><span class="sh-t">Coffees.</span><span class="ro-title" id="roName" translate="no"></span></span><span class="ro-tools"><a class="chip ro-shop-top" id="roShopTop" target="_blank" rel="noopener" hidden>Visit shop</a><button type="button" class="chip ro-follow" id="roFollow" aria-pressed="false">Follow</button></span><button type="button" class="chip fy-pill" id="fyPill" aria-pressed="false">For you</button></div>
+    <div class="sec-head"><span class="cap" id="sh" role="heading" aria-level="2"><span class="sh-t">Coffees</span><span class="ro-title" id="roName" translate="no"></span></span><span class="ro-tools"><a class="chip ro-shop-top" id="roShopTop" target="_blank" rel="noopener" hidden>Visit shop</a><button type="button" class="chip ro-follow" id="roFollow" aria-pressed="false">Follow</button></span><button type="button" class="chip fy-pill" id="fyPill" aria-pressed="false">For you</button></div>
     <p class="fy-note fy-top" id="followNote" hidden></p>
     <p class="fy-note fy-top" id="fyNote" role="status" hidden></p>
     <p class="shelf-meta" id="shelfMeta" hidden></p>
@@ -3506,13 +3506,13 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   </section>
 
   <section class="sec" id="bags" aria-labelledby="bh" hidden>
-    <div class="sec-head"><span class="cap" id="bh" role="heading" aria-level="2">My bags.</span></div>
+    <div class="sec-head"><span class="cap" id="bh" role="heading" aria-level="2">My bags</span></div>
     <div class="bag-empty" id="bagEmpty" hidden><p>Save a coffee here to track how fresh it is and how much is left.</p><button type="button" class="chip" id="bagEmptyGo">Find a coffee</button></div>
     <div class="shelf" id="bagList"></div>
   </section>
 
   <section class="sec" id="gear" aria-labelledby="gh" hidden>
-    <div class="sec-head"><span class="cap" id="gh" role="heading" aria-level="2">My equipment.</span></div>
+    <div class="sec-head"><span class="cap" id="gh" role="heading" aria-level="2">My equipment</span></div>
     <button type="button" class="gear-dd gear-intro" id="gearIntro">Add your brewer and grinder for exact recipes</button>
     <div class="setup" id="setup" hidden><p class="su-q" id="suQ"></p><div class="chips" id="suC" role="group" aria-labelledby="suQ"></div></div>
     <div class="gear-tools">
@@ -3554,7 +3554,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   </section>
 
   <section class="sec" id="recipe" aria-labelledby="rtitle">
-    <div class="sec-head"><span class="cap" role="heading" aria-level="2"><span id="recTitle">Recipe.</span></span><span class="cap" id="rsource"></span></div>
+    <div class="sec-head"><span class="cap" role="heading" aria-level="2"><span id="recTitle">Recipe</span></span><span class="cap" id="rsource"></span></div>
     <p class="crowd" id="crowd" hidden></p>
     <div class="r-title">
       <div class="r-kick"><span class="method" id="rmethod"></span><span class="cap" id="rgoal"></span><span class="zero-pill" id="rzero" hidden></span></div>
@@ -3598,7 +3598,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   </section>
 
   <section class="sec" id="journal" aria-labelledby="jh">
-    <div class="sec-head"><span class="cap" id="jh" role="heading" aria-level="2">Journal.</span></div>
+    <div class="sec-head"><span class="cap" id="jh" role="heading" aria-level="2">Journal</span></div>
     <div class="log quick" id="logBox">
       <div class="quick-taste" id="quickTaste"><p class="qt-q">How was it?</p><p class="qt-btns"><button type="button" class="chip" data-qt="sour">Too sour</button><button type="button" class="chip" data-qt="balanced">Just right</button><button type="button" class="chip" data-qt="bitter">Too bitter</button></p><p class="qt-more"><a href="#" id="qtMore">More detail</a></p></div>
       <p class="muted log-first" id="logFirst" hidden>Log your first brew: the next recipe adjusts to how it tasted.</p>
@@ -7840,8 +7840,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         const w = LANG === "it" ? "Aggiunto" : "Added";   // one word for every coffee: the shop's own date when it gives one, else the day Goccio first saw it (Nov 2026: was Released or Added)
         return iso && iso === ymd(now) ? `${w} ${LANG === "it" ? "oggi" : "today"}` : iso && iso === ymd(y) ? `${w} ${LANG === "it" ? "ieri" : "yesterday"}` : d0 ? `${w} ${LANG === "it" ? "il " : ""}${d0}` : ""; })();   // today's and yesterday's coffees say so; older ones keep their date
       const shown = (seen.get(r.roaster + "|" + String(nm(r)).toLowerCase() + tagKey(r)) || new Set()).size > 1 ? fullName(r) : nm(r);
-      const dN = dayN.get(String(shelfDate(r) || "").slice(0, 10)) || 0, dNt = dN ? `: ${dN.toLocaleString(LANG === "it" ? "it-IT" : "en-GB")}` : "";   // "Added today: 230": the title over it already says Coffees
-      const dayHead = byDay && !isSp && day && day !== lastDay ? `<h3 class="grp day-g">${day}${dNt}</h3>` : ""; if (byDay && !isSp && day) lastDay = day;
+      // the count first: "230 added today", "15 added yesterday", "42 added on 23/11" ("230 aggiunti oggi")
+      const dN = dayN.get(String(shelfDate(r) || "").slice(0, 10)) || 0, it1 = LANG === "it", rest = day.replace(/^(Added|Aggiunto)\s+/, "");
+      const dayT = !dN ? day : it1 ? `${dN.toLocaleString("it-IT")} ${dN === 1 ? "aggiunto" : "aggiunti"} ${rest}` : `${dN.toLocaleString("en-GB")} added ${/^\d/.test(rest) ? "on " : ""}${rest}`;
+      const dayHead = byDay && !isSp && day && day !== lastDay ? `<h3 class="grp day-g">${dayT}</h3>` : ""; if (byDay && !isSp && day) lastDay = day;
       tagBits.push(...coffeeLabels(r, shown).map((l) => `<span class="tg lbl" style="--vc:${LABEL_DOT[l] || "#8e8e93"}">${l}</span>`));
       return `${head}${dayHead}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
         <div class="l">
