@@ -1,0 +1,15 @@
+# Goccio's scan clock: a small Cloudflare Worker that starts the daily roaster scan on time.
+# GitHub runs its own schedules hours late when it's busy; Cloudflare's timers are on the minute.
+# Deployed by .github/workflows/scan-clock.yml. It needs one secret, GITHUB_TOKEN: a fine-grained GitHub token with
+# access to thisisfed/goccio only and Actions set to "Read and write" (added in Cloudflare: the Worker's Settings,
+# Variables and Secrets).
+name = "goccio-scan-clock"
+main = "index.js"
+compatibility_date = "2026-11-01"
+account_id = "1c3773d3175301c1a989184b445ac1f2"
+workers_dev = false   # no web address: it only wakes up on its timer
+
+[triggers]
+# 05:31 UTC every day (05:31 UK in winter, 06:31 in summer, as before), and once more half an hour later in case GitHub
+# didn't take the first call; the scan skips itself if today's is already in or one is running
+crons = ["31 5 * * *", "1 6 * * *"]
