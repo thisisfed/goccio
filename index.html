@@ -3363,6 +3363,33 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
 </style>
 </head>
 <body>
+<script>
+/* On a computer the site is its phone self: the page opens inside a phone-wide column in the middle of the screen (like
+   Instagram or Threads on the web), so there is one design. The page stops loading out here and loads again in the column,
+   where it is simply the phone site. Its address and title are kept in step out here, the wheel scrolls it from anywhere,
+   and the black around it follows its light or dark. Not for search engines and link previews (they read the page as it is),
+   not inside a frame, not on narrow screens; ?wide shows the old wide layout. */
+(() => { try {
+  if (self !== top || innerWidth < 700 || /[?&]wide\b/.test(location.search) || /bot|crawl|spider|slurp|lighthouse|pagespeed|preview|facebookexternalhit|embedly|whatsapp|telegram|discord|twitterbot|linkedin/i.test(navigator.userAgent)) return;
+  window.stop();
+  const H = document.documentElement; H.className = "phone-host";
+  document.head.querySelectorAll("style, link[rel=stylesheet], link[rel=preload]").forEach((e) => e.remove());   // the site's styles are for the page in the column
+  const st = document.createElement("style");
+  st.textContent = "html,body{margin:0;height:100%;overflow:hidden;background:#000;transition:background .3s}.ph{position:fixed;top:0;bottom:0;left:50%;width:430px;max-width:100vw;height:100%;transform:translateX(-50%);border:0;display:block;box-shadow:0 0 0 1px rgba(128,128,128,.18)}";
+  document.head.appendChild(st);
+  document.body.innerHTML = ""; document.body.removeAttribute("class");
+  const f = document.createElement("iframe"); f.className = "ph"; f.title = "Goccio"; f.src = location.href;
+  f.allow = "camera; microphone; geolocation; clipboard-read; clipboard-write; fullscreen; screen-wake-lock";
+  document.body.appendChild(f);
+  setInterval(() => { try { const w = f.contentWindow, href = w.location.href;
+      if (href && href !== location.href && href.startsWith(location.origin)) history.replaceState(null, "", href);
+      if (w.document.title && document.title !== w.document.title) document.title = w.document.title;
+      const bg = getComputedStyle(w.document.body).backgroundColor; if (bg && bg !== "rgba(0, 0, 0, 0)" && document.body.style.backgroundColor !== bg) document.body.style.backgroundColor = bg; } catch (e) {} }, 400);
+  addEventListener("wheel", (e) => { try { f.contentWindow.scrollBy(0, e.deltaY); } catch (er) {} }, { passive: true });
+  f.addEventListener("load", () => { try { f.focus(); } catch (e) {} });
+  addEventListener("keydown", () => { try { f.focus(); } catch (e) {} });
+} catch (e) {} })();
+</script>
 <!-- the hero film lies over the page top, the top bar included: its black is see-through, so the drop falls across the bar into the coffee -->
 <video class="wm-video" id="wmVideo" muted playsinline webkit-playsinline preload="none" poster="/img/goccio-drop2.jpg?v=3" aria-hidden="true" tabindex="-1" disablepictureinpicture><source src="/img/goccio-drop2.mp4?v=7" type="video/mp4"></video><video class="wm-video" id="wmLoop" muted playsinline webkit-playsinline loop preload="none" aria-hidden="true" tabindex="-1" disablepictureinpicture style="visibility:hidden" data-src="/img/goccio-ripples.mp4?v=4"></video><canvas class="wm-video" id="wmFilm" width="640" height="360" aria-hidden="true" hidden></canvas>
 <header class="top">
