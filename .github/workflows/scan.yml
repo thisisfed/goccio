@@ -135,5 +135,11 @@ jobs:
             # a partial rescan is labelled differently so it never counts as the day's full scan
             if [ -n "$ONLY" ]; then git commit -m "Roaster rescan ($ONLY) $(date -u +'%d %b %Y')"; else git commit -m "Roaster scan $(date -u +'%d %b %Y')"; fi
             # main may have moved while the parts were being put together (a site change merged meanwhile)
-            git pull --rebase -q -X theirs && git push   # during a rebase "theirs" is this scan: today's list wins
+            # a site change merged in the seconds between the pull and the push rejected it once (25 Nov 2026, the day's whole scan lost):
+          # pull and push again, a few times, before giving up
+          for i in 1 2 3 4 5 6; do
+            git pull --rebase -q -X theirs && git push && exit 0   # during a rebase "theirs" is this scan: today's list wins
+            echo "push refused, try $i of 6"; sleep $((i * 10))
+          done
+          exit 1
           fi
