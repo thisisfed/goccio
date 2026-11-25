@@ -88,9 +88,9 @@ domain to `data/removed.json`. After the next scan, `data/releases.json → roas
   scan is in. The clock needs one secret in Cloudflare, `GITHUB_TOKEN`: a fine-grained GitHub token for
   thisisfed/goccio only, with Actions set to "Read and write" (the token is "goccio-scan-clock" on GitHub and **expires on
   24 Nov 2027**: regenerate it there and paste the new one into the Worker's GITHUB_TOKEN). Run the scan by hand any time.
-- **LISTING_TOKEN** (the listing form and Goccio's weekly report file issues in goccio-requests with it) also **expires on
-  24 Nov 2027**. It lives in two places: the repo's Actions secret (for the workflows) and the Cloudflare Pages project
-  v60 (for the site). A publish only copies it to Cloudflare when it works, so an old GitHub secret never breaks the site.
+- **LISTING_TOKEN** (the listing form and Goccio's weekly report file issues in goccio-requests with it) holds the
+  GitHub token "goccio-requests", which **never expires**. It lives in two places: the repo's Actions secret (for the
+  workflows) and the Cloudflare Pages project v60 (for the site). A publish only copies it to Cloudflare when it works.
 - **Run for some roasters only:** Run workflow with `only` = roaster names, comma-separated.
 - **Look at one page:** Run workflow with `inspect` = `text:URL` (visible words), `raw:URL` (page source) or a bare URL
   (what the scanner reads off it).
