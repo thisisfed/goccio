@@ -10128,7 +10128,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const umbrella = (ms) => act(async () => { tween("armR", 0.05, 260); tween("armRa", 8, 260); await tween("umb", 1, 450); lookY = -2.4; lookX = 1; draw(); await face({ eyeSL: 1.1, eyeSR: 1.1 }, 200);
       await wait((ms || 5200) * 0.5); lookY = 0; lookX = 0; draw(); await face({ smile: 0.6 }, 200); await wait((ms || 5200) * 0.5);
       await tween("umb", 0, 380); poke(-1.6); tween("armR", 0, 240); await face({ smile: 0 }, 200); });
-    const yawn = () => act(async () => { tween("aRest", 0.18, 650); await face({ eyeL: 0.08, eyeR: 0.08, eyeSL: 1.15, eyeSR: 1.15 }, 650); leanTo = -1.5; await wait(650);
+    const yawn = () => act(async () => { tween("aRest", 0.18, 650); await face({ eyeL: 0.08, eyeR: 0.08, eyeSL: 1.15, eyeSR: 1.15 }, 650); leanTo = -1.5;
+      // at the top of the stretch, a little one slips out: a small pfft, a wisp, a twitch
+      pfft(0.4, 0.22); { const side = Math.random() < 0.5 ? -1 : 1; for (let i = 0; i < 2; i++) { const c = document.createElementNS(NS, "circle"); c.setAttribute("class", "gd-puff"); c.setAttribute("cx", (side * (13 + i * 3)).toFixed(1)); c.setAttribute("cy", (-2 - i * 1.4).toFixed(1)); c.setAttribute("r", (1.4 + i * 0.7).toFixed(1)); c.style.animationDelay = i * 60 + "ms"; notes && notes.appendChild(c); setTimeout(() => c.remove(), 1500); } } poke(-0.6); await wait(650);
       tween("aRest", 0, 420); leanTo = 0; await face({ eyeL: 1, eyeR: 1, eyeSL: 1, eyeSR: 1 }, 420); poke(-1.4); });
     // a smile, eyes softening
     const smile = () => act(async () => { await face({ smile: 1, eyeL: 0.8, eyeR: 0.8 }, 260); await wait(1400 + Math.random() * 800); });
@@ -10290,11 +10292,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       let w = r * MOVES.reduce((t, m) => t + m[0], 0); for (const [k, f] of MOVES) { if ((w -= k) < 0) { f(); break; } } };
     setTimeout(idle, 2500);
     // held down too long: it farts. A jolt, a puff out the back, a small sound, then it's embarrassed: it blushes, looks away, shrinks a little
-    const pfft = () => { try { const A = window.__gdA || (window.__gdA = new (window.AudioContext || window.webkitAudioContext)()); if (A.state === "suspended") A.resume();
-        const t0 = A.currentTime, dur = 0.42, n = A.createBuffer(1, Math.ceil(A.sampleRate * dur), A.sampleRate), ch = n.getChannelData(0); for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1;
+    const pfft = (vol = 1, dur0 = 0.42) => { try { const A = window.__gdA || (window.__gdA = new (window.AudioContext || window.webkitAudioContext)()); if (A.state === "suspended") A.resume();
+        const t0 = A.currentTime, dur = dur0, n = A.createBuffer(1, Math.ceil(A.sampleRate * dur), A.sampleRate), ch = n.getChannelData(0); for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1;
         const src = A.createBufferSource(); src.buffer = n; const bp = A.createBiquadFilter(); bp.type = "bandpass"; bp.Q.value = 2.2; bp.frequency.setValueAtTime(150, t0); bp.frequency.exponentialRampToValueAtTime(70, t0 + dur);
-        const o = A.createOscillator(); o.type = "sawtooth"; o.frequency.setValueAtTime(95, t0); o.frequency.exponentialRampToValueAtTime(48, t0 + dur); const og = A.createGain(); og.gain.value = 0.12;
-        const g = A.createGain(); g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(0.22, t0 + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+        const o = A.createOscillator(); o.type = "sawtooth"; o.frequency.setValueAtTime(95, t0); o.frequency.exponentialRampToValueAtTime(48, t0 + dur); const og = A.createGain(); og.gain.value = 0.12 * vol;
+        const g = A.createGain(); g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(0.22 * vol, t0 + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
         const lfo = A.createOscillator(), lg = A.createGain(); lfo.frequency.value = 26; lg.gain.value = 0.1; lfo.connect(lg).connect(g.gain);   // the flutter
         src.connect(bp).connect(g); o.connect(og).connect(g); g.connect(A.destination); [src, o, lfo].forEach((x) => { x.start(t0); x.stop(t0 + dur); }); } catch (e) {} };
     const puff = () => { const side = S.jx > 0 ? -1 : 1; for (let i = 0; i < 4; i++) { const c = document.createElementNS(NS, "circle"); c.setAttribute("class", "gd-puff");
@@ -11419,6 +11421,17 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       // brewing from the chat: "start brewing" with a recipe open starts it; "let's brew" with nothing named asks which coffee
       { const recipeOpen = $("recipe") && !$("recipe").hidden && $("startBrew");
         if (/^(ok |okay |right |go |now )?(let'?s )?(start( brewing| the (timer|brew))?|go|begin|brew( now)?|inizia(mo)?|via|partiamo)[ !.]*$/i.test(q) && recipeOpen) { say(T("Here we go. Tare with the coffee in, then press Start as you begin to pour.", "Si parte. Tara con il caffè dentro, poi premi Start quando inizi a versare."), null, happy); setTimeout(() => { closeTalk(); $("startBrew").click(); }, 900); return; }
+        { const m0 = q.match(/^(?:ok |okay |so )?(?:let'?s |can we |can you |could you |please |i want to |i'?d like to |help me |voglio )?(?:brew|make|prepare|prepara(?:re|mo)?)\s+(?:me |us )?(?:a |an |some |something |one |un |una |qualcosa di )?(.+?)(?:\s+(?:coffee|one|caff[eè]))?[ ?!.]*$/i);
+          if (m0) { const DEM = { ethiopian: "ethiopia", kenyan: "kenya", colombian: "colombia", brazilian: "brazil", rwandan: "rwanda", burundian: "burundi", panamanian: "panama", guatemalan: "guatemala", honduran: "honduras", peruvian: "peru", mexican: "mexico", indonesian: "indonesia", ecuadorian: "ecuador", bolivian: "bolivia", tanzanian: "tanzania", ugandan: "uganda", yemeni: "yemen", salvadoran: "salvador", "costa rican": "costa rica", nicaraguan: "nicaragua", chinese: "china", indian: "india", vietnamese: "vietnam", etiope: "ethiopia", keniano: "kenya", colombiano: "colombia", brasiliano: "brazil", naturale: "natural", lavato: "washed", anaerobico: "anaerobic" };
+            const PROC = /^(natural|naturals|washed|honey|anaerobic|carbonic|co-?ferment(ed)?|decaf|wet-?hulled|infused|thermal)$/;
+            let want = norm(m0[1]); Object.entries(DEM).forEach(([k, v]) => { want = want.replace(new RegExp("\\b" + k + "\\b", "g"), v); });
+            const ow = ORIGIN_WORDS(), words = want.split(" ").filter((w) => w.length >= 3 && !/^(the|and|with|from|for|cup|good|nice|great|today|new)$/.test(w)).map((w) => w.replace(/s$/, "") === "natural" ? "natural" : w);
+            if (words.length && words.some((w) => PROC.test(w) || ow.has(w))) {
+              const hay = (r) => norm([r.process, r.origin, r.region, r.variety].filter(Boolean).join(" "));
+              const hits = coffees().filter((r) => words.every((w) => hay(r).includes(w.replace(/^naturals$/, "natural")))).map((r) => [(r.just_in ? 3 : r.new ? 1.5 : 0) + suits(r) * 2 + (notesOf(r).length ? 1 : 0) + Math.random(), r]).sort((a, b) => b[0] - a[0]).map((x) => x[1]);
+              if (!hits.length) { say(T(`I can't find a ${m0[1]} on Goccio right now. Want me to pick something close?`, `Adesso non trovo un ${m0[1]} su Goccio. Vuoi che ne scelga uno simile?`), null, hmm); pendingYes = () => pickNew(false, mem.brewer); return; }
+              const top = hits.slice(0, 3); whichCo = { list: hits, then: (r) => gbStart(r), by: "name", at: Date.now() };
+              say(T(`Lovely. ${hits.length > 3 ? `${hits.length.toLocaleString("en-GB")} on Goccio; here are three of the best` : "Here they are"}:`, `Bello. ${hits.length > 3 ? `Ce ne sono ${hits.length.toLocaleString("it-IT")} su Goccio; eccone tre dei migliori` : "Eccoli"}:`) + "\n" + top.map((r, i) => `${i + 1}. ${r.name}, ${roasteryName(r.roaster)}`).join("\n") + "\n" + T(`Which one shall we brew?${hits.length > 3 ? " Or say 'show me them all'." : ""}`, `Quale prepariamo?${hits.length > 3 ? " O di' 'mostrameli tutti'." : ""}`), null, happy); return; } } }
         if (/^(ok |okay |so )?(let'?s |time to |can we |can you |could you |please |i want to |help me |voglio |aiutami a )?(brew|make (a |me a |us a )?coffee|make some coffee|brew (with me|together)|guide me|walk me through( a)?( brew(ing)?)?|brew step by step|guided brew|preparare un caff[eè]|prepariamo|facciamo un caff[eè])( together| with me| it| this| that| this one| that one| now| time| insieme)?[ !.?]*$/i.test(q)) {
           const fresh = lastCo && Date.now() - lastCo.at < 300000 && /\b(it|this|that|lo|la)\b/i.test(q);
           if (recipeOpen && !fresh) { say(T("Your recipe's open. Say 'start' when the kettle's ready.", "La ricetta è aperta. Di' 'inizia' quando l'acqua è pronta."), null, happy); return; }
