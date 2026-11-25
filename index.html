@@ -10126,9 +10126,13 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       poke((a.x || 1) > 0 ? 2.4 : -2.4); setTimeout(() => poke(-1.8), 120); setTimeout(() => poke(1.2), 260); if (!acting) surprised(); };
     const motionOn = () => { addEventListener("deviceorientation", onTilt, { passive: true }); addEventListener("devicemotion", onShake, { passive: true }); };
     // listen from the start (Android sends at once); an iPhone only starts sending once the first tap on a Goccio has asked for permission
-    motionOn(); let motionAsked = false;
-    window.gdMotion = () => { if (motionAsked) return; motionAsked = true; const D0 = window.DeviceOrientationEvent, M0 = window.DeviceMotionEvent;
-      try { if (D0 && typeof D0.requestPermission === "function") D0.requestPermission().catch(() => {}); if (M0 && typeof M0.requestPermission === "function") M0.requestPermission().catch(() => {}); } catch (e) {} };
+    motionOn(); let motionAsked = false, motionLive = false;
+    addEventListener("deviceorientation", (e) => { if (e.gamma != null) motionLive = true; }, { passive: true });
+    // an iPhone forgets this between visits, and a site can't keep it: so never ask if the tilt already comes through (Safari still allows it),
+    // and never again once you've said no (the hello's own Allow motion button still asks)
+    window.gdMotion = (force) => { if (motionAsked || motionLive) return; let no = false; try { no = localStorage.getItem("v60.motion") === "no"; } catch (e) {} if (no && !force) return; motionAsked = true; const D0 = window.DeviceOrientationEvent, M0 = window.DeviceMotionEvent;
+      const keep = (r) => { try { localStorage.setItem("v60.motion", r === "granted" ? "yes" : "no"); } catch (e) {} };
+      try { if (D0 && typeof D0.requestPermission === "function") D0.requestPermission().then(keep).catch(() => {}); if (M0 && typeof M0.requestPermission === "function") M0.requestPermission().catch(() => {}); } catch (e) {} };
     el.addEventListener("click", () => window.gdMotion && window.gdMotion());
     // its life at rest: something every few seconds, never on a beat. Mostly happy: smiles, happy eyes, yawns, a dance, a jump now and then
     const idle = () => { setTimeout(idle, 2000 + Math.random() * 3600); if (document.hidden || still() || phase !== "rest" || acting || (opt.paused && opt.paused())) return;
@@ -11110,17 +11114,21 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const wxCity = async (name) => { wantCity = false; say(T(`Checking the sky over ${name}…`, `Guardo il cielo su ${name}…`), [], curious);
       try { const g = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=1&language=${LANG === "it" ? "it" : "en"}`).then((r) => r.json()); const p = g && g.results && g.results[0];
         if (!p) { wantCity = true; return say(T(`I couldn't find ${name} on my map. Try another spelling, or a bigger town nearby?`, `Non trovo ${name} sulla mia mappa. Prova a scriverlo diversamente, o una città vicina più grande?`), null, hmm); }
-        try { localStorage.setItem(CITY_KEY, p.name); } catch (e) {}
+        try { localStorage.setItem(CITY_KEY, p.name); localStorage.removeItem("v60.gdSpot"); } catch (e) {}
         await wxReport(p.latitude.toFixed(2), p.longitude.toFixed(2), p.name); } catch (e) { say(T("I couldn't get the weather just now, sorry.", "Non riesco a vedere il meteo adesso, scusa."), null, hmm); } };
     const weather = (q) => { const m = String(q || "").match(/\b(?:in|at|for|a|ad|su)\s+([A-Za-zÀ-ÿ' .-]{2,40}?)\s*[?!.]*$/i), named = m && !/^(the )?(morning|afternoon|evening|night|weekend|moment|week|today|tomorrow|mattina|sera|notte)$/i.test(m[1].trim()) ? m[1].trim() : "";
       if (named) return wxCity(named);
       let last = ""; try { last = localStorage.getItem(CITY_KEY) || ""; } catch (e) {}
+      const fresh = /\b(here|right now|where i am|my location|current location|i moved|update|new location|qui|dove sono|posizione attuale|aggiorna)\b/i.test(String(q || ""));
+      let spot = null; try { spot = JSON.parse(localStorage.getItem("v60.gdSpot") || "null"); } catch (e) {}
+      if (!fresh && spot && spot.la != null) { say(T("Let me look outside…", "Fammi guardare fuori…"), [], curious); return wxReport(spot.la, spot.lo).catch(() => say(T("I couldn't get the weather just now, sorry.", "Non riesco a vedere il meteo adesso, scusa."), null, hmm)); }
+      if (!fresh && last) return wxCity(last);
       const noLoc = (code) => { if (last) return wxCity(last); wantCity = true;
         say(code === 1 ? T("Your phone isn't sharing its location with this site. Tell me your town and I'll check, or allow it: on iPhone, Settings, Privacy & Security, Location Services, Safari Websites, then 'While Using the App'.", "Il telefono non condivide la posizione con questo sito. Dimmi la tua città e controllo, oppure consentila: su iPhone, Impostazioni, Privacy e sicurezza, Localizzazione, Siti web di Safari, poi 'Mentre usi l'app'.")
           : T("I couldn't find where you are. Which town are you in?", "Non riesco a capire dove sei. In che città sei?"), null, curious); };
       if (!navigator.geolocation) return noLoc(2);
       say(T("Let me look outside… (your browser may ask to share your location)", "Fammi guardare fuori… (il browser potrebbe chiederti la posizione)"), [], curious);
-      navigator.geolocation.getCurrentPosition(async (p) => { try { await wxReport(p.coords.latitude.toFixed(2), p.coords.longitude.toFixed(2)); } catch (e) { say(T("I couldn't get the weather just now, sorry.", "Non riesco a vedere il meteo adesso, scusa."), null, hmm); } },
+      navigator.geolocation.getCurrentPosition(async (p) => { try { const la = p.coords.latitude.toFixed(2), lo = p.coords.longitude.toFixed(2); try { localStorage.setItem("v60.gdSpot", JSON.stringify({ la, lo })); localStorage.removeItem(CITY_KEY); } catch (e) {} await wxReport(la, lo); } catch (e) { say(T("I couldn't get the weather just now, sorry.", "Non riesco a vedere il meteo adesso, scusa."), null, hmm); } },
         (e) => noLoc(e && e.code), { timeout: 12000, maximumAge: 600000 }); };
     // ---- coffees and roasters by name: "where is Climpson based?", "how does Uraga from Climpson taste?" ----
     // Answered from the list itself, never guessed: a roaster's town and how many coffees it has; a coffee's origin, process,
@@ -11207,7 +11215,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       { const ql0 = q.toLowerCase();
         if (/what do you (know|remember) about me|do you remember me|what('?s| is) my (brewer|taste)|cosa (sai|ricordi) di me|ti ricordi di me/i.test(ql0)) { const bits = [mem.brewer ? T(`you brew with a ${brewName(mem.brewer)}`, `prepari il caffè con ${brewName(mem.brewer)}`) : "", (mem.likes || []).length ? T(`you like ${andList(mem.likes.map(likeName))} coffees`, `ti piacciono i caffè ${andList(mem.likes.map(likeName))}`) : ""].filter(Boolean);
           return say(bits.length ? T(`I know you're ${name || "you"}, ${andList(bits)}. It stays on this device. Say "forget me" and I will.`, `So che sei ${name || "tu"}, che ${andList(bits)}. Resta su questo dispositivo. Di' "dimenticami" e lo dimentico.`) : T(`Just your name${name ? ", " + name : ""}. Tell me your brewer or the flavours you like and I'll remember.`, `Solo il tuo nome${name ? ", " + name : ""}. Dimmi che metodo usi o che sapori ti piacciono e me li ricordo.`), null, happy); }
-        if (/^(please )?(forget (me|everything|what i (said|told you))|dimenticami|dimentica tutto)\b/i.test(ql0)) { mem = {}; saveMem(); return say(T("Done, I've forgotten your brewer and your tastes.", "Fatto, ho dimenticato il tuo metodo e i tuoi gusti."), null, smile); }
+        if (/^(please )?(forget (me|everything|what i (said|told you))|dimenticami|dimentica tutto)\b/i.test(ql0)) { mem = {}; saveMem(); try { localStorage.removeItem("v60.gdSpot"); localStorage.removeItem(CITY_KEY); } catch (e) {} return say(T("Done, I've forgotten your brewer, your tastes and where you are.", "Fatto, ho dimenticato il tuo metodo, i tuoi gusti e dove sei."), null, smile); }
         const brS = !/\?|^(how|what|why|when|where|which|can|should|do|does|is|come|cosa|perch)\b/i.test(ql0) && /\b(i (use|have|own|got|brew with|brew on|make (it|my coffee|coffee) (with|in|on))|i'?m using|my (brewer|go-?to|setup) is|uso (il |la |un |una |l')?|ho (il |la |un |una |l')?|preparo con)\b/i.test(ql0) && ql0.match(BREW_RX);
         const flS = /\b(i (like|love|prefer|enjoy|'?m into)|my favou?rite|mi piace|mi piacciono|adoro|preferisco)\b/i.test(ql0) && !/\?/.test(ql0) ? flavsIn(ql0) : [];
         if (brS || flS.length) { if (brS) mem.brewer = brS[1].toLowerCase(); if (flS.length) mem.likes = [...new Set([...(mem.likes || []), ...flS])].slice(-4); saveMem();
@@ -11368,7 +11376,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         const askMove = window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === "function" && matchMedia("(pointer: coarse)").matches;
         if (askMove) { const row = document.createElement("span"); row.className = "gd-intro-move";
           row.innerHTML = `<span>${T("Tilt your phone and I’ll slosh about.", "Inclina il telefono e mi muovo come un liquido.")}</span><button type="button">${T("Allow motion", "Consenti movimento")}</button>`;
-          row.querySelector("button").onclick = () => { window.gdMotion && window.gdMotion(); tb.hop && tb.hop(); bye(); }; b.appendChild(row); }
+          row.querySelector("button").onclick = () => { window.gdMotion && window.gdMotion(true); tb.hop && tb.hop(); bye(); }; b.appendChild(row); }
         document.body.appendChild(b); tb.hop && tb.hop();
         let t = 0; const bye = (e) => { if (e && e.target && b.contains(e.target) && e.target.closest("button")) return;   // the Allow button does its own closing
           clearTimeout(t); removeEventListener("pointerdown", bye, true); removeEventListener("keydown", bye, true); b.classList.add("out"); setTimeout(() => b.remove(), 400); };
