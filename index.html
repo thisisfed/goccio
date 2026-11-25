@@ -10359,9 +10359,14 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       for (const [x, ms] of [[-3.8, 460], [3.8, 460], [-3.8, 260], [3.8, 300]]) { lookX = x * s0; draw(); await wait(ms); }
       lookX = 0; lookY = 0; draw(); await wait(160); tween("aRest", 0, 200);
       await face({ eyeL: 1, eyeR: 1, smile: 0, eyeSL: 1.1, eyeSR: 1.1 }, 150); rigid = true; a = S.aRest = 0; va = 0; lean = 0; vl = 0; leanTo = 0;
-      await Promise.all([tween("flip", s0 * deg, 700), tween("jx", s0 * d, 700)]); await wait(140);
-      await Promise.all([tween("flip", -s0 * deg, 1150), tween("jx", -s0 * d, 1150)]); await wait(140);
-      await Promise.all([tween("flip", 0, 700), tween("jx", 0, 700)]); S.flip = 0; rigid = false; poke(-2); await face({ happy: 1 }, 140); await wait(700); });
+      // all the way to one edge of the screen, across to the other, then home to the middle: how far, in his own units, measured
+      // from where he sits; the turn matches the distance, so he rolls rather than slides
+      const sv = el.querySelector("svg"), sr = sv && sv.getBoundingClientRect(), bb = body.getBoundingClientRect(), u = sr && sr.width ? sr.width / 64 : 3, half = bb.width / 2 / u, pad = 20 / u;   /* a little off the edge: his rolling outline is wider than at rest */
+      const toL = Math.max(8, (bb.left + bb.width / 2) / u - half - pad), toR = Math.max(8, (innerWidth - (bb.left + bb.width / 2)) / u - half - pad);
+      const far1 = s0 < 0 ? toL : toR, far2 = s0 < 0 ? toR : toL, spin = (x) => x / R0 * 180 / Math.PI, ms = (x) => Math.max(600, Math.min(1900, x * 15));
+      await Promise.all([tween("flip", s0 * spin(far1), ms(far1)), tween("jx", s0 * far1, ms(far1))]); poke(-1.2); await wait(220);
+      await Promise.all([tween("flip", -s0 * spin(far2), ms(far1 + far2)), tween("jx", -s0 * far2, ms(far1 + far2))]); poke(-1.2); await wait(220);
+      await Promise.all([tween("flip", 0, ms(far2)), tween("jx", 0, ms(far2))]); S.flip = 0; rigid = false; poke(-2); await face({ happy: 1 }, 140); await wait(700); });
     // roly-poly: a crouch, then forward roly-polies in place, the face rolling under and coming back over the top; a splat and happy eyes
     const rolypoly = () => act(async () => { tween("aRest", -0.16, 180); await face({ eyeL: 0.7, eyeR: 0.7 }, 180); rigid = true; a = S.aRest = 0; va = 0; lean = 0; vl = 0; leanTo = 0;
       // each roll brings it towards you: it grows and comes a little down the screen, as if nearer
