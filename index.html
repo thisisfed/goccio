@@ -10107,12 +10107,13 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // roly-poly: a crouch, then forward roly-polies in place, the face rolling under and coming back over the top; a splat and happy eyes
     const rolypoly = () => act(async () => { tween("aRest", -0.16, 180); await face({ eyeL: 0.7, eyeR: 0.7 }, 180); rigid = true; a = S.aRest = 0; va = 0; lean = 0; vl = 0; leanTo = 0;
       // each roll brings it towards you: it grows and comes a little down the screen, as if nearer
-      const near = !still(); if (near) { el.style.transformOrigin = "50% 100%"; el.style.zIndex = "45"; el.style.transition = "scale .52s cubic-bezier(.4,0,.6,1), translate .52s cubic-bezier(.4,0,.6,1)"; }
-      for (let i = 0; i < 2; i++) { jv = -150; go(); if (near) { el.style.scale = String(1 + 0.2 * (i + 1)); el.style.translate = `0 ${8 * (i + 1)}px`; } await tween("tumble", i + 1, 520); }
-      S.tumble = 0; rigid = false; poke(-3); await tween("cross", 1, 200); leanTo = -1.5; go(); await wait(380); leanTo = 1.5; go(); await wait(380); leanTo = 0; await tween("cross", 0, 200); await face({ happy: 1, eyeL: 1, eyeR: 1 }, 140); await wait(250);   /* dizzy */
-      // then hops back to its place: two little hops, shrinking back
-      if (near) { el.style.transition = "scale .36s cubic-bezier(.3,.7,.4,1), translate .36s cubic-bezier(.3,.7,.4,1)";
-        jv = -230; go(); el.style.scale = "1.18"; el.style.translate = "0 7px"; await wait(400); jv = -200; go(); el.style.scale = "1"; el.style.translate = "0 0"; await wait(420); poke(-1.8);
+      const near = !still(); if (near) { el.style.transformOrigin = "50% 100%"; el.style.zIndex = "45"; el.style.transition = "scale 1.3s cubic-bezier(.45,0,.55,1), translate 1.3s cubic-bezier(.45,0,.55,1)"; el.style.scale = "2.3"; el.style.translate = "0 46px"; }
+      // two roly-polies in one go, no stop between, coming much closer as it rolls
+      jv = -150; go(); setTimeout(() => { jv = -150; go(); }, 650); await tween("tumble", 2, 1300);
+      S.tumble = 0; rigid = false; poke(-3); await face({ happy: 1, eyeL: 1, eyeR: 1 }, 140); await wait(450);
+      // then hops back to its place: two hops, shrinking back
+      if (near) { el.style.transition = "scale .38s cubic-bezier(.3,.7,.4,1), translate .38s cubic-bezier(.3,.7,.4,1)";
+        jv = -260; go(); el.style.scale = "1.5"; el.style.translate = "0 18px"; await wait(420); jv = -220; go(); el.style.scale = "1"; el.style.translate = "0 0"; await wait(440); poke(-1.8);
         el.style.transition = ""; el.style.zIndex = ""; el.style.scale = ""; el.style.translate = ""; }
       await wait(300); });
     // cross-eyed: both eyes slide in and meet in the middle, a little wobble, then back with a blink
@@ -10202,8 +10203,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       else if (r < 0.872) onPhone();
       else if (r < 0.875) upside();   // now and then: head over heels, a look round, and back
       else if (r < 0.879 && performance.now() - ptrT > 6000) boo();   // rarely, and only when you've gone quiet: boo!
-      else if (r < 0.88) (Math.random() < 0.3 ? () => crossEyes() : wink)();
-      else if (r < 0.91) surprised();
+      else if (r < 0.88) wink();
+      else if (r < 0.895) crossEyes();
+      else if (r < 0.915) surprised();
       else if (r < 0.93) curious();
       else if (r < 0.95) (Math.random() < 0.5 ? doze : sleepy)();
       else if (!following) { lookX = (Math.random() < 0.5 ? -1 : 1) * 3; lookY = Math.random() < 0.4 ? -1.5 : 0; draw(); setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900 + Math.random() * 700); }
