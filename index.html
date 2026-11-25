@@ -2934,7 +2934,8 @@ html body .ask-goccio svg.ag-hops{animation:agHops .7s ease-out}
 @keyframes agSpin{0%{rotate:0deg}70%{rotate:380deg}85%{rotate:350deg}100%{rotate:360deg}}
 @keyframes agHops{0%,100%{translate:0 0}20%{translate:0 -5px}40%{translate:0 0;scale:1.08 .92}60%{translate:0 -4px}80%{translate:0 0;scale:1.05 .95}}
 @media (prefers-reduced-motion:reduce){html body .ask-goccio svg{animation:none!important}}
-html body .wm-live.wm-tot{margin-top:0!important}   /* the totals, on their own line under today's news, without the live dot */
+html body .wm-more .wm-live.wm-tot{margin:0 0 20px!important;justify-content:center;text-align:center;max-width:none!important}   /* the totals, right under the tagline, the buttons as far under them as before */
+html body .wm-more .wm-tagline:has(+ .wm-tot:not([hidden])){margin-bottom:9px!important}   /* tagline and totals read as one block */
 html body .gd-dock.right .gd-talk{left:auto!important;right:var(--dr,12px)!important;translate:none!important;transform-origin:100% 0} html body .gd-dock.right .gd-x{right:-1px!important}
 html.nav-off .botnav{transform:translateY(100%)!important;visibility:hidden;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s linear .6s!important}   /* slides away softly, and back the same way */
 html:not(.nav-off) .botnav{transition:transform .6s cubic-bezier(.4,0,.2,1), visibility 0s!important}
@@ -3275,9 +3276,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         <p class="wordmark" aria-hidden="true" translate="no"><span id="wm">Goccio</span></p>
         <div class="wm-more">
           <p class="wm-tagline">The right recipe for every bag.</p>
+          <p class="wm-live wm-tot" id="wmTot" hidden></p>
           <p class="wm-ctas"><button type="button" class="btn wm-go" id="wmFind">Find a coffee</button><button type="button" class="btn wm-bag" id="wmBag">I have a coffee</button></p>
           <h1 class="wm-lead">Every new coffee, with its recipe before you buy.</h1>
-          <p class="wm-live wm-tot" id="wmTot" hidden></p><p class="wm-live" id="wmLive" hidden><i class="live-dot" aria-hidden="true"></i><span id="wmLiveT"></span></p>
+          <p class="wm-live" id="wmLive" hidden><i class="live-dot" aria-hidden="true"></i><span id="wmLiveT"></span></p>
         </div>
       </div>
       <div class="hero-row">
@@ -4282,6 +4284,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     moka:   { name: "Bialetti Moka Express", kind: "steps", doses: [[7, "1-cup"], [16, "3-cup"], [30, "6-cup"]], dose: 16, base: 15, dA: {}, range: [10, 22], water: { 7: 60, 16: 150, 30: 300 } },
   };
   const brewerOf = (st) => BREWERS[st.brewer] ? st.brewer : "v60";
+  const RECIPE_BREWERS = BREWERS;   // the chat has its own BREWERS (what each brewer is): brewing together needs this one
   const HOWELL = "https://georgehowellcoffee.com/pages/brew-guide-kalita-155";
   const YT = (q) => "https://www.youtube.com/results?search_query=" + encodeURIComponent(q);
   Object.assign(BASE, {
@@ -9428,8 +9431,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           const added = aN > 0 && when ? `${cN}${rN} ${it0 ? (aR > 0 ? (aR === 1 ? "aggiunta" : "aggiunte") : aN !== 1 ? "aggiunti" : "aggiunto") : "added"} ${when}.` : "";
           if (window.__searchHint) try { window.__searchHint(); } catch (e) {}
           // the totals sit on a second line under today's news, now that a phone's search box no longer shows them
-          const g0 = { useGrouping: "always" }, tot = it0 ? `${nC.toLocaleString(loc0, g0)} caffè, ${nR.toLocaleString(loc0, g0)} torrefazioni in tutto.` : `${nC.toLocaleString(loc0)} coffees, ${nR.toLocaleString(loc0)} roasters in all.`;
-          if ($("wmLive")) { $("wmLiveT").textContent = added || tot; $("wmLive").hidden = false; if ($("wmTot") && added) { $("wmTot").textContent = tot; $("wmTot").hidden = false; } } } }
+          const g0 = { useGrouping: "always" }, tot = it0 ? `${nC.toLocaleString(loc0, g0)} caffè, ${nR.toLocaleString(loc0, g0)} torrefazioni in totale.` : `${nC.toLocaleString(loc0)} coffees, ${nR.toLocaleString(loc0)} roasters in total.`;
+          if ($("wmTot")) { $("wmTot").textContent = tot; $("wmTot").hidden = false; }   // the totals: under "The right recipe for every bag"
+          if ($("wmLive")) { $("wmLiveT").textContent = added; $("wmLive").hidden = !added; } } }
       renderShelfV();
       renderShelf();
       document.documentElement.classList.remove("wait");
@@ -10324,14 +10328,96 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       else if (/caffeine stays|la caffeina resta/i.test(t)) ctx = { t: "caffeine", at: Date.now() };
       else if (/what are we brewing\?|cosa prepariamo\?|how'?s your coffee today\?|com'?è il tuo caff[eè] oggi\?|what are you (brewing|drinking)|cosa stai (bevendo|preparando)/i.test(t)) ctx = { t: "brewing", at: Date.now() }; };
     // one of today's new coffees, the most interesting first (notes, a special variety or process), never the same one twice in a visit
-    const pickNew = (again, brew) => { const bw = String(brew || "").toLowerCase(), forEsp = /espresso|moka/.test(bw), forFilter = !!bw && !forEsp;
+    const pickNew = (again, brew, then) => { const bw = String(brew || "").toLowerCase(), forEsp = /espresso|moka/.test(bw), forFilter = !!bw && !forEsp;
       const fits = (r) => forFilter ? ((r.roast_for === "filter" || /^(v?light)$/.test(r.roast || "")) ? 3 : 0) - ((r.roast_for === "espresso" || /dark/.test(r.roast || "")) ? 6 : 0) : forEsp ? ((r.roast_for === "espresso" || /medium|dark/.test(r.roast || "")) ? 3 : 0) - (r.roast_for === "filter" ? 2 : 0) : 0; const pool0 = (typeof shelf !== "undefined" ? shelf : []).filter((r) => r.just_in), pool = pool0.length ? pool0 : (typeof shelf !== "undefined" ? shelf : []).filter((r) => r.new);
       const fresh = pool.filter((r) => !picked.has(r.url)); const list = fresh.length ? fresh : pool; if (!list.length) return say(T("Nothing new has landed yet today. Ask me again later!", "Oggi non è ancora arrivato niente di nuovo. Richiedimelo più tardi!"), null, hmm);
       const score = (r) => fits(r) + suits(r) * 3 + (notesOf(r).length ? 2 : 0) + (/gesha|geisha|sidra|pink bourbon|wush|laurina|eugenioides/i.test(r.variety || r.name || "") ? 2 : 0) + (/natural|anaerobic|honey|carbonic|co-?ferment/i.test(r.process || "") ? 1 : 0) + Math.random() * 1.5;
       const r = list.map((x) => [score(x), x]).sort((a, b) => b[0] - a[0])[0][1]; picked.add(r.url);
       const lead = again ? pick([T("How about this one: ", "Che ne dici di questo: "), T("Another good one: ", "Un altro buono: "), T("Then try ", "Allora prova ")]) : pick([T("My pick of today's: ", "Il mio preferito di oggi: "), T("If I had to choose one today: ", "Se dovessi sceglierne uno oggi: "), T("This one caught my eye: ", "Questo mi ha colpito: ")]);
       const yours = suits(r) ? T(" Right up your street.", " Proprio nel tuo stile.") : "", br = bw ? (fits(r) > 0 ? T(` Roasted for ${forEsp ? "espresso" : "filter"}, so it suits ${/^[aeiou]/i.test(brewName(bw)) ? "an" : "a"} ${brewName(bw)}.`, ` Tostato per ${forEsp ? "espresso" : "filtro"}, perfetto per ${brewName(bw)}.`) : "") : mem.brewer && Math.random() < 0.5 ? T(` Lovely in your ${brewName(mem.brewer)}.`, ` Ottimo nel tuo ${brewName(mem.brewer)}.`) : "";
-      say(lead + describe(r) + yours + br, [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); search(r.name + " " + r.roaster); } }], happy); ctx = { t: "pick", at: Date.now(), brew: bw || null }; };
+      if (then) { say(lead + describe(r) + " " + then(r), null, happy); return r; }
+      say(lead + describe(r) + yours + br, [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); search(r.name + " " + r.roaster); } }], happy); ctx = { t: "pick", at: Date.now(), brew: bw || null }; return r; };
+
+    // ---------- brewing together: Goccio asks what the recipe needs, one question at a time, then opens it set up ----------
+    // the coffee, the brewer, the grinder, how much, and the roast and process only when the bag or listing doesn't say
+    let gbs = null;
+    const GB_BREW = [[/\bv60 ?neo\b|\bneo\b/i, "neo"], [/\bv60\b|hario v|\bcone\b/i, "v60"], [/kalita|\bwave\b/i, "kalita"], [/april/i, "april"], [/\borea\b/i, "orea"], [/melitta/i, "melitta"], [/chemex/i, "chemex"], [/origami/i, "origami"], [/\bswitch\b/i, "switch"], [/clever/i, "clever"], [/aero ?press|\baero\b/i, "aero"], [/french press|cafeti[eè]re|\bpress\b|plunger/i, "press"], [/cold brew/i, "cold"], [/espresso|\bmachine\b|gaggia|lelit|rancilio|la marzocco|breville|sage/i, "espresso"], [/moccamaster|filter machine|batch/i, "mocca"], [/\bmoka\b|bialetti|caffettiera/i, "moka"], [/cupping/i, "cupping"], [/pour.?over|\bfilter\b|\bfiltro\b/i, "v60"]];
+    const GB_WORD = { v60: "v60", aero: "aeropress", press: "french press", kalita: "kalita", chemex: "chemex", origami: "origami", clever: "clever", switch: "switch", moka: "moka", espresso: "espresso", cold: "cold brew", orea: "orea", melitta: "melitta", mocca: "moccamaster" };
+    const gbBrewer = (q) => { for (const [re, k] of GB_BREW) if (re.test(q) && RECIPE_BREWERS[k]) return k; return null; };
+    const gbMemBrewer = () => mem.brewer ? gbBrewer(mem.brewer) : null;
+    const GB_BRANDS = new Set(["1zpresso", "timemore", "baratza", "fellow", "mahlkonig", "mahlkönig", "turin", "sage", "breville", "wilfa", "kingrinder", "hario", "gen", "pro", "plus", "the", "and", "esp", "s", "other", "grinder"]);
+    const gbMill = (q) => { const ql = " " + q.toLowerCase().replace(/[^a-z0-9ö\- ]/g, " ") + " "; let best = null, bs = 0;
+      for (const [k, G] of Object.entries(GRINDERS)) { if (k === "words") continue; const toks = [...new Set((G.name + " " + (G.short || "")).toLowerCase().replace(/[()\/]/g, " ").split(/\s+/).filter((w) => w.length >= 2))];
+        let sc = 0, real = false; toks.forEach((w) => { if (ql.includes(" " + w + " ") || (w.length >= 5 && ql.includes(w))) { sc += w.length; if (!GB_BRANDS.has(w)) real = true; } });
+        if (/gen ?1/.test(ql) && /gen 1/i.test(G.name)) sc += 3; if (/gen ?2/.test(ql) && /gen 2/i.test(G.name)) sc += 3;
+        if (real && sc > bs) { bs = sc; best = k; } }
+      return best; };
+    const gbMissing = (g) => { try { const st = Object.assign({}, state, g.r ? listState(g.r) : { text: g.text, bag: null, process: "auto", roast: "auto" }, { brewer: g.brewer || brewerOf(state) });
+      if (g.roast) st.roast = g.roast; if (g.process) st.process = g.process; return (engine(st, { noPrefs: true }).c || {}).missing || []; } catch (e) { return []; } };
+    const gbName = (g) => g.r ? `${g.r.name}` : (g.text || "").split(/[,.]/).slice(0, 2).map((x) => x.trim()).filter(Boolean).join(", ") || T("your coffee", "il tuo caffè");
+    // the next question, or null when there's nothing left to ask
+    const gbAsk = (g) => {
+      const it = LANG === "it";
+      if (!g.r && !g.text) { g.step = "coffee"; return T("Which coffee? Tell me its name, what the bag says (roaster, origin, process, roast), or say 'pick one'.", "Quale caffè? Dimmi il nome, cosa dice il sacchetto (torrefazione, origine, processo, tostatura), o di' 'scegline uno'."); }
+      if (!g.brewer) { g.step = "brewer"; const mb = gbMemBrewer(); return mb ? T(`What are you brewing with? Your ${RECIPE_BREWERS[mb].name} again?`, `Con cosa lo prepari? Ancora il tuo ${RECIPE_BREWERS[mb].name}?`) : T("What are you brewing with? V60, AeroPress, Chemex, French press, espresso…", "Con cosa lo prepari? V60, AeroPress, Chemex, French press, espresso…"); }
+      if (!g.mill) { g.step = "mill"; const known = prefs.mill && prefs.mill !== "words" && GRINDERS[prefs.mill]; return known ? T(`And the grinder? Still the ${GRINDERS[prefs.mill].name}?`, `E il macinino? Sempre il ${GRINDERS[prefs.mill].name}?`) : T("Which grinder? Comandante, Encore, Ode, Niche… or 'none' if it's pre-ground.", "Quale macinino? Comandante, Encore, Ode, Niche… o 'nessuno' se è già macinato."); }
+      const B = RECIPE_BREWERS[g.brewer];
+      if (!g.dose && !B.cup && B.doses.length > 1) { g.step = "dose"; return B.shot ? T("A single or a double?", "Singolo o doppio?") : g.brewer === "moka" ? T("Which size moka? 1, 3 or 6 cups?", "Che moka? Da 1, 3 o 6 tazze?") : T("How much are you making? One cup, two, or say the grams.", "Quanto ne fai? Una tazza, due, o dimmi i grammi."); }
+      const miss = gbMissing(g);
+      if (miss.includes("roast") && !g.roast) { g.step = "roast"; return T(`The ${g.r ? "listing" : "bag"} doesn't say the roast. Look at the beans: very light, light, medium, medium-dark or dark? 'Not sure' is fine.`, `${g.r ? "La scheda" : "Il sacchetto"} non dice la tostatura. Guarda i chicchi: molto chiara, chiara, media, medio-scura o scura? Va bene anche 'non so'.`); }
+      if (miss.includes("process") && !g.process) { g.step = "process"; return T("And the process? Washed, natural, honey, anaerobic, co-ferment or decaf. Or 'not sure'.", "E il processo? Lavato, naturale, honey, anaerobico, co-fermentato o decaffeinato. O 'non so'."); }
+      g.step = null; return null; };
+    // everything answered: open the recipe with it all set
+    const gbFinish = (g, pre) => { gbs = null; const B = RECIPE_BREWERS[g.brewer], M = g.mill !== "words" ? GRINDERS[g.mill] : null;
+      const kit = [B.name, g.dose && !B.cup ? `${g.dose} g` : "", M ? T(`on your ${M.short || M.name}`, `col tuo ${M.short || M.name}`) : g.millNote || ""].filter(Boolean).join(", ");
+      say((pre ? pre + " " : "") + T(`All set: ${gbName(g)}, ${kit}. Opening your recipe. Press Start brewing when the kettle's ready.`, `Tutto pronto: ${gbName(g)}, ${kit}. Apro la ricetta. Premi Inizia quando l'acqua è pronta.`), null, happy);
+      if (GB_WORD[g.brewer]) { mem.brewer = GB_WORD[g.brewer]; saveMem(); }
+      const kitOn = () => { try { if (g.brewer !== brewerOf(state)) setBrewer(g.brewer); if (g.dose && B.doses.some(([x]) => x === g.dose)) state.dose = g.dose;
+        if (GRINDERS[g.mill] && prefs.mill !== g.mill) { prefs.mill = g.mill; savePrefs(); $("millSel").value = g.mill; syncMill(); }
+        saveState(); renderAllOpts(); render(); } catch (e) {} };
+      const beanOn = () => { try { if (g.roast) { state.roast = g.roast; state.roastPhoto = null; } if (g.process) state.process = g.process; kitOn(); } catch (e) {} };
+      setTimeout(() => { kitOn();
+        if (g.r) { brewIt(g.r); setTimeout(beanOn, 900); }
+        else { closeTalk(); try { mineOn(); } catch (e) {} $("coffeeIn").value = g.text; build(); beanOn(); } }, 2200); };
+    const gbGo = (g, pre) => { const qn = gbAsk(g); if (qn) say((pre ? pre + " " : "") + qn, null, curious); else gbFinish(g, pre); };
+    const gbStart = (r, text) => { gbs = { at: Date.now(), r: r || null, text: text || null, tries: 0 }; ctx = null;
+      gbGo(gbs, r ? T(`${r.name} from ${roasteryName(r.roaster)}, lovely. Let's set it up.`, `${r.name} della ${roasteryName(r.roaster)}, buonissimo. Prepariamolo.`) : T("Let's brew together.", "Prepariamolo insieme.")); };
+    // an answer to the question asked; false hands the message back to the rest of the chat
+    const gbAnswer = (q) => { const g = gbs, ql = q.toLowerCase().trim();
+      if (/^(stop|cancel|never ?mind|forget it|no thanks|not now|later|basta|lascia stare|annulla|niente)\b/i.test(ql)) { gbs = null; say(T("No problem. Say 'let's brew' when you're ready.", "Nessun problema. Di' 'prepariamo' quando sei pronto."), null, smile); return true; }
+      const yes = /^(yes|yeah|yep|yup|sure|ok|okay|same|usual|the usual|still|correct|right|s[iì]|certo|esatto|sempre|il solito)\b/i.test(ql);
+      const unsure = /\b(not sure|no idea|don'?t know|dunno|unsure|no clue|non (lo )?so|boh)\b/i.test(ql);
+      const isQ = /\?\s*$/.test(ql) || /^(what|why|how|who|when|where|which|is|are|does|do|can|should|cosa|perch|come|chi|quando|dove|quale)\b/i.test(ql);
+      const miss = () => { g.tries++; if (isQ || g.tries > 2) { gbs = null; return false; } say(pick([T("Sorry, I didn't catch that. ", "Scusa, non ho capito. "), T("Hmm, not sure I follow. ", "Mmm, non ti seguo. ")]) + gbAsk(g), null, hmm); return true; };
+      g.at = Date.now();
+      if (g.step === "coffee") {
+        if (/^(pick( one)?|you (pick|choose)|surprise me|any|anything|whatever|scegli(ne uno)?|sorprendimi|fai tu)\b/i.test(ql)) { g.tries = 0; pickNew(false, mem.brewer, (r) => { g.r = r; return gbAsk(g) || ""; }); if (!gbAsk(g)) gbFinish(g); return true; }
+        const qn = norm(q), ro = findRoaster(qn), cs = findCoffees(qn, ro), mine = ro ? cs.filter((r) => r.roaster === ro.name) : cs;
+        if (mine.length) { g.r = mine[0]; g.tries = 0; gbGo(g, T(`${g.r.name} from ${roasteryName(g.r.roaster)}, lovely.`, `${g.r.name} della ${roasteryName(g.r.roaster)}, buonissimo.`)); return true; }
+        const p = parseCoffee(q);
+        if (p.origin || p.process || p.roast || p.roaster || ro || (g.tries >= 1 && !isQ && q.split(/\s+/).length >= 2)) { g.text = q; g.tries = 0; gbGo(g, T("Got it.", "Capito.")); return true; }
+        if (isQ) { gbs = null; return false; } g.tries++; say(T("I can't find that one on Goccio. Tell me what the bag says, like 'XYZ Roastery, Ethiopia, washed, light roast'.", "Non lo trovo su Goccio. Dimmi cosa dice il sacchetto, tipo 'XYZ Roastery, Etiopia, lavato, tostatura chiara'."), null, hmm); return true; }
+      if (g.step === "brewer") { const k = gbBrewer(q) || (yes && gbMemBrewer());
+        if (!k) return miss(); g.brewer = k; g.tries = 0; gbGo(g, pick([T("Nice.", "Bello."), T("Good one.", "Ottimo."), T("Lovely.", "Perfetto.")])); return true; }
+      if (g.step === "mill") { let k = gbMill(q);
+        if (!k && yes && prefs.mill && GRINDERS[prefs.mill]) k = prefs.mill;
+        if (!k && /\b(none|no grinder|don'?t have|pre.?ground|ground|nessuno|non ce l'?ho|gi[aà] macinato|macinato)\b/i.test(ql)) { g.mill = "words"; g.millNote = T("pre-ground", "già macinato"); g.tries = 0; gbGo(g, T(`No grinder, no problem: ask the roaster to grind it for ${RECIPE_BREWERS[g.brewer].name}.`, `Senza macinino va bene: chiedi alla torrefazione di macinarlo per ${RECIPE_BREWERS[g.brewer].name}.`)); return true; }
+        if (!k) { if (isQ) return miss(); g.mill = "words"; g.millNote = T("grind in words", "macinatura a parole"); g.tries = 0; gbGo(g, T("I don't have a chart for that one, so I'll give the grind in Comandante clicks and in words.", "Non ho la tabella per quello, quindi ti do la macinatura in scatti Comandante e a parole.")); return true; }
+        g.mill = k; g.tries = 0; gbGo(g, T(`The ${GRINDERS[k].short || GRINDERS[k].name}, great.`, `Il ${GRINDERS[k].short || GRINDERS[k].name}, ottimo.`)); return true; }
+      if (g.step === "dose") { const B = RECIPE_BREWERS[g.brewer], gm = ql.match(/(\d+(?:[.,]\d+)?)\s*(g|gr|grams?|grammi)\b/), cm = ql.match(/\b(\d|one|a|single|two|double|three|four|six|una|un|due|tre|quattro|sei|singolo|doppio)\b/);
+        const near = (x) => B.doses.map(([d]) => d).sort((a, b) => Math.abs(a - x) - Math.abs(b - x))[0];
+        let d = null;
+        if (gm) d = near(parseFloat(gm[1].replace(",", ".")));
+        else if (g.brewer === "moka" && /\b(1|one|una?)\b/.test(ql)) d = 7; else if (g.brewer === "moka" && /\b(6|six|sei)\b/.test(ql)) d = 30; else if (g.brewer === "moka" && /\b(3|three|tre)\b/.test(ql)) d = 16;
+        else if (cm) { const n = { one: 1, a: 1, single: 1, una: 1, un: 1, singolo: 1, two: 2, double: 2, due: 2, doppio: 2, three: 3, tre: 3, four: 4, quattro: 4, six: 6, sei: 6 }[cm[1]] || +cm[1] || 1;
+          d = B.shot ? (n >= 2 ? 18 : 14) : near(B.dose * n); }
+        else if (yes || unsure) d = B.dose;
+        if (!d) return miss(); g.dose = d; g.tries = 0; gbGo(g, ""); return true; }
+      if (g.step === "roast") { const k = /very light|molto chiar|extra light|nordic/i.test(ql) ? "vlight" : /medium.?dark|medio.?scur|full city/i.test(ql) ? "mdark" : /\blight\b|chiar|pale/i.test(ql) ? "light" : /medium|media|medio|milk.?choc/i.test(ql) ? "medium" : /dark|scur|oily|italian|french roast/i.test(ql) ? "dark" : unsure ? "unsure" : null;
+        if (!k) return miss(); g.roast = k; g.tries = 0; gbGo(g, k === "unsure" ? T("Then I'll play it safe: a touch cooler and a click coarser.", "Allora vado sul sicuro: un po' più fresca e uno scatto più grossa.") : ""); return true; }
+      if (g.step === "process") { const k = /co.?ferment|infus|co.?fermentat/i.test(ql) ? "cofer" : /anaerob|carbonic/i.test(ql) ? "anaerobic" : /decaf|deca/i.test(ql) ? "decaf" : /honey|miele/i.test(ql) ? "honey" : /natur|dry/i.test(ql) ? "natural" : /wash|lavat|wet/i.test(ql) ? "washed" : unsure ? "unsure" : null;
+        if (!k) return miss(); if (k !== "unsure") g.process = k; else g.process = "auto"; g.tries = 0; gbGo(g, ""); return true; }
+      gbs = null; return false; };
     // the hello: a fresh one each time, with something from what landed today (one that suits you, if it knows your taste)
     const hello = () => { const today = (typeof shelf !== "undefined" ? shelf : []).filter((r) => r.just_in), n = today.length, hi = pick([T(`Hi ${name}!`, `Ciao ${name}!`), T(`Hello ${name}!`, `Ciao ${name}!`), T(`Oh, hi ${name}!`, `Oh, ciao ${name}!`), T(`Hey ${name}!`, `Ehi ${name}!`)]);
       if (!n) return say(hi + " " + pick([T("Ask me about coffee.", "Chiedimi del caffè."), T("What are we brewing?", "Cosa prepariamo?"), T("Need a hand with your coffee?", "Ti serve una mano col caffè?")]), null, happy);
@@ -11050,6 +11136,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         say(T(`${roasteryName(ro.name)} is ${w ? "based in " + w : "on Goccio, though it doesn't say where it's based"}. ${n} coffee${n === 1 ? "" : "s"} from them on Goccio right now.`, `${roasteryName(ro.name)} ${w ? "ha sede a " + w : "è su Goccio, ma non dice dove ha sede"}. Adesso ha ${n} caffè su Goccio.`),
           [{ t: T("See their coffees", "Vedi i loro caffè"), f: () => openRoaster(ro.name) }], happy); return true; }
       if (mine.length) { const r = mine[0], more = mine.length - 1; lastCo = { r, at: Date.now() };
+        if (BREW_ASK.test(q) && !/^(how|what|which|best|recipe|ricetta|come)\b/i.test(q.trim())) { ctx = null; gbStart(r); return true; }
         if (BREW_ASK.test(q) || (ctx && ctx.t === "brewwhich")) { ctx = null; say(T(`${r.name} from ${roasteryName(r.roaster)}, lovely. Here's how to brew it.`, `${r.name} della ${roasteryName(r.roaster)}, buonissimo. Ecco come prepararlo.`), null, happy); setTimeout(() => brewIt(r), 1400); return true; }
         say(describe(r) + (more ? T(` (${more} more with that name.)`, ` (Altri ${more} con quel nome.)`) : ""), [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); search(r.name + (ro ? "" : " " + r.roaster)); } }], happy); return true; }
       if (ro && cs.length) { const others = [...new Set(cs.map((r) => r.roaster))].slice(0, 3).map(roasteryName);
@@ -11072,15 +11159,18 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       if (pendingOpts.length) { const opts = pendingOpts; pendingOpts = []; const nq = norm(q);
         const hit = opts.find((x) => { const t = norm(typeof x === "string" ? x : x.t); return t && (nq === t || (t.length >= 3 && (nq.includes(t) || (nq.length >= 3 && t.startsWith(nq))))); });
         if (hit) { if (typeof hit === "string") { lastQ = q = hit; } else if (hit.a) { hit.a(); return; } else if (hit.f) { hit.f(); return; } else if (hit.q) { lastQ = q = hit.q; } } }
+      if (gbs && Date.now() - gbs.at > 900000) gbs = null;
+      if (gbs && gbAnswer(q)) return;
       if (!pendingYes && /^(yes|yeah|yep|yup|sure|ok|okay|no|nope|nah|s[iì]|certo|va bene)\b[ .!]*$/i.test(q)) {   // a yes or no with nothing to answer
         return say(pick([T("Noted! Ask me anything about coffee.", "Ricevuto! Chiedimi qualsiasi cosa sul caffè."), T("Got it. What shall we talk about?", "Capito. Di cosa parliamo?"), T("Okay! I'm all ears. Well, all drop.", "Ok! Sono tutto orecchi. Anzi, tutto goccia.")]), null, smile); }
       if (pendingYes) { const f = pendingYes; pendingYes = null; if (/^(yes|yeah|yep|yup|sure|ok|okay|please|go on|go ahead|show me|let'?s see|s[iì]|certo|dai|va bene|vediamo|fammi vedere)\b/i.test(q)) { react("👍", 200); setTimeout(f, 650); return; } }
       // brewing from the chat: "start brewing" with a recipe open starts it; "let's brew" with nothing named asks which coffee
       { const recipeOpen = $("recipe") && !$("recipe").hidden && $("startBrew");
         if (/^(ok |okay |right |go |now )?(let'?s )?(start( brewing| the (timer|brew))?|go|begin|brew( now)?|inizia(mo)?|via|partiamo)[ !.]*$/i.test(q) && recipeOpen) { say(T("Here we go. Tare with the coffee in, then press Start as you begin to pour.", "Si parte. Tara con il caffè dentro, poi premi Start quando inizi a versare."), null, happy); setTimeout(() => { closeTalk(); $("startBrew").click(); }, 900); return; }
-        if (/^(let'?s |time to |can we |i want to |voglio )?(brew|make (a )?coffee|make some coffee|preparare un caff[eè]|prepariamo)( it| this| that| this one| that one| now| time)?[ !.?]*$/i.test(q) && !(lastCo && Date.now() - lastCo.at < 300000)) {
-          if (recipeOpen) { say(T("Your recipe's open. Say 'start' when the kettle's ready.", "La ricetta è aperta. Di' 'inizia' quando l'acqua è pronta."), null, happy); return; }
-          say(T("Lovely. Which coffee? Tell me its name, or say 'pick one' and I'll choose from today's.", "Bello. Quale caffè? Dimmi il nome, o di' 'scegline uno' e scelgo tra quelli di oggi."), null, curious); ctx = { t: "brewwhich", at: Date.now() }; return; }
+        if (/^(ok |okay |so )?(let'?s |time to |can we |can you |could you |please |i want to |help me |voglio |aiutami a )?(brew|make (a |me a |us a )?coffee|make some coffee|brew (with me|together)|guide me|walk me through( a)?( brew(ing)?)?|brew step by step|guided brew|preparare un caff[eè]|prepariamo|facciamo un caff[eè])( together| with me| it| this| that| this one| that one| now| time| insieme)?[ !.?]*$/i.test(q)) {
+          const fresh = lastCo && Date.now() - lastCo.at < 300000 && /\b(it|this|that|lo|la)\b/i.test(q);
+          if (recipeOpen && !fresh) { say(T("Your recipe's open. Say 'start' when the kettle's ready.", "La ricetta è aperta. Di' 'inizia' quando l'acqua è pronta."), null, happy); return; }
+          gbStart(fresh ? lastCo.r : null); return; }
         if (/^(let'?s |can you |could you |please )?(brew|make)( me| us)? (something|anything)\b/i.test(q)) { ctx = null; pickNew(false, mem.brewer); return; }
         if (ctx && ctx.t === "brewwhich" && /^(pick( one)?|you (pick|choose)|surprise me|scegli(ne uno)?|sorprendimi)[ !.]*$/i.test(q)) { ctx = null; pickNew(false, mem.brewer); return; } }
       if (aboutCo(q) || follow(q)) return; if (ctx && ctx.t !== "which" && ctx.t !== "brewwhich") ctx = null;
