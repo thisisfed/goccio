@@ -4082,7 +4082,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   // the variety and the process are in the tags: said again at the end of the name ("El Pergamino Bourbon Natural") they only make it long
   const tailTrim = (n, r) => { let out = String(n || ""); const bits = [r.variety, r.process].filter(Boolean).map((x) => String(x).trim()).filter((x) => x.length >= 3);
       for (let go = true; go;) { go = false; for (const b of bits) { const m = out.match(new RegExp("^(.*\\S)[\\s,\\-–|/]+" + b.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\s*$", "i")); if (m && m[1].replace(/[\s,\-–|/]+$/, "").length >= 3) { out = m[1].replace(/[\s,\-–|/]+$/, ""); go = true; } } }
-      return out; };
+      return out.replace(/\s+(?:x|×|&|\+|and|with|e|y)$/i, "");   // a joiner left hanging once the origin is cut off: "City Bloc x" (Brazil Montanari) -> "City Bloc"
+    };
   // the name a coffee has in the list, everywhere it is named (Goccio too): "Cosmic Gâteau", not the shop's "Cosmic Gâteau *new*"
   const shownName = (r) => r._nm ?? (r._nm = tailTrim(coffeeName(r) ?? shortName(r), r));
   const shortName = (r) => {
