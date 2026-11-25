@@ -2801,9 +2801,10 @@ html body .wb-sign .gd-beta{position:absolute;left:calc(50% + 50.4px * var(--gs,
 html.gd-open body .wb-sign .gd-beta{opacity:0}
 /* laser eyes: red eyes, two beams, a burning trail round the tag, sparks; then a scorch and smoke where it was */
 html body .wb-sign .gdrop.laser .gd-e{fill:#ff2a14}
-/* hypnosis: white spirals turning slowly in his eyes */
+/* hypnosis: spirals of strange bright colours turning slowly in his eyes */
 html body .gd-hyp{opacity:0;transition:opacity .4s ease;pointer-events:none} html body .gd-hyp.in{opacity:1}
-html body .gd-hyp path{fill:none;stroke:#f4ede4;stroke-width:.34;stroke-linecap:round;transform-box:fill-box;transform-origin:center;animation:gd-hyp 1.7s linear infinite}
+html body .gd-hyp path{fill:none;stroke-width:.62;stroke-linecap:round}   /* broad bands of odd bright colours, one a turn */
+html body .gd-hyp .gh-rot{transform-box:fill-box;transform-origin:center;animation:gd-hyp 1.7s linear infinite}
 @keyframes gd-hyp{to{transform:rotate(360deg)}}
 html body .wb-sign .gd-fx{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:40}
 html body .gd-fx .fx-beam{fill:#ff2a14}   /* the whole cone red, core and all */
@@ -10551,10 +10552,13 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     let gazeLock = false;   // while he hypnotises, his eyes stay on you, whatever the pointer does
     const hypno = () => act(async () => { if (still()) return; gazeLock = true; lookX = 0; lookY = 0; draw();
       const NS = "http://www.w3.org/2000/svg", L = el.querySelector(".gd-l"), R = el.querySelector(".gd-r"); if (!L || !R) return;
-      let d = "M 0 0"; for (let t = 0; t <= Math.PI * 9; t += 0.12) { const r = 0.13 * t; d += ` L ${(r * Math.cos(t)).toFixed(2)} ${(r * Math.sin(t)).toFixed(2)}`; }   // a spiral out to 3.5, well past the eye's edge
+      // the spiral in bands of odd, bright colours, each turn a different one, turning as before
+      const HUES = ["#ff2bd6", "#7cff3a", "#ff7a00", "#6a3cff", "#00e5ff", "#fff35c", "#ff3b5c", "#3bff9e", "#b14dff"];
+      const segs = []; for (let k = 0; k < 9; k++) { let d0 = ""; for (let t = Math.PI * k; t <= Math.PI * (k + 1) + 0.01; t += 0.1) { const r = 0.13 * t; d0 += `${d0 ? " L" : "M"} ${(r * Math.cos(t)).toFixed(2)} ${(r * Math.sin(t)).toFixed(2)}`; } segs.push([d0, HUES[k]]); }
       const cid = "hypc" + Math.random().toString(36).slice(2, 6), cp = document.createElementNS(NS, "clipPath"), cc = document.createElementNS(NS, "circle");   // cut to the eye, so its end is never seen
       cp.id = cid; cc.setAttribute("r", "2.3"); cp.appendChild(cc); eyes.appendChild(cp);
-      const sp = [L, R].map((e0, i) => { const g = document.createElementNS(NS, "g"), pth = document.createElementNS(NS, "path"); g.setAttribute("class", "gd-hyp"); pth.setAttribute("d", d); pth.setAttribute("clip-path", `url(#${cid})`); pth.style.animationDirection = i ? "reverse" : "normal"; g.appendChild(pth); eyes.appendChild(g); return [e0, g]; });
+      const sp = [L, R].map((e0, i) => { const g = document.createElementNS(NS, "g"), cl = document.createElementNS(NS, "g"), rot = document.createElementNS(NS, "g"); g.setAttribute("class", "gd-hyp"); cl.setAttribute("clip-path", `url(#${cid})`); rot.setAttribute("class", "gh-rot"); rot.style.animationDirection = i ? "reverse" : "normal";
+        segs.forEach(([d0, c]) => { const pth = document.createElementNS(NS, "path"); pth.setAttribute("d", d0); pth.setAttribute("stroke", c); rot.appendChild(pth); }); cl.appendChild(rot); g.appendChild(cl); eyes.appendChild(g); return [e0, g]; });
       let on = true; const follow = () => { if (!on) return; sp.forEach(([e0, g]) => { const rx = parseFloat(e0.getAttribute("rx")) || 2.4, ry = parseFloat(e0.getAttribute("ry")) || 3.4, cx = e0.getAttribute("cx"), cy = e0.getAttribute("cy");
           g.setAttribute("transform", `${e0.getAttribute("transform") || ""} translate(${cx} ${cy}) scale(${(rx / 2.4).toFixed(3)} ${(ry / 2.4).toFixed(3)})`); }); requestAnimationFrame(follow); }; follow();
       sp.forEach(([, g]) => g.classList.add("in"));
