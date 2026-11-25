@@ -2802,11 +2802,9 @@ html body .wb-sign .gd-beta{position:absolute;left:calc(50% + 50.4px * var(--gs,
 html.gd-open body .wb-sign .gd-beta{opacity:0}
 /* laser eyes: red eyes, two beams, a burning trail round the tag, sparks; then a scorch and smoke where it was */
 html body .wb-sign .gdrop.laser .gd-e{fill:#ff2a14}
-/* hypnosis: spirals of strange bright colours turning slowly in his eyes */
+/* hypnosis: rings of strange bright colours widening slowly from the middle of his eyes */
 html body .gd-hyp{opacity:0;transition:opacity .4s ease;pointer-events:none} html body .gd-hyp.in{opacity:1}
-html body .gd-hyp path{fill:none;stroke-width:.62;stroke-linecap:round}   /* broad bands of odd bright colours, one a turn */
-html body .gd-hyp .gh-rot{transform-box:fill-box;transform-origin:center;animation:gd-hyp 1.7s linear infinite}
-@keyframes gd-hyp{to{transform:rotate(360deg)}}
+html body .gd-hyp circle{fill:none;stroke-width:.34}   /* thin rings of odd bright colours, widening from the middle */
 html body .wb-sign .gd-fx{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:40}
 html body .gd-fx .fx-beam{fill:#ff2a14}   /* the whole cone red, core and all */
 html body .gd-fx .fx-beam-glow{fill:#ff2a14;opacity:.5}
@@ -10265,7 +10263,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const step = (t) => { raf = 0; const dt = Math.min(0.032, last ? (t - last) / 1000 : 0.016); last = t;
       tws = tws.filter((tw) => { const x = Math.min(1, (performance.now() - tw.t0) / tw.ms); setK(tw.key, tw.from + (tw.to - tw.from) * ease(x)); if (x >= 1) { tw.res(); return false; } return true; });
       if (phase === "fall") { vy += G * dt; y += vy * dt; if (y >= 0) { y = 0; phase = "rest"; round = 0; va = -Math.min(14, vy / 90); vy = 0; if (!landedOnce) { landedOnce = true; setTimeout(showOff, 1600); } } }   // lands: flattens with the speed it had, then rings
-      if (jv || jy) { jv += G * 0.75 * dt; jy += jv * dt; if (jy >= 0) { jy = 0; if (jv > 50) va -= Math.min(4.5, jv / 80); jv = 0; } }   // a hop: up, then down with a little splat
+      if (jv || jy) { const dh = dt / 1.45; jv += G * 0.75 * dh; jy += jv * dh; if (jy >= 0) { jy = 0; if (jv > 50) va -= Math.min(4.5, jv / 80); jv = 0; } }   // a hop: up, then down with a little splat
       va += (-wS * wS * (a - S.aRest) - 2 * zS * wS * va) * dt; a += va * dt;
       vl += (-wL * wL * (lean - leanTo) - 2 * zL * wL * vl) * dt; lean += vl * dt; leanTo *= Math.pow(0.02, dt);
       draw();
@@ -10332,7 +10330,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const boo = () => act(async () => { if (still()) return; el.style.transformOrigin = "50% 100%"; el.style.transition = "scale .22s cubic-bezier(.2,1.8,.4,1)"; el.style.zIndex = "45";
       await face({ eyeSL: 1.7, eyeSR: 1.7, eyeL: 1.2, eyeR: 1.2 }, 90); el.style.scale = "2.6"; poke(2.6); await wait(260); poke(-2.2); await wait(700);
       el.style.transition = "scale .45s cubic-bezier(.4,0,.2,1)"; el.style.scale = "1"; await face({ eyeSL: 1, eyeSR: 1, eyeL: 1, eyeR: 1, happy: 1, blush: 0.6 }, 300); await wait(450);
-      for (let i = 0; i < 3; i++) { jv = -140; go(); await wait(170); } await wait(500); await face({ happy: 0, blush: 0 }, 300); el.style.zIndex = ""; el.style.transition = ""; });
+      for (let i = 0; i < 3; i++) { jv = -140; go(); await wait(250); } await wait(500); await face({ happy: 0, blush: 0 }, 300); el.style.zIndex = ""; el.style.transition = ""; });
     // thinking: the eyes drift up and to one side, then the other, with a slow half-blink and a little lean, for as long as the thought takes
     const think = (ms) => act(async () => { const end = performance.now() + (ms || 1500); let side = Math.random() < 0.5 ? -1 : 1;
       await face({ eyeL: 0.8, eyeR: 0.8 }, 200);
@@ -10356,7 +10354,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       await tween("turn", 0, 380); await face({ blush: 1, happy: 1 }, 200); await wait(1100); });
     // a backflip: it crouches, springs up, turns right over backwards in the air, and lands with a splat and happy eyes
     const backflip = () => act(async () => { tween("aRest", -0.18, 170); await face({ eyeL: 0.6, eyeR: 0.6 }, 170);
-      tween("aRest", 0.14, 120); jv = -400; go(); await tween("flip", -360, 430); S.flip = 0; tween("aRest", 0, 200); poke(-3.4); await face({ happy: 1, eyeL: 1, eyeR: 1 }, 140); await wait(900); });
+      tween("aRest", 0.14, 120); jv = -400; go(); await tween("flip", -360, 620); S.flip = 0; tween("aRest", 0, 200); poke(-3.4); await face({ happy: 1, eyeL: 1, eyeR: 1 }, 140); await wait(900); });
     // roll: like a ball, it turns as it goes (the distance matches the turn, so it doesn't skid), off to one side, all the way across to the other, and home
     const roll = () => act(async () => { const s0 = Math.random() < 0.5 ? -1 : 1, deg = 200, d = deg * Math.PI / 180 * R0;
       // first, furtive: head still and a touch low, eyes narrowed to slits, darting one way, the other, back again, as if
@@ -10599,23 +10597,28 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       for (const s1 of [-1, 1, 0]) { tween("flip", s1 * 9, 380); await wait(650); }
       await blinkSoft(); await face({ eyeL: 1.1, eyeR: 1.1, eyeSL: 1.15, eyeSR: 1.15 }, 160); await wait(350);
       await nearTo(1, 0, 900, "cubic-bezier(.3,.7,.4,1)"); S.flip = 0; poke(-1.4); nearDone(); }, true);
-    // hypnosis: he goes still and stares straight at you while his eyes turn into slow white spirals, one each way ("you are getting
-    // sleepy…"); then a blink and they're gone. The spirals follow his eyes' shape, so a blink closes them too
+    // hypnosis: he goes still and stares straight at you while his eyes open wide and fill with slowly widening coloured rings ("you are getting
+    // sleepy…"); then a blink and they're gone. The rings follow his eyes' shape, so a blink closes them too
     let gazeLock = false;   // while he hypnotises, his eyes stay on you, whatever the pointer does
     const hypno = () => act(async () => { if (still()) return; gazeLock = true; lookX = 0; lookY = 0; draw();
       const NS = "http://www.w3.org/2000/svg", L = el.querySelector(".gd-l"), R = el.querySelector(".gd-r"); if (!L || !R) return;
-      // the spiral in bands of odd, bright colours, each turn a different one, turning as before
-      const HUES = ["#ff2bd6", "#7cff3a", "#ff7a00", "#6a3cff", "#00e5ff", "#fff35c", "#ff3b5c", "#3bff9e", "#b14dff"];
-      const segs = []; for (let k = 0; k < 9; k++) { let d0 = ""; for (let t = Math.PI * k; t <= Math.PI * (k + 1) + 0.01; t += 0.1) { const r = 0.13 * t; d0 += `${d0 ? " L" : "M"} ${(r * Math.cos(t)).toFixed(2)} ${(r * Math.sin(t)).toFixed(2)}`; } segs.push([d0, HUES[k]]); }
-      const cid = "hypc" + Math.random().toString(36).slice(2, 6), cp = document.createElementNS(NS, "clipPath"), cc = document.createElementNS(NS, "circle");   // cut to the eye, so its end is never seen
+      // rings of odd, bright colours, born at the middle of each eye and slowly widening to its edge, where the eye cuts them off
+      const HUES = ["#ff2bd6", "#7cff3a", "#ff7a00", "#6a3cff", "#00e5ff", "#fff35c", "#ff3b5c", "#3bff9e", "#b14dff"], N = 6, PER = 3600;
+      const cid = "hypc" + Math.random().toString(36).slice(2, 6), cp = document.createElementNS(NS, "clipPath"), cc = document.createElementNS(NS, "circle");   // cut to the eye, so a ring never leaves it
       cp.id = cid; cc.setAttribute("r", "2.3"); cp.appendChild(cc); eyes.appendChild(cp);
-      const sp = [L, R].map((e0, i) => { const g = document.createElementNS(NS, "g"), cl = document.createElementNS(NS, "g"), rot = document.createElementNS(NS, "g"); g.setAttribute("class", "gd-hyp"); cl.setAttribute("clip-path", `url(#${cid})`); rot.setAttribute("class", "gh-rot"); rot.style.animationDirection = i ? "reverse" : "normal";
-        segs.forEach(([d0, c]) => { const pth = document.createElementNS(NS, "path"); pth.setAttribute("d", d0); pth.setAttribute("stroke", c); rot.appendChild(pth); }); cl.appendChild(rot); g.appendChild(cl); eyes.appendChild(g); return [e0, g]; });
+      const rings = [];
+      const sp = [L, R].map((e0) => { const g = document.createElementNS(NS, "g"), cl = document.createElementNS(NS, "g"); g.setAttribute("class", "gd-hyp"); cl.setAttribute("clip-path", `url(#${cid})`);
+        const rs = []; for (let k = 0; k < N; k++) { const c = document.createElementNS(NS, "circle"); c.setAttribute("cx", "0"); c.setAttribute("cy", "0"); cl.appendChild(c); rs.push(c); } rings.push(rs); g.appendChild(cl); eyes.appendChild(g); return [e0, g]; });
+      const t0 = performance.now(); let hueN = 0; const born = new Array(N).fill(-1);
+      const grow = (now) => { const t = (now - t0) / PER; for (let k = 0; k < N; k++) { const f = t + k / N, ph = f % 1, gen = Math.floor(f);
+          if (born[k] !== gen) { born[k] = gen; rings.forEach((rs) => rs[k].setAttribute("stroke", HUES[hueN % HUES.length])); hueN++; }
+          rings.forEach((rs) => { rs[k].setAttribute("r", (ph * 2.5).toFixed(3)); rs[k].style.opacity = Math.min(1, ph * 6).toFixed(2); }); } };
       let on = true; const follow = () => { if (!on) return; sp.forEach(([e0, g]) => { const rx = parseFloat(e0.getAttribute("rx")) || 2.4, ry = parseFloat(e0.getAttribute("ry")) || 3.4, cx = e0.getAttribute("cx"), cy = e0.getAttribute("cy");
-          g.setAttribute("transform", `${e0.getAttribute("transform") || ""} translate(${cx} ${cy}) scale(${(rx / 2.4).toFixed(3)} ${(ry / 2.4).toFixed(3)})`); }); requestAnimationFrame(follow); }; follow();
+          g.setAttribute("transform", `${e0.getAttribute("transform") || ""} translate(${cx} ${cy}) scale(${(rx / 2.4).toFixed(3)} ${(ry / 2.4).toFixed(3)})`); }); grow(performance.now()); requestAnimationFrame(follow); }; follow();
+      await face({ eyeSL: 1.5, eyeSR: 1.5 }, 500);   // his eyes open wide to hold the rings
       sp.forEach(([, g]) => g.classList.add("in"));
-      await wait(4600);   // still, straight at you, the spirals turning
-      blink = 0.12; draw(); await wait(140); sp.forEach(([, g]) => g.remove()); cp.remove(); on = false; blink = 1; draw(); gazeLock = false; }, true);
+      await wait(6000);   // still, straight at you, the rings widening
+      blink = 0.12; draw(); await wait(140); sp.forEach(([, g]) => g.remove()); cp.remove(); on = false; blink = 1; draw(); await face({ eyeSL: 1, eyeSR: 1 }, 400); gazeLock = false; }, true);
     // boop: it rushes up and squashes its face against your screen like glass, holds, then peels off and falls back with a wobble
     const boop = () => act(async () => { if (still()) return; await face({ eyeSL: 1.2, eyeSR: 1.2 }, 150); await nearTo(3, 80, 520, "cubic-bezier(.5,0,.9,.6)");
       el.style.transition = "scale .12s ease-out"; el.style.scale = "3.6 3.25"; rigid = true; await face({ eyeL: 0.45, eyeR: 0.45, eyeSL: 1.45, eyeSR: 1.45, blush: 0.8 }, 120); await wait(900);
@@ -10637,7 +10640,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     let lkX = 0, lkY = 0, lkRaf = 0;
     const look = (x, y) => { lkX = x; lkY = y; if (lkRaf) return; const tick = () => { lookX += (lkX - lookX) * 0.14; lookY += (lkY - lookY) * 0.14; draw();
       if (Math.abs(lkX - lookX) + Math.abs(lkY - lookY) > 0.02) lkRaf = requestAnimationFrame(tick); else { lookX = lkX; lookY = lkY; draw(); lkRaf = 0; } }; lkRaf = requestAnimationFrame(tick); };
-    const hop = (v, dx, ms) => { jv = -v; tween("jx", dx, ms); go(); return wait(ms + 60); };
+    const hop = (v, dx, ms) => { ms *= 1.45; jv = -v; tween("jx", dx, ms); go(); return wait(ms + 60); };   // matches the slower hop clock
     // typing its answer: on its phone, eyes down at the screen, the screen flickering as it taps
     const text = (on) => { if (still()) return; wantText = !!on; if (on) { if (texting || acting) return; texting = true; tween("fone", 1, 260); look(0, 2.4); clearInterval(texT); texT = setInterval(() => tween("scroll", S.scroll + 0.35, 110), 260); }
       else { if (!texting) return; texting = false; clearInterval(texT); tween("fone", 0, 320).then(() => { S.scroll = 0; }); look(0, 0); } };
