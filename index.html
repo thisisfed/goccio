@@ -9622,7 +9622,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           // the totals sit on a second line under today's news, now that a phone's search box no longer shows them
           const g0 = { useGrouping: "always" }, tot = it0 ? `${nC.toLocaleString(loc0, g0)} caffè, ${nR.toLocaleString(loc0, g0)} torrefazioni in totale.` : `${nC.toLocaleString(loc0)} coffees, ${nR.toLocaleString(loc0)} roasters in total.`;
           if ($("wmTot")) $("wmTot").hidden = true;   // the totals live in the search box now (25/11/2026), not under the slogan
-          if ($("wmLive")) { $("wmLiveT").textContent = added; $("wmLive").hidden = !added; } } }
+          // what a newcomer needs: how many shops are read, and that it happens daily ("792 roasters checked every morning."), not the day's joiners
+          const daily = nR ? (it0 ? `${nR.toLocaleString(loc0, g0)} torrefazioni controllate ogni mattina.` : `${nR.toLocaleString(loc0)} roasters checked every morning.`) : "";
+          if ($("wmLive")) { $("wmLiveT").textContent = daily; $("wmLive").hidden = !daily; } } }
       renderShelfV();
       renderShelf();
       document.documentElement.classList.remove("wait");
