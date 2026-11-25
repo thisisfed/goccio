@@ -11962,8 +11962,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         // stretched as he pulls free, round again with a little bounce, and blinks. Each page view, at the top of the page only
         { const box = tb.parentElement && tb.parentElement.querySelector(".ask-box");
           // a reload or a step back puts the page back where it was a moment later: no show then, only on a fresh visit to the top
-          let navT = "navigate"; try { navT = (performance.getEntriesByType("navigation")[0] || {}).type || "navigate"; } catch (e) {}
-          if (box && navT === "navigate" && scrollY < 40 && !location.hash && !document.documentElement.classList.contains("brew-in")) {
+          // (a reload where you were at the top plays it too: where you were is noted as you leave)
+          let navT = "navigate", wasY = 0; try { navT = (performance.getEntriesByType("navigation")[0] || {}).type || "navigate"; wasY = +sessionStorage.getItem("v60.leftAt") || 0; } catch (e) {}
+          addEventListener("pagehide", () => { try { sessionStorage.setItem("v60.leftAt", String(Math.round(scrollY))); } catch (e) {} });
+          if (box && (navT === "navigate" || wasY < 40) && scrollY < 40 && !location.hash && !document.documentElement.classList.contains("brew-in")) {
             const br = box.getBoundingClientRect(), gr = tb.getBoundingClientRect(), cover = gr.right - br.right;
             if (cover > 0 && cover < 120) {
               box.style.position = "relative"; box.style.zIndex = "2"; box.style.marginRight = -cover + "px"; tb.style.opacity = "0";
