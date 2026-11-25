@@ -10448,7 +10448,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const jumps = () => act(async () => { const s0 = Math.random() < 0.5 ? -1 : 1; await face({ smile: 0.7 }, 150); await hop(240, s0 * 9, 330); await wait(160); await hop(260, -s0 * 9, 360); await wait(160); await hop(200, 0, 300); await wait(200); });
     // yes: two nods, eyes down and up with the body; no: two shakes of the head, eyes side to side
     const yes = () => act(async () => { await face({ smile: 0.8 }, 150); for (let i = 0; i < 2; i++) { lookY = 2; tween("aRest", -0.08, 120); draw(); await wait(150); lookY = -0.5; tween("aRest", 0.03, 130); draw(); await wait(170); } lookY = 0; tween("aRest", 0, 150); draw(); await wait(500); });
-    const no = () => act(async () => { await face({ smile: -0.4 }, 150); for (let i = 0; i < 3; i++) { for (const s1 of [-1, 1]) { lookX = s1 * 3; leanTo = s1 * 2.5; draw(); go(); await wait(140); } } lookX = 0; leanTo = 0; draw(); await wait(450); });
+    // no: a slow, smooth shake of the head, side to side two and a bit times, easing in and out (not a jerk from side to side)
+    const no = () => act(async () => { await face({ smile: -0.4 }, 220); const t0 = performance.now(), DUR = 1900;
+      await new Promise((done) => { const step = (now) => { const k = Math.min(1, (now - t0) / DUR), env = Math.pow(Math.sin(Math.PI * k), 0.7), v = Math.sin(Math.PI * 2 * 2.25 * k) * env;
+          lookX = v * 2.8; leanTo = v * 2.1; draw(); go(); if (k < 1) requestAnimationFrame(step); else done(); }; requestAnimationFrame(step); });
+      lookX = 0; leanTo = 0; draw(); go(); await wait(450); });
     // dancing: the headphones drop on, it bobs to the beat (two a second), sways and hops, eyes happy, notes float up; then they come off
     const NS = "http://www.w3.org/2000/svg", notes = el.querySelector(".gd-n");
     let dancing = false;
