@@ -2009,7 +2009,7 @@ html body .shelf .grp.day-g{position:sticky;top:calc(var(--top-h,49px) + 12px);z
 html body .shelf .grp.day-g:not(:first-child){margin-top:40px}
 html body .shelf .grp.day-g::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:13px;background:var(--bg);display:none}   /* pinned, the strip between it and the top bar is filled, so what scrolls under doesn't show there */
 html body .shelf .grp.day-g.stuck::before{display:block}
-html body .shelf .grp.day-g .day-what{display:none} html body .shelf .grp.day-g.stuck .day-what{display:inline}   /* "230 added today" under Coffees; "230 coffees added today" once pinned */
+html body .shelf .grp.day-g .day-what{display:none} html body .shelf .grp.day-g.say-what .day-what{display:inline}   /* "230 added today" under Coffees; "230 coffees added today" once pinned */
 html body .shelf .grp.day-g::after{content:"";position:absolute;left:0;width:100%;bottom:0;height:1px;background:var(--line);pointer-events:none;transition:left .32s cubic-bezier(.2,.8,.2,1),width .32s cubic-bezier(.2,.8,.2,1)}   /* in the list its line is as long as the one over "Coffees." */
 html body .shelf .grp.day-g.stuck::after{left:calc(50% - 50vw);width:100vw}   /* pinned under the top bar, it stretches out from edge to edge, like the bar's own line */
 @media (prefers-reduced-motion:reduce){html body .shelf .grp.day-g::after{transition:none}}
@@ -2979,12 +2979,12 @@ html body .gd-offer.in{max-height:80px;opacity:1;transform:none}
 html body .gd-tip{position:fixed;z-index:60;max-width:min(250px,calc(100vw - 24px));padding:10px 14px;border:0;border-radius:18px;background:var(--pill);color:var(--ink);font:500 15px/1.35 var(--sans);text-align:left;cursor:pointer;box-shadow:0 10px 30px rgba(0,0,0,.45);opacity:0;transform:translateY(-6px) scale(.92);transform-origin:calc(100% - var(--tail,22px)) 0;transition:opacity .25s ease,transform .45s cubic-bezier(.3,1.5,.5,1)}
 html body .gd-tip::before{display:none}
 /* the same bubble as Goccio's in the chat (padding, rounding, the soft top light), its corner squared towards him as the chat's is towards
-   the sender; ringed in the site's orange with a warm glow that pulses twice, so it stands out from the page it floats over */
+   the sender; with a dark shadow all round it, so it stands out from the page it floats over */
 html body .gd-tip{padding:8px 12px!important;border-radius:16px!important;border-top-right-radius:4px!important;
   background:var(--pill) linear-gradient(180deg,color-mix(in srgb,#fff 7%,transparent),transparent 70%)!important;
-  box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 10%,transparent),0 0 0 1.5px var(--hl),0 0 18px color-mix(in srgb,var(--hl) 45%,transparent),0 10px 30px rgba(0,0,0,.55)!important}
-html body .gd-tip.in{opacity:1;transform:none;animation:gdTipGlow 1.4s ease-in-out .5s 2}
-@keyframes gdTipGlow{50%{box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 10%,transparent),0 0 0 2px var(--hl),0 0 30px color-mix(in srgb,var(--hl) 75%,transparent),0 10px 30px rgba(0,0,0,.55)}}
+  box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 12%,transparent),0 0 0 1px color-mix(in srgb,#fff 8%,transparent),0 0 0 7px rgba(0,0,0,.72),0 0 28px 12px rgba(0,0,0,.85),0 16px 40px rgba(0,0,0,.9)!important;
+  background-color:color-mix(in srgb,var(--pill) 82%,#fff)!important}   /* a dark shadow all round it lifts it off the page under it; a touch lighter inside than the page's pills */
+html body .gd-tip.in{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){html body .gd-tip{transition:opacity .2s}}
 html body .gd-offer svg{width:28px;height:28px;flex:none;transform:translateX(-40px) rotate(-30deg);transition:transform .7s cubic-bezier(.3,1.5,.5,1) .2s}
 html body .gd-offer.in svg{transform:none}
@@ -10187,7 +10187,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         const row = last && (last.querySelector(":scope > .r") || last), lim = row ? row.getBoundingClientRect().bottom : Infinity;   /* its line meets the bottom of the buttons, then they go up together */
         const dy = Math.min(0, lim - (t + h.offsetHeight));
         if (Math.abs(dy - was) > 0.25) { h.dataset.dy = dy.toFixed(1); h.style.transform = dy ? `translateY(${dy.toFixed(1)}px)` : ""; }
-        h.classList.toggle("stuck", t <= t0 + 1.5); }); };   /* pinned (or held there by the list) and on its way out: the strip over it stays filled, so nothing peeks between it and the bar */
+        h.classList.toggle("stuck", t <= t0 + 1.5); });
+      // "230 coffees added today" once the Coffees title is out of view: decided by where the title is, so the words don't flicker as the heading pins
+      { const ttl = document.getElementById("sh"), bar = document.querySelector(".top"), off = !!(ttl && bar && ttl.getBoundingClientRect().bottom < bar.getBoundingClientRect().bottom + 4);
+        hs.forEach((h) => h.classList.toggle("say-what", off)); } };   /* pinned (or held there by the list) and on its way out: the strip over it stays filled, so nothing peeks between it and the bar */
     addEventListener("scroll", () => { if (!q0) q0 = requestAnimationFrame(mark); }, { passive: true });
     addEventListener("resize", () => { if (!q0) q0 = requestAnimationFrame(mark); }, { passive: true }); }
   const makeBuddy = (el, opt = {}) => { const body = el && el.querySelector(".gd-b"), eyes = el && el.querySelector(".gd-e"), all = el && el.querySelector(".gd-all"); if (!el || !body || !all) return null;
