@@ -34,7 +34,7 @@ def main():
     with sync_playwright() as p:
         b = p.chromium.launch()
         pg = b.new_page()
-        big = render(pg, 4096, 1.0)   # as big as the icon allows: the ball touches the edges, the rounded corners only take the black
+        big = render(pg, 4096, 0.76)   # about the size other apps draw their mark (Grok's ring and slash): room round him, never touching the corners
         for name, size in [("apple-touch-icon.png", 180), ("icon-192.png", 192), ("icon-512.png", 512), ("icon-1024.png", 1024)]:
             big.resize((size, size), Image.LANCZOS).convert("RGB").save("icons/" + name, optimize=True)
         render(pg, 4096, 0.8).resize((512, 512), Image.LANCZOS).convert("RGB").save("icons/icon-512-maskable.png", optimize=True)   # Android's safe circle: 80% of the tile
