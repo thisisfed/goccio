@@ -9980,7 +9980,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         const m = document.createElementNS(NS1, "path"); m.setAttribute("class", "gd-mouth"); m.setAttribute("fill", "#000"); m.setAttribute("clip-path", `url(#${id})`); m.style.pointerEvents = "none"; eyes.after(m); return [m, cpp]; } catch (e) { return null; } })();
     const W0 = 36, H0 = 24, R0 = 15.5;   // at rest: a dome 36 wide, 24 high; falling: a round drop of about the same volume
     const wS = 2 * Math.PI / 0.24, zS = 0.3, wL = 2 * Math.PI / 0.42, zL = 0.45, G = 2600;
-    const S = { aRest: 0, eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, fone: 0, umb: 0, scroll: 0, jx: 0, blush: 0, turn: 0, armL: 0, armR: 0, armLa: 0, armRa: 0, flip: 0, cold: 0, jaw: 0, tumble: 0 }; let rigid = false, jy = 0, jv = 0, ptrX = 0, ptrY = 0, ptrT = 0; let tws = [], a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
+    const S = { aRest: 0, eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, fone: 0, umb: 0, scroll: 0, jx: 0, blush: 0, turn: 0, armL: 0, armR: 0, armLa: 0, armRa: 0, flip: 0, cold: 0, jaw: 0, tumble: 0, cross: 0 }; let rigid = false, jy = 0, jv = 0, ptrX = 0, ptrY = 0, ptrT = 0; let tws = [], a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
     const draw = () => {
       // the shape it has just before it falls: round. Squashed or stretched it keeps its volume (taller is narrower); its top
       // sways with the page; it sits on its lowest point
@@ -10009,7 +10009,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       // no mouth: a smile lifts the lower lids (smiling eyes); a frown tips the eyes down at the outer corners (sad); a yawn squeezes them
       const c = Math.max(-1, Math.min(1, S.smile)), lift = c > 0 ? c : 0, sad = c < 0 ? -c : 0;
       L.setAttribute("ry", (parseFloat(L.getAttribute("ry")) * (1 - 0.38 * lift)).toFixed(2)); R.setAttribute("ry", (parseFloat(R.getAttribute("ry")) * (1 - 0.38 * lift)).toFixed(2));
-      L.setAttribute("transform", `translate(0 ${(-1.1 * lift + 1.4 * sad - 0.6 * S.happy).toFixed(2)}) rotate(${(-28 * sad).toFixed(1)} -6 -12)`); R.setAttribute("transform", `translate(0 ${(-1.1 * lift + 1.4 * sad - 0.6 * S.happy).toFixed(2)}) rotate(${(28 * sad).toFixed(1)} 6 -12)`);   /* sad: tipped and a little lower */
+      L.setAttribute("transform", `translate(${(3.3 * S.cross).toFixed(2)} ${(-1.1 * lift + 1.4 * sad - 0.6 * S.happy + 0.9 * S.cross).toFixed(2)}) rotate(${(-28 * sad + 24 * S.cross).toFixed(1)} -6 -12)`); R.setAttribute("transform", `translate(${(-3.3 * S.cross).toFixed(2)} ${(-1.1 * lift + 1.4 * sad - 0.6 * S.happy + 0.9 * S.cross).toFixed(2)}) rotate(${(28 * sad - 24 * S.cross).toFixed(1)} 6 -12)`);   /* cross-eyed: both slide in towards the middle, a touch down, tipped inwards */   /* sad: tipped and a little lower */
       el.querySelectorAll(".gd-bl").forEach((b) => b.style.opacity = (S.blush * 0.95).toFixed(2));
       { const um = el.querySelector(".gd-umb"); if (um) { um.style.opacity = S.umb.toFixed(2); const uu = um.querySelector(".gu-u"); if (uu) uu.setAttribute("transform", `translate(0 ${((1 - S.umb) * -8).toFixed(2)}) rotate(${(-21 + lean * 1.2).toFixed(1)} 19 -15)`); } }
       // its phone: held low in front, screen lit; the light tints its eyes and lights its face from below
@@ -10031,7 +10031,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       tws.push({ key, from: S[key], to, t0: performance.now(), ms, res }); go(); }, delay));
     const setK = (key, v) => { S[key] = v; };
     const face = (o, ms) => Promise.all(Object.entries(o).map(([k, v]) => tween(k, v, ms)));
-    const REST = { eyeL: 1, eyeR: 1, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, blush: 0, jaw: 0 };
+    const REST = { eyeL: 1, eyeR: 1, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, blush: 0, jaw: 0, cross: 0 };
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     let acting = false, texT = 0, texting = false;   // one expression at a time
     let wantText = false;   // typing an answer: the phone comes out, but a trick puts it away first and it comes back after
@@ -10120,8 +10120,18 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       await Promise.all([tween("flip", 0, 700), tween("jx", 0, 700)]); S.flip = 0; rigid = false; poke(-2); await face({ happy: 1 }, 140); await wait(700); });
     // roly-poly: a crouch, then forward roly-polies in place, the face rolling under and coming back over the top; a splat and happy eyes
     const rolypoly = () => act(async () => { tween("aRest", -0.16, 180); await face({ eyeL: 0.7, eyeR: 0.7 }, 180); rigid = true; a = S.aRest = 0; va = 0; lean = 0; vl = 0; leanTo = 0;
-      for (let i = 0; i < 2; i++) { jv = -150; go(); await tween("tumble", i + 1, 520); }
-      S.tumble = 0; rigid = false; poke(-3); await face({ happy: 1, eyeL: 1, eyeR: 1 }, 140); await wait(800); });
+      // each roll brings it towards you: it grows and comes a little down the screen, as if nearer
+      const near = !still(); if (near) { el.style.transformOrigin = "50% 100%"; el.style.zIndex = "45"; el.style.transition = "scale .52s cubic-bezier(.4,0,.6,1), translate .52s cubic-bezier(.4,0,.6,1)"; }
+      for (let i = 0; i < 2; i++) { jv = -150; go(); if (near) { el.style.scale = String(1 + 0.2 * (i + 1)); el.style.translate = `0 ${8 * (i + 1)}px`; } await tween("tumble", i + 1, 520); }
+      S.tumble = 0; rigid = false; poke(-3); await tween("cross", 1, 200); leanTo = -1.5; go(); await wait(380); leanTo = 1.5; go(); await wait(380); leanTo = 0; await tween("cross", 0, 200); await face({ happy: 1, eyeL: 1, eyeR: 1 }, 140); await wait(250);   /* dizzy */
+      // then hops back to its place: two little hops, shrinking back
+      if (near) { el.style.transition = "scale .36s cubic-bezier(.3,.7,.4,1), translate .36s cubic-bezier(.3,.7,.4,1)";
+        jv = -230; go(); el.style.scale = "1.18"; el.style.translate = "0 7px"; await wait(400); jv = -200; go(); el.style.scale = "1"; el.style.translate = "0 0"; await wait(420); poke(-1.8);
+        el.style.transition = ""; el.style.zIndex = ""; el.style.scale = ""; el.style.translate = ""; }
+      await wait(300); });
+    // cross-eyed: both eyes slide in and meet in the middle, a little wobble, then back with a blink
+    const crossEyes = (ms) => act(async () => { await tween("cross", 1, 260); for (let i = 0; i < 3; i++) { leanTo = i % 2 ? 1 : -1; go(); await wait((ms || 1500) / 3); } leanTo = 0;
+      await tween("cross", 0, 220); blink = 0.12; draw(); await wait(120); blink = 1; draw(); });
     // dozing: so tired its head drops to one side as the eyes close, then it jerks back up wide awake. Twice, the second time deeper
     const doze = () => act(async () => { const s1 = Math.random() < 0.5 ? -1 : 1;
       for (let i = 0; i < 2; i++) { const deep = i === 1, ms = deep ? 1700 : 1300;
@@ -10206,7 +10216,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       else if (r < 0.872) onPhone();
       else if (r < 0.875) upside();   // now and then: head over heels, a look round, and back
       else if (r < 0.879 && performance.now() - ptrT > 6000) boo();   // rarely, and only when you've gone quiet: boo!
-      else if (r < 0.88) wink();
+      else if (r < 0.88) (Math.random() < 0.3 ? () => crossEyes() : wink)();
       else if (r < 0.91) surprised();
       else if (r < 0.93) curious();
       else if (r < 0.95) (Math.random() < 0.5 ? doze : sleepy)();
@@ -10245,7 +10255,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1; lookX = dx / d * 3; lookY = dy / d * 1.5; draw();
       setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900); }, { passive: true });
     el.addEventListener("click", () => { if (farted) { farted = false; return; } if (opt.tap) opt.tap(); else if (!acting) jumps(); });
-    return { S, busy: () => acting, free: () => { acting = false; }, doze, cold, text, rolypoly, look, tilt: (v) => tween("aRest", v, 320), umbrella, onPhone, roll, landed: () => phase !== "fall", bored, moon, fartBack, upside, boo, think, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, fart, draw,
+    return { S, busy: () => acting, free: () => { acting = false; }, doze, cold, text, rolypoly, crossEyes, look, tilt: (v) => tween("aRest", v, 320), umbrella, onPhone, roll, landed: () => phase !== "fall", bored, moon, fartBack, upside, boo, think, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, fart, draw,
       bob: () => { poke(-0.7 - Math.random() * 0.6); if (Math.random() < 0.3) { jv = -90; go(); } } }; };
     // ---- talking: tap the drop and ask it something. It answers in a bubble, the words typing themselves out while it bobs.
     // It knows a handful of things for certain (what's new, a coffee to try, sour or bitter, ratio, temperature, grind, the processes,
@@ -10761,6 +10771,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       [/^(?!.*\b(scan|app|photo|camera|website|site|page|recipe|how|why|what|which|best|grinder|scale|timer)\b).{0,40}\b(phone|iphone|instagram|tiktok|scroll(ing)?|doomscroll\w*|social media|telefono|cellulare|telefonino)\b/i, () => { say(pick([T("One sec, just checking something…", "Un attimo, controllo una cosa…"), T("Sorry, I was just scrolling coffee pics.", "Scusa, stavo guardando foto di caffè."), T("Hang on, someone posted a latte art swan.", "Aspetta, qualcuno ha postato un cigno di latte art.")]), null); setTimeout(() => { D.free(); D.onPhone(); }, 450); }, true],
       [/\b(are you cold|i'?m (so )?cold|it'?s (so |really )?(cold|freezing)|brr+|freezing|hai freddo|ho freddo|che freddo|si gela|fa freddo)\b/i, () => { say(pick([T("Brrr. Quick, put the kettle on.", "Brrr. Presto, metti su l'acqua."), T("Don't. I'm going blue just hearing it.", "Non dirlo. Divento blu solo a sentirlo.")]), null); setTimeout(() => { D.free(); D.cold(4500); }, 450); }, true],
       [/\b(umbrella|ombrello|is it raining|it'?s raining|sta piovendo|piove)\b/i, () => { say(pick([T("Never leave home without it.", "Mai uscire senza."), T("Drip, drip. Good thing I'm waterproof. Well, I am water.", "Plic, plic. Per fortuna sono impermeabile. Anzi, sono acqua.")]), null); setTimeout(() => { D.free(); D.umbrella(5200); }, 450); }, true],
+      [/\b(cross[- ]?eyed|cross (your|ur|the) eyes|cross eyes|strabico|occhi storti|incrocia gli occhi)\b/i, () => { say(pick([T("Like this?", "Così?"), T("Now I can see my nose. I don't have a nose.", "Adesso vedo il mio naso. Non ho il naso.")]), null); setTimeout(() => { D.free(); D.crossEyes(1800); }, 450); }, true],
       [/\b(rol+(y|ie)[ -]?pol+(y|ie)|somersault|forward roll|tumble|capriol\w*|fai una capriola)\b/i, () => { say(pick([T("Weee!", "Uiii!"), T("Head over heels!", "A gambe all'aria!")]), null); setTimeout(() => { D.free(); D.rolypoly(); littleMove("ag-flip"); }, 450); }, true],
       [/\broll\b|rolling|rotola|rotolare|fai una rotolata/i, () => { say(T("Wheee!", "Uiii!"), null); setTimeout(() => { D.free(); D.roll(); littleMove("ag-spin"); }, 450); }, true],
       [/back ?flip|somersault|do a flip|capriola|salto (mortale|all'indietro)/i, () => { say(T("Watch this!", "Guarda qua!"), null); setTimeout(() => { D.free(); D.backflip(); littleMove("ag-flip"); }, 450); }, true],
