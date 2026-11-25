@@ -2793,7 +2793,7 @@ html body .wb-sign .gd-say{padding-right:40px!important}
 /* What's brewing?: the arrow sits in the box, no fill of its own */
 html body #go.on{background:transparent!important;color:var(--ink)!important}
 /* the drop's bubble: over the drop, in the page's own ink with the page's colour for text, a tail pointing down at the drop */
-html body .wb-sign .gd-talk{position:absolute;left:50%;bottom:calc(100% - var(--cup-at, 21px) + 57.5px * var(--gs, 1) + 8.5px);width:min(340px,calc(100vw - 24px));z-index:40;display:grid;grid-template-columns:minmax(0,1fr);gap:12px;padding:14px 12px 12px;
+html body .wb-sign .gd-talk{position:absolute;left:50%;bottom:calc(100% - var(--cup-at, 21px) + 57.5px * var(--gs, 1) + 8.5px);width:min(var(--gdw,340px),calc(100vw - 24px));z-index:40;display:grid;grid-template-columns:minmax(0,1fr);gap:12px;padding:14px 12px 12px;
   border-radius:var(--r,4px);background:var(--ink);color:var(--bg);text-align:left;font:500 15px/1.35 var(--sans);letter-spacing:0;translate:-50% 0;transform-origin:50% 100%;
   box-shadow:0 12px 40px rgba(0,0,0,.35);animation:gdTalkIn .32s cubic-bezier(.3,1.45,.5,1)}
 html body .wb-sign .gd-talk[hidden]{display:none}
@@ -2863,6 +2863,12 @@ html body .top #toolsBtn{position:relative;z-index:1}
 html body .top #toolsBtn.gulp{animation:agGulp .45s cubic-bezier(.3,1.6,.5,1)}
 html body .ask-line .ask-goccio.ag-out svg{animation:agOut .8s cubic-bezier(.3,.7,.4,1) both}   /* only the drop wobbles; its pill just slides out */
 html body .top #toolsBtn.spit{animation:agSpit .4s cubic-bezier(.3,1.5,.5,1)}
+/* the little one coming back out of the +: the same liquid spring as tapping the + (its stretch on the +, the bar's springy edge) */
+@supports (transition-timing-function:linear(0,1)){
+  html body .top #toolsBtn.spit{transform-origin:100% 50%;animation:drop-p 1.098s linear both}
+  html body .ask-line .ask-goccio:not(.ag-gone){transition:width 0.941s linear(0,0.065,0.213,0.39,0.564,0.715,0.836,0.924,0.984,1.021,1.039,1.045,1.043,1.037,1.029,1.021,1.014,1.008,1.004,1.001,0.999,0.998,0.998,0.998,0.998),margin 0.941s linear(0,0.065,0.213,0.39,0.564,0.715,0.836,0.924,0.984,1.021,1.039,1.045,1.043,1.037,1.029,1.021,1.014,1.008,1.004,1.001,0.999,0.998,0.998,0.998,0.998),transform 0.941s linear(0,0.065,0.213,0.39,0.564,0.715,0.836,0.924,0.984,1.021,1.039,1.045,1.043,1.037,1.029,1.021,1.014,1.008,1.004,1.001,0.999,0.998,0.998,0.998,0.998),opacity .15s ease}
+  html body .ask-line .ask-goccio.ag-out svg{animation:none}
+}
 @keyframes agOut{0%{transform:translateX(10px) scale(.3,.5);opacity:0}18%{opacity:1}40%{transform:translateX(-3px) scale(1.25,.78)}58%{transform:translateX(1px) scale(.88,1.12)}74%{transform:scale(1.06,.95)}88%{transform:scale(.98,1.02)}100%{transform:none;opacity:1}}
 @keyframes agSpit{0%{scale:1}30%{scale:.88 1.1}65%{scale:1.05 .97}100%{scale:1}}
 @keyframes agGulp{0%{scale:1}35%{scale:1.14 .9}70%{scale:.96 1.05}100%{scale:1}}
@@ -2892,6 +2898,9 @@ html body .wb-sign .gd-talk .gd-say:empty{display:none!important}
 html body .gd-m{position:relative;max-width:86%;padding:8px 12px;border-radius:16px;font:500 15px/1.35 var(--sans);letter-spacing:0;white-space:pre-wrap;overflow-wrap:anywhere;animation:gdMsgIn .26s cubic-bezier(.3,1.4,.5,1)}
 html body .gd-it{align-self:flex-start;background:var(--pill);color:var(--ink);border-bottom-left-radius:4px;transform-origin:0 100%}
 html body .gd-me{align-self:flex-end;background:var(--hl);color:#000;border-bottom-right-radius:4px;transform-origin:100% 100%}
+/* bubbles with a little depth, as in Messages: lit from above, a fine highlight on the top edge, a soft shadow under */
+html body .gd-it{background-image:linear-gradient(180deg,color-mix(in srgb,#fff 7%,transparent),transparent 70%);box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 10%,transparent),inset 0 -1px 0 color-mix(in srgb,#000 22%,transparent),0 1px 2px color-mix(in srgb,#000 35%,transparent)}
+html body .gd-me{background-image:linear-gradient(180deg,color-mix(in srgb,#fff 16%,transparent),transparent 65%);box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 28%,transparent),inset 0 -1px 0 color-mix(in srgb,#000 14%,transparent),0 1px 2px color-mix(in srgb,#000 35%,transparent)}
 html body .gd-m.has-tb{margin-top:12px}
 html body .gd-tb{position:absolute;top:-14px;left:-10px;min-width:28px;height:28px;padding:0 4px;box-sizing:border-box;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:15px;line-height:1;
   background:var(--gd-card);border:1px solid color-mix(in srgb,var(--ink) 16%,var(--bg));box-shadow:0 2px 8px rgba(0,0,0,.18);animation:gdTb .4s cubic-bezier(.3,1.9,.5,1)}
@@ -7680,7 +7689,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           return `<p class="muted" style="padding:16px 0;margin:0">${msg}</p>`; })();
     const left = list.length - Math.min(shelfN, list.length);
     $("shelfMore").hidden = false; $("shelfMore").removeAttribute("aria-hidden");
-    $("shelfMore").textContent = left > 0 ? `And ${Math.max(left, (shelfPart && !q && !qActive() ? shelfPart : list.length) - Math.min(shelfN, list.length)).toLocaleString("en-GB")} more` : !list.length && q ? "Clear search" : !list.length && qActive() && !shelfRo ? "Clear the filters" : "Back to top";   // the end of the list: a way back up
+    $("shelfMore").textContent = left > 0 ? (() => { const more = Math.max(left, (shelfPart && !q && !qActive() ? shelfPart : list.length) - Math.min(shelfN, list.length)); return more > 20 ? `Load 20 of ${more.toLocaleString("en-GB")} more` : `Load the last ${more}`; })() : !list.length && q ? "Clear search" : !list.length && qActive() && !shelfRo ? "Clear the filters" : "Back to top";   // the end of the list: a way back up
     $("shelfMore").dataset.top = left > 0 ? "" : "1"; $("shelfMore").dataset.clear = !list.length && q ? "1" : ""; $("shelfMore").dataset.unfilter = !list.length && !q && qActive() && !shelfRo ? "1" : "";
     fitsCheck();
     $("shelf").querySelectorAll("button[data-i]").forEach((b) => b.onclick = () => { const r = shelf[+b.dataset.i];
@@ -9955,13 +9964,21 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   // one character, made twice: the drop (it talks) and a coffee bean beside it (it doesn't): the same liquid physics, the same faces
   const makeBuddy = (el, opt = {}) => { const body = el && el.querySelector(".gd-b"), eyes = el && el.querySelector(".gd-e"), all = el && el.querySelector(".gd-all"); if (!el || !body || !all) return null;
     const still = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // cold: a blue layer of the same shape over the body (a fill, not a filter: Safari won't filter parts of an SVG)
+    const coldP = (() => { try { const NS0 = "http://www.w3.org/2000/svg", svg0 = body.ownerSVGElement, gid = "gdCold" + Math.random().toString(36).slice(2, 7);
+        if (svg0) { let df = svg0.querySelector("defs"); if (!df) { df = document.createElementNS(NS0, "defs"); svg0.prepend(df); }
+          const gr = document.createElementNS(NS0, "radialGradient"); gr.id = gid; gr.setAttribute("cx", ".45"); gr.setAttribute("cy", ".6"); gr.setAttribute("r", ".62");
+          [[0, "#d8ecfc"], [0.45, "#86bdf0"], [0.85, "#3f78b8"], [1, "#1f3f6a"]].forEach(([o, c0]) => { const st = document.createElementNS(NS0, "stop"); st.setAttribute("offset", o); st.setAttribute("stop-color", c0); gr.appendChild(st); }); df.appendChild(gr); }
+        const c = document.createElementNS(NS0, "path"); c.setAttribute("class", "gd-cold"); c.setAttribute("fill", svg0 ? `url(#${gid})` : "#86bdf0"); c.style.opacity = "0"; c.style.pointerEvents = "none"; body.after(c); return c; } catch (e) { return null; } })();
+    // a mouth: the whole lower third of the body, a wide grin that opens with joy and shuts tight when sad
+    const mouthP = (() => { try { const NS1 = "http://www.w3.org/2000/svg", m = document.createElementNS(NS1, "path"), t = document.createElementNS(NS1, "ellipse"); m.setAttribute("class", "gd-mouth"); m.setAttribute("fill", "#2a0c03"); t.setAttribute("class", "gd-tongue"); t.setAttribute("fill", "#c8604c"); m.style.pointerEvents = t.style.pointerEvents = "none"; eyes.after(m); m.after(t); return [m, t]; } catch (e) { return null; } })();
     const W0 = 36, H0 = 24, R0 = 15.5;   // at rest: a dome 36 wide, 24 high; falling: a round drop of about the same volume
     const wS = 2 * Math.PI / 0.24, zS = 0.3, wL = 2 * Math.PI / 0.42, zL = 0.45, G = 2600;
-    const S = { aRest: 0, eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, fone: 0, umb: 0, scroll: 0, jx: 0, blush: 0, turn: 0, armL: 0, armR: 0, armLa: 0, armRa: 0, flip: 0 }; let jy = 0, jv = 0, ptrX = 0, ptrY = 0, ptrT = 0; let tws = [], a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
+    const S = { aRest: 0, eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, fone: 0, umb: 0, scroll: 0, jx: 0, blush: 0, turn: 0, armL: 0, armR: 0, armLa: 0, armRa: 0, flip: 0, cold: 0 }; let rigid = false, jy = 0, jv = 0, ptrX = 0, ptrY = 0, ptrT = 0; let tws = [], a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
     const draw = () => {
       // the shape it has just before it falls: round. Squashed or stretched it keeps its volume (taller is narrower); its top
       // sways with the page; it sits on its lowest point
-      const k = Math.max(0.3, 1 + a), ry = R0 * k, tc = Math.cos(S.turn * Math.PI), rx = R0 / Math.sqrt(k), w = rx * 2, ts = Math.sin(S.turn * Math.PI),   /* turning round: it narrows to its side, then widens showing its back */ cx = lean * 0.6, bot = y, mid = bot - ry, top = bot - 2 * ry, sh = 0.552;
+      const k = rigid ? 1 : Math.max(0.3, 1 + a), ry = R0 * k, tc = Math.cos(S.turn * Math.PI), rx = R0 / Math.sqrt(k), w = rx * 2, ts = Math.sin(S.turn * Math.PI),   /* turning round: it narrows to its side, then widens showing its back */ cx = rigid ? 0 : lean * 0.6, bot = y, mid = bot - ry, top = bot - 2 * ry, sh = 0.552;
       const d = `M ${-rx} ${mid} C ${-rx} ${mid - ry * sh} ${cx - rx * sh} ${top} ${cx} ${top} C ${cx + rx * sh} ${top} ${rx} ${mid - ry * sh} ${rx} ${mid} C ${rx} ${mid + ry * sh} ${rx * sh} ${bot} 0 ${bot} C ${-rx * sh} ${bot} ${-rx} ${mid + ry * sh} ${-rx} ${mid} Z`;
       // arms: liquid pushed out of its sides, wide where they leave the body, rounded at the tip, a little curve as if poured
       const arm = (side, ext, ang) => { ext *= Math.abs(tc); if (ext < 0.03) return ""; const A = ang * Math.PI / 180, dx = side * Math.cos(A), dy = -Math.sin(A), nx = -dy, ny = dx;
@@ -9969,7 +9986,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         const tx = ox + dx * (rx * 0.22 + L), ty = oy + dy * (rx * 0.22 + L), f = (v) => v.toFixed(2);
         return ` M ${f(ox + nx * wb)} ${f(oy + ny * wb)} C ${f(ox + dx * L * 0.55 + nx * (wb * 0.55 + bend))} ${f(oy + dy * L * 0.55 + ny * (wb * 0.55 + bend))} ${f(tx - dx * rt + nx * rt)} ${f(ty - dy * rt + ny * rt)} ${f(tx + nx * rt)} ${f(ty + ny * rt)}`
           + ` Q ${f(tx + dx * rt * 1.5)} ${f(ty + dy * rt * 1.5)} ${f(tx - nx * rt)} ${f(ty - ny * rt)} C ${f(tx - dx * rt - nx * rt)} ${f(ty - dy * rt - ny * rt)} ${f(ox + dx * L * 0.55 - nx * (wb * 0.55 - bend))} ${f(oy + dy * L * 0.55 - ny * (wb * 0.55 - bend))} ${f(ox - nx * wb)} ${f(oy - ny * wb)} Z`; };
-      body.setAttribute("d", d); const AR = el.querySelectorAll(".gd-arm"); if (AR.length === 2) { AR[0].setAttribute("d", arm(-1, S.armL, S.armLa)); AR[1].setAttribute("d", arm(1, S.armR, S.armRa)); }   /* behind the body, so they flow out of it */
+      body.setAttribute("d", d); if (coldP) { coldP.setAttribute("d", d); coldP.style.opacity = (S.cold * 0.86).toFixed(2); } const AR = el.querySelectorAll(".gd-arm"); if (AR.length === 2) { AR[0].setAttribute("d", arm(-1, S.armL, S.armLa)); AR[1].setAttribute("d", arm(1, S.armR, S.armRa)); }   /* behind the body, so they flow out of it */
       const hl = el.querySelector(".gd-h"); if (hl) hl.setAttribute("transform", `translate(${(cx * 0.5 - rx * 0.45).toFixed(2)} ${(top + ry * 0.42).toFixed(2)}) rotate(-35)`);
       const tm = ((S.turn % 2) + 2) % 2, back = tm > 0.5 && tm < 1.5; eyes.style.opacity = back ? "0" : "1";   /* turn 0→1 shows its back, 0→2 is a whole spin */
       const bt = el.querySelector(".gd-butt"); if (bt) { bt.style.opacity = back ? "1" : "0"; bt.setAttribute("d", `M ${cx * 0.2} ${(bot - ry * 0.62).toFixed(2)} Q ${(cx * 0.2 + 1.2).toFixed(2)} ${(bot - ry * 0.3).toFixed(2)} 0 ${(bot - 1.2).toFixed(2)}`); }   /* its back: no face, just a little crease */
@@ -9993,6 +10010,12 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           const fsh = el.querySelector(".gd-fone-sh"); if (fsh) fsh.style.opacity = (0.1 + 0.06 * Math.sin(S.scroll * Math.PI)).toFixed(2); }   /* its back faces you: you only see it light up the face */
         if (gl) gl.style.opacity = (S.fone * 0.9).toFixed(2);
         eyes.style.fill = ""; }
+      if (mouthP) { const [mp, tg] = mouthP, f = (v) => v.toFixed(2), vis = Math.max(0.06, Math.abs(tc));
+        const mo = Math.max(0.12, Math.min(1, 0.62 + 0.38 * S.happy + 0.25 * Math.max(0, S.smile) - 0.5 * Math.max(0, -S.smile) - 0.3 * (1 - Math.min(S.eyeL, S.eyeR)) * (S.happy ? 0 : 1))) * (1 - 0.75 * S.fone);   /* on its phone: mouth nearly shut, concentrating */
+        const yT = mid + ry / 3 + lookY * 0.35, yB = bot - ry * 0.08, h = (yB - yT) * mo, hw = rx * 0.7 * vis, mx = cx * 0.55 + lookX * 0.5 + ts * rx * 0.58, up = 1.6 * Math.max(0, S.smile) + 1.2 * S.happy - 1.4 * Math.max(0, -S.smile);
+        mp.setAttribute("d", `M ${f(mx - hw)} ${f(yT - up)} Q ${f(mx)} ${f(yT + up)} ${f(mx + hw)} ${f(yT - up)} C ${f(mx + hw)} ${f(yT - up + h * 0.95)} ${f(mx + hw * 0.55)} ${f(yT + h)} ${f(mx)} ${f(yT + h)} C ${f(mx - hw * 0.55)} ${f(yT + h)} ${f(mx - hw)} ${f(yT - up + h * 0.95)} ${f(mx - hw)} ${f(yT - up)} Z`);
+        tg.setAttribute("cx", f(mx)); tg.setAttribute("cy", f(yT + h * 0.8)); tg.setAttribute("rx", f(hw * 0.42)); tg.setAttribute("ry", f(Math.max(0, h * 0.2))); tg.style.opacity = h > 4 ? "1" : "0";
+        mp.style.opacity = tg.style.opacity === "1" || true ? eyes.style.opacity : "0"; if (eyes.style.opacity === "0") tg.style.opacity = "0"; }
       all.setAttribute("transform", `translate(${S.jx.toFixed(2)} ${jy.toFixed(2)})${S.flip ? ` rotate(${S.flip.toFixed(1)} 0 ${(-R0).toFixed(1)})` : ""}`); };   /* a backflip turns it about its middle */
     // small timed changes (a lid closing, an eye opening wide), eased in and out, run in the same frame loop as the physics
     const ease = (x) => x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
@@ -10081,15 +10104,31 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const backflip = () => act(async () => { tween("aRest", -0.18, 170); await face({ eyeL: 0.6, eyeR: 0.6 }, 170);
       tween("aRest", 0.14, 120); jv = -400; go(); await tween("flip", -360, 430); S.flip = 0; tween("aRest", 0, 200); poke(-3.4); await face({ happy: 1, eyeL: 1, eyeR: 1 }, 140); await wait(900); });
     // roll: like a ball, it turns as it goes (the distance matches the turn, so it doesn't skid), off to one side, all the way across to the other, and home
-    const roll = () => act(async () => { const s0 = Math.random() < 0.5 ? -1 : 1, deg = 200, d = deg * Math.PI / 180 * R0; await face({ eyeSL: 1.1, eyeSR: 1.1 }, 150); tween("aRest", -0.06, 200);
+    const roll = () => act(async () => { const s0 = Math.random() < 0.5 ? -1 : 1, deg = 200, d = deg * Math.PI / 180 * R0; await face({ eyeSL: 1.1, eyeSR: 1.1 }, 150); rigid = true; a = S.aRest = 0; va = 0; lean = 0; vl = 0; leanTo = 0;
       await Promise.all([tween("flip", s0 * deg, 700), tween("jx", s0 * d, 700)]); await wait(140);
       await Promise.all([tween("flip", -s0 * deg, 1150), tween("jx", -s0 * d, 1150)]); await wait(140);
-      await Promise.all([tween("flip", 0, 700), tween("jx", 0, 700)]); S.flip = 0; tween("aRest", 0, 200); poke(-2); await face({ happy: 1 }, 140); await wait(700); });
+      await Promise.all([tween("flip", 0, 700), tween("jx", 0, 700)]); S.flip = 0; rigid = false; poke(-2); await face({ happy: 1 }, 140); await wait(700); });
+    // dozing: so tired its head drops to one side as the eyes close, then it jerks back up wide awake. Twice, the second time deeper
+    const doze = () => act(async () => { const s1 = Math.random() < 0.5 ? -1 : 1;
+      for (let i = 0; i < 2; i++) { const deep = i === 1, ms = deep ? 1700 : 1300;
+        lookY = 2.4; draw(); tween("flip", s1 * (deep ? 11 : 7), ms); tween("aRest", deep ? -0.14 : -0.08, ms); await face({ eyeL: deep ? 0.04 : 0.14, eyeR: deep ? 0.04 : 0.14 }, ms);
+        await wait(deep ? 650 : 300);
+        lookY = -0.8; draw(); tween("flip", 0, 120); tween("aRest", 0.08, 120); await face({ eyeL: 1, eyeR: 1, eyeSL: 1.3, eyeSR: 1.3 }, 120); poke(-1.4);
+        await wait(220); tween("aRest", 0, 320); await face({ eyeSL: 1, eyeSR: 1 }, 380); lookY = 0; draw(); await wait(deep ? 300 : 1100); } S.flip = 0; });
+    // cold: it turns a cold blue, squints and shivers, then warms back up to coffee brown
+    const cold = (ms) => act(async () => { tween("cold", 1, 900); await face({ eyeL: 0.62, eyeR: 0.62, eyeSL: 0.92, eyeSR: 0.92 }, 400);
+      const end = performance.now() + (ms || 4500); let sd = 1;
+      while (performance.now() < end) { S.jx = sd * (0.7 + Math.random() * 0.5); sd = -sd; draw(); await wait(40 + Math.random() * 25); if (Math.random() < 0.03) { await wait(280); } }
+      S.jx = 0; draw(); await tween("cold", 0, 1100); poke(-1); });
     // the chat steers its eyes: they glide to where they're asked to look, never jump (a frame loop of its own, eased)
     let lkX = 0, lkY = 0, lkRaf = 0;
     const look = (x, y) => { lkX = x; lkY = y; if (lkRaf) return; const tick = () => { lookX += (lkX - lookX) * 0.14; lookY += (lkY - lookY) * 0.14; draw();
       if (Math.abs(lkX - lookX) + Math.abs(lkY - lookY) > 0.02) lkRaf = requestAnimationFrame(tick); else { lookX = lkX; lookY = lkY; draw(); lkRaf = 0; } }; lkRaf = requestAnimationFrame(tick); };
     const hop = (v, dx, ms) => { jv = -v; tween("jx", dx, ms); go(); return wait(ms + 60); };
+    // typing its answer: on its phone, eyes down at the screen, the screen flickering as it taps
+    let texT = 0, texting = false;
+    const text = (on) => { if (still()) return; if (on) { if (texting) return; texting = true; tween("fone", 1, 260); look(0, 2.4); clearInterval(texT); texT = setInterval(() => tween("scroll", S.scroll + 0.35, 110), 260); }
+      else { if (!texting) return; texting = false; clearInterval(texT); tween("fone", 0, 320).then(() => { S.scroll = 0; }); look(0, 0); } };
     // jumps: to one side, to the other, and home
     const jumps = () => act(async () => { const s0 = Math.random() < 0.5 ? -1 : 1; await face({ smile: 0.7 }, 150); await hop(240, s0 * 9, 330); await wait(160); await hop(260, -s0 * 9, 360); await wait(160); await hop(200, 0, 300); await wait(200); });
     // yes: two nods, eyes down and up with the body; no: two shakes of the head, eyes side to side
@@ -10157,7 +10196,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       else if (r < 0.88) wink();
       else if (r < 0.91) surprised();
       else if (r < 0.93) curious();
-      else if (r < 0.95) sleepy();
+      else if (r < 0.95) (Math.random() < 0.5 ? doze : sleepy)();
       else if (!following) { lookX = (Math.random() < 0.5 ? -1 : 1) * 3; lookY = Math.random() < 0.4 ? -1.5 : 0; draw(); setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900 + Math.random() * 700); }
       else poke(-0.9); };
     setTimeout(idle, 2500);
@@ -10193,7 +10232,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1; lookX = dx / d * 3; lookY = dy / d * 1.5; draw();
       setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900); }, { passive: true });
     el.addEventListener("click", () => { if (farted) { farted = false; return; } if (opt.tap) opt.tap(); else if (!acting) jumps(); });
-    return { S, busy: () => acting, free: () => { acting = false; }, look, tilt: (v) => tween("aRest", v, 320), umbrella, onPhone, roll, landed: () => phase !== "fall", bored, moon, fartBack, upside, boo, think, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, fart, draw,
+    return { S, busy: () => acting, free: () => { acting = false; }, doze, cold, text, look, tilt: (v) => tween("aRest", v, 320), umbrella, onPhone, roll, landed: () => phase !== "fall", bored, moon, fartBack, upside, boo, think, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, fart, draw,
       bob: () => { poke(-0.7 - Math.random() * 0.6); if (Math.random() < 0.3) { jv = -90; go(); } } }; };
     // ---- talking: tap the drop and ask it something. It answers in a bubble, the words typing themselves out while it bobs.
     // It knows a handful of things for certain (what's new, a coffee to try, sour or bitter, ratio, temperature, grind, the processes,
@@ -10213,7 +10252,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const dayWord = (iso) => { const t = new Date(), y = new Date(); y.setDate(t.getDate() - 1); const f = (d) => d.toISOString().slice(0, 10);
       return iso === f(t) ? T("today", "oggi") : iso === f(y) ? T("yesterday", "ieri") : T("on ", "il ") + (typeof isoDm === "function" ? isoDm(iso) : iso); };
     const search = (q) => { const a = $("askIn"); window.__gdSearching = true; setTimeout(() => { window.__gdSearching = false; }, 0); a.value = q; a.dispatchEvent(new Event("input", { bubbles: true })); $("askForm").requestSubmit(); if (window.syncAskGo) setTimeout(window.syncAskGo, 0); };   /* the words fill the top bar, its hint gives way */
-    const bob = (on) => { clearInterval(bobT); if (on && !still()) bobT = setInterval(() => D.bob(), 210); watch(on ? "you" : null); };
+    const bob = (on) => { clearInterval(bobT); if (on && !still()) bobT = setInterval(() => D.bob(), 210); watch(on ? "you" : null);
+      if (D && D.text) D.text(!!on && !document.documentElement.classList.contains("gd-docked")); };   // the big one types its answer on its phone
     // where its eyes go while you chat: as you type it tips back a touch, looks up at the box and reads along the line, left to right;
     // while it types its answer it looks down at you; then back to normal
     let watchT = 0, tipped = false;
@@ -10278,7 +10318,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     try { (JSON.parse(sessionStorage.getItem(CHAT_KEY) || "[]") || []).forEach((r) => { const m = bubble(r.w, r.t, r.r); m._rec = r; msgs.push(r); if (r.w === "me") lastMine = m; }); } catch (e) {}
     const say = (text, chips, mood) => { const th = thinkNext; thinkNext = null; if (!th) return sayNow(text, chips, mood); const g = ++sayGen;
       finishTyping(); chipsEl.textContent = ""; const tb = bubble("it", th.lead); tb.classList.add("gd-typing"); const dots = document.createElement("span"); dots.className = "gd-dots"; dots.innerHTML = "<i></i><i></i><i></i>"; tb.appendChild(dots); toBottom();
-      toTop(lastMine, true); if (D && !still()) { D.free(); D.think(th.ms); } setTimeout(() => { tb.remove(); if (g === sayGen) sayNow(th.pre + text, chips, mood); }, th.ms); };
+      toTop(lastMine, true); if (D && !still()) { if (document.documentElement.classList.contains("gd-docked")) { D.free(); D.think(th.ms); } else D.text(true); }   /* the typing dots: the big one is already tapping away on its phone */ setTimeout(() => { tb.remove(); if (g === sayGen) sayNow(th.pre + text, chips, mood); }, th.ms); };
     // long answers read like a well-written message, not a wall: numbered steps on their own lines, and the rest in short
     // paragraphs of a sentence or two. Text that already has its own line breaks is left as it is
     const tidy = (t) => { t = String(t); if (/\n/.test(t) || t.length < 200) return t;
@@ -10702,6 +10742,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         T("A mouth would make me a sip. I'd rather stay a drop.", "Con la bocca sarei un sorso. Preferisco restare una goccia."),
         T("My eyes do all the talking. Look: happy!", "Parlano i miei occhi. Guarda: felice!")]), null, happy)],
       [/^(?!.*\b(scan|app|photo|camera|website|site|page|recipe|how|why|what|which|best|grinder|scale|timer)\b).{0,40}\b(phone|iphone|instagram|tiktok|scroll(ing)?|doomscroll\w*|social media|telefono|cellulare|telefonino)\b/i, () => { say(pick([T("One sec, just checking something…", "Un attimo, controllo una cosa…"), T("Sorry, I was just scrolling coffee pics.", "Scusa, stavo guardando foto di caffè."), T("Hang on, someone posted a latte art swan.", "Aspetta, qualcuno ha postato un cigno di latte art.")]), null); setTimeout(() => { D.free(); D.onPhone(); }, 450); }, true],
+      [/\b(are you cold|i'?m (so )?cold|it'?s (so |really )?(cold|freezing)|brr+|freezing|hai freddo|ho freddo|che freddo|si gela|fa freddo)\b/i, () => { say(pick([T("Brrr. Quick, put the kettle on.", "Brrr. Presto, metti su l'acqua."), T("Don't. I'm going blue just hearing it.", "Non dirlo. Divento blu solo a sentirlo.")]), null); setTimeout(() => { D.free(); D.cold(4500); }, 450); }, true],
       [/\b(umbrella|ombrello|is it raining|it'?s raining|sta piovendo|piove)\b/i, () => { say(pick([T("Never leave home without it.", "Mai uscire senza."), T("Drip, drip. Good thing I'm waterproof. Well, I am water.", "Plic, plic. Per fortuna sono impermeabile. Anzi, sono acqua.")]), null); setTimeout(() => { D.free(); D.umbrella(5200); }, 450); }, true],
       [/\broll\b|rolling|rotola|rotolare|fai una rotolata/i, () => { say(T("Wheee!", "Uiii!"), null); setTimeout(() => { D.free(); D.roll(); littleMove("ag-spin"); }, 450); }, true],
       [/back ?flip|somersault|do a flip|capriola|salto (mortale|all'indietro)/i, () => { say(T("Watch this!", "Guarda qua!"), null); setTimeout(() => { D.free(); D.backflip(); littleMove("ag-flip"); }, 450); }, true],
@@ -11138,15 +11179,16 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         placeIn ? Promise.resolve({}) : fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${la}&longitude=${lo}&localityLanguage=${LANG === "it" ? "it" : "en"}`).then((r) => r.json()).catch(() => ({}))]);
       const c = w && w.current; if (!c) throw 0; const t = Math.round(c.temperature_2m), wc = c.weather_code, day = c.is_day !== 0, d = (WX[wc] || ["", ""])[LANG === "it" ? 1 : 0], place = placeIn || g.city || g.locality || "";
           // react to it: storms, snow, rain, fog, frost, heat, a clear night, a sunny day
-      const brolly = () => { if (D) { D.free(); D.umbrella(6000); } };
+      const brolly = () => { if (D) { D.free(); D.umbrella(6000); } }, brr = () => { if (D) { D.free(); D.cold(5000); } };
       const [en, it, mood] = wc >= 95 ? ["A storm! Stay in and brew something good.", "Un temporale! Resta dentro e preparati qualcosa di buono.", brolly]
-        : (wc >= 71 && wc <= 77) || wc === 85 || wc === 86 ? ["Snow! Warm your hands on a big mug of filter.", "Neve! Scaldati le mani con una bella tazza di filtro.", surprised]
+        : (wc >= 71 && wc <= 77) || wc === 85 || wc === 86 ? ["Snow! Warm your hands on a big mug of filter.", "Neve! Scaldati le mani con una bella tazza di filtro.", brr]
         : (wc >= 51 && wc <= 67) || (wc >= 80 && wc <= 82) ? ["Rainy. Perfect for a slow pour-over by the window.", "Piove. Perfetto per un pour-over lento vicino alla finestra.", brolly]
         : wc === 45 || wc === 48 ? ["Foggy. A bright, citrusy coffee to cut through it?", "Nebbia. Un caffè brillante e agrumato per bucarla?", curious]
-        : t <= 3 ? ["Freezing! Hot coffee, both hands round the cup.", "Si gela! Caffè bollente, con tutte e due le mani attorno alla tazza.", hmm]
+        : t <= 3 ? ["Freezing! Hot coffee, both hands round the cup.", "Si gela! Caffè bollente, con tutte e due le mani attorno alla tazza.", brr]
         : t >= 24 ? ["Hot out there. Iced pour-over time: brew it straight onto ice.", "Fa caldo. È l'ora del pour-over freddo: versalo direttamente sul ghiaccio.", D.dance]
         : !day ? ["A quiet night. Decaf, maybe, and a good book.", "Una notte tranquilla. Un decaffeinato, magari, e un buon libro.", D.yawn]
         : wc <= 1 ? ["Sunny! Take your cup outside.", "Sole! Porta la tazza fuori.", happy]
+        : t < 7 ? ["Cold out there. Hot coffee weather.", "Fa freddo. Tempo da caffè caldo.", brr]
         : t < 10 ? ["Chilly. Hot coffee weather.", "Fresco. Tempo da caffè caldo.", smile] : ["Good coffee weather.", "Tempo da caffè.", smile];
       say(T(`It's ${t}°C${d ? " and " + d : ""}${place ? " in " + place : " where you are"}. ${en}`, `Ci sono ${t}°C${d ? ", " + d : ""}${place ? " a " + place : " dove sei"}. ${it}`), null, mood); };
     const wxCity = async (name) => { wantCity = false; say(T(`Checking the sky over ${name}…`, `Guardo il cielo su ${name}…`), [], curious);
@@ -11323,8 +11365,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const home = talkEl.parentNode, dock = document.createElement("div"); dock.className = "wb-sign gd-dock"; document.body.appendChild(dock);
     // on a phone, where the top bar is just its pills, the docked bubble spans exactly from the search pill's left edge to the +'s right edge
     const fitDock = () => { const a = document.querySelector(".top .ask-box"), p = $("toolsBtn"); if (!a || !p) return; const ar = a.getBoundingClientRect(), pr = p.getBoundingClientRect();
-      const wide = ar.left < 40; dock.classList.toggle("wide", wide); dock.classList.toggle("right", !wide); dock.style.setProperty("--dr", (innerWidth - pr.right) + "px"); { const g = $("askGoccio"); if (g && g.offsetWidth) { const gr = g.getBoundingClientRect(); dock.style.setProperty("--tip", (pr.right - (gr.left + gr.width / 2)) + "px"); } } if (wide) dock.style.setProperty("--dl", ar.left + "px"); };   // wider screens: it hangs from the right, under Goccio and the +
-    addEventListener("resize", fitDock, { passive: true });
+      const wide = ar.left < 40; dock.classList.toggle("wide", wide); dock.classList.toggle("right", !wide); dock.style.setProperty("--dr", (innerWidth - pr.right) + "px"); { const g = $("askGoccio"); if (g && g.offsetWidth) { const gr = g.getBoundingClientRect(); dock.style.setProperty("--tip", (pr.right - (gr.left + gr.width / 2)) + "px"); } } if (wide) dock.style.setProperty("--dl", ar.left + "px");
+      document.documentElement.style.setProperty("--gdw", wide ? (pr.right - ar.left).toFixed(1) + "px" : "340px"); };   // wider screens: it hangs from the right, under Goccio and the +. The big one's bubble is always as wide as the little one's
+    addEventListener("resize", fitDock, { passive: true }); fitDock();
     // while the chat is open the page behind it dims and softens, so the conversation stands out; a tap on it closes the chat
     const scrim = document.createElement("div"); scrim.className = "gd-scrim"; document.body.appendChild(scrim);
     const dim = (on, top) => { document.documentElement.classList.toggle("gd-open", on); document.documentElement.classList.toggle("gd-docked", !!(on && top)); };
@@ -11365,6 +11408,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         // nobody about: look this way and that, then back to you
         setInterval(() => { if (document.hidden || performance.now() - idle < 4000) return; const a = Math.random() * Math.PI * 2; tx = Math.cos(a) * 2.6; ty = Math.sin(a) * 1.8; go(); setTimeout(() => { if (performance.now() - idle >= 4000) { tx = 0; ty = 0; go(); } }, 1400); }, 3500);
         tb.hop = () => { hopT = performance.now(); go(); };
+        // dozing: eyes close as its head drops, then it jerks awake
+        tb.doze = () => { lidTo = .1; tx = 0; ty = 2.8; go(); setTimeout(() => { if (lidTo > .5) return; lidTo = 1; ty = -1; wideTo = 1.3; tb.hop(); go(); setTimeout(() => { wideTo = 1; ty = 0; go(); }, 650); }, 1800); };
         tb.look = (x, y) => { tx = x; ty = y; idle = performance.now(); go(); };   // the chat steers its eyes
         // bored: heavy lids, eyes drift down to one side, then the other, then back
         tb.bored = () => { const s = Math.random() < 0.5 ? -1 : 1; lidTo = .45; tx = s * 2.4; ty = 1.6; go(); setTimeout(() => { tx = -s * 2.4; go(); }, 1900);
@@ -11381,10 +11426,12 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
             const watch = () => { if (film.paused || film.ended || performance.now() - idle < 2500) return; const fr = film.getBoundingClientRect(), r = tb.getBoundingClientRect(); if (fr.bottom < 0 || !r.width) return;
               const dx = fr.left + fr.width / 2 - (r.left + r.width / 2), dy = fr.top + fr.height * 0.55 - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1; tx = dx / d * 3.2; ty = dy / d * 3.2; go(); requestAnimationFrame(watch); };
             film.addEventListener("play", () => { wideTo = 1; requestAnimationFrame(watch); }); film.addEventListener("timeupdate", () => requestAnimationFrame(watch));
-            const wow = () => { if (tb.classList.contains("ag-gone")) return; wideTo = 1.35; go(); tb.hop(); setTimeout(() => { wideTo = 1; go(); }, 1100); };
+            // the end of the film: over the moon. Eyes huge, three hops and a spin
+            const wow = () => { if (tb.classList.contains("ag-gone")) return; tx = 0; ty = -1.2; wideTo = 1.45; lidTo = 1; go(); tb.hop(); setTimeout(() => tb.hop(), 560); setTimeout(() => tb.hop(), 1120);
+              setTimeout(() => tb.move && tb.move("ag-spin"), 1700); setTimeout(() => { wideTo = 1; ty = 0; go(); }, 2800); };
             film.addEventListener("ended", wow);
             if (!film.paused && !film.ended) requestAnimationFrame(watch); } }
-        (function life() { setTimeout(() => { const r = tb.getBoundingClientRect(); if (!document.hidden && r.width && !tb.classList.contains("ag-gone") && performance.now() - idle > 3000 && r.bottom > 0) tb.move(); life(); }, 7000 + Math.random() * 9000); })();
+        (function life() { setTimeout(() => { const r = tb.getBoundingClientRect(); if (!document.hidden && r.width && !tb.classList.contains("ag-gone") && performance.now() - idle > 3000 && r.bottom > 0) (Math.random() < 0.18 && tb.doze ? tb.doze() : tb.move()); life(); }, 7000 + Math.random() * 9000); })();
         let tg0 = null; addEventListener("deviceorientation", (e) => { if (e.gamma == null || performance.now() - idle < 2500) return; if (tg0 === null) tg0 = e.gamma; tg0 += (e.gamma - tg0) * 0.003;
           const dx = e.gamma - tg0, db = (e.beta || 0) - 45; if (Math.abs(dx) < 4) return; const k = Math.max(-1, Math.min(1, dx / 30)); tx = k * 3.2; ty = Math.max(-1, Math.min(1, db / 40)) * 1.2; go(); }, { passive: true });
         go(); } }
@@ -11399,7 +11446,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           else { plus.classList.remove("gulp", "spit"); tb.classList.remove("ag-out"); void plus.offsetWidth; plus.classList.add("spit"); tb.classList.add("ag-out"); } };
         tb.addEventListener("animationend", (e) => { if (e.animationName === "agOut") tb.classList.remove("ag-out"); });   // bubbles up from the svg
         new IntersectionObserver((es) => es.forEach((e) => set(e.isIntersecting)), { threshold: .3 }).observe(el);
-        plus.addEventListener("animationend", (e) => { if (e.animationName === "agGulp" || e.animationName === "agSpit") plus.classList.remove("gulp", "spit"); }); } }
+        plus.addEventListener("animationend", (e) => { if (e.animationName === "agGulp" || e.animationName === "agSpit" || (e.animationName === "drop-p" && plus.classList.contains("spit"))) plus.classList.remove("gulp", "spit"); }); } }
     // first visit: the little Goccio introduces itself under the top bar, once, so "Search or ask Goccio" makes sense.
     // Any tap or key closes it, or it fades after 9 seconds
     { const tb = $("askGoccio"); let seen = "1"; try { seen = localStorage.getItem("v60.gdIntro"); } catch (e) {}
