@@ -3370,7 +3370,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
    and the black around it follows its light or dark. Not for search engines and link previews (they read the page as it is),
    not inside a frame, not on narrow screens; ?wide shows the old wide layout. */
 (() => { try {
-  if (self !== top || innerWidth < 700 || /[?&]wide\b/.test(location.search) || /bot|crawl|spider|slurp|lighthouse|pagespeed|preview|facebookexternalhit|embedly|whatsapp|telegram|discord|twitterbot|linkedin/i.test(navigator.userAgent)) return;
+  // inside the column: no scrollbar of its own (the wheel and the trackpad still scroll it), as on a phone
+  if (self !== top) { try { if (parent.document.documentElement.classList.contains("phone-host")) { const ns = document.createElement("style"); ns.textContent = "html{scrollbar-width:none}html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}"; document.head.appendChild(ns); } } catch (e) {} return; }
+  if (innerWidth < 700 || /[?&]wide\b/.test(location.search) || /bot|crawl|spider|slurp|lighthouse|pagespeed|preview|facebookexternalhit|embedly|whatsapp|telegram|discord|twitterbot|linkedin/i.test(navigator.userAgent)) return;
   window.stop();
   const H = document.documentElement; H.className = "phone-host";
   document.head.querySelectorAll("style, link[rel=stylesheet], link[rel=preload]").forEach((e) => e.remove());   // the site's styles are for the page in the column
