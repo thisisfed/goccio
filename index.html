@@ -2931,6 +2931,7 @@ html body .wb-sign .gdrop .gd-l, html body .wb-sign .gdrop .gd-r{fill:url(#gdEye
 html body .gd-head{display:none}
 html.gd-full, html.gd-full body{overflow:hidden!important;overscroll-behavior:none}
 html.gd-full body .wb-sign .gdrop{visibility:hidden!important}
+html.gd-full.gd-kb body .gd-dock.gd-dock.gd-dock .gd-talk{padding-bottom:8px!important}   /* with the keyboard up, the box sits right on it: no room kept for the home bar, which the keyboard covers */
 html.gd-full body .gd-dock.gd-dock.gd-dock .gd-talk{box-shadow:0 0 0 100vmax var(--bg)!important;position:fixed!important;left:0!important;right:0!important;top:0;bottom:auto!important;width:auto!important;max-width:none!important;height:100dvh;translate:none!important;transform:none!important;margin:0!important;border:0!important;border-radius:0!important;display:flex!important;flex-direction:column;gap:10px;padding:0 12px calc(12px + env(safe-area-inset-bottom,0px))!important;background:var(--bg)!important;box-shadow:none!important;animation:gdSheet .32s cubic-bezier(.2,.9,.3,1)}
 html.gd-full body .gd-dock .gd-talk::after{display:none!important}
 html.gd-full body .gd-head{display:flex;align-items:center;gap:10px;flex:none;box-sizing:border-box;height:calc(var(--top-h,49px) + env(safe-area-inset-top,0px));margin:0 -12px;padding:env(safe-area-inset-top,0px) 56px 0 12px;border-bottom:1px solid var(--line);touch-action:none}   /* as tall as the top bar, so its line sits where the bar's does */
@@ -11738,7 +11739,7 @@ void main(){
     const pin = (on) => { const b = document.body.style, H = document.documentElement;
       if (on && pinY === null) { pinY = scrollY; b.position = "fixed"; b.top = -pinY + "px"; b.left = "0"; b.right = "0"; b.width = "100%"; }
       else if (!on && pinY !== null) { const y = pinY; pinY = null; b.position = b.top = b.left = b.right = b.width = ""; const sb = H.style.scrollBehavior; H.style.scrollBehavior = "auto"; scrollTo(0, y); H.style.scrollBehavior = sb; } };
-    const fullFit = () => { if (!document.documentElement.classList.contains("gd-full")) { talkEl.style.top = ""; talkEl.style.height = ""; return; } const vv = window.visualViewport; if (vv) { talkEl.style.top = (vv.offsetTop + Math.max(0, scrollY)) + "px"; talkEl.style.height = vv.height + "px"; } toBottom(); };   /* iPhone can still scroll the pinned page to show the box, and the sheet goes with it: the scroll is added back */
+    const fullFit = () => { if (!document.documentElement.classList.contains("gd-full")) { talkEl.style.top = ""; talkEl.style.height = ""; return; } const vv = window.visualViewport; if (vv) { talkEl.style.top = (vv.offsetTop + Math.max(0, scrollY)) + "px"; talkEl.style.height = vv.height + "px"; document.documentElement.classList.toggle("gd-kb", vv.height < innerHeight - 150); } toBottom(); };   /* gd-kb: the keyboard is up */   /* iPhone can still scroll the pinned page to show the box, and the sheet goes with it: the scroll is added back */
     // iPhone: as the keyboard comes up, Safari slides what you see down the page to show the box, and it doesn't always say when it
     // has finished (the last slide can come after its own events). So while you type, and for a moment after the keyboard comes or
     // goes, the sheet is checked against what you can see every frame and moved to match: it never ends up above the screen
@@ -11761,7 +11762,7 @@ void main(){
       if (!name && msgs.length && msgs[msgs.length - 1].w !== "me" && /call you\?|Come ti chiamo\?/.test(msgs[msgs.length - 1].t || "")) { askingName = true; showChips(); return; }   /* still waiting for your answer: not asked again */
       if (!name && !asked) { askingName = true; try { localStorage.setItem("v60.nameAsked", "1"); } catch (e) {} return say(T("Hi! I'm Goccio, the drop that knows coffee. What should I call you?", "Ciao! Sono Goccio, la goccia che sa tutto del caffè. Come ti chiamo?"), [T("Skip", "Salta")], happy); }
       hello(); };
-    closeTalk = () => { if (!talking) return; talking = false; document.documentElement.classList.remove("gd-full"); fullFit(); pin(false); dim(false); talkEl.hidden = true; el.setAttribute("aria-expanded", "false"); clearInterval(typeT); bob(false); };
+    closeTalk = () => { if (!talking) return; talking = false; document.documentElement.classList.remove("gd-full", "gd-kb"); fullFit(); pin(false); dim(false); talkEl.hidden = true; el.setAttribute("aria-expanded", "false"); clearInterval(typeT); bob(false); };
     $("gdX").onclick = closeTalk;
     // the top bar: the little Goccio opens it there; a question typed in the search box goes to Goccio instead of the list
     { const tb = $("askGoccio"); if (tb) tb.onclick = () => { window.gdMotion && window.gdMotion(); talking ? closeTalk() : openTalk(true); tb.hop && tb.hop(); }; }
