@@ -164,6 +164,10 @@ One coffee's totals, as the site sees them: `https://www.goccio.co.uk/api/taste?
 Free plan: 100,000 answers written and 5 million rows read a day. Over that, answers are dropped until midnight UTC; nothing
 is ever charged.
 
+## Where Goccio's answers live
+
+Goccio's quick answers (hello, his moves, brewing with you, finding coffees on the list) are in the page, so they are instant. What he knows about coffee, about 300 answers, and the words that ask for his secret tricks are on the server in `functions/api/goccio.js`: the page sends each question to `/api/goccio` and gets back only the answer that fits. To add or change an answer, edit that file; each row keeps its place in its list, so the page knows which answer comes first.
+
 ## What Goccio couldn't answer (the Monday report)
 
 When Goccio says "I don't know", or someone gives one of his answers a 👎, the question is filed anonymously (just its words,
