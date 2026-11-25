@@ -7840,7 +7840,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         const w = LANG === "it" ? "Aggiunto" : "Added";   // one word for every coffee: the shop's own date when it gives one, else the day Goccio first saw it (Nov 2026: was Released or Added)
         return iso && iso === ymd(now) ? `${w} ${LANG === "it" ? "oggi" : "today"}` : iso && iso === ymd(y) ? `${w} ${LANG === "it" ? "ieri" : "yesterday"}` : d0 ? `${w} ${LANG === "it" ? "il " : ""}${d0}` : ""; })();   // today's and yesterday's coffees say so; older ones keep their date
       const shown = (seen.get(r.roaster + "|" + String(nm(r)).toLowerCase() + tagKey(r)) || new Set()).size > 1 ? fullName(r) : nm(r);
-      const dN = dayN.get(String(shelfDate(r) || "").slice(0, 10)) || 0, dNt = dN ? `: ${dN.toLocaleString(LANG === "it" ? "it-IT" : "en-GB")} ${LANG === "it" ? "caffè" : dN === 1 ? "coffee" : "coffees"}` : "";
+      const dN = dayN.get(String(shelfDate(r) || "").slice(0, 10)) || 0, dNt = dN ? `: ${dN.toLocaleString(LANG === "it" ? "it-IT" : "en-GB")}` : "";   // "Added today: 230": the title over it already says Coffees
       const dayHead = byDay && !isSp && day && day !== lastDay ? `<h3 class="grp day-g">${day}${dNt}</h3>` : ""; if (byDay && !isSp && day) lastDay = day;
       tagBits.push(...coffeeLabels(r, shown).map((l) => `<span class="tg lbl" style="--vc:${LABEL_DOT[l] || "#8e8e93"}">${l}</span>`));
       return `${head}${dayHead}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
@@ -9635,8 +9635,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           const g0 = { useGrouping: "always" }, tot = it0 ? `${nC.toLocaleString(loc0, g0)} caffè, ${nR.toLocaleString(loc0, g0)} torrefazioni in totale.` : `${nC.toLocaleString(loc0)} coffees, ${nR.toLocaleString(loc0)} roasters in total.`;
           if ($("wmTot")) $("wmTot").hidden = true;   // the totals live in the search box now (25/11/2026), not under the slogan
           // what a newcomer needs: how many shops are read, and that it happens daily ("792 roasters checked every morning."), not the day's joiners
-          const daily = nR ? (it0 ? `${nR.toLocaleString(loc0, g0)} torrefazioni controllate ogni mattina.` : `${nR.toLocaleString(loc0)} roasters checked every morning.`) : "";
-          if ($("wmLive")) { $("wmLiveT").textContent = daily; $("wmLive").hidden = !daily; } } }
+          // one promise with the scale in it, no dot line under it: "Every new coffee from 792 roasters, with its recipe before you buy."
+          { const ld = document.querySelector(".wm-more .wm-lead"); if (ld && nR) ld.textContent = it0 ? `Ogni caffè nuovo da ${nR.toLocaleString(loc0, g0)} torrefazioni, con la sua ricetta prima di comprarlo.` : `Every new coffee from ${nR.toLocaleString(loc0)} roasters, with its recipe before you buy.`; }
+          if ($("wmLive")) $("wmLive").hidden = true; } }
       renderShelfV();
       renderShelf();
       document.documentElement.classList.remove("wait");
