@@ -3020,6 +3020,8 @@ html body .wb-sign .gd-talk .gd-say:empty{display:none!important}
 html body .gd-m{position:relative;max-width:86%;padding:8px 12px;border-radius:16px;font:500 15px/1.35 var(--sans);letter-spacing:0;white-space:pre-wrap;overflow-wrap:anywhere;animation:gdMsgIn .26s cubic-bezier(.3,1.4,.5,1)}
 html body .gd-it{align-self:flex-start;background:var(--pill);color:var(--ink);border-bottom-left-radius:4px;transform-origin:0 100%}
 html body .gd-me{align-self:flex-end;background:var(--hl);color:#000;border-bottom-right-radius:4px;transform-origin:100% 100%}
+html.gd-full body .gd-it{background-color:color-mix(in srgb,var(--pill),#fff calc(var(--lift,0) * 11%))}   /* full screen: lighter the lower it sits, as in Messages */
+html.gd-full body .gd-me{background-color:color-mix(in srgb,var(--hl),#fff calc(var(--lift,0) * 22%))}
 /* bubbles with a little depth, as in Messages: lit from above, a fine highlight on the top edge, a soft shadow under */
 html body .gd-it{background-image:linear-gradient(180deg,color-mix(in srgb,#fff 7%,transparent),transparent 70%);box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 10%,transparent),inset 0 -1px 0 color-mix(in srgb,#000 22%,transparent),0 1px 2px color-mix(in srgb,#000 35%,transparent)}
 html body .gd-me{background-image:linear-gradient(180deg,color-mix(in srgb,#fff 16%,transparent),transparent 65%);box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 28%,transparent),inset 0 -1px 0 color-mix(in srgb,#000 14%,transparent),0 1px 2px color-mix(in srgb,#000 35%,transparent)}
@@ -10754,6 +10756,12 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       sayEl.addEventListener("pointerdown", (e) => { const m = it(e); if (!m || e.target.closest(".gd-pick")) return; clearTimeout(holdT); holdT = setTimeout(() => pickFor(m), 450); });
       ["pointerup", "pointercancel", "pointerleave"].forEach((t) => sayEl.addEventListener(t, () => clearTimeout(holdT)));
       sayEl.addEventListener("scroll", () => { clearTimeout(holdT); }, { passive: true });
+      // full screen, as in Messages: the lower a bubble sits on the screen, the lighter its colour; kept up as the chat scrolls or grows
+      { let rq = 0; const shade = () => { rq = 0; if (!document.documentElement.classList.contains("gd-full")) return; const H = innerHeight;
+          sayEl.querySelectorAll(".gd-m").forEach((m) => { const r = m.getBoundingClientRect(), k = Math.max(0, Math.min(1, (r.top + r.height / 2) / H)); m.style.setProperty("--lift", k.toFixed(3)); }); };
+        const ask = () => { if (!rq) rq = requestAnimationFrame(shade); };
+        sayEl.addEventListener("scroll", ask, { passive: true }); addEventListener("resize", ask, { passive: true });
+        new MutationObserver(ask).observe(sayEl, { childList: true, subtree: true, characterData: true }); new MutationObserver(ask).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] }); }
       sayEl.addEventListener("click", (e) => { if (e.target.closest(".gd-pick")) return; const m = it(e), now = Date.now(); if (m && m === lastEl && now - lastTap < 350) { pickFor(m); lastTap = 0; return; } lastTap = now; lastEl = m; if (!m) unpick(); });
       document.addEventListener("pointerdown", (e) => { if (picker && !picker.contains(e.target)) setTimeout(() => { if (picker && !picker.matches(":hover")) unpick(); }, 0); }, true);
       sayEl.addEventListener("contextmenu", (e) => { if (it(e)) e.preventDefault(); }); }
@@ -10960,7 +10968,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         const tb = $("askGoccio"), tr = tb && !tb.classList.contains("ag-gone") ? tb.getBoundingClientRect() : null;
         if (tr && tr.width > 20 && tr.bottom > 0 && tr.bottom < 120) {
           pk = document.createElement("button"); pk.type = "button"; pk.className = "gd-tip";
-          { const bar = document.querySelector(".top"), bb = bar ? bar.getBoundingClientRect().bottom : tr.bottom + 9; pk.style.top = Math.round(bb + Math.max(6, bb - 1 - tr.bottom)) + "px"; }   /* under the bar's line by as much as the pills sit above it */ pk.style.right = Math.max(8, Math.round(innerWidth - tr.right - 6)) + "px"; pk.style.setProperty("--tail", Math.round(tr.width / 2 + 6) + "px");
+          { const bar = document.querySelector(".top"), bb = bar ? bar.getBoundingClientRect().bottom : tr.bottom + 9; pk.style.top = Math.round(bb + Math.max(6, bb - 1 - tr.bottom)) + "px"; }   /* under the bar's line by as much as the pills sit above it */ pk.style.right = Math.max(8, Math.round(innerWidth - tr.right)) + "px";   /* its right edge on the pill's */ pk.style.setProperty("--tail", Math.round(tr.width / 2 + 6) + "px");
           pk.textContent = T("Need a hand? I can brew this with you.", "Ti serve una mano? Lo prepariamo insieme.");
           pk.setAttribute("aria-label", T("Brew this with Goccio", "Preparalo con Goccio"));
           pk.onclick = () => { hide(); openTalk(true); setTimeout(() => gbStart(r), 350); };
