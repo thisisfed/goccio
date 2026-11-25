@@ -6,7 +6,7 @@ python3 scripts/goccio_foam.py SIZE OUT.webp [lit]
 Without "lit" it draws the skin the page turns with the ball: lit from the front only, so it looks right at any angle; the
 page lays the studio light (top lighter, bottom darker, from the upper left) over it as a fixed layer. With "lit" it bakes
 that light in, for the little Goccio in the top bar."""
-import sys, math
+import sys, math, os
 import numpy as np
 from scipy.spatial import cKDTree
 from PIL import Image
@@ -15,7 +15,7 @@ N = int(sys.argv[1]) if len(sys.argv) > 1 else 384
 ROT = 0.0
 OUT = sys.argv[2] if len(sys.argv) > 2 else 'img/goccio-foam.webp'
 LIT = len(sys.argv) > 3 and sys.argv[3] == 'lit'
-SS = 2; M = N * SS
+SS = int(os.environ.get('SS', 2)); M = N * SS   # SS=1 for very big pictures (the icons): fine enough, and it fits in memory
 rng = np.random.default_rng(11)
 
 def nrm(a): a = np.array(a, float); return a / np.linalg.norm(a)
@@ -128,5 +128,8 @@ im8 = np.asarray(Image.fromarray((out * 255).round().astype(np.uint8), 'RGBA').r
 yy2, xx2 = np.mgrid[0:N, 0:N]; cx2 = (N - 1) / 2; dx2, dy2 = xx2 - cx2, yy2 - cx2; rr2 = np.hypot(dx2, dy2) + 1e-9
 edge_r = N / 2 * 0.975; out_px = rr2 > edge_r
 sx = np.clip(np.round(cx2 + dx2 / rr2 * edge_r), 0, N - 1).astype(int); sy = np.clip(np.round(cx2 + dy2 / rr2 * edge_r), 0, N - 1).astype(int)
-im8[out_px] = im8[sy[out_px], sx[out_px]]; im8[..., 3] = 255
-Image.fromarray(im8, 'RGBA').convert('RGB').save(OUT, quality=82, method=6)
+if 'round' in sys.argv[3:]:   # the ball alone, see-through round it (for the icons), as a PNG
+    Image.fromarray(im8, 'RGBA').save(OUT)
+else:
+    im8[out_px] = im8[sy[out_px], sx[out_px]]; im8[..., 3] = 255
+    Image.fromarray(im8, 'RGBA').convert('RGB').save(OUT, quality=82, method=6)
