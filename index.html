@@ -10019,9 +10019,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         eyes.style.fill = ""; }
       if (mouthP) { const [mp, cpp] = mouthP, f = (v) => v.toFixed(2); cpp.setAttribute("d", d);
         if (gap < 0.25 || eyes.style.opacity === "0") mp.setAttribute("d", "");
-        else { const yC = bot - (2 * ry - gap) / 3 - gap, cur = 2.2 * Math.max(0, S.smile) + 1.6 * S.happy - 1.6 * Math.max(0, -S.smile), W = rx * 1.2, mx = cx * 0.4 + ts * rx * 0.58;
-          // a band as thick as the gap, curved like a smile, wider than the body: the body's outline trims it
-          mp.setAttribute("d", `M ${f(mx - W)} ${f(yC - cur)} Q ${f(mx)} ${f(yC + cur)} ${f(mx + W)} ${f(yC - cur)} L ${f(mx + W)} ${f(yC - cur + gap)} Q ${f(mx)} ${f(yC + cur + gap)} ${f(mx - W)} ${f(yC - cur + gap)} Z`); } }
+        else { // a ring cut right round the sphere, a third of the way up from the bottom: seen from the front, each edge is the near half of a ring,
+          // dipping in the middle and rising to the sides as it wraps round. The gap is centred on that line
+          const yT = bot - (2 * ry) / 3 - gap / 2, yB = yT + gap, half = (yy) => rx * Math.sqrt(Math.max(0, 1 - Math.pow((yy - mid) / ry, 2))),
+            tilt = 0.24 + 0.08 * Math.max(0, S.smile) + 0.06 * S.happy - 0.12 * Math.max(0, -S.smile), wT = half(yT) + 0.6, wB = half(yB) + 0.6, mx = cx * 0.3 + ts * rx * 0.5;
+          mp.setAttribute("d", `M ${f(mx - wT)} ${f(yT)} A ${f(wT)} ${f(Math.max(0.1, wT * tilt))} 0 0 0 ${f(mx + wT)} ${f(yT)} L ${f(mx + wB)} ${f(yB)} A ${f(wB)} ${f(Math.max(0.1, wB * tilt))} 0 0 1 ${f(mx - wB)} ${f(yB)} Z`); } }
       all.setAttribute("transform", `translate(${S.jx.toFixed(2)} ${jy.toFixed(2)})${S.flip ? ` rotate(${S.flip.toFixed(1)} 0 ${(-R0).toFixed(1)})` : ""}`); };   /* a backflip turns it about its middle */
     // small timed changes (a lid closing, an eye opening wide), eased in and out, run in the same frame loop as the physics
     const ease = (x) => x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
