@@ -2957,6 +2957,11 @@ html body .gd-peek-dim.in{opacity:.45}
 /* the brew offer: a row in the page just above the recipe, the little Goccio sliding in at its start */
 html body .gd-offer{display:flex;align-items:center;gap:10px;width:100%;margin:0 0 14px;padding:10px 12px;border:0;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1.3 var(--sans);text-align:left;cursor:pointer;overflow:hidden;max-height:0;opacity:0;transform:translateY(-6px);transition:max-height .45s cubic-bezier(.3,.7,.4,1),opacity .3s ease .1s,transform .45s cubic-bezier(.3,1.4,.5,1),margin .45s ease}
 html body .gd-offer.in{max-height:80px;opacity:1;transform:none}
+/* the little Goccio's word from the top bar: a small bubble under him, its tail pointing up at him */
+html body .gd-tip{position:fixed;z-index:60;max-width:min(250px,calc(100vw - 24px));padding:10px 14px;border:0;border-radius:18px;background:var(--pill);color:var(--ink);font:500 15px/1.35 var(--sans);text-align:left;cursor:pointer;box-shadow:0 10px 30px rgba(0,0,0,.45);opacity:0;transform:translateY(-6px) scale(.92);transform-origin:calc(100% - var(--tail,22px)) 0;transition:opacity .25s ease,transform .45s cubic-bezier(.3,1.5,.5,1)}
+html body .gd-tip::before{content:"";position:absolute;top:-6px;right:calc(var(--tail,22px) - 7px);width:14px;height:14px;background:inherit;border-radius:3px;transform:rotate(45deg)}
+html body .gd-tip.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){html body .gd-tip{transition:opacity .2s}}
 html body .gd-offer svg{width:28px;height:28px;flex:none;transform:translateX(-40px) rotate(-30deg);transition:transform .7s cubic-bezier(.3,1.5,.5,1) .2s}
 html body .gd-offer.in svg{transform:none}
 html body .gd-offer .go-t{flex:1;min-width:0} html body .gd-offer .go-a{flex:none;color:var(--hl)}
@@ -10807,15 +10812,27 @@ void main(){
       const hide = () => { if (!pk) return; const p0 = pk; pk = null; p0.classList.remove("in"); setTimeout(() => p0.remove(), 450); };
       const peek = () => { const H = document.documentElement; if (shown || talking || !H.classList.contains("brew-in") || H.classList.contains("gd-set") || H.classList.contains("brew-on")) return;
         const r = coffeeOpen(), head = document.querySelector(".item.brewing #recipe .sec-head"); if (!r || !head || !(window.gdOnce && window.gdOnce("offer"))) return; shown = true;
+        // the little Goccio up in the top bar says it, in a small bubble just under him (over the coffee's name, never the recipe);
+        // it goes by itself after a few seconds, or at a scroll. With him not in the bar, the offer sits in the page as before
+        const tb = $("askGoccio"), tr = tb && !tb.classList.contains("ag-gone") ? tb.getBoundingClientRect() : null;
+        if (tr && tr.width > 20 && tr.bottom > 0 && tr.bottom < 120) {
+          pk = document.createElement("button"); pk.type = "button"; pk.className = "gd-tip";
+          pk.style.top = Math.round(tr.bottom + 12) + "px"; pk.style.right = Math.max(8, Math.round(innerWidth - tr.right - 6)) + "px"; pk.style.setProperty("--tail", Math.round(tr.width / 2 + 6) + "px");
+          pk.textContent = T("Need a hand? I can brew this with you.", "Ti serve una mano? Lo prepariamo insieme.");
+          pk.setAttribute("aria-label", T("Brew this with Goccio", "Preparalo con Goccio"));
+          pk.onclick = () => { hide(); openTalk(true); setTimeout(() => gbStart(r), 350); };
+          document.body.appendChild(pk); if (tb.hop) tb.hop(); requestAnimationFrame(() => requestAnimationFrame(() => pk && pk.classList.add("in")));
+          const p1 = pk, y0 = scrollY, off = () => { if (Math.abs(scrollY - y0) > 40) { removeEventListener("scroll", off); if (pk === p1) hide(); } };
+          addEventListener("scroll", off, { passive: true }); setTimeout(() => { removeEventListener("scroll", off); if (pk === p1) hide(); }, 7000); return; }
         pk = document.createElement("button"); pk.type = "button"; pk.className = "gd-offer";
-        const sv = $("askGoccio") && $("askGoccio").querySelector("svg"); if (sv) { const c = sv.cloneNode(true); c.style.opacity = ""; pk.appendChild(c); }
+        const sv = tb && tb.querySelector("svg"); if (sv) { const c = sv.cloneNode(true); c.style.opacity = ""; pk.appendChild(c); }
         pk.insertAdjacentHTML("beforeend", `<span class="go-t">${T("Need a hand? I can brew this with you.", "Ti serve una mano? Lo prepariamo insieme.")}</span><span class="go-a" aria-hidden="true">→</span>`);
         pk.setAttribute("aria-label", T("Brew this with Goccio", "Preparalo con Goccio"));
         pk.onclick = () => { hide(); openTalk(true); setTimeout(() => gbStart(r), 350); };
         head.before(pk); requestAnimationFrame(() => requestAnimationFrame(() => pk && pk.classList.add("in"))); };
       // a coffee's Brew tapped by you (not by the chat): a moment to take in the recipe, then the offer
       document.addEventListener("click", (e) => { if (!e.isTrusted || shown) return; if (e.target.closest && e.target.closest("#shelf .item .btn[data-i], #bags .btn")) setTimeout(peek, 1500); }, true);
-      new MutationObserver(() => { if (pk && !document.documentElement.classList.contains("brew-in")) hide(); }).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] }); }
+      new MutationObserver(() => { const H = document.documentElement; if (pk && (!H.classList.contains("brew-in") || H.classList.contains("brew-on") || H.classList.contains("gd-full"))) hide(); }).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] }); }
     // an answer to the question asked; false hands the message back to the rest of the chat
     const gbAnswer = (q) => { const g = gbs; let ql = q.toLowerCase().trim();
       { const n = ql.match(/^(?:number |n\.? ?|#|option )?(\d{1,2})[.)]?$/); if (n && g.opts && g.opts[+n[1] - 1]) { q = g.opts[+n[1] - 1][1]; ql = q; } }
