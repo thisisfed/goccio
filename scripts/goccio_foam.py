@@ -59,7 +59,7 @@ for _ in range(9):
     mot += np.sin(Pb @ kv + rng.uniform(0, 6.3)) / 9
 mot = smooth(-0.05, 0.35, mot)
 
-cream = np.array([0.80, 0.56, 0.32]); caramel = np.array([0.56, 0.34, 0.16]); deep = np.array([0.34, 0.19, 0.08])
+cream = np.array([0.64, 0.41, 0.21]); caramel = np.array([0.43, 0.24, 0.10]); deep = np.array([0.25, 0.12, 0.04])
 base = cream[None] * (1 - 0.55 * mot[:, None]) + caramel[None] * (0.55 * mot[:, None])
 grain = 1 + 0.05 * (rng.random(npx) - .5)
 
@@ -72,7 +72,7 @@ def side(lx, ly):
     return (lx * L[0] + ly * L[1]) / math.hypot(L[0], L[1]) if LIT else lx * 0   # >0 on the side towards the light
 
 # layer 1: the microfoam, a dense skin of tiny bubbles over the cream
-hit, lx, ly, l2, _ = tier(320000, .0028, .0065)
+hit, lx, ly, l2, _ = tier(700000, .0019, .0044)
 dl, sp = dome(lx, ly, l2, .6)
 ring = smooth(.72, .95, np.sqrt(l2)) * hit
 col = base * (grain * (1 - 0.22 * ring * (0.5 + 0.5 * np.clip(-side(lx, ly), 0, 1)))
@@ -80,7 +80,7 @@ col = base * (grain * (1 - 0.22 * ring * (0.5 + 0.5 * np.clip(-side(lx, ly), 0, 
 col = col + ((sp ** 90) * 0.28 * hit)[:, None]
 
 # layers 2 and 3: medium and big bubbles, clear films you half see through
-for n, lo, hi, see, gloss, edge in [(12000, .0075, .016, .30, .7, .28), (900, .017, .042, .55, 1.0, .38)]:
+for n, lo, hi, see, gloss, edge in [(27000, .005, .011, .30, .7, .28), (2100, .011, .027, .55, 1.0, .38)]:
     hit, lx, ly, l2, rb = tier(n, lo, hi)
     dl, sp = dome(lx, ly, l2, .85)
     cen = np.clip(1 - l2, 0, 1)
