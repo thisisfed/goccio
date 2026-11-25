@@ -10069,7 +10069,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const gl = cv.getContext("webgl", { premultipliedAlpha: true, alpha: true, antialias: false, preserveDrawingBuffer: false }); if (!gl) return null;
     const VS = "attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}";
     const FS = `precision highp float;
-uniform mat3 uM; uniform vec4 uE; uniform mat3 uR; uniform vec3 uL; uniform vec2 uD; uniform float uPx; uniform vec4 uA; uniform vec4 uB; uniform vec4 uH;
+uniform mat3 uM; uniform vec4 uE; uniform mat3 uR; uniform vec3 uL; uniform vec2 uD; uniform float uPx; uniform vec4 uA; uniform vec4 uB;
 vec3 h3(vec3 p){ p=fract(p*vec3(.1031,.1030,.0973)); p+=dot(p,p.yxz+33.33); return fract((p.xxy+p.yxx)*p.zyx); }
 float h1(vec3 p){ p=fract(p*.1031); p+=dot(p,p.zyx+31.32); return fract((p.x+p.y)*p.z); }
 // the bubble on top at this point of one size of bubble: its height (0 if none), where in it we are, and its radius
@@ -10089,16 +10089,16 @@ void main(){
   vec3 bp=uR*n;
   vec3 V=vec3(0.,0.,1.), H=normalize(uL+V);
   float mot=smoothstep(-.05,.35,wave(bp));
-  vec3 base=mix(vec3(.80,.56,.32),vec3(.56,.34,.16),.55*mot), deep=vec3(.34,.19,.08);
+  vec3 base=mix(vec3(.64,.41,.21),vec3(.43,.24,.1),.55*mot), deep=vec3(.25,.12,.04);
   vec3 col=base;
   // microfoam, then medium and big bubbles on top; tiers too small for a pixel fade to their average, so nothing shimmers
   vec3 off; float l2, rad;
-  float h0=tier(bp,110.,.0028,.0065,.9,off,l2,rad); float f0=smoothstep(.6,1.6,rad/uPx);
+  float h0=tier(bp,165.,.0019,.0044,.9,off,l2,rad); float f0=smoothstep(.6,1.6,rad/uPx);
   if(h0>0.){ vec3 dt=off-bp*dot(off,bp); vec3 nb=normalize(dt*1.2+bp*sqrt(max(0.,1.-l2))); vec3 nl=normalize(mix(n,nb*uR,.6));
     float ring=smoothstep(.72,.95,sqrt(l2)); float dl=max(dot(nl,uL),0.), sp=pow(max(dot(nl,H),0.),90.);
     col=mix(base*.93, base*(1.-.25*ring)*(.9+.16*dl)+sp*.28*smoothstep(2.,5.,rad/uPx), f0); } else col=mix(base*.93, base*.8, f0);
   for(int t=0;t<2;t++){
-    float fr=t==0?45.:14., lo=t==0?.0075:.017, hi=t==0?.016:.042, dens=t==0?.55:.5, see=t==0?.3:.55, gl0=t==0?.7:1., ed=t==0?.28:.38;
+    float fr=t==0?68.:22., lo=t==0?.005:.011, hi=t==0?.011:.027, dens=t==0?.55:.5, see=t==0?.3:.55, gl0=t==0?.7:1., ed=t==0?.28:.38;
     float hb=tier(bp,fr,lo,hi,dens,off,l2,rad); if(hb<=0.) continue; float ft=smoothstep(.5,1.4,rad/uPx), fg=smoothstep(2.,6.,rad/uPx);
     vec3 dt=off-bp*dot(off,bp); vec3 nb=normalize(dt*1.3+bp*sqrt(max(0.,1.-l2))); vec3 nl=normalize(mix(n,nb*uR,.85));
     float dl=max(dot(nl,uL),0.), sp=max(dot(nl,H),0.); float cen=max(0.,1.-l2), sl=sqrt(l2);
@@ -10112,13 +10112,6 @@ void main(){
   float lam=max(dot(n,uL),0.), vert=1.-(dot(q,uD)+1.)*.5;
   float key=.22+.58*pow(lam,.85)+.5*pow(vert,1.2), rim=.6+.4*pow(zz,.55), lit=key*rim;
   col=col*lit+vec3(.85,.42,.16)*.1*(1.-lit)*sqrt(zz)*(dot(col,vec3(.333))+.2);
-  if(uH.w>0.){ float d=1.-dot(bp,uH.xyz); float ed=uH.w*(1.+.45*wave(bp*2.3+uH.xyz*3.));
-    float m=1.-smoothstep(ed*.78,ed,d);                                   // the coffee showing through
-    float rimF=smoothstep(ed*.85,ed*1.05,d)*(1.-smoothstep(ed*1.1,ed*1.6,d)); // the foam bunched up round the opening
-    float deep=smoothstep(ed*.95,ed*.45,d);                                // the foam's edge shades the coffee just inside it
-    vec3 liq=vec3(.13,.055,.02)*(.55+.55*max(dot(n,uL),0.))*(.55+.45*deep)*(.75+.35*vert);
-    float g=pow(max(dot(n,H),0.),70.); liq+=vec3(1.,.86,.66)*g*.85+vec3(.5,.27,.1)*pow(1.-zz,3.)*.35;   // wet and glossy, a warm edge
-    col=mix(col*(1.+.22*rimF),liq,m); }
   vec2 Lx=normalize(uL.xy+1e-5);
   for(int e=0;e<2;e++){ vec4 E=e==0?uA:uB; if(E.z<=0.) continue; vec2 dv=(lp-E.xy)/E.zw; float dd=length(dv); if(dd>1.9) continue;
     vec2 dir=dv/max(dd,1e-4); float tow=dot(dir,Lx);
@@ -10134,7 +10127,7 @@ void main(){
     if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(pr));
     gl.useProgram(pr); const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
     const ap = gl.getAttribLocation(pr, "p"); gl.enableVertexAttribArray(ap); gl.vertexAttribPointer(ap, 2, gl.FLOAT, false, 0, 0);
-    const U = {}; ["uM", "uE", "uR", "uL", "uD", "uPx", "uA", "uB", "uH"].forEach((k) => { U[k] = gl.getUniformLocation(pr, k); });
+    const U = {}; ["uM", "uE", "uR", "uL", "uD", "uPx", "uA", "uB"].forEach((k) => { U[k] = gl.getUniformLocation(pr, k); });
     gl.enable(gl.SCISSOR_TEST); gl.clearColor(0, 0, 0, 0);
     // the canvas spreads well beyond the drawing's box, so a roll or a jump never runs off its edge
     const MX = 1.1, MY = 0.8; let W = 0, Hh = 0, dpr = 1;
@@ -10145,13 +10138,7 @@ void main(){
     el.prepend(cv); el.classList.add("gl");
     addEventListener("resize", () => { size(); kick(); }, { passive: true }); new ResizeObserver(() => { size(); kick(); }).observe(svg);
     let dead = false; cv.addEventListener("webglcontextlost", (e) => { e.preventDefault(); dead = true; el.classList.remove("gl"); });
-    let P = null, raf = 0, last = "", yawS = 0, pitS = 0, vyaw = 0, vpit = 0, px0 = null, py0 = null, hole = null;
-    // every so often (and after a hard shake) the foam parts somewhere on his front, away from his eyes, and closes again
-    const SPOTS = [[0, 0.58], [-0.4, 0.5], [0.4, 0.5], [0.12, -0.7], [-0.15, -0.68], [0.2, 0.66]];   /* below the eyes, low on the sides, or up on top: never over them */
-    const part = (big) => { if (hole || dead || document.hidden || matchMedia("(prefers-reduced-motion: reduce)").matches) return; const r0 = cv.getBoundingClientRect(); if (r0.bottom < 0 || r0.top > innerHeight) return;
-      const sp = SPOTS[Math.floor(Math.random() * SPOTS.length)]; hole = { sx: sp[0] + (Math.random() - 0.5) * 0.12, sy: sp[1] + (Math.random() - 0.5) * 0.12, a: (big ? 0.42 : 0.24) + Math.random() * 0.12, ms: big ? 3200 : 2600, t0: performance.now() }; kick(); };
-    (function every() { setTimeout(() => { part(false); every(); }, 14000 + Math.random() * 18000); })();
-    el.__foamPart = part;
+    let P = null, raf = 0, last = "", yawS = 0, pitS = 0, vyaw = 0, vpit = 0, px0 = null, py0 = null;
     const still = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
     const render = () => { raf = 0; if (dead || !P || !W) return;
       const m = (all.transform.baseVal.consolidate() || { matrix: svg.createSVGMatrix() }).matrix, k = W / 64;
@@ -10161,7 +10148,7 @@ void main(){
       const cxs = m.a * 0 + m.c * P.mid + m.e, cys = m.b * 0 + m.d * P.mid + m.f;
       if (px0 !== null && !still()) { const vx = cxs - px0, vy = cys - py0; vyaw += ((-vx * 0.05) - yawS) * 0.12; vpit += ((vy * 0.05) - pitS) * 0.12; vyaw *= 0.8; vpit *= 0.8;
         yawS = Math.max(-0.45, Math.min(0.45, yawS + vyaw)); pitS = Math.max(-0.45, Math.min(0.45, pitS + vpit)); }
-      px0 = cxs; py0 = cys; if (Math.abs(vyaw) + Math.abs(vpit) > 0.09 && Math.random() < 0.04) part(true);
+      px0 = cxs; py0 = cys;
       // device pixel (from the bottom left) to the body's own coordinates: canvas -> SVG user units -> inside the turning group
       const ch = cv.height, s = 1 / (res * k), ox = -MX * W / k - 32, oy = -MY * Hh / k - 56;   // user = (fx/dpr)/k + ox ; uy = ((ch - fy)/dpr)/k + oy
       const det = m.a * m.d - m.b * m.c, ia = m.d / det, ib = -m.b / det, ic = -m.c / det, id = m.a / det, ie = (m.c * m.f - m.d * m.e) / det, iF = (m.b * m.e - m.a * m.f) / det;
@@ -10182,12 +10169,7 @@ void main(){
         if (!E || !allI || (eyesG && eyesG.style.opacity === "0")) return [0, 0, 0, 0]; const mm = allI.multiply(E.getCTM()), rx0 = +E.getAttribute("rx");
         const cx0 = +E.getAttribute("cx"), cy0 = +E.getAttribute("cy"), X = mm.a * cx0 + mm.c * cy0 + mm.e, Y = mm.b * cx0 + mm.d * cy0 + mm.f;
         const ry0 = Math.max(+E.getAttribute("ry"), rx0 * 0.45); return [X, Y, rx0 * 1.05 * Math.hypot(mm.a, mm.b), Math.min(ry0 * 1.06, rx0 * 1.5) * Math.hypot(mm.c, mm.d)]; });
-      let HO = [0, 0, 1, 0];
-      if (hole) { const t = (performance.now() - hole.t0) / hole.ms; if (t >= 1) hole = null; else {
-          if (!hole.d) { const sx = hole.sx, sy = hole.sy, sz = Math.sqrt(Math.max(0, 1 - sx * sx - sy * sy)); hole.d = [B[0][0] * sx + B[1][0] * sy + B[2][0] * sz, B[0][1] * sx + B[1][1] * sy + B[2][1] * sz, B[0][2] * sx + B[1][2] * sy + B[2][2] * sz]; }
-          const e = t < 0.28 ? 1 - Math.pow(1 - t / 0.28, 3) : t < 0.62 ? 1 : Math.pow(1 - (t - 0.62) / 0.38, 2);   // parts fast, holds, closes slowly
-          const a = hole.a * (0.85 + 0.15 * e) * e; HO = [...hole.d, 1 - Math.cos(a)]; } }
-      const key = [M.join(), P.rx, P.ry, P.mid, th.toFixed(4), ph.toFixed(4), ang.toFixed(4), cv.width, cv.height, EY.flat().map((v) => v.toFixed(2)).join(), HO.map((v) => v.toFixed(4)).join()].join("|"); if (key === last) { if (hole) kick(); return; } last = key;
+      const key = [M.join(), P.rx, P.ry, P.mid, th.toFixed(4), ph.toFixed(4), ang.toFixed(4), cv.width, cv.height, EY.flat().map((v) => v.toFixed(2)).join()].join("|"); if (key === last) return; last = key;
       // only the pixels round the body are drawn
       const corners = [[-P.rx, P.mid - P.ry], [P.rx, P.mid - P.ry], [-P.rx, P.mid + P.ry], [P.rx, P.mid + P.ry]].map(([x, y]) => { const ux = m.a * x + m.c * y + m.e, uy = m.b * x + m.d * y + m.f; return [(ux - ox) / s, ch - (uy - oy) / s]; });
       const x0 = Math.max(0, Math.floor(Math.min(...corners.map((c) => c[0])) - 3)), x1 = Math.min(cv.width, Math.ceil(Math.max(...corners.map((c) => c[0])) + 3));
@@ -10195,9 +10177,9 @@ void main(){
       gl.viewport(0, 0, cv.width, cv.height); gl.scissor(0, 0, cv.width, cv.height); gl.clear(gl.COLOR_BUFFER_BIT);
       if (x1 <= x0 || y1 <= y0) return; gl.scissor(x0, y0, x1 - x0, y1 - y0);
       gl.uniformMatrix3fv(U.uM, false, M); gl.uniform4f(U.uE, 0, P.mid, P.rx, P.ry); gl.uniformMatrix3fv(U.uR, false, R);
-      gl.uniform3f(U.uL, ...L); gl.uniform2f(U.uD, ...Dn); gl.uniform1f(U.uPx, px); gl.uniform4f(U.uA, ...EY[0]); gl.uniform4f(U.uB, ...EY[1]); gl.uniform4f(U.uH, ...HO);
+      gl.uniform3f(U.uL, ...L); gl.uniform2f(U.uD, ...Dn); gl.uniform1f(U.uPx, px); gl.uniform4f(U.uA, ...EY[0]); gl.uniform4f(U.uB, ...EY[1]);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-      if (hole || Math.abs(vyaw) + Math.abs(vpit) + Math.abs(yawS) + Math.abs(pitS) > 0.002) kick(); };
+      if (Math.abs(vyaw) + Math.abs(vpit) + Math.abs(yawS) + Math.abs(pitS) > 0.002) kick(); };
     const kick = () => { if (!raf) raf = requestAnimationFrame(render); };
     size();
     return { frame: (p) => { P = p; if (raf) { cancelAnimationFrame(raf); raf = 0; } render(); } };
