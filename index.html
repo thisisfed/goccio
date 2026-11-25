@@ -2876,8 +2876,13 @@ html body .top #toolsBtn.spit{animation:agSpit .4s cubic-bezier(.3,1.5,.5,1)}
 html body .top .ask-br{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:0}
 html body .top.ask-on #toolsBtn, html body .top.ask-on .ask-line .ask-goccio:not(.ag-gone){pointer-events:none}
 html body .top.ask-on .ask-line{right:12px!important;transition:opacity .25s ease, transform .25s ease, right .941s linear(0,0.065,0.213,0.39,0.564,0.715,0.836,0.924,0.984,1.021,1.039,1.045,1.043,1.037,1.029,1.021,1.014,1.008,1.004,1.001,0.999,0.998,0.998,0.998,0.998) .2s, visibility 0s linear 0s!important}
-html body .top.ask-on .ask-line .ask-goccio:not(.ag-gone){transform:translateX(calc(-1 * var(--pill-h,32px) - 8px));transition:transform .42s cubic-bezier(.55,0,.8,.3)}
-html body .top.ask-on #toolsBtn{transform:translateX(calc(-2 * var(--pill-h,32px) - 16px));transition:transform .42s cubic-bezier(.55,0,.8,.3)}
+/* the same moves as the + and its pills: going in, each runs back into the box (tools-back); coming out, each springs out of it on the
+   + pills' own stretch-and-settle curves (drop-l, drop-t), and the necks stretch with them and snap once parted */
+html body .top:is(.ask-on,.ask-off) .ask-line .ask-goccio{--tb-x:calc(-1 * var(--pill-h,32px) - 8px)} html body .top:is(.ask-on,.ask-off) #toolsBtn{--tb-x:calc(-2 * var(--pill-h,32px) - 16px)}
+html body .top.ask-on .ask-line .ask-goccio:not(.ag-gone){animation:tools-back .27s cubic-bezier(.4,0,1,1) .05s both}
+html body .top.ask-on #toolsBtn{animation:tools-back .3s cubic-bezier(.4,0,1,1) both}
+html body .top.ask-off .ask-line .ask-goccio:not(.ag-gone){transform-origin:0 50%;animation:drop-l 1.098s linear both}
+html body .top.ask-off #toolsBtn{transform-origin:50% 50%;animation:drop-t 1.098s linear both}
 html body .top:is(.ask-on,.ask-off) .ask-line{z-index:5!important} html body .top:is(.ask-on,.ask-off) .ask-line > .ask-box{position:relative;z-index:2} html body .top:is(.ask-on,.ask-off) .ask-line .ask-goccio{z-index:0}   /* the pills slip in under the box, never over it */
 html body .top .ask-line > .ask-box{transition:margin-right .941s linear(0,0.065,0.213,0.39,0.564,0.715,0.836,0.924,0.984,1.021,1.039,1.045,1.043,1.037,1.029,1.021,1.014,1.008,1.004,1.001,0.999,0.998,0.998,0.998,0.998)}
 html body .top.ask-on .ask-line > .ask-box{margin-right:calc(-1 * var(--pill-h,32px) - 4px);transition:margin-right .941s linear(0,0.065,0.213,0.39,0.564,0.715,0.836,0.924,0.984,1.021,1.039,1.045,1.043,1.037,1.029,1.021,1.014,1.008,1.004,1.001,0.999,0.998,0.998,0.998,0.998) .2s}   /* the box runs on over the little Goccio's pill; the pills keep their size and slip in under it */
@@ -2889,6 +2894,14 @@ html body .top.ask-on .ask-line > .ask-box{margin-right:calc(-1 * var(--pill-h,3
   html body .top #toolsBtn{transition:scale .941s linear(0,0.065,0.213,0.39,0.564,0.715,0.836,0.924,0.984,1.021,1.039,1.045,1.043,1.037,1.029,1.021,1.014,1.008,1.004,1.001,0.999,0.998,0.998,0.998,0.998), transform .941s linear(0,0.065,0.213,0.39,0.564,0.715,0.836,0.924,0.984,1.021,1.039,1.045,1.043,1.037,1.029,1.021,1.014,1.008,1.004,1.001,0.999,0.998,0.998,0.998,0.998), opacity .3s ease, background .2s ease}
 }
 @media (prefers-reduced-motion:reduce){html body .top .ask-line,html body .top .ask-line .ask-goccio svg,html body .top #toolsBtn{transition:none!important}}
+/* the little Goccio peeking in from the side when you pick a coffee: it slides out from the right edge, leaning, with its offer beside it */
+html body .gd-peek{position:fixed;right:0;z-index:28;display:flex;align-items:center;gap:8px;padding:0;margin:0;border:0;background:none;cursor:pointer;transform:translateX(calc(100% + 10px));transition:transform .6s cubic-bezier(.3,1.35,.5,1)}
+html body .gd-peek.in{transform:translateX(14px)}
+html body .gd-peek svg{width:46px;height:46px;flex:none;rotate:-18deg;fill:#000;overflow:visible;transition:rotate .6s cubic-bezier(.3,1.5,.5,1) .15s}
+html body .gd-peek.in svg{rotate:-8deg}
+html body .gd-peek .gp-say{max-width:210px;padding:8px 12px;border-radius:16px;border-bottom-right-radius:4px;background:var(--gd-card,var(--pill));color:var(--ink);font:500 15px/1.35 var(--sans);text-align:left;box-shadow:0 1px 2px color-mix(in srgb,#000 35%,transparent);opacity:0;transition:opacity .3s ease .45s}
+html body .gd-peek.in .gp-say{opacity:1}
+@media (prefers-reduced-motion:reduce){html body .gd-peek,html body .gd-peek svg{transition:none}}
 @keyframes agSpinFast{0%{transform:rotate(-720deg) scale(.5)}60%{transform:rotate(-40deg) scale(1.08)}100%{transform:none}}
 @keyframes agSpit{0%{scale:1}30%{scale:.88 1.1}65%{scale:1.05 .97}100%{scale:1}}
 @keyframes agGulp{0%{scale:1}35%{scale:1.14 .9}70%{scale:.96 1.05}100%{scale:1}}
@@ -10537,6 +10550,23 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const gbGo = (g, pre) => { const qn = gbAsk(g); if (qn) say((pre ? pre + " " : "") + qn, null, curious); else gbFinish(g, pre); };
     const gbStart = (r, text) => { gbs = { at: Date.now(), r: r || null, text: text || null, tries: 0 }; ctx = null;
       gbGo(gbs, r ? T(`${r.name} from ${roasteryName(r.roaster)}, lovely. Let's set it up.`, `${r.name} della ${roasteryName(r.roaster)}, buonissimo. Prepariamolo.`) : T("Let's brew together.", "Prepariamolo insieme.")); };
+    // picked a coffee: the little Goccio peeks in from the side of the screen and offers to brew it with you. Once a visit; a tap starts brewing together
+    { let shown = false, pk = null, hideT = 0;
+      const coffeeOpen = () => { const b = state && state.bag; if (!b || !b.name) return null; return (typeof shelf !== "undefined" ? shelf : []).find((r) => r.name === b.name && r.roaster === b.roaster) || null; };
+      const hide = () => { clearTimeout(hideT); if (!pk) return; const p0 = pk; pk = null; p0.classList.remove("in"); setTimeout(() => p0.remove(), 600); removeEventListener("scroll", onScroll); };
+      let y0 = 0; const onScroll = () => { if (Math.abs(scrollY - y0) > 260) hide(); };
+      const peek = () => { if (shown || talking || !document.documentElement.classList.contains("brew-in") || document.documentElement.classList.contains("gd-set") || document.documentElement.classList.contains("brew-on")) return;
+        const r = coffeeOpen(); if (!r) return; shown = true;
+        const nav = document.querySelector(".dock:not([hidden]), .botnav"), bot = nav ? Math.max(70, innerHeight - nav.getBoundingClientRect().top + 14) : 90;
+        pk = document.createElement("button"); pk.type = "button"; pk.className = "gd-peek"; pk.style.bottom = bot + "px";
+        const src = $("askGoccio") && $("askGoccio").querySelector("svg"); pk.innerHTML = `<span class="gp-say">${T("Need a hand? I can brew this with you.", "Ti serve una mano? Lo prepariamo insieme.")}</span>`; if (src) pk.appendChild(src.cloneNode(true));
+        pk.setAttribute("aria-label", T("Brew this with Goccio", "Preparalo con Goccio"));
+        pk.onclick = () => { hide(); openTalk(true); setTimeout(() => gbStart(r), 350); };
+        document.body.appendChild(pk); requestAnimationFrame(() => requestAnimationFrame(() => pk && pk.classList.add("in")));
+        y0 = scrollY; addEventListener("scroll", onScroll, { passive: true }); hideT = setTimeout(hide, 8000); };
+      // a coffee's Brew tapped by you (not by the chat): a moment to look at the recipe, then the offer
+      document.addEventListener("click", (e) => { if (!e.isTrusted || shown) return; if (e.target.closest && e.target.closest("#shelf .item .btn[data-i], #bags .btn")) setTimeout(peek, 1800); }, true);
+      new MutationObserver(() => { if (pk && !document.documentElement.classList.contains("brew-in")) hide(); }).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] }); }
     // an answer to the question asked; false hands the message back to the rest of the chat
     const gbAnswer = (q) => { const g = gbs; let ql = q.toLowerCase().trim();
       { const n = ql.match(/^(?:number |n\.? ?|#|option )?(\d{1,2})[.)]?$/); if (n && g.opts && g.opts[+n[1] - 1]) { q = g.opts[+n[1] - 1][1]; ql = q; } }
@@ -11614,7 +11644,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // the necks: the box's round end to the little Goccio's pill, and that pill to the +, drawn with the same metaball bridge as the + uses
     const NS = "http://www.w3.org/2000/svg", sv = document.createElementNS(NS, "svg"); sv.setAttribute("class", "drop-br ask-br"); sv.setAttribute("aria-hidden", "true");
     const P = [document.createElementNS(NS, "path"), document.createElementNS(NS, "path")]; P.forEach((x) => sv.appendChild(x)); if (top) top.prepend(sv);
-    const necks = (merging) => { cancelAnimationFrame(raf); if (!window.__bridge || matchMedia("(prefers-reduced-motion: reduce)").matches) return; const t0 = performance.now(), G = 7, gone = [false, false];
+    const necks = (merging) => { cancelAnimationFrame(raf); if (!window.__bridge || matchMedia("(prefers-reduced-motion: reduce)").matches) return; const t0 = performance.now(), G = 3.5, gone = [false, false];   /* the + pills snap at 3.5 px too */
       const step = (now) => { const t = now - t0, o = sv.getBoundingClientRect(), box = top.querySelector(".ask-box"), g = $("askGoccio"), pl = $("toolsBtn"); if (!box || !pl) return;
         const pills = [box, g && g.offsetWidth && !g.classList.contains("ag-gone") ? g : null, pl].filter(Boolean);
         [0, 1].forEach((i) => { let d = ""; const A0 = pills[i], B0 = pills[i + 1];
@@ -11627,7 +11657,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         if (t < 1300) raf = requestAnimationFrame(step); else P.forEach((x) => x.setAttribute("d", "")); };
       raf = requestAnimationFrame(step); };
     if (ai && top) { ai.addEventListener("focus", () => { clearTimeout(offT); top.classList.remove("ask-off"); top.classList.add("ask-on"); necks(true); });
-      ai.addEventListener("blur", () => { if (!top.classList.contains("ask-on")) return; top.classList.remove("ask-on"); top.classList.add("ask-off"); necks(false); clearTimeout(offT); offT = setTimeout(() => top.classList.remove("ask-off"), 950); }); } }
+      ai.addEventListener("blur", () => { if (!top.classList.contains("ask-on")) return; top.classList.remove("ask-on"); top.classList.add("ask-off"); necks(false); clearTimeout(offT); offT = setTimeout(() => top.classList.remove("ask-off"), 1150); }); } }
   window.__v60 = { showReview, analyseBeans, decafGuard, parseCoffee, engine, suggest, cupNotes, cardImage, risks, recipeText, BASE, get recipe() { return recipe; }, get shelf() { return shelf; } };
 })();
 </script>
