@@ -10333,9 +10333,12 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       tween("aRest", 0.14, 120); jv = -400; go(); await tween("flip", -360, 430); S.flip = 0; tween("aRest", 0, 200); poke(-3.4); await face({ happy: 1, eyeL: 1, eyeR: 1 }, 140); await wait(900); });
     // roll: like a ball, it turns as it goes (the distance matches the turn, so it doesn't skid), off to one side, all the way across to the other, and home
     const roll = () => act(async () => { const s0 = Math.random() < 0.5 ? -1 : 1, deg = 200, d = deg * Math.PI / 180 * R0;
-      // first, head quite still, only his eyes: a look one way, a look the other, as if checking the road is clear
-      leanTo = 0; lookY = 0; lookX = -3.4 * s0; draw(); await wait(520); lookX = 3.4 * s0; draw(); await wait(520); lookX = 0; draw(); await wait(200);
-      await face({ eyeSL: 1.1, eyeSR: 1.1 }, 150); rigid = true; a = S.aRest = 0; va = 0; lean = 0; vl = 0; leanTo = 0;
+      // first, furtive: head still and a touch low, eyes narrowed to slits, darting one way, the other, back again, as if
+      // making sure nobody is watching; then wide open and off
+      leanTo = 0; lookY = 0.4; tween("aRest", -0.05, 260); await face({ eyeL: 0.5, eyeR: 0.5, smile: -0.1 }, 220);
+      for (const [x, ms] of [[-3.8, 460], [3.8, 460], [-3.8, 260], [3.8, 300]]) { lookX = x * s0; draw(); await wait(ms); }
+      lookX = 0; lookY = 0; draw(); await wait(160); tween("aRest", 0, 200);
+      await face({ eyeL: 1, eyeR: 1, smile: 0, eyeSL: 1.1, eyeSR: 1.1 }, 150); rigid = true; a = S.aRest = 0; va = 0; lean = 0; vl = 0; leanTo = 0;
       await Promise.all([tween("flip", s0 * deg, 700), tween("jx", s0 * d, 700)]); await wait(140);
       await Promise.all([tween("flip", -s0 * deg, 1150), tween("jx", -s0 * d, 1150)]); await wait(140);
       await Promise.all([tween("flip", 0, 700), tween("jx", 0, 700)]); S.flip = 0; rigid = false; poke(-2); await face({ happy: 1 }, 140); await wait(700); });
