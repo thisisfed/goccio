@@ -2905,7 +2905,28 @@ html body .gd-peek .gd-e{transform-box:fill-box;transform-origin:center;animatio
 html body .gd-peek.in svg{rotate:-8deg}
 html body .gd-peek .gp-say{max-width:210px;margin-bottom:calc(18px * var(--gs,1.45));padding:8px 12px;border-radius:16px;border-bottom-right-radius:4px;background:var(--gd-card,var(--pill));color:var(--ink);font:500 15px/1.35 var(--sans);text-align:left;box-shadow:0 1px 2px color-mix(in srgb,#000 35%,transparent);opacity:0;transition:opacity .3s ease .45s}
 html body .gd-peek.in .gp-say{opacity:1}
-@media (prefers-reduced-motion:reduce){html body .gd-peek,html body .gd-peek svg{transition:none}}
+/* first visit: the big Goccio drops in, says hi, then flies up into the little pill */
+html body .gd-fly{position:fixed;z-index:60;pointer-events:none;transform:translateY(-70vh);transition:transform .8s cubic-bezier(.3,1.35,.5,1)}
+html body .gd-fly.in{transform:none}
+html body .gd-fly svg{width:100%;height:100%;overflow:visible}
+html body .gd-fly-hi{position:absolute;left:50%;bottom:calc(100% - 8px);translate:-50% 0;white-space:nowrap;padding:8px 12px;border-radius:16px;background:var(--gd-card,var(--pill));color:var(--ink);font:500 15px/1.35 var(--sans);opacity:0;transform:translateY(6px);transition:opacity .3s ease, transform .3s ease}
+html body .gd-fly-hi.in{opacity:1;transform:none}
+/* the offer stands out: the page dims a little behind it; a tap on the page lets it go */
+html body .gd-peek-dim{position:fixed;inset:0;z-index:27;background:#000;opacity:0;transition:opacity .45s ease}
+html body .gd-peek-dim.in{opacity:.45}
+/* from the left: mirrored, the offer on its right */
+html body .gd-peek.from-left{right:auto;left:0;flex-direction:row-reverse;transform:translateX(calc(-100% - 10px))}
+html body .gd-peek.from-left.in{transform:translateX(-18px)}
+html body .gd-peek.from-left svg{rotate:18deg;margin-right:0;margin-left:calc(-10px * var(--gs,1.45))}
+html body .gd-peek.from-left.in svg{rotate:8deg}
+html body .gd-peek.from-left .gp-say{border-bottom-right-radius:16px;border-bottom-left-radius:4px}
+/* from the bottom: it rises from behind the bar, the offer above it */
+html body .gd-peek.from-bottom{right:auto;left:50%;flex-direction:column-reverse;align-items:center;gap:4px;transform:translate(-50%, calc(100% + 40px))}
+html body .gd-peek.from-bottom.in{transform:translate(-50%, 0)}
+html body .gd-peek.from-bottom svg{rotate:0deg;margin:0}
+html body .gd-peek.from-bottom.in svg{rotate:0deg}
+html body .gd-peek.from-bottom .gp-say{margin-bottom:0;border-bottom-right-radius:16px;text-align:center}
+@media (prefers-reduced-motion:reduce){html body .gd-peek,html body .gd-peek svg,html body .gd-peek-dim{transition:none}}
 @keyframes agSpinFast{0%{transform:rotate(-720deg) scale(.5)}60%{transform:rotate(-40deg) scale(1.08)}100%{transform:none}}
 @keyframes agSpit{0%{scale:1}30%{scale:.88 1.1}65%{scale:1.05 .97}100%{scale:1}}
 @keyframes agGulp{0%{scale:1}35%{scale:1.14 .9}70%{scale:.96 1.05}100%{scale:1}}
@@ -10512,6 +10533,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // the next question, or null when there's nothing left to ask
     // choices as a numbered list, one per row: answer with the number or in words
     const gbList = (g, opts) => { g.opts = opts; return opts.map(([t], i) => `${i + 1}. ${t}`).join("\n"); };
+    // the amounts a brewer takes, in words people know: the grams and about how much it makes (or the pot, or the shot)
+    const gbDoses = (B) => { const rt = (B.ratio && (B.ratio.balanced || B.ratio.light)) || 16; return B.doses.map(([d, lb]) => [B.shot ? T(`${d} g, ${d >= 18 ? "a double" : d <= 14 ? "a single" : "a big single"}`, `${d} g, ${d >= 18 ? "doppio" : "singolo"}`)
+      : /cup/.test(lb) ? T(`${d} g, the ${lb} pot`, `${d} g, moka da ${lb.replace("-cup", "")}`) : T(`${d} g, about ${Math.round(d * rt / 10) * 10} ml${d === B.dose ? " (one mug)" : ""}`, `${d} g, circa ${Math.round(d * rt / 10) * 10} ml${d === B.dose ? " (una tazza)" : ""}`), `${d} g`]); };
     const gbAsk = (g) => {
       g.opts = null; g.yn = false;
       if (!g.r && !g.text) { g.step = "coffee"; return T("Which coffee? Tell me its name, what the bag says (roaster, origin, process, roast), or say 'pick one'.", "Quale caffè? Dimmi il nome, cosa dice il sacchetto (torrefazione, origine, processo, tostatura), o di' 'scegline uno'."); }
@@ -10522,12 +10546,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         if (known && !g.noMill) { g.yn = true; return T(`And the grinder? Still the ${GRINDERS[prefs.mill].name}?`, `E il macinino? Sempre il ${GRINDERS[prefs.mill].name}?`) + "\n" + gbList(g, [[T(`Yes, the ${GRINDERS[prefs.mill].short || GRINDERS[prefs.mill].name}`, `Sì, il ${GRINDERS[prefs.mill].short || GRINDERS[prefs.mill].name}`), "yes"], [T("A different one", "Un altro"), "no"]]); }
         return T("Which grinder?", "Quale macinino?") + "\n" + gbList(g, [["Comandante C40", "comandante c40"], ["1Zpresso K-Ultra", "k-ultra"], ["Timemore C3", "timemore c3"], ["Baratza Encore ESP", "encore esp"], ["Fellow Opus", "fellow opus"], [T("None, it's pre-ground", "Nessuno, è già macinato"), "none"]]) + "\n" + T("Or name another.", "O dimmene un altro."); }
       const B = RECIPE_BREWERS[g.brewer];
-      if (!g.dose && !B.cup && B.doses.length > 1) { g.step = "dose";
-        const near = (x) => B.doses.map(([d]) => d).sort((a, b) => Math.abs(a - x) - Math.abs(b - x))[0];
-        if (B.shot) return T("A single or a double?", "Singolo o doppio?") + "\n" + gbList(g, [[T("Single, 14 g", "Singolo, 14 g"), "single"], [T("Double, 18 g", "Doppio, 18 g"), "double"]]);
-        if (g.brewer === "moka") return T("Which size moka?", "Che moka?") + "\n" + gbList(g, [[T("1 cup", "Da 1 tazza"), "1 cup"], [T("3 cups", "Da 3 tazze"), "3 cups"], [T("6 cups", "Da 6 tazze"), "6 cups"]]);
-        const one = near(B.dose), two = near(B.dose * 2);
-        return T("How much are you making?", "Quanto ne fai?") + "\n" + gbList(g, [[T(`One cup, ${one} g`, `Una tazza, ${one} g`), `${one} g`]].concat(two !== one ? [[T(`Two cups, ${two} g`, `Due tazze, ${two} g`), `${two} g`]] : [])) + "\n" + T("Or say the grams.", "O dimmi i grammi."); }
+      if (!g.dose && !B.cup && B.doses.length > 1) { g.step = "dose"; return T(`How much coffee? The ${B.name} takes:`, `Quanto caffè? Il ${B.name} ne prende:`) + "\n" + gbList(g, gbDoses(B)) + "\n" + T("Pick a number, or say the grams.", "Scegli un numero, o dimmi i grammi."); }
       const miss = gbMissing(g);
       if (miss.includes("roast") && !g.roast) { g.step = "roast"; return T(`The ${g.r ? "listing" : "bag"} doesn't say the roast. How do the beans look?`, `${g.r ? "La scheda" : "Il sacchetto"} non dice la tostatura. Come sono i chicchi?`) + "\n" + gbList(g, [[T("Very light", "Molto chiara"), "very light"], [T("Light", "Chiara"), "light"], [T("Medium", "Media"), "medium"], [T("Medium-dark", "Medio-scura"), "medium-dark"], [T("Dark", "Scura"), "dark"], [T("Not sure", "Non so"), "not sure"]]); }
       if (miss.includes("process") && !g.process) { g.step = "process"; return T("And the process?", "E il processo?") + "\n" + gbList(g, [[T("Washed", "Lavato"), "washed"], [T("Natural", "Naturale"), "natural"], ["Honey", "honey"], [T("Anaerobic", "Anaerobico"), "anaerobic"], [T("Co-ferment", "Co-fermentato"), "co-ferment"], [T("Decaf", "Decaffeinato"), "decaf"], [T("Not sure", "Non so"), "not sure"]]); }
@@ -10544,6 +10563,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       // the page is set up out of sight (coffee, brewer, grinder, dose, roast, process, rows hidden), then shown once: no numbers changing in front of you
       setTimeout(() => { const H = document.documentElement; H.classList.add("gd-landing", "gd-set"); kitOn();
         let shown = false; const show = () => { if (shown) return; shown = true; document.querySelectorAll(".spec.chg").forEach((x) => x.classList.remove("chg")); window.__specFlash = 0;
+          { const it = document.querySelector(".item.brewing"), tb = document.querySelector(".top"); if (it && tb) { const dd = it.getBoundingClientRect().top - (tb.getBoundingClientRect().bottom - 4); if (Math.abs(dd) > 1) window.scrollTo({ top: scrollY + dd, behavior: "instant" }); } }   /* the coffee sits where a coffee opened by hand does, not squeezed up under the bar */
           H.classList.add("gd-landed"); H.classList.remove("gd-landing"); setTimeout(() => H.classList.remove("gd-landed"), 400); };
         const done = () => { beanOn(); setTimeout(() => requestAnimationFrame(() => requestAnimationFrame(show)), 450); };
         if (g.r) brewIt(g.r, done);
@@ -10555,21 +10575,28 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const gbGo = (g, pre) => { const qn = gbAsk(g); if (qn) say((pre ? pre + " " : "") + qn, null, curious); else gbFinish(g, pre); };
     const gbStart = (r, text) => { gbs = { at: Date.now(), r: r || null, text: text || null, tries: 0 }; ctx = null;
       gbGo(gbs, r ? T(`${r.name} from ${roasteryName(r.roaster)}, lovely. Let's set it up.`, `${r.name} della ${roasteryName(r.roaster)}, buonissimo. Prepariamolo.`) : T("Let's brew together.", "Prepariamolo insieme.")); };
+    // a copy of the big Goccio as it is right now, to show anywhere: its look carried over from the page's styles, with its own gradients
+    // (the page's sit in a section that's hidden while a recipe is open, and a hidden gradient paints nothing)
+    const cloneBig = () => { const src = el.querySelector("svg"); if (!src) return null; const c = src.cloneNode(true);
+      { const o = [src, ...src.querySelectorAll("*")], k = [c, ...c.querySelectorAll("*")]; o.forEach((x, i) => { const cs = getComputedStyle(x), y = k[i]; if (!y || /^(defs|stop|radialgradient|lineargradient|clippath)$/i.test(x.tagName)) return; ["fill", "stroke", "opacity", "display", "visibility"].forEach((pr) => y.style.setProperty(pr, cs.getPropertyValue(pr))); }); }
+      c.removeAttribute("id"); const ren = {}, sfx = "C" + Math.random().toString(36).slice(2, 6); c.querySelectorAll("[id]").forEach((x) => { if (/gradient/i.test(x.tagName)) { ren[x.id] = x.id + sfx; x.id += sfx; } else x.removeAttribute("id"); });
+      c.querySelectorAll("*").forEach((y) => { const f = y.style.getPropertyValue("fill"); const m = /url\("?#([^")]+)"?\)/.exec(f || ""); if (m && ren[m[1]]) y.style.setProperty("fill", `url(#${ren[m[1]]})`); }); return c; };
     // picked a coffee: the little Goccio peeks in from the side of the screen and offers to brew it with you. Once a visit; a tap starts brewing together
     { let shown = false, pk = null, hideT = 0;
       const coffeeOpen = () => { const b = state && state.bag; if (!b || !b.name) return null; return (typeof shelf !== "undefined" ? shelf : []).find((r) => r.name === b.name && r.roaster === b.roaster) || null; };
-      const hide = () => { clearTimeout(hideT); if (!pk) return; const p0 = pk; pk = null; p0.classList.remove("in"); setTimeout(() => p0.remove(), 600); removeEventListener("scroll", onScroll); };
+      let dim = null;
+      const hide = () => { clearTimeout(hideT); if (dim) { const d0 = dim; dim = null; d0.classList.remove("in"); setTimeout(() => d0.remove(), 500); } if (!pk) return; const p0 = pk; pk = null; p0.classList.remove("in"); setTimeout(() => p0.remove(), 600); removeEventListener("scroll", onScroll); };
       let y0 = 0; const onScroll = () => { if (Math.abs(scrollY - y0) > 260) hide(); };
       const peek = () => { if (shown || talking || !document.documentElement.classList.contains("brew-in") || document.documentElement.classList.contains("gd-set") || document.documentElement.classList.contains("brew-on")) return;
         const r = coffeeOpen(); if (!r) return; shown = true;
         const nav = document.querySelector(".dock:not([hidden]), .botnav"), bot = nav ? Math.max(70, innerHeight - nav.getBoundingClientRect().top + 14) : 90;
-        pk = document.createElement("button"); pk.type = "button"; pk.className = "gd-peek"; pk.style.bottom = bot + "px";
-        const src = el.querySelector("svg"); pk.innerHTML = `<span class="gp-say">${T("Need a hand? I can brew this with you.", "Ti serve una mano? Lo prepariamo insieme.")}</span>`;   /* the big Goccio itself, as it is right now */
-        if (src) { const c = src.cloneNode(true); { const o = [src, ...src.querySelectorAll("*")], k = [c, ...c.querySelectorAll("*")]; o.forEach((x, i) => { const cs = getComputedStyle(x), y = k[i]; if (!y || /^(defs|stop|radialgradient|lineargradient|clippath)$/i.test(x.tagName)) return; ["fill", "stroke", "opacity", "display", "visibility"].forEach((pr) => y.style.setProperty(pr, cs.getPropertyValue(pr))); }); }   /* its look comes from the page's styles: carried over, so the copy looks the same anywhere */ c.removeAttribute("id"); const ren = {}; c.querySelectorAll("[id]").forEach((x) => { if (/gradient/i.test(x.tagName)) { ren[x.id] = x.id + "Pk"; x.id += "Pk"; } else x.removeAttribute("id"); });
-          c.querySelectorAll("*").forEach((y) => { const f = y.style.getPropertyValue("fill"); const m = /url\("?#([^")]+)"?\)/.exec(f || ""); if (m && ren[m[1]]) y.style.setProperty("fill", `url(#${ren[m[1]]})`); });   /* its own gradients: the page's may be hidden while a recipe is open, and a hidden gradient paints nothing */ c.classList.add("gp-drop"); pk.appendChild(c); }
+        const side = ["right", "left", "bottom"][Math.floor(Math.random() * 3)];   // it comes in from a different place each time
+        dim = document.createElement("div"); dim.className = "gd-peek-dim"; dim.onclick = hide; document.body.appendChild(dim);
+        pk = document.createElement("button"); pk.type = "button"; pk.className = "gd-peek from-" + side; pk.style.bottom = (side === "bottom" ? bot - 26 : bot) + "px";
+        pk.innerHTML = `<span class="gp-say">${T("Need a hand? I can brew this with you.", "Ti serve una mano? Lo prepariamo insieme.")}</span>`; { const c = cloneBig(); if (c) { c.classList.add("gp-drop"); pk.appendChild(c); } }   /* the big Goccio itself, as it is right now */
         pk.setAttribute("aria-label", T("Brew this with Goccio", "Preparalo con Goccio"));
         pk.onclick = () => { hide(); openTalk(true); setTimeout(() => gbStart(r), 350); };
-        document.body.appendChild(pk); requestAnimationFrame(() => requestAnimationFrame(() => pk && pk.classList.add("in")));
+        document.body.appendChild(pk); requestAnimationFrame(() => requestAnimationFrame(() => { if (pk) pk.classList.add("in"); if (dim) dim.classList.add("in"); }));
         y0 = scrollY; addEventListener("scroll", onScroll, { passive: true }); hideT = setTimeout(hide, 8000); };
       // a coffee's Brew tapped by you (not by the chat): a moment to look at the recipe, then the offer
       document.addEventListener("click", (e) => { if (!e.isTrusted || shown) return; if (e.target.closest && e.target.closest("#shelf .item .btn[data-i], #bags .btn")) setTimeout(peek, 1800); }, true);
@@ -10606,7 +10633,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       if (g.step === "dose") { const B = RECIPE_BREWERS[g.brewer], gm = ql.match(/(\d+(?:[.,]\d+)?)\s*(g|gr|grams?|grammi)\b/), cm = ql.match(/\b(\d|one|a|single|two|double|three|four|six|una|un|due|tre|quattro|sei|singolo|doppio)\b/);
         const near = (x) => B.doses.map(([d]) => d).sort((a, b) => Math.abs(a - x) - Math.abs(b - x))[0];
         let d = null;
-        if (gm) d = near(parseFloat(gm[1].replace(",", ".")));
+        if (gm) { const x = parseFloat(gm[1].replace(",", ".")), ds = B.doses.map(([v]) => v);
+          if (!ds.includes(x)) { const lo = Math.min(...ds), hi = Math.max(...ds), nr = near(x); g.tries = 0;
+            say(T(`The ${B.name} takes ${lo} to ${hi} g here, so ${x} g ${x > hi ? "would overflow it" : x < lo ? "is too little for it" : "isn't one of its doses"}. The closest is ${nr} g. Which one?`, `Il ${B.name} qui prende da ${lo} a ${hi} g, quindi ${x} g ${x > hi ? "lo farebbe traboccare" : x < lo ? "sono troppo pochi" : "non è una delle sue dosi"}. Il più vicino è ${nr} g. Quale?`) + "\n" + gbList(g, gbDoses(B)), null, hmm); return true; }
+          d = x; }
         else if (g.brewer === "moka" && /\b(1|one|una?)\b/.test(ql)) d = 7; else if (g.brewer === "moka" && /\b(6|six|sei)\b/.test(ql)) d = 30; else if (g.brewer === "moka" && /\b(3|three|tre)\b/.test(ql)) d = 16;
         else if (cm) { const n = { one: 1, a: 1, single: 1, una: 1, un: 1, singolo: 1, two: 2, double: 2, due: 2, doppio: 2, three: 3, tre: 3, four: 4, quattro: 4, six: 6, sei: 6 }[cm[1]] || +cm[1] || 1;
           d = B.shot ? (n >= 2 ? 18 : 14) : near(B.dose * n); }
@@ -11570,7 +11600,21 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // first visit: the little Goccio introduces itself under the top bar, once, so "Search or ask Goccio" makes sense.
     // Any tap or key closes it, or it fades after 9 seconds
     { const tb = $("askGoccio"); let seen = "1"; try { seen = localStorage.getItem("v60.gdIntro"); } catch (e) {}
-      if (tb && !seen) setTimeout(() => { const r = tb.getBoundingClientRect(); if (talking || !r.width || tb.classList.contains("ag-gone")) return;
+      const flyIn = (then) => { const ts = tb.querySelector("svg"), c = cloneBig(); if (!c || !ts || matchMedia("(prefers-reduced-motion: reduce)").matches || talking || scrollY > 80) return then();
+        const gs = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--gs")) || 1.45, W = 64 * gs, Hh = 60 * gs;
+        const dim = document.createElement("div"); dim.className = "gd-peek-dim"; document.body.appendChild(dim);
+        const f = document.createElement("div"); f.className = "gd-fly"; f.style.width = W + "px"; f.style.height = Hh + "px"; f.style.left = (innerWidth / 2 - W / 2) + "px"; f.style.top = (Math.max(140, innerHeight * 0.33) - Hh) + "px";   /* up in the film, over the name, where the drop falls */ f.appendChild(c);
+        const hi = document.createElement("span"); hi.className = "gd-fly-hi"; hi.textContent = T(`Hi! I'm Goccio.`, "Ciao! Sono Goccio."); f.appendChild(hi); document.body.appendChild(f);
+        ts.style.opacity = "0";   // the little one isn't there yet: it's this one
+        requestAnimationFrame(() => requestAnimationFrame(() => { f.classList.add("in"); dim.classList.add("in"); }));
+        setTimeout(() => hi.classList.add("in"), 900);
+        setTimeout(() => { hi.classList.remove("in");
+          // up into the pill: its body lands on the little one's, shrinking to its size on the way
+          const R = ts.getBoundingClientRect(), fr = f.getBoundingClientRect(), bx = fr.left + fr.width / 2, by = fr.top + fr.height * (41 / 60), sc = (R.width * 30 / 40) / (31 * gs);
+          f.style.transition = "transform .9s cubic-bezier(.5,-0.25,.3,1.1), opacity .25s ease .78s"; f.style.transformOrigin = `50% ${(41 / 60) * 100}%`;
+          f.style.transform = `translate(${(R.left + R.width / 2 - bx).toFixed(1)}px, ${(R.top + R.height / 2 - by).toFixed(1)}px) scale(${sc.toFixed(3)})`; f.style.opacity = "0"; dim.classList.remove("in");
+          setTimeout(() => { ts.style.opacity = ""; tb.hop && tb.hop(); tb.move && tb.move("ag-spin"); f.remove(); dim.remove(); setTimeout(then, 500); }, 900); }, 3400); };
+      if (tb && !seen) setTimeout(() => flyIn(() => { const r = tb.getBoundingClientRect(); if (talking || !r.width || tb.classList.contains("ag-gone")) return;
         try { localStorage.setItem("v60.gdIntro", "1"); } catch (e) {}
         const b = document.createElement("div"); b.className = "gd-intro"; b.setAttribute("role", "status");
         b.innerHTML = T("Hi, I’m Goccio, a little drop of coffee. Type in the box to search the coffees, or ask me anything about coffee. Tap me any time.", "Ciao, sono Goccio, una gocciolina di caffè. Scrivi nella barra per cercare tra i caffè, o chiedimi qualsiasi cosa sul caffè. Toccami quando vuoi.");
@@ -11585,7 +11629,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         document.body.appendChild(b); tb.hop && tb.hop();
         let t = 0; const bye = (e) => { if (e && e.target && b.contains(e.target) && e.target.closest("button")) return;   // the Allow button does its own closing
           clearTimeout(t); removeEventListener("pointerdown", bye, true); removeEventListener("keydown", bye, true); b.classList.add("out"); setTimeout(() => b.remove(), 400); };
-        t = setTimeout(bye, askMove ? 15000 : 9000); setTimeout(() => { addEventListener("pointerdown", bye, true); addEventListener("keydown", bye, true); }, 300); }, 1600); }
+        t = setTimeout(bye, askMove ? 15000 : 9000); setTimeout(() => { addEventListener("pointerdown", bye, true); addEventListener("keydown", bye, true); }, 300); }), 1600); }
     const isQuestion = (t) => /\?\s*$/.test(t) || /^(goccio\b|hey goccio|hi goccio|ciao goccio|what|why|how|who|where|when|which|is it|are|does|do i|can|should|tell me|explain|cos|perch[eé]|come mai|come si|quando|dove|chi|quant[oai])\b/i.test(t.trim());
     $("askForm").addEventListener("submit", (e) => { const a = $("askIn"), t = a.value.trim(); if (window.__gdSearching || !t || !isQuestion(t)) return;
       e.preventDefault(); e.stopImmediatePropagation(); a.value = ""; a.dispatchEvent(new Event("input", { bubbles: true })); a.blur();
