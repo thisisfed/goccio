@@ -11012,7 +11012,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const on = landedOn(best);
       const line = suits(best) ? pick([T(`${n} new coffees landed ${on}, and one's very you: ${what}.`, `${on[0].toUpperCase() + on.slice(1)} sono arrivati ${n} caffè nuovi, e uno è proprio per te: ${what}.`), T(`New ${on}, right up your street: ${what}.`, `Arrivato ${on}, proprio nel tuo stile: ${what}.`)])
         : pick([T(`${n} new coffees landed ${on}. One caught my eye: ${what}.`, `${on[0].toUpperCase() + on.slice(1)} sono arrivati ${n} caffè nuovi. Uno mi ha colpito: ${what}.`), T(`New ${on}: ${what}, and ${n - 1} more.`, `Novità di ${on}: ${what}, e altri ${n - 1}.`), T(`Guess what landed ${on}? ${what}.`, `Indovina cos'è arrivato ${on}? ${what}.`)]);
-      say(hi + " " + line, [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); search(shownName(best) + " " + best.roaster); } }], happy); ctx = { t: "pick", at: Date.now() }; };
+      say(hi + "\n" + line, [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); search(shownName(best) + " " + best.roaster); } }], happy); ctx = { t: "pick", at: Date.now() }; };
     // now and then, after an answer, it asks you something back: first what it doesn't know about you yet
     const askBack = () => { if (++sinceAsk < 2 || Math.random() > 0.55) return; sinceAsk = 0; const t0 = Date.now();
       const go = () => { if (Date.now() - t0 > 20000 || !talking) return; if (typing || sayEl.querySelector(".gd-typing")) return setTimeout(go, 300);
@@ -11045,7 +11045,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       return false; };
     const offer = (text, chips) => { const a = (chips || []).find((x) => x && typeof x === "object" && x.f); if (!a) return [text, chips];
       const many = /coffees|their|his|them|caff[eè]$|suoi|loro/i.test(a.t); pendingYes = a.f;
-      return [text + " " + (a.ask || (many ? T("Want to see them?", "Vuoi vederli?") : T("Want to see it?", "Vuoi vederlo?"))), [{ t: T("Yes", "Sì"), q: T("Yes", "Sì") }, ...chips.filter((x) => x !== a)]]; };
+      return [text + "\n" + (a.ask || (many ? T("Want to see them?", "Vuoi vederli?") : T("Want to see it?", "Vuoi vederlo?"))), [{ t: T("Yes", "Sì"), q: T("Yes", "Sì") }, ...chips.filter((x) => x !== a)]]; };   // the question on a line of its own
     // no hint buttons in the chat, ever: when Goccio offers choices it says them ("…: clean and bright, rich and full or easy?"),
     // and typing one (or something close) picks it, as a tap would have
     let pendingOpts = [];
