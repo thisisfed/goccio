@@ -10219,9 +10219,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const showOff = () => { if (still() || (opt.paused && opt.paused()) || solo) return; acting = false;   /* the hello's smile gives way to the show */ const r0 = el.getBoundingClientRect(); if (r0.bottom < 0 || r0.top > innerHeight) return;
       const tag0 = el.parentElement && el.parentElement.querySelector(".gd-beta"); if (tag0 && tag0.offsetWidth && Math.random() < 0.35) return laserBeta(false);   /* now and then the first show is the laser eyes on his tag */
       (window.gdOnce && window.gdOnce() ? rolypoly : [roll, backflip][Math.floor(Math.random() * 2)])(); };   /* the big show (coming right up to you) only if nothing has interrupted yet; otherwise a roll or a flip in its place */
-    // it falls the first time it comes into view
+    // the first time it comes into view it's simply there (it used to drop in from above): a moment later, its first show
     let fell = false;
-    const fall = () => { if (fell || still()) return; fell = true; setTimeout(() => { phase = "fall"; round = 1; y = -90; vy = 0; go(); }, opt.delay || 0); };
+    const fall = () => { if (fell || still()) return; fell = true; if (!landedOnce) { landedOnce = true; setTimeout(showOff, (opt.delay || 0) + 1600); } };
     if (!opt.manualFall && "IntersectionObserver" in window) new IntersectionObserver((es) => { if (es[0].isIntersecting && es[0].intersectionRatio > 0.6) fall(); }, { threshold: [0, 0.6, 1] }).observe(el);
     // the page moving: a fast lift. It squashes as the page speeds up (it feels heavier), stretches tall as it slows (lighter),
     // and rings in between. Scrolling down carries it up the screen, like a lift going up
