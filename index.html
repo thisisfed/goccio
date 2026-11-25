@@ -9311,9 +9311,17 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       if (false) { const k = shelf.filter((r) => r.roaster === shelfRo).length; return LANG === "it" ? `Cerca tra ${k} caffè` : `Search ${k} coffee${k === 1 ? "" : "s"}`; }   // on a roaster's page: that roaster's coffees
       const n = window.__coN || (typeof shelfPart !== "undefined" && shelfPart) || (typeof shelf !== "undefined" && shelf.length) || 0;   // the whole list, also while only its first part is in
       const box = document.getElementById("askIn"), nr = box && box.clientWidth && box.clientWidth < 290 ? 0 : (window.__roN || 0);   // and the roasters: "Search 8,757 coffees, 732 roasters" (a very narrow phone keeps just the coffees)
-      // one box for both: coffees to find, or a question for Goccio
-      const narrowAsk = box && box.clientWidth && box.clientWidth < 360;   /* a phone: the short form, so it never ends in "…" */
-      return n ? (LANG === "it" ? (narrowAsk ? "Cerca o chiedi a Goccio" : `Cerca tra ${n.toLocaleString("it-IT")} caffè o chiedi a Goccio`) : (narrowAsk ? "Search or ask Goccio" : `Search ${n.toLocaleString("en-GB")} coffees or ask Goccio`)) : T(HINT); };
+      // the size of the list: "Search 9,033 coffees from 754 roasters" (the roasters are left out until their count is in)
+      const r0 = window.__roN || 0, g = { useGrouping: "always" };
+      if (!n) return T(HINT);
+      const it = LANG === "it", N = n.toLocaleString(it ? "it-IT" : "en-GB", g), R = r0.toLocaleString(it ? "it-IT" : "en-GB", g);
+      // the whole line where it fits; a phone too narrow for it drops "Search", then the roasters, rather than ending in "…"
+      const forms = !r0 ? [it ? `Cerca tra ${N} caffè` : `Search ${N} coffees`]
+        : it ? [`Cerca tra ${N} caffè di ${R} torrefazioni`, `${N} caffè di ${R} torrefazioni`, `Cerca tra ${N} caffè`]
+             : [`Search ${N} coffees from ${R} roasters`, `${N} coffees from ${R} roasters`, `Search ${N} coffees`];
+      const room = ph.clientWidth; if (!room) return forms[0];
+      const m = document.createElement("span"); m.className = "ph-t ph-q"; m.style.cssText = "position:absolute;visibility:hidden;white-space:nowrap;width:auto"; ph.appendChild(m);
+      const pick = forms.find((t) => { m.textContent = t; return m.scrollWidth <= room; }) || forms[forms.length - 1]; m.remove(); return pick; };
     const settle = () => { if (calm) return; calm = true; roll(hintText(), true); };
     addEventListener("scroll", () => { if (scrollY > 80) settle(); }, { passive: true });
     a.addEventListener("focus", settle);
@@ -9593,7 +9601,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           if (window.__searchHint) try { window.__searchHint(); } catch (e) {}
           // the totals sit on a second line under today's news, now that a phone's search box no longer shows them
           const g0 = { useGrouping: "always" }, tot = it0 ? `${nC.toLocaleString(loc0, g0)} caffè, ${nR.toLocaleString(loc0, g0)} torrefazioni in totale.` : `${nC.toLocaleString(loc0)} coffees, ${nR.toLocaleString(loc0)} roasters in total.`;
-          if ($("wmTot")) { $("wmTot").textContent = tot; $("wmTot").hidden = false; }   // the totals: under the slogan
+          if ($("wmTot")) $("wmTot").hidden = true;   // the totals live in the search box now (25/11/2026), not under the slogan
           if ($("wmLive")) { $("wmLiveT").textContent = added; $("wmLive").hidden = !added; } } }
       renderShelfV();
       renderShelf();
