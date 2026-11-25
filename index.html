@@ -10822,7 +10822,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const gbName = (g) => g.r ? `${shownName(g.r)}` : (g.text || "").split(/[,.]/).slice(0, 2).map((x) => x.trim()).filter(Boolean).join(", ") || T("your coffee", "il tuo caffè");
     // the next question, or null when there's nothing left to ask
     // choices as a numbered list, one per row: answer with the number or in words
-    const gbList = (g, opts) => { g.opts = opts; return opts.map(([t], i) => `${i + 1}. ${t}`).join("\n"); };
+    const gbList = (g, opts) => { g.opts = opts; nextPills = opts; return ""; };   // the choices as pills under the question: tap one, or type
     // the amounts a brewer takes, in words people know: the grams and about how much it makes (or the pot, or the shot)
     const gbDoses = (B) => { const rt = (B.ratio && (B.ratio.balanced || B.ratio.light)) || 16; return B.doses.map(([d, lb]) => [B.shot ? T(`${d} g, ${d >= 18 ? "a double" : d <= 14 ? "a single" : "a big single"}`, `${d} g, ${d >= 18 ? "doppio" : "singolo"}`)
       : /cup/.test(lb) ? T(`${d} g, the ${lb} pot`, `${d} g, moka da ${lb.replace("-cup", "")}`) : T(`${d} g, about ${Math.round(d * rt / 10) * 10} ml${d === B.dose ? " (one mug)" : ""}`, `${d} g, circa ${Math.round(d * rt / 10) * 10} ml${d === B.dose ? " (una tazza)" : ""}`), `${d} g`]); };
@@ -10831,17 +10831,20 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       if (!g.r && !g.text) { g.step = "coffee"; return T("Which coffee? Tell me its name, what the bag says (roaster, origin, process, roast), or say 'pick one'.", "Quale caffè? Dimmi il nome, cosa dice il sacchetto (torrefazione, origine, processo, tostatura), o di' 'scegline uno'."); }
       if (!g.brewer) { g.step = "brewer"; const mb = gbMemBrewer();
         // no list to pick from: Goccio covers nearly every brewer, so it just asks; one it can't do gets told what it can (gbNoBrewer)
-        if (mb && !g.noMem) { g.yn = true; return T(`What are you brewing with? Your ${RECIPE_BREWERS[mb].name} again?`, `Con cosa lo prepari? Ancora il tuo ${RECIPE_BREWERS[mb].name}?`); }
+        if (mb && !g.noMem) { g.yn = true; return T(`What are you brewing with? Your ${RECIPE_BREWERS[mb].name} again?`, `Con cosa lo prepari? Ancora il tuo ${RECIPE_BREWERS[mb].name}?`) + gbList(g, [[T(`Yes, the ${RECIPE_BREWERS[mb].name}`, `Sì, il ${RECIPE_BREWERS[mb].name}`), "yes"], [T("Something else", "Un altro"), "no"]]); }
+        // your own brewers from My gear, as pills; any other one is typed
+        const own = ownBrewers().filter((k) => RECIPE_BREWERS[k] && k !== "cupping").slice(0, 5); if (own.length) gbList(g, own.map((k) => [RECIPE_BREWERS[k].name, RECIPE_BREWERS[k].name]));
         return T("What are you brewing with?", "Con cosa lo prepari?"); }
       if (!g.mill) { g.step = "mill"; const known = prefs.mill && prefs.mill !== "words" && GRINDERS[prefs.mill];
         // no list here either: any grinder named is looked up; "don't know" gets the grind in words, from fine to coarse
-        if (known && !g.noMill) { g.yn = true; return T(`And the grinder? Still the ${GRINDERS[prefs.mill].name}?`, `E il macinino? Sempre il ${GRINDERS[prefs.mill].name}?`); }
+        if (known && !g.noMill) { g.yn = true; return T(`And the grinder? Still the ${GRINDERS[prefs.mill].name}?`, `E il macinino? Sempre il ${GRINDERS[prefs.mill].name}?`) + gbList(g, [[T(`Yes, the ${GRINDERS[prefs.mill].short || GRINDERS[prefs.mill].name}`, `Sì, il ${GRINDERS[prefs.mill].short || GRINDERS[prefs.mill].name}`), "yes"], [T("A different one", "Un altro"), "no"]]); }
+        { let mine = []; try { mine = gear.grinders.filter((k) => GRINDERS[k] && k !== "words").slice(0, 4); } catch (e) {} if (mine.length) gbList(g, [...mine.map((k) => [GRINDERS[k].short || GRINDERS[k].name, GRINDERS[k].name]), [T("Not sure", "Non so"), "not sure"]]); }
         return T("Which grinder?", "Quale macinino?"); }
       const B = RECIPE_BREWERS[g.brewer];
-      if (!g.dose && !B.cup && B.doses.length > 1) { g.step = "dose"; return T(`How much coffee? The ${B.name} takes:`, `Quanto caffè? Il ${B.name} ne prende:`) + "\n" + gbList(g, gbDoses(B)) + "\n" + T("Pick a number, or say the grams.", "Scegli un numero, o dimmi i grammi."); }
+      if (!g.dose && !B.cup && B.doses.length > 1) { g.step = "dose"; return T(`How much coffee in the ${B.name}? Tap one, or say the grams.`, `Quanto caffè nel ${B.name}? Toccane uno, o dimmi i grammi.`) + gbList(g, gbDoses(B)); }
       const miss = gbMissing(g);
-      if (miss.includes("roast") && !g.roast) { g.step = "roast"; return T(`The ${g.r ? "listing" : "bag"} doesn't say the roast. How do the beans look?`, `${g.r ? "La scheda" : "Il sacchetto"} non dice la tostatura. Come sono i chicchi?`) + "\n" + gbList(g, [[T("Very light", "Molto chiara"), "very light"], [T("Light", "Chiara"), "light"], [T("Medium", "Media"), "medium"], [T("Medium-dark", "Medio-scura"), "medium-dark"], [T("Dark", "Scura"), "dark"], [T("Not sure", "Non so"), "not sure"]]); }
-      if (miss.includes("process") && !g.process) { g.step = "process"; return T("And the process?", "E il processo?") + "\n" + gbList(g, [[T("Washed", "Lavato"), "washed"], [T("Natural", "Naturale"), "natural"], ["Honey", "honey"], [T("Anaerobic", "Anaerobico"), "anaerobic"], [T("Co-ferment", "Co-fermentato"), "co-ferment"], [T("Decaf", "Decaffeinato"), "decaf"], [T("Not sure", "Non so"), "not sure"]]); }
+      if (miss.includes("roast") && !g.roast) { g.step = "roast"; return T(`The ${g.r ? "listing" : "bag"} doesn't say the roast. How do the beans look?`, `${g.r ? "La scheda" : "Il sacchetto"} non dice la tostatura. Come sono i chicchi?`) + gbList(g, [[T("Very light", "Molto chiara"), "very light"], [T("Light", "Chiara"), "light"], [T("Medium", "Media"), "medium"], [T("Medium-dark", "Medio-scura"), "medium-dark"], [T("Dark", "Scura"), "dark"], [T("Not sure", "Non so"), "not sure"]]); }
+      if (miss.includes("process") && !g.process) { g.step = "process"; return T("And the process?", "E il processo?") + gbList(g, [[T("Washed", "Lavato"), "washed"], [T("Natural", "Naturale"), "natural"], ["Honey", "honey"], [T("Anaerobic", "Anaerobico"), "anaerobic"], [T("Co-ferment", "Co-fermentato"), "co-ferment"], [T("Decaf", "Decaffeinato"), "decaf"], [T("Not sure", "Non so"), "not sure"]]); }
       g.step = null; return null; };
     // everything answered: open the recipe with it all set
     const gbFinish = (g, pre) => { gbs = null; const B = RECIPE_BREWERS[g.brewer], M = g.mill !== "words" ? GRINDERS[g.mill] : null;
@@ -10927,7 +10930,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         if (p.origin || p.process || p.roast || p.roaster || ro || (g.tries >= 1 && !isQ && q.split(/\s+/).length >= 2)) { g.text = q; g.tries = 0; gbGo(g, T("Got it.", "Capito.")); return true; }
         if (isQ) { gbs = null; return false; } g.tries++; say(T("I can't find that one on Goccio. Tell me what the bag says, like 'XYZ Roastery, Ethiopia, washed, light roast'.", "Non lo trovo su Goccio. Dimmi cosa dice il sacchetto, tipo 'XYZ Roastery, Etiopia, lavato, tostatura chiara'."), null, hmm); return true; }
       if ((g.step === "brewer" || g.step === "mill") && g.opts && !g.yn && /^(no|nope|nah|none of (these|them))[ .!]*$/i.test(ql)) return miss();
-      if ((g.step === "brewer" || g.step === "mill") && (!g.opts || g.yn) && /^(no|nope|nah|not this time|different|another|other|altro|un altro)\b/i.test(ql)) { if (g.step === "brewer") g.noMem = true; else g.noMill = true; g.tries = 0; gbGo(g, T("Okay.", "Ok.")); return true; }
+      if ((g.step === "brewer" || g.step === "mill") && (!g.opts || g.yn) && /^(no|nope|nah|not this time|different|another|other|something else|a different one|altro|un altro)\b/i.test(ql)) { if (g.step === "brewer") g.noMem = true; else g.noMill = true; g.tries = 0; gbGo(g, T("Okay.", "Ok.")); return true; }
       if (g.step === "brewer") { const k = gbBrewer(q) || (yes && gbMemBrewer());
         if (!k) { g.tries++; if (isQ || g.tries > 2) { gbs = null; return false; } say(gbNoBrewer(), null, hmm); return true; } g.brewer = k; g.tries = 0; gbGo(g, pick([T("Nice.", "Bello."), T("Good one.", "Ottimo."), T("Lovely.", "Perfetto.")])); return true; }
       if (g.step === "mill") { let k = gbMill(q);
@@ -10941,7 +10944,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         let d = null;
         if (gm) { const x = parseFloat(gm[1].replace(",", ".")), ds = B.doses.map(([v]) => v);
           if (!ds.includes(x)) { const lo = Math.min(...ds), hi = Math.max(...ds), nr = near(x); g.tries = 0;
-            say(T(`The ${B.name} takes ${lo} to ${hi} g here, so ${x} g ${x > hi ? "would overflow it" : x < lo ? "is too little for it" : "isn't one of its doses"}. The closest is ${nr} g. Which one?`, `Il ${B.name} qui prende da ${lo} a ${hi} g, quindi ${x} g ${x > hi ? "lo farebbe traboccare" : x < lo ? "sono troppo pochi" : "non è una delle sue dosi"}. Il più vicino è ${nr} g. Quale?`) + "\n" + gbList(g, gbDoses(B)), null, hmm); return true; }
+            say(T(`The ${B.name} takes ${lo} to ${hi} g here, so ${x} g ${x > hi ? "would overflow it" : x < lo ? "is too little for it" : "isn't one of its doses"}. The closest is ${nr} g. Which one?`, `Il ${B.name} qui prende da ${lo} a ${hi} g, quindi ${x} g ${x > hi ? "lo farebbe traboccare" : x < lo ? "sono troppo pochi" : "non è una delle sue dosi"}. Il più vicino è ${nr} g. Quale?`) + gbList(g, gbDoses(B)), null, hmm); return true; }
           d = x; }
         else if (g.brewer === "moka" && /\b(1|one|una?)\b/.test(ql)) d = 7; else if (g.brewer === "moka" && /\b(6|six|sei)\b/.test(ql)) d = 30; else if (g.brewer === "moka" && /\b(3|three|tre)\b/.test(ql)) d = 16;
         else if (cm) { const n = { one: 1, a: 1, single: 1, una: 1, un: 1, singolo: 1, two: 2, double: 2, due: 2, doppio: 2, three: 3, tre: 3, four: 4, quattro: 4, six: 6, sei: 6 }[cm[1]] || +cm[1] || 1;
@@ -11008,11 +11011,14 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const say1 = pendingOpts.map((x) => typeof x === "string" ? x : x.t).filter((t) => t && !/\?\s*$/.test(t) && !/^(another one|un altro|skip|salta)$/i.test(t));
       if (say1.length < 2) return text; const list = orList(say1.map(lc));
       return /\?\s*$/.test(text) ? text.replace(/\?\s*$/, ": " + list + "?") : text + " " + T("For example: ", "Per esempio: ") + list + "."; };
+    let nextPills = null;
+    const showPills = (opts) => { chipsEl.textContent = ""; opts.forEach(([t, v]) => { const b = document.createElement("button"); b.type = "button"; b.textContent = t;
+        b.onclick = () => { chipsEl.textContent = ""; addMsg("me", t); ask(v, true); }; chipsEl.appendChild(b); }); };   // your tap shows as your answer; what's sent is the plain value
     const sayNow = (text, chips, mood) => { pendingYes = null; ctxFrom(text); [text, chips] = offer(text, chips); text = voice(text, chips); chips = null; text = tidy(text); sayGen++; finishTyping(); const m = addMsg("it", ""); m._rec.t = text; saveChat(); typing = { m, text, top: replyTo }; let k = 0; bob(true);
       const anchor = replyTo && replyTo.isConnected ? replyTo : m; requestAnimationFrame(() => toTop(anchor, true));   // your question at the top, the answer filling in below it
       // as the answer grows it keeps your question pinned at the top, until it reaches it or you scroll the chat yourself
       typeT = setInterval(() => { k += 2; m.textContent = text.slice(0, k); if (typing && !typing.free && k % 8 === 0) toTop(anchor); if (k >= text.length) { if (typing && !typing.free) toTop(anchor); finishTyping(); } }, 24);
-      showChips(chips); if (mood) mood(); };
+      showChips(chips); if (nextPills) { const pl = nextPills; nextPills = null; showPills(pl); } if (mood) mood(); };
     // the sample questions: a fresh mix each time, one from each kind, so you get an idea of everything it knows
     const POOL = () => ({
       find: [T("What's new?", "Cosa c'è di nuovo?"), T("Surprise me", "Sorprendimi"), T("Something fruity?", "Qualcosa di fruttato?"), T("What's the best coffee?", "Qual è il caffè migliore?")],
