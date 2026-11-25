@@ -10068,7 +10068,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         const row = last && (last.querySelector(":scope > .r") || last), lim = row ? (row === last ? row.getBoundingClientRect().bottom : row.getBoundingClientRect().top - 12) : Infinity;   /* its line stays 12 px over the buttons */
         const dy = Math.min(0, lim - (t + h.offsetHeight));
         if (Math.abs(dy - was) > 0.25) { h.dataset.dy = dy.toFixed(1); h.style.transform = dy ? `translateY(${dy.toFixed(1)}px)` : ""; }
-        h.classList.toggle("stuck", Math.abs(t - t0) < 1.5); }); };
+        h.classList.toggle("stuck", t <= t0 + 1.5); }); };   /* pinned (or held there by the list) and on its way out: the strip over it stays filled, so nothing peeks between it and the bar */
     addEventListener("scroll", () => { if (!q0) q0 = requestAnimationFrame(mark); }, { passive: true });
     addEventListener("resize", () => { if (!q0) q0 = requestAnimationFrame(mark); }, { passive: true }); }
   const makeBuddy = (el, opt = {}) => { const body = el && el.querySelector(".gd-b"), eyes = el && el.querySelector(".gd-e"), all = el && el.querySelector(".gd-all"); if (!el || !body || !all) return null;
