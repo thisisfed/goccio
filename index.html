@@ -5665,7 +5665,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   }
 
   // ---------- water ----------
-  const WATER_TIP = `<span class="tech-w">Use filtered or soft bottled water.</span>`;
+  const WATER_TIP = "";   // the water line now sits with the other notes over How to pour (#consTop), all together at the top
   const WATER = [["soft", "Soft / Filtered"], ["hard", "Hard tap (London / SE England)"], ["custom", "Custom"]];
 
   /* Water by postcode: the postcode area's typical tap water, as CaCO₃ (hardness, alkalinity).
@@ -6024,9 +6024,12 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         /* every line has its own way to fix it, as when it stands alone: Process not stated. Say what the bag says. */
         const ask = a || (() => { const x = document.createElement("a"); x.href = "#"; x.className = "why-ask"; x.onclick = (ev) => { ev.preventDefault(); bagAskShow = true; render(); }; return x; })();
         ask.textContent = LANG === "it" ? "Di’ cosa dice la busta." : "Say what the bag says."; p.appendChild(ask);
-        ct.appendChild(p); }); ct.hidden = !ct.childElementCount;
+        ct.appendChild(p); });
       /* asked for: the words give way to the question itself, right here: Roast, Scan the beans, + 5 */
-      if (D && bagAskShow && !D.hidden && D.textContent.trim() && !ct.hidden) { ct.textContent = ""; ct.appendChild(D); } }
+      if (D && bagAskShow && !D.hidden && D.textContent.trim() && ct.childElementCount) { ct.textContent = ""; ct.appendChild(D); }
+      /* and the water, last of the notes, under the same triangle: every recipe's warnings sit together, here at the top, not one of them down in the pour */
+      { const w = document.createElement("p"); w.className = "cons-top cons-w"; w.textContent = LANG === "it" ? "Usa acqua filtrata o un’acqua in bottiglia poco dura." : "Use filtered or soft bottled water."; ct.appendChild(w); }
+      ct.hidden = !ct.childElementCount; }
     // "Label: text" lines bold the label; a line with no label (the roast note) is shown as it is
     // the roaster's notes (or the typical ones) lead, then the rest, all in view
     const xli = (w) => { const i = w.indexOf(": "); if (i < 1 || i > 60) return `<li>${esc(w)}</li>`;
@@ -8263,6 +8266,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const side = Math.max(8, row.getBoundingClientRect().left), gap = cw.getBoundingClientRect().top + scrollY + 4 - tp.getBoundingClientRect().bottom;   // + 4: the line box's top to the capitals
       if (Math.abs(gap - side) > .5) sh.style.setProperty("margin-top", (parseFloat(getComputedStyle(sh).marginTop) + side - gap) + "px", "important"); if (first || scrollY < 0) top0(); } catch (e) {} };
     fit(true); requestAnimationFrame(() => fit(false)); setTimeout(() => fit(false), 350); setTimeout(() => fit(false), 1000);
+    // measured again when the chat sets a coffee up out of sight and then shows it (the list may have drawn the coffee anew by then)
+    window.__brewFit = () => { try { const rw = document.querySelector(".item.brewing"), sh = $("shelves"), tp = document.querySelector(".top"); if (!rw || !sh || !tp) return; const cw = rw.querySelector(".c-where") || rw;
+      top0(); const side = Math.max(8, rw.getBoundingClientRect().left), gap = cw.getBoundingClientRect().top + scrollY + 4 - tp.getBoundingClientRect().bottom;
+      if (Math.abs(gap - side) > .5) sh.style.setProperty("margin-top", (parseFloat(getComputedStyle(sh).marginTop) + side - gap) + "px", "important"); top0(); } catch (e) {} };
     // the coffee travels from where it was tapped to the top of the page, unhurried: no jump cut
     try { const dy = y0 - row.getBoundingClientRect().top; if (Math.abs(dy) > 2 && !matchMedia("(prefers-reduced-motion: reduce)").matches) { const dur = Math.min(900, 420 + Math.abs(dy) * .6), an = row.animate([{ transform: `translateY(${dy}px)` }, { transform: "none" }], { duration: dur, easing: "cubic-bezier(.3,.7,.2,1)" });
         setTimeout(() => { try { if (an.playState !== "finished") an.finish(); } catch (e) {} }, dur + 150); an.finished.then(() => fit(false)).catch(() => {}); } } catch (e) {} }   /* a travel that stalls (a phone saving power) is ended: the coffee never rests part-way down */
@@ -10766,6 +10773,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     let gbs = null;
     const GB_BREW = [[/\bv60 ?neo\b|\bneo\b/i, "neo"], [/\bv60\b|hario v|\bcone\b/i, "v60"], [/kalita|\bwave\b/i, "kalita"], [/april/i, "april"], [/\borea\b/i, "orea"], [/melitta/i, "melitta"], [/chemex/i, "chemex"], [/origami/i, "origami"], [/\bswitch\b/i, "switch"], [/clever/i, "clever"], [/aero ?press|\baero\b/i, "aero"], [/french press|cafeti[eè]re|\bpress\b|plunger/i, "press"], [/cold brew/i, "cold"], [/espresso|\bmachine\b|gaggia|lelit|rancilio|la marzocco|breville|sage/i, "espresso"], [/moccamaster|filter machine|batch/i, "mocca"], [/\bmoka\b|bialetti|caffettiera/i, "moka"], [/cupping/i, "cupping"], [/pour.?over|\bfilter\b|\bfiltro\b/i, "v60"]];
     const GB_WORD = { v60: "v60", aero: "aeropress", press: "french press", kalita: "kalita", chemex: "chemex", origami: "origami", clever: "clever", switch: "switch", moka: "moka", espresso: "espresso", cold: "cold brew", orea: "orea", melitta: "melitta", mocca: "moccamaster" };
+    // a brewer Goccio has no recipe for: say so, and what it can set up instead
+    const gbNoBrewer = () => { const seen = new Set(), names = GB_BREW.map(([, k]) => k).filter((k) => k !== "cupping" && RECIPE_BREWERS[k] && !seen.has(k) && seen.add(k)).map((k) => RECIPE_BREWERS[k].name);
+      const list = names.slice(0, -1).join(", ") + (LANG === "it" ? " e " : " and ") + names[names.length - 1];
+      return T(`I don't have a recipe for that one yet. I can set you up for ${list}. Which is closest to yours?`, `Per quello non ho ancora una ricetta. Posso prepararti ${list}. Quale somiglia di più al tuo?`); };
     const gbBrewer = (q) => { for (const [re, k] of GB_BREW) if (re.test(q) && RECIPE_BREWERS[k]) return k; return null; };
     const gbMemBrewer = () => mem.brewer ? gbBrewer(mem.brewer) : null;
     const GB_BRANDS = new Set(["1zpresso", "timemore", "baratza", "fellow", "mahlkonig", "mahlkönig", "turin", "sage", "breville", "wilfa", "kingrinder", "hario", "gen", "pro", "plus", "the", "and", "esp", "s", "other", "grinder"]);
@@ -10788,8 +10799,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       g.opts = null; g.yn = false;
       if (!g.r && !g.text) { g.step = "coffee"; return T("Which coffee? Tell me its name, what the bag says (roaster, origin, process, roast), or say 'pick one'.", "Quale caffè? Dimmi il nome, cosa dice il sacchetto (torrefazione, origine, processo, tostatura), o di' 'scegline uno'."); }
       if (!g.brewer) { g.step = "brewer"; const mb = gbMemBrewer();
-        if (mb && !g.noMem) { g.yn = true; return T(`What are you brewing with? Your ${RECIPE_BREWERS[mb].name} again?`, `Con cosa lo prepari? Ancora il tuo ${RECIPE_BREWERS[mb].name}?`) + "\n" + gbList(g, [[T(`Yes, the ${RECIPE_BREWERS[mb].name}`, `Sì, il ${RECIPE_BREWERS[mb].name}`), "yes"], [T("Something else", "Un altro"), "no"]]); }
-        return T("What are you brewing with?", "Con cosa lo prepari?") + "\n" + gbList(g, [["V60", "v60"], ["AeroPress", "aeropress"], ["Chemex", "chemex"], ["French press", "french press"], [T("Espresso machine", "Macchina espresso"), "espresso"], [T("Moka pot", "Moka"), "moka"]]) + "\n" + T("Or name another.", "O dimmene un altro."); }
+        // no list to pick from: Goccio covers nearly every brewer, so it just asks; one it can't do gets told what it can (gbNoBrewer)
+        if (mb && !g.noMem) { g.yn = true; return T(`What are you brewing with? Your ${RECIPE_BREWERS[mb].name} again?`, `Con cosa lo prepari? Ancora il tuo ${RECIPE_BREWERS[mb].name}?`); }
+        return T("What are you brewing with?", "Con cosa lo prepari?"); }
       if (!g.mill) { g.step = "mill"; const known = prefs.mill && prefs.mill !== "words" && GRINDERS[prefs.mill];
         if (known && !g.noMill) { g.yn = true; return T(`And the grinder? Still the ${GRINDERS[prefs.mill].name}?`, `E il macinino? Sempre il ${GRINDERS[prefs.mill].name}?`) + "\n" + gbList(g, [[T(`Yes, the ${GRINDERS[prefs.mill].short || GRINDERS[prefs.mill].name}`, `Sì, il ${GRINDERS[prefs.mill].short || GRINDERS[prefs.mill].name}`), "yes"], [T("A different one", "Un altro"), "no"]]); }
         return T("Which grinder?", "Quale macinino?") + "\n" + gbList(g, [["Comandante C40", "comandante c40"], ["1Zpresso K-Ultra", "k-ultra"], ["Timemore C3", "timemore c3"], ["Baratza Encore ESP", "encore esp"], ["Fellow Opus", "fellow opus"], [T("None, it's pre-ground", "Nessuno, è già macinato"), "none"]]) + "\n" + T("Or name another.", "O dimmene un altro."); }
@@ -10811,8 +10823,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       // the page is set up out of sight (coffee, brewer, grinder, dose, roast, process, rows hidden), then shown once: no numbers changing in front of you
       setTimeout(() => { const H = document.documentElement; H.classList.add("gd-landing", "gd-set"); kitOn();
         let shown = false; const show = () => { if (shown) return; shown = true; document.querySelectorAll(".spec.chg").forEach((x) => x.classList.remove("chg")); window.__specFlash = 0;
-          { const it = document.querySelector(".item.brewing"), tb = document.querySelector(".top"); if (it && tb) { const dd = it.getBoundingClientRect().top - (tb.getBoundingClientRect().bottom - 4); if (Math.abs(dd) > 1) window.scrollTo({ top: scrollY + dd, behavior: "instant" }); } }   /* the coffee sits where a coffee opened by hand does, not squeezed up under the bar */
-          H.classList.add("gd-landed"); H.classList.remove("gd-landing"); setTimeout(() => H.classList.remove("gd-landed"), 400); };
+          { const it = document.querySelector(".item.brewing"); if (it && document.documentElement.classList.contains("brew-in")) { try { scrollTo({ top: 0, left: 0, behavior: "instant" }); } catch (e) { scrollTo(0, 0); } } }   /* the open coffee starts the page, with the same room under the bar as one opened by hand */   /* the coffee sits where a coffee opened by hand does, not squeezed up under the bar */
+          H.classList.add("gd-landed"); H.classList.remove("gd-landing"); if (window.__brewFit) { window.__brewFit(); requestAnimationFrame(() => window.__brewFit()); setTimeout(() => window.__brewFit(), 500); } setTimeout(() => H.classList.remove("gd-landed"), 400); };
         const done = () => { beanOn(); setTimeout(() => requestAnimationFrame(() => requestAnimationFrame(show)), 450); };
         if (g.r) brewIt(g.r, done);
         else { closeTalk(); try { mineOn(); } catch (e) {} $("coffeeIn").value = g.text; build(); done(); }
@@ -10839,8 +10851,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     { let shown = false, pk = null;
       const coffeeOpen = () => { const b = state && state.bag; if (!b || !b.name) return null; return (typeof shelf !== "undefined" ? shelf : []).find((r) => r.name === b.name && r.roaster === b.roaster) || null; };
       const hide = () => { if (!pk) return; const p0 = pk; pk = null; p0.classList.remove("in"); setTimeout(() => p0.remove(), 450); };
-      const peek = () => { const H = document.documentElement; if (shown || talking || !H.classList.contains("brew-in") || H.classList.contains("gd-set") || H.classList.contains("brew-on")) return;
-        const r = coffeeOpen(), head = document.querySelector(".item.brewing #recipe .sec-head"); if (!r || !head || !(window.gdOnce && window.gdOnce("offer"))) return; shown = true;
+      const peek = () => { const H = document.documentElement; if (pk || talking || !H.classList.contains("brew-in") || H.classList.contains("gd-set") || H.classList.contains("brew-on")) return;
+        const r = coffeeOpen(), head = document.querySelector(".item.brewing #recipe .sec-head"); if (!r || !head) return; shown = true;   // every Brew tapped: the offer each time (asked 25/11/2026), not once a visit
         // the little Goccio up in the top bar says it, in a small bubble just under him (over the coffee's name, never the recipe);
         // it goes by itself after a few seconds, or at a scroll. With him not in the bar, the offer sits in the page as before
         const tb = $("askGoccio"), tr = tb && !tb.classList.contains("ag-gone") ? tb.getBoundingClientRect() : null;
@@ -10860,7 +10872,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         pk.onclick = () => { hide(); openTalk(true); setTimeout(() => gbStart(r), 350); };
         head.before(pk); requestAnimationFrame(() => requestAnimationFrame(() => pk && pk.classList.add("in"))); };
       // a coffee's Brew tapped by you (not by the chat): a moment to take in the recipe, then the offer
-      document.addEventListener("click", (e) => { if (!e.isTrusted || shown) return; if (e.target.closest && e.target.closest("#shelf .item .btn[data-i], #bags .btn")) setTimeout(peek, 1500); }, true);
+      document.addEventListener("click", (e) => { if (!e.isTrusted) return; if (e.target.closest && e.target.closest("#shelf .item .btn[data-i], #bags .btn")) setTimeout(peek, 1500); }, true);
       new MutationObserver(() => { const H = document.documentElement; if (pk && (!H.classList.contains("brew-in") || H.classList.contains("brew-on") || H.classList.contains("gd-full"))) hide(); }).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] }); }
     // an answer to the question asked; false hands the message back to the rest of the chat
     const gbAnswer = (q) => { const g = gbs; let ql = q.toLowerCase().trim();
@@ -10885,7 +10897,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       if ((g.step === "brewer" || g.step === "mill") && g.opts && !g.yn && /^(no|nope|nah|none of (these|them))[ .!]*$/i.test(ql)) return miss();
       if ((g.step === "brewer" || g.step === "mill") && (!g.opts || g.yn) && /^(no|nope|nah|not this time|different|another|other|altro|un altro)\b/i.test(ql)) { if (g.step === "brewer") g.noMem = true; else g.noMill = true; g.tries = 0; gbGo(g, T("Okay.", "Ok.")); return true; }
       if (g.step === "brewer") { const k = gbBrewer(q) || (yes && gbMemBrewer());
-        if (!k) return miss(); g.brewer = k; g.tries = 0; gbGo(g, pick([T("Nice.", "Bello."), T("Good one.", "Ottimo."), T("Lovely.", "Perfetto.")])); return true; }
+        if (!k) { g.tries++; if (isQ || g.tries > 2) { gbs = null; return false; } say(gbNoBrewer(), null, hmm); return true; } g.brewer = k; g.tries = 0; gbGo(g, pick([T("Nice.", "Bello."), T("Good one.", "Ottimo."), T("Lovely.", "Perfetto.")])); return true; }
       if (g.step === "mill") { let k = gbMill(q);
         if (!k && yes && prefs.mill && GRINDERS[prefs.mill]) k = prefs.mill;
         if (!k && /\b(none|no grinder|don'?t have|pre.?ground|ground|nessuno|non ce l'?ho|gi[aà] macinato|macinato)\b/i.test(ql)) { g.mill = "words"; g.millNote = T("pre-ground", "già macinato"); g.tries = 0; gbGo(g, T(`No grinder, no problem: ask the roaster to grind it for ${RECIPE_BREWERS[g.brewer].name}.`, `Senza macinino va bene: chiedi alla torrefazione di macinarlo per ${RECIPE_BREWERS[g.brewer].name}.`)); return true; }
