@@ -2977,8 +2977,14 @@ html body .gd-offer{display:flex;align-items:center;gap:10px;width:100%;margin:0
 html body .gd-offer.in{max-height:80px;opacity:1;transform:none}
 /* the little Goccio's word from the top bar: a small bubble under him, its tail pointing up at him */
 html body .gd-tip{position:fixed;z-index:60;max-width:min(250px,calc(100vw - 24px));padding:10px 14px;border:0;border-radius:18px;background:var(--pill);color:var(--ink);font:500 15px/1.35 var(--sans);text-align:left;cursor:pointer;box-shadow:0 10px 30px rgba(0,0,0,.45);opacity:0;transform:translateY(-6px) scale(.92);transform-origin:calc(100% - var(--tail,22px)) 0;transition:opacity .25s ease,transform .45s cubic-bezier(.3,1.5,.5,1)}
-html body .gd-tip::before{content:"";position:absolute;top:-6px;right:calc(var(--tail,22px) - 7px);width:14px;height:14px;background:inherit;border-radius:3px;transform:rotate(45deg)}
-html body .gd-tip.in{opacity:1;transform:none}
+html body .gd-tip::before{display:none}
+/* the same bubble as Goccio's in the chat (padding, rounding, the soft top light), its corner squared towards him as the chat's is towards
+   the sender; ringed in the site's orange with a warm glow that pulses twice, so it stands out from the page it floats over */
+html body .gd-tip{padding:8px 12px!important;border-radius:16px!important;border-top-right-radius:4px!important;
+  background:var(--pill) linear-gradient(180deg,color-mix(in srgb,#fff 7%,transparent),transparent 70%)!important;
+  box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 10%,transparent),0 0 0 1.5px var(--hl),0 0 18px color-mix(in srgb,var(--hl) 45%,transparent),0 10px 30px rgba(0,0,0,.55)!important}
+html body .gd-tip.in{opacity:1;transform:none;animation:gdTipGlow 1.4s ease-in-out .5s 2}
+@keyframes gdTipGlow{50%{box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 10%,transparent),0 0 0 2px var(--hl),0 0 30px color-mix(in srgb,var(--hl) 75%,transparent),0 10px 30px rgba(0,0,0,.55)}}
 @media (prefers-reduced-motion:reduce){html body .gd-tip{transition:opacity .2s}}
 html body .gd-offer svg{width:28px;height:28px;flex:none;transform:translateX(-40px) rotate(-30deg);transition:transform .7s cubic-bezier(.3,1.5,.5,1) .2s}
 html body .gd-offer.in svg{transform:none}
