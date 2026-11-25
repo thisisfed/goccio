@@ -2870,6 +2870,17 @@ html body .top #toolsBtn.spit{animation:agSpit .4s cubic-bezier(.3,1.5,.5,1)}
   html body .ask-line .ask-goccio.ag-out svg{animation:agSpinFast .7s cubic-bezier(.15,.7,.3,1) both}   /* out of the +: a fast spin as it lands in place */
 }
 @keyframes agOut{0%{transform:translateX(10px) scale(.3,.5);opacity:0}18%{opacity:1}40%{transform:translateX(-3px) scale(1.25,.78)}58%{transform:translateX(1px) scale(.88,1.12)}74%{transform:scale(1.06,.95)}88%{transform:scale(.98,1.02)}100%{transform:none;opacity:1}}
+/* typing in the search box: it stretches longer and squeezes the pills on its right, on the same liquid spring as the + (and back on the way out) */
+@supports (transition-timing-function:linear(0,1)){
+  html body .top .ask-line{transition:opacity .25s ease, transform .25s ease, right .941s linear(0,0.065,0.213,0.39,0.564,0.715,0.836,0.924,0.984,1.021,1.039,1.045,1.043,1.037,1.029,1.021,1.014,1.008,1.004,1.001,0.999,0.998,0.998,0.998,0.998), visibility 0s linear 0s!important}
+  html body .top .ask-line .ask-goccio svg{transition:scale .941s linear(0,0.065,0.213,0.39,0.564,0.715,0.836,0.924,0.984,1.021,1.039,1.045,1.043,1.037,1.029,1.021,1.014,1.008,1.004,1.001,0.999,0.998,0.998,0.998,0.998)}
+  html body .top #toolsBtn{transition:scale .941s linear(0,0.065,0.213,0.39,0.564,0.715,0.836,0.924,0.984,1.021,1.039,1.045,1.043,1.037,1.029,1.021,1.014,1.008,1.004,1.001,0.999,0.998,0.998,0.998,0.998), background .2s ease}
+  html body .top:has(#askIn:focus) .ask-line{right:calc(var(--nav-w,90px) - 12px)!important}
+  html body .top:has(#askIn:focus) .ask-line .ask-goccio:not(.ag-gone){width:22px}
+  html body .top:has(#askIn:focus) .ask-line .ask-goccio svg{scale:.66 1}
+  html body .top:has(#askIn:focus) #toolsBtn{scale:.62 1;transform-origin:100% 50%}
+}
+@media (prefers-reduced-motion:reduce){html body .top .ask-line,html body .top .ask-line .ask-goccio svg,html body .top #toolsBtn{transition:none!important}}
 @keyframes agSpinFast{0%{transform:rotate(-720deg) scale(.5)}60%{transform:rotate(-40deg) scale(1.08)}100%{transform:none}}
 @keyframes agSpit{0%{scale:1}30%{scale:.88 1.1}65%{scale:1.05 .97}100%{scale:1}}
 @keyframes agGulp{0%{scale:1}35%{scale:1.14 .9}70%{scale:.96 1.05}100%{scale:1}}
@@ -9939,7 +9950,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     load(0); let k = 0, last = 0;
     const tick = (t) => { if (document.documentElement.classList.contains("wait")) return requestAnimationFrame(tick);
       if (window.__heroOff) { last = t; return requestAnimationFrame(tick); }   // off screen: the ripples wait
-      if (t - last >= 1000 / FPS - 2) { if (draw(k)) { k++; last = t; if (k >= N) k = LOOP; } }   // a sheet still on its way: hold the frame, don't skip
+      if (t - last >= 1000 / FPS - 2) { if (draw(k)) { k++; last = t; if (k < LOOP) window.__filmT = k / FPS; else if (window.__filmT != null) { window.__filmT = null; dispatchEvent(new Event("goccio-film-end")); } if (k >= N) k = LOOP; } }   // where the drop is, for the little Goccio watching it   // a sheet still on its way: hold the frame, don't skip
       requestAnimationFrame(tick); };
     requestAnimationFrame(tick); };
   { const v = $("wmVideo"), h = document.querySelector(".wm-screen"); if (v && h) { const fit = () => {
@@ -10107,18 +10118,33 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // roly-poly: a crouch, then forward roly-polies in place, the face rolling under and coming back over the top; a splat and happy eyes
     const rolypoly = () => act(async () => { tween("aRest", -0.16, 180); await face({ eyeL: 0.7, eyeR: 0.7 }, 180); rigid = true; a = S.aRest = 0; va = 0; lean = 0; vl = 0; leanTo = 0;
       // each roll brings it towards you: it grows and comes a little down the screen, as if nearer
-      const near = !still(); if (near) { el.style.transformOrigin = "50% 100%"; el.style.zIndex = "45"; el.style.transition = "scale 1.3s cubic-bezier(.45,0,.55,1), translate 1.3s cubic-bezier(.45,0,.55,1)"; el.style.scale = "2.3"; el.style.translate = "0 46px"; }
+      const near = !still(); if (near) { el.style.transformOrigin = "50% 100%"; el.style.zIndex = "45"; el.style.transition = "scale 1.3s cubic-bezier(.45,0,.55,1), translate 1.3s cubic-bezier(.45,0,.55,1)"; el.style.scale = "3.4"; el.style.translate = `0 ${Math.min(90, roomBelow())}px`; }
       // two roly-polies in one go, no stop between, coming much closer as it rolls
       jv = -150; go(); setTimeout(() => { jv = -150; go(); }, 650); await tween("tumble", 2, 1300);
       S.tumble = 0; rigid = false; poke(-3); await face({ happy: 1, eyeL: 1, eyeR: 1 }, 140); await wait(450);
       // then hops back to its place: two hops, shrinking back
       if (near) { el.style.transition = "scale .38s cubic-bezier(.3,.7,.4,1), translate .38s cubic-bezier(.3,.7,.4,1)";
-        jv = -260; go(); el.style.scale = "1.5"; el.style.translate = "0 18px"; await wait(420); jv = -220; go(); el.style.scale = "1"; el.style.translate = "0 0"; await wait(440); poke(-1.8);
+        jv = -260; go(); el.style.scale = "2"; el.style.translate = `0 ${Math.min(40, roomBelow())}px`; await wait(420); jv = -240; go(); el.style.scale = "1.35"; el.style.translate = `0 ${Math.min(14, roomBelow())}px`; await wait(420); jv = -200; go(); el.style.scale = "1"; el.style.translate = "0 0"; await wait(440); poke(-1.8);
         el.style.transition = ""; el.style.zIndex = ""; el.style.scale = ""; el.style.translate = ""; }
       await wait(300); });
     // cross-eyed: both eyes slide in and meet in the middle, a little wobble, then back with a blink
     const crossEyes = (ms) => act(async () => { await tween("cross", 1, 260); for (let i = 0; i < 3; i++) { leanTo = i % 2 ? 1 : -1; go(); await wait((ms || 1500) / 3); } leanTo = 0;
       await tween("cross", 0, 220); blink = 0.12; draw(); await wait(120); blink = 1; draw(); });
+    // coming up to you (it moves in front of everything, growing from its base as if nearer, then goes back)
+    // it comes down the screen as it nears, but never past the bottom edge: its base stays on screen
+    const roomBelow = () => { if (!el.style.scale) el._base = el.getBoundingClientRect().bottom; return Math.max(0, innerHeight - 14 - (el._base || innerHeight)); };
+    const nearTo = (sc, dy, ms, ez) => { dy = Math.min(dy, roomBelow()); el.style.transformOrigin = "50% 100%"; el.style.zIndex = "45"; el.style.transition = `scale ${ms}ms ${ez || "cubic-bezier(.45,0,.55,1)"}, translate ${ms}ms ${ez || "cubic-bezier(.45,0,.55,1)"}`; el.style.scale = String(sc); el.style.translate = `0 ${dy}px`; return wait(ms); };
+    const nearDone = () => { el.style.transition = ""; el.style.zIndex = ""; el.style.scale = ""; el.style.translate = ""; };
+    // a close look: it leans right in to study you, eyes narrowed, head tilting one way and the other, blinks, and backs off
+    const closeLook = () => act(async () => { if (still()) return; lookX = 0; lookY = 0; draw(); await face({ eyeL: 0.55, eyeR: 0.55 }, 300); await nearTo(2.6, 60, 1300);
+      for (const s1 of [-1, 1, 0]) { tween("flip", s1 * 9, 380); await wait(650); }
+      blink = 0.12; draw(); await wait(130); blink = 1; draw(); await face({ eyeL: 1.1, eyeR: 1.1, eyeSL: 1.15, eyeSR: 1.15 }, 160); await wait(350);
+      await nearTo(1, 0, 900, "cubic-bezier(.3,.7,.4,1)"); S.flip = 0; poke(-1.4); nearDone(); });
+    // boop: it rushes up and squashes its face against your screen like glass, holds, then peels off and falls back with a wobble
+    const boop = () => act(async () => { if (still()) return; await face({ eyeSL: 1.2, eyeSR: 1.2 }, 150); await nearTo(3, 80, 520, "cubic-bezier(.5,0,.9,.6)");
+      el.style.transition = "scale .12s ease-out"; el.style.scale = "3.6 3.25"; rigid = true; await face({ eyeL: 0.45, eyeR: 0.45, eyeSL: 1.45, eyeSR: 1.45, blush: 0.8 }, 120); await wait(900);
+      rigid = false; el.style.transition = "scale .18s ease-in"; el.style.scale = "2.7"; await wait(180); poke(3.4); await face({ eyeL: 1, eyeR: 1, eyeSL: 1, eyeSR: 1 }, 200);
+      await nearTo(1, 0, 650, "cubic-bezier(.3,.7,.4,1)"); poke(-2.4); await face({ happy: 1, blush: 0 }, 160); await wait(600); nearDone(); });
     // dozing: so tired its head drops to one side as the eyes close, then it jerks back up wide awake. Twice, the second time deeper
     const doze = () => act(async () => { const s1 = Math.random() < 0.5 ? -1 : 1;
       for (let i = 0; i < 2; i++) { const deep = i === 1, ms = deep ? 1700 : 1300;
@@ -10205,6 +10231,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       else if (r < 0.879 && performance.now() - ptrT > 6000) boo();   // rarely, and only when you've gone quiet: boo!
       else if (r < 0.88) wink();
       else if (r < 0.895) crossEyes();
+      else if (r < 0.9) (Math.random() < 0.5 ? closeLook : boop)();   // now and then it comes right up to you
       else if (r < 0.915) surprised();
       else if (r < 0.93) curious();
       else if (r < 0.95) (Math.random() < 0.5 ? doze : sleepy)();
@@ -10243,7 +10270,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1; lookX = dx / d * 3; lookY = dy / d * 1.5; draw();
       setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900); }, { passive: true });
     el.addEventListener("click", () => { if (farted) { farted = false; return; } if (opt.tap) opt.tap(); else if (!acting) jumps(); });
-    return { S, busy: () => acting, free: () => { acting = false; }, doze, cold, text, rolypoly, crossEyes, look, tilt: (v) => tween("aRest", v, 320), umbrella, onPhone, roll, landed: () => phase !== "fall", bored, moon, fartBack, upside, boo, think, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, fart, draw,
+    return { S, busy: () => acting, free: () => { acting = false; }, doze, cold, text, rolypoly, crossEyes, closeLook, boop, look, tilt: (v) => tween("aRest", v, 320), umbrella, onPhone, roll, landed: () => phase !== "fall", bored, moon, fartBack, upside, boo, think, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, fart, draw,
       bob: () => { poke(-0.7 - Math.random() * 0.6); if (Math.random() < 0.3) { jv = -90; go(); } } }; };
     // ---- talking: tap the drop and ask it something. It answers in a bubble, the words typing themselves out while it bobs.
     // It knows a handful of things for certain (what's new, a coffee to try, sour or bitter, ratio, temperature, grind, the processes,
@@ -10759,6 +10786,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       [/^(?!.*\b(scan|app|photo|camera|website|site|page|recipe|how|why|what|which|best|grinder|scale|timer)\b).{0,40}\b(phone|iphone|instagram|tiktok|scroll(ing)?|doomscroll\w*|social media|telefono|cellulare|telefonino)\b/i, () => { say(pick([T("One sec, just checking something…", "Un attimo, controllo una cosa…"), T("Sorry, I was just scrolling coffee pics.", "Scusa, stavo guardando foto di caffè."), T("Hang on, someone posted a latte art swan.", "Aspetta, qualcuno ha postato un cigno di latte art.")]), null); setTimeout(() => { D.free(); D.onPhone(); }, 450); }, true],
       [/\b(are you cold|i'?m (so )?cold|it'?s (so |really )?(cold|freezing)|brr+|freezing|hai freddo|ho freddo|che freddo|si gela|fa freddo)\b/i, () => { say(pick([T("Brrr. Quick, put the kettle on.", "Brrr. Presto, metti su l'acqua."), T("Don't. I'm going blue just hearing it.", "Non dirlo. Divento blu solo a sentirlo.")]), null); setTimeout(() => { D.free(); D.cold(4500); }, 450); }, true],
       [/\b(umbrella|ombrello|is it raining|it'?s raining|sta piovendo|piove)\b/i, () => { say(pick([T("Never leave home without it.", "Mai uscire senza."), T("Drip, drip. Good thing I'm waterproof. Well, I am water.", "Plic, plic. Per fortuna sono impermeabile. Anzi, sono acqua.")]), null); setTimeout(() => { D.free(); D.umbrella(5200); }, 450); }, true],
+      [/\b(come (closer|here|nearer)|get closer|look at me|vieni (qui|qua|vicino)|avvicinati|più vicino)\b/i, () => { say(pick([T("Hello there.", "Ciao, eh."), T("Let me have a proper look at you.", "Fammi guardare bene.")]), null); setTimeout(() => { D.free(); D.closeLook(); }, 450); }, true],
+      [/\b(boop|kiss|smooch|mwah|bacio|bacino|baciami)\b/i, () => { say(pick([T("Mwah!", "Muah!"), T("Boop!", "Bup!")]), null); setTimeout(() => { D.free(); D.boop(); }, 450); }, true],
       [/\b(cross[- ]?eyed|cross (your|ur|the) eyes|cross eyes|strabico|occhi storti|incrocia gli occhi)\b/i, () => { say(pick([T("Like this?", "Così?"), T("Now I can see my nose. I don't have a nose.", "Adesso vedo il mio naso. Non ho il naso.")]), null); setTimeout(() => { D.free(); D.crossEyes(1800); }, 450); }, true],
       [/\b(rol+(y|ie)[ -]?pol+(y|ie)|somersault|forward roll|tumble|capriol\w*|fai una capriola)\b/i, () => { say(pick([T("Weee!", "Uiii!"), T("Head over heels!", "A gambe all'aria!")]), null); setTimeout(() => { D.free(); D.rolypoly(); littleMove("ag-flip"); }, 450); }, true],
       [/\broll\b|rolling|rotola|rotolare|fai una rotolata/i, () => { say(T("Wheee!", "Uiii!"), null); setTimeout(() => { D.free(); D.roll(); littleMove("ag-spin"); }, 450); }, true],
@@ -11407,7 +11436,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // the little Goccio in the pill is alive too: it leans and looks towards the pointer (or your finger), blinks, and looks around when nobody moves
     { const tb = $("askGoccio"), bo = tb && tb.querySelector(".ag-b"), ey = tb && tb.querySelector(".ag-e");
       if (bo && ey && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        let tx = 0, ty = 0, x = 0, y = 0, blink = 1, hopT = 0, idle = 0, run = 0, wide = 1, wideTo = 1, lid = 1, lidTo = 1;
+        let tx = 0, ty = 0, x = 0, y = 0, blink = 1, hopT = 0, idle = -1e9, run = 0, wide = 1, wideTo = 1, lid = 1, lidTo = 1;
         const loop = (t) => { x += (tx - x) * .16; y += (ty - y) * .16; const k = hopT ? Math.max(0, 1 - (t - hopT) / 520) : 0, up = k ? Math.sin((1 - k) * Math.PI) * 6 : 0;
           if (!k) hopT = 0;
           // squash a touch against the way it leans, like the big one
@@ -11423,7 +11452,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         const blinkOnce = () => { blink = .12; go(); setTimeout(() => { blink = 1; go(); }, 120); };
         (function nextBlink() { setTimeout(() => { if (!document.hidden) { blinkOnce(); if (Math.random() < .2) setTimeout(blinkOnce, 260); } nextBlink(); }, 2400 + Math.random() * 3600); })();
         // nobody about: look this way and that, then back to you
-        const filmOn = () => { const f = $("wmVideo"); if (!f || f.paused || f.ended) return false; const fr = f.getBoundingClientRect(); return fr.bottom > 0 && fr.width > 0; };
+        let filmOn = () => false;
         setInterval(() => { if (document.hidden || performance.now() - idle < 4000 || filmOn()) return; const a = Math.random() * Math.PI * 2; tx = Math.cos(a) * 2.6; ty = Math.sin(a) * 1.8; go(); setTimeout(() => { if (performance.now() - idle >= 4000) { tx = 0; ty = 0; go(); } }, 1400); }, 3500);
         tb.hop = () => { hopT = performance.now(); go(); };
         // dozing: eyes close as its head drops, then it jerks awake
@@ -11440,22 +11469,30 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           if (pickd[0] === "ag-wink") { blink = 0.1; go(); setTimeout(() => { blink = 1; go(); }, 260); return; }
           svg.classList.add(pickd[0]); setTimeout(() => svg.classList.remove(pickd[0]), pickd[1]); };
         // the film at the top: while the drop falls, the little one watches it; when it lands, wide eyes and a jump of surprise
-        { const film = $("wmVideo"); if (film) {
-            // where the drop is in the film, second by second (as a share of the 1280 × 720 frame): it appears at the top, falls, splashes into a crown,
+        { const film = $("wmVideo"), cv = $("wmFilm"); if (film || cv) {
+            // where the drop is in the film, second by second (as a share of the 16:9 frame): it appears at the top, falls, splashes into a crown,
             // a column rises with a drop on top, that drop falls back, splashes again, and the ripples settle in the middle
             const PATH = [[0, .5, .2], [.75, .5, .17], [1, .5, .53], [1.9, .5, .47], [2.3, .5, .3], [3, .5, .28], [3.6, .5, .54], [3.8, .5, .27], [4.2, .5, .48], [6, .5, .55]];
             const dropAt = (t) => { let i = 0; while (i < PATH.length - 2 && t > PATH[i + 1][0]) i++; const [t0, x0, y0] = PATH[i], [t1, x1, y1] = PATH[i + 1], k = Math.max(0, Math.min(1, (t - t0) / (t1 - t0))); return [x0 + (x1 - x0) * k, y0 + (y1 - y0) * k]; };
-            const watch = () => { if (film.paused || film.ended || performance.now() - idle < 2500) return; const fr = film.getBoundingClientRect(), r = tb.getBoundingClientRect(); if (fr.bottom < 0 || !r.width || !fr.width) return;
+            // the film playing now: the video, or the same film drawn frame by frame on a canvas (phones that won't play it by themselves)
+            const now = () => { if (film && !film.paused && !film.ended && film.style.display !== "none") return { el: film, t: film.currentTime };
+              if (cv && !cv.hidden && window.__filmT != null) return { el: cv, t: window.__filmT }; return null; };
+            filmOn = () => { const f = now(); if (!f) return false; const fr = f.el.getBoundingClientRect(); return fr.bottom > 0 && fr.width > 0; };
+            let wRun = false;
+            const watch = () => { wRun = false; const f = now(); if (!f || tb.classList.contains("ag-gone")) return; if (performance.now() - idle < 2500) { wRun = true; setTimeout(() => requestAnimationFrame(watch), 300); return; }
+              const fr = f.el.getBoundingClientRect(), r = tb.getBoundingClientRect(); if (fr.bottom < 0 || !r.width || !fr.width) return;
               // the film covers its box (object-fit: cover): find where that point of the frame is on screen
-              const s0 = Math.max(fr.width / 1280, fr.height / 720), op = (getComputedStyle(film).objectPosition || "50% 50%").split(" ").map((v) => /%/.test(v) ? parseFloat(v) / 100 : 0.5), [fx, fy] = dropAt(film.currentTime);
-              const px = fr.left + (fr.width - 1280 * s0) * op[0] + fx * 1280 * s0, py = fr.top + (fr.height - 720 * s0) * (op[1] != null ? op[1] : 0.5) + fy * 720 * s0;
-              const dx = px - (r.left + r.width / 2), dy = py - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1, m = Math.min(1, d / 120) * 3.2; tx = dx / d * m; ty = dy / d * m; go(); requestAnimationFrame(watch); };
-            film.addEventListener("play", () => { wideTo = 1; requestAnimationFrame(watch); }); film.addEventListener("timeupdate", () => requestAnimationFrame(watch));
+              const s0 = Math.max(fr.width / 16, fr.height / 9), op = (getComputedStyle(f.el).objectPosition || "50% 50%").split(" ").map((v) => /%/.test(v) ? parseFloat(v) / 100 : /top|left/.test(v) ? 0 : /bottom|right/.test(v) ? 1 : 0.5), [fx, fy] = dropAt(f.t);
+              const px = fr.left + (fr.width - 16 * s0) * op[0] + fx * 16 * s0, py = fr.top + (fr.height - 9 * s0) * (op[1] != null ? op[1] : 0.5) + fy * 9 * s0;
+              const dx = px - (r.left + r.width / 2), dy = py - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1, m = Math.min(1, d / 60) * 3.4; tx = dx / d * m; ty = dy / d * m; go(); wRun = true; requestAnimationFrame(watch); };
+            const startW = () => { if (!wRun) { wRun = true; requestAnimationFrame(watch); } };
+            if (film) { film.addEventListener("play", () => { wideTo = 1; startW(); }); film.addEventListener("timeupdate", startW); }
+            setInterval(() => { if (!wRun && now()) startW(); }, 400);   // the canvas film has no events: look in now and then
             // the end of the film: over the moon. Eyes huge, three hops and a spin
             const wow = () => { if (tb.classList.contains("ag-gone")) return; tx = 0; ty = -1.2; wideTo = 1.45; lidTo = 1; go(); tb.hop(); setTimeout(() => tb.hop(), 560); setTimeout(() => tb.hop(), 1120);
               setTimeout(() => tb.move && tb.move("ag-spin"), 1700); setTimeout(() => { wideTo = 1; ty = 0; go(); }, 2800); };
-            film.addEventListener("ended", wow);
-            if (!film.paused && !film.ended) requestAnimationFrame(watch); } }
+            if (film) film.addEventListener("ended", wow); addEventListener("goccio-film-end", wow);
+            startW(); } }
         (function life() { setTimeout(() => { const r = tb.getBoundingClientRect(); if (!document.hidden && r.width && !tb.classList.contains("ag-gone") && performance.now() - idle > 3000 && r.bottom > 0) (Math.random() < 0.18 && tb.doze ? tb.doze() : tb.move()); life(); }, 7000 + Math.random() * 9000); })();
         let tg0 = null; addEventListener("deviceorientation", (e) => { if (e.gamma == null || performance.now() - idle < 2500 || filmOn()) return; if (tg0 === null) tg0 = e.gamma; tg0 += (e.gamma - tg0) * 0.003;
           const dx = e.gamma - tg0, db = (e.beta || 0) - 45; if (Math.abs(dx) < 4) return; const k = Math.max(-1, Math.min(1, dx / 30)); tx = k * 3.2; ty = Math.max(-1, Math.min(1, db / 40)) * 1.2; go(); }, { passive: true });
