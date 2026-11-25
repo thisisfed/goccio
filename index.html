@@ -7803,6 +7803,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     shown.forEach((r) => { const k = r.roaster + "|" + String(nm(r)).toLowerCase() + tagKey(r); if (seen.has(k)) return;
       seen.set(k, new Set((shelf._byRo.get(r.roaster) || []).filter((o) => inList.has(o) && String(nm(o)).toLowerCase() === String(nm(r)).toLowerCase() && tagKey(o) === tagKey(r)).map((o) => String(o.name).toLowerCase()))); });
     const fullName = (r) => String(r.name || "").replace(/^\s*(?:espresso|filter|filtro|omni)\s*[-–—:|]\s*/i, "").replace(/["“”]/g, "").replace(/\s{2,}/g, " ").trim();
+    // how many coffees each day holds in the list as it stands (filters and all), for the day's heading: "Added yesterday, 345 coffees"
+    const dayN = new Map(); list.forEach((r) => { const k = String(shelfDate(r) || "").slice(0, 10); if (k) dayN.set(k, (dayN.get(k) || 0) + 1); });
     let lastGroup = null, lastDay = null; const byDay = !q;   // in date order (no search), the day is said once, as a heading over that day's coffees, not on every card
     brewHome();   // the recipe sits inside a row while a listed coffee is being brewed: out before the rows are redrawn, back in after
     $("shelf").innerHTML = shown.length ? shown.map((r) => {
@@ -7825,7 +7827,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         const w = LANG === "it" ? "Aggiunto" : "Added";   // one word for every coffee: the shop's own date when it gives one, else the day Goccio first saw it (Nov 2026: was Released or Added)
         return iso && iso === ymd(now) ? `${w} ${LANG === "it" ? "oggi" : "today"}` : iso && iso === ymd(y) ? `${w} ${LANG === "it" ? "ieri" : "yesterday"}` : d0 ? `${w} ${LANG === "it" ? "il " : ""}${d0}` : ""; })();   // today's and yesterday's coffees say so; older ones keep their date
       const shown = (seen.get(r.roaster + "|" + String(nm(r)).toLowerCase() + tagKey(r)) || new Set()).size > 1 ? fullName(r) : nm(r);
-      const dayHead = byDay && !isSp && day && day !== lastDay ? `<h3 class="grp day-g">${day}</h3>` : ""; if (byDay && !isSp && day) lastDay = day;
+      const dN = dayN.get(String(shelfDate(r) || "").slice(0, 10)) || 0, dNt = dN ? `, ${dN.toLocaleString(LANG === "it" ? "it-IT" : "en-GB")} ${LANG === "it" ? "caffè" : dN === 1 ? "coffee" : "coffees"}` : "";
+      const dayHead = byDay && !isSp && day && day !== lastDay ? `<h3 class="grp day-g">${day}${dNt}</h3>` : ""; if (byDay && !isSp && day) lastDay = day;
       tagBits.push(...coffeeLabels(r, shown).map((l) => `<span class="tg lbl" style="--vc:${LABEL_DOT[l] || "#8e8e93"}">${l}</span>`));
       return `${head}${dayHead}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
         <div class="l">
@@ -9612,7 +9615,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           const aR = part && d.added_roasters_n != null ? d.added_roasters_n : (d.roasters || []).filter((x) => x && x.first_seen === aDay).length;
           window.__roN = nR; window.__coN = nC; window.__addN = aN; window.__addDay = aDay;   // one count for the whole site: the hero, the search box, the list button and Goccio all say this
           const loc0 = it0 ? "it-IT" : "en-GB", cN = `${aN.toLocaleString(loc0)} ${it0 ? "caffè" : "coffee" + (aN === 1 ? "" : "s")}`, rN = aR > 0 ? ` ${it0 ? "e" : "and"} ${aR.toLocaleString(loc0)} ${it0 ? (aR === 1 ? "torrefazione" : "torrefazioni") : "roaster" + (aR === 1 ? "" : "s")}` : "";
-          const added = aN > 0 && when ? `${cN}${rN} ${it0 ? (aR > 0 ? (aR === 1 ? "aggiunta" : "aggiunte") : aN !== 1 ? "aggiunti" : "aggiunto") : "added"} ${when}.` : "";
+          // only the roasters now ("24 roasters added yesterday."): the day's coffees are counted over the list, "Added yesterday, 345 coffees"
+          const added = aR > 0 && when ? `${aR.toLocaleString(loc0)} ${it0 ? (aR === 1 ? "torrefazione aggiunta" : "torrefazioni aggiunte") : "roaster" + (aR === 1 ? "" : "s") + " added"} ${when}.` : "";
           if (window.__searchHint) try { window.__searchHint(); } catch (e) {}
           // the totals sit on a second line under today's news, now that a phone's search box no longer shows them
           const g0 = { useGrouping: "always" }, tot = it0 ? `${nC.toLocaleString(loc0, g0)} caffè, ${nR.toLocaleString(loc0, g0)} torrefazioni in totale.` : `${nC.toLocaleString(loc0)} coffees, ${nR.toLocaleString(loc0)} roasters in total.`;
