@@ -2005,11 +2005,12 @@ footer .refs a:hover, footer #credit a:hover, footer .foot-all a:hover, .item .w
   html body #recipe #rbody > #techLbl{margin-top:0}
 }
 /* the day the coffees below it were added, said once */
-html body .shelf .grp.day-g{position:sticky;top:calc(var(--top-h,49px) + 12px);z-index:4;display:flex;align-items:center;gap:10px;margin:0 0 0;padding:0 0 11px;border:0;background:var(--bg);font:500 var(--fs-s,15px)/1.3 var(--sans);color:var(--ink);letter-spacing:0}   /* the size of the search box's words */   /* the day stands out from the names under it, and stays pinned under the top bar while you scroll that day's coffees */
+html body .shelf .grp.day-g{position:relative;top:calc(var(--top-h,49px) + 12px);z-index:4;display:flex;align-items:center;gap:10px;margin:0 0 0;padding:0 0 11px;border:0;background:var(--bg);font:500 var(--fs-s,15px)/1.3 var(--sans);color:var(--ink);letter-spacing:0}   /* the size of the search box's words */   /* the day stands out from the names under it, and stays pinned under the top bar while you scroll that day's coffees */
 html body .shelf .grp.day-g:not(:first-child){margin-top:40px}
 html body .shelf .grp.day-g::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:13px;background:var(--bg);display:none}   /* pinned, the strip between it and the top bar is filled, so what scrolls under doesn't show there */
 html body .shelf .grp.day-g.stuck::before{display:block}
-html body .shelf .grp.day-g .day-what{display:none} html body .shelf .grp.day-g.say-what .day-what{display:inline}   /* "230 added today" under Coffees; "230 coffees added today" once pinned */
+html body .shelf .grp.day-g .day-what{display:none}   /* it sits under Coffees, which says what it counts */
+html body .shelf .grp.day-g{transform:none!important;top:auto!important} html body .shelf .grp.day-g.stuck::before{display:none!important} html body .shelf .grp.day-g.stuck::after{left:0!important;width:100%!important}   /* no longer pinned: never pushed or stretched */   /* "230 added today" under Coffees; "230 coffees added today" once pinned */
 html body .shelf .grp.day-g::after{content:"";position:absolute;left:0;width:100%;bottom:0;height:1px;background:var(--line);pointer-events:none;transition:left .32s cubic-bezier(.2,.8,.2,1),width .32s cubic-bezier(.2,.8,.2,1)}   /* in the list its line is as long as the one over "Coffees." */
 html body .shelf .grp.day-g.stuck::after{left:calc(50% - 50vw);width:100vw}   /* pinned under the top bar, it stretches out from edge to edge, like the bar's own line */
 @media (prefers-reduced-motion:reduce){html body .shelf .grp.day-g::after{transition:none}}
@@ -7853,7 +7854,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const dN = dayN.get(String(shelfDate(r) || "").slice(0, 10)) || 0, it1 = LANG === "it", rest = day.replace(/^(Added|Aggiunto)\s+/, "");
       // pinned under the bar, the Coffees title is gone from view: the heading then says what it counts ("230 coffees added today")
       const dayT = !dN ? day : it1 ? `${dN.toLocaleString("it-IT")}<span class="day-what"> caffè</span> ${dN === 1 ? "aggiunto" : "aggiunti"} ${rest}` : `${dN.toLocaleString("en-GB")}<span class="day-what"> ${dN === 1 ? "coffee" : "coffees"}</span> added ${/^\d/.test(rest) ? "on " : ""}${rest}`;
-      const dayHead = byDay && !isSp && day && day !== lastDay ? `<h3 class="grp day-g"><span class="day-t">${dayT}</span></h3>` : "";   // one span: the heading lays out its children in a row when pinned if (byDay && !isSp && day) lastDay = day;
+      // only the first day's count, under the Coffees title ("230 added today"): no heading over each later day, and it doesn't pin
+      const dayHead = byDay && !isSp && day && lastDay === null ? `<h3 class="grp day-g"><span class="day-t">${dayT}</span></h3>` : ""; if (byDay && !isSp && day) lastDay = day;   // one span: the heading lays out its children in a row
       tagBits.push(...coffeeLabels(r, shown).map((l) => `<span class="tg lbl" style="--vc:${LABEL_DOT[l] || "#8e8e93"}">${l}</span>`));
       return `${head}${dayHead}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
         <div class="l">
