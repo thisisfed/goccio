@@ -2007,7 +2007,9 @@ html body .shelf .grp.day-g{position:sticky;top:calc(var(--top-h,49px) + 12px);z
 html body .shelf .grp.day-g:not(:first-child){margin-top:40px}
 html body .shelf .grp.day-g::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:13px;background:var(--bg);display:none}   /* pinned, the strip between it and the top bar is filled, so what scrolls under doesn't show there */
 html body .shelf .grp.day-g.stuck::before{display:block}
-html body .shelf .grp.day-g::after{content:"";position:absolute;left:calc(50% - 50vw);width:100vw;bottom:0;height:1px;background:var(--line);pointer-events:none}   /* its line runs from edge to edge of the screen */
+html body .shelf .grp.day-g::after{content:"";position:absolute;left:0;width:100%;bottom:0;height:1px;background:var(--line);pointer-events:none;transition:left .32s cubic-bezier(.2,.8,.2,1),width .32s cubic-bezier(.2,.8,.2,1)}   /* in the list its line is as long as the one over "Coffees." */
+html body .shelf .grp.day-g.stuck::after{left:calc(50% - 50vw);width:100vw}   /* pinned under the top bar, it stretches out from edge to edge, like the bar's own line */
+@media (prefers-reduced-motion:reduce){html body .shelf .grp.day-g::after{transition:none}}
 html body .shelf .grp.day-g::before{left:calc(50% - 50vw)!important;right:auto!important;width:100vw}
 html.brew-in body .shelf .grp.day-g{display:none!important}   /* brewing a coffee: no day heading pinned over it */
 html body .shelf .grp.day-g + .item{border-top:0!important}
