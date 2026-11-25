@@ -2536,7 +2536,7 @@ html.brew-in .shelf > .item.brewing{padding-bottom:14px!important}
 :root[data-theme="light"] .wm-more .wm-bag{background:var(--pill)!important;color:var(--ink)!important}
 /* a timed schedule reads like the step list: the weight in the text's own size, not as a headline */
 .pours.steps.timed tr:not(.act) td.to{font:500 var(--fs-s)/1.35 var(--sans)!important;letter-spacing:0!important;white-space:nowrap}
-/* first screen: the two buttons come straight after "The right recipe for every bag", and the text closes it */
+/* first screen: the two buttons come straight after the slogan, "Read the bag. Goccio does the rest.", and the text closes it */
 .wm-more .wm-ctas{margin:0 0 20px!important}
 .wm-more .wm-tagline{margin-bottom:20px!important}   /* the tagline as far over the two buttons as they are over the text under them; Goccio comes down with it */
 /* the first screen's two buttons are the bottom bar's two pills exactly: same height, corners, gap and width */
@@ -3355,7 +3355,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       <div class="wm-screen">
         <p class="wordmark" aria-hidden="true" translate="no"><span id="wm">Goccio</span></p>
         <div class="wm-more">
-          <p class="wm-tagline">The right recipe for every bag.</p>
+          <p class="wm-tagline">Read the bag. Goccio does the rest.</p>
           <p class="wm-live wm-tot" id="wmTot" hidden></p>
           <p class="wm-ctas"><button type="button" class="btn wm-go" id="wmFind">Find a coffee</button><button type="button" class="btn wm-bag" id="wmBag">I have a coffee</button></p>
           <h1 class="wm-lead">Every new coffee, with its recipe before you buy.</h1>
@@ -9507,13 +9507,13 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           const it0 = LANG === "it", when = aDay === ymd0(0) ? (it0 ? "oggi" : "today") : aDay === ymd0(1) ? (it0 ? "ieri" : "yesterday") : aDay ? (it0 ? "il " : "on ") + isoDm(aDay) : "";
           // and how many roasters joined that day (the totals are in the search box): "202 coffees and 12 roasters added yesterday."
           const aR = part && d.added_roasters_n != null ? d.added_roasters_n : (d.roasters || []).filter((x) => x && x.first_seen === aDay).length;
-          window.__roN = nR; window.__coN = nC;   // one count for the whole site: the hero, the search box, the list button and Goccio all say this
+          window.__roN = nR; window.__coN = nC; window.__addN = aN; window.__addDay = aDay;   // one count for the whole site: the hero, the search box, the list button and Goccio all say this
           const loc0 = it0 ? "it-IT" : "en-GB", cN = `${aN.toLocaleString(loc0)} ${it0 ? "caffè" : "coffee" + (aN === 1 ? "" : "s")}`, rN = aR > 0 ? ` ${it0 ? "e" : "and"} ${aR.toLocaleString(loc0)} ${it0 ? (aR === 1 ? "torrefazione" : "torrefazioni") : "roaster" + (aR === 1 ? "" : "s")}` : "";
           const added = aN > 0 && when ? `${cN}${rN} ${it0 ? (aR > 0 ? (aR === 1 ? "aggiunta" : "aggiunte") : aN !== 1 ? "aggiunti" : "aggiunto") : "added"} ${when}.` : "";
           if (window.__searchHint) try { window.__searchHint(); } catch (e) {}
           // the totals sit on a second line under today's news, now that a phone's search box no longer shows them
           const g0 = { useGrouping: "always" }, tot = it0 ? `${nC.toLocaleString(loc0, g0)} caffè, ${nR.toLocaleString(loc0, g0)} torrefazioni in totale.` : `${nC.toLocaleString(loc0)} coffees, ${nR.toLocaleString(loc0)} roasters in total.`;
-          if ($("wmTot")) { $("wmTot").textContent = tot; $("wmTot").hidden = false; }   // the totals: under "The right recipe for every bag"
+          if ($("wmTot")) { $("wmTot").textContent = tot; $("wmTot").hidden = false; }   // the totals: under the slogan
           if ($("wmLive")) { $("wmLiveT").textContent = added; $("wmLive").hidden = !added; } } }
       renderShelfV();
       renderShelf();
@@ -10661,7 +10661,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // the day the newest coffees landed, in the list's own words: today, yesterday, or the date
     const landedOn = (r) => { const d0 = (r && r.found) || ""; const ymd = (k) => { const t = new Date(); t.setDate(t.getDate() - k); return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`; };
       return d0 === ymd(0) || !d0 ? T("today", "oggi") : d0 === ymd(1) ? T("yesterday", "ieri") : T("on ", "il ") + isoDm(d0); };
-    const hello = () => { const today = (typeof shelf !== "undefined" ? shelf : []).filter((r) => r.just_in), n = today.length, hi = pick([T(`Hi ${name}!`, `Ciao ${name}!`), T(`Hello ${name}!`, `Ciao ${name}!`), T(`Oh, hi ${name}!`, `Oh, ciao ${name}!`), T(`Hey ${name}!`, `Ehi ${name}!`)]);
+    const hello = () => { const today = (typeof shelf !== "undefined" ? shelf : []).filter((r) => r.just_in), n0 = today.length, n = n0 && window.__addN > n0 && today[0].found === window.__addDay ? window.__addN : n0,   /* the same number the top of the page says, even before the whole list is in */ hi = pick([T(`Hi ${name}!`, `Ciao ${name}!`), T(`Hello ${name}!`, `Ciao ${name}!`), T(`Oh, hi ${name}!`, `Oh, ciao ${name}!`), T(`Hey ${name}!`, `Ehi ${name}!`)]);
       if (!n) return say(hi + " " + pick([T("Ask me about coffee.", "Chiedimi del caffè."), T("What are we brewing?", "Cosa prepariamo?"), T("Need a hand with your coffee?", "Ti serve una mano col caffè?")]), null, happy);
       const best = today.map((x) => [suits(x) * 3 + (notesOf(x).length ? 1.5 : 0) + Math.random() * 2, x]).sort((a, b) => b[0] - a[0])[0][1], ns = notesOf(best); picked.add(best.url); lastCo = { r: best, at: Date.now() };
       const what = `${best.name} ${T("from", "di")} ${roasteryName(best.roaster)}${ns.length ? T(", tasting of ", ", che sa di ") + andList(ns) : ""}`;
