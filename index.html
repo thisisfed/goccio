@@ -11760,10 +11760,15 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       if (mic && Rec) { mic.hidden = false; let rec = null;
         mic.onclick = () => { if (rec) { try { rec.stop(); } catch (e) {} return; }
           try { rec = new Rec(); rec.lang = LANG === "it" ? "it-IT" : "en-GB"; rec.interimResults = true; rec.maxAlternatives = 1; } catch (e) { rec = null; return; }
-          mic.classList.add("on"); inEl.placeholder = T("Listening…", "Ti ascolto…"); D.curious();
-          rec.onresult = (e) => { const r0 = e.results[e.results.length - 1]; inEl.value = r0[0].transcript; if (r0.isFinal) { const t = inEl.value; try { rec.stop(); } catch (er) {} ask(t); } };
-          rec.onerror = (e) => { sayNow(e.error === "not-allowed" ? T("I need the microphone for that. You can type instead.", "Mi serve il microfono. Puoi anche scrivere.") : T("I didn't catch that. Try again or type it?", "Non ho capito. Riprova o scrivilo?"), null, hmm); };
-          rec.onend = () => { mic.classList.remove("on"); rec = null; gdWords(); };
+          mic.classList.add("on"); inEl.value = ""; inEl.placeholder = T("Listening…", "Ti ascolto…"); D.curious(); let heard = "", sent = false;
+          const send = () => { if (sent) return; const t = heard.trim(); if (!t) return; sent = true; inEl.value = ""; ask(t); };
+          // everything said so far, the finished parts and the one still being heard; sent once a part is finished
+          rec.onresult = (e) => { let fin = "", now = ""; for (let i = 0; i < e.results.length; i++) { const r0 = e.results[i]; if (r0.isFinal) fin += r0[0].transcript + " "; else now += r0[0].transcript; }
+            heard = (fin + now).replace(/\s+/g, " "); inEl.value = heard.trim(); if (fin && !now) { try { rec.stop(); } catch (er) {} send(); } };
+          rec.onerror = (e) => { if (e.error === "aborted") return; if (e.error === "no-speech" && heard) return;
+            sayNow(e.error === "not-allowed" || e.error === "service-not-allowed" ? T("I need the microphone for that: allow it for this site (on an iPhone, Siri and Dictation need to be on). You can type instead.", "Mi serve il microfono: permettilo per questo sito (su iPhone servono Siri e Dettatura attivi). Puoi anche scrivere.")
+              : e.error === "network" ? T("I can't hear you without a connection. Type it instead?", "Senza connessione non ti sento. Scrivilo?") : T("I didn't catch that. Try again or type it?", "Non ho capito. Riprova o scrivilo?"), null, hmm); };
+          rec.onend = () => { mic.classList.remove("on"); rec = null; send(); gdWords(); };   // stopped before a part was finished (Safari often does): what was heard is sent
           try { rec.start(); } catch (e) { mic.classList.remove("on"); rec = null; } }; } }
     inEl.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); ask(inEl.value); } if (e.key === "Escape") closeTalk(); });
     // the bubble lives over the drop; asked from the top bar it docks under the bar instead, wherever you are on the page
