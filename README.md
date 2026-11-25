@@ -82,9 +82,9 @@ domain to `data/removed.json`. After the next scan, `data/releases.json → roas
 - **Daily roaster scan** (`scripts/scan.py`, `.github/workflows/scan.yml`): reads every roaster's public shop once a
   day (Shopify, WooCommerce, Squarespace, sitemaps), following robots.txt, at least 2 seconds between requests to a shop,
   backing off from any shop that says it's busy. It keeps coffee beans in stock and pulls origin, process, variety, roast
-  and tasting notes. Started at 05:31 UTC every day by the **scan clock**, a small Cloudflare Worker
+  and tasting notes. Started at 02:31 UTC every night (a second knock at 03:31), so the new coffees are up by about 05:00, by the **scan clock**, a small Cloudflare Worker
   (`workers/scan-clock`, deployed by `.github/workflows/scan-clock.yml`), because GitHub runs its own schedules hours
-  late when it's busy. GitHub's schedule (05:31, 07:13, 09:47 UTC) stays as a backup and skips itself once the day's
+  late when it's busy. GitHub's schedule (02:31, 05:13, 07:47 UTC) stays as a backup and skips itself once the day's
   scan is in. The clock needs one secret in Cloudflare, `GITHUB_TOKEN`: a fine-grained GitHub token for
   thisisfed/goccio only, with Actions set to "Read and write" (the token is "goccio-scan-clock" on GitHub and **expires on
   24 Nov 2027**: regenerate it there and paste the new one into the Worker's GITHUB_TOKEN). Run the scan by hand any time.

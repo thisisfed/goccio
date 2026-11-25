@@ -34,10 +34,10 @@ def main():
     with sync_playwright() as p:
         b = p.chromium.launch()
         pg = b.new_page()
-        big = render(pg, 4096, 0.8)   # drawn big once, then scaled down: smoother edges than drawing small
+        big = render(pg, 4096, 1.0)   # as big as the icon allows: the ball touches the edges, the rounded corners only take the black
         for name, size in [("apple-touch-icon.png", 180), ("icon-192.png", 192), ("icon-512.png", 512), ("icon-1024.png", 1024)]:
             big.resize((size, size), Image.LANCZOS).convert("RGB").save("icons/" + name, optimize=True)
-        render(pg, 4096, 0.64).resize((512, 512), Image.LANCZOS).convert("RGB").save("icons/icon-512-maskable.png", optimize=True)   # Android's safe circle
+        render(pg, 4096, 0.8).resize((512, 512), Image.LANCZOS).convert("RGB").save("icons/icon-512-maskable.png", optimize=True)   # Android's safe circle: 80% of the tile
         fav = render(pg, 1024, 0.96, bg=False)   # browser tabs: just the ball, no square
         fav.resize((32, 32), Image.LANCZOS).save("icons/favicon-32.png", optimize=True)
         fav.resize((48, 48), Image.LANCZOS).save("icons/favicon-48.png", optimize=True)
