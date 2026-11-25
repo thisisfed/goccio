@@ -10351,6 +10351,12 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // ---------- one name, several roasters: Goccio lists them and you pick ----------
     let whichCo = null;
     const coByRoaster = (list) => { const seen = new Set(); return list.filter((r) => !seen.has(r.roaster) && seen.add(r.roaster)); };
+    // only a roaster named: its coffees, newest first, and you pick one by name (or describe a bag it doesn't list)
+    const askRoasterCo = (ro, then, other) => { const list = [...ro.list].sort((a, b) => (b.just_in ? 2 : b.new ? 1 : 0) - (a.just_in ? 2 : a.new ? 1 : 0)), shown = list.slice(0, 6), more = list.length - shown.length;
+      whichCo = { list, then, other, by: "name", at: Date.now() };
+      if (list.length === 1) { whichCo = null; return then(list[0]); }
+      say(T(`${roasteryName(ro.name)} has ${list.length} coffees on Goccio${more ? ", the newest" : ""}: ${andList(shown.map((r) => r.name))}${more ? `, and ${more} more` : ""}. Which one? If yours isn't there, tell me what the bag says.`,
+        `${roasteryName(ro.name)} ha ${list.length} caffè su Goccio${more ? ", i più nuovi" : ""}: ${andList(shown.map((r) => r.name))}${more ? `, e altri ${more}` : ""}. Quale? Se il tuo non c'è, dimmi cosa dice il sacchetto.`), null, curious); };
     const askWhichCo = (list, then) => { const opts = coByRoaster(list), shown = opts.slice(0, 5), more = opts.length - shown.length;
       whichCo = { list: opts, then, at: Date.now() };
       const names = shown.map((r) => roasteryName(r.roaster));
@@ -10364,9 +10370,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       let hit = null;
       if (ord) { const i = { first: 0, "1st": 0, primo: 0, second: 1, "2nd": 1, secondo: 1, third: 2, "3rd": 2, terzo: 2, fourth: 3, "4th": 3, quarto: 3, fifth: 4, "5th": 4, quinto: 4 }[ord[1]];
         hit = ord[1] === "last" || ord[1] === "ultimo" ? w.list[Math.min(4, w.list.length - 1)] : w.list[i != null ? i : +ord[1] - 1] || null; }
-      if (!hit) { let bs = 0; w.list.forEach((r) => { const words = norm(r.roaster).split(" ").filter((x) => x.length >= 3 && !CO_SKIP.has(x)); const sc = words.filter((x) => ql.includes(" " + x + " ")).reduce((a, x) => a + x.length, 0); if (sc > bs) { bs = sc; hit = r; } }); }
-      if (!hit) { const ro = findRoaster(norm(q)); if (ro) hit = w.list.find((r) => r.roaster === ro.name) || null; }
-      if (!hit) { if (/\?\s*$/.test(q) || q.split(/\s+/).length > 6) { whichCo = null; return false; } say(T("Which roaster? Just its name is fine.", "Quale torrefazione? Basta il nome."), null, hmm); return true; }
+      if (!hit && w.by === "name") { let bs = 0; w.list.forEach((r) => { const words = norm(r.name).split(" ").filter((x) => x.length >= 3 && !CO_SKIP.has(x)); const sc = words.filter((x) => ql.includes(" " + x + " ")).reduce((a, x) => a + x.length, 0); if (sc > bs) { bs = sc; hit = r; } });
+        if (!hit && w.other && !/\?\s*$/.test(q)) { whichCo = null; w.other(q); return true; } }
+      if (!hit && w.by !== "name") { let bs = 0; w.list.forEach((r) => { const words = norm(r.roaster).split(" ").filter((x) => x.length >= 3 && !CO_SKIP.has(x)); const sc = words.filter((x) => ql.includes(" " + x + " ")).reduce((a, x) => a + x.length, 0); if (sc > bs) { bs = sc; hit = r; } }); }
+      if (!hit && w.by !== "name") { const ro = findRoaster(norm(q)); if (ro) hit = w.list.find((r) => r.roaster === ro.name) || null; }
+      if (!hit) { if (/\?\s*$/.test(q) || q.split(/\s+/).length > 6) { whichCo = null; return false; } say(w.by === "name" ? T("Which one? Its name is enough.", "Quale? Basta il nome.") : T("Which roaster? Just its name is fine.", "Quale torrefazione? Basta il nome."), null, hmm); return true; }
       whichCo = null; lastCo = { r: hit, at: Date.now() }; w.then(hit); return true; };
     // ---------- brewing together: Goccio asks what the recipe needs, one question at a time, then opens it set up ----------
     // the coffee, the brewer, the grinder, how much, and the roast and process only when the bag or listing doesn't say
@@ -10429,6 +10437,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         const qn = norm(q), ro = findRoaster(qn), cs = findCoffees(qn, ro), mine = ro ? cs.filter((r) => r.roaster === ro.name) : cs;
         if (mine.length) { g.tries = 0; const go = (r) => { g.r = r; g.at = Date.now(); gbGo(g, T(`${r.name} from ${roasteryName(r.roaster)}, lovely.`, `${r.name} della ${roasteryName(r.roaster)}, buonissimo.`)); };
           if (!ro && coByRoaster(mine).length > 1) askWhichCo(mine, go); else go(mine[0]); return true; }
+        if (ro) { const rest = qn.split(" ").filter((x) => x && !ro.keys.includes(x) && !/^(from|by|the|a|an|some|one|coffee|coffees|beans|bag|roastery|roasters?|roasting|and|sons|co|di|della|il|un|caff[eè])$/.test(x));
+          if (!rest.length && ro.list && ro.list.length) { askRoasterCo(ro, (r) => { g.r = r; g.at = Date.now(); gbGo(g, T(`${r.name} from ${roasteryName(r.roaster)}, lovely.`, `${r.name} della ${roasteryName(r.roaster)}, buonissimo.`)); },
+            (bag) => { g.text = `${ro.name}, ${bag}`; g.at = Date.now(); gbGo(g, T("Got it.", "Capito.")); }); return true; } }
         const p = parseCoffee(q);
         if (p.origin || p.process || p.roast || p.roaster || ro || (g.tries >= 1 && !isQ && q.split(/\s+/).length >= 2)) { g.text = q; g.tries = 0; gbGo(g, T("Got it.", "Capito.")); return true; }
         if (isQ) { gbs = null; return false; } g.tries++; say(T("I can't find that one on Goccio. Tell me what the bag says, like 'XYZ Roastery, Ethiopia, washed, light roast'.", "Non lo trovo su Goccio. Dimmi cosa dice il sacchetto, tipo 'XYZ Roastery, Etiopia, lavato, tostatura chiara'."), null, hmm); return true; }
