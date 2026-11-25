@@ -9972,20 +9972,13 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           [[0, "#d8ecfc"], [0.45, "#86bdf0"], [0.85, "#3f78b8"], [1, "#1f3f6a"]].forEach(([o, c0]) => { const st = document.createElementNS(NS0, "stop"); st.setAttribute("offset", o); st.setAttribute("stop-color", c0); gr.appendChild(st); }); df.appendChild(gr); }
         const c = document.createElementNS(NS0, "path"); c.setAttribute("class", "gd-cold"); c.setAttribute("fill", svg0 ? `url(#${gid})` : "#86bdf0"); c.style.opacity = "0"; c.style.pointerEvents = "none"; body.after(c); return c; } catch (e) { return null; } })();
     // a mouth: the whole lower third of the body, a wide grin that opens with joy and shuts tight when sad
-    // the mouth: no drawn mouth at all. The lower third of the body is its jaw: it drops away from the rest of it, and the gap between
-    // is flat black like the eyes. Shut, there is nothing to see
-    const mouthP = (() => { try { const NS1 = "http://www.w3.org/2000/svg", svg1 = body.ownerSVGElement, id = "gdJaw" + Math.random().toString(36).slice(2, 7); if (!svg1) return null;
-        let df = svg1.querySelector("defs"); if (!df) { df = document.createElementNS(NS1, "defs"); svg1.prepend(df); }
-        const cp = document.createElementNS(NS1, "clipPath"), cpp = document.createElementNS(NS1, "path"); cp.id = id; cp.appendChild(cpp); df.appendChild(cp);
-        const m = document.createElementNS(NS1, "path"); m.setAttribute("class", "gd-mouth"); m.setAttribute("fill", "#000"); m.setAttribute("clip-path", `url(#${id})`); m.style.pointerEvents = "none"; eyes.after(m); return [m, cpp]; } catch (e) { return null; } })();
     const W0 = 36, H0 = 24, R0 = 15.5;   // at rest: a dome 36 wide, 24 high; falling: a round drop of about the same volume
     const wS = 2 * Math.PI / 0.24, zS = 0.3, wL = 2 * Math.PI / 0.42, zL = 0.45, G = 2600;
-    const S = { aRest: 0, eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, fone: 0, umb: 0, scroll: 0, jx: 0, blush: 0, turn: 0, armL: 0, armR: 0, armLa: 0, armRa: 0, flip: 0, cold: 0, jaw: 0, tumble: 0, cross: 0 }; let rigid = false, jy = 0, jv = 0, ptrX = 0, ptrY = 0, ptrT = 0; let tws = [], a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
+    const S = { aRest: 0, eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, fone: 0, umb: 0, scroll: 0, jx: 0, blush: 0, turn: 0, armL: 0, armR: 0, armLa: 0, armRa: 0, flip: 0, cold: 0, tumble: 0, cross: 0 }; let rigid = false, jy = 0, jv = 0, ptrX = 0, ptrY = 0, ptrT = 0; let tws = [], a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
     const draw = () => {
       // the shape it has just before it falls: round. Squashed or stretched it keeps its volume (taller is narrower); its top
       // sways with the page; it sits on its lowest point
-      const jawO = Math.max(S.jaw, 0.55 * S.happy + 0.18 * Math.max(0, S.smile)) * (1 - S.fone), gap = jawO * R0 * 0.3;
-      const k = rigid ? 1 : Math.max(0.3, 1 + a), ry = R0 * k + gap / 2, tc = Math.cos(S.turn * Math.PI), rx = R0 / Math.sqrt(k), w = rx * 2, ts = Math.sin(S.turn * Math.PI),   /* turning round: it narrows to its side, then widens showing its back */ cx = rigid ? 0 : lean * 0.6, bot = y, mid = bot - ry, top = bot - 2 * ry, sh = 0.552;
+      const k = rigid ? 1 : Math.max(0.3, 1 + a), ry = R0 * k, tc = Math.cos(S.turn * Math.PI), rx = R0 / Math.sqrt(k), w = rx * 2, ts = Math.sin(S.turn * Math.PI),   /* turning round: it narrows to its side, then widens showing its back */ cx = rigid ? 0 : lean * 0.6, bot = y, mid = bot - ry, top = bot - 2 * ry, sh = 0.552;
       const d = `M ${-rx} ${mid} C ${-rx} ${mid - ry * sh} ${cx - rx * sh} ${top} ${cx} ${top} C ${cx + rx * sh} ${top} ${rx} ${mid - ry * sh} ${rx} ${mid} C ${rx} ${mid + ry * sh} ${rx * sh} ${bot} 0 ${bot} C ${-rx * sh} ${bot} ${-rx} ${mid + ry * sh} ${-rx} ${mid} Z`;
       // arms: liquid pushed out of its sides, wide where they leave the body, rounded at the tip, a little curve as if poured
       const arm = (side, ext, ang) => { ext *= Math.abs(tc); if (ext < 0.03) return ""; const A = ang * Math.PI / 180, dx = side * Math.cos(A), dy = -Math.sin(A), nx = -dy, ny = dx;
@@ -10017,13 +10010,6 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           const fsh = el.querySelector(".gd-fone-sh"); if (fsh) fsh.style.opacity = (0.1 + 0.06 * Math.sin(S.scroll * Math.PI)).toFixed(2); }   /* its back faces you: you only see it light up the face */
         if (gl) gl.style.opacity = (S.fone * 0.9).toFixed(2);
         eyes.style.fill = ""; }
-      if (mouthP) { const [mp, cpp] = mouthP, f = (v) => v.toFixed(2); cpp.setAttribute("d", d);
-        if (gap < 0.25 || eyes.style.opacity === "0" || Math.abs(tw) > 0.15) mp.setAttribute("d", "");
-        else { // a ring cut right round the sphere, a third of the way up from the bottom: seen from the front, each edge is the near half of a ring,
-          // dipping in the middle and rising to the sides as it wraps round. The gap is centred on that line
-          const yT = bot - (2 * ry) / 3 - gap / 2, yB = yT + gap, half = (yy) => rx * Math.sqrt(Math.max(0, 1 - Math.pow((yy - mid) / ry, 2))),
-            tilt = 0.24 + 0.08 * Math.max(0, S.smile) + 0.06 * S.happy - 0.12 * Math.max(0, -S.smile), wT = half(yT) + 0.6, wB = half(yB) + 0.6, mx = cx * 0.3 + ts * rx * 0.5;
-          mp.setAttribute("d", `M ${f(mx - wT)} ${f(yT)} A ${f(wT)} ${f(Math.max(0.1, wT * tilt))} 0 0 0 ${f(mx + wT)} ${f(yT)} L ${f(mx + wB)} ${f(yB)} A ${f(wB)} ${f(Math.max(0.1, wB * tilt))} 0 0 1 ${f(mx - wB)} ${f(yB)} Z`); } }
       all.setAttribute("transform", `translate(${S.jx.toFixed(2)} ${jy.toFixed(2)})${S.flip ? ` rotate(${S.flip.toFixed(1)} 0 ${(-R0).toFixed(1)})` : ""}`); };   /* a backflip turns it about its middle */
     // small timed changes (a lid closing, an eye opening wide), eased in and out, run in the same frame loop as the physics
     const ease = (x) => x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
@@ -10031,7 +10017,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       tws.push({ key, from: S[key], to, t0: performance.now(), ms, res }); go(); }, delay));
     const setK = (key, v) => { S[key] = v; };
     const face = (o, ms) => Promise.all(Object.entries(o).map(([k, v]) => tween(k, v, ms)));
-    const REST = { eyeL: 1, eyeR: 1, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, blush: 0, jaw: 0, cross: 0 };
+    const REST = { eyeL: 1, eyeR: 1, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, blush: 0, cross: 0 };
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     let acting = false, texT = 0, texting = false;   // one expression at a time
     let wantText = false;   // typing an answer: the phone comes out, but a trick puts it away first and it comes back after
@@ -10077,8 +10063,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const umbrella = (ms) => act(async () => { tween("armR", 0.05, 260); tween("armRa", 8, 260); await tween("umb", 1, 450); lookY = -2.4; lookX = 1; draw(); await face({ eyeSL: 1.1, eyeSR: 1.1 }, 200);
       await wait((ms || 5200) * 0.5); lookY = 0; lookX = 0; draw(); await face({ smile: 0.6 }, 200); await wait((ms || 5200) * 0.5);
       await tween("umb", 0, 380); poke(-1.6); tween("armR", 0, 240); await face({ smile: 0 }, 200); });
-    const yawn = () => act(async () => { tween("jaw", 1, 650); tween("aRest", 0.18, 650); await face({ eyeL: 0.08, eyeR: 0.08, eyeSL: 1.15, eyeSR: 1.15 }, 650); leanTo = -1.5; await wait(650);
-      tween("aRest", 0, 420); leanTo = 0; tween("jaw", 0, 420); await face({ eyeL: 1, eyeR: 1, eyeSL: 1, eyeSR: 1 }, 420); poke(-1.4); });
+    const yawn = () => act(async () => { tween("aRest", 0.18, 650); await face({ eyeL: 0.08, eyeR: 0.08, eyeSL: 1.15, eyeSR: 1.15 }, 650); leanTo = -1.5; await wait(650);
+      tween("aRest", 0, 420); leanTo = 0; await face({ eyeL: 1, eyeR: 1, eyeSL: 1, eyeSR: 1 }, 420); poke(-1.4); });
     // a smile, eyes softening
     const smile = () => act(async () => { await face({ smile: 1, eyeL: 0.8, eyeR: 0.8 }, 260); await wait(1400 + Math.random() * 800); });
     // happy: eyes curve up (^ ^), a big smile, a little bounce
@@ -10097,7 +10083,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // upside down: it tips its whole head over, has a look around the world that way up, then rights itself with a wobble
     const upside = () => act(async () => { const d = Math.random() < 0.5 ? 1 : -1; await tween("flip", 180 * d, 460); lookX = 2.4; draw(); await wait(500); lookX = -2.4; draw(); await wait(500); lookX = 0; draw();
       await face({ happy: 1 }, 160); await wait(450); await face({ happy: 0 }, 160); await tween("flip", 0, 420); poke(d * -2.4); });
-    const surprised = () => act(async () => { tween("jaw", 0.75, 140); tween("aRest", 0.1, 140); await face({ eyeSL: 1.4, eyeSR: 1.4 }, 140); await wait(900); tween("aRest", 0, 300); poke(-0.8); });
+    const surprised = () => act(async () => { tween("aRest", 0.1, 140); await face({ eyeSL: 1.4, eyeSR: 1.4 }, 140); await wait(900); tween("aRest", 0, 300); poke(-0.8); });
     // sleepy: lids droop slowly, it leans and nods off, then wakes with a start
     const sleepy = () => act(async () => { await face({ eyeL: 0.35, eyeR: 0.35 }, 900); leanTo = 2; await wait(700); await face({ eyeL: 0.12, eyeR: 0.12 }, 600); leanTo = 3; await wait(900);
       leanTo = 0; poke(-1.6); await face({ eyeL: 1, eyeR: 1, eyeSL: 1.3, eyeSR: 1.3 }, 120); await wait(500); });
@@ -11435,7 +11421,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         const blinkOnce = () => { blink = .12; go(); setTimeout(() => { blink = 1; go(); }, 120); };
         (function nextBlink() { setTimeout(() => { if (!document.hidden) { blinkOnce(); if (Math.random() < .2) setTimeout(blinkOnce, 260); } nextBlink(); }, 2400 + Math.random() * 3600); })();
         // nobody about: look this way and that, then back to you
-        setInterval(() => { if (document.hidden || performance.now() - idle < 4000) return; const a = Math.random() * Math.PI * 2; tx = Math.cos(a) * 2.6; ty = Math.sin(a) * 1.8; go(); setTimeout(() => { if (performance.now() - idle >= 4000) { tx = 0; ty = 0; go(); } }, 1400); }, 3500);
+        const filmOn = () => { const f = $("wmVideo"); if (!f || f.paused || f.ended) return false; const fr = f.getBoundingClientRect(); return fr.bottom > 0 && fr.width > 0; };
+        setInterval(() => { if (document.hidden || performance.now() - idle < 4000 || filmOn()) return; const a = Math.random() * Math.PI * 2; tx = Math.cos(a) * 2.6; ty = Math.sin(a) * 1.8; go(); setTimeout(() => { if (performance.now() - idle >= 4000) { tx = 0; ty = 0; go(); } }, 1400); }, 3500);
         tb.hop = () => { hopT = performance.now(); go(); };
         // dozing: eyes close as its head drops, then it jerks awake
         tb.doze = () => { lidTo = .1; tx = 0; ty = 2.8; go(); setTimeout(() => { if (lidTo > .5) return; lidTo = 1; ty = -1; wideTo = 1.3; tb.hop(); go(); setTimeout(() => { wideTo = 1; ty = 0; go(); }, 650); }, 1800); };
@@ -11452,8 +11439,15 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           svg.classList.add(pickd[0]); setTimeout(() => svg.classList.remove(pickd[0]), pickd[1]); };
         // the film at the top: while the drop falls, the little one watches it; when it lands, wide eyes and a jump of surprise
         { const film = $("wmVideo"); if (film) {
-            const watch = () => { if (film.paused || film.ended || performance.now() - idle < 2500) return; const fr = film.getBoundingClientRect(), r = tb.getBoundingClientRect(); if (fr.bottom < 0 || !r.width) return;
-              const dx = fr.left + fr.width / 2 - (r.left + r.width / 2), dy = fr.top + fr.height * 0.55 - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1; tx = dx / d * 3.2; ty = dy / d * 3.2; go(); requestAnimationFrame(watch); };
+            // where the drop is in the film, second by second (as a share of the 1280 × 720 frame): it appears at the top, falls, splashes into a crown,
+            // a column rises with a drop on top, that drop falls back, splashes again, and the ripples settle in the middle
+            const PATH = [[0, .5, .2], [.75, .5, .17], [1, .5, .53], [1.9, .5, .47], [2.3, .5, .3], [3, .5, .28], [3.6, .5, .54], [3.8, .5, .27], [4.2, .5, .48], [6, .5, .55]];
+            const dropAt = (t) => { let i = 0; while (i < PATH.length - 2 && t > PATH[i + 1][0]) i++; const [t0, x0, y0] = PATH[i], [t1, x1, y1] = PATH[i + 1], k = Math.max(0, Math.min(1, (t - t0) / (t1 - t0))); return [x0 + (x1 - x0) * k, y0 + (y1 - y0) * k]; };
+            const watch = () => { if (film.paused || film.ended || performance.now() - idle < 2500) return; const fr = film.getBoundingClientRect(), r = tb.getBoundingClientRect(); if (fr.bottom < 0 || !r.width || !fr.width) return;
+              // the film covers its box (object-fit: cover): find where that point of the frame is on screen
+              const s0 = Math.max(fr.width / 1280, fr.height / 720), op = (getComputedStyle(film).objectPosition || "50% 50%").split(" ").map((v) => /%/.test(v) ? parseFloat(v) / 100 : 0.5), [fx, fy] = dropAt(film.currentTime);
+              const px = fr.left + (fr.width - 1280 * s0) * op[0] + fx * 1280 * s0, py = fr.top + (fr.height - 720 * s0) * (op[1] != null ? op[1] : 0.5) + fy * 720 * s0;
+              const dx = px - (r.left + r.width / 2), dy = py - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1, m = Math.min(1, d / 120) * 3.2; tx = dx / d * m; ty = dy / d * m; go(); requestAnimationFrame(watch); };
             film.addEventListener("play", () => { wideTo = 1; requestAnimationFrame(watch); }); film.addEventListener("timeupdate", () => requestAnimationFrame(watch));
             // the end of the film: over the moon. Eyes huge, three hops and a spin
             const wow = () => { if (tb.classList.contains("ag-gone")) return; tx = 0; ty = -1.2; wideTo = 1.45; lidTo = 1; go(); tb.hop(); setTimeout(() => tb.hop(), 560); setTimeout(() => tb.hop(), 1120);
@@ -11461,7 +11455,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
             film.addEventListener("ended", wow);
             if (!film.paused && !film.ended) requestAnimationFrame(watch); } }
         (function life() { setTimeout(() => { const r = tb.getBoundingClientRect(); if (!document.hidden && r.width && !tb.classList.contains("ag-gone") && performance.now() - idle > 3000 && r.bottom > 0) (Math.random() < 0.18 && tb.doze ? tb.doze() : tb.move()); life(); }, 7000 + Math.random() * 9000); })();
-        let tg0 = null; addEventListener("deviceorientation", (e) => { if (e.gamma == null || performance.now() - idle < 2500) return; if (tg0 === null) tg0 = e.gamma; tg0 += (e.gamma - tg0) * 0.003;
+        let tg0 = null; addEventListener("deviceorientation", (e) => { if (e.gamma == null || performance.now() - idle < 2500 || filmOn()) return; if (tg0 === null) tg0 = e.gamma; tg0 += (e.gamma - tg0) * 0.003;
           const dx = e.gamma - tg0, db = (e.beta || 0) - 45; if (Math.abs(dx) < 4) return; const k = Math.max(-1, Math.min(1, dx / 30)); tx = k * 3.2; ty = Math.max(-1, Math.min(1, db / 40)) * 1.2; go(); }, { passive: true });
         go(); } }
     // two Goccios never on screen at once: when the big one comes into view, the little one slides into the + and the + gulps it;
