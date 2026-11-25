@@ -2870,15 +2870,14 @@ html body .top #toolsBtn.spit{animation:agSpit .4s cubic-bezier(.3,1.5,.5,1)}
   html body .ask-line .ask-goccio.ag-out svg{animation:agSpinFast .7s cubic-bezier(.15,.7,.3,1) both}   /* out of the +: a fast spin as it lands in place */
 }
 @keyframes agOut{0%{transform:translateX(10px) scale(.3,.5);opacity:0}18%{opacity:1}40%{transform:translateX(-3px) scale(1.25,.78)}58%{transform:translateX(1px) scale(.88,1.12)}74%{transform:scale(1.06,.95)}88%{transform:scale(.98,1.02)}100%{transform:none;opacity:1}}
-/* typing in the search box: it takes the whole bar and the pills on its right merge into it like drops into a pool, the way the
-   pills come out of the + and go back into it: each leans into the box, stretched, then shrinks into it. Leaving, they come back out with a wobble */
-@keyframes pillIn{0%{transform:none;opacity:1}30%{transform:translateX(-7px) scale(1.2,.82)}65%{transform:translateX(-12px) scale(.55,.7);opacity:.85}100%{transform:translateX(-16px) scale(.12);opacity:0}}
-@keyframes pillOut{0%{transform:translateX(-16px) scale(.12);opacity:0}35%{transform:translateX(-10px) scale(.6,.75);opacity:.9}65%{transform:translateX(2px) scale(1.12,.9);opacity:1}82%{transform:translateX(-1px) scale(.97,1.03)}100%{transform:none;opacity:1}}
-html body .top.ask-on #toolsBtn, html body .top.ask-on .ask-line .ask-goccio:not(.ag-gone){animation:pillIn .55s cubic-bezier(.4,0,.6,1) forwards;pointer-events:none}
-html body .top.ask-off #toolsBtn, html body .top.ask-off .ask-line .ask-goccio:not(.ag-gone){animation:pillOut .7s cubic-bezier(.3,.7,.4,1) .12s both}
+/* typing in the search box: it takes the whole bar, flowing on over the pills on its right. The pills keep their size and place: liquid
+   necks bridge the gaps as the box runs into them, as the pills do going back into the +. Leaving, the box draws back and the necks thin and snap */
+html body .top .ask-br{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:0}
+html body .top.ask-on #toolsBtn, html body .top.ask-on .ask-line .ask-goccio:not(.ag-gone){pointer-events:none}
 html body .top.ask-on .ask-line{right:12px!important}
 html body .top:is(.ask-on,.ask-off) .ask-line{z-index:5!important} html body .top:is(.ask-on,.ask-off) .ask-line > .ask-box{position:relative;z-index:2} html body .top:is(.ask-on,.ask-off) .ask-line .ask-goccio{z-index:0}   /* the pills slip in under the box, never over it */
-html body .top.ask-on .ask-line .ask-goccio:not(.ag-gone){width:0;margin-left:-12px}
+html body .top .ask-line > .ask-box{transition:margin-right .941s linear(0,0.065,0.213,0.39,0.564,0.715,0.836,0.924,0.984,1.021,1.039,1.045,1.043,1.037,1.029,1.021,1.014,1.008,1.004,1.001,0.999,0.998,0.998,0.998,0.998)}
+html body .top.ask-on .ask-line > .ask-box{margin-right:calc(-1 * var(--pill-h,32px) - 4px)}   /* the box runs on over the little Goccio's pill; the pills keep their size and slip in under it */
 @media (prefers-reduced-motion:reduce){html body .top.ask-on #toolsBtn, html body .top.ask-on .ask-line .ask-goccio, html body .top.ask-off #toolsBtn, html body .top.ask-off .ask-line .ask-goccio{animation:none}}
 @supports (transition-timing-function:linear(0,1)){
   html body .top .ask-line{transition:opacity .25s ease, transform .25s ease, right .941s linear(0,0.065,0.213,0.39,0.564,0.715,0.836,0.924,0.984,1.021,1.039,1.045,1.043,1.037,1.029,1.021,1.014,1.008,1.004,1.001,0.999,0.998,0.998,0.998,0.998), visibility 0s linear 0s!important}
@@ -7707,7 +7706,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           return `<p class="muted" style="padding:16px 0;margin:0">${msg}</p>`; })();
     const left = list.length - Math.min(shelfN, list.length);
     $("shelfMore").hidden = false; $("shelfMore").removeAttribute("aria-hidden");
-    $("shelfMore").textContent = left > 0 ? (() => { const more = Math.max(left, (shelfPart && !q && !qActive() ? shelfPart : list.length) - Math.min(shelfN, list.length)); return `Load ${Math.min(20, more)} more (${more.toLocaleString("en-GB")})`; })() : !list.length && q ? "Clear search" : !list.length && qActive() && !shelfRo ? "Clear the filters" : "Back to top";   // the end of the list: a way back up
+    $("shelfMore").textContent = left > 0 ? (() => { const more = Math.max(left, (shelfPart && !q && !qActive() ? shelfPart : list.length) - Math.min(shelfN, list.length)); const total = !q && !qActive() ? (window.__coN || shelfPart || list.length) : list.length; return `Load ${Math.min(20, more)} more (${total.toLocaleString("en-GB")})`; /* in brackets: the same total as everywhere else */ })() : !list.length && q ? "Clear search" : !list.length && qActive() && !shelfRo ? "Clear the filters" : "Back to top";   // the end of the list: a way back up
     $("shelfMore").dataset.top = left > 0 ? "" : "1"; $("shelfMore").dataset.clear = !list.length && q ? "1" : ""; $("shelfMore").dataset.unfilter = !list.length && !q && qActive() && !shelfRo ? "1" : "";
     fitsCheck();
     $("shelf").querySelectorAll("button[data-i]").forEach((b) => b.onclick = () => { const r = shelf[+b.dataset.i];
@@ -9178,7 +9177,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const hintText = () => { if (typeof shelfRo !== "undefined" && shelfRo) { const k0 = shelf.filter((r) => r.roaster === shelfRo).length, bx = document.getElementById("askIn"), narrow = bx && bx.clientWidth && bx.clientWidth < 330;
         return LANG === "it" ? `Cerca in ${shelfRo}` : `Search ${shelfRo}`; }   /* on a roaster's page the box says whose coffees it searches */
       if (false) { const k = shelf.filter((r) => r.roaster === shelfRo).length; return LANG === "it" ? `Cerca tra ${k} caffè` : `Search ${k} coffee${k === 1 ? "" : "s"}`; }   // on a roaster's page: that roaster's coffees
-      const n = (typeof shelfPart !== "undefined" && shelfPart) || (typeof shelf !== "undefined" && shelf.length) || 0;   // the whole list, also while only its first part is in
+      const n = window.__coN || (typeof shelfPart !== "undefined" && shelfPart) || (typeof shelf !== "undefined" && shelf.length) || 0;   // the whole list, also while only its first part is in
       const box = document.getElementById("askIn"), nr = box && box.clientWidth && box.clientWidth < 290 ? 0 : (window.__roN || 0);   // and the roasters: "Search 8,757 coffees, 732 roasters" (a very narrow phone keeps just the coffees)
       // one box for both: coffees to find, or a question for Goccio
       const narrowAsk = box && box.clientWidth && box.clientWidth < 360;   /* a phone: the short form, so it never ends in "…" */
@@ -9456,7 +9455,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           const it0 = LANG === "it", when = aDay === ymd0(0) ? (it0 ? "oggi" : "today") : aDay === ymd0(1) ? (it0 ? "ieri" : "yesterday") : aDay ? (it0 ? "il " : "on ") + isoDm(aDay) : "";
           // and how many roasters joined that day (the totals are in the search box): "202 coffees and 12 roasters added yesterday."
           const aR = part && d.added_roasters_n != null ? d.added_roasters_n : (d.roasters || []).filter((x) => x && x.first_seen === aDay).length;
-          window.__roN = nR;
+          window.__roN = nR; window.__coN = nC;   // one count for the whole site: the hero, the search box, the list button and Goccio all say this
           const loc0 = it0 ? "it-IT" : "en-GB", cN = `${aN.toLocaleString(loc0)} ${it0 ? "caffè" : "coffee" + (aN === 1 ? "" : "s")}`, rN = aR > 0 ? ` ${it0 ? "e" : "and"} ${aR.toLocaleString(loc0)} ${it0 ? (aR === 1 ? "torrefazione" : "torrefazioni") : "roaster" + (aR === 1 ? "" : "s")}` : "";
           const added = aN > 0 && when ? `${cN}${rN} ${it0 ? (aR > 0 ? (aR === 1 ? "aggiunta" : "aggiunte") : aN !== 1 ? "aggiunti" : "aggiunto") : "added"} ${when}.` : "";
           if (window.__searchHint) try { window.__searchHint(); } catch (e) {}
@@ -10381,7 +10380,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       else if (/natural/.test(pr)) out.push(T("it's a natural: sweet and fruit-forward", "è un naturale: dolce e fruttato"));
       else if (/honey/.test(pr)) out.push(T("it's a honey process: sweet, round and juicy", "è un honey: dolce, rotondo e succoso"));
       else if (/washed/.test(pr)) out.push(T("it's washed: clean and bright", "è lavato: pulito e vivace"));
-      if (r.just_in) out.push(T("it only landed today", "è arrivato solo oggi"));
+      if (r.just_in) out.push(T(`it only landed ${landedOn(r)}`, `è arrivato solo ${landedOn(r)}`));
       if (!out.length && r.origin) out.push(T(`it's a ${r.origin} from ${roasteryName(r.roaster)}, who know what they're doing`, `è un ${r.origin} della ${roasteryName(r.roaster)}, che sa il fatto suo`));
       return out.slice(0, 3); };
     // a follow-up about the coffee it just named
@@ -10421,7 +10420,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const fits = (r) => forFilter ? ((r.roast_for === "filter" || /^(v?light)$/.test(r.roast || "")) ? 3 : 0) - ((r.roast_for === "espresso" || /dark/.test(r.roast || "")) ? 6 : 0) : forEsp ? ((r.roast_for === "espresso" || /medium|dark/.test(r.roast || "")) ? 3 : 0) - (r.roast_for === "filter" ? 2 : 0) : 0; const pool0 = (typeof shelf !== "undefined" ? shelf : []).filter((r) => r.just_in), pool = pool0.length ? pool0 : (typeof shelf !== "undefined" ? shelf : []).filter((r) => r.new);
       const fresh = pool.filter((r) => !picked.has(r.url)); const list = fresh.length ? fresh : pool; if (!list.length) return say(T("Nothing new has landed yet today. Ask me again later!", "Oggi non è ancora arrivato niente di nuovo. Richiedimelo più tardi!"), null, hmm);
       const score = (r) => fits(r) + suits(r) * 3 + (notesOf(r).length ? 2 : 0) + (/gesha|geisha|sidra|pink bourbon|wush|laurina|eugenioides/i.test(r.variety || r.name || "") ? 2 : 0) + (/natural|anaerobic|honey|carbonic|co-?ferment/i.test(r.process || "") ? 1 : 0) + Math.random() * 1.5;
-      const r = list.map((x) => [score(x), x]).sort((a, b) => b[0] - a[0])[0][1]; picked.add(r.url);
+      const r = list.map((x) => [score(x), x]).sort((a, b) => b[0] - a[0])[0][1]; picked.add(r.url); lastCo = { r, at: Date.now() };
       const lead = again ? pick([T("How about this one: ", "Che ne dici di questo: "), T("Another good one: ", "Un altro buono: "), T("Then try ", "Allora prova ")]) : pick([T("My pick of today's: ", "Il mio preferito di oggi: "), T("If I had to choose one today: ", "Se dovessi sceglierne uno oggi: "), T("This one caught my eye: ", "Questo mi ha colpito: ")]);
       const yours = suits(r) ? T(" Right up your street.", " Proprio nel tuo stile.") : "", br = bw ? (fits(r) > 0 ? T(` Roasted for ${forEsp ? "espresso" : "filter"}, so it suits ${/^[aeiou]/i.test(brewName(bw)) ? "an" : "a"} ${brewName(bw)}.`, ` Tostato per ${forEsp ? "espresso" : "filtro"}, perfetto per ${brewName(bw)}.`) : "") : mem.brewer && Math.random() < 0.5 ? T(` Lovely in your ${brewName(mem.brewer)}.`, ` Ottimo nel tuo ${brewName(mem.brewer)}.`) : "";
       if (then) { say(lead + describe(r) + " " + then(r), null, happy); return r; }
@@ -10569,12 +10568,16 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         if (!k) return miss(); if (k !== "unsure") g.process = k; else g.process = "auto"; g.tries = 0; gbGo(g, ""); return true; }
       gbs = null; return false; };
     // the hello: a fresh one each time, with something from what landed today (one that suits you, if it knows your taste)
+    // the day the newest coffees landed, in the list's own words: today, yesterday, or the date
+    const landedOn = (r) => { const d0 = (r && r.found) || ""; const ymd = (k) => { const t = new Date(); t.setDate(t.getDate() - k); return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`; };
+      return d0 === ymd(0) || !d0 ? T("today", "oggi") : d0 === ymd(1) ? T("yesterday", "ieri") : T("on ", "il ") + isoDm(d0); };
     const hello = () => { const today = (typeof shelf !== "undefined" ? shelf : []).filter((r) => r.just_in), n = today.length, hi = pick([T(`Hi ${name}!`, `Ciao ${name}!`), T(`Hello ${name}!`, `Ciao ${name}!`), T(`Oh, hi ${name}!`, `Oh, ciao ${name}!`), T(`Hey ${name}!`, `Ehi ${name}!`)]);
       if (!n) return say(hi + " " + pick([T("Ask me about coffee.", "Chiedimi del caffè."), T("What are we brewing?", "Cosa prepariamo?"), T("Need a hand with your coffee?", "Ti serve una mano col caffè?")]), null, happy);
       const best = today.map((x) => [suits(x) * 3 + (notesOf(x).length ? 1.5 : 0) + Math.random() * 2, x]).sort((a, b) => b[0] - a[0])[0][1], ns = notesOf(best); picked.add(best.url); lastCo = { r: best, at: Date.now() };
       const what = `${best.name} ${T("from", "di")} ${roasteryName(best.roaster)}${ns.length ? T(", tasting of ", ", che sa di ") + andList(ns) : ""}`;
-      const line = suits(best) ? pick([T(`${n} new coffees landed today, and one's very you: ${what}.`, `Oggi sono arrivati ${n} caffè nuovi, e uno è proprio per te: ${what}.`), T(`Fresh in today, right up your street: ${what}.`, `Arrivato oggi, proprio nel tuo stile: ${what}.`)])
-        : pick([T(`${n} new coffees landed today. One caught my eye: ${what}.`, `Oggi sono arrivati ${n} caffè nuovi. Uno mi ha colpito: ${what}.`), T(`Fresh today: ${what}, and ${n - 1} more.`, `Novità di oggi: ${what}, e altri ${n - 1}.`), T(`Guess what landed today? ${what}.`, `Indovina cos'è arrivato oggi? ${what}.`)]);
+      const on = landedOn(best);
+      const line = suits(best) ? pick([T(`${n} new coffees landed ${on}, and one's very you: ${what}.`, `${on[0].toUpperCase() + on.slice(1)} sono arrivati ${n} caffè nuovi, e uno è proprio per te: ${what}.`), T(`New ${on}, right up your street: ${what}.`, `Arrivato ${on}, proprio nel tuo stile: ${what}.`)])
+        : pick([T(`${n} new coffees landed ${on}. One caught my eye: ${what}.`, `${on[0].toUpperCase() + on.slice(1)} sono arrivati ${n} caffè nuovi. Uno mi ha colpito: ${what}.`), T(`New ${on}: ${what}, and ${n - 1} more.`, `Novità di ${on}: ${what}, e altri ${n - 1}.`), T(`Guess what landed ${on}? ${what}.`, `Indovina cos'è arrivato ${on}? ${what}.`)]);
       say(hi + " " + line, [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); search(best.name + " " + best.roaster); } }], happy); ctx = { t: "pick", at: Date.now() }; };
     // now and then, after an answer, it asks you something back: first what it doesn't know about you yet
     const askBack = () => { if (++sinceAsk < 2 || Math.random() > 0.55) return; sinceAsk = 0; const t0 = Date.now();
@@ -10656,6 +10659,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       2025: ["Jack Simpson", "Australia", "Australia"], 2026: ["Pan Wei", "China", "Cina"] };
     const WBC_LAST = Math.max(...Object.keys(WBC).map(Number));
     const EARLY = [
+      // "anything else?", "what else?": after a coffee it named, another one; otherwise an offer of what it can do
+      [/^(anything|something|what) else\b|^(any )?others?\b|^(anything |any )?more\b[ ?!.]*$|^show me (another|more|others)\b|^(altro|qualcos'?altro|altri|che altro)\b/i, () => { if (lastCo && Date.now() - lastCo.at < 600000) return pickNew(true, mem.brewer);
+        say(pick([T("Plenty! Ask me for a coffee pick, help with a sour or bitter cup, or say 'let's brew' and we'll make one together.", "Tanto! Chiedimi un caffè da provare, aiuto con una tazza acida o amara, o di' 'prepariamo' e lo facciamo insieme."), T("Want another coffee to try, a recipe, or shall we brew one together?", "Vuoi un altro caffè da provare, una ricetta, o ne prepariamo uno insieme?")]), null, happy); }],
       // filled in after a check of 120 everyday questions (25/11/2026)
       F(/\b(when (was|were) (it|they|these|those|the|my)( beans?| coffee| bag)? roasted|roast(ed)? date|does (the )?roast date matter|how (fresh|old) should (the )?(beans|coffee) be|data di tostatura)\b/i, "It matters, but fresher isn't always better. Filter coffee is usually best from about one to five weeks after the roast date, espresso from about two to six. Too fresh and it's gassy and uneven; much older and it fades. Look for a roast date on the bag, not just a best-before.", "Conta, ma più fresco non è sempre meglio. Il caffè filtro di solito dà il meglio da una a cinque settimane dopo la tostatura, l'espresso da due a sei. Troppo fresco è pieno di gas; troppo vecchio si spegne. Cerca la data di tostatura sulla busta, non solo la scadenza."),
       F(/\bhoney (process|processed|coffee)\b|\bwhat is honey\b|\bblack honey|red honey|yellow honey|white honey|processo honey/i, "Honey process sits between washed and natural: the skin comes off, but some of the sticky fruit (the 'mucilage', which looks like honey) stays on while the beans dry. White and yellow honey keep less of it, red and black keep more and dry slower. Expect sweet, round and juicy, with a little more body than a washed coffee.", "Il processo honey sta tra il lavato e il naturale: si toglie la buccia, ma parte della polpa appiccicosa (la 'mucillagine', che sembra miele) resta sui chicchi mentre asciugano. White e yellow honey ne tengono meno, red e black di più e asciugano più lentamente. Aspettati un caffè dolce, rotondo e succoso, con un po' più di corpo di un lavato."),
@@ -10685,7 +10691,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       F(/^(help|aiuto|what can you do|cosa sai fare)\b[ ?!.]*$/i, "I can find coffees (try 'something fruity' or a roaster's name), pick one from today's new ones, explain brewing (grind, ratio, temperature, why it's sour or bitter), compare brewers and grinders, and answer coffee questions. I also tell the weather and the odd joke.", "Posso trovare caffè (prova 'qualcosa di fruttato' o il nome di una torrefazione), sceglierne uno tra i nuovi di oggi, spiegare la preparazione (macinatura, rapporto, temperatura, perché è acido o amaro), confrontare metodi e macinini, e rispondere a domande sul caffè. Ti dico anche il meteo e qualche barzelletta."),
       [/what'?s up|wassup|\bsup\b|how are you|how r u|how'?s (it going|your day|life|things)|how (have|ve) you been|how (do|are) you feel|how you doing|how do you do|are you (ok|okay|alright|well|good)|you (ok|okay|alright)\b|come (va|stai|ti senti)|tutto (bene|ok)|che si dice|che fai|come butta/i, () => say(pick([
         T("Just brewing ideas. You?", "Sto preparando idee. E tu?"), T("Feeling fresh, a bit fruity, lightly roasted. You?", "Mi sento fresco, un po' fruttato, tostatura chiara. E tu?"), T("Sloshing about happily. What are we brewing?", "Sguazzo felice. Cosa prepariamo?"),
-        T(`${pick(["404", "Lots of", "Plenty of"])} new coffees landed today, so I'm buzzing.`, "Oggi sono arrivati tanti caffè nuovi, quindi sono su di giri."), T("Not much, just waiting for the kettle to boil.", "Niente di che, aspetto che bolla il bollitore."),
+        T(`${pick(["Lots of", "Plenty of"])} new coffees landed ${landedOn((coffees().find((x) => x.just_in)) || null)}, so I'm buzzing.`, `${(() => { const o = landedOn((coffees().find((x) => x.just_in)) || null); return o[0].toUpperCase() + o.slice(1); })()} sono arrivati tanti caffè nuovi, quindi sono su di giri.`), T("Not much, just waiting for the kettle to boil.", "Niente di che, aspetto che bolla il bollitore."),
         T("Living my best drop life. How's your coffee today?", "Mi godo la vita da goccia. Com'è il tuo caffè oggi?"), T("Bit of a slow drip today. Ask me something to perk me up!", "Oggi gocciolo lento. Chiedimi qualcosa per svegliarmi!"),
         T("Freshly brewed and ready. How about you?", "Appena fatto e pronto. E tu?"), T("Great, thanks for asking! Hot, sweet and a little bit fruity. You?", "Benissimo, grazie! Caldo, dolce e un po' fruttato. E tu?"),
         T(`${new Date().getHours() < 11 ? "Waking up slowly, like everyone before the first cup." : new Date().getHours() < 17 ? "Good! Peak coffee hours." : "A bit sleepy. Decaf mood."} And you?`, `${new Date().getHours() < 11 ? "Mi sveglio piano, come tutti prima del primo caffè." : new Date().getHours() < 17 ? "Bene! Sono le ore d'oro del caffè." : "Un po' assonnato. Momento decaffeinato."} E tu?`)]), null, happy)],
@@ -10844,8 +10850,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           `${list.length} caffè nuovi ${dayWord(day)}. Uno che mi piace: ${r.name} della ${roasteryName(r.roaster)}${ns.length ? ", " + andList(ns) : ""}.`),
           [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); search(r.name); } }, T("Surprise me", "Sorprendimi")], happy); }],
       [/^(another|one more|un altro|altro)\b/i, () => ask(moreQ || T("Surprise me", "Sorprendimi"))],
-      [/how many (coffees|roasters)|quanti (caff|torref)/i, () => { const cs = coffees(), ro = new Set(cs.map((r) => r.roaster)).size;
-        say(T(`Right now I know ${cs.length.toLocaleString("en-GB")} coffees from ${ro} roasters, and more arrive every day.`, `Adesso conosco ${cs.length.toLocaleString("it-IT")} caffè di ${ro} torrefazioni, e ogni giorno ne arrivano altri.`), null, surprised); }],
+      [/how many (coffees|roasters)|quanti (caff|torref)/i, () => { const cs = { length: window.__coN || coffees().length }, ro = window.__roN || new Set(coffees().map((r) => r.roaster)).size;
+        say(T(`Right now I know ${cs.length.toLocaleString("en-GB")} coffees from ${ro.toLocaleString("en-GB")} roasters, and more arrive every day.`, `Adesso conosco ${cs.length.toLocaleString("it-IT")} caffè di ${ro} torrefazioni, e ogni giorno ne arrivano altri.`), null, surprised); }],
       [/^(?!.*\b(italian|italiano|italia|italy)\b)(.*)(best coffee|favourite coffee|favorite coffee|caff[eè] migliore|il migliore)/i, () => say(T("There's no single best: it's the one you love. Tell me a flavour, like strawberry or chocolate, and I'll find coffees that taste of it.", "Non c'è un migliore: è quello che ami. Dimmi un sapore, tipo fragola o cioccolato, e ti trovo i caffè che lo ricordano."), null, smile)],
       // brewers
       // the basics: what coffee is, where the bean comes from, how it gets to the cup
@@ -11590,9 +11596,25 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         setTimeout(async function late() { if (document.documentElement.classList.contains("wait")) return setTimeout(late, 1000);   /* the film only starts loading once the page shows */ if (filmOnCanvas || (v.readyState >= 2 && !v.error)) return; try { const r = await fetch("/img/goccio-drop2.mp4?v=7"); if (!r.ok) return; fetch("/img/goccio-ripples.mp4?v=4").then((x) => x.ok && x.blob()).then((b) => { const lp = $("wmLoop"); if (b && lp) { lp.dataset.src = URL.createObjectURL(b); } }).catch(() => {});
             v.src = URL.createObjectURL(await r.blob()); v.load(); kick(); } catch (e) {} }, 4000);
       } } }
-  { const ai = $("askIn"), top = document.querySelector(".top"); let offT = 0;
-    if (ai && top) { ai.addEventListener("focus", () => { clearTimeout(offT); top.classList.remove("ask-off"); top.classList.add("ask-on"); });
-      ai.addEventListener("blur", () => { if (!top.classList.contains("ask-on")) return; top.classList.remove("ask-on"); top.classList.add("ask-off"); clearTimeout(offT); offT = setTimeout(() => top.classList.remove("ask-off"), 950); }); } }
+  { const ai = $("askIn"), top = document.querySelector(".top"); let offT = 0, raf = 0;
+    // the necks: the box's round end to the little Goccio's pill, and that pill to the +, drawn with the same metaball bridge as the + uses
+    const NS = "http://www.w3.org/2000/svg", sv = document.createElementNS(NS, "svg"); sv.setAttribute("class", "drop-br ask-br"); sv.setAttribute("aria-hidden", "true");
+    const P = [document.createElementNS(NS, "path"), document.createElementNS(NS, "path")]; P.forEach((x) => sv.appendChild(x)); if (top) top.prepend(sv);
+    const necks = (merging) => { cancelAnimationFrame(raf); if (!window.__bridge || matchMedia("(prefers-reduced-motion: reduce)").matches) return; const t0 = performance.now(), G = 9, gone = [false, false];
+      const step = (now) => { const t = now - t0, o = sv.getBoundingClientRect(), box = top.querySelector(".ask-box"), g = $("askGoccio"), pl = $("toolsBtn"); if (!box || !pl) return;
+        const pills = [box, g && g.offsetWidth && !g.classList.contains("ag-gone") ? g : null, pl].filter(Boolean);
+        [0, 1].forEach((i) => { let d = ""; const A0 = pills[i], B0 = pills[i + 1];
+          if (A0 && B0 && !gone[i]) { const A = A0.getBoundingClientRect(), B = B0.getBoundingClientRect(), r = Math.min(A.height, B.height) / 2, gap = B.left - A.right;
+            // a gap closing fattens the neck; between two pills that don't move it swells in over time (merging) or thins and snaps (parting)
+            let v = gap <= 0 ? 0.5 : gap >= G ? 0 : Math.max(0.06, 0.5 * Math.pow(1 - gap / G, 2 / 3));
+            if (i === 1 || A0 !== box) v = merging ? 0.5 * Math.min(1, Math.sqrt(t / 260)) : Math.max(0, 0.5 * (1 - t / 380));
+            if (!merging && v <= 0.06 && t > 120) gone[i] = true;
+            if (v > 0 && !gone[i]) d = window.__bridge([A.right - r - o.left, A.top + A.height / 2 - o.top], r, [B.left + B.width / 2 - o.left, B.top + B.height / 2 - o.top], B.height / 2, v); }
+          P[i].setAttribute("d", d); });
+        if (t < 1000) raf = requestAnimationFrame(step); else P.forEach((x) => x.setAttribute("d", "")); };
+      raf = requestAnimationFrame(step); };
+    if (ai && top) { ai.addEventListener("focus", () => { clearTimeout(offT); top.classList.remove("ask-off"); top.classList.add("ask-on"); necks(true); });
+      ai.addEventListener("blur", () => { if (!top.classList.contains("ask-on")) return; top.classList.remove("ask-on"); top.classList.add("ask-off"); necks(false); clearTimeout(offT); offT = setTimeout(() => top.classList.remove("ask-off"), 950); }); } }
   window.__v60 = { showReview, analyseBeans, decafGuard, parseCoffee, engine, suggest, cupNotes, cardImage, risks, recipeText, BASE, get recipe() { return recipe; }, get shelf() { return shelf; } };
 })();
 </script>
