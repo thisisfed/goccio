@@ -9985,15 +9985,18 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   const makeBuddy = (el, opt = {}) => { const body = el && el.querySelector(".gd-b"), eyes = el && el.querySelector(".gd-e"), all = el && el.querySelector(".gd-all"); if (!el || !body || !all) return null;
     const still = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
     // cold: a blue layer of the same shape over the body (a fill, not a filter: Safari won't filter parts of an SVG)
-    const coldP = (() => { try { const NS0 = "http://www.w3.org/2000/svg", svg0 = body.ownerSVGElement, gid = "gdCold" + Math.random().toString(36).slice(2, 7);
+    // cold and hot: a layer of the same shape over the body, a cold blue or a hot red (a fill, not a filter: Safari won't filter parts of an SVG)
+    const tintLayer = (name, stops, flat) => { try { const NS0 = "http://www.w3.org/2000/svg", svg0 = body.ownerSVGElement, gid = name + Math.random().toString(36).slice(2, 7);
         if (svg0) { let df = svg0.querySelector("defs"); if (!df) { df = document.createElementNS(NS0, "defs"); svg0.prepend(df); }
           const gr = document.createElementNS(NS0, "radialGradient"); gr.id = gid; gr.setAttribute("cx", ".45"); gr.setAttribute("cy", ".6"); gr.setAttribute("r", ".62");
-          [[0, "#d8ecfc"], [0.45, "#86bdf0"], [0.85, "#3f78b8"], [1, "#1f3f6a"]].forEach(([o, c0]) => { const st = document.createElementNS(NS0, "stop"); st.setAttribute("offset", o); st.setAttribute("stop-color", c0); gr.appendChild(st); }); df.appendChild(gr); }
-        const c = document.createElementNS(NS0, "path"); c.setAttribute("class", "gd-cold"); c.setAttribute("fill", svg0 ? `url(#${gid})` : "#86bdf0"); c.style.opacity = "0"; c.style.pointerEvents = "none"; body.after(c); return c; } catch (e) { return null; } })();
+          stops.forEach(([o, c0]) => { const st = document.createElementNS(NS0, "stop"); st.setAttribute("offset", o); st.setAttribute("stop-color", c0); gr.appendChild(st); }); df.appendChild(gr); }
+        const c = document.createElementNS(NS0, "path"); c.setAttribute("class", "gd-" + name); c.setAttribute("fill", svg0 ? `url(#${gid})` : flat); c.style.opacity = "0"; c.style.pointerEvents = "none"; body.after(c); return c; } catch (e) { return null; } };
+    const coldP = tintLayer("cold", [[0, "#d8ecfc"], [0.45, "#86bdf0"], [0.85, "#3f78b8"], [1, "#1f3f6a"]], "#86bdf0");
+    const hotP = tintLayer("hot", [[0, "#ffb08a"], [0.45, "#f0563a"], [0.85, "#b5201a"], [1, "#6a0d0b"]], "#f0563a");
     // a mouth: the whole lower third of the body, a wide grin that opens with joy and shuts tight when sad
     const W0 = 36, H0 = 24, R0 = 15.5;   // at rest: a dome 36 wide, 24 high; falling: a round drop of about the same volume
     const wS = 2 * Math.PI / 0.24, zS = 0.3, wL = 2 * Math.PI / 0.42, zL = 0.45, G = 2600;
-    const S = { aRest: 0, eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, fone: 0, umb: 0, scroll: 0, jx: 0, blush: 0, turn: 0, armL: 0, armR: 0, armLa: 0, armRa: 0, flip: 0, cold: 0, tumble: 0, cross: 0 }; let rigid = false, jy = 0, jv = 0, ptrX = 0, ptrY = 0, ptrT = 0; let tws = [], a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
+    const S = { aRest: 0, eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, fone: 0, umb: 0, scroll: 0, jx: 0, blush: 0, turn: 0, armL: 0, armR: 0, armLa: 0, armRa: 0, flip: 0, cold: 0, hot: 0, tumble: 0, cross: 0 }; let rigid = false, jy = 0, jv = 0, ptrX = 0, ptrY = 0, ptrT = 0; let tws = [], a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
     const draw = () => {
       // the shape it has just before it falls: round. Squashed or stretched it keeps its volume (taller is narrower); its top
       // sways with the page; it sits on its lowest point
@@ -10005,7 +10008,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         const tx = ox + dx * (rx * 0.22 + L), ty = oy + dy * (rx * 0.22 + L), f = (v) => v.toFixed(2);
         return ` M ${f(ox + nx * wb)} ${f(oy + ny * wb)} C ${f(ox + dx * L * 0.55 + nx * (wb * 0.55 + bend))} ${f(oy + dy * L * 0.55 + ny * (wb * 0.55 + bend))} ${f(tx - dx * rt + nx * rt)} ${f(ty - dy * rt + ny * rt)} ${f(tx + nx * rt)} ${f(ty + ny * rt)}`
           + ` Q ${f(tx + dx * rt * 1.5)} ${f(ty + dy * rt * 1.5)} ${f(tx - nx * rt)} ${f(ty - ny * rt)} C ${f(tx - dx * rt - nx * rt)} ${f(ty - dy * rt - ny * rt)} ${f(ox + dx * L * 0.55 - nx * (wb * 0.55 - bend))} ${f(oy + dy * L * 0.55 - ny * (wb * 0.55 - bend))} ${f(ox - nx * wb)} ${f(oy - ny * wb)} Z`; };
-      body.setAttribute("d", d); if (coldP) { coldP.setAttribute("d", d); coldP.style.opacity = (S.cold * 0.86).toFixed(2); } const AR = el.querySelectorAll(".gd-arm"); if (AR.length === 2) { AR[0].setAttribute("d", arm(-1, S.armL, S.armLa)); AR[1].setAttribute("d", arm(1, S.armR, S.armRa)); }   /* behind the body, so they flow out of it */
+      body.setAttribute("d", d); if (coldP) { coldP.setAttribute("d", d); coldP.style.opacity = (S.cold * 0.86).toFixed(2); } if (hotP) { hotP.setAttribute("d", d); hotP.style.opacity = (S.hot * 0.8).toFixed(2); } const AR = el.querySelectorAll(".gd-arm"); if (AR.length === 2) { AR[0].setAttribute("d", arm(-1, S.armL, S.armLa)); AR[1].setAttribute("d", arm(1, S.armR, S.armRa)); }   /* behind the body, so they flow out of it */
       const hl = el.querySelector(".gd-h"); if (hl) hl.setAttribute("transform", `translate(${(cx * 0.5 - rx * 0.45).toFixed(2)} ${(top + ry * 0.42).toFixed(2)}) rotate(-35)`);
       const tm = ((S.turn % 2) + 2) % 2, back = tm > 0.5 && tm < 1.5, tbA = S.tumble * Math.PI * 2, tv = Math.cos(tbA), tw = Math.sin(tbA); eyes.style.opacity = back || tv < 0 ? "0" : "1";   /* a roly-poly: the face rolls down and under, round the back, and comes back over the top */   /* turn 0→1 shows its back, 0→2 is a whole spin */
       const bt = el.querySelector(".gd-butt"); if (bt) { bt.style.opacity = back ? "1" : "0"; bt.setAttribute("d", `M ${cx * 0.2} ${(bot - ry * 0.62).toFixed(2)} Q ${(cx * 0.2 + 1.2).toFixed(2)} ${(bot - ry * 0.3).toFixed(2)} 0 ${(bot - 1.2).toFixed(2)}`); }   /* its back: no face, just a little crease */
@@ -10171,10 +10174,13 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         lookY = -0.8; draw(); tween("flip", 0, 120); tween("aRest", 0.08, 120); await face({ eyeL: 1, eyeR: 1, eyeSL: 1.3, eyeSR: 1.3 }, 120); poke(-1.4);
         await wait(220); tween("aRest", 0, 320); await face({ eyeSL: 1, eyeSR: 1 }, 380); lookY = 0; draw(); await wait(deep ? 300 : 1100); } S.flip = 0; });
     // cold: it turns a cold blue, squints and shivers, then warms back up to coffee brown
-    const cold = (ms) => act(async () => { tween("cold", 1, 900); await face({ eyeL: 0.62, eyeR: 0.62, eyeSL: 0.92, eyeSR: 0.92 }, 400);
-      const end = performance.now() + (ms || 4500); let sd = 1;
+    const cold = (ms) => act(async () => { tween("cold", 1, 350); await face({ eyeL: 0.62, eyeR: 0.62, eyeSL: 0.92, eyeSR: 0.92 }, 250);
+      const end = performance.now() + (ms || 1400); let sd = 1;
       while (performance.now() < end) { S.jx = sd * (0.7 + Math.random() * 0.5); sd = -sd; draw(); await wait(40 + Math.random() * 25); if (Math.random() < 0.03) { await wait(280); } }
-      S.jx = 0; draw(); await tween("cold", 0, 1100); poke(-1); });
+      S.jx = 0; draw(); await tween("cold", 0, 450); poke(-1); });
+    // hot: it flushes red, eyes heavy, sags a little and sways in the heat, then cools back to coffee brown
+    const hot = (ms) => act(async () => { tween("hot", 1, 400); tween("aRest", -0.1, 500); await face({ eyeL: 0.5, eyeR: 0.5, eyeSL: 1.05, eyeSR: 1.05 }, 400);
+      leanTo = -1.6; go(); await wait((ms || 1500) / 2); leanTo = 1.6; go(); await wait((ms || 1500) / 2); leanTo = 0; tween("aRest", 0, 400); await tween("hot", 0, 500); poke(-1); });
     // the chat steers its eyes: they glide to where they're asked to look, never jump (a frame loop of its own, eased)
     let lkX = 0, lkY = 0, lkRaf = 0;
     const look = (x, y) => { lkX = x; lkY = y; if (lkRaf) return; const tick = () => { lookX += (lkX - lookX) * 0.14; lookY += (lkY - lookY) * 0.14; draw();
@@ -10239,7 +10245,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         [20, () => { const b = (k) => { blink = k; draw(); }; b(0.12); setTimeout(() => b(1), 130); if (Math.random() < 0.3) setTimeout(() => { b(0.12); setTimeout(() => b(1), 120); }, 300); }],
         [14, happy], [12, smile], [10, yawn], [8, dance], [8, jumps], [5, yes], [5, no], [3, curious], [2.5, hmm], [2, () => think(1800)], [2, bored], [2, surprised],
         [2, wink], [1.6, crossEyes], [1.6, sleepy], [1.6, doze], [1.2, onPhone], [1.2, backflip], [0.8, roll], [0.8, rolypoly], [0.8, upside],
-        [0.7, closeLook], [0.7, boop], [0.5, () => umbrella(4200)], [0.5, () => cold(3200)], [quiet ? 0.4 : 0, boo],
+        [0.7, closeLook], [0.7, boop], [0.5, () => umbrella(4200)], [0.5, () => cold(1400)], [0.5, () => hot(1500)], [quiet ? 0.4 : 0, boo],
         [following ? 0 : 5, () => { lookX = (Math.random() < 0.5 ? -1 : 1) * 3; lookY = Math.random() < 0.4 ? -1.5 : 0; draw(); setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900 + Math.random() * 700); }],
         [2, () => poke(-0.9)]];
       let w = r * MOVES.reduce((t, m) => t + m[0], 0); for (const [k, f] of MOVES) { if ((w -= k) < 0) { f(); break; } } };
@@ -10276,7 +10282,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1; lookX = dx / d * 3; lookY = dy / d * 1.5; draw();
       setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900); }, { passive: true });
     el.addEventListener("click", () => { if (farted) { farted = false; return; } if (opt.tap) opt.tap(); else if (!acting) jumps(); });
-    return { S, busy: () => acting, free: () => { acting = false; }, doze, cold, text, rolypoly, crossEyes, closeLook, boop, look, tilt: (v) => tween("aRest", v, 320), umbrella, onPhone, roll, landed: () => phase !== "fall", bored, moon, fartBack, upside, boo, think, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, fart, draw,
+    return { S, busy: () => acting, free: () => { acting = false; }, doze, cold, hot, text, rolypoly, crossEyes, closeLook, boop, look, tilt: (v) => tween("aRest", v, 320), umbrella, onPhone, roll, landed: () => phase !== "fall", bored, moon, fartBack, upside, boo, think, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, fart, draw,
       bob: () => { poke(-0.7 - Math.random() * 0.6); if (Math.random() < 0.3) { jv = -90; go(); } } }; };
     // ---- talking: tap the drop and ask it something. It answers in a bubble, the words typing themselves out while it bobs.
     // It knows a handful of things for certain (what's new, a coffee to try, sour or bitter, ratio, temperature, grind, the processes,
@@ -10797,7 +10803,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         T("A mouth would make me a sip. I'd rather stay a drop.", "Con la bocca sarei un sorso. Preferisco restare una goccia."),
         T("My eyes do all the talking. Look: happy!", "Parlano i miei occhi. Guarda: felice!")]), null, happy)],
       [/^(?!.*\b(scan|app|photo|camera|website|site|page|recipe|how|why|what|which|best|grinder|scale|timer)\b).{0,40}\b(phone|iphone|instagram|tiktok|scroll(ing)?|doomscroll\w*|social media|telefono|cellulare|telefonino)\b/i, () => { say(pick([T("One sec, just checking something…", "Un attimo, controllo una cosa…"), T("Sorry, I was just scrolling coffee pics.", "Scusa, stavo guardando foto di caffè."), T("Hang on, someone posted a latte art swan.", "Aspetta, qualcuno ha postato un cigno di latte art.")]), null); setTimeout(() => { D.free(); D.onPhone(); }, 450); }, true],
-      [/\b(are you cold|i'?m (so )?cold|it'?s (so |really )?(cold|freezing)|brr+|freezing|hai freddo|ho freddo|che freddo|si gela|fa freddo)\b/i, () => { say(pick([T("Brrr. Quick, put the kettle on.", "Brrr. Presto, metti su l'acqua."), T("Don't. I'm going blue just hearing it.", "Non dirlo. Divento blu solo a sentirlo.")]), null); setTimeout(() => { D.free(); D.cold(4500); }, 450); }, true],
+      [/\b(are you cold|i'?m (so )?cold|it'?s (so |really )?(cold|freezing)|brr+|freezing|hai freddo|ho freddo|che freddo|si gela|fa freddo)\b/i, () => { say(pick([T("Brrr. Quick, put the kettle on.", "Brrr. Presto, metti su l'acqua."), T("Don't. I'm going blue just hearing it.", "Non dirlo. Divento blu solo a sentirlo.")]), null); setTimeout(() => { D.free(); D.cold(1500); }, 450); }, true],
+      [/\b(i'?m (so )?hot|it'?s (so |really )?(hot|boiling)|so hot|heatwave|are you hot|fa caldo|che caldo|ho caldo|si muore di caldo)\b/i, () => { say(pick([T("Phew. I'm brewing myself over here.", "Uff. Qui mi sto preparando da solo."), T("Too hot! Iced coffee, quick.", "Troppo caldo! Caffè freddo, presto.")]), null); setTimeout(() => { D.free(); D.hot(1600); }, 450); }, true],
       [/\b(umbrella|ombrello|is it raining|it'?s raining|sta piovendo|piove)\b/i, () => { say(pick([T("Never leave home without it.", "Mai uscire senza."), T("Drip, drip. Good thing I'm waterproof. Well, I am water.", "Plic, plic. Per fortuna sono impermeabile. Anzi, sono acqua.")]), null); setTimeout(() => { D.free(); D.umbrella(5200); }, 450); }, true],
       [/\b(what|which) version|version (are|is) (you|goccio)|goccio version|che versione|quale versione/i, () => say(T("Goccio Beta 0.9. Still learning, a drop at a time.", "Goccio Beta 0.9. Sto ancora imparando, una goccia alla volta."), null, happy), true],
       [/\b(come (closer|here|nearer)|get closer|look at me|vieni (qui|qua|vicino)|avvicinati|più vicino)\b/i, () => { say(pick([T("Hello there.", "Ciao, eh."), T("Let me have a proper look at you.", "Fammi guardare bene.")]), null); setTimeout(() => { D.free(); D.closeLook(); }, 450); }, true],
@@ -11239,13 +11246,13 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         placeIn ? Promise.resolve({}) : fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${la}&longitude=${lo}&localityLanguage=${LANG === "it" ? "it" : "en"}`).then((r) => r.json()).catch(() => ({}))]);
       const c = w && w.current; if (!c) throw 0; const t = Math.round(c.temperature_2m), wc = c.weather_code, day = c.is_day !== 0, d = (WX[wc] || ["", ""])[LANG === "it" ? 1 : 0], place = placeIn || g.city || g.locality || "";
           // react to it: storms, snow, rain, fog, frost, heat, a clear night, a sunny day
-      const brolly = () => { if (D) { D.free(); D.umbrella(6000); } }, brr = () => { if (D) { D.free(); D.cold(5000); } };
+      const brolly = () => { if (D) { D.free(); D.umbrella(6000); } }, brr = () => { if (D) { D.free(); D.cold(1500); } }, phew = () => { if (D) { D.free(); D.hot(1600); } };
       const [en, it, mood] = wc >= 95 ? ["A storm! Stay in and brew something good.", "Un temporale! Resta dentro e preparati qualcosa di buono.", brolly]
         : (wc >= 71 && wc <= 77) || wc === 85 || wc === 86 ? ["Snow! Warm your hands on a big mug of filter.", "Neve! Scaldati le mani con una bella tazza di filtro.", brr]
         : (wc >= 51 && wc <= 67) || (wc >= 80 && wc <= 82) ? ["Rainy. Perfect for a slow pour-over by the window.", "Piove. Perfetto per un pour-over lento vicino alla finestra.", brolly]
         : wc === 45 || wc === 48 ? ["Foggy. A bright, citrusy coffee to cut through it?", "Nebbia. Un caffè brillante e agrumato per bucarla?", curious]
         : t <= 3 ? ["Freezing! Hot coffee, both hands round the cup.", "Si gela! Caffè bollente, con tutte e due le mani attorno alla tazza.", brr]
-        : t >= 24 ? ["Hot out there. Iced pour-over time: brew it straight onto ice.", "Fa caldo. È l'ora del pour-over freddo: versalo direttamente sul ghiaccio.", D.dance]
+        : t >= 24 ? ["Hot out there. Iced pour-over time: brew it straight onto ice.", "Fa caldo. È l'ora del pour-over freddo: versalo direttamente sul ghiaccio.", phew]
         : !day ? ["A quiet night. Decaf, maybe, and a good book.", "Una notte tranquilla. Un decaffeinato, magari, e un buon libro.", D.yawn]
         : wc <= 1 ? ["Sunny! Take your cup outside.", "Sole! Porta la tazza fuori.", happy]
         : t < 7 ? ["Cold out there. Hot coffee weather.", "Fa freddo. Tempo da caffè caldo.", brr]
