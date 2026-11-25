@@ -10332,7 +10332,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const backflip = () => act(async () => { tween("aRest", -0.18, 170); await face({ eyeL: 0.6, eyeR: 0.6 }, 170);
       tween("aRest", 0.14, 120); jv = -400; go(); await tween("flip", -360, 430); S.flip = 0; tween("aRest", 0, 200); poke(-3.4); await face({ happy: 1, eyeL: 1, eyeR: 1 }, 140); await wait(900); });
     // roll: like a ball, it turns as it goes (the distance matches the turn, so it doesn't skid), off to one side, all the way across to the other, and home
-    const roll = () => act(async () => { const s0 = Math.random() < 0.5 ? -1 : 1, deg = 200, d = deg * Math.PI / 180 * R0; await face({ eyeSL: 1.1, eyeSR: 1.1 }, 150); rigid = true; a = S.aRest = 0; va = 0; lean = 0; vl = 0; leanTo = 0;
+    const roll = () => act(async () => { const s0 = Math.random() < 0.5 ? -1 : 1, deg = 200, d = deg * Math.PI / 180 * R0;
+      // first, head quite still, only his eyes: a look one way, a look the other, as if checking the road is clear
+      leanTo = 0; lookY = 0; lookX = -3.4 * s0; draw(); await wait(520); lookX = 3.4 * s0; draw(); await wait(520); lookX = 0; draw(); await wait(200);
+      await face({ eyeSL: 1.1, eyeSR: 1.1 }, 150); rigid = true; a = S.aRest = 0; va = 0; lean = 0; vl = 0; leanTo = 0;
       await Promise.all([tween("flip", s0 * deg, 700), tween("jx", s0 * d, 700)]); await wait(140);
       await Promise.all([tween("flip", -s0 * deg, 1150), tween("jx", -s0 * d, 1150)]); await wait(140);
       await Promise.all([tween("flip", 0, 700), tween("jx", 0, 700)]); S.flip = 0; rigid = false; poke(-2); await face({ happy: 1 }, 140); await wait(700); });
@@ -10366,6 +10369,31 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const tagOk = tag && tag.offsetWidth && !tag.classList.contains("burnt") && getComputedStyle(tag).opacity !== "0";
       if (others.length && (any || !tagOk || Math.random() < 0.5)) return others[Math.floor(Math.random() * others.length)];
       return tagOk ? tag : null; };
+    const laserPoke = () => act(async () => { const host = el.parentElement; if (!host || still()) return;
+      const plus = document.getElementById("toolsBtn"), disc = document.querySelector("footer details.disc > summary");
+      const inView = (e) => { if (!e || !e.offsetWidth) return false; const r = e.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight && r.width > 0; };
+      const pick = [inView(plus) && !(plus.closest(".top") || plus).classList.contains("tools-open") ? plus : null, inView(disc) ? disc : null].filter(Boolean);
+      if (!pick.length) return; const tg = pick[Math.floor(Math.random() * pick.length)];
+      const NS = "http://www.w3.org/2000/svg", mk = (n, a, p0) => { const e = document.createElementNS(NS, n); Object.entries(a).forEach(([k, v]) => e.setAttribute(k, v)); (p0 || fx).appendChild(e); return e; };
+      const aimAt = () => { const r = tg === disc ? (() => { const q = disc.getBoundingClientRect(), cs = getComputedStyle(disc, "::after"); return { left: q.right - 16, top: q.top, width: 16, height: q.height }; })() : tg.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
+      const look = (px, py) => { const b0 = body.getBoundingClientRect(), dx = px - (b0.left + b0.width / 2), dy = py - (b0.top + b0.height * 0.42), dd = Math.hypot(dx, dy) || 1; lookX = 4.4 * dx / dd; lookY = 4.4 * dy / dd; draw(); };
+      look(...aimAt()); await face({ eyeL: 0.75, eyeR: 0.75, smile: 0.3 }, 220); await wait(320); el.classList.add("laser"); await wait(380);
+      const fx = document.createElementNS(NS, "svg"); fx.setAttribute("class", "gd-fx"); fx.setAttribute("aria-hidden", "true"); host.appendChild(fx);
+      const H0 = () => host.getBoundingClientRect(), eyeAt = (c) => { const r = el.querySelector(c).getBoundingClientRect(), h = H0(); return [r.left + r.width / 2 - h.left, r.top + r.height / 2 - h.top, Math.max(1, Math.min(r.width, r.height) / 2)]; };
+      const cone = (e0, ex, ey, r0, px, py, r1) => { const dx = px - ex, dy = py - ey, dd = Math.hypot(dx, dy) || 1, nx = -dy / dd, ny = dx / dd;
+        e0.setAttribute("points", [[ex + nx * r0, ey + ny * r0], [px + nx * r1, py + ny * r1], [px - nx * r1, py - ny * r1], [ex - nx * r0, ey - ny * r0]].map((q) => q[0].toFixed(1) + "," + q[1].toFixed(1)).join(" ")); };
+      const beams = [0, 1].map(() => [mk("polygon", { class: "fx-beam-glow" }), mk("polygon", { class: "fx-beam" })]), hot = mk("circle", { class: "fx-hot", r: "3" });
+      const T0 = performance.now(), DUR = 650; let hit = false;
+      await new Promise((done) => { const step = (now) => { const k = Math.min(1, (now - T0) / DUR), [gx, gy] = aimAt(), h = H0(), px = gx - h.left, py = gy - h.top;
+          [".gd-l", ".gd-r"].forEach((c, i) => { const [ex, ey, er] = eyeAt(c); cone(beams[i][0], ex, ey, er * 1.25, px, py, 2.4); cone(beams[i][1], ex, ey, er * 0.55, px, py, 0.7); });
+          hot.setAttribute("cx", px.toFixed(1)); hot.setAttribute("cy", py.toFixed(1)); hot.setAttribute("r", (2.4 + Math.random() * 1.6).toFixed(1)); look(gx, gy);
+          if (!hit && k > 0.35) { hit = true;   // the hit: the + flips to − and back, the Disclaimer folds or opens
+            if (tg === plus) { const v = plus.querySelector(".tb-v"); plus.animate([{ rotate: "0deg" }, { rotate: "180deg", offset: 0.4 }, { rotate: "180deg", offset: 0.7 }, { rotate: "360deg" }], { duration: 1500, easing: "cubic-bezier(.45,0,.2,1)" });
+              if (v) v.animate([{ transform: "scaleY(1)" }, { transform: "scaleY(0)", offset: 0.3 }, { transform: "scaleY(0)", offset: 0.75 }, { transform: "scaleY(1)" }], { duration: 1500, easing: "ease-in-out" }); }
+            else { const d = disc.parentNode; d.open = !d.open; } }
+          if (k < 1) requestAnimationFrame(step); else done(); }; requestAnimationFrame(step); });
+      beams.flat().forEach((b) => b.remove()); hot.remove(); el.classList.remove("laser"); fx.remove();
+      lookX = 0; lookY = 0; draw(); await face({ eyeL: 1, eyeR: 1, smile: 0.7, happy: 0.5 }, 260); await wait(900); }, true);
     const laserBeta = (any) => act(async () => { const host = el.parentElement, tag = zapPick(any);
       if (!host || !tag || still()) return;
       const NS = "http://www.w3.org/2000/svg", mk = (n, a, p0) => { const e = document.createElementNS(NS, n); Object.entries(a).forEach(([k, v]) => e.setAttribute(k, v)); (p0 || fx).appendChild(e); return e; };
@@ -10579,14 +10607,14 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       try { if (D0 && typeof D0.requestPermission === "function") D0.requestPermission().then(keep).catch(() => {}); if (M0 && typeof M0.requestPermission === "function") M0.requestPermission().catch(() => {}); } catch (e) {} };
     el.addEventListener("click", () => window.gdMotion && window.gdMotion());
     // its life at rest: something every few seconds, never on a beat. Mostly happy: smiles, happy eyes, yawns, a dance, a jump now and then
-    const idle = () => { setTimeout(idle, 2000 + Math.random() * 3600); if (document.hidden || still() || phase !== "rest" || acting || (opt.paused && opt.paused())) return;
+    const idle = () => { setTimeout(idle, 1200 + Math.random() * 2000); if (document.hidden || still() || phase !== "rest" || acting || (opt.paused && opt.paused())) return;
       const r = Math.random(), rr = el.getBoundingClientRect(); if (rr.bottom < 0 || rr.top > innerHeight) return;
       const following = performance.now() - ptrT < 2500;   // the eyes are on your pointer: no looking round on its own
       // every move it has can turn up on its own, the small ones often, the big ones now and then (the secret tricks stay secret)
       const quiet = performance.now() - ptrT > 6000, closeOk = performance.now() - lastAct > 10000 && !document.documentElement.classList.contains("brew-in"), MOVES = [   /* coming right up to you: only when you've been still for 10 s */
         [20, () => { blinkSoft().then(() => { if (Math.random() < 0.3) setTimeout(() => blinkSoft(), 160); }); }],
         [14, happy], [12, smile], [10, yawn], [8, dance], [8, jumps], [5, yes], [5, no], [3, curious], [2.5, hmm], [2, () => think(1800)], [2, bored], [2, surprised],
-        [2, wink], [1.4, betaLaugh], [1.2, betaAsk], [0.8, hypno], [0.7, meditate], [0.9, laserBeta], [0.5, laserHeart], [0.6, crossEyes], [1.6, sleepy], [1.6, doze], [1.2, onPhone], [1.2, backflip], [0.8, roll], [closeOk ? 0.8 : 0, rolypoly], [0.8, upside],
+        [2, wink], [1.4, betaLaugh], [1.2, betaAsk], [0.8, hypno], [0.7, meditate], [0.9, laserBeta], [0.5, laserHeart], [0.7, laserPoke], [0.6, crossEyes], [1.6, sleepy], [1.6, doze], [1.2, onPhone], [1.2, backflip], [0.8, roll], [closeOk ? 0.8 : 0, rolypoly], [0.8, upside],
         [closeOk ? 0.7 : 0, closeLook], [closeOk ? 0.7 : 0, boop], [0.5, () => umbrella(4200)], [0.5, () => cold(1400)], [0.5, () => hot(1500)], [quiet ? 0.4 : 0, boo],
         [following ? 0 : 5, () => { lookX = (Math.random() < 0.5 ? -1 : 1) * 3; lookY = Math.random() < 0.4 ? -1.5 : 0; draw(); setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900 + Math.random() * 700); }],
         [2, () => poke(-0.9)]];
@@ -10606,7 +10634,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1; lookX = dx / d * 3; lookY = dy / d * 1.5; draw();
       setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900); }, { passive: true });
     el.addEventListener("click", () => { if (opt.tap) opt.tap(); else if (!acting) jumps(); });
-    return { S, busy: () => acting, free: () => { if (!solo) acting = false; }, betaLaugh, betaAsk, laserBeta, laserHeart, hypno, meditate, doze, cold, hot, text, rolypoly, crossEyes, closeLook, boop, look, tilt: (v) => tween("aRest", v, 320), umbrella, onPhone, roll, landed: () => phase !== "fall", bored, moon, upside, boo, think, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, draw,
+    return { S, busy: () => acting, free: () => { if (!solo) acting = false; }, betaLaugh, betaAsk, laserBeta, laserHeart, laserPoke, hypno, meditate, doze, cold, hot, text, rolypoly, crossEyes, closeLook, boop, look, tilt: (v) => tween("aRest", v, 320), umbrella, onPhone, roll, landed: () => phase !== "fall", bored, moon, upside, boo, think, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, draw,
       bob: () => { poke(-0.7 - Math.random() * 0.6); if (Math.random() < 0.3) { jv = -90; go(); } } }; };
     // ---- talking: tap the drop and ask it something. It answers in a bubble, the words typing themselves out while it bobs.
     // It knows a handful of things for certain (what's new, a coffee to try, sour or bitter, ratio, temperature, grind, the processes,
