@@ -2811,7 +2811,14 @@ html body .gd-fx .fx-hot{fill:#fff3c4}
 html body .gd-fx .fx-spark{fill:#ffb347}
 html body .gd-fx .fx-trail{fill:none;stroke:#ff8a2a;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:stroke 1.2s ease,stroke-width 1.2s ease}
 html body .gd-fx .fx-trail.cold{stroke:#2a1608;stroke-width:3}
-html body .gd-fx .fx-trail.fx-love.done{stroke:#ff2a14;stroke-width:2.6;filter:drop-shadow(0 0 4px rgba(255,42,20,.8))}   /* the heart round "good", glowing red once it is closed */
+html body .gd-fx .fx-scorch-dot{fill:#2a1608;filter:blur(1.5px)}
+footer details > summary.arrow-burnt::after{opacity:0!important;transition:opacity .15s}   /* a footer arrow burnt by his laser */
+footer details > summary.arrow-back::after{animation:beta-back .6s cubic-bezier(.3,1.5,.5,1)}
+.arrow-smoke{position:fixed;z-index:60;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:radial-gradient(#9a948e,transparent 70%);pointer-events:none;animation:arrowSmoke 2.2s ease-out forwards}
+@keyframes arrowSmoke{0%{opacity:0;transform:none}15%{opacity:.6}100%{opacity:0;transform:translate(6px,-34px) scale(3.2)}}
+.gd-burnl{transition:color .25s ease,text-shadow .25s ease,opacity .6s ease}
+.gd-burnl.hot{color:#ffb070!important;text-shadow:0 0 6px #ff5a14,0 0 12px #ff2a14}
+.gd-burnl.ash{color:#2a1608!important;text-shadow:none;opacity:.35}
 html body .gd-fx .fx-flash{fill:#ffcf7a}
 html body .gd-fx .fx-scorch{fill:#140a04;stroke:#3a1d0c;stroke-width:1.5;opacity:0}
 html body .gd-fx .fx-smoke{transform-box:fill-box;transform-origin:center}
@@ -10288,8 +10295,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       await face({ smile: 0.8, happy: 0.6 }, 180); poke(-1.2); await wait(700); await face({ smile: 0, happy: 0 }, 200);
       await tween("scroll", S.scroll + 1, 260); await wait(500); lookY = 0; draw(); await face({ fone: 0, eyeL: 1, eyeR: 1 }, 320); S.scroll = 0; });
     const yawn = () => act(async () => { tween("aRest", 0.18, 650); await face({ eyeL: 0.08, eyeR: 0.08, eyeSL: 1.15, eyeSR: 1.15 }, 650); leanTo = -1.5;
-      // at the top of the stretch, a little one slips out: a small pfft, a wisp, a twitch
-      pfft(0.4, 0.22); { const side = Math.random() < 0.5 ? -1 : 1; for (let i = 0; i < 2; i++) { const c = document.createElementNS(NS, "circle"); c.setAttribute("class", "gd-puff"); c.setAttribute("cx", (side * (13 + i * 3)).toFixed(1)); c.setAttribute("cy", (-2 - i * 1.4).toFixed(1)); c.setAttribute("r", (1.4 + i * 0.7).toFixed(1)); c.style.animationDelay = i * 60 + "ms"; notes && notes.appendChild(c); setTimeout(() => c.remove(), 1500); } } poke(-0.6); await wait(650);
+      // at the top of the stretch: a small twitch (nothing slips out any more)
+      poke(-0.6); await wait(650);
       tween("aRest", 0, 420); leanTo = 0; await face({ eyeL: 1, eyeR: 1, eyeSL: 1, eyeSR: 1 }, 420); poke(-1.4); });
     // a smile, eyes softening
     const smile = () => act(async () => { await face({ smile: 1, eyeL: 0.8, eyeR: 0.8 }, 260); await wait(1400 + Math.random() * 800); });
@@ -10367,10 +10374,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       if (others.length && (any || !tagOk || Math.random() < 0.5)) return others[Math.floor(Math.random() * others.length)];
       return tagOk ? tag : null; };
     const laserPoke = () => act(async () => { const host = el.parentElement; if (!host || still()) return;
-      const plus = document.getElementById("toolsBtn"), disc = document.querySelector("footer details.disc > summary");
-      const inView = (e) => { if (!e || !e.offsetWidth) return false; const r = e.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight && r.width > 0; };
-      const pick = [inView(plus) && !(plus.closest(".top") || plus).classList.contains("tools-open") ? plus : null, inView(disc) ? disc : null].filter(Boolean);
-      if (!pick.length) return; const tg = pick[Math.floor(Math.random() * pick.length)];
+      const plus = document.getElementById("toolsBtn"), arrows = [...document.querySelectorAll("footer details > summary")].filter((x) => !x.classList.contains("arrow-burnt"));
+      const inView = (e) => { if (!e || !e.offsetWidth) return false; const r = e.getBoundingClientRect(); return r.bottom > 60 && r.top < innerHeight - 70 && r.width > 0; };
+      // any footer arrow on screen (Disclaimer, Methods, Sources…), most of the time; the + in the top bar now and then
+      const seen = arrows.filter(inView), pick = seen.length && (Math.random() < 0.8 || !inView(plus)) ? seen : [inView(plus) && !(plus.closest(".top") || plus).classList.contains("tools-open") ? plus : null].filter(Boolean);
+      if (!pick.length) return; const tg = pick[Math.floor(Math.random() * pick.length)], disc = tg !== plus ? tg : null;
       const NS = "http://www.w3.org/2000/svg", mk = (n, a, p0) => { const e = document.createElementNS(NS, n); Object.entries(a).forEach(([k, v]) => e.setAttribute(k, v)); (p0 || fx).appendChild(e); return e; };
       const aimAt = () => { const r = tg === disc ? (() => { const q = disc.getBoundingClientRect(), cs = getComputedStyle(disc, "::after"); return { left: q.right - 16, top: q.top, width: 16, height: q.height }; })() : tg.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
       const look = (px, py) => { const b0 = body.getBoundingClientRect(), dx = px - (b0.left + b0.width / 2), dy = py - (b0.top + b0.height * 0.42), dd = Math.hypot(dx, dy) || 1; lookX = 4.4 * dx / dd; lookY = 4.4 * dy / dd; draw(); };
@@ -10387,9 +10395,12 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           if (!hit && k > 0.35) { hit = true;   // the hit: the + flips to − and back, the Disclaimer folds or opens
             if (tg === plus) { const v = plus.querySelector(".tb-v"); plus.animate([{ rotate: "0deg" }, { rotate: "180deg", offset: 0.4 }, { rotate: "180deg", offset: 0.7 }, { rotate: "360deg" }], { duration: 1500, easing: "cubic-bezier(.45,0,.2,1)" });
               if (v) v.animate([{ transform: "scaleY(1)" }, { transform: "scaleY(0)", offset: 0.3 }, { transform: "scaleY(0)", offset: 0.75 }, { transform: "scaleY(1)" }], { duration: 1500, easing: "ease-in-out" }); }
-            else { const d = disc.parentNode; d.open = !d.open; } }
+            else { const d = disc.parentNode, ar = aimAt(), h1 = H0(); d.open = !d.open; disc.classList.add("arrow-burnt");   // the arrow burns away: a scorch and a wisp where it was, back a few seconds later
+              const sc = mk("circle", { class: "fx-scorch-dot", cx: (ar[0] - h1.left).toFixed(1), cy: (ar[1] - h1.top).toFixed(1), r: "7" }, host.querySelector(".gd-fx")); sc.animate([{ opacity: 0.9 }, { opacity: 0.9, offset: 0.6 }, { opacity: 0 }], { duration: 3200, fill: "forwards" });
+              const wisp = document.createElement("i"); wisp.className = "arrow-smoke"; wisp.style.left = ar[0] + "px"; wisp.style.top = ar[1] + "px"; document.body.appendChild(wisp); setTimeout(() => wisp.remove(), 2400);
+              setTimeout(() => { disc.classList.remove("arrow-burnt"); disc.classList.add("arrow-back"); setTimeout(() => disc.classList.remove("arrow-back"), 700); }, 3400); } }
           if (k < 1) requestAnimationFrame(step); else done(); }; requestAnimationFrame(step); });
-      beams.flat().forEach((b) => b.remove()); hot.remove(); el.classList.remove("laser"); fx.remove();
+      beams.flat().forEach((b) => b.remove()); hot.remove(); el.classList.remove("laser"); setTimeout(() => fx.remove(), 3400);
       lookX = 0; lookY = 0; draw(); await face({ eyeL: 1, eyeR: 1, smile: 0.7, happy: 0.5 }, 260); await wait(900); }, true);
     const laserBeta = (any) => act(async () => { const host = el.parentElement, tag = zapPick(any);
       if (!host || !tag || still()) return;
@@ -10442,42 +10453,45 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       await wait(1400); [scorch, trail].forEach((e) => e.animate([{ opacity: e === scorch ? 0.9 : 1 }, { opacity: 0 }], { duration: 900, fill: "forwards" }));
       await wait(900); fx.remove(); const bk = tag.classList.contains("gd-beta") ? "back" : "gd-unzap"; tag.classList.remove("burnt", "gd-zapped"); tag.classList.add(bk);
       await wait(700); tag.classList.remove(bk); }, true);
-    // a heart drawn with his laser eyes round "good" in Brew something good. under him: the beams trace it, it glows red, then fades
-    const laserHeart = () => act(async () => { const host = el.parentElement;   // the words sit in the same line as him: "Brew something good."
-      if (!host || still()) return;
-      let word = null; { const w = document.createTreeWalker(host, NodeFilter.SHOW_TEXT); for (let n = w.nextNode(); n && !word; n = w.nextNode()) { if (n.parentElement.closest("svg, .gd-beta, .gd-say, .gd-tip")) continue; const m = /\b(good|buono)\b/i.exec(n.textContent); if (m) { word = document.createRange(); word.setStart(n, m.index); word.setEnd(n, m.index + m[0].length); } } }
-      if (!word) return;
-      const wr0 = word.getBoundingClientRect(); if (wr0.bottom < 0 || wr0.top > innerHeight) return;
-      const NS = "http://www.w3.org/2000/svg", mk = (n, a, p0) => { const e = document.createElementNS(NS, n); Object.entries(a).forEach(([k, v]) => e.setAttribute(k, v)); (p0 || fx).appendChild(e); return e; };
-      const aim = (px, py) => { const b0 = body.getBoundingClientRect(), dx = px - (b0.left + b0.width / 2), dy = py - (b0.top + b0.height * 0.42), d = Math.hypot(dx, dy) || 1; lookX = 4.4 * dx / d; lookY = 4.4 * dy / d; draw(); };
-      aim(wr0.left + wr0.width / 2, wr0.top + wr0.height / 2); tween("aRest", 0.05, 240); go();
-      await face({ eyeL: 0.85, eyeR: 0.85, smile: 0.4 }, 260); await wait(380);
+    // he burns a word letter by letter: the beams walk along it, each letter glows hot as they reach it and turns to ash, a wisp of
+    // smoke rises, then the word comes back. The word is one on screen near him: a coffee's name, a heading, or "good" under him
+    const laserWord = () => act(async () => { const host = el.parentElement; if (!host || still()) return;
+      const b0 = el.getBoundingClientRect(), near = (e) => { const r = e.getBoundingClientRect(); return r.top > 70 && r.bottom < innerHeight - 70 && r.width > 20 && Math.hypot(r.left + r.width / 2 - (b0.left + b0.width / 2), r.top - b0.top) < 460; };
+      const cands = [...document.querySelectorAll("#shelf .item .name, .sec-head h2, .wm-lead")].filter((e) => e.offsetWidth && !e.closest("[hidden]") && near(e));
+      // a text node with a word of 4 to 12 letters in it
+      let node = null, m = null; const tryEl = (e) => { const w = document.createTreeWalker(e, NodeFilter.SHOW_TEXT); for (let n = w.nextNode(); n; n = w.nextNode()) { const x = /[A-Za-zÀ-ÿ]{4,12}/.exec(n.textContent); if (x) { node = n; m = x; return true; } } return false; };
+      if (!(cands.length && tryEl(cands[Math.floor(Math.random() * cands.length)]))) { const w = document.createTreeWalker(host, NodeFilter.SHOW_TEXT); for (let n = w.nextNode(); n; n = w.nextNode()) { if (n.parentElement.closest("svg, .gd-beta, .gd-say, .gd-tip")) continue; const x = /\b(good|buono)\b/i.exec(n.textContent); if (x) { node = n; m = x; break; } } }
+      if (!node) return;
+      // the word, one span a letter, put back exactly as it was afterwards
+      const parent = node.parentNode, before = node.textContent.slice(0, m.index), after = node.textContent.slice(m.index + m[0].length), wrap = document.createElement("span");
+      [...m[0]].forEach((ch) => { const sp = document.createElement("span"); sp.className = "gd-burnl"; sp.textContent = ch; wrap.appendChild(sp); });
+      const frag = document.createDocumentFragment(); if (before) frag.appendChild(document.createTextNode(before)); frag.appendChild(wrap); if (after) frag.appendChild(document.createTextNode(after));
+      parent.replaceChild(frag, node); const restore = () => { try { const t = document.createTextNode(before + m[0] + after); const first = before ? wrap.previousSibling : wrap, last = after ? wrap.nextSibling : wrap; parent.insertBefore(t, first); [first, wrap, last].forEach((x) => { if (x && x.parentNode === parent && x !== t) parent.removeChild(x); }); } catch (e) {} };
+      const letters = [...wrap.children], NS = "http://www.w3.org/2000/svg", mk = (n, a, p0) => { const e = document.createElementNS(NS, n); Object.entries(a).forEach(([k, v]) => e.setAttribute(k, v)); (p0 || fx).appendChild(e); return e; };
+      const look = (px, py) => { const bb = body.getBoundingClientRect(), dx = px - (bb.left + bb.width / 2), dy = py - (bb.top + bb.height * 0.42), dd = Math.hypot(dx, dy) || 1; lookX = 4.4 * dx / dd; lookY = 4.4 * dy / dd; draw(); };
+      { const r = wrap.getBoundingClientRect(); look(r.left, r.top + r.height / 2); } tween("aRest", -0.05, 240); await face({ eyeL: 0.72, eyeR: 0.72, smile: -0.2 }, 240); await wait(380);
       el.classList.add("laser"); await wait(380);
       const fx = document.createElementNS(NS, "svg"); fx.setAttribute("class", "gd-fx"); fx.setAttribute("aria-hidden", "true"); host.appendChild(fx);
-      const H0 = () => host.getBoundingClientRect();
-      const eyeAt = (c) => { const r = el.querySelector(c).getBoundingClientRect(), h = H0(); return [r.left + r.width / 2 - h.left, r.top + r.height / 2 - h.top, Math.max(1, Math.min(r.width, r.height) / 2)]; };
-      const cone = (e0, ex, ey, r0, px, py, r1) => { const dx = px - ex, dy = py - ey, d = Math.hypot(dx, dy) || 1, nx = -dy / d, ny = dx / d;
+      const H0 = () => host.getBoundingClientRect(), eyeAt = (c) => { const r = el.querySelector(c).getBoundingClientRect(), h = H0(); return [r.left + r.width / 2 - h.left, r.top + r.height / 2 - h.top, Math.max(1, Math.min(r.width, r.height) / 2)]; };
+      const cone = (e0, ex, ey, r0, px, py, r1) => { const dx = px - ex, dy = py - ey, dd = Math.hypot(dx, dy) || 1, nx = -dy / dd, ny = dx / dd;
         e0.setAttribute("points", [[ex + nx * r0, ey + ny * r0], [px + nx * r1, py + ny * r1], [px - nx * r1, py - ny * r1], [ex - nx * r0, ey - ny * r0]].map((q) => q[0].toFixed(1) + "," + q[1].toFixed(1)).join(" ")); };
-      // the heart, a little wider than the word and tall enough to hold it, drawn from its bottom point up the left side and round
-      // the word sits in the heart's middle, just under where the two lobes meet: the heart about half as wide again as the word
-      const h0 = H0(), cx = wr0.left + wr0.width / 2 - h0.left, cy = wr0.top + wr0.height * 0.52 - h0.top, sx = Math.max(wr0.width, 40) * 1.5 / 32, sy = sx * 0.78;
-      const at = (t) => ({ x: cx + sx * 16 * Math.pow(Math.sin(t), 3), y: cy - sy * (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t) + 1.5) });
-      const trail = mk("path", { class: "fx-trail fx-love", d: "" }), beams = [0, 1].map(() => [mk("polygon", { class: "fx-beam-glow" }), mk("polygon", { class: "fx-beam" })]), hot = mk("circle", { class: "fx-hot", r: "3" });
-      const sparks = []; let pts = [], last = performance.now(); const T0 = performance.now(), DUR = 1900;
-      await new Promise((done) => { const step = (now) => { const k = Math.min(1, (now - T0) / DUR), pt = at(Math.PI + k * Math.PI * 2 * -1), dt = Math.min(50, now - last) / 1000; last = now;
-          pts.push(`${pt.x.toFixed(1)} ${pt.y.toFixed(1)}`); trail.setAttribute("d", "M " + pts.join(" L "));
-          [".gd-l", ".gd-r"].forEach((c, i) => { const [ex, ey, er] = eyeAt(c); cone(beams[i][0], ex, ey, er * 1.25, pt.x, pt.y, 2.4); cone(beams[i][1], ex, ey, er * 0.55, pt.x, pt.y, 0.7); });
-          { const h1 = H0(); aim(h1.left + pt.x, h1.top + pt.y); }
-          hot.setAttribute("cx", pt.x.toFixed(1)); hot.setAttribute("cy", pt.y.toFixed(1));
-          if (Math.random() < 0.7) { const a = Math.random() * Math.PI * 2, v = 30 + Math.random() * 70; sparks.push({ x: pt.x, y: pt.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 20, life: 0.3 + Math.random() * 0.25, e: mk("circle", { class: "fx-spark", r: (0.5 + Math.random() * 0.8).toFixed(1) }) }); }
+      const beams = [0, 1].map(() => [mk("polygon", { class: "fx-beam-glow" }), mk("polygon", { class: "fx-beam" })]), hot = mk("circle", { class: "fx-hot", r: "3" }), sparks = [];
+      const per = Math.max(150, Math.min(260, 1800 / letters.length)), T0 = performance.now(), DUR = per * letters.length; let last = T0;
+      await new Promise((done) => { const step = (now) => { const t = now - T0, k = Math.min(1, t / DUR), i = Math.min(letters.length - 1, Math.floor(t / per)), f = (t % per) / per, dt = Math.min(50, now - last) / 1000; last = now;
+          const r = letters[i].getBoundingClientRect(), h = H0(), px = r.left + r.width * (0.2 + 0.6 * f) - h.left, py = r.top + r.height * (0.25 + 0.5 * ((i + f) % 1 < 0.5 ? (i + f) % 1 * 2 : 2 - (i + f) % 1 * 2)) - h.top;
+          letters.forEach((l, j) => { if (j < i) { l.classList.remove("hot"); l.classList.add("ash"); } else if (j === i) l.classList.add("hot"); });
+          [".gd-l", ".gd-r"].forEach((c, j) => { const [ex, ey, er] = eyeAt(c); cone(beams[j][0], ex, ey, er * 1.25, px, py, 2.4); cone(beams[j][1], ex, ey, er * 0.55, px, py, 0.7); });
+          hot.setAttribute("cx", px.toFixed(1)); hot.setAttribute("cy", py.toFixed(1)); hot.setAttribute("r", (2.4 + Math.random() * 1.4).toFixed(1)); look(px + h.left, py + h.top);
+          if (Math.random() < 0.6) { const a = Math.random() * Math.PI * 2, v = 30 + Math.random() * 70; sparks.push({ x: px, y: py, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 25, life: 0.3 + Math.random() * 0.25, e: mk("circle", { class: "fx-spark", r: (0.5 + Math.random() * 0.8).toFixed(1) }) }); }
           sparks.forEach((p0) => { p0.life -= dt; p0.vy += 240 * dt; p0.x += p0.vx * dt; p0.y += p0.vy * dt; p0.e.setAttribute("cx", p0.x.toFixed(1)); p0.e.setAttribute("cy", p0.y.toFixed(1)); p0.e.style.opacity = Math.max(0, p0.life * 2.6).toFixed(2); if (p0.life <= 0) p0.e.remove(); });
-          for (let i = sparks.length - 1; i >= 0; i--) if (sparks[i].life <= 0) sparks.splice(i, 1);
-          if (k < 1) requestAnimationFrame(step); else done(); };
-        requestAnimationFrame(step); });
-      beams.flat().forEach((b) => b.remove()); hot.remove(); sparks.forEach((p0) => p0.e.remove()); el.classList.remove("laser");
-      trail.setAttribute("d", trail.getAttribute("d") + " Z"); trail.classList.add("done");   // closed, it glows red
-      lookX = 0; lookY = 0; tween("aRest", 0, 240); draw(); await face({ eyeL: 1, eyeR: 1, smile: 1, happy: 1, blush: 1 }, 320); go(); await wait(1500);
-      trail.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 1100, fill: "forwards" }); await face({ happy: 0, smile: 0, blush: 0 }, 400); await wait(800); fx.remove(); }, true);
+          for (let j = sparks.length - 1; j >= 0; j--) if (sparks[j].life <= 0) sparks.splice(j, 1);
+          if (Math.random() < 0.3) poke(0.1);
+          if (k < 1) requestAnimationFrame(step); else done(); }; requestAnimationFrame(step); });
+      beams.flat().forEach((b) => b.remove()); hot.remove(); sparks.forEach((p0) => p0.e.remove()); el.classList.remove("laser"); letters.forEach((l) => { l.classList.remove("hot"); l.classList.add("ash"); });
+      { const r = wrap.getBoundingClientRect(); for (let j = 0; j < 4; j++) { const wsp = document.createElement("i"); wsp.className = "arrow-smoke"; wsp.style.left = (r.left + r.width * (0.2 + 0.2 * j)) + "px"; wsp.style.top = (r.top + r.height / 2) + "px"; wsp.style.animationDelay = j * 120 + "ms"; document.body.appendChild(wsp); setTimeout(() => wsp.remove(), 2800); } }
+      lookX = 0.8; lookY = -0.6; tween("aRest", 0, 240); draw(); await face({ eyeL: 1, eyeR: 1, smile: 0.6, happy: 0.6 }, 260); await wait(1100); await face({ happy: 0, smile: 0 }, 300); lookX = 0; lookY = 0; draw(); fx.remove();
+      // a moment later the word is back, letter by letter
+      await wait(1200); for (const l of letters) { l.classList.remove("ash"); await wait(60); } await wait(400); restore(); }, true);
     // he looks at his Beta tag, then at you, then at the tag again, as if asking you what it's about; the last look at you
     // with both eyes a little wider
     const betaAsk = () => act(async () => {
@@ -10603,7 +10617,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const quiet = performance.now() - ptrT > 6000, closeOk = performance.now() - lastAct > 10000 && !document.documentElement.classList.contains("brew-in"), MOVES = [   /* coming right up to you: only when you've been still for 10 s */
         [20, () => { blinkSoft().then(() => { if (Math.random() < 0.3) setTimeout(() => blinkSoft(), 160); }); }],
         [14, happy], [12, smile], [10, yawn], [8, dance], [8, jumps], [5, yes], [5, no], [3, curious], [2.5, hmm], [2, () => think(1800)], [2, bored], [2, surprised],
-        [2, wink], [1.4, betaLaugh], [1.2, betaAsk], [0.8, hypno], [0.7, meditate], [0.9, laserBeta], [0.5, laserHeart], [0.7, laserPoke], [0.6, crossEyes], [1.6, sleepy], [1.6, doze], [1.2, onPhone], [1.2, backflip], [0.8, roll], [closeOk ? 0.8 : 0, rolypoly], [0.8, upside],
+        [2, wink], [1.4, betaLaugh], [1.2, betaAsk], [0.8, hypno], [0.7, meditate], [0.9, laserBeta], [0.7, laserWord], [0.7, laserPoke], [0.6, crossEyes], [1.6, sleepy], [1.6, doze], [1.2, onPhone], [1.2, backflip], [0.8, roll], [closeOk ? 0.8 : 0, rolypoly], [0.8, upside],
         [closeOk ? 0.7 : 0, closeLook], [closeOk ? 0.7 : 0, boop], [quiet ? 0.4 : 0, boo],
         [following ? 0 : 5, () => { lookX = (Math.random() < 0.5 ? -1 : 1) * 3; lookY = Math.random() < 0.4 ? -1.5 : 0; draw(); setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900 + Math.random() * 700); }],
         [2, () => poke(-0.9)]];
@@ -10623,7 +10637,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1; lookX = dx / d * 3; lookY = dy / d * 1.5; draw();
       setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900); }, { passive: true });
     el.addEventListener("click", () => { if (opt.tap) opt.tap(); else if (!acting) jumps(); });
-    return { S, busy: () => acting, free: () => { if (!solo) acting = false; }, betaLaugh, betaAsk, laserBeta, laserHeart, laserPoke, hypno, meditate, doze, text, rolypoly, crossEyes, closeLook, boop, look, tilt: (v) => tween("aRest", v, 320), onPhone, roll, landed: () => phase !== "fall", bored, moon, upside, boo, think, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, draw,
+    return { S, busy: () => acting, free: () => { if (!solo) acting = false; }, betaLaugh, betaAsk, laserBeta, laserWord, laserPoke, hypno, meditate, doze, text, rolypoly, crossEyes, closeLook, boop, look, tilt: (v) => tween("aRest", v, 320), onPhone, roll, landed: () => phase !== "fall", bored, moon, upside, boo, think, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, draw,
       bob: () => { poke(-0.7 - Math.random() * 0.6); if (Math.random() < 0.3) { jv = -90; go(); } } }; };
     // ---- talking: tap the drop and ask it something. It answers in a bubble, the words typing themselves out while it bobs.
     // It knows a handful of things for certain (what's new, a coffee to try, sour or bitter, ratio, temperature, grind, the processes,
@@ -11226,8 +11240,6 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         setTimeout(() => { closeTalk(); const g0 = $("gdrop"); if (g0) g0.scrollIntoView({ block: "center", behavior: "smooth" }); setTimeout(() => { D.free(); D.hypno(); }, 900); }, 1100); }, true],
       [/\bmeditat\w*|\bzen\b|\bom+\b|\bnamaste\b|\bmedita\w*|calm (down|yourself)/i, () => { say(pick([T("Breathe in… breathe out…", "Inspira… espira…"), T("Finding my inner crema.", "Cerco la mia crema interiore.")]), null, smile);
         setTimeout(() => { closeTalk(); const g0 = $("gdrop"); if (g0) g0.scrollIntoView({ block: "center", behavior: "smooth" }); setTimeout(() => { D.free(); D.meditate(); }, 900); }, 1100); }, true],
-      [/draw (me )?a heart|laser heart|\bheart\b.*\blaser|disegna un cuore|cuore laser/i, () => { say(pick([T("For you.", "Per te."), T("Watch this.", "Guarda qui.")]), null, smile);
-        setTimeout(() => { closeTalk(); const g0 = $("gdrop"); if (g0) g0.scrollIntoView({ block: "center", behavior: "smooth" }); setTimeout(() => { D.free(); D.laserHeart(); }, 900); }, 1100); }, true],
       [/\blasers?\b|laser eyes|occhi laser|(destroy|burn|zap|kill|blast|delete) (the |your |that )?beta|(distruggi|brucia) (la |il )?beta/i, () => { say(pick([T("Stand back.", "State indietro."), T("Pew pew.", "Piu piu.")]), null, curious);
         setTimeout(() => { closeTalk(); const g0 = $("gdrop"); if (g0) g0.scrollIntoView({ block: "center", behavior: "smooth" }); setTimeout(() => { D.free(); D.laserBeta(!/beta/i.test(lastQ)); }, 900); }, 900); }, true],
       [/\b(rol+(y|ie)[ -]?pol+(y|ie)|somersault|forward roll|tumble|capriol\w*|fai una capriola)\b/i, () => { say(pick([T("Weee!", "Uiii!"), T("Head over heels!", "A gambe all'aria!")]), null); setTimeout(() => { D.free(); D.rolypoly(); littleMove("ag-flip"); }, 450); }, true],
