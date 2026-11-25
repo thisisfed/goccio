@@ -2895,11 +2895,15 @@ html body .top.ask-on .ask-line:not(:has(.ask-goccio.ag-gone)) > .ask-box{margin
 }
 @media (prefers-reduced-motion:reduce){html body .top .ask-line,html body .top .ask-line .ask-goccio svg,html body .top #toolsBtn{transition:none!important}}
 /* the little Goccio peeking in from the side when you pick a coffee: it slides out from the right edge, leaning, with its offer beside it */
-html body .gd-peek{position:fixed;right:0;z-index:28;display:flex;align-items:center;gap:8px;padding:0;margin:0;border:0;background:none;cursor:pointer;transform:translateX(calc(100% + 10px));transition:transform .6s cubic-bezier(.3,1.35,.5,1)}
-html body .gd-peek.in{transform:translateX(14px)}
-html body .gd-peek svg{width:46px;height:46px;flex:none;rotate:-18deg;fill:#000;overflow:visible;transition:rotate .6s cubic-bezier(.3,1.5,.5,1) .15s}
+html body .gd-peek{position:fixed;right:0;z-index:28;display:flex;align-items:flex-end;gap:8px;padding:0;margin:0;border:0;background:none;cursor:pointer;transform:translateX(calc(100% + 10px));transition:transform .6s cubic-bezier(.3,1.35,.5,1)}
+html body .gd-peek.in{transform:translateX(18px)}
+html body .gd-peek svg{width:calc(64px * var(--gs,1.45));height:calc(60px * var(--gs,1.45));margin-right:calc(-10px * var(--gs,1.45));flex:none;rotate:-18deg;overflow:visible;transform-origin:50% 100%;transition:rotate .6s cubic-bezier(.3,1.5,.5,1) .15s}
+html body .gd-peek.in svg{animation:gpBreathe 2.6s ease-in-out .7s infinite}
+html body .gd-peek .gd-e{transform-box:fill-box;transform-origin:center;animation:gpBlink 4.2s 1.4s infinite}
+@keyframes gpBreathe{0%,100%{scale:1 1}50%{scale:1.03 .97}}
+@keyframes gpBlink{0%,92%,100%{scale:1 1}95%{scale:1 .1}}
 html body .gd-peek.in svg{rotate:-8deg}
-html body .gd-peek .gp-say{max-width:210px;padding:8px 12px;border-radius:16px;border-bottom-right-radius:4px;background:var(--gd-card,var(--pill));color:var(--ink);font:500 15px/1.35 var(--sans);text-align:left;box-shadow:0 1px 2px color-mix(in srgb,#000 35%,transparent);opacity:0;transition:opacity .3s ease .45s}
+html body .gd-peek .gp-say{max-width:210px;margin-bottom:calc(18px * var(--gs,1.45));padding:8px 12px;border-radius:16px;border-bottom-right-radius:4px;background:var(--gd-card,var(--pill));color:var(--ink);font:500 15px/1.35 var(--sans);text-align:left;box-shadow:0 1px 2px color-mix(in srgb,#000 35%,transparent);opacity:0;transition:opacity .3s ease .45s}
 html body .gd-peek.in .gp-say{opacity:1}
 @media (prefers-reduced-motion:reduce){html body .gd-peek,html body .gd-peek svg{transition:none}}
 @keyframes agSpinFast{0%{transform:rotate(-720deg) scale(.5)}60%{transform:rotate(-40deg) scale(1.08)}100%{transform:none}}
@@ -10560,7 +10564,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         const r = coffeeOpen(); if (!r) return; shown = true;
         const nav = document.querySelector(".dock:not([hidden]), .botnav"), bot = nav ? Math.max(70, innerHeight - nav.getBoundingClientRect().top + 14) : 90;
         pk = document.createElement("button"); pk.type = "button"; pk.className = "gd-peek"; pk.style.bottom = bot + "px";
-        const src = $("askGoccio") && $("askGoccio").querySelector("svg"); pk.innerHTML = `<span class="gp-say">${T("Need a hand? I can brew this with you.", "Ti serve una mano? Lo prepariamo insieme.")}</span>`; if (src) pk.appendChild(src.cloneNode(true));
+        const src = el.querySelector("svg"); pk.innerHTML = `<span class="gp-say">${T("Need a hand? I can brew this with you.", "Ti serve una mano? Lo prepariamo insieme.")}</span>`;   /* the big Goccio itself, as it is right now */
+        if (src) { const c = src.cloneNode(true); { const o = [src, ...src.querySelectorAll("*")], k = [c, ...c.querySelectorAll("*")]; o.forEach((x, i) => { const cs = getComputedStyle(x), y = k[i]; if (!y || /^(defs|stop|radialgradient|lineargradient|clippath)$/i.test(x.tagName)) return; ["fill", "stroke", "opacity", "display", "visibility"].forEach((pr) => y.style.setProperty(pr, cs.getPropertyValue(pr))); }); }   /* its look comes from the page's styles: carried over, so the copy looks the same anywhere */ c.removeAttribute("id"); const ren = {}; c.querySelectorAll("[id]").forEach((x) => { if (/gradient/i.test(x.tagName)) { ren[x.id] = x.id + "Pk"; x.id += "Pk"; } else x.removeAttribute("id"); });
+          c.querySelectorAll("*").forEach((y) => { const f = y.style.getPropertyValue("fill"); const m = /url\("?#([^")]+)"?\)/.exec(f || ""); if (m && ren[m[1]]) y.style.setProperty("fill", `url(#${ren[m[1]]})`); });   /* its own gradients: the page's may be hidden while a recipe is open, and a hidden gradient paints nothing */ c.classList.add("gp-drop"); pk.appendChild(c); }
         pk.setAttribute("aria-label", T("Brew this with Goccio", "Preparalo con Goccio"));
         pk.onclick = () => { hide(); openTalk(true); setTimeout(() => gbStart(r), 350); };
         document.body.appendChild(pk); requestAnimationFrame(() => requestAnimationFrame(() => pk && pk.classList.add("in")));
