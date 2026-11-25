@@ -164,6 +164,21 @@ One coffee's totals, as the site sees them: `https://www.goccio.co.uk/api/taste?
 Free plan: 100,000 answers written and 5 million rows read a day. Over that, answers are dropped until midnight UTC; nothing
 is ever charged.
 
+## What Goccio couldn't answer (the Monday report)
+
+When Goccio says "I don't know", or someone gives one of his answers a 👎, the question is filed anonymously (just its words,
+cut to 200 characters, with emails, phone numbers and links taken out) by `functions/api/learn.js` as a comment on that week's
+issue in the private repo:
+
+**https://github.com/thisisfed/goccio-requests/issues?q=label%3Agoccio-learn**
+
+Each week has one issue, "Goccio couldn't answer: week of 23 Nov 2026". Every Monday morning the "Goccio's week" workflow
+(`.github/workflows/learn.yml`, `scripts/learn_week.py`) counts last week's questions into a numbered list in the issue's
+body, most asked first (👎 marks a disliked answer), and labels it `ready`. The ready ones are at
+https://github.com/thisisfed/goccio-requests/issues?q=label%3Aready+label%3Agoccio-learn
+
+To teach Goccio, send the issue's link to Claude: the answers go into his knowledge, in English and Italian.
+
 ## Health page
 
 **www.goccio.co.uk/health/** (not linked anywhere, hidden from search engines): the last scan (when, how long, roasters
