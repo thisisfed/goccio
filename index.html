@@ -10152,7 +10152,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       // its phone: held low in front, screen lit; the light tints its eyes and lights its face from below
       { const fo = el.querySelector(".gd-fone"), gl = el.querySelector(".gd-glow"); if (fo) { fo.style.opacity = S.fone.toFixed(2); fo.setAttribute("transform", `translate(${(lean * 0.4).toFixed(2)} ${(y - 3.5 + (1 - S.fone) * 9).toFixed(2)}) rotate(${(-8 + lean * 0.6).toFixed(1)})`);
           const fsh = el.querySelector(".gd-fone-sh"); if (fsh) fsh.style.opacity = (0.1 + 0.06 * Math.sin(S.scroll * Math.PI)).toFixed(2); }   /* its back faces you: you only see it light up the face */
-        if (gl) gl.style.opacity = (S.fone * 0.9).toFixed(2);
+        if (gl) { if (S.fone > 0.01) { if (!tvRaf) tvRaf = requestAnimationFrame(tvTick); } else gl.style.opacity = "0"; }
         eyes.style.fill = ""; }
       all.setAttribute("transform", `translate(${S.jx.toFixed(2)} ${jy.toFixed(2)})${S.flip ? ` rotate(${S.flip.toFixed(1)} 0 ${(-R0).toFixed(1)})` : ""}`);
       };   /* a backflip turns it about its middle */
@@ -10205,6 +10205,17 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // a wink: one lid down and up, a little lean towards that side
     const wink = () => act(async () => { const right = Math.random() < 0.6, k = right ? "eyeR" : "eyeL"; leanTo = right ? 1.5 : -1.5; await tween(k, 0.08, 110); tween("smile", 0.6, 160); await wait(260); await tween(k, 1, 160); await wait(200); });
     // a yawn: it stretches up, eyes squeezed shut, holds, then lets go with a small shake
+    // the phone's light on his face flickers like a video: every half second or so a new "shot" (its own colour and brightness),
+    // with a quick shimmer inside each. Drawn on its own while the phone is up, so it keeps going between his moves
+    let tvRaf = 0, tvShot = -1, tvCol = [191, 227, 255], tvTo = [191, 227, 255], tvLvl = 0.8, tvLvlTo = 0.8, tvX = 0;
+    const TV = [[191, 227, 255], [255, 214, 168], [200, 255, 214], [255, 186, 200], [232, 232, 255], [150, 196, 255], [255, 240, 200], [180, 255, 240]];
+    const tvTick = (now) => { tvRaf = 0; const gl = el.querySelector(".gd-glow"), st = el.querySelectorAll("radialGradient[id^='gdGlow'] stop"); if (!gl) return;
+      if (S.fone <= 0.01) { gl.style.opacity = "0"; return; }
+      const shot = Math.floor(now / 520 + Math.sin(now / 1700) * 0.6); if (shot !== tvShot) { tvShot = shot; tvTo = TV[Math.floor(Math.random() * TV.length)]; tvLvlTo = 0.45 + Math.random() * 0.55; tvX = (Math.random() - 0.5) * 3; }
+      tvCol = tvCol.map((c, i) => c + (tvTo[i] - c) * 0.35); tvLvl += (tvLvlTo - tvLvl) * 0.3;
+      const fl = tvLvl * (0.9 + 0.1 * Math.sin(now / 37) * Math.sin(now / 91)), col = `rgb(${tvCol.map((c) => Math.round(c)).join(",")})`;
+      st.forEach((x) => x.setAttribute("stop-color", col)); gl.style.opacity = (S.fone * fl).toFixed(3); gl.setAttribute("cx", tvX.toFixed(2));
+      tvRaf = requestAnimationFrame(tvTick); };
     const onPhone = () => act(async () => { S.scroll = 0; await face({ fone: 1 }, 380);
       lookY = 2.2; lookX = 0; draw(); await face({ eyeL: 0.8, eyeR: 0.8 }, 200);
       for (let i = 0; i < 4; i++) { await wait(500 + Math.random() * 400); await tween("scroll", S.scroll + 1, 260); }
