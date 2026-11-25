@@ -2812,19 +2812,25 @@ html body .gd-fx .fx-spark{fill:#ffb347}
 html body .gd-fx .fx-trail{fill:none;stroke:#ff8a2a;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:stroke 1.2s ease,stroke-width 1.2s ease}
 html body .gd-fx .fx-trail.cold{stroke:#2a1608;stroke-width:3}
 html body .gd-fx .fx-scorch-dot{fill:#2a1608;filter:blur(1.5px)}
-footer details > summary.arrow-burnt::after{opacity:0!important;transition:opacity .15s}   /* a footer arrow burnt by his laser */
+footer details > summary.arrow-burnt::after{border-color:#5a3826!important;filter:drop-shadow(0 0 3px #ff5a14);rotate:12deg;scale:.85;transition:border-color .2s,filter 1.4s,rotate .4s,scale .4s}   /* a footer arrow burnt by his laser: blackened and bent, embers cooling */
+footer details > summary.arrow-burnt.arrow-ash::after{opacity:0!important;translate:0 6px;filter:none;transition:opacity .8s ease-in,translate .8s ease-in}
 footer details > summary.arrow-back::after{animation:beta-back .6s cubic-bezier(.3,1.5,.5,1)}
 .arrow-smoke{position:fixed;z-index:60;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:radial-gradient(#9a948e,transparent 70%);pointer-events:none;animation:arrowSmoke 2.2s ease-out forwards}
 @keyframes arrowSmoke{0%{opacity:0;transform:none}15%{opacity:.6}100%{opacity:0;transform:translate(6px,-34px) scale(3.2)}}
-.gd-burnl{transition:color .25s ease,text-shadow .25s ease,opacity .6s ease}
+.gd-burnl{display:inline-block;white-space:pre;transition:color .3s ease,text-shadow .9s ease,opacity .6s ease,transform .5s ease}
 .gd-burnl.hot{color:#ffb070!important;text-shadow:0 0 6px #ff5a14,0 0 12px #ff2a14}
-.gd-burnl.ash{color:#2a1608!important;text-shadow:none;opacity:.35}
+.gd-burnl.ash{color:#4a3a30!important;text-shadow:0 0 2px #ff4a10,0 1px 0 #1a0d06;transform:translateY(2px) rotate(-4deg) scaleY(.92);animation:gdLetterCool 1.6s ease-out forwards}   /* charred: dark, slumped, an ember edge cooling */
+@keyframes gdLetterCool{to{text-shadow:0 0 0 transparent,0 1px 0 #1a0d06;color:#3a2e28}}
 html body .gd-fx .fx-flash{fill:#ffcf7a}
 html body .gd-fx .fx-scorch{fill:#140a04;stroke:#3a1d0c;stroke-width:1.5;opacity:0}
 html body .gd-fx .fx-smoke{transform-box:fill-box;transform-origin:center}
-html body .wb-sign .gd-beta.burnt{opacity:0!important;transition:opacity .12s}
+html body .gd-charred{filter:sepia(1) saturate(1.8) hue-rotate(-14deg) brightness(.38) contrast(1.35)!important;rotate:var(--tw,-1deg);scale:.96;transition:filter .25s ease,rotate .4s ease,scale .4s ease;animation:gdEmbers 1.8s ease-out forwards;pointer-events:none!important}
+@keyframes gdEmbers{0%{box-shadow:0 0 12px 3px rgba(255,120,30,.95),inset 0 0 9px 2px rgba(255,90,20,.95)}60%{box-shadow:0 0 5px 1px rgba(255,80,20,.45),inset 0 0 5px 1px rgba(180,50,10,.6)}100%{box-shadow:0 0 2px 0 rgba(30,14,6,.7),inset 0 0 4px 1px rgba(15,7,3,.9)}}   /* blackened, the embers round its edge dying out */
+html body .gd-charred.gd-crumble{animation:gdCrumble 1.1s ease-in forwards}
+@keyframes gdCrumble{0%{opacity:1;translate:0 0;clip-path:inset(0 0 0 0)}100%{opacity:0;translate:0 10px;clip-path:inset(35% 0 0 0)}}   /* it crumbles from the top down and drops away */
+html body .gd-fx .fx-ash{fill:#5c534c}
 html body .wb-sign .gd-beta.back, html body .gd-unzap{animation:beta-back .6s cubic-bezier(.3,1.5,.5,1)}
-html body .gd-zapped{opacity:0!important;pointer-events:none!important;transition:opacity .12s!important}   /* anything else he zaps: gone for a moment, then back */
+
 @keyframes beta-back{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
 html body .wb-sign .gd-hint{position:absolute;left:50%;bottom:calc(100% - var(--cup-at, 21px) + 57.5px * var(--gs, 1) + 8.5px);translate:-50% 0;z-index:39;white-space:nowrap;padding:6px 10px;border-radius:var(--r,4px);
   background:var(--ink);color:var(--bg);font:500 15px/1.35 var(--sans);letter-spacing:0;animation:gdTalkIn .32s cubic-bezier(.3,1.45,.5,1);transition:opacity .35s ease}
@@ -10398,7 +10404,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
             else { const d = disc.parentNode, ar = aimAt(), h1 = H0(); d.open = !d.open; disc.classList.add("arrow-burnt");   // the arrow burns away: a scorch and a wisp where it was, back a few seconds later
               const sc = mk("circle", { class: "fx-scorch-dot", cx: (ar[0] - h1.left).toFixed(1), cy: (ar[1] - h1.top).toFixed(1), r: "7" }, host.querySelector(".gd-fx")); sc.animate([{ opacity: 0.9 }, { opacity: 0.9, offset: 0.6 }, { opacity: 0 }], { duration: 3200, fill: "forwards" });
               const wisp = document.createElement("i"); wisp.className = "arrow-smoke"; wisp.style.left = ar[0] + "px"; wisp.style.top = ar[1] + "px"; document.body.appendChild(wisp); setTimeout(() => wisp.remove(), 2400);
-              setTimeout(() => { disc.classList.remove("arrow-burnt"); disc.classList.add("arrow-back"); setTimeout(() => disc.classList.remove("arrow-back"), 700); }, 3400); } }
+              setTimeout(() => disc.classList.add("arrow-ash"), 1800);   // then it crumbles away
+              setTimeout(() => { disc.classList.remove("arrow-burnt", "arrow-ash"); disc.classList.add("arrow-back"); setTimeout(() => disc.classList.remove("arrow-back"), 700); }, 3400); } }
           if (k < 1) requestAnimationFrame(step); else done(); }; requestAnimationFrame(step); });
       beams.flat().forEach((b) => b.remove()); hot.remove(); el.classList.remove("laser"); setTimeout(() => fx.remove(), 3400);
       lookX = 0; lookY = 0; draw(); await face({ eyeL: 1, eyeR: 1, smile: 0.7, happy: 0.5 }, 260); await wait(900); }, true);
@@ -10438,9 +10445,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       beams.flat().forEach((b) => b.remove()); hot.remove(); sparks.forEach((p0) => p0.e.remove()); el.classList.remove("laser");
       const flash = mk("rect", { class: "fx-flash", x: x - 4, y: y - 4, width: w + 8, height: h + 8, rx: rad + 4 });
       flash.animate([{ opacity: 0.95 }, { opacity: 0 }], { duration: 420, easing: "ease-out", fill: "forwards" });
-      tag.classList.add("burnt"); if (!tag.classList.contains("gd-beta")) tag.classList.add("gd-zapped"); trail.classList.add("cold");
-      const scorch = mk("rect", { class: "fx-scorch", x: x + 1, y: y + 1, width: w - 2, height: h - 2, rx: rad });
-      scorch.animate([{ opacity: 0 }, { opacity: 0.9 }], { duration: 300, fill: "forwards" });
+      tag.classList.add("burnt", "gd-charred"); tag.style.setProperty("--tw", ((Math.random() < 0.5 ? -1 : 1) * (0.8 + Math.random() * 1.4)).toFixed(1) + "deg"); trail.classList.add("cold");
+      const scorch = mk("rect", { class: "fx-scorch", x: x - 3, y: y - 3, width: w + 6, height: h + 6, rx: rad + 3 });   // a soot halo round it on the page
+      scorch.animate([{ opacity: 0 }, { opacity: 0.55 }], { duration: 300, fill: "forwards" });
+      const ashes = () => { for (let i = 0; i < 16; i++) { const ax = x + w * Math.random(), ay = y + h * (0.4 + 0.6 * Math.random()), fl = mk("rect", { class: "fx-ash", x: ax.toFixed(1), y: ay.toFixed(1), width: (1 + Math.random() * 1.6).toFixed(1), height: (1 + Math.random() * 1.6).toFixed(1) });
+          fl.animate([{ transform: "translate(0,0) rotate(0deg)", opacity: 0.9 }, { transform: `translate(${((Math.random() - 0.5) * 14).toFixed(1)}px,${(16 + Math.random() * 26).toFixed(1)}px) rotate(${(Math.random() * 360).toFixed(0)}deg)`, opacity: 0 }], { duration: 900 + Math.random() * 700, delay: Math.random() * 300, easing: "ease-in", fill: "forwards" }); } };
       const smokeId = "fxs" + Math.random().toString(36).slice(2, 6), sg = mk("radialGradient", { id: smokeId }, mk("defs", {}));   // soft puffs: grey in the middle, gone at the edge
       [[0, 0.75], [0.55, 0.35], [1, 0]].forEach(([o, a]) => mk("stop", { offset: o, "stop-color": "#9a948e", "stop-opacity": a }, sg));
       for (let i = 0; i < 14; i++) { const sx = x + w * (0.1 + 0.8 * Math.random()), sy = y + h * (0.2 + 0.6 * Math.random()), dx = (Math.random() - 0.5) * 18, rise = 26 + Math.random() * 34;
@@ -10449,9 +10458,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           { duration: 1800 + Math.random() * 1400, delay: i * 90, easing: "ease-out", fill: "forwards" }); }
       lookX = 0.8; lookY = -0.6; tween("aRest", 0, 240); draw(); await face({ eyeL: 1, eyeR: 1, smile: 0.6, happy: 0.6 }, 260); leanTo = 0; go(); await wait(900);
       await face({ happy: 0, smile: 0 }, 300); lookX = 0; lookY = 0; draw(); go();
-      // a little later the scorch fades and the tag is back; he does nothing else until it is
-      await wait(1400); [scorch, trail].forEach((e) => e.animate([{ opacity: e === scorch ? 0.9 : 1 }, { opacity: 0 }], { duration: 900, fill: "forwards" }));
-      await wait(900); fx.remove(); const bk = tag.classList.contains("gd-beta") ? "back" : "gd-unzap"; tag.classList.remove("burnt", "gd-zapped"); tag.classList.add(bk);
+      // a little later the charred thing crumbles to ash and falls away, the soot fades, and the tag is back; he does nothing else until it is
+      await wait(900); tag.classList.add("gd-crumble"); ashes(); [scorch, trail].forEach((e) => e.animate([{ opacity: e === scorch ? 0.55 : 1 }, { opacity: 0 }], { duration: 1200, fill: "forwards" }));
+      await wait(1400); fx.remove(); const bk = tag.classList.contains("gd-beta") ? "back" : "gd-unzap"; tag.classList.remove("burnt", "gd-zapped", "gd-charred", "gd-crumble"); tag.style.removeProperty("--tw"); tag.classList.add(bk);
       await wait(700); tag.classList.remove(bk); }, true);
     // he burns a word letter by letter: the beams walk along it, each letter glows hot as they reach it and turns to ash, a wisp of
     // smoke rises, then the word comes back. The word is one on screen near him: a coffee's name, a heading, or "good" under him
