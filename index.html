@@ -10403,16 +10403,19 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const tagOk = tag && tag.offsetWidth && !tag.classList.contains("burnt") && getComputedStyle(tag).opacity !== "0";
       if (others.length && (any || !tagOk || Math.random() < 0.5)) return others[Math.floor(Math.random() * others.length)];
       return tagOk ? tag : null; };
+    let zapN = 0;   // every other zap goes to the top bar, so the + (or −) and little Goccio get their turn
     const laserPoke = () => act(async () => { const host = el.parentElement; if (!host || still()) return;
-      const plus = document.getElementById("toolsBtn"), arrows = [...document.querySelectorAll("footer details > summary")].filter((x) => !x.classList.contains("arrow-burnt"));
-      const inView = (e) => { if (!e || !e.offsetWidth) return false; const r = e.getBoundingClientRect(); return r.bottom > 60 && r.top < innerHeight - 70 && r.width > 0; };
-      // any footer arrow on screen (Disclaimer, Methods, Sources…), most of the time; the + in the top bar now and then
-      const seen = arrows.filter(inView), pick = seen.length && (Math.random() < 0.8 || !inView(plus)) ? seen : [inView(plus) ? plus : null].filter(Boolean);
-      if (!pick.length) return; const tg = pick[Math.floor(Math.random() * pick.length)], disc = tg !== plus ? tg : null;
+      const plus = document.getElementById("toolsBtn"), ask = document.getElementById("askGoccio"), arrows = [...document.querySelectorAll("footer details > summary")].filter((x) => !x.classList.contains("arrow-burnt"));
+      const inView = (e) => { if (!e || !e.offsetWidth) return false; const r = e.getBoundingClientRect(); return r.bottom > 60 && r.top < innerHeight - 24 && r.width > 0; };
+      // the footer arrows on screen (Disclaimer, Methods, Sources…), one after another, most of the time; the + (or −) in the top bar now and then
+      const seen = arrows.filter(inView), tops = [plus, ask].filter((x) => { if (!x || !x.offsetWidth || x.classList.contains("ag-gone")) return false; const r = x.getBoundingClientRect(); return r.width > 0 && r.bottom > 0 && r.top < 120; })   /* in the top bar: always on screen (the old check wanted it 60 px down, so the + was never picked) */, topTurn = zapN++ % 2 === 0 || !seen.length;
+      const pick = topTurn && tops.length ? [tops[Math.floor(Math.random() * tops.length)]] : seen;
+      if (!pick.length) return; const hitSet = new Set(); let first = true;   /* after each one the footer shifts as it folds or opens: the next arrow is picked from what is on screen then */
+      for (let n = 0; n < 3; n++) { const tg = n === 0 ? pick[0] : tops.includes(pick[0]) ? null : arrows.filter((x) => inView(x) && !hitSet.has(x))[0]; if (!tg) break; hitSet.add(tg); const disc = tops.includes(tg) ? null : tg;
       const NS = "http://www.w3.org/2000/svg", mk = (n, a, p0) => { const e = document.createElementNS(NS, n); Object.entries(a).forEach(([k, v]) => e.setAttribute(k, v)); (p0 || fx).appendChild(e); return e; };
       const aimAt = () => { const r = tg === disc ? (() => { const q = disc.getBoundingClientRect(), cs = getComputedStyle(disc, "::after"); return { left: q.right - 16, top: q.top, width: 16, height: q.height }; })() : tg.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
       const look = (px, py) => { const b0 = body.getBoundingClientRect(), dx = px - (b0.left + b0.width / 2), dy = py - (b0.top + b0.height * 0.42), dd = Math.hypot(dx, dy) || 1; lookX = 4.4 * dx / dd; lookY = 4.4 * dy / dd; draw(); };
-      look(...aimAt()); await face({ eyeL: 0.75, eyeR: 0.75, smile: 0.3 }, 220); await wait(320); el.classList.add("laser"); await wait(380);
+      look(...aimAt()); if (first) { await face({ eyeL: 0.75, eyeR: 0.75, smile: 0.3 }, 220); await wait(320); } else await wait(420); el.classList.add("laser"); await wait(first ? 380 : 200); first = false;
       const fx = document.createElementNS(NS, "svg"); fx.setAttribute("class", "gd-fx"); fx.setAttribute("aria-hidden", "true"); host.appendChild(fx);
       const H0 = () => host.getBoundingClientRect(), eyeAt = (c) => { const r = el.querySelector(c).getBoundingClientRect(), h = H0(); return [r.left + r.width / 2 - h.left, r.top + r.height / 2 - h.top, Math.max(1, Math.min(r.width, r.height) / 2)]; };
       const cone = (e0, ex, ey, r0, px, py, r1) => { const dx = px - ex, dy = py - ey, dd = Math.hypot(dx, dy) || 1, nx = -dy / dd, ny = dx / dd;
@@ -10425,13 +10428,14 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           if (!hit && k > 0.35) { hit = true;   // the hit: the + flips to − and back, the Disclaimer folds or opens
             if (tg === plus) { const v = plus.querySelector(".tb-v"); plus.animate([{ rotate: "0deg" }, { rotate: "180deg", offset: 0.4 }, { rotate: "180deg", offset: 0.7 }, { rotate: "360deg" }], { duration: 1500, easing: "cubic-bezier(.45,0,.2,1)" });
               if (v) v.animate([{ transform: "scaleY(1)" }, { transform: "scaleY(0)", offset: 0.3 }, { transform: "scaleY(0)", offset: 0.75 }, { transform: "scaleY(1)" }], { duration: 1500, easing: "ease-in-out" }); }
+            else if (tg === ask) { if (ask.hop) { ask.hop(); setTimeout(() => ask.hop(), 420); } ask.animate([{ rotate: "0deg" }, { rotate: "-14deg", offset: 0.25 }, { rotate: "10deg", offset: 0.55 }, { rotate: "0deg" }], { duration: 800, easing: "ease-out" }); }   // little Goccio, zapped: he jumps
             else { const d = disc.parentNode, ar = aimAt(), h1 = H0(); d.open = !d.open; disc.classList.add("arrow-burnt");   // the arrow burns away: a scorch and a wisp where it was, back a few seconds later
               const sc = mk("circle", { class: "fx-scorch-dot", cx: (ar[0] - h1.left).toFixed(1), cy: (ar[1] - h1.top).toFixed(1), r: "7" }, host.querySelector(".gd-fx")); sc.animate([{ opacity: 0.9 }, { opacity: 0.9, offset: 0.6 }, { opacity: 0 }], { duration: 3200, fill: "forwards" });
               const wisp = document.createElement("i"); wisp.className = "arrow-smoke"; wisp.style.left = ar[0] + "px"; wisp.style.top = ar[1] + "px"; document.body.appendChild(wisp); setTimeout(() => wisp.remove(), 2400);
               setTimeout(() => disc.classList.add("arrow-ash"), 1800);   // then it crumbles away
               setTimeout(() => { disc.classList.remove("arrow-burnt", "arrow-ash"); disc.classList.add("arrow-back"); setTimeout(() => disc.classList.remove("arrow-back"), 700); }, 3400); } }
           if (k < 1) requestAnimationFrame(step); else done(); }; requestAnimationFrame(step); });
-      beams.flat().forEach((b) => b.remove()); hot.remove(); el.classList.remove("laser"); setTimeout(() => fx.remove(), 3400);
+      beams.flat().forEach((b) => b.remove()); hot.remove(); el.classList.remove("laser"); setTimeout(() => fx.remove(), 3400); }
       lookX = 0; lookY = 0; draw(); await face({ eyeL: 1, eyeR: 1, smile: 0.7, happy: 0.5 }, 260); await wait(900); }, true);
     const laserBeta = (any) => act(async () => { const host = el.parentElement, tag = zapPick(any);
       if (!host || !tag || still()) return;
