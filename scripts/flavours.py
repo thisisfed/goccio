@@ -106,7 +106,7 @@ _add("naranja|naranjas|orange|oranges|arancia|arance|laranja|orangen|sinaasappel
 _add("mandarina|mandarinas|mandarine|mandarino|tangerina|clementina|clémentine|clementine", "mandarin")
 _add("limón|limon|limones|citron|limone|limoni|limão|zitrone|zitronen|citroen|lămâie|citron", "lemon")
 _add("lima|limas|lime|citron vert|limette|limetten|limoen", "lime")
-_add("pomelo|pamplemousse|pompelmo|toranja|grapefruit|grapefruits|pampelmuse", "grapefruit")
+_add("pamplemousse|pompelmo|toranja|grapefruit|grapefruits|pampelmuse", "grapefruit")   # not "pomelo": an English fruit of its own (Crosby: "Pomelo, Brazil Nut")
 _add("bergamota|bergamote|bergamotto|bergamotte", "bergamot")
 _add("piña|pina|ananas|abacaxi", "pineapple")
 _add("mango|mangos|mangue|manga|mangue", "mango")
@@ -292,6 +292,20 @@ def english_notes(notes):
 
 
 # Romanian, Swedish, Norwegian, Danish, Italian, Portuguese, Spanish, German and French notes found untranslated (Nov 2026 check)
+# Polish (Trigger) and Norwegian (Langøra) notes found untranslated (25 Nov 2026)
+PHRASES.update({
+    "morele": "apricot", "morela": "apricot", "limonka": "lime", "czarna herbata": "black tea", "żurawina": "cranberry", "karmel": "caramel",
+    "banany": "banana", "banan": "banana", "papaja": "papaya", "kajmak": "dulce de leche", "gruszka": "pear", "truskawka": "strawberry", "truskawki": "strawberry",
+    "jabłko": "apple", "owoce leśne": "forest fruits", "orzech laskowy": "hazelnut", "orzechy laskowe": "hazelnut", "kakao": "cocoa", "czekolada": "chocolate",
+    "czekolada deserowa": "dark chocolate", "gorzka czekolada": "dark chocolate", "mleczna czekolada": "milk chocolate", "prażone orzechy": "roasted nuts",
+    "orzechy": "nuts", "suszone owoce": "dried fruit", "dojrzałe owoce": "ripe fruit", "brązowy cukier": "brown sugar", "wiśnia": "cherry", "malina": "raspberry",
+    "maliny": "raspberry", "jeżyna": "blackberry", "porzeczka": "currant", "czarna porzeczka": "blackcurrant", "pomarańcza": "orange", "cytryna": "lemon",
+    "brzoskwinia": "peach", "śliwka": "plum", "miód": "honey", "wanilia": "vanilla", "jaśmin": "jasmine", "róża": "rose", "melasa": "molasses",
+    "pierniczki z dżemem truskawkowym": "gingerbread with strawberry jam", "piernik": "gingerbread", "pierniczki": "gingerbread",
+    "pasjonsfrukt": "passion fruit", "blackcurrent": "blackcurrant", "black currant": "blackcurrant", "jordbærsyltetøy": "strawberry jam",
+})
+
+
 PHRASES.update({
     "ciocolata cu lapte": "milk chocolate", "ciocolată cu lapte": "milk chocolate", "ciocolata neagra": "dark chocolate", "ciocolată neagră": "dark chocolate",
     "zahar brun": "brown sugar", "zahăr brun": "brown sugar", "coacaze negre": "blackcurrant", "coacăze negre": "blackcurrant", "alune de padure": "hazelnut",

@@ -183,7 +183,7 @@ VARIETIES = ["Gesha", "Geisha", "Sidra", "Pink Bourbon", "Wush Wush", "Eugenioid
 EXCLUDE = re.compile(r"subscri|abonnement|abbonamento|\babo\b|suscripci|assinatura|\bcurso\b|introdu[cç][aã]o aos|sach[eê]s?\b|c[aá]psulas?|filtro de papel|coador|prenumeration|geschenk|regalo|cadeau|gutschein|"
                      r"\btasse\b|tazza|dip ?style|in-store|xpods?|xbloom|セット|飲み比べ|ドリップバッグ|latte art|\bpen\b|\btool\b|accessor|machine|maker|moccamaster|ticket|party|event|festival|origami|glass|server|carafe|porcelain|ceramic|brewer|filter holder|gift|voucher|capsule|\bpods?\b|nespresso|(?<!\dg )(?<!\d g )coffee bags?|drip bags?|brew bags?|immersion bags?|caf[ée] de poche|"
                      r"h[aå]ndbrygg|presskanne|julepakke|pakken\b|med pegasus|\bswitch\s[–-]|\bnewby\b|steep|equipment|grinder|\bmug\b|kettle|dripper|filter papers?|papers\b|\bcups?\b(?! of excellence)|"
-                     r"sampler|tasting pack|taster|bundle|merch|t-?shirt|hoodie|tote|cap\b|"
+                     r"sampler|tasting pack|taster|bundle|merch|t-?shirt|hoodie|tote|cap\b|casquette|beanie|bonnet\b|chapeau|\bhats?\b|sweat-?shirt|"
                      r"cold brew|concentrate|instant|\btea\b|chocolate bar|chocolate\b|kaffeehonig|\bhonig\b|\bchocolat\b|tablettes?\b|tampers?\b|stirring stick|\bwdt\b|dosing (?:ring|cup|funnel)|cascara|"
                      r"workshop|course|\bclass(?:es)?\b|masterclass|training|advent|box\b|\bkit\b|scale\b|aeropress\b(?! recipe)|"
                      r"green (?:beans?|coffee)|råkaffe|rohkaffee|unroasted|\bduo\b|\btrio\b|\bpack\b|\bset\b|selection|collection|wholesale|caf[ée]s?[ -]only|trade[ -]only|\bhoreca\b|food ?service|"
@@ -227,7 +227,7 @@ NOTES_CHECK = 10   # pages read for notes with these rules (10: elbgold's "Noten
 # A fix for one shop's page layout re-reads only that shop: raise its number here (above NOTES_CHECK), not NOTES_CHECK,
 # which re-reads every coffee without notes everywhere (thousands of pages). Raise NOTES_CHECK only for a change to the
 # rules every shop goes through
-NOTES_RECHECK = {"Climpson & Sons": 10, "Sydrip": 10, "Fève": 10, "Passage": 10, "The Source": 10, "Terraform": 11, "Lucid Coffee Roasters": 12, "James Gourmet Coffee": 11, "Sl.ow": 11, "Sprout": 11, "Rogue Wave": 11, "Dayglow": 11, "Established Coffee": 11}   # e.g. {"Monmouth": 10}
+NOTES_RECHECK = {"Climpson & Sons": 10, "Sydrip": 10, "Fève": 10, "Passage": 10, "The Source": 10, "Terraform": 11, "Lucid Coffee Roasters": 12, "James Gourmet Coffee": 11, "Sl.ow": 11, "Sprout": 11, "Rogue Wave": 11, "Dayglow": 11, "Established Coffee": 11, "Langøra": 12, "Jolly Bean Roastery": 12, "Light Up Coffee": 12, "Trigger": 12, "Crosby Coffee": 12}   # e.g. {"Monmouth": 10}
 notes_ver = lambda shop: max(NOTES_CHECK, NOTES_RECHECK.get(shop, 0))
 NOTES_V = 2       # page notes read under these list rules; a short list (two or fewer) read under older ones is read once more
 
@@ -1641,7 +1641,13 @@ def tidy_note(n):
     'Butterscotch followed by' -> 'Butterscotch', 'A caramel finish' -> 'Caramel finish', 'Rounded out by' and 'Hints of' -> '' (dropped)."""
     n = re.sub(r"[\xa0\u2009\u202f\s]+", " ", re.sub(r"[\u200b-\u200d\ufeff]", "", n or "")).strip()   # no-break spaces: "Blood\xa0orange"
     n = re.sub(r"^[^\w\s(\"'“<]+\s*", "", n)   # an emoji in front: "🍫Chocolate" -> "Chocolate"
-    n = re.sub(r"^(?:imagine|tasting notes?|notes?|taste|with)\s*:?\s+", "", n, flags=re.I)
+    n = re.sub(r"^(?:imagine|expect|tasting notes?|notes?|taste|with)\s*:?\s+", "", n, flags=re.I)
+    n = re.sub(r"^super-?\s?sweet\s+", "", n, flags=re.I)   # "Expect super-sweet plum" -> "Plum"
+    for _ in range(2):   # "Cherry notes up front" -> "Cherry", "Red berry flavour notes" -> "Red berry"
+        n = re.sub(r"(?<=\w)\s+(?:notes?|flavou?rs?|tones?)(?:\s+(?:up front|upfront|first|to finish|at the end|throughout|on the finish))?$", "", n, flags=re.I)
+    if re.fullmatch(r"(?:tasting|taste|cup|flavou?r)s?", n.strip(), re.I):   # "Tasting Notes" was the label, not a note
+        return ""
+    n = re.sub(r"\b([A-Z]) ([a-z]{3,})\b", lambda m: m.group(1) + m.group(2) if m.group(1) not in "AI" or (m.group(1) + m.group(2)).lower() in flavours.EN_WORDS or flavours.to_english(m.group(1) + m.group(2)).lower() != (m.group(1) + m.group(2)).lower() else m.group(0), n)   # "Dried A pricot" -> "Dried Apricot"
     n = re.sub(r"^notes_", "", n, flags=re.I)   # a shop's tag: "Notes_Caramel" -> "Caramel" (York Coffee Emporium)   # "Imagine lollipop!", "Tasting Notes: Plum"
     n = re.sub(r"\s*[(\[][^)\]]*$", "", n)   # an aside the list cut open: "Tropical fruits (pineapple" -> "Tropical fruits"
     n = re.sub(r"\s*!+$", "", n)   # "Lemon cake!" -> "Lemon cake"
@@ -1673,7 +1679,35 @@ def first_line_notes(text):
     """A description that opens with nothing but a short list ("Florals, Mandarin, Raspberry", Long & Short) is the tasting
     notes, with no label to say so: two to five commas-apart phrases of one to three words, none of them a grind, a process,
     a variety or ordinary sentence words."""
-    line = next((ln.strip() for ln in (text or "").splitlines() if ln.strip()), "")
+    lines = [ln.strip() for ln in strip_html(text or "").splitlines() if ln.strip()]
+    if not lines:
+        return None
+    got = _first_line(lines[0])
+    if got and _flavourish(got):
+        return got
+    # further down, a line of its own that is nothing but flavours: under a line of how it feels ("Insens, saftig, eksplosiv" /
+    # "Jordbærmarmelade, pasjonsfrukt, fersken", Langøra), or under Origin, Varietal and Process ("GRAPEFRUIT, APPLE, BROWN SUGAR -
+    # AROMATIC & FLORAL", Jolly Bean: the style after the dash is not a note). Here every note must be a word a cup is described with
+    for ln in lines[1:14]:
+        head = re.split(r"\s[-–—]\s", ln)[0].strip()
+        got = _first_line(head) if "," in head else None
+        if got and _flavourish(got, every=True):
+            return got
+    return got
+
+
+def _flavourish(line, every=False):
+    """At least half (or, with every, all) of a comma list is words a cup is described with, in any language we know."""
+    def known(b):
+        b = b.strip().lower()
+        return bool(b) and (flavours.to_english(b).lower() != b or b in flavours.EN_WORDS or b in flavours.W or bool(FLAVOUR_WORD.search(b))
+                            or all(w in flavours.EN_WORDS or w in flavours.W for w in b.split()))
+    bits = [b for b in line.split(",") if b.strip()]
+    n = sum(known(b) for b in bits)
+    return n == len(bits) if every else n * 2 >= len(bits)
+
+
+def _first_line(line):
     bits = [b.strip(" .") for b in line.split(",")]
     if not (2 <= len(bits) <= 5) or len(line) > 70 or re.search(r"\d|[:;!?]", line):
         return None
@@ -1696,6 +1730,7 @@ def first_line_notes(text):
 # taken, and only words in this list: nothing is guessed from the rest of the sentence.
 JA_FLAVOURS = {
     "焼きりんご": "baked apple", "青りんご": "green apple", "りんご": "apple", "リンゴ": "apple", "アップル": "apple", "林檎": "apple",
+    "ブラッドオレンジ": "blood orange", "グレープ": "grape", "ぶどう": "grape", "ブドウ": "grape", "葡萄": "grape", "ラムレーズン": "rum raisin", "ラム": "rum",
     "レーズン": "raisin", "ドライフルーツ": "dried fruit", "プルーン": "prune", "デーツ": "date", "いちじく": "fig", "イチジク": "fig",
     "キャラメル": "caramel", "トフィー": "toffee", "黒糖": "brown sugar", "ブラウンシュガー": "brown sugar", "きび砂糖": "cane sugar", "和三盆": "wasanbon sugar",
     "はちみつ": "honey", "ハチミツ": "honey", "蜂蜜": "honey", "メープルシロップ": "maple syrup", "メープル": "maple", "バニラ": "vanilla",
@@ -1746,8 +1781,13 @@ def find_notes(item):
     # a list item, paragraph or line break ends a line: "<li>Flavours like: Cherry, Apricot, Cola</li></ul>" (Lucid) is read to
     # "Cola" and no further (the markup kept the last note joined to the tags, and it was thrown away as markup)
     text = re.sub(r"(?=</(?:li|p|div|h[1-6]|td|tr|dd|dt)>|<br\s*/?>)", "\n", text, flags=re.I)
+    # bold, italics and spans inside a line are only looks: "<strong>Tasting notes:</strong> Pomelo, Brazil Nut" (Crosby) lost its first
+    # note to the "</strong>" stuck on it; and a word the shop's editor split ("Dried A pricot", "S piced Raisins") comes back whole
+    text = re.sub(r"</?(?:strong|b|em|i|u|span|font|mark|small)\b[^>]*>", "", text, flags=re.I)
     # a bracketed heading with the list under it: "【Taste Note】" then "Almond, Red apple, Orange, Plum, Clean" (Passage)
     text = re.sub(r"[【\[]\s*(?:taste|tasting|flavou?r|cup)\s+notes?\s*[】\]][ \t\xa0]*\n\s*", "Tasting notes: ", text, flags=re.I)
+    # the cup under a bracketed label on the same line: "[PROFILE] GINGERBREAD COOKIES WITH STRAWBERRY JAM", "[PROFIL] …" (Trigger)
+    text = re.sub(r"[【\[]\s*(?:profile?|profil smakowy|smak|nuty(?: smakowe)?|w smaku|taste|flavou?rs?)\s*[】\]][ \t\xa0]*", "Tasting notes: ", text, flags=re.I)
     # "Taste notes" over a sentence, not a list: "We taste beautiful florals like lavender and lilac, with a…" (Dayglow): the list after "like"
     tp = re.search(r"(?:^|\n)\s*taste notes\s*:?\s*\n?\s*([^\n]{10,400})", text, re.I)
     if tp and re.match(r"(?:we|it|this|you|expect|think|imagine)\b", tp.group(1), re.I):   # a sentence, not a list
@@ -1800,6 +1840,9 @@ def find_notes(item):
         parts = re.split(r"\s[-–|]\s", item["title"])
         if len(parts) >= 3 and "," in parts[-1]:
             raw = parts[-1]
+        bt = re.search(r"\]\s+([^\[\]]{3,80})$", item["title"])
+        if not raw and bt and "," in bt.group(1):   # "Etiopia Aricha [FILTR] Morele, Limonka, Czarna Herbata" (Trigger): the list after the tag
+            raw = bt.group(1)
     if not raw:
         for t in item["tags"]:
             mm = re.match(r"(?:notes?|flavou?r)[:_ ](.+)", t, re.I)
@@ -1819,6 +1862,12 @@ def find_notes(item):
         if len(ds) >= 3 and all(len(x.split()) == 1 for x in ds[:-1]) and len(ds[-1].split()) > 2:
             ds[-1] = ds[-1].split()[0]   # single-word notes, then the sentence runs on: keep the note
         raw = " - ".join(ds)
+    # one long note that is two: "GINGERBREAD COOKIES WITH STRAWBERRY JAM", "Pierniczki z dżemem truskawkowym" (Trigger) -> two notes
+    one = raw.strip(" .")
+    if "," not in one and len(one) > 24 and len(one.split()) <= 7:
+        en = flavours.to_english(one.lower())
+        if re.search(r"\swith\s", en, re.I):
+            raw = re.sub(r"\s+with\s+", ", ", en, flags=re.I)
     # and the word for "and" in the shop's language, once the line is already a comma list: "Té verde, manzanilla, fruta de la pasión y kiwi amarillo" (Harmony)
     bits = re.split(r",|&|\band\b|/|·|•|\|| [-–] |\s\+\s" + (r"|\s(?:y|e|et|und|och|og|ja|i)\s" if "," in raw else ""), raw)
     out = []
@@ -1826,7 +1875,7 @@ def find_notes(item):
         b = b.strip(" .;:-–").strip()
         if (2 <= len(b) <= 28 and len(b.split()) <= 4 and ":" not in b
                 and not re.search(r"\d|masl|process|altitude|score|perfect|sharing|recommend|brew", b, re.I)
-                and not first(COUNTRIES, b) and not first(list(COUNTRY_ALIASES), b)):
+                and (re.search(r"\bbrazil nuts?\b", b, re.I) or (not first(COUNTRIES, b) and not first(list(COUNTRY_ALIASES), b)))):
             b = tidy_note(b)
             if b and b.lower() not in (o.lower() for o in out):
                 out.append(b)
@@ -1979,6 +2028,12 @@ def same_name(name):
     return re.sub(r"\W+", "", SALE_FORM.sub(" ", name or "").lower()) or (name or "").lower()
 
 
+# country names as Polish shops write them in a coffee's name (Trigger: "Kolumbia El Diviso", "Gwatemala San Jose Del Lago")
+PL_COUNTRIES = {"Kolumbia": "Colombia", "Etiopia": "Ethiopia", "Gwatemala": "Guatemala", "Kenia": "Kenya", "Brazylia": "Brazil", "Kostaryka": "Costa Rica",
+                "Salwador": "El Salvador", "Meksyk": "Mexico", "Nikaragua": "Nicaragua", "Ekwador": "Ecuador", "Boliwia": "Bolivia", "Indonezja": "Indonesia",
+                "Jemen": "Yemen", "Gwinea": "Guinea", "Tajlandia": "Thailand", "Chiny": "China", "Indie": "India", "Wietnam": "Vietnam"}
+
+
 def tidy_name(name, roaster):
     """'Buy Specialty Coffee Beans Online UK | Nude Coffee Roasters' -> '' (caller falls back);
     'Farm • Sagastume Geisha | doubleshot' -> 'Sagastume Geisha'; 'Limited Release | Franken Grind Blend' -> 'Franken Grind Blend';
@@ -2034,9 +2089,13 @@ def tidy_name(name, roaster):
     if sep and head and details_only(tail):   # "Finca Sunderland: Washed" -> "Finca Sunderland"
         name = head
     name = re.sub(r"^\s*\[[^\]]{3,40}\]\s*", "", name)   # "[Kawa bezkofeinowa] Kolumbia El Vergel Decaf": a shop category in brackets
+    # a tag in brackets, then the cup: "Etiopia Aricha [FILTR] Morele, Limonka, Czarna Herbata" (Trigger) -> "Etiopia Aricha"
+    name = re.sub(r"^(.{3,60}?)\s*\[[^\]]{2,30}\]\s+\S.*$", r"\1", name)
+    name = re.sub(r"\b(?:" + "|".join(PL_COUNTRIES) + r")\b", lambda m: PL_COUNTRIES[m.group(0)], name)   # "Kolumbia" -> "Colombia"
     # "El Diviso Ombligon ! DÉCAFÉINÉ !! Filtre & Espresso" -> "El Diviso Ombligon Décaféiné"
     name = re.sub(r"\s*\b(?:filt(?:er|re|ro)\s*(?:&|and|et|/|\+)\s*espresso|espresso\s*(?:&|and|et|/|\+)\s*filt(?:er|re|ro))\s*$", "", name, flags=re.I)
     name = re.sub(r"\s*!+\s*", " ", name).strip()
+    name = re.sub(r"\s*(?:\(\s*sale\s*\)|[-–]\s*sale|\bsale)\s*$", "", name, flags=re.I)   # "Santa Rosa (Sale)", "Iron Men Blend Sale" (Crosby)
     # "Alo Bore [Washed]" -> "Alo Bore": a bracketed process at the end is already a tag
     name = re.sub(r"\s*[\[(]([^\])]{3,30})[\])]\s*$", lambda m: "" if find_process(m.group(1)) or details_only(m.group(1)) else m.group(0), name)
     return calm_caps(name).strip(" -–—|,")

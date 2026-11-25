@@ -41,6 +41,38 @@ COFFEE_BODY = "Origin: Colombia\nProcess: Washed\nVariety: Caturra\nAltitude: 1,
 
 # (what was reported, check that must be True)
 CASES = [
+    ("Crosby: '<strong>Tasting notes:</strong> Pomelo, Brazil Nut' is two notes: the bold label doesn't eat the first, Brazil nut is not the country, pomelo stays pomelo",
+     lambda: scan.flavours.english_notes(scan.find_notes(item("Honduras Santa Rosa", "<ul><li><strong>Origin:</strong> Honduras</li><li><strong>Region:</strong> Santa Rosa</li><li><strong>Tasting notes:</strong> Pomelo, Brazil Nut</li><li><strong>Process:</strong> Washed</li><li><strong>Cup Score:</strong> 84</li></ul>")))
+     == ["Pomelo", "Brazil Nut"]),
+    ("Crosby: notes the editor split or wrapped in a sentence, a misspelt blackcurrant, and '(Sale)' copies of a coffee",
+     lambda: [scan.tidy_note(x) for x in ["Dried A pricot", "S piced Raisins", "Expect super-sweet plum", "Cherry notes up front"]] == ["Dried Apricot", "Spiced Raisins", "Plum", "Cherry"]
+     and scan.flavours.english_notes(["Blackcurrent"]) == ["Blackcurrant"]
+     and scan.tidy_name("Santa Rosa (Sale)", "Crosby Coffee") == "Santa Rosa" and scan.tidy_name("Iron Men Blend Sale", "Crosby Coffee") == "Iron Men Blend"
+     and scan.tidy_name("Garage Sale Espresso", "X") == "Garage Sale Espresso"),
+    ("Tanat: a cap named after a coffee ('Casquette - Geisha Washed Only Beige') is not a coffee",
+     lambda: scan.EXCLUDE.search("Casquette - Geisha Washed Only Beige") is not None and scan.EXCLUDE.search("Beanie Noir") is not None
+     and not scan.EXCLUDE.search("Geisha Washed") and not scan.EXCLUDE.search("Finca Hartmann")),
+    ("Langøra: the flavours on the second line, under a line of how it feels ('Insens, saftig, eksplosiv')",
+     lambda: scan.find_notes(item("Julekaffe Colombia - Granja Paraíso 92", "<p><em>Insens, saftig, eksplosiv</em></p>\n<p><em>Jordbærmarmelade, pasjonsfrukt, fersken</em></p>\n<p>Dette er en skkelig eksplosiv fruktbombe av en kaffe.</p>"))
+     == ["Jordbærmarmelade", "Pasjonsfrukt", "Fersken"]
+     and scan.flavours.english_notes(["Jordbærmarmelade", "Pasjonsfrukt", "Fersken"]) == ["Strawberry jam", "Passion fruit", "Peach"]),
+    ("Jolly Bean: a heading of flavours under Origin, Varietal and Process; the style after the dash is not a note",
+     lambda: scan.find_notes(item("Leonid Ramirez - Recessio Proof Banger", "<p><strong>Origin:</strong> Genova</p><p><strong>Varietal:</strong> Castillo</p><p><strong>Process:</strong> Extended Fermentation Washed</p><p></p><h3>GRAPEFRUIT, APPLE, BROWN SUGAR - AROMATIC &amp; FLORAL</h3><p>A new producer for us! Leonid Ramírez is here with an extended fermentation castillo, and it is great and typifies why I love Colombian lots so much, fruit, full body, complex and floral.</p>"))
+     == ["Grapefruit", "Apple", "Brown sugar"]),
+    ("Trigger: '[PROFILE] GINGERBREAD COOKIES WITH STRAWBERRY JAM' is the cup, two notes; the Polish '[PROFIL]' too",
+     lambda: scan.find_notes(item("Colombia x Rwanda Holiday Coffee", "<p>[X-MAS COFFEE] COLOMBIA X RWANDA<br>[PRODUCER] SANTA CLAUS TEAM<br>[VARIETAL] CATURRA X BOURBON<br>[PROCESS] WASHED CO-FERMENTED X NATURAL<br>[ROAST LEVEL] FILTER<br>[PROFILE] GINGERBREAD COOKIES WITH STRAWBERRY JAM</p><p>Coffee roasted a maximum of 14 days ago.</p>"))
+     == ["Gingerbread cookies", "Strawberry jam"]
+     and scan.find_notes(item("Kolumbia x Rwanda [X-mas Coffee] Pierniczki z dżemem truskawkowym", "<p>[KAWA ŚWIĄTECZNA] KOLUMBIA X RWANDA<br>[PRODUCENT] SANTA CLAUS TEAM<br>[PROFIL] PIERNICZKI Z DŻEMEM TRUSKAWKOWYM</p><p>Zapach zbliżających się świąt.</p>"))
+     == ["Gingerbread", "Strawberry jam"]),
+    ("Trigger: the name stops at the bracketed tag, the notes after it are read, Polish country names in English",
+     lambda: scan.tidy_name("Etiopia Aricha [FILTR] Morele, Limonka, Czarna Herbata", "Trigger") == "Ethiopia Aricha"
+     and scan.tidy_name("Kolumbia x Rwanda [X-mas Coffee] Pierniczki z dżemem truskawkowym", "Trigger") == "Colombia x Rwanda"
+     and scan.tidy_name("[Kawa bezkofeinowa] Kolumbia El Vergel Decaf", "Trigger") == "Colombia El Vergel Decaf"
+     and scan.tidy_name("Industrial Supply Series [RED]", "People Possession") == "Industrial Supply Series Red"
+     and scan.flavours.english_notes(scan.find_notes(item("Etiopia Aricha [FILTR] Morele, Limonka, Czarna Herbata", "<p>Kawa z Etiopii.</p>")))
+     == ["Apricot", "Lime", "Black tea"]),
+    ("Light Up: Japanese blood orange, grape and rum (ラム, which a browser turns into 'lamb')",
+     lambda: scan.find_notes(item("Ethiopia", "<p>ブラッドオレンジやグレープのようなフルーティーさ。ラムを思わせる余韻。</p>")) == ["Blood orange", "Grape", "Rum"]),
     ("ST. ALi: 'Strawberries + White Lily' is two notes, shown with a comma between, not one note with a plus",
      lambda: scan.flavours.english_notes(["Strawberries + White Lily"]) == ["Strawberries", "White Lily"]
      and scan.flavours.english_notes(["Chocolate", "Plum + Treacle"]) == ["Chocolate", "Plum", "Treacle"]),
