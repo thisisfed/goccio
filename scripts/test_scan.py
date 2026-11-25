@@ -41,6 +41,9 @@ COFFEE_BODY = "Origin: Colombia\nProcess: Washed\nVariety: Caturra\nAltitude: 1,
 
 # (what was reported, check that must be True)
 CASES = [
+    ("ST. ALi: 'Strawberries + White Lily' is two notes, shown with a comma between, not one note with a plus",
+     lambda: scan.flavours.english_notes(["Strawberries + White Lily"]) == ["Strawberries", "White Lily"]
+     and scan.flavours.english_notes(["Chocolate", "Plum + Treacle"]) == ["Chocolate", "Plum", "Treacle"]),
     # Dropshot (Romania, 24/11/2026): notes left in Romanian, one misspelt ("Ciuocolata"); "Columbia" and "Brazilia" in names are Colombia and Brazil
     ("Dropshot's Romanian notes come out in English",
      lambda: scan.flavours.english_notes(["Ciuocolata cu lapte", "Portocala coapta", "Gem de Vişine", "Tort de Ciocolată Neagră", "Turta Dulce", "Miere Acacia"]) == ["Milk chocolate", "Ripe orange", "Sour cherry jam", "Dark chocolate cake", "Gingerbread", "Acacia honey"]),
