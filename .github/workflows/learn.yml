@@ -1,0 +1,23 @@
+name: Goccio's week
+
+# Mondays: last week's questions Goccio couldn't answer are counted into a list, most asked first, in their private issue
+on:
+  schedule:
+    - cron: "41 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  count:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Count last week's questions
+        env:
+          GH_TOKEN: ${{ secrets.LISTING_TOKEN }}   # it reaches the private requests repo; the workflow's own token can't
+        run: python3 scripts/learn_week.py
