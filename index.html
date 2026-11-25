@@ -2811,7 +2811,8 @@ html body .gd-fx .fx-flash{fill:#ffcf7a}
 html body .gd-fx .fx-scorch{fill:#140a04;stroke:#3a1d0c;stroke-width:1.5;opacity:0}
 html body .gd-fx .fx-smoke{transform-box:fill-box;transform-origin:center}
 html body .wb-sign .gd-beta.burnt{opacity:0!important;transition:opacity .12s}
-html body .wb-sign .gd-beta.back{animation:beta-back .6s cubic-bezier(.3,1.5,.5,1)}
+html body .wb-sign .gd-beta.back, html body .gd-unzap{animation:beta-back .6s cubic-bezier(.3,1.5,.5,1)}
+html body .gd-zapped{opacity:0!important;pointer-events:none!important;transition:opacity .12s!important}   /* anything else he zaps: gone for a moment, then back */
 @keyframes beta-back{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
 html body .wb-sign .gd-hint{position:absolute;left:50%;bottom:calc(100% - var(--cup-at, 21px) + 57.5px * var(--gs, 1) + 8.5px);translate:-50% 0;z-index:39;white-space:nowrap;padding:6px 10px;border-radius:var(--r,4px);
   background:var(--ink);color:var(--bg);font:500 15px/1.35 var(--sans);letter-spacing:0;animation:gdTalkIn .32s cubic-bezier(.3,1.45,.5,1);transition:opacity .35s ease}
@@ -10183,7 +10184,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // just landed for the first time: a big show first, a roly-poly, laser eyes on his tag, a roll or a backflip, before the quieter life begins
     let landedOnce = false;
     const showOff = () => { if (still() || (opt.paused && opt.paused())) return; acting = false;   /* the hello's smile gives way to the show */ const r0 = el.getBoundingClientRect(); if (r0.bottom < 0 || r0.top > innerHeight) return;
-      const tag0 = el.parentElement && el.parentElement.querySelector(".gd-beta"); if (tag0 && tag0.offsetWidth && Math.random() < 0.35) return laserBeta();   /* now and then the first show is the laser eyes on his tag */
+      const tag0 = el.parentElement && el.parentElement.querySelector(".gd-beta"); if (tag0 && tag0.offsetWidth && Math.random() < 0.35) return laserBeta(false);   /* now and then the first show is the laser eyes on his tag */
       (window.gdOnce && window.gdOnce() ? rolypoly : [roll, backflip][Math.floor(Math.random() * 2)])(); };   /* the big show (coming right up to you) only if nothing has interrupted yet; otherwise a roll or a flip in its place */
     // it falls the first time it comes into view
     let fell = false;
@@ -10276,8 +10277,18 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       tween("aRest", 0, 200); leanTo = 0; lookX = 0; draw(); go(); await wait(300); await face({ happy: 0, smile: 0, blush: 0, eyeL: 1, eyeR: 1 }, 380); });
     // laser eyes: he stares at his Beta tag, his eyes go red, two beams run round its border and burn it away: sparks while they
     // cut, then a flash, a scorch and smoke where it was. A few seconds later the tag is back, as if nothing happened
-    const laserBeta = () => act(async () => { const host = el.parentElement, tag = host && host.querySelector(".gd-beta");
-      if (!tag || still() || !tag.offsetWidth || tag.classList.contains("burnt") || getComputedStyle(tag).opacity === "0") return;
+    // the target: his Beta tag, or (half the time, or when asked for "anything") something else near him on screen: a button, a pill,
+    // a heading. Never part of him, the bars or the chat. It all comes back
+    const zapPick = (any) => { const host = el.parentElement, tag = host && host.querySelector(".gd-beta"), b0 = el.getBoundingClientRect(), cx0 = b0.left + b0.width / 2, cy0 = b0.top + b0.height / 2;
+      const ok = (e) => { if (!e.offsetWidth || e.contains(el) || el.contains(e) || e.closest(".top, .botnav, .gd-talk, .gd-dock, [hidden], .burnt") || e.classList.contains("burnt")) return false;
+        const r = e.getBoundingClientRect(), cs = getComputedStyle(e); if (cs.visibility === "hidden" || +cs.opacity < 0.5 || cs.position === "fixed") return false;
+        return r.width > 14 && r.height > 10 && r.width < innerWidth * 0.7 && r.height < 120 && r.top > 60 && r.bottom < innerHeight - 70 && Math.hypot(r.left + r.width / 2 - cx0, r.top + r.height / 2 - cy0) < 430; };
+      const others = [...document.querySelectorAll("button, a.pill, .pill, .chip, .btn, h2, h3, .cap, .wm-tagline, .c-notes")].filter((e) => e !== tag && ok(e));
+      const tagOk = tag && tag.offsetWidth && !tag.classList.contains("burnt") && getComputedStyle(tag).opacity !== "0";
+      if (others.length && (any || !tagOk || Math.random() < 0.5)) return others[Math.floor(Math.random() * others.length)];
+      return tagOk ? tag : null; };
+    const laserBeta = (any) => act(async () => { const host = el.parentElement, tag = zapPick(any);
+      if (!host || !tag || still()) return;
       const NS = "http://www.w3.org/2000/svg", mk = (n, a, p0) => { const e = document.createElementNS(NS, n); Object.entries(a).forEach(([k, v]) => e.setAttribute(k, v)); (p0 || fx).appendChild(e); return e; };
       // his eyes on the tag itself, wherever it sits: aimed at it, then following the cut as it goes round
       const aim = (px, py) => { const b0 = body.getBoundingClientRect(), dx = px - (b0.left + b0.width / 2), dy = py - (b0.top + b0.height * 0.42), d = Math.hypot(dx, dy) || 1; lookX = 4.4 * dx / d; lookY = 4.4 * dy / d; draw(); };
@@ -10309,7 +10320,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       beams.flat().forEach((b) => b.remove()); hot.remove(); sparks.forEach((p0) => p0.e.remove()); el.classList.remove("laser");
       const flash = mk("rect", { class: "fx-flash", x: x - 4, y: y - 4, width: w + 8, height: h + 8, rx: rad + 4 });
       flash.animate([{ opacity: 0.95 }, { opacity: 0 }], { duration: 420, easing: "ease-out", fill: "forwards" });
-      tag.classList.add("burnt"); trail.classList.add("cold");
+      tag.classList.add("burnt"); if (!tag.classList.contains("gd-beta")) tag.classList.add("gd-zapped"); trail.classList.add("cold");
       const scorch = mk("rect", { class: "fx-scorch", x: x + 1, y: y + 1, width: w - 2, height: h - 2, rx: rad });
       scorch.animate([{ opacity: 0 }, { opacity: 0.9 }], { duration: 300, fill: "forwards" });
       const smokeId = "fxs" + Math.random().toString(36).slice(2, 6), sg = mk("radialGradient", { id: smokeId }, mk("defs", {}));   // soft puffs: grey in the middle, gone at the edge
@@ -10322,7 +10333,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       await face({ happy: 0, smile: 0 }, 300); lookX = 0; lookY = 0; draw(); go();
       // a little later the scorch fades and the tag is back
       setTimeout(() => { [scorch, trail].forEach((e) => e.animate([{ opacity: e === scorch ? 0.9 : 1 }, { opacity: 0 }], { duration: 900, fill: "forwards" }));
-        setTimeout(() => { fx.remove(); tag.classList.remove("burnt"); tag.classList.add("back"); setTimeout(() => tag.classList.remove("back"), 700); }, 900); }, 2600); });
+        setTimeout(() => { fx.remove(); const bk = tag.classList.contains("gd-beta") ? "back" : "gd-unzap"; tag.classList.remove("burnt", "gd-zapped"); tag.classList.add(bk); setTimeout(() => tag.classList.remove(bk), 700); }, 900); }, 2600); });
     // he looks at his Beta tag, then at you, then at the tag again, as if asking you what it's about; the last look at you
     // with one eye a little wider, like a raised eyebrow
     const betaAsk = () => act(async () => {
@@ -11058,7 +11069,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       [/\b(boop|kiss|smooch|mwah|bacio|bacino|baciami)\b/i, () => { say(pick([T("Mwah!", "Muah!"), T("Boop!", "Bup!")]), null); setTimeout(() => { D.free(); D.boop(); }, 450); }, true],
       [/\b(cross[- ]?eyed|cross (your|ur|the) eyes|cross eyes|strabico|occhi storti|incrocia gli occhi)\b/i, () => { say(pick([T("Like this?", "Così?"), T("Now I can see my nose. I don't have a nose.", "Adesso vedo il mio naso. Non ho il naso.")]), null); setTimeout(() => { D.free(); D.crossEyes(1800); }, 450); }, true],
       [/\blasers?\b|laser eyes|occhi laser|(destroy|burn|zap|kill|blast|delete) (the |your |that )?beta|(distruggi|brucia) (la |il )?beta/i, () => { say(pick([T("Stand back.", "State indietro."), T("Pew pew.", "Piu piu.")]), null, curious);
-        setTimeout(() => { closeTalk(); const g0 = $("gdrop"); if (g0) g0.scrollIntoView({ block: "center", behavior: "smooth" }); setTimeout(() => { D.free(); D.laserBeta(); }, 900); }, 900); }, true],
+        setTimeout(() => { closeTalk(); const g0 = $("gdrop"); if (g0) g0.scrollIntoView({ block: "center", behavior: "smooth" }); setTimeout(() => { D.free(); D.laserBeta(!/beta/i.test(lastQ)); }, 900); }, 900); }, true],
       [/\b(rol+(y|ie)[ -]?pol+(y|ie)|somersault|forward roll|tumble|capriol\w*|fai una capriola)\b/i, () => { say(pick([T("Weee!", "Uiii!"), T("Head over heels!", "A gambe all'aria!")]), null); setTimeout(() => { D.free(); D.rolypoly(); littleMove("ag-flip"); }, 450); }, true],
       [/\broll\b|rolling|rotola|rotolare|fai una rotolata/i, () => { say(T("Wheee!", "Uiii!"), null); setTimeout(() => { D.free(); D.roll(); littleMove("ag-spin"); }, 450); }, true],
       [/back ?flip|somersault|do a flip|capriola|salto (mortale|all'indietro)/i, () => { say(T("Watch this!", "Guarda qua!"), null); setTimeout(() => { D.free(); D.backflip(); littleMove("ag-flip"); }, 450); }, true],
