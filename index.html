@@ -10573,6 +10573,12 @@ void main(){
     const react = (emoji, delay) => { const m = lastMine; if (!m || m.querySelector(".gd-tb")) return; setTimeout(() => { if (m.querySelector(".gd-tb")) return;
       const t = document.createElement("span"); t.className = "gd-tb"; t.textContent = emoji; m.appendChild(t); m.classList.add("has-tb"); if (m._rec) { m._rec.r = emoji; saveChat(); } }, delay == null ? 450 : delay); };
     // your tapbacks on its messages, like iMessage: double-tap or hold one of its bubbles, pick an emoji, and it reacts
+    // a question it couldn't answer, or an answer you gave a 👎, goes (anonymously) to the weekly list Goccio is taught from
+    const learnSent = new Set();
+    const learn = (q, why) => { q = String(q || "").trim(); if (q.length < 3 || learnSent.has(why + q) || /[?&]nolearn\b/.test(location.search)) return; learnSent.add(why + q);
+      try { const body = JSON.stringify({ q, lang: LANG === "it" ? "it" : "en", why }); if (!(navigator.sendBeacon && navigator.sendBeacon("/api/learn", new Blob([body], { type: "application/json" })))) fetch("/api/learn", { method: "POST", headers: { "content-type": "application/json" }, body, keepalive: true }).catch(() => {}); } catch (e) {} };
+    // the question a message of its answered: the last thing you said before it
+    const askedFor = (m) => { const i = msgs.indexOf(m && m._rec); for (let k = (i < 0 ? msgs.length : i) - 1; k >= 0; k--) if (msgs[k].w === "me") return msgs[k].t; return ""; };
     const TAPS = ["❤️", "👍", "👎", "😂", "‼️", "❓"];
     const feel = (e) => { const docked = document.documentElement.classList.contains("gd-docked");
       if (docked) { littleMove(e === "😂" ? "ag-hops" : e === "❤️" ? "ag-wink" : e === "‼️" ? "ag-flip" : e === "👍" ? "ag-dance" : null); }
@@ -10586,7 +10592,7 @@ void main(){
         const its = sayEl.querySelectorAll(".gd-it:not(.gd-typing)"), lastIt = its[its.length - 1];
         // 👍 on Goccio's latest message when it asks something: a yes. 👎: a no
         if ((e === "👍" || e === "👎") && m === lastIt && /\?\s*$/.test(String((m._rec && m._rec.t) || m.textContent.replace(e, "")))) setTimeout(() => ask(e === "👍" ? "yes" : "no", true), 450);
-        else feel(e); } else if (m._rec) delete m._rec.r;
+        else { if (e === "👎") learn(askedFor(m), "down"); feel(e); } } else if (m._rec) delete m._rec.r;
       saveChat(); };
     const pickFor = (m) => { unpick(); if (!m || !m.classList.contains("gd-it") || m.classList.contains("gd-typing")) return; picker = document.createElement("span"); picker.className = "gd-pick"; picker.setAttribute("role", "group"); picker.setAttribute("aria-label", T("React", "Reagisci"));
       TAPS.forEach((e) => { const b = document.createElement("button"); b.type = "button"; b.textContent = e; if (m._rec && m._rec.r === e) b.className = "on"; b.onclick = (ev) => { ev.stopPropagation(); tapOn(m, e); unpick(); }; picker.appendChild(b); });
@@ -11693,7 +11699,7 @@ void main(){
       ["I don't know, sorry. But I can tell you why your coffee's sour.", "Non lo so, scusa. Ma posso dirti perché il tuo caffè è aspro."],
       ["I don't know that one. Shall we talk about grinders instead?", "Questa non la so. Parliamo di macinini?"]];
     let dunnoLast = -1;
-    const dunno = () => { if (thinkNext) thinkNext.pre = "";   /* "Good question!" then "no idea" reads wrong: just say it doesn't know */ if (Math.random() < 0.3) react("❓", 900);   /* now and then, not every time */ let i; do { i = Math.floor(Math.random() * DUNNO.length); } while (i === dunnoLast && DUNNO.length > 1); dunnoLast = i; const hook = !/\?\s*$/.test(T(DUNNO[i][0], DUNNO[i][1])) && Math.random() < 0.6 && typeof shelf !== "undefined" && shelf.some((r) => r.just_in);
+    const dunno = () => { learn(lastQ, "dunno"); if (thinkNext) thinkNext.pre = "";   /* "Good question!" then "no idea" reads wrong: just say it doesn't know */ if (Math.random() < 0.3) react("❓", 900);   /* now and then, not every time */ let i; do { i = Math.floor(Math.random() * DUNNO.length); } while (i === dunnoLast && DUNNO.length > 1); dunnoLast = i; const hook = !/\?\s*$/.test(T(DUNNO[i][0], DUNNO[i][1])) && Math.random() < 0.6 && typeof shelf !== "undefined" && shelf.some((r) => r.just_in);
       say(T(DUNNO[i][0], DUNNO[i][1]), hook ? [{ t: T("Pick one", "Scegline uno"), ask: T("Shall I pick you one of today's new coffees instead?", "Vuoi che ti scelga uno dei caffè nuovi di oggi?"), f: () => pickNew(false) }] : null, Math.random() < 0.5 ? hmm : curious); };
     $("gdGo").onclick = () => ask(inEl.value);
     { const mic = $("gdMic"), Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
