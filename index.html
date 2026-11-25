@@ -2905,6 +2905,20 @@ html body .top.ask-on .ask-line:not(:has(.ask-goccio.ag-gone)) > .ask-box{margin
   html body .top #toolsBtn{transition:scale .941s linear(0,0.065,0.213,0.39,0.564,0.715,0.836,0.924,0.984,1.021,1.039,1.045,1.043,1.037,1.029,1.021,1.014,1.008,1.004,1.001,0.999,0.998,0.998,0.998,0.998), transform .941s linear(0,0.065,0.213,0.39,0.564,0.715,0.836,0.924,0.984,1.021,1.039,1.045,1.043,1.037,1.029,1.021,1.014,1.008,1.004,1.001,0.999,0.998,0.998,0.998,0.998), opacity .3s ease, background .2s ease}
 }
 @media (prefers-reduced-motion:reduce){html body .top .ask-line,html body .top .ask-line .ask-goccio svg,html body .top #toolsBtn{transition:none!important}}
+/* phones: the chat as a full-screen sheet */
+html body .gd-head{display:none}
+html.gd-full, html.gd-full body{overflow:hidden!important;overscroll-behavior:none}
+html.gd-full body .gd-dock.gd-dock.gd-dock .gd-talk{position:fixed!important;left:0!important;right:0!important;top:0;bottom:auto!important;width:auto!important;max-width:none!important;height:100dvh;translate:none!important;transform:none!important;margin:0!important;border:0!important;border-radius:0!important;display:flex!important;flex-direction:column;gap:10px;padding:0 12px calc(12px + env(safe-area-inset-bottom,0px))!important;background:var(--bg)!important;box-shadow:none!important;animation:gdSheet .32s cubic-bezier(.2,.9,.3,1)}
+html.gd-full body .gd-dock .gd-talk::after{display:none!important}
+html.gd-full body .gd-head{display:flex;align-items:center;gap:10px;flex:none;min-height:56px;margin:0 -12px;padding:env(safe-area-inset-top,0px) 52px 0 12px;border-bottom:1px solid var(--line);touch-action:none}
+html.gd-full body .gd-head svg{width:30px;height:30px;flex:none;overflow:visible}
+html.gd-full body .gd-head .gh-n{font:600 var(--fs-s)/1.2 var(--sans);color:var(--ink)}
+html.gd-full body .gd-head .gh-b{padding:2px 6px;border:1px solid var(--line);border-radius:var(--r,4px);font:500 12px/1.2 var(--sans);color:var(--muted)}
+html.gd-full body .gd-dock .gd-x{top:calc(env(safe-area-inset-top,0px) + 12px)!important;right:8px!important}
+html.gd-full body .gd-dock .gd-say{flex:1 1 auto;max-height:none!important;min-height:0!important;margin:0!important;padding:4px 0 0!important;overflow-y:auto}
+html.gd-full body .gd-dock .gd-ask, html.gd-full body .gd-dock .gd-chips{flex:none}
+@keyframes gdSheet{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){html.gd-full body .gd-dock .gd-talk{animation:none}}
 /* first visit: the big Goccio drops in, says hi, then flies up into the little pill */
 html body .gd-fly{position:fixed;z-index:60;pointer-events:none;transform:translateY(-70vh);transition:transform .8s cubic-bezier(.3,1.35,.5,1)}
 html body .gd-fly.in{transform:none}
@@ -2991,10 +3005,10 @@ html body .wb-sign .gd-talk .gd-say{padding-right:38px!important} html body .wb-
 html body .gd-m{max-width:100%}
 /* the little Goccio's moves: a dance, a backflip, a spin and a double hop, all inside its pill */
 html body .ask-goccio svg{transform-origin:50% 60%;overflow:visible}
-html body .ask-goccio svg.ag-dance{animation:agDance 1.3s ease-in-out}
-html body .ask-goccio svg.ag-flip{animation:agFlip .8s cubic-bezier(.4,0,.2,1)}
-html body .ask-goccio svg.ag-spin{animation:agSpin .9s cubic-bezier(.5,0,.3,1)}
-html body .ask-goccio svg.ag-hops{animation:agHops .7s ease-out}
+html body :is(.ask-goccio,.gd-head) svg.ag-dance{animation:agDance 1.3s ease-in-out}
+html body :is(.ask-goccio,.gd-head) svg.ag-flip{animation:agFlip .8s cubic-bezier(.4,0,.2,1)}
+html body :is(.ask-goccio,.gd-head) svg.ag-spin{animation:agSpin .9s cubic-bezier(.5,0,.3,1)}
+html body :is(.ask-goccio,.gd-head) svg.ag-hops{animation:agHops .7s ease-out}
 @keyframes agDance{0%,100%{rotate:0deg;translate:0 0}15%{rotate:-14deg;translate:-2px -2px}30%{rotate:12deg;translate:2px 0}45%{rotate:-14deg;translate:-2px -2px}60%{rotate:12deg;translate:2px 0}75%{rotate:0deg;translate:0 -4px;scale:1.08 .92}88%{translate:0 0;scale:.94 1.06}}
 @keyframes agFlip{0%{rotate:0deg;translate:0 0;scale:1.1 .9}25%{translate:0 -7px;scale:.95 1.05}60%{rotate:-360deg;translate:0 -6px}85%{rotate:-360deg;translate:0 1px;scale:1.12 .88}100%{rotate:-360deg;translate:0 0;scale:1}}
 @keyframes agSpin{0%{rotate:0deg}70%{rotate:380deg}85%{rotate:350deg}100%{rotate:360deg}}
@@ -10848,7 +10862,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       [/el salvador|salvador/i, "El Salvador", "El Salvador", "sweet and round, home of the big-bean Pacamara: chocolate, tropical fruit", "dolce e rotondo, patria del Pacamara dai chicchi grandi: cioccolato, frutta tropicale"],
       [/mexic/i, "Mexico", "Messico", "light and nutty with gentle chocolate and citrus", "leggero e nocciolato, con cioccolato delicato e agrumi"],
       [/yemen/i, "Yemen", "Yemen", "where coffee was first drunk: wild, winey, spicy and dried-fruit sweet", "dove il caffè è stato bevuto per la prima volta: selvaggio, vinoso, speziato e dolce di frutta secca"]];
-    const littleMove = (m) => { const tb = $("askGoccio"); if (tb && tb.move) tb.move(m); };   // the little one in the top bar joins in
+    const littleMove = (m) => { const tb = $("askGoccio"); if (tb && tb.move) tb.move(m); const hs = talkEl.querySelector(".gd-head svg"); if (hs && m) { hs.classList.add(m); setTimeout(() => hs.classList.remove(m), 1400); } };   // the little one in the top bar joins in
     let moreQ = "", lastTrick = null, prevTrick = null;   // a trick can be asked for again ("again!")   // what "Another one" asks again: the last flavour asked for, or a plain surprise
     const ANSWERS = [
       [/^(hi|hello|hey|hiya|ciao|salve|buongiorno|buonasera|yo)\b/i, () => say(name ? T(`Hi ${name}! What are we brewing?`, `Ciao ${name}! Cosa prepariamo?`) : T("Hi! I'm Goccio. Ask me anything about coffee.", "Ciao! Sono Goccio. Chiedimi qualcosa sul caffè."), null, happy)],
@@ -11519,12 +11533,20 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     addEventListener("scroll", () => { if (!talking || openY === null) return;
       if (talkEl.contains(document.activeElement) || performance.now() - kbT < 1200) { openY = scrollY; return; }
       if (Math.abs(scrollY - openY) > 140) closeTalk(); }, { passive: true });   // scroll away from an open chat: it closes and the page clears
-    openTalk = (top) => { if (talking) { place(top); return; } openY = null; setTimeout(() => { openY = scrollY; }, 800); place(top); gdWords(); talking = true; dim(true, top); talkEl.hidden = false; el.setAttribute("aria-expanded", "true"); toBottom();
+    // phones: the chat is a full-screen sheet, like a messaging app: Goccio as the contact at the top, the box on the keyboard. Nothing behind it
+    // can scroll or be tapped, so it never closes by accident; the X, Escape or a swipe down on its top closes it
+    const fullMQ = matchMedia("(max-width: 640px)"), isFull = () => fullMQ.matches;
+    const fullFit = () => { if (!document.documentElement.classList.contains("gd-full")) { talkEl.style.top = ""; talkEl.style.height = ""; return; } const vv = window.visualViewport; if (vv) { talkEl.style.top = vv.offsetTop + "px"; talkEl.style.height = vv.height + "px"; } };
+    if (window.visualViewport) { visualViewport.addEventListener("resize", fullFit); visualViewport.addEventListener("scroll", fullFit); }
+    const fullHead = () => { if (talkEl.querySelector(".gd-head")) return; const h = document.createElement("span"); h.className = "gd-head"; const sv = $("askGoccio") && $("askGoccio").querySelector("svg"); if (sv) { const c = sv.cloneNode(true); c.style.opacity = ""; h.appendChild(c); }
+      h.insertAdjacentHTML("beforeend", `<span class="gh-n">Goccio</span><span class="gh-b">Beta 0.9</span>`); talkEl.prepend(h);
+      let y0 = null; h.addEventListener("touchstart", (e) => { y0 = e.touches[0].clientY; }, { passive: true }); h.addEventListener("touchmove", (e) => { if (y0 != null && e.touches[0].clientY - y0 > 70) { y0 = null; closeTalk(); } }, { passive: true }); };
+    openTalk = (top) => { if (talking) { place(top || isFull()); return; } if (isFull()) { top = true; fullHead(); document.documentElement.classList.add("gd-full"); } openY = null; setTimeout(() => { openY = scrollY; }, 800); place(top); gdWords(); talking = true; dim(true, top); talkEl.hidden = false; el.setAttribute("aria-expanded", "true"); fullFit(); toBottom();
       const lastAt = msgs.length ? msgs[msgs.length - 1].at || 0 : 0; if (name && msgs.length && Date.now() - lastAt < 20 * 60000) { showChips(); return; }   // still mid-chat: carry on
       replyTo = null;   // a new hello answers nobody: it anchors to itself
       if (!name) { askingName = true; return say(T("Hi! I'm Goccio, the drop that knows coffee. What should I call you?", "Ciao! Sono Goccio, la goccia che sa tutto del caffè. Come ti chiamo?"), [T("Skip", "Salta")], happy); }
       hello(); };
-    closeTalk = () => { if (!talking) return; talking = false; dim(false); talkEl.hidden = true; el.setAttribute("aria-expanded", "false"); clearInterval(typeT); bob(false); };
+    closeTalk = () => { if (!talking) return; talking = false; document.documentElement.classList.remove("gd-full"); fullFit(); dim(false); talkEl.hidden = true; el.setAttribute("aria-expanded", "false"); clearInterval(typeT); bob(false); };
     $("gdX").onclick = closeTalk;
     // the top bar: the little Goccio opens it there; a question typed in the search box goes to Goccio instead of the list
     { const tb = $("askGoccio"); if (tb) tb.onclick = () => { window.gdMotion && window.gdMotion(); talking ? closeTalk() : openTalk(true); tb.hop && tb.hop(); }; }
