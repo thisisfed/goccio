@@ -2928,7 +2928,8 @@ html body .wb-sign .gdrop .gd-l, html body .wb-sign .gdrop .gd-r{fill:url(#gdEye
 /* phones: the chat as a full-screen sheet */
 html body .gd-head{display:none}
 html.gd-full, html.gd-full body{overflow:hidden!important;overscroll-behavior:none}
-html.gd-full body .gd-dock.gd-dock.gd-dock .gd-talk{position:fixed!important;left:0!important;right:0!important;top:0;bottom:auto!important;width:auto!important;max-width:none!important;height:100dvh;translate:none!important;transform:none!important;margin:0!important;border:0!important;border-radius:0!important;display:flex!important;flex-direction:column;gap:10px;padding:0 12px calc(12px + env(safe-area-inset-bottom,0px))!important;background:var(--bg)!important;box-shadow:none!important;animation:gdSheet .32s cubic-bezier(.2,.9,.3,1)}
+html.gd-full body .wb-sign .gdrop{visibility:hidden!important}
+html.gd-full body .gd-dock.gd-dock.gd-dock .gd-talk{box-shadow:0 0 0 100vmax var(--bg)!important;position:fixed!important;left:0!important;right:0!important;top:0;bottom:auto!important;width:auto!important;max-width:none!important;height:100dvh;translate:none!important;transform:none!important;margin:0!important;border:0!important;border-radius:0!important;display:flex!important;flex-direction:column;gap:10px;padding:0 12px calc(12px + env(safe-area-inset-bottom,0px))!important;background:var(--bg)!important;box-shadow:none!important;animation:gdSheet .32s cubic-bezier(.2,.9,.3,1)}
 html.gd-full body .gd-dock .gd-talk::after{display:none!important}
 html.gd-full body .gd-head{display:flex;align-items:center;gap:10px;flex:none;box-sizing:border-box;height:calc(var(--top-h,49px) + env(safe-area-inset-top,0px));margin:0 -12px;padding:env(safe-area-inset-top,0px) 56px 0 12px;border-bottom:1px solid var(--line);touch-action:none}   /* as tall as the top bar, so its line sits where the bar's does */
 html.gd-full body .gd-head svg{width:30px;height:30px;flex:none;overflow:visible}
@@ -11748,6 +11749,7 @@ void main(){
     openTalk = (top) => { if (talking) { place(top || isFull()); return; } if (isFull()) { top = true; fullHead(); pin(true); document.documentElement.classList.add("gd-full"); } openY = null; setTimeout(() => { openY = scrollY; }, 800); place(top); gdWords(); talking = true; dim(true, top); talkEl.hidden = false; el.setAttribute("aria-expanded", "true"); fullFit(); if (window.gdFitWatch) window.gdFitWatch(1000); toBottom();
       const lastAt = msgs.length ? msgs[msgs.length - 1].at || 0 : 0; if (name && msgs.length && Date.now() - lastAt < 20 * 60000) { showChips(); return; }   // still mid-chat: carry on
       replyTo = null;   // a new hello answers nobody: it anchors to itself
+      if (!name && msgs.length && msgs[msgs.length - 1].w !== "me" && /call you\?|Come ti chiamo\?/.test(msgs[msgs.length - 1].t || "") && Date.now() - lastAt < 20 * 60000) { askingName = true; showChips(); return; }
       if (!name) { askingName = true; return say(T("Hi! I'm Goccio, the drop that knows coffee. What should I call you?", "Ciao! Sono Goccio, la goccia che sa tutto del caffè. Come ti chiamo?"), [T("Skip", "Salta")], happy); }
       hello(); };
     closeTalk = () => { if (!talking) return; talking = false; document.documentElement.classList.remove("gd-full"); fullFit(); pin(false); dim(false); talkEl.hidden = true; el.setAttribute("aria-expanded", "false"); clearInterval(typeT); bob(false); };
