@@ -10319,9 +10319,21 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       tvRaf = requestAnimationFrame(tvTick); };
     const onPhone = () => act(async () => { S.scroll = 0; await face({ fone: 1 }, 380);
       lookY = 2.2; lookX = 0; draw(); await face({ eyeL: 0.8, eyeR: 0.8 }, 200);
-      for (let i = 0; i < 4; i++) { await wait(500 + Math.random() * 400); await tween("scroll", S.scroll + 1, 260); }
-      await face({ smile: 0.8, happy: 0.6 }, 180); poke(-1.2); await wait(700); await face({ smile: 0, happy: 0 }, 200);
-      await tween("scroll", S.scroll + 1, 260); await wait(500); lookY = 0; draw(); await face({ fone: 0, eyeL: 1, eyeR: 1 }, 320); S.scroll = 0; });
+      // what he reads gets a face: a laugh, a fright, boredom, dozing off over it, a wow, a sad face. One or two per look at the phone
+      const REACT = {
+        laugh: async () => { await face({ smile: 1, happy: 1, eyeL: 0.7, eyeR: 0.7 }, 160); for (let i = 0; i < 4; i++) { poke(i % 2 ? 1.4 : -1.6); jv = -70; go(); await wait(190); } await wait(350); await face({ smile: 0, happy: 0, eyeL: 0.8, eyeR: 0.8 }, 260); },
+        scared: async () => { tween("aRest", 0.12, 120); leanTo = -2.6; lookY = 1.2; draw(); go(); await face({ eyeSL: 1.45, eyeSR: 1.45, eyeL: 1.2, eyeR: 1.2, smile: -0.6 }, 110); jv = -150; go();
+          for (let i = 0; i < 6; i++) { leanTo = i % 2 ? -2.2 : -3; go(); await wait(70); } await wait(700); tween("aRest", 0, 400); leanTo = 0; lookY = 2.2; draw(); await face({ eyeSL: 1, eyeSR: 1, eyeL: 0.8, eyeR: 0.8, smile: 0 }, 420); },
+        bored: async () => { await face({ eyeL: 0.4, eyeR: 0.4, smile: -0.25 }, 600); leanTo = 1.6; go(); for (let i = 0; i < 2; i++) { await wait(900); await tween("scroll", S.scroll + 1, 700); } leanTo = 0; go(); await face({ eyeL: 0.8, eyeR: 0.8, smile: 0 }, 300); },
+        sleepy: async () => { await face({ eyeL: 0.35, eyeR: 0.35 }, 900); tween("aRest", 0.1, 900); leanTo = 1.8; go(); await face({ eyeL: 0, eyeR: 0, fone: 0.75 }, 900); await wait(900);
+          poke(1.6); tween("aRest", 0, 160); leanTo = 0; go(); await face({ eyeL: 1.25, eyeR: 1.25, eyeSL: 1.2, eyeSR: 1.2, fone: 1 }, 120); await wait(500); await face({ eyeL: 0.8, eyeR: 0.8, eyeSL: 1, eyeSR: 1 }, 300); },
+        wow: async () => { await face({ eyeSL: 1.35, eyeSR: 1.35, eyeL: 1.1, eyeR: 1.1 }, 140); poke(-1.4); await wait(1100); await face({ eyeSL: 1, eyeSR: 1, eyeL: 0.8, eyeR: 0.8 }, 300); },
+        sad: async () => { await face({ smile: -1, eyeL: 0.7, eyeR: 0.7 }, 500); tween("aRest", 0.06, 500); await wait(1300); tween("aRest", 0, 400); await face({ smile: 0, eyeL: 0.8, eyeR: 0.8 }, 400); } };
+      const keys = Object.keys(REACT), first = keys[Math.floor(Math.random() * keys.length)];
+      for (let i = 0; i < 3; i++) { await wait(500 + Math.random() * 400); await tween("scroll", S.scroll + 1, 260); }
+      await REACT[first]();
+      if (Math.random() < 0.5) { const nx = keys.filter((k) => k !== first)[Math.floor(Math.random() * (keys.length - 1))]; await wait(400); await tween("scroll", S.scroll + 1, 260); await wait(500); await REACT[nx](); }
+      await tween("scroll", S.scroll + 1, 260); await wait(500); lookY = 0; draw(); await face({ fone: 0, eyeL: 1, eyeR: 1, smile: 0, happy: 0 }, 320); S.scroll = 0; });
     const yawn = () => act(async () => { tween("aRest", 0.18, 650); await face({ eyeL: 0.08, eyeR: 0.08, eyeSL: 1.15, eyeSR: 1.15 }, 650); leanTo = -1.5;
       // at the top of the stretch: a small twitch (nothing slips out any more)
       poke(-0.6); await wait(650);
