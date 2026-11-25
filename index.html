@@ -4047,7 +4047,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       { const am = full.replace(/\{[^}]*\}?|\[[^\]]*\]?|\([^)]*\)?/g, " ").replace(/\s{2,}/g, " ").trim().match(/^([A-Z]{2,5})\s*[-–—:]?\s+(.+)$/);
         if (am) { const ws = am[2].split(/\s+/).slice(0, am[1].length); if (ws.length === am[1].length && ws.every((w, i) => w[0].toUpperCase() === am[1][i])) return am[1] + " " + ws.join(" "); } }
       // a blend that names two countries (Brazil & Costa Rica 80/20): the countries are the name
-      if (new RegExp(`${B(ALL_COUNTRIES)}\\s*(?:&|\\+|/|\\band\\b|,)\\s*${B(ALL_COUNTRIES)}`, "iu").test(full)) return full;
+      if (new RegExp(`${B(ALL_COUNTRIES)}\\s*(?:&|\\+|/|\\band\\b|,|\\bx\\b|×)\\s*${B(ALL_COUNTRIES)}`, "iu").test(full)) return full;   // "Colombia x Rwanda" (Trigger) too
       const keep = (a) => a.filter((w) => w && w.length > 2).map(reEsc);
       const region = keep([r.region]), variety = keep(r.variety ? String(r.variety).split(/\s*[,/&]\s*/) : []);
       const ONLY_DETAIL = new RegExp(`^(?:${[DETAIL, FILLER, GRADE, LABEL, ...variety].join("|")})$`, "iu");
@@ -4056,7 +4056,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const CUTWORDS = [ALL_COUNTRIES, DETAIL, FILLER, "coffee", ...region, ...variety].join("|");
       // after the name's first word: anything from a country, process, variety, grade or date on is lot detail
       // (not a country after from/of/with: From Brazil with Love is a name)
-      const CUTG = new RegExp(`(?<!\\b(?:from|of|de|del|da|do|in|to|with)\\s)${B(CUTWORDS)}`, "giu");
+      const CUTG = new RegExp(`(?<!\\b(?:from|of|de|del|da|do|in|to|with|las|los|la|el|le|les|san|santa|são|sao)\\s)${B(CUTWORDS)}`, "giu");   // "Las Flores" (KB) is a name, not Flores the island
       const HEAD = new RegExp(`^(?:${B(DETAIL)}|\\S+)`, "iu");   // a name can open with a two-word variety: Pink Bourbon La Riviera
       const cut = (t) => {
         t = t.replace(/\sby\s[\s\S]*$/, "");   // Afterglow by Jamison Savage (a lower-case by only: Fed By Fear is a name)
@@ -4113,7 +4113,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   let s = name;
   for (const w of drop) s = s.replace(new RegExp(`(?<![\\p{L}\\d])${reEsc(w)}(?![\\p{L}\\d])`, "giu"), (m, at, str) =>
     // part of a blend (Brazil & Costa Rica): leave it, the name means the mix
-    /(?:&|\+|\/|\band)\s*$/i.test(str.slice(0, at)) || /^\s*(?:&|\+|\/|and\b)/i.test(str.slice(at + m.length)) ? m : "\u0000");
+    /(?:&|\+|\/|\band|\bx|×)\s*$/i.test(str.slice(0, at)) || /^\s*(?:&|\+|\/|and\b|x\b|×)/i.test(str.slice(at + m.length)) ? m : "\u0000");
   if (s === name) return name;
   const SEP = "[,:;~\\-–—|]";
   s = s.replace(/\u0000(?:\s*\u0000)+/g, "\u0000")

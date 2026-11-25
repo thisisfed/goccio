@@ -2048,8 +2048,15 @@ def tidy_name(name, roaster):
     # the name and keeps its words without the brackets (People Possession: "Industrial Supply Series [RED]" -> "… Red")
     def _tail(m):
         t = m.group(1).strip()
-        if any(v.lower() in t.lower() for v in VARIETIES if len(v) > 3) or re.search(r"\d", t):
-            return ""
+        if any(v.lower() in t.lower() for v in VARIETIES if len(v) > 3) or (find_process(t) and len(t) < 30):
+            return ""   # a variety or a process in brackets is a tag already: "Alo Bore [Washed]" -> "Alo Bore"
+        if re.search(r"\d", t):
+            # a place and its lot code: "Janson [Los Alpes GN195]" (Tanat) keeps Los Alpes, the code goes
+            ws = [w for w in t.split() if not re.search(r"\d", w)]
+            while ws and (details_only(ws[-1]) or ws[-1].lower() in ("lot", "#", "no", "n°")):
+                ws.pop()
+            rest = " ".join(ws)
+            return " " + rest if len(re.sub(r"[^A-Za-zÀ-ÿ]", "", rest)) >= 3 and not details_only(rest) else ""
         return " " + (t.title() if t.isupper() else t)
     name = re.sub(r"\s*\[([^\]]{2,40})\]\s*$", _tail, name)
     # a blend named, then what's in it: "Broadway Blend: El Salvador & Guatemala" -> "Broadway Blend" (the origins show as tags)

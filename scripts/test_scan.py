@@ -41,6 +41,10 @@ COFFEE_BODY = "Origin: Colombia\nProcess: Washed\nVariety: Caturra\nAltitude: 1,
 
 # (what was reported, check that must be True)
 CASES = [
+    ("Tanat: 'Janson [Los Alpes GN195]' keeps the farm in the brackets, the lot code goes; a variety or a bare code in brackets still goes",
+     lambda: scan.tidy_name("Janson [Los Alpes GN195]", "Tanat") == "Janson Los Alpes" and scan.tidy_name("Abu [Catuai 3125]", "People Possession") == "Abu"
+     and scan.tidy_name("Alo Bore [Washed]", "Tanat") == "Alo Bore" and scan.tidy_name("Kimel [GN195]", "Tanat") == "Kimel"
+     and scan.tidy_name("Industrial Supply Series [RED]", "People Possession") == "Industrial Supply Series Red"),
     ("North Star: a coffee sold ground for the French press, and a coffee with a travel mug, are not bags of beans; the filter-roast one is",
      lambda: scan.EXCLUDE.search("City Bloc x Brazil Montanari - French Press (250G)") is not None
      and scan.EXCLUDE.search("Brazil Montanari + Flat White Life Travel") is not None
