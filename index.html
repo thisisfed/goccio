@@ -10611,13 +10611,13 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const motionOn = () => { addEventListener("deviceorientation", onTilt, { passive: true }); addEventListener("devicemotion", onShake, { passive: true }); };
     // listen from the start (Android sends at once); an iPhone only starts sending once the first tap on a Goccio has asked for permission
     motionOn(); let motionAsked = false, motionLive = false;
-    addEventListener("deviceorientation", (e) => { if (e.gamma != null) motionLive = true; }, { passive: true });
+    addEventListener("deviceorientation", (e) => { if (e.gamma != null) { motionLive = true; window.__gdMotionOn = true; } }, { passive: true });
     // an iPhone forgets this between visits, and a site can't keep it: so never ask if the tilt already comes through (Safari still allows it),
     // and never again once you've said no (the hello's own Allow motion button still asks)
     window.gdMotion = (force) => { if (motionAsked || motionLive) return; let no = false; try { no = localStorage.getItem("v60.motion") === "no"; } catch (e) {} if (no && !force) return; motionAsked = true; const D0 = window.DeviceOrientationEvent, M0 = window.DeviceMotionEvent;
       const keep = (r) => { try { localStorage.setItem("v60.motion", r === "granted" ? "yes" : "no"); } catch (e) {} };
       try { if (D0 && typeof D0.requestPermission === "function") D0.requestPermission().then(keep).catch(() => {}); if (M0 && typeof M0.requestPermission === "function") M0.requestPermission().catch(() => {}); } catch (e) {} };
-    el.addEventListener("click", () => window.gdMotion && window.gdMotion());
+    // (the motion permission is no longer asked on a tap: Goccio offers it in the chat, "shake your phone", and asks only on a yes)
     // its life at rest: something every few seconds, never on a beat. Mostly happy: smiles, happy eyes, yawns, a dance, a jump now and then
     const idle = () => { setTimeout(idle, 1200 + Math.random() * 2000); if (document.hidden || still() || phase !== "rest" || acting || (opt.paused && opt.paused())) return;
       const r = Math.random(), rr = el.getBoundingClientRect(); if (rr.bottom < 0 || rr.top > innerHeight) return;
@@ -11249,6 +11249,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         setTimeout(() => { closeTalk(); const g0 = $("gdrop"); if (g0) g0.scrollIntoView({ block: "center", behavior: "smooth" }); setTimeout(() => { D.free(); D.hypno(); }, 900); }, 1100); }, true],
       [/\bmeditat\w*|\bzen\b|\bom+\b|\bnamaste\b|\bmedita\w*|calm (down|yourself)/i, () => { say(pick([T("Breathe in… breathe out…", "Inspira… espira…"), T("Finding my inner crema.", "Cerco la mia crema interiore.")]), null, smile);
         setTimeout(() => { closeTalk(); const g0 = $("gdrop"); if (g0) g0.scrollIntoView({ block: "center", behavior: "smooth" }); setTimeout(() => { D.free(); D.meditate(); }, 900); }, 1100); }, true],
+      [/\b(shake|shaking|tilt|tilting|motion|movement|scuot\w*|inclin\w*|movimento)\b/i, () => { if (window.__gdMotionOn) return say(T("I can already feel it: give your phone a shake.", "Lo sento già: dai una scossa al telefono."), null, happy);
+          say(T("I can feel it when you tilt or shake your phone. Your phone will ask you first.", "Posso sentire quando inclini o scuoti il telefono. Il telefono te lo chiederà prima."), [{ t: T("Yes", "Sì"), ask: T("Want me to?", "Vuoi?"), f: () => { window.gdMotion && window.gdMotion(true); say(T("Now tilt your phone. Or shake it!", "Ora inclina il telefono. O scuotilo!"), null, happy); } }], curious); }],
       [/\blasers?\b|laser eyes|occhi laser|(destroy|burn|zap|kill|blast|delete) (the |your |that )?beta|(distruggi|brucia) (la |il )?beta/i, () => { say(pick([T("Stand back.", "State indietro."), T("Pew pew.", "Piu piu.")]), null, curious);
         setTimeout(() => { closeTalk(); const g0 = $("gdrop"); if (g0) g0.scrollIntoView({ block: "center", behavior: "smooth" }); setTimeout(() => { D.free(); D.laserBeta(!/beta/i.test(lastQ)); }, 900); }, 900); }, true],
       [/\b(rol+(y|ie)[ -]?pol+(y|ie)|somersault|forward roll|tumble|capriol\w*|fai una capriola)\b/i, () => { say(pick([T("Weee!", "Uiii!"), T("Head over heels!", "A gambe all'aria!")]), null); setTimeout(() => { D.free(); D.rolypoly(); littleMove("ag-flip"); }, 450); }, true],
@@ -11715,10 +11717,13 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const noLoc = (code) => { if (last) return wxCity(last); wantCity = true;
         say(code === 1 ? T("Your phone isn't sharing its location with this site. Tell me your town and I'll check, or allow it: on iPhone, Settings, Privacy & Security, Location Services, Safari Websites, then 'While Using the App'.", "Il telefono non condivide la posizione con questo sito. Dimmi la tua città e controllo, oppure consentila: su iPhone, Impostazioni, Privacy e sicurezza, Localizzazione, Siti web di Safari, poi 'Mentre usi l'app'.")
           : T("I couldn't find where you are. Which town are you in?", "Non riesco a capire dove sei. In che città sei?"), null, curious); };
-      if (!navigator.geolocation) return noLoc(2);
-      say(T("Let me look outside… (your browser may ask to share your location)", "Fammi guardare fuori… (il browser potrebbe chiederti la posizione)"), [], curious);
-      navigator.geolocation.getCurrentPosition(async (p) => { try { const la = p.coords.latitude.toFixed(2), lo = p.coords.longitude.toFixed(2); try { localStorage.setItem("v60.gdSpot", JSON.stringify({ la, lo })); localStorage.removeItem(CITY_KEY); } catch (e) {} await wxReport(la, lo); } catch (e) { say(T("I couldn't get the weather just now, sorry.", "Non riesco a vedere il meteo adesso, scusa."), null, hmm); } },
-        (e) => noLoc(e && e.code), { timeout: 12000, maximumAge: 600000 }); };
+      // where you are, roughly, without asking the phone: the town Cloudflare sees the visit come from (no location pop-up, ever)
+      say(T("Let me look outside…", "Fammi guardare fuori…"), [], curious);
+      (async () => { try { const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 5000); const w = await (await fetch("/api/where", { signal: ctl.signal, cache: "no-store" })).json(); clearTimeout(tm);
+          if (!w || w.la == null || w.lo == null) return noLoc(2);
+          try { localStorage.setItem("v60.gdSpot", JSON.stringify({ la: String(w.la), lo: String(w.lo) })); localStorage.removeItem(CITY_KEY); } catch (e) {}
+          await wxReport(String(w.la), String(w.lo), w.city || "");
+        } catch (e) { noLoc(2); } })(); };
     // ---- coffees and roasters by name: "where is Climpson based?", "how does Uraga from Climpson taste?" ----
     // Answered from the list itself, never guessed: a roaster's town and how many coffees it has; a coffee's origin, process,
     // variety, notes and price; and, when a roaster doesn't have the coffee asked for, who does
@@ -11944,7 +11949,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     closeTalk = () => { if (!talking) return; talking = false; document.documentElement.classList.remove("gd-full", "gd-kb"); fullFit(); pin(false); dim(false); talkEl.hidden = true; el.setAttribute("aria-expanded", "false"); clearInterval(typeT); bob(false); };
     $("gdX").onclick = closeTalk;
     // the top bar: the little Goccio opens it there; a question typed in the search box goes to Goccio instead of the list
-    { const tb = $("askGoccio"); if (tb) tb.onclick = () => { window.gdMotion && window.gdMotion(); talking ? closeTalk() : openTalk(true); tb.hop && tb.hop(); }; }
+    { const tb = $("askGoccio"); if (tb) tb.onclick = () => { talking ? closeTalk() : openTalk(true); tb.hop && tb.hop(); }; }
     // the little Goccio in the pill is alive too: it leans and looks towards the pointer (or your finger), blinks, and looks around when nobody moves
     { const tb = $("askGoccio"), bo = tb && tb.querySelector(".ag-b"), ey = tb && tb.querySelector(".ag-e"), shy = tb && tb.querySelector(".ag-shy");
       if (bo && ey && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
