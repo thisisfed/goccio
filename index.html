@@ -2381,6 +2381,7 @@ html.brew-in #coffee{display:none!important}
 #detected .miss { display: block; } #detected .miss + .miss { margin-top: 8px; }
 /* Adjust is no longer a fold: its two rows (Serve, Method) sit with the others */
 #adjOpts > summary{display:none!important} #adjOpts{margin:0!important;padding:0!important;border:0!important}
+html.gd-set #opts-kit, html.gd-set #millOpt{display:none!important}   /* brewer and grinder were picked in the chat with Goccio: straight from the coffee to its recipe */
 #recipe .sec-head{border-top:0!important}   /* no rule over "Recipe for …": the choices run straight into it */
 /* one space between rows of pills everywhere: 12 px from the bottom of one row to the top of the next, 4 px between lines inside a row */
 #opts-main{margin-top:0!important}
@@ -10406,8 +10407,12 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         saveState(); renderAllOpts(); render(); } catch (e) {} };
       const beanOn = () => { try { if (g.roast) { state.roast = g.roast; state.roastPhoto = null; } if (g.process) state.process = g.process; kitOn(); } catch (e) {} };
       setTimeout(() => { kitOn();
-        if (g.r) { brewIt(g.r); setTimeout(beanOn, 900); }
-        else { closeTalk(); try { mineOn(); } catch (e) {} $("coffeeIn").value = g.text; build(); beanOn(); } }, 2200); };
+        const setOn = () => document.documentElement.classList.add("gd-set");
+        if (g.r) { brewIt(g.r); setTimeout(() => { beanOn(); setOn(); }, 900); }
+        else { closeTalk(); try { mineOn(); } catch (e) {} $("coffeeIn").value = g.text; build(); beanOn(); setOn(); } }, 2200); };
+    // a coffee opened by hand, Cancel, or a new bag typed: the brewer and grinder rows come back
+    document.addEventListener("click", (e) => { if (!e.isTrusted || !document.documentElement.classList.contains("gd-set")) return;
+      if (e.target.closest && e.target.closest('#shelf .item .btn[data-i], #bags .btn, #wmBag, #wmFind, #suBag, #go, [data-bn="cancel"], [data-bn="coffee"], #bvReset')) document.documentElement.classList.remove("gd-set"); }, true);
     const gbGo = (g, pre) => { const qn = gbAsk(g); if (qn) say((pre ? pre + " " : "") + qn, null, curious); else gbFinish(g, pre); };
     const gbStart = (r, text) => { gbs = { at: Date.now(), r: r || null, text: text || null, tries: 0 }; ctx = null;
       gbGo(gbs, r ? T(`${r.name} from ${roasteryName(r.roaster)}, lovely. Let's set it up.`, `${r.name} della ${roasteryName(r.roaster)}, buonissimo. Prepariamolo.`) : T("Let's brew together.", "Prepariamolo insieme.")); };
