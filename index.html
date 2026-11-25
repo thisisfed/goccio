@@ -2800,6 +2800,10 @@ html body .wb-sign .gd-beta{position:absolute;left:calc(50% + 50.4px * var(--gs,
 html.gd-open body .wb-sign .gd-beta{opacity:0}
 /* laser eyes: red eyes, two beams, a burning trail round the tag, sparks; then a scorch and smoke where it was */
 html body .wb-sign .gdrop.laser .gd-e{fill:#ff2a14}
+/* hypnosis: white spirals turning slowly in his eyes */
+html body .gd-hyp{opacity:0;transition:opacity .4s ease;pointer-events:none} html body .gd-hyp.in{opacity:1}
+html body .gd-hyp path{fill:none;stroke:#f4ede4;stroke-width:.42;stroke-linecap:round;transform-box:fill-box;transform-origin:center;animation:gd-hyp 1.7s linear infinite}
+@keyframes gd-hyp{to{transform:rotate(360deg)}}
 html body .wb-sign .gd-fx{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:40}
 html body .gd-fx .fx-beam{stroke:#ffd9cc;stroke-width:1.3;stroke-linecap:round}
 html body .gd-fx .fx-beam-glow{stroke:#ff2a14;stroke-width:4.5;stroke-linecap:round;opacity:.55}
@@ -10371,6 +10375,20 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       for (const s1 of [-1, 1, 0]) { tween("flip", s1 * 9, 380); await wait(650); }
       blink = 0.12; draw(); await wait(130); blink = 1; draw(); await face({ eyeL: 1.1, eyeR: 1.1, eyeSL: 1.15, eyeSR: 1.15 }, 160); await wait(350);
       await nearTo(1, 0, 900, "cubic-bezier(.3,.7,.4,1)"); S.flip = 0; poke(-1.4); nearDone(); });
+    // hypnosis: he comes up close, his eyes turn into slow white spirals and he sways gently from side to side ("you are getting
+    // sleepy…"); then a blink, the spirals are gone, and back he goes. The spirals follow his eyes' shape, so a blink closes them too
+    const hypno = () => act(async () => { if (still()) return; lookX = 0; lookY = 0; draw();
+      const NS = "http://www.w3.org/2000/svg", L = el.querySelector(".gd-l"), R = el.querySelector(".gd-r"); if (!L || !R) return;
+      let d = "M 0 0"; for (let t = 0; t <= Math.PI * 9; t += 0.18) { const r = 0.075 * t; d += ` L ${(r * Math.cos(t)).toFixed(2)} ${(r * Math.sin(t)).toFixed(2)}`; }   // a spiral out to 2.1
+      const sp = [L, R].map((e0, i) => { const g = document.createElementNS(NS, "g"), pth = document.createElementNS(NS, "path"); g.setAttribute("class", "gd-hyp"); pth.setAttribute("d", d); pth.style.animationDirection = i ? "reverse" : "normal"; g.appendChild(pth); eyes.appendChild(g); return [e0, g]; });
+      let on = true; const follow = () => { if (!on) return; sp.forEach(([e0, g]) => { const rx = parseFloat(e0.getAttribute("rx")) || 2.4, ry = parseFloat(e0.getAttribute("ry")) || 3.4, cx = e0.getAttribute("cx"), cy = e0.getAttribute("cy");
+          g.setAttribute("transform", `${e0.getAttribute("transform") || ""} translate(${cx} ${cy}) scale(${(rx / 2.4).toFixed(3)} ${(ry / 2.4).toFixed(3)})`); }); requestAnimationFrame(follow); }; follow();
+      await face({ eyeSL: 1.25, eyeSR: 1.25 }, 300); sp.forEach(([, g]) => g.classList.add("in"));
+      await nearTo(2.8, 1, 1400);
+      for (let i = 0; i < 6; i++) { const s1 = i % 2 ? 1 : -1; leanTo = s1 * 1.3; tween("aRest", s1 * 0.09, 700); go(); await wait(760); }
+      leanTo = 0; tween("aRest", 0, 300); go(); await wait(250);
+      blink = 0.12; draw(); await wait(140); sp.forEach(([, g]) => g.remove()); on = false; blink = 1; draw(); await face({ eyeSL: 1, eyeSR: 1 }, 200); await wait(250);
+      await nearTo(1, 0, 900, "cubic-bezier(.3,.7,.4,1)"); poke(-1.4); nearDone(); });
     // boop: it rushes up and squashes its face against your screen like glass, holds, then peels off and falls back with a wobble
     const boop = () => act(async () => { if (still()) return; await face({ eyeSL: 1.2, eyeSR: 1.2 }, 150); await nearTo(3, 80, 520, "cubic-bezier(.5,0,.9,.6)");
       el.style.transition = "scale .12s ease-out"; el.style.scale = "3.6 3.25"; rigid = true; await face({ eyeL: 0.45, eyeR: 0.45, eyeSL: 1.45, eyeSR: 1.45, blush: 0.8 }, 120); await wait(900);
@@ -10454,7 +10472,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const quiet = performance.now() - ptrT > 6000, closeOk = performance.now() - lastAct > 10000 && !document.documentElement.classList.contains("brew-in"), MOVES = [   /* coming right up to you: only when you've been still for 10 s */
         [20, () => { const b = (k) => { blink = k; draw(); }; b(0.12); setTimeout(() => b(1), 130); if (Math.random() < 0.3) setTimeout(() => { b(0.12); setTimeout(() => b(1), 120); }, 300); }],
         [14, happy], [12, smile], [10, yawn], [8, dance], [8, jumps], [5, yes], [5, no], [3, curious], [2.5, hmm], [2, () => think(1800)], [2, bored], [2, surprised],
-        [2, wink], [1.4, betaLaugh], [1.2, betaAsk], [0.9, laserBeta], [1.6, crossEyes], [1.6, sleepy], [1.6, doze], [1.2, onPhone], [1.2, backflip], [0.8, roll], [closeOk ? 0.8 : 0, rolypoly], [0.8, upside],
+        [2, wink], [1.4, betaLaugh], [1.2, betaAsk], [closeOk ? 0.8 : 0, hypno], [0.9, laserBeta], [1.6, crossEyes], [1.6, sleepy], [1.6, doze], [1.2, onPhone], [1.2, backflip], [0.8, roll], [closeOk ? 0.8 : 0, rolypoly], [0.8, upside],
         [closeOk ? 0.7 : 0, closeLook], [closeOk ? 0.7 : 0, boop], [0.5, () => umbrella(4200)], [0.5, () => cold(1400)], [0.5, () => hot(1500)], [quiet ? 0.4 : 0, boo],
         [following ? 0 : 5, () => { lookX = (Math.random() < 0.5 ? -1 : 1) * 3; lookY = Math.random() < 0.4 ? -1.5 : 0; draw(); setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900 + Math.random() * 700); }],
         [2, () => poke(-0.9)]];
@@ -10492,7 +10510,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1; lookX = dx / d * 3; lookY = dy / d * 1.5; draw();
       setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900); }, { passive: true });
     el.addEventListener("click", () => { if (farted) { farted = false; return; } if (opt.tap) opt.tap(); else if (!acting) jumps(); });
-    return { S, busy: () => acting, free: () => { acting = false; }, betaLaugh, betaAsk, laserBeta, doze, cold, hot, text, rolypoly, crossEyes, closeLook, boop, look, tilt: (v) => tween("aRest", v, 320), umbrella, onPhone, roll, landed: () => phase !== "fall", bored, moon, fartBack, upside, boo, think, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, fart, draw,
+    return { S, busy: () => acting, free: () => { acting = false; }, betaLaugh, betaAsk, laserBeta, hypno, doze, cold, hot, text, rolypoly, crossEyes, closeLook, boop, look, tilt: (v) => tween("aRest", v, 320), umbrella, onPhone, roll, landed: () => phase !== "fall", bored, moon, fartBack, upside, boo, think, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, fart, draw,
       bob: () => { poke(-0.7 - Math.random() * 0.6); if (Math.random() < 0.3) { jv = -90; go(); } } }; };
     // ---- talking: tap the drop and ask it something. It answers in a bubble, the words typing themselves out while it bobs.
     // It knows a handful of things for certain (what's new, a coffee to try, sour or bitter, ratio, temperature, grind, the processes,
