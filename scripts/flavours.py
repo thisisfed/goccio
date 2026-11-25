@@ -280,8 +280,10 @@ def to_english(note):
 def english_notes(notes):
     """The list in English, without duplicates the translation creates ('Fresa', 'Fraise' -> 'Strawberry')."""
     out = []
-    for n in notes or []:
-        if not isinstance(n, str):
+    # two notes joined with a plus ("Strawberries + White Lily", ST. ALi) are two notes: split, shown with a comma between
+    parts = [q.strip() for n in notes or [] if isinstance(n, str) for q in re.split(r"\s+\+\s+|\s*\+\s*(?=[A-Za-zÀ-ÿ])", n)]
+    for n in parts:
+        if not n:
             continue
         e = to_english(n)
         if e and e.lower() not in (o.lower() for o in out):
