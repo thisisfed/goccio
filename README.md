@@ -86,7 +86,8 @@ domain to `data/removed.json`. After the next scan, `data/releases.json → roas
   (`workers/scan-clock`, deployed by `.github/workflows/scan-clock.yml`), because GitHub runs its own schedules hours
   late when it's busy. GitHub's schedule (05:31, 07:13, 09:47 UTC) stays as a backup and skips itself once the day's
   scan is in. The clock needs one secret in Cloudflare, `GITHUB_TOKEN`: a fine-grained GitHub token for
-  thisisfed/goccio only, with Actions set to "Read and write". Run the scan by hand any time.
+  thisisfed/goccio only, with Actions set to "Read and write" (the token is "goccio-scan-clock" on GitHub and **expires on
+  24 Nov 2027**: regenerate it there and paste the new one into the Worker's GITHUB_TOKEN). Run the scan by hand any time.
 - **Run for some roasters only:** Run workflow with `only` = roaster names, comma-separated.
 - **Look at one page:** Run workflow with `inspect` = `text:URL` (visible words), `raw:URL` (page source) or a bare URL
   (what the scanner reads off it).
