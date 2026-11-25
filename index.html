@@ -10060,9 +10060,17 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   // whose top lags behind when the page moves (the contact line holds, the body sways)
   // one character, made twice: the drop (it talks) and a coffee bean beside it (it doesn't): the same liquid physics, the same faces
   // a day heading pinned under the top bar fills the strip above it (the 12 px that match the space under its text)
+  // and it stays only as long as its own coffees: when the last one's buttons come up to its line, they push it up and away
+  // (rather than holding on until the end of the whole list and then jumping away)
   { let q0 = 0; const mark = () => { q0 = 0; const hs = document.querySelectorAll(".shelf .grp.day-g"); if (!hs.length) return; const t0 = parseFloat(getComputedStyle(hs[0]).top) || 61;
-      hs.forEach((h) => { const t = h.getBoundingClientRect().top; h.classList.toggle("stuck", Math.abs(t - t0) < 1.5); }); };
-    addEventListener("scroll", () => { if (!q0) q0 = requestAnimationFrame(mark); }, { passive: true }); }
+      hs.forEach((h) => { const was = parseFloat(h.dataset.dy || "0"), t = h.getBoundingClientRect().top - was;   // where it would be without the push
+        let last = null; for (let n = h.nextElementSibling; n && !n.classList.contains("day-g"); n = n.nextElementSibling) if (n.classList.contains("item")) last = n;
+        const row = last && (last.querySelector(":scope > .r") || last), lim = row ? (row === last ? row.getBoundingClientRect().bottom : row.getBoundingClientRect().top - 12) : Infinity;   /* its line stays 12 px over the buttons */
+        const dy = Math.min(0, lim - (t + h.offsetHeight));
+        if (Math.abs(dy - was) > 0.25) { h.dataset.dy = dy.toFixed(1); h.style.transform = dy ? `translateY(${dy.toFixed(1)}px)` : ""; }
+        h.classList.toggle("stuck", Math.abs(t - t0) < 1.5); }); };
+    addEventListener("scroll", () => { if (!q0) q0 = requestAnimationFrame(mark); }, { passive: true });
+    addEventListener("resize", () => { if (!q0) q0 = requestAnimationFrame(mark); }, { passive: true }); }
   const makeBuddy = (el, opt = {}) => { const body = el && el.querySelector(".gd-b"), eyes = el && el.querySelector(".gd-e"), all = el && el.querySelector(".gd-all"); if (!el || !body || !all) return null;
     const still = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
     // cold: a blue layer of the same shape over the body (a fill, not a filter: Safari won't filter parts of an SVG)
