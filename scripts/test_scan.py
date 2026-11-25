@@ -69,6 +69,11 @@ CASES = [
     # Lucid (24/11/2026): "Tasting:" is a list of descriptors (fruity, high sweetness); the notes are under "Flavours like:"
     ("Lucid's 'Flavours like: Cherry, Apricot, Cola' are the notes, not the 'Tasting: Fruity, High sweetness' descriptors",
      lambda: scan.find_notes({"body": "Origin: Rwanda\nProcess: Washed\nTasting: Fruity, High sweetness, Medium Acidity, Juicy\nFlavours like: Cherry, Apricot, Cola", "title": "Rwanda Shyira", "tags": []}) == ["Cherry", "Apricot", "Cola"]),
+    # Lucid (25/11/2026): the same lines as list items in the shop's own markup; "Cola</li></ul>" was dropped as markup
+    ("Lucid's '<li>Flavours like: Cherry, Apricot, Cola</li>' gives all three notes, Cola included",
+     lambda: scan.find_notes({"body": "<ul><li>Variety: Red Bourbon</li><li>Process: Washed Process</li></ul><p>&nbsp;</p><ul><li>Tasting: Fruity, High sweetness, Medium Acidity, Juicy</li><li>Flavours like: Cherry, Apricot, Cola</li></ul>", "title": "Rwanda Shyira Washed", "tags": []}) == ["Cherry", "Apricot", "Cola"]),
+    ("…and a paragraph after the list doesn't join the notes",
+     lambda: scan.find_notes({"body": "<ul><li>Flavours like: Cherry, Apricot, Cola</li></ul><p>We roast this one light for filter.</p>", "title": "Rwanda Shyira Washed", "tags": []}) == ["Cherry", "Apricot", "Cola"]),
     # James Gourmet (24/11/2026): "Aromatics: Floral, melon and raspberry | Body: … | Acidity: …"
     ("James Gourmet's 'Aromatics: Floral, melon and raspberry |' gives the three notes and stops at the next label",
      lambda: scan.find_notes({"body": "BREWING AND RECIPES\nAromatics: Floral, melon and raspberry | Body: Creamy on cooling| Acidity: Ripe, Wild, Boozy, Citric |\nRipe soft fruit and orange land in your mug.", "title": "Ethiopian Bekele Yutute", "tags": []}) == ["Floral", "Melon", "Raspberry"]),

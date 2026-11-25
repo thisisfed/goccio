@@ -227,7 +227,7 @@ NOTES_CHECK = 10   # pages read for notes with these rules (10: elbgold's "Noten
 # A fix for one shop's page layout re-reads only that shop: raise its number here (above NOTES_CHECK), not NOTES_CHECK,
 # which re-reads every coffee without notes everywhere (thousands of pages). Raise NOTES_CHECK only for a change to the
 # rules every shop goes through
-NOTES_RECHECK = {"Climpson & Sons": 10, "Sydrip": 10, "Fève": 10, "Passage": 10, "The Source": 10, "Terraform": 11, "Lucid Coffee Roasters": 11, "James Gourmet Coffee": 11, "Sl.ow": 11, "Sprout": 11, "Rogue Wave": 11, "Dayglow": 11, "Established Coffee": 11}   # e.g. {"Monmouth": 10}
+NOTES_RECHECK = {"Climpson & Sons": 10, "Sydrip": 10, "Fève": 10, "Passage": 10, "The Source": 10, "Terraform": 11, "Lucid Coffee Roasters": 12, "James Gourmet Coffee": 11, "Sl.ow": 11, "Sprout": 11, "Rogue Wave": 11, "Dayglow": 11, "Established Coffee": 11}   # e.g. {"Monmouth": 10}
 notes_ver = lambda shop: max(NOTES_CHECK, NOTES_RECHECK.get(shop, 0))
 NOTES_V = 2       # page notes read under these list rules; a short list (two or fewer) read under older ones is read once more
 
@@ -1743,6 +1743,9 @@ NOTES_LEAD_LIST = re.compile(r"(?:notes?|flavou?rs?|tastes?)\b[^\n<.]{0,60}?(?:r
 
 def find_notes(item):
     text = item["body"]
+    # a list item, paragraph or line break ends a line: "<li>Flavours like: Cherry, Apricot, Cola</li></ul>" (Lucid) is read to
+    # "Cola" and no further (the markup kept the last note joined to the tags, and it was thrown away as markup)
+    text = re.sub(r"(?=</(?:li|p|div|h[1-6]|td|tr|dd|dt)>|<br\s*/?>)", "\n", text, flags=re.I)
     # a bracketed heading with the list under it: "【Taste Note】" then "Almond, Red apple, Orange, Plum, Clean" (Passage)
     text = re.sub(r"[【\[]\s*(?:taste|tasting|flavou?r|cup)\s+notes?\s*[】\]][ \t\xa0]*\n\s*", "Tasting notes: ", text, flags=re.I)
     # "Taste notes" over a sentence, not a list: "We taste beautiful florals like lavender and lilac, with a…" (Dayglow): the list after "like"
@@ -2622,7 +2625,8 @@ def add_page_details(recs, roaster, old):
             need.append("notes")
         # a shop whose page layout fooled the notes rules (Sydrip: the related coffees' notes taken for this one's) is read
         # once more under the fixed rules, and what the page says now replaces the old list
-        redo = roaster["name"] in NOTES_RECHECK and prev.get("notes_from") == "page" and (prev.get("notes_checked") or 0) < NOTES_RECHECK[roaster["name"]]
+        # (a coffee whose page gave no notes at all is read again too: Lucid's Rwanda Shyira, whose notes the old rules missed)
+        redo = roaster["name"] in NOTES_RECHECK and (prev.get("notes_from") == "page" or not prev.get("notes")) and (prev.get("notes_checked") or 0) < NOTES_RECHECK[roaster["name"]]
         if redo and "notes" not in need:
             need.append("notes")
         # every coffee the shop doesn't label filter or espresso gets its page read once for the brewers it names
