@@ -2981,6 +2981,7 @@ html.gd-full body .gd-head{display:flex;align-items:center;gap:10px;flex:none;bo
 html.gd-full body .gd-head svg{width:30px;height:30px;flex:none;overflow:visible}
 html.gd-full body .gd-head .gh-n{font:600 var(--fs-s)/1.2 var(--sans);color:var(--ink)}
 html.gd-full body .gd-head .gh-b{padding:2px 6px;border:1px solid var(--line);border-radius:var(--r,4px);font:500 12px/1.2 var(--sans);color:var(--muted)}
+html body footer .foot-ex .g-ex{border-top:0!important;padding-top:0!important;margin-top:0!important}   /* in the footer: no rule under its title, and the gap under the title the same as Disclaimer's */
 html.gd-full body .gd-head .gh-new{margin-left:auto;margin-right:-8px;height:32px;padding:0 12px;border:0;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);cursor:pointer;white-space:nowrap;transition:background .15s}   /* New chat: a worded pill 4 px left of the X, as the top bar's pills sit */
 @media (hover:hover){ html.gd-full body .gd-head .gh-new:hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))} }   /* the same hover as the top bar's + */
 html.gd-full body .gd-dock.gd-dock.gd-dock .gd-x{z-index:6!important;top:calc(env(safe-area-inset-top,0px) + 8px)!important;right:12px!important;width:32px!important;height:32px!important;background:var(--pill)!important;border-radius:var(--r,4px)!important;color:var(--ink)!important}   /* exactly where the top bar's + and brew mode's X are, and the same grey square */
@@ -10907,7 +10908,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // "Show me" a coffee Goccio named: that coffee, not a search for its name. The list narrows to its name and roaster, and its own card
     // (found by its shop link) comes to the middle of the screen
     const showCo = (r) => { const twin = coffees().some((x) => x !== r && x.roaster === r.roaster && shownName(x) === shownName(r)); search(shownName(r) + " " + r.roaster + (twin ? " " + [r.origin, r.process].filter(Boolean).join(" ") : "")); let k = 0;   /* a roaster with two coffees of that name: its origin and process tell them apart */ const find = () => { const it = [...document.querySelectorAll("#shelf .item")].find((x) => [...x.querySelectorAll("a[href]")].some((a) => a.href === r.url));
-        if (it) { it.classList.add("co-flash"); setTimeout(() => it.classList.remove("co-flash"), 1800);
+        if (it) {   // no highlight behind it (26/11/2026): the search line over it already says it's the one
           // the search already glides to the Coffees title with the coffee under it: once that glide has stopped, scroll only if
           // the coffee still isn't on screen (a second glide straight after the first made the page jump about)
           let y0 = -1, still = 0; const settle = () => { const y = scrollY; still = y === y0 ? still + 1 : 0; y0 = y; if (still < 4) return requestAnimationFrame(settle);
