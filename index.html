@@ -2888,7 +2888,8 @@ html body .wb-sign .gd-ask input::placeholder{color:color-mix(in srgb,var(--bg) 
 html body .wb-sign .gd-ask button{width:32px;min-width:32px!important;max-width:32px;margin:0!important;padding:0;display:inline-flex;align-items:center;justify-content:center;flex:none}
 html body .wb-sign .gd-ask button svg{width:16px;height:16px}
 html body .wb-sign .gd-ask button[hidden]{display:none}
-html body .wb-sign #gdGo{background:var(--hl);color:#000}
+html body .wb-sign #gdGo{background:var(--pill);color:var(--ink);transition:background-color .2s ease,color .2s ease}
+html body .wb-sign #gdGo.ready{background:var(--hl);color:#000}   /* orange only once there's something to send (26/11/2026), like iMessage's arrow */
 html body .wb-sign #gdMic.on{background:var(--hl);color:#000;animation:gdMic 1s ease-in-out infinite}
 @keyframes gdMic{50%{opacity:.6}}
 html body .wb-sign #gdVoice .x{display:none} html body .wb-sign #gdVoice.off .x{display:inline} html body .wb-sign #gdVoice.off .w{display:none}
@@ -10905,6 +10906,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     if (D) { const { happy, curious, yes, smile, hmm, surprised, dance } = D, still = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
     const IT = LANG === "it", T = (en, it) => IT ? it : en;
     const talkEl = $("gdTalk"), sayEl = $("gdSay"), chipsEl = $("gdChips"), inEl = $("gdIn");
+    { const go = () => { const b = $("gdGo"); if (b) b.classList.toggle("ready", !!inEl.value.trim()); }; inEl.addEventListener("input", go); new MutationObserver(go).observe(inEl, { attributes: true }); setInterval(go, 700); }   // the arrow turns orange with something to send
     let typeT = 0, bobT = 0;
     const coffees = () => (typeof shelf !== "undefined" && Array.isArray(shelf) ? shelf : []);
     const pick = (xs) => xs[Math.floor(Math.random() * xs.length)];
@@ -11319,7 +11321,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const hello = () => { const all0 = typeof shelf !== "undefined" ? shelf : [], today = all0.filter((r) => r.just_in), n0 = today.length, day0 = n0 ? String(shelfDate(today[0]) || "").slice(0, 10) : "", n = n0 ? all0.filter((r) => String(shelfDate(r) || "").slice(0, 10) === day0).length : 0,   /* the same number the list's heading says ("230 added today"), counted the same way */ hi = (() => {   /* a different hello each time: never the same one twice running, and some only at their time of day */
         const nm = name ? " " + name : "", nmc = name ? ", " + name : "", h0 = new Date().getHours();
         const all = [T(`Hi${nm}!`, `Ciao${nm}!`), T(`Hello${nm}!`, `Salve${nm}!`), T(`Oh, hi${nm}!`, `Oh, ciao${nm}!`), T(`Hey${nm}!`, `Ehi${nm}!`), T(`Hey there${nmc}!`, `Eccoti${nmc}!`),
-          T(`Welcome back${nmc}!`, `Bentornato${nmc}!`), ...[0, 1, 2].map(() => T(`Hey${nm}. How are you \uE000doing\uE001brewing today?\uE002`, `Ehi${nm}. Come va \uE000la giornata\uE001il caffè oggi?\uE002`)), T(`Look who's here${nmc}!`, `Guarda chi c'è${nmc}!`), T(`Hello again${nmc}!`, `Rieccoti${nmc}!`), T(`Ciao${nm}!`, `Ciao ciao${nm}!`), T(`Good to see you${nmc}!`, `Che bello vederti${nmc}!`),
+          T(`Welcome back${nmc}!`, `Bentornato${nmc}!`),  T(`Look who's here${nmc}!`, `Guarda chi c'è${nmc}!`), T(`Hello again${nmc}!`, `Rieccoti${nmc}!`), T(`Ciao${nm}!`, `Ciao ciao${nm}!`), T(`Good to see you${nmc}!`, `Che bello vederti${nmc}!`),
           ...(h0 >= 5 && h0 < 12 ? [T(`Good morning${nmc}!`, `Buongiorno${nmc}!`), T(`Morning${nmc}!`, `Buondì${nmc}!`)] : h0 >= 12 && h0 < 18 ? [T(`Good afternoon${nmc}!`, `Buon pomeriggio${nmc}!`)] : h0 >= 18 && h0 < 23 ? [T(`Good evening${nmc}!`, `Buonasera${nmc}!`), T(`Evening${nmc}!`, `Sera${nmc}!`)] : [T(`Still up${nmc}?`, `Ancora sveglio${nmc}?`)])];
         let last = ""; try { last = localStorage.getItem("v60.hi") || ""; } catch (e) {}
         // the time of day, more often than not (26/11/2026): good morning, a first cup, good evening, still up
@@ -11450,7 +11452,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // how long the dots show: as if typed, so a long message takes longer than a short one (about 14 ms a letter, 0.6 to 2.6 s)
     const dotsFor = (t) => Math.min(2600, 600 + String(t || "").length * 14) * (0.9 + Math.random() * 0.2);
     const typeDots = (ms, then, g0) => { const g = g0 == null ? sayGen : g0; setTimeout(() => { if (sayGen === g && talking) then(); }, 500); };   // a short pause: the message itself shows the dots first
-    const sayNow = (text, chips, mood) => { pendingYes = null; ctxFrom(text); let ask2 = null; [text, chips, ask2] = offer(text, chips); const py = pendingYes; text = voice(text, chips); chips = null; text = tidy(text); sayGen++; finishTyping(); const rubs = /\uE000/.test(text); const tf = typeFrames(text); text = tf.text; if (tipEl) { tipEl.remove(); tipEl = null; } const m = addMsg("it", ""); m._rec.t = text; saveChat(); tipAfter(m); typing = { m, text, top: replyTo }; let k = 0; bob(true);
+    const sayNow = (text, chips, mood) => { pendingYes = null; ctxFrom(text); let ask2 = null; [text, chips, ask2] = offer(text, chips); const py = pendingYes; text = voice(text, chips); chips = null; text = tidy(text); sayGen++; finishTyping(); const rubs = false;   /* no more rub-out joke (26/11/2026): every message lands whole */ const tf = typeFrames(text); text = tf.text; if (tipEl) { tipEl.remove(); tipEl = null; } const m = addMsg("it", ""); m._rec.t = text; saveChat(); tipAfter(m); typing = { m, text, top: replyTo }; let k = 0; bob(true);
       const anchor = replyTo && replyTo.isConnected ? replyTo : m; requestAnimationFrame(() => toTop(anchor, true));   // your question at the top, the answer filling in below it
       // as the answer grows it keeps your question pinned at the top, until it reaches it or you scroll the chat yourself
       // a touch slower than before (2 letters every 32 ms, was 24)
@@ -11459,7 +11461,12 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       if (rubs) typeT = setInterval(() => { m.textContent = tf.fr[k] || ""; k++; if (typing && !typing.free && k % 4 === 0) toTop(anchor); if (k >= tf.fr.length) { if (typing && !typing.free) toTop(anchor); finishTyping(); } }, 32);
       else { const ms = noDots ? 0 : Math.min(2200, 450 + text.length * 12) * (0.9 + Math.random() * 0.2); noDots = false;
         if (ms) { m.classList.add("gd-typing"); const d = document.createElement("span"); d.className = "gd-dots"; d.innerHTML = "<i></i><i></i><i></i>"; m.appendChild(d); }
-        typeT = setTimeout(() => { const free = typing && typing.free; finishTyping(); if (!free) requestAnimationFrame(() => toTop(anchor)); }, ms); }
+        typeT = setTimeout(() => { const free = typing && typing.free, r0 = m.getBoundingClientRect(); finishTyping();
+          // the dots bubble grows into the message (its width and height glide), and the words fade in as it opens, as in iMessage
+          if (ms && m.animate && !matchMedia("(prefers-reduced-motion: reduce)").matches) { const r1 = m.getBoundingClientRect(), ink = getComputedStyle(m).color;
+            m.style.overflow = "hidden"; const a = m.animate([{ width: r0.width + "px", height: r0.height + "px" }, { width: r1.width + "px", height: r1.height + "px" }], { duration: 280, easing: "cubic-bezier(.2,.8,.2,1)" });
+            m.animate([{ color: "transparent" }, { color: "transparent", offset: 0.3 }, { color: ink }], { duration: 360, easing: "ease-out" }); a.onfinish = a.oncancel = () => { m.style.overflow = ""; }; }
+          if (!free) requestAnimationFrame(() => toTop(anchor)); }, ms); }
       showChips(chips); if (CALM) mood = null;
       if (ask2) { const g2 = sayGen, pl2 = nextPills || [[T("Yes", "Sì"), T("Yes", "Sì")], [T("No", "No"), T("No thanks", "No grazie")]]; nextPills = null;   /* "Want to see it?" in a second message once the first is written, then the Yes / No pills */
         const ask = () => typeDots(dotsFor(ask2), () => { nextPills = pl2; sayNow(ask2, null, null); pendingYes = py; }, g2);
