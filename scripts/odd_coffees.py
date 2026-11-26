@@ -1,8 +1,11 @@
 """Today's new coffees that look odd, for a person to check: a strange name ("[ ] 2027", a bag size, a gift box, a code)
 or tasting notes that aren't tastes ("Typical of the region", "Dynamic", "Where juicy mandarin").
 
-Writes odd-coffees.md (a list with links) and prints how many. The Odd coffees workflow opens it as a GitHub issue each
-morning after the scan, so it arrives by email; nothing on the site changes. Usage: python3 scripts/odd_coffees.py [YYYY-MM-DD]
+They're held back: the scan (python3 scripts/odd_coffees.py --hold, before it commits) puts them in data/held.json, and
+publishing leaves held coffees off the site (scripts/hold.py). The Odd coffees workflow then emails them as an issue with two
+boxes each: tick "Show it" and the coffee goes on the site (data/approved.json, never held again), tick "Ban it" and it goes
+for good (data/banned_coffees.json). The Odd coffees: answer workflow does that the moment a box is ticked.
+Usage: python3 scripts/odd_coffees.py [--hold] [YYYY-MM-DD]   (without --hold: writes odd-coffees.md from what's held today)
 """
 import json
 import re
@@ -15,7 +18,12 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 import flavours  # noqa: E402
 
-day = sys.argv[1] if len(sys.argv) > 1 else date.today().isoformat()
+args = [a for a in sys.argv[1:] if not a.startswith("--")]
+HOLD = "--hold" in sys.argv
+day = args[0] if args else date.today().isoformat()
+HELD, OK = ROOT / "data" / "held.json", ROOT / "data" / "approved.json"
+load = lambda f: json.loads(f.read_text()) if f.exists() else {}
+key = lambda u: (u or "").split("?")[0].split("#")[0].rstrip("/").lower()
 rel = json.loads((ROOT / "data" / "releases.json").read_text())["releases"]
 
 # words that are tastes: the flavour dictionary, plus any word used in the notes of 6 or more coffees across the whole list
@@ -28,7 +36,7 @@ TASTE |= set("""roasted starfruit osmanthus panettone satsuma woody rosemary ros
 stevia granola loquat pastry tiramisu candyfloss maltesers banoffee herbaceous hops effervescent umami chrysanthemum lingonberry sandalwood barquillo
 jackfruit ganache frangipane lollipop darjeeling viscous gooseberries gooseberry vermouth cereals flowery mulberry cointreau boysenberry dragonfruit dandelion
 daisy botanical biscoff chewy waffle peachy camomile limeade choco allspice cognac snickers savory sapodilla velvet smoke quince lactic gianduja malic
-carnation amarula soldum blaeberries refreshers fruitiness nuttiness balanced complex round long smoked oak wood rye puchao love hearts""".split())
+carnation amarula soldum blaeberries refreshers sangria skittles piloncillo plush acai açaí molasse molasses fruitiness nuttiness balanced complex round long smoked oak wood rye puchao love hearts""".split())
 # words that describe a coffee, its place or its making, not how it tastes
 NOT_TASTE = set("""typical typically classic dynamic structured structure profile region regional origin process processed
 washed natural anaerobic altitude roast espresso filter notes note hints hint where when which this that our
@@ -71,23 +79,33 @@ def odd_notes(r):
 
 
 today = [r for r in rel if r.get("found") == day]
-rows = []
-for r in today:
-    a, b = odd_name(r), odd_notes(r)
-    if a or b:
-        rows.append((r, a, b))
+held, ok = load(HELD), load(OK)
+if HOLD:   # the scan: today's odd ones go on hold, unless already shown once by hand
+    n = 0
+    for r in today:
+        a, b = odd_name(r), odd_notes(r)
+        u = key(r.get("url"))
+        ns = r.get("notes") or []
+        bad_name = [w for w in a if w in ("no letters", "a bag size", "not one coffee?", "a shop leftover")]   # a variety code (SL28, 74158) or a '#' is no reason to hide
+        if (bad_name or (b and len(b) * 2 >= len(ns))) and u and u not in ok and u not in held:   # an odd name, or notes that are mostly not tastes; one odd note among good ones isn't worth hiding a coffee
+            held[u] = {"name": r.get("name"), "roaster": r.get("roaster"), "on": day, "why": "; ".join((["name: " + ", ".join(a)] if a else []) + (["notes: " + "; ".join(b)] if b else []))}
+            n += 1
+    HELD.write_text(json.dumps(held, ensure_ascii=False, indent=1, sort_keys=True) + "\n")
+    print(f"held back today: {n} (on hold in all: {len(held)})")
+    sys.exit(0)
 
+by_url = {key(r.get("url")): r for r in rel}
+rows = [(u, h, by_url.get(u)) for u, h in held.items() if h.get("on") == day]
 dd = "/".join(reversed(day.split("-")))
 if rows:
-    lines = [f"{len(rows)} of today's {len(today)} new coffees look odd. Nothing on the site has changed: tell Claude which to fix, rename or ban.", ""]
-    for r, a, b in sorted(rows, key=lambda t: (t[0].get("roaster") or "", t[0].get("name") or "")):
-        why = []
-        if a:
-            why.append("name: " + ", ".join(a))
-        if b:
-            why.append("notes: " + "; ".join(f"“{x}”" for x in b))
-        notes = ", ".join(r.get("notes") or []) or "no notes"
-        lines.append(f"- **{r.get('name')}** from {r.get('roaster')} ({notes})  \n  {'; '.join(why)}  \n  {r.get('url')}")
+    lines = [f"{len(rows)} of today's {len(today)} new coffees look odd, so they're **held back**: not on the site until you tick **Show it**. "
+             "**Ban it** takes one off for good. Unticked, a coffee stays hidden.", ""]
+    for u, h, r in sorted(rows, key=lambda t: ((t[1].get("roaster") or ""), (t[1].get("name") or ""))):
+        notes = ", ".join((r or {}).get("notes") or []) or "no notes"
+        lines.append(f"**{h.get('name')}** from {h.get('roaster')} ({notes})  \n{h.get('why')}")
+        lines.append(f"- [ ] Show it: {u}")
+        lines.append(f"- [ ] Ban it: {u}")
+        lines.append("")
     Path("odd-coffees.md").write_text("\n".join(lines) + "\n")
 else:
     Path("odd-coffees.md").write_text(f"Nothing odd among today's {len(today)} new coffees.\n")

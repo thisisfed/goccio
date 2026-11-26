@@ -1,0 +1,47 @@
+name: "Odd coffees: answer"
+
+# A box ticked in an Odd coffees issue: "Show it" puts that held coffee on the site, "Ban it" takes it off for good
+# (scripts/odd_answer.py), then the site is published again. Free.
+on:
+  issues:
+    types: [edited]
+
+permissions:
+  contents: write
+  issues: write
+  actions: write
+
+concurrency:
+  group: odd-answer
+  cancel-in-progress: false
+
+jobs:
+  answer:
+    if: contains(github.event.issue.labels.*.name, 'odd-coffees')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Read the ticks
+        env:
+          BODY: ${{ github.event.issue.body }}
+        run: |
+          printf '%s' "$BODY" > /tmp/body.md
+          python3 scripts/odd_answer.py /tmp/body.md | tee /tmp/answer.txt
+      - name: Save and publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "v60-scan-bot"
+          git config user.email "v60-scan-bot@users.noreply.github.com"
+          git add data/held.json data/approved.json data/banned_coffees.json
+          if git diff --cached --quiet; then echo "Nothing new ticked"; exit 0; fi
+          git commit -m "Odd coffees: $(cat /tmp/answer.txt)"
+          for i in 1 2 3 4 5; do git pull --rebase -q && git push && break; sleep $((i * 5)); done
+          gh workflow run deploy.yml --ref main   # a push by the bot doesn't publish by itself
+          gh issue comment ${{ github.event.issue.number }} --body "Done: $(cat /tmp/answer.txt). The site updates in a couple of minutes."
