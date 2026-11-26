@@ -246,7 +246,7 @@ def page(title, desc, path, body, extra_head="", nav=True, tight=False):
 <meta property="og:title" content="{e(title)}"><meta property="og:description" content="{e(desc)}">
 <meta property="og:url" content="{e(url)}"><meta property="og:image" content="{BASE}/og/card-8.png">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png?v=3"><link rel="apple-touch-icon" href="/apple-touch-icon.png?v=3"><meta name="apple-mobile-web-app-title" content="Goccio">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png?v=9"><link rel="apple-touch-icon" href="/apple-touch-icon.png?v=3"><meta name="apple-mobile-web-app-title" content="Goccio">
 <style>{CSS}</style>{extra_head}
 </head><body>
 <header class="top"><a class="mark" href="/">Goccio</a><span class="tr">{'<a class="pill" href="/coffee/">Roasters</a>' if nav else '<a class="pill" href="/">Back to homepage</a>'}<button type="button" class="pill sq" id="themeBtn" aria-label="Appearance"></button></span></header>
