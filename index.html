@@ -11102,21 +11102,23 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // the cameras, from the chat: only on a phone (a computer has none to scan with)
     const CAM_OK = () => !!(window.__scanBeans && window.__scanBag) && !matchMedia("(hover: hover) and (pointer: fine)").matches;   // the choices as pills under the question: tap one, or type
     // the amounts a brewer takes, in words people know: the grams and about how much it makes (or the pot, or the shot)
-    const gbDoses = (B) => { const rt = (B.ratio && (B.ratio.balanced || B.ratio.light)) || 16; return B.doses.map(([d, lb]) => [B.shot ? T(`${d} g, ${d >= 18 ? "a double" : d <= 14 ? "a single" : "a big single"}`, `${d} g, ${d >= 18 ? "doppio" : "singolo"}`)
-      : /cup/.test(lb) ? T(`${d} g, the ${lb} pot`, `${d} g, moka da ${lb.replace("-cup", "")}`) : T(`${d} g, about ${Math.round(d * rt / 10) * 10} ml`, `${d} g, circa ${Math.round(d * rt / 10) * 10} ml`), `${d} g`]); };
+    const gbDoses = (B) => B.doses.map(([d]) => [`${d} g`, `${d} g`]);   // just the grams on the pills (26/11/2026: "12 g, about 190 ml" was too much)
+    const TYPE_IT = () => [T("Something else", "Altro"), "__type"];   // the last pill: type your own
     const gbAsk = (g) => {
       g.opts = null; g.yn = false;
-      if (!g.r && !g.text) { g.step = "coffee"; if (CAM_OK()) gbList(g, [[T("Scan the bag", "Scansiona il sacchetto"), "__scanbag"], [T("Pick one for me", "Scegline uno tu"), "pick one"]]); return T("Which coffee? Tell me its name, what the bag says (roaster, origin, process, roast), or say 'pick one'.", "Quale caffè? Dimmi il nome, cosa dice il sacchetto (torrefazione, origine, processo, tostatura), o di' 'scegline uno'."); }
+      if (!g.r && !g.text) { g.step = "coffee"; gbList(g, [...(CAM_OK() ? [[T("Scan the bag", "Scansiona il sacchetto"), "__scanbag"]] : []), [T("Pick one for me", "Scegline uno tu"), "pick one"], [T("Type its name", "Scrivi il nome"), "__type"]]); return T("Which coffee? Tell me its name, what the bag says (roaster, origin, process, roast), or say 'pick one'.", "Quale caffè? Dimmi il nome, cosa dice il sacchetto (torrefazione, origine, processo, tostatura), o di' 'scegline uno'."); }
       if (!g.brewer) { g.step = "brewer"; const mb = gbMemBrewer();
         // no list to pick from: Goccio covers nearly every brewer, so it just asks; one it can't do gets told what it can (gbNoBrewer)
         if (mb && !g.noMem) { g.yn = true; return T(`What are you brewing with? Your ${RECIPE_BREWERS[mb].name} again?`, `Con cosa lo prepari? Ancora il tuo ${RECIPE_BREWERS[mb].name}?`) + gbList(g, [[T(`Yes, the ${RECIPE_BREWERS[mb].name}`, `Sì, il ${RECIPE_BREWERS[mb].name}`), "yes"], [T("Something else", "Un altro"), "no"]]); }
         // your own brewers from My gear, as pills; any other one is typed
-        const own = ownBrewers().filter((k) => RECIPE_BREWERS[k] && k !== "cupping").slice(0, 5); if (own.length) gbList(g, own.map((k) => [RECIPE_BREWERS[k].name, RECIPE_BREWERS[k].name]));
+        const own = ownBrewers().filter((k) => RECIPE_BREWERS[k] && k !== "cupping").slice(0, 5), common = ["v60", "aero", "press", "espresso", "moka", "chemex"].filter((k) => RECIPE_BREWERS[k]);
+        gbList(g, [...(own.length ? own : common).map((k) => [RECIPE_BREWERS[k].name, RECIPE_BREWERS[k].name]), TYPE_IT()]);   // yours, or the most common; any other is typed
         return T("What are you brewing with?", "Con cosa lo prepari?"); }
       if (!g.mill) { g.step = "mill"; const known = prefs.mill && prefs.mill !== "words" && GRINDERS[prefs.mill];
         // no list here either: any grinder named is looked up; "don't know" gets the grind in words, from fine to coarse
         if (known && !g.noMill) { g.yn = true; return T(`And the grinder? Still the ${GRINDERS[prefs.mill].name}?`, `E il macinino? Sempre il ${GRINDERS[prefs.mill].name}?`) + gbList(g, [[T(`Yes, the ${GRINDERS[prefs.mill].short || GRINDERS[prefs.mill].name}`, `Sì, il ${GRINDERS[prefs.mill].short || GRINDERS[prefs.mill].name}`), "yes"], [T("A different one", "Un altro"), "no"]]); }
-        { let mine = []; try { mine = gear.grinders.filter((k) => GRINDERS[k] && k !== "words").slice(0, 4); } catch (e) {} if (mine.length) gbList(g, [...mine.map((k) => [GRINDERS[k].short || GRINDERS[k].name, GRINDERS[k].name]), [T("Not sure", "Non so"), "not sure"]]); }
+        { let mine = []; try { mine = gear.grinders.filter((k) => GRINDERS[k] && k !== "words").slice(0, 4); } catch (e) {} if (!mine.length) mine = ["c40", "kultra", "c3", "k6", "niche"].filter((k) => GRINDERS[k]);
+          gbList(g, [...mine.map((k) => [GRINDERS[k].short || GRINDERS[k].name, GRINDERS[k].name]), [T("Not sure", "Non so"), "not sure"], TYPE_IT()]); }
         return T("Which grinder?", "Quale macinino?"); }
       const B = RECIPE_BREWERS[g.brewer];
       if (!g.dose && !B.cup && B.doses.length > 1) { g.step = "dose"; return T(`How much coffee in the ${B.name}? Tap one, or say the grams.`, `Quanto caffè nel ${B.name}? Toccane uno, o dimmi i grammi.`) + gbList(g, gbDoses(B)); }
@@ -11322,7 +11324,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       return /\?\s*$/.test(text) ? text.replace(/\?\s*$/, ": " + list + "?") : text + " " + T("For example: ", "Per esempio: ") + list + "."; };
     let nextPills = null;
     const showPills = (opts) => { chipsEl.textContent = ""; opts.forEach(([t, v]) => { const b = document.createElement("button"); b.type = "button"; b.textContent = t;
-        b.onclick = () => { chipsEl.textContent = ""; addMsg("me", t); ask(v, true); }; chipsEl.appendChild(b); });   // your tap shows as your answer; what's sent is the plain value
+        b.onclick = () => { if (v === "__type") { const i = $("gdIn"); if (i) { i.placeholder = T("Type it here", "Scrivilo qui"); i.focus(); } return; }   // type your own: the field, nothing sent
+          chipsEl.textContent = ""; addMsg("me", t); ask(v, true); }; chipsEl.appendChild(b); });   // your tap shows as your answer; what's sent is the plain value
       // the pills take room from the messages: the question they answer moves up so it stays whole above them
       requestAnimationFrame(() => requestAnimationFrame(() => { const last = [...sayEl.querySelectorAll(".gd-m")].pop(); if (!last) return;
         const over = last.getBoundingClientRect().bottom - sayEl.getBoundingClientRect().bottom + 12; if (over > 0) sayEl.scrollBy({ top: over, behavior: "smooth" }); })); };
