@@ -2,9 +2,11 @@ name: New roasters worldwide
 
 # Every night, before the morning scans: roasteries on OpenStreetMap that aren't on the list yet are read the way the daily
 # scan reads them, and up to 10 that sell specialty coffee beans are added to data/roasters.json. None found: nothing changes.
+# Started at 00:31 UTC by the scan clock (Cloudflare), so the 02:31 scan reads the new roasters. GitHub's own schedule
+# below is only a backup and often runs hours late: roasters it adds after the day's scan are scanned straight away.
 on:
   schedule:
-    - cron: "17 2 * * *"
+    - cron: "17 1 * * *"
   workflow_dispatch:
     inputs:
       max_add:
@@ -16,6 +18,7 @@ on:
 
 permissions:
   contents: write
+  actions: write   # to start a scan of just the new roasters
 
 concurrency:
   group: world   # its own queue: in the scan's, a newer scan waiting in line cancelled it
@@ -31,7 +34,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Find and check
-        run: python scripts/world.py
+        run: cp data/roasters.json /tmp/roasters_before.json && python scripts/world.py
         env:
           WORLD_MAX_ADD: ${{ inputs.max_add }}
           WORLD_MAX_TRY: ${{ inputs.max_try }}
@@ -54,3 +57,7 @@ jobs:
               sleep 5
             done
           fi
+      - name: Scan the new roasters now if today's scan has already gone by
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: sh scripts/scan_new.sh /tmp/roasters_before.json
