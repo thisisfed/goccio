@@ -404,3 +404,4 @@ _add("słodkie owoce", "sweet fruit"); _add("ciemna czekolada|gorzka czekolada",
 _add("przyprawy korzenne", "baking spices"); _add("śliwka węgierka|węgierka", "damson plum"); _add("migdały|migdał|migdałów", "almonds")
 _add("czerwona porzeczka", "redcurrant"); _add("mandarynka|mandarynki", "mandarin"); _add("papya|papaja", "papaya"); _add("kwiatowa|kwiatowy|kwiatowe", "floral", "a")
 _add("żółte słodkie śliwki", "sweet yellow plums"); _add("słodkie|słodki|słodka", "sweet", "a"); _add("żółte|żółty|żółta", "yellow", "a"); _add("śliwki|śliwka", "plums")
+_add("frutas de hueso|fruta de hueso|frutas con hueso", "stone fruit")   # Spanish, Bluebell 26/11/2026
