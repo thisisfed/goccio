@@ -210,18 +210,18 @@ NOTES_RE = re.compile(r"(?:tasting notes?|flavou?rs? like|aromatics|flavour note
 NOTES_SENT = re.compile(r"(?:notes? of|flavou?rs? of|tastes? of|hints? of|aromas? of|(?:aroma|nose|palate|cup|fragrance) (?:presents|shows|offers|gives|brings|reveals)|on the palate,?|we(?:'re| are)? (?:getting|tasting)|expect(?:ing)?(?! notes)|tasting like|in the cup,? (?:we|you(?:'ll| will)?|i) (?:find|get|taste|have|pick up))\s+"
                         r"((?:[A-Za-z][\w'’\-]*(?:\s(?!and\b)[A-Za-z][\w'’\-]*){0,2})(?:\s*(?:,|&|\band\b)\s*[A-Za-z][\w'’\-]*(?:\s(?!and\b)[A-Za-z][\w'’\-]*){0,2}){1,5})", re.I)
 # a label on a line of its own with the notes on the next ("Tasting notes\nStrawberry, blueberry, nectarine"; Standout)
-NOTES_LINE = re.compile(r"(?:tasting notes?|flavou?rs? like|aromatics|flavou?r notes?|flavou?r composition|flavou?r descriptions?|cup profile|flavou?r profile|cup(?:ping)? notes|in the cup|smaksnoter|smagsnoter|smaksnotater|geschmacksnoten|"
+NOTES_LINE = re.compile(r"(?:tasting notes?|flavou?rs? like|aromatics|flavou?r notes?|profil sensoryczny|sensory profile|flavou?r composition|flavou?r descriptions?|cup profile|flavou?r profile|cup(?:ping)? notes|in the cup|smaksnoter|smagsnoter|smaksnotater|geschmacksnoten|"
                         r"notas de cata|note di degustazione|notes de d[ée]gustation)[ \t]*(?:\n|\s{2,})\s*([^\n.]{3,120})", re.I)
 # a table row read as one line, label and notes split by a single space ("Tasting notes Citrus, Lemon Peel, White Florals"; Dak).
 # The line must be the label and a list and nothing else, so a sentence ("tasting notes of ...", "tasting notes are ...") is never taken.
 # Also a bare label ("Notes", "Flavor", "Aroma", "Tastes like") and other languages ("Note de degustare", "NOTES DE DÉGUSTATIONS"),
 # with the list split by commas, spaced dashes or bullets ("Fraise - Myrtille - Mûre - Figue"; Tanat, Mabó, Dropshot, Coffea Circulor)
-NOTES_CELL = re.compile(r"^[ \t\xa0]*(?:tasting notes?|flavou?rs? like|aromatics|tastes?(?![ \t]+like)|flavou?r notes?|flavou?r composition|flavou?r descriptions?|cup profile|flavou?r profile|notes? de d[ée]gustations?|d[ée]gustation|note de degustare|note di degustazione|notas de cata|"
+NOTES_CELL = re.compile(r"^[ \t\xa0]*(?:tasting notes?|flavou?rs? like|aromatics|tastes?(?![ \t]+like)|flavou?r notes?|profil sensoryczny|sensory profile|flavou?r composition|flavou?r descriptions?|cup profile|flavou?r profile|notes? de d[ée]gustations?|d[ée]gustation|note de degustare|note di degustazione|notas de cata|"
                         r"sensory profile|cup(?:ping)? notes|tastes like|smaksnoter|smagsnoter|smaksnotater|geschmacksnoten|flavou?rs?|aromas?|noten|notes)[ \t\xa0]*:?[ \t\xa0]+"
                         r"(?!(?:of|are|is|include|from|with|that|we|you|and|the|a|an)\b)(?![^\n]*\b(?:coffee|roasters?|roastery|caf[ée])\b)"
                         r"([^\n.:]{3,120}?(?:,|&|\band\b|\s[-–•·]\s|\s?//\s?|\s\|\s)[^\n.:]{2,160}?)[ \t\xa0]*\.?[ \t\xa0]*$", re.I | re.M)
 # the same label alone on its line and the list alone on the next ("Notes\nGem de fragi, Mar rosu, Stafide"; Dropshot, Mabó, Inverness)
-NOTES_NEXT = re.compile(r"^[ \t\xa0]*(?:tasting notes?|flavou?rs? like|aromatics|tastes?(?![ \t]+like)|flavou?r notes?|flavou?r composition|flavou?r descriptions?|cup profile|flavou?r profile|notes? de d[ée]gustations?|d[ée]gustation|note de degustare|note di degustazione|notas de cata|"
+NOTES_NEXT = re.compile(r"^[ \t\xa0]*(?:tasting notes?|flavou?rs? like|aromatics|tastes?(?![ \t]+like)|flavou?r notes?|profil sensoryczny|sensory profile|flavou?r composition|flavou?r descriptions?|cup profile|flavou?r profile|notes? de d[ée]gustations?|d[ée]gustation|note de degustare|note di degustazione|notas de cata|"
                         r"sensory profile|cup(?:ping)? notes|tastes like|smaksnoter|smagsnoter|smaksnotater|geschmacksnoten|flavou?rs?|aromas?|noten|notes)[ \t\xa0]*:?[ \t\xa0]*\n[ \t\xa0]*"
                         r"(?!(?:of|are|is|include|from|with|that|we|you|and|the|a|an)\b)(?![^\n]*\b(?:coffee|roasters?|roastery|caf[ée])\b)"
                         r"([^\n.:]{3,120}?(?:,|&|\band\b|\s[-–•·]\s|\s?//\s?|\s\|\s)[^\n.:]{2,160}?)[ \t\xa0]*$", re.I | re.M)
@@ -229,7 +229,7 @@ NOTES_CHECK = 10   # pages read for notes with these rules (10: elbgold's "Noten
 # A fix for one shop's page layout re-reads only that shop: raise its number here (above NOTES_CHECK), not NOTES_CHECK,
 # which re-reads every coffee without notes everywhere (thousands of pages). Raise NOTES_CHECK only for a change to the
 # rules every shop goes through
-NOTES_RECHECK = {"Wes Ngopi": 13, "Climpson & Sons": 10, "Sydrip": 10, "Fève": 10, "Passage": 10, "The Source": 10, "Terraform": 11, "Lucid Coffee Roasters": 12, "James Gourmet Coffee": 11, "Sl.ow": 11, "Sprout": 11, "Rogue Wave": 11, "Dayglow": 11, "Established Coffee": 11, "Langøra": 12, "Jolly Bean Roastery": 12, "Light Up Coffee": 12, "Trigger": 12, "Crosby Coffee": 12, "Tandem": 13, "Rise & Grind Roastery": 13, "Kurasu": 13}   # e.g. {"Monmouth": 10}
+NOTES_RECHECK = {"Wes Ngopi": 13, "Climpson & Sons": 10, "Sydrip": 10, "Fève": 10, "Passage": 10, "The Source": 10, "Terraform": 11, "Lucid Coffee Roasters": 12, "James Gourmet Coffee": 11, "Sl.ow": 11, "Sprout": 11, "Rogue Wave": 11, "Dayglow": 11, "Established Coffee": 11, "Langøra": 12, "Jolly Bean Roastery": 12, "Light Up Coffee": 12, "Trigger": 12, "Crosby Coffee": 12, "Tandem": 13, "Rise & Grind Roastery": 13, "Kurasu": 13, "Hälla Kafferosteri": 13, "To kawa": 13}   # e.g. {"Monmouth": 10}
 notes_ver = lambda shop: max(NOTES_CHECK, NOTES_RECHECK.get(shop, 0))
 NOTES_V = 2       # page notes read under these list rules; a short list (two or fewer) read under older ones is read once more
 
@@ -273,6 +273,8 @@ NOTES_TAIL = re.compile(r"\s(?:in|with|for|that|which|on|to|from|giving|making|a
 # the same in French, Italian and Spanish: "aux notes intenses de grué de cacao, liqueur d'amande et fruit de la passion" (Mokxa),
 # "note di pesca, gelsomino e miele", "notas de durazno, panela y naranja"; a note may be up to five words ("fruit de la passion")
 _W = r"[^\W\d_][\w'’\-]*"
+NOTES_SENT_NORD = re.compile(r"(?:toner|noter|smaker|smag|smak|inslag|nuancer|hint)\s+(?:av|af)\s+"
+                             r"(" + _W + r"(?:\s(?!(?:och|og|samt)\b)" + _W + r"){0,3}(?:\s*(?:,|&|\b(?:och|og|samt)\b)\s*" + _W + r"(?:\s(?!(?:och|og|samt)\b)" + _W + r"){0,3}){1,6})", re.I)
 NOTES_SENT_ROM = re.compile(r"(?:notes?|arômes?|saveurs?|note|aromi|sentori|notas|sabores)\s+(?:[^\W\d_]+\s+){0,2}?(?:de|d['’]|di|des)\s*"
                             r"(" + _W + r"(?:\s(?!(?:et|e|y)\b)" + _W + r"){0,4}(?:\s*(?:,|\b(?:et|e|y)\b)\s*" + _W + r"(?:\s(?!(?:et|e|y)\b)" + _W + r"){0,4}){1,6})", re.I)
 
@@ -288,6 +290,13 @@ def notes_from_text(text):
             continue   # "hints of the terroir and the farm's history" is a story, not tasting notes
         if True in story:   # "notes of chocolate cherries, strawberry cake, crisp apple and a rich, candy-like sweetness": the list ends where the story starts
             parts = parts[:story.index(True)]
+        if len(parts) >= 2:
+            return ", ".join(parts)
+    for m in NOTES_SENT_NORD.finditer(text or ""):   # Swedish, Danish, Norwegian: "toner av svart te, lakrits och len mjölkchoklad" (Hälla)
+        bits = re.split(r"(\s*\b(?:och|og|samt)\b\s*|\s*&\s*)", m.group(1), maxsplit=1)
+        head, conj, tail = (bits + ["", ""])[:3]
+        parts = [p.strip(" .;:") for p in head.split(",")] + ([tail.split(",")[0].strip(" .;:")] if conj else [])   # the list ends at the item after "och"
+        parts = [p for p in parts if p and len(p.split()) <= 4]
         if len(parts) >= 2:
             return ", ".join(parts)
     for m in NOTES_SENT_ROM.finditer(text or ""):
@@ -1432,7 +1441,7 @@ def find_process(text):
                       (r"monsoon(?:ed|ing)", "Monsooned"), (r"semi[- ]washed", "Semi-washed"),
                       (r"\bnatural\b|\bnaturally (?:processed|dried)\b|\bnaturalna\b|\bnature\b(?= mac[ée]ration| process)|dry[- ]process|\bnaturale\b|\bnaturel\b|\bnatur\b|naturlig|\bnatuurlijk|t[øo]rrforedl", "Natural"),
                       (r"\bhoney\b|pulped natural|\bmiel\b|\bhonig\b|\bmiele\b|\bmiodowa\b", "Honey"),
-                      (r"\bwashed\b|\b(?:extended|double|fully)[- ]wash(?:ed)?\b|wet[- ]process|\blavato\b|gewaschen|\blavé\b|\blavado\b|tvättad|\bvasket\b|v[åa]tforedl|gewassen|vaskad|\bmyta\b|\bmyt[aey]\b", "Washed")]:
+                      (r"\bwashed\b|\b(?:extended|double|fully)[- ]wash(?:ed)?\b|wet[- ]process|\blavato\b|gewaschen|\blavé\b|\blavado\b|tvätta[dt]|\bvasket\b|v[åa]tforedl|gewassen|vaskad|\bmyta\b|\bmyt[aey]\b", "Washed")]:
         if re.search(pat, t):
             return name
     return None
