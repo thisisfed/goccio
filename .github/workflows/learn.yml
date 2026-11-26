@@ -14,6 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/private   # the scanner and Goccio's knowledge live in the private repo
+        with:
+          token: ${{ secrets.PRIVATE_REPO_TOKEN }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"

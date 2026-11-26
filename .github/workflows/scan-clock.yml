@@ -19,6 +19,9 @@ jobs:
       SCAN_CLOCK_TOKEN: ${{ secrets.SCAN_CLOCK_TOKEN }}
     steps:
       - uses: actions/checkout@v5
+      - uses: ./.github/actions/private   # the scanner and Goccio's knowledge live in the private repo
+        with:
+          token: ${{ secrets.PRIVATE_REPO_TOKEN }}
       - uses: actions/setup-node@v5
         with:
           node-version: 22
