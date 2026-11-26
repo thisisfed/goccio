@@ -10824,7 +10824,15 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const text = (on) => { if (still()) return; wantText = !!on; if (on) { if (texting || acting) return; texting = true; tween("fone", 1, 260); look(0, 2.4); clearInterval(texT); texT = setInterval(() => tween("scroll", S.scroll + 0.35, 110), 260); }
       else { if (!texting) return; texting = false; clearInterval(texT); tween("fone", 0, 320).then(() => { S.scroll = 0; }); look(0, 0); } };
     // jumps: to one side, to the other, and home
-    const jumps = () => act(async () => { const s0 = Math.random() < 0.5 ? -1 : 1; await face({ smile: 0.7 }, 150); await hop(240, s0 * 9, 330); await wait(160); await hop(260, -s0 * 9, 360); await wait(160); await hop(200, 0, 300); await wait(200); });
+    // the whole width of the screen to play in (26/11/2026): how far he can go each way, in his own units, from where he sits; the
+    // whole drop travels (as when he rolls), so nothing of him is cut off at his box's edge
+    const room = () => { const sv = el.querySelector("svg"), sr = sv && sv.getBoundingClientRect(), bb = body.getBoundingClientRect(), u = sr && sr.width ? sr.width / 64 : 3, half = bb.width / 2 / u, pad = 16 / u;
+      return { u, L: Math.max(8, (bb.left + bb.width / 2) / u - half - pad), R: Math.max(8, (innerWidth - (bb.left + bb.width / 2)) / u - half - pad) }; };
+    // hops over to x, a few small hops rather than one long slide; home again with x = 0
+    const hopTo = async (x, v, ms) => { const n = Math.max(1, Math.ceil(Math.abs(x - S.jx) / 16)); for (let i = n; i >= 1; i--) { await hop(v, S.jx + (x - S.jx) / i, ms); if (i > 1) await wait(60); } };
+    const roam = async (fn) => { const r0 = room(); rollU = r0.u; try { await fn(r0); } finally { S.jx = 0; rollU = 0; el.style.translate = ""; draw(); } };
+    const jumps = () => act(async () => { const s0 = Math.random() < 0.5 ? -1 : 1; await face({ smile: 0.7 }, 150);
+      await roam(async (r0) => { await hopTo(s0 < 0 ? -r0.L : r0.R, 240, 330); await wait(160); await hopTo(s0 < 0 ? r0.R : -r0.L, 260, 330); await wait(160); await hopTo(0, 200, 300); }); await wait(200); });
     // yes: two nods, eyes down and up with the body; no: two shakes of the head, eyes side to side
     const yes = () => act(async () => { await face({ smile: 0.8 }, 150); for (let i = 0; i < 2; i++) { lookY = 2; tween("aRest", -0.08, 120); draw(); await wait(150); lookY = -0.5; tween("aRest", 0.03, 130); draw(); await wait(170); } lookY = 0; tween("aRest", 0, 150); draw(); await wait(500); });
     // no: a slow, smooth shake of the head, side to side two and a bit times, easing in and out (not a jerk from side to side)
@@ -10841,7 +10849,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       await face({ happy: 1, smile: 1 }, 160); const B = 500;
       for (let b = 0; b < 2; b++) { poke(-2.4); leanTo = b ? 3.5 : -3.5; draw(); await wait(B); }   // bounce, bounce
       jv = -170; go(); await spin(1, B); poke(-2);   // a spin with a little hop
-      await hop(200, -8, 260); poke(-1.6); await wait(B - 320); await hop(200, 8, 260); poke(-1.6); await wait(B - 320); await hop(150, 0, 220); poke(-1.2);   // side steps
+      await roam(async (r0) => { await hopTo(-r0.L, 200, 260); poke(-1.6); await wait(B - 320); await hopTo(r0.R, 200, 260); poke(-1.6); await wait(B - 320); await hopTo(0, 150, 220); }); poke(-1.2);   // side steps, all the way to each side of the screen and back
       await spin(-1, B); poke(-2);   // and back the other way
       for (let b = 0; b < 4; b++) { tween("aRest", b % 2 ? -0.14 : 0.16, 200); leanTo = b % 2 ? -2.5 : 2.5; lookX = b % 2 ? -1.5 : 1.5; draw(); await wait(B / 2); }   // pumps, up and down
       tween("aRest", 0, 160); lookX = 0; jv = -300; go(); await spin(2, 640); poke(-3.2);   // the big finish: a jump with a double spin
@@ -11527,7 +11535,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const WBC_LAST = Math.max(...Object.keys(WBC).map(Number));
     const EARLY = [
       // "anything else?", "what else?": after a coffee it named, another one; otherwise an offer of what it can do
-      [/^(anything|something|what) else\b|^(any )?others?\b|^(anything |any )?more\b[ ?!.]*$|^show me (another|more|others)\b|^(altro|qualcos'?altro|altri|che altro)\b/i, () => { if (lastCo && Date.now() - lastCo.at < 600000) return pickNew(true, mem.brewer);
+      [/^(anything|something|what) else\b|^(any )?others?\b|^(anything |any )?more\b[ ?!.]*$|^(show|give|find) me (another|more|others|something else|anything else|a different one|one more)\b|^(another|a different) one\b|^(altro|qualcos'?altro|altri|che altro|fammi vedere altro)\b/i, () => { if (moreQ && lastCo && Date.now() - lastCo.at < 600000 && tasteFind(moreQ) !== false) return; if (lastCo && Date.now() - lastCo.at < 600000) return pickNew(true, mem.brewer);   /* after a taste ("I feel blackcurrant"), another with that taste */
         say(pick([T("Plenty! Ask me for a coffee pick, help with a sour or bitter cup, or say 'let's brew' and we'll make one together.", "Tanto! Chiedimi un caffè da provare, aiuto con una tazza acida o amara, o di' 'prepariamo' e lo facciamo insieme."), T("Want another coffee to try, a recipe, or shall we brew one together?", "Vuoi un altro caffè da provare, una ricetta, o ne prepariamo uno insieme?")]), null, happy); }],
       // everyday coffee questions answered straight (26/11/2026: "Is coffee a fruit?" got a fruity coffee picked instead)
       [/\bis coffee (a |an )?(fruit|berry|seed|bean|vegetable|nut|plant)\b|where do (coffee )?beans come from|what (is|are) (a )?coffee (cherry|cherries|bean)s?\b|il caff[eè] [eè] (un )?(frutto|seme|fagiolo)|da dove (viene|vengono) (il caff[eè]|i chicchi)/i, () => say(T("Sort of! A coffee bean is the seed of a fruit, the coffee cherry: a small red or yellow fruit that grows on a shrub. Each cherry usually holds two seeds. Pick, remove the fruit, dry, roast: that's your bean. Leave the fruit on while it dries and you get a 'natural' coffee, often the fruitiest of all.", "In un certo senso sì! Il chicco è il seme di un frutto, la ciliegia del caffè: un piccolo frutto rosso o giallo che cresce su un arbusto. Di solito ogni ciliegia ha due semi. Si raccoglie, si toglie la polpa, si essicca, si tosta: ecco il chicco. Se la polpa resta attaccata mentre asciuga, hai un caffè 'naturale', spesso il più fruttato."))],
@@ -11556,17 +11564,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       [/espresso (vs|versus|or|and) filter|filter (vs|versus|or|and) espresso|difference between espresso and filter|differenza tra espresso e filtro/i, () => say(T("Espresso pushes hot water through fine coffee at high pressure in about 30 seconds: small, thick and intense. Filter lets water flow through coarser coffee by gravity over a few minutes: a bigger, clearer cup where delicate flavours show more. Same beans, two very different cups.", "L'espresso spinge acqua calda attraverso caffè fine ad alta pressione in circa 30 secondi: poco, denso e intenso. Il filtro fa scendere l'acqua per gravità attraverso caffè più grosso in qualche minuto: una tazza più grande e limpida, dove i sapori delicati si sentono di più. Stessi chicchi, due tazze molto diverse."))],
       [/why grind (fresh|just before)|pre[- ]?ground|should i (buy|get) (a grinder|ground coffee)|is (a )?grinder worth|macinare al momento/i, () => say(T("Ground coffee loses its aroma within minutes to hours, so grinding just before brewing makes the biggest single difference to taste. A grinder is the best upgrade you can make, more than a fancy brewer. If you buy ground, buy small bags and close them well.", "Il caffè macinato perde l'aroma in pochi minuti o ore, quindi macinare appena prima di preparare è la cosa che cambia di più il gusto. Un macinino è il miglior acquisto che puoi fare, più di un metodo costoso. Se compri macinato, prendi pacchetti piccoli e chiudili bene."))],
       // a named taste: "a coffee with cherry notes", "something that tastes of blueberry", "note di pesca": a coffee whose notes have it
-      [/\b(notes?|tastes? (of|like)|tasting of|hints? of|flavou?r(ed)? (of|like)|che sa di|note di|sapore di)\b/i, () => {
-        if (/^(why|how|what (is|are|does|do)|what's|are the|is it|perch|come mai|cosa)\b/i.test(lastQ) || /\b(roaster|roastery|roasters|where|based|located|who|torrefazione|dove)\b/i.test(lastQ)) return false;   // "where is Notes Roastery based?" is about a roaster
-        const vocab = new Set(); coffees().forEach((x) => notesOf(x).join(" ").toLowerCase().split(/[^a-zà-ÿ]+/).forEach((w) => { if (w.length >= 3) vocab.add(w); }));
-        const STOP = /^(coffee|coffees|caff[eè]|notes?|tastes?|tasting|taste|like|with|something|anything|that|find|show|any|one|flavou?rs?|flavou?red|hints?|some|really|very|please|want|have|got|give|and|the|for|nice|good|sa|di|che|note|sapore|qualcosa|con)$/;
-        const want = lastQ.toLowerCase().split(/[^a-zà-ÿ]+/).filter((w) => w.length >= 3 && !STOP.test(w) && vocab.has(w)); if (!want.length) return false;
-        const has = (x, w) => notesOf(x).join(" ").toLowerCase().includes(w);
-        let cs = coffees().filter((x) => want.every((w) => has(x, w))), partly = false;
-        if (!cs.length) { cs = coffees().filter((x) => want.some((w) => has(x, w))); partly = true; } if (!cs.length) return false; moreQ = lastQ;
-        const r = pick(cs.slice(0, 300)), ns = notesOf(r);
-        say(T(`${partly ? "Not all of that in one cup, but close: " : ""}try ${shownName(r)} from ${roasteryName(r.roaster)}${r.origin ? ", " + r.origin : ""}. It tastes of ${andList(ns)}.${cs.length > 1 ? ` (${cs.length} on Goccio have ${want.length > 1 && !partly ? "those notes" : "that note"}.)` : ""}`.replace(/^t/, "T"), `${partly ? "Non tutto in una tazza, ma ci siamo: " : ""}prova ${shownName(r)} della ${roasteryName(r.roaster)}${r.origin ? ", " + r.origin : ""}. Sa di ${andList(ns)}.`.replace(/^p/, "P")),
-          [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(r); } }, T("Another one", "Un altro")], happy); }],
+      [/\b(notes?|tastes? (of|like)|tasting of|hints? of|flavou?r(ed)? (of|like)|che sa di|note di|sapore di)\b/i, () => tasteFind(lastQ)],
       // filled in after a check of 120 everyday questions (25/11/2026)
       K0,
       K0,
@@ -11690,6 +11688,18 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       [/kalita/i, ["A Kalita Wave is a flat-bottomed pour-over dripper with three small holes and wavy filters: steadier and more forgiving than a cone.", "La Kalita Wave è un dripper a fondo piatto con tre piccoli fori e filtri ondulati: più costante e più facile di un cono."]],
       [/clever|hario switch|\bswitch\b/i, ["It's a pour-over dripper with a valve: the coffee steeps like a French press, then you open it and it drains through paper. Easy and very consistent.", "È un dripper con una valvola: il caffè resta in infusione come in una French press, poi apri e scende attraverso la carta. Facile e molto costante."]],
       [/origami/i, ["The Origami is a Japanese ceramic dripper with deep pleats; it takes cone or flat filters, so it brews like a V60 or a Kalita.", "L'Origami è un dripper giapponese in ceramica con pieghe profonde; accetta filtri a cono o piatti, quindi prepara come un V60 o una Kalita."]]];
+    // a coffee whose notes have the taste named: "a coffee with cherry notes", "I feel blackcurrant", "fancy something with peach"
+    const tasteFind = (q0) => {
+        if (/^(why|how|what (is|are|does|do)|what's|are the|is it|perch|come mai|cosa)\b/i.test(q0) || /\b(roaster|roastery|roasters|where|based|located|who|torrefazione|dove)\b/i.test(q0)) return false;   // "where is Notes Roastery based?" is about a roaster
+        const vocab = new Set(); coffees().forEach((x) => notesOf(x).join(" ").toLowerCase().split(/[^a-zà-ÿ]+/).forEach((w) => { if (w.length >= 3) vocab.add(w); }));
+        const STOP = /^(coffee|coffees|caff[eè]|notes?|tastes?|tasting|taste|like|with|something|anything|that|find|show|any|one|flavou?rs?|flavou?red|hints?|some|really|very|please|want|have|got|give|and|the|for|nice|good|sa|di|che|note|sapore|qualcosa|con)$/;
+        const want = q0.toLowerCase().split(/[^a-zà-ÿ]+/).filter((w) => w.length >= 3 && !STOP.test(w) && vocab.has(w)); if (!want.length) return false;
+        const has = (x, w) => notesOf(x).join(" ").toLowerCase().includes(w);
+        let cs = coffees().filter((x) => want.every((w) => has(x, w))), partly = false;
+        if (!cs.length) { cs = coffees().filter((x) => want.some((w) => has(x, w))); partly = true; } if (!cs.length) return false; moreQ = q0;
+        const r = pick(cs.slice(0, 300)), ns = notesOf(r); lastCo = { r, at: Date.now() };
+        say(T(`${partly ? "Not all of that in one cup, but close: " : ""}try ${shownName(r)} from ${roasteryName(r.roaster)}${r.origin ? ", " + r.origin : ""}. It tastes of ${andList(ns)}.${cs.length > 1 ? ` (${cs.length} on Goccio have ${want.length > 1 && !partly ? "those notes" : "that note"}.)` : ""}`.replace(/^t/, "T"), `${partly ? "Non tutto in una tazza, ma ci siamo: " : ""}prova ${shownName(r)} della ${roasteryName(r.roaster)}${r.origin ? ", " + r.origin : ""}. Sa di ${andList(ns)}.`.replace(/^p/, "P")),
+          [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(r); } }, T("Another one", "Un altro")], happy); };
     const ANSWERS = [
       [/^(what('?s| is)( an?| the)?|cos'?[eè]( una?| il| la| lo)?|che cos'?[eè]( una?| il| la| lo)?) (v-?60|aero ?press|chemex|french press|cafeti[eè]re|moka( pot)?|bialetti|kalita( wave)?|origami|hario switch|clever( dripper)?)\b[ ?!.]*$/i,
         () => { const b = BREWER_IS.find(([re]) => re.test(curQ)); if (!b) return false; say(T(b[1][0], b[1][1]), null, curious); }],
@@ -12267,11 +12277,17 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       // (a word of it matched a coffee's name: "SaiPan kannatuskahvi, lovely"), and it starts again even mid-way through a brew
       if (/^(so |ok |okay |hey |hi |right,? )?(i )?((want|wanna|would like|'d like|'m going|am going|need|feel like) to |let'?s |can we |can you |could you |help me |time to |shall we )?(brew|make)( me| us)?( (something|anything|a coffee|coffee|some coffee|a cup|a brew|one))?( (together|with me|now|today|please))*[ .!…?]*$/i.test(q)
         || /^(voglio |vorrei |posso )?(preparare|fare)( un| qualcosa| un caff[eè]| del caff[eè])?[ .!?]*$|^prepariamo( qualcosa| un caff[eè])?[ .!?]*$/i.test(q)) { whichCo = null; gbStart(null, null, q); return; }
+      // a taste named with a wish ("Show me something else. I feel blackcurrant.", "I fancy peach", "in the mood for cherry"): that taste
+      // wins over "something else" (it used to give any other coffee, 26/11/2026)
+      if (/\b(feel|feeling|fancy|fancying|in the mood for|mood for|craving|crave|want|wanna|like|show me|got any|looking for|something|anything|voglio|mi va|ho voglia)\b/i.test(q) && !/^(why|how|what (is|are)|perch|come)\b/i.test(q) && !BREW_ASK.test(q)) {
+        const voc = new Set(); coffees().forEach((x) => notesOf(x).join(" ").toLowerCase().split(/[^a-zà-ÿ]+/).forEach((w) => { if (w.length >= 4) voc.add(w); }));
+        const PLAIN = /^(black|white|green|red|dark|light|sweet|milk|brown|sugar|fruit|fruity|fruits|clean|bright|juicy|tea|cup|long|body|acidity|soft|rich|smooth|round|notes?|coffee|coffees|something|anything|else|feel|feeling|want|like|show|fancy|mood|really|very|some|another|other|more)$/;
+        if (q.toLowerCase().split(/[^a-zà-ÿ]+/).some((w) => w.length >= 4 && !PLAIN.test(w) && voc.has(w)) && tasteFind(q) !== false) { ctx = null; return; } }
       if (ctx && ctx.t === "howru") { const c = ctx; ctx = null; if (Date.now() - c.at < 600000 && howReply(q, c)) return; }
       if (gbs && gbAnswer(q)) return;
       if (!pendingYes && /^(yes|yeah|yep|yup|sure|ok|okay|no|nope|nah|s[iì]|certo|va bene)\b[ .!]*$/i.test(q)) {   // a yes or no with nothing to answer
         return say(pick([T("Noted! Ask me anything about coffee.", "Ricevuto! Chiedimi qualsiasi cosa sul caffè."), T("Got it. What shall we talk about?", "Capito. Di cosa parliamo?"), T("Okay! I'm all ears. Well, all drop.", "Ok! Sono tutto orecchi. Anzi, tutto goccia.")]), null, smile); }
-      if (pendingYes) { const f = pendingYes; pendingYes = null; if (/^(yes|yeah|yep|yup|sure|ok|okay|please|go on|go ahead|show me|let'?s see|s[iì]|certo|dai|va bene|vediamo|fammi vedere)\b/i.test(q)) { if (!silent) react("👍", 200); setTimeout(f, 650); return; }
+      if (pendingYes) { const f = pendingYes; pendingYes = null; if (/^(yes|yeah|yep|yup|sure|ok|okay|please|go on|go ahead|show me|let'?s see|s[iì]|certo|dai|va bene|vediamo|fammi vedere)\b/i.test(q) && !/\b(else|another|other|more|different|instead|altro|altri|diverso)\b/i.test(q)) {   /* "Show me something else" is not a yes */ if (!silent) react("👍", 200); setTimeout(f, 650); return; }
         if (/^(no|nope|nah|no thanks|not now|maybe later|non ora|no grazie)\b[ .!]*$/i.test(q)) return say(pick([T("No worries.", "Nessun problema."), T("Okay, another time.", "Ok, un'altra volta."), T("Fair enough.", "Va bene.")]), null, smile); }
       // brewing from the chat: "start brewing" with a recipe open starts it; "let's brew" with nothing named asks which coffee
       { const recipeOpen = $("recipe") && !$("recipe").hidden && $("startBrew");
