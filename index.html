@@ -3134,7 +3134,8 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
 .shelf .item .c-typ{color:var(--muted)}
 /* desktop: two columns of coffees */
 @media (min-width:1000px){ #shelf{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:32px;margin-top:-10px} #shelf > .item{margin-top:0!important} #shelf > .grp:not(.bare), #shelf > p{grid-column:1/-1} }   /* both columns start level, under the first one's pull-up */
-@media (min-width:1000px){ html body #shelf.shelf > .item:last-child{border-bottom:1px solid var(--line)!important} }   /* two columns: the last coffee keeps its rule, level with the one beside it */
+@media (min-width:1000px){ html body #shelf.shelf > .item:last-child{border-bottom:1px solid var(--line)!important} }
+@media (min-width:1000px){ html body #shelf.shelf > .grp.day-g{margin-top:-3px!important} }   /* the two-column list starts 10 px higher: its count line comes back down under "Coffees", as on a phone */   /* two columns: the last coffee keeps its rule, level with the one beside it */
 /* under the recipe: grey pills like every other action */
 .share .btn, .share a.btn, .hero-pill[data-jump="recipe"]{background:var(--pill)!important;color:var(--ink)!important;border:0!important;box-shadow:none!important}
 .share .btn:hover, .hero-pill[data-jump="recipe"]:hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))!important}
@@ -3347,7 +3348,10 @@ html[lang="it"] :is(#adjOpts,#moreOpts) > summary{grid-template-columns:max-cont
 /* 2. the phone's first screen: the name, the line, the count and the two ways in, then the list */
 @media (max-width:640px){
   .wm-screen{min-height:min(62svh,520px)!important;height:auto!important}
-  .hero-row{display:none!important}
+  /* of the computer's intro, a phone keeps only the Brewing example: one folded line under the header, opened with a tap */
+  .hero-row{display:block!important;margin:0!important;padding:0 0 12px!important}
+  .hero-row > .stage, .hero-side > :not(.g-ex){display:none!important}
+  .hero-side{display:block!important}
 }
 .chip.gear-more:has(> .pn){width:auto!important;min-width:var(--pill-h);padding:0 9px!important;border-radius:980px!important}
 .chip.gear-more > .pn{color:var(--ink);font:500 var(--fs-s)/1 var(--sans);font-variant-numeric:tabular-nums;letter-spacing:0}
@@ -6647,7 +6651,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     if (rr.pours) bits.push(it ? `versate da ${rr.pours[0]} g ogni ${rr.pours[1]} s` : `${rr.pours[0]} g pours every ${rr.pours[1]} s`);
     if (rr.time) bits.push(it ? `${rr.time} in tutto` : `${rr.time} in all`);
     const who = row.roaster, br = rr.brewer && BN[rr.brewer] ? (it ? ` (per ${BN[rr.brewer]})` : ` (for ${BN[rr.brewer]})`) : "";
-    el.innerHTML = `<p class="ro-rec-h">${it ? "La ricetta della torrefazione" : "The roaster’s recipe"}${esc(br)}</p><p class="ro-rec-t">${esc(who)}: ${esc(bits.join(", ")).replace(/(\d) (g|s|°C|µm|clicks|scatti)\b/g, "$1\u00a0$2")}.</p>`;
+    el.innerHTML = `<p class="ro-rec-h">${it ? "La ricetta della torrefazione" : "The roaster’s recipe"}${esc(br)}</p><p class="ro-rec-t">${esc(who)} ${it ? "consiglia" : "suggests"} ${esc(bits.join(", ")).replace(/(\d) (g|s|°C|µm|clicks|scatti)\b/g, "$1\u00a0$2")}.</p>`;
     el.hidden = false; }
   function crowdFor(bag) { const el = $("crowd"); if (!el) return; const u = bag && bag.url;
     const show = (t) => { const n = t ? (t.sour || 0) + (t.balanced || 0) + (t.bitter || 0) : 0; if (n < CROWD_MIN) { el.hidden = true; return; }
@@ -9898,7 +9902,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const room = scr.clientWidth - parseFloat(ss.paddingLeft) - parseFloat(ss.paddingRight);
       const ls = parseFloat(cs.letterSpacing) / parseFloat(cs.fontSize) || 0, gaps = w.textContent.length - 1;   // the tracking, as a share of the size
       const ink = m.actualBoundingBoxLeft + m.actualBoundingBoxRight + ls * 100 * gaps; if (!ink || !room) return;
-      const fitS = 100 * room / ink, size = [39, 63, 102, 165, 267, 432, 699].filter((x) => x <= fitS).pop() || fitS, k = size / 100; p.style.fontSize = size.toFixed(2) + "px";
+      const SC = [39, 63, 102, 165, 267, 432, 699], nm = document.querySelector("#shelf .item .name, .shelf .item .name");
+      // never more than two golden steps above the page's biggest words (a coffee's name: 39 on a phone gives 102, 63 on a computer gives 165), as on a phone
+      const big = nm ? parseFloat(getComputedStyle(nm).fontSize) : (innerWidth >= 1000 ? 63 : 39), cap = SC[Math.min(SC.length - 1, (SC.findIndex((x) => x >= big - 0.5) + 1 || 1) + 1)];
+      const fitS = 100 * room / ink, size = Math.min(cap, SC.filter((x) => x <= fitS).pop() || fitS), k = size / 100; p.style.fontSize = size.toFixed(2) + "px";
       const pr = document.createElement("span"); pr.style.cssText = "display:inline-block;width:0;height:0;vertical-align:baseline"; w.prepend(pr);
       const o = pr.getBoundingClientRect(); pr.remove();
       const L = o.left - m.actualBoundingBoxLeft * k, R = o.left + (m.actualBoundingBoxRight + ls * 100 * gaps) * k;
@@ -9908,6 +9915,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         lb = far > 4 ? far : tg ? parseFloat(getComputedStyle(tg).marginBottom) || 14 : 14, foot = more ? more.getBoundingClientRect().top - lb : sr.bottom - gap;   // as far over the tagline as the two buttons are over the text under them (20 px): set in the one place that puts the name, so it is there from the first frame
       w.style.transform = `translate(${(sr.left + sr.width / 2 - (L + R) / 2).toFixed(2)}px, ${(foot - B).toFixed(2)}px)`; };
     fit(); addEventListener("resize", fit);
+    { const sh = document.getElementById("shelf"); if (sh && "MutationObserver" in window) { const mo = new MutationObserver(() => { if (sh.querySelector(".item .name")) { mo.disconnect(); fit(); } }); mo.observe(sh, { childList: true, subtree: true }); } }   // the coffees' names set the cap: fit again once they're in
     { const more = scr.querySelector(".wm-more"); if (more && "ResizeObserver" in window) new ResizeObserver(() => fit()).observe(more); }   // the count arrives late
     if (document.fonts) { document.fonts.load('100px "ALT Riviera Regular"').then(fit).catch(() => {}); document.fonts.ready.then(fit); }
   })();
