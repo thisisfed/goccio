@@ -229,7 +229,7 @@ NOTES_CHECK = 10   # pages read for notes with these rules (10: elbgold's "Noten
 # A fix for one shop's page layout re-reads only that shop: raise its number here (above NOTES_CHECK), not NOTES_CHECK,
 # which re-reads every coffee without notes everywhere (thousands of pages). Raise NOTES_CHECK only for a change to the
 # rules every shop goes through
-NOTES_RECHECK = {"Wes Ngopi": 13, "Climpson & Sons": 10, "Sydrip": 10, "Fève": 10, "Passage": 10, "The Source": 10, "Terraform": 11, "Lucid Coffee Roasters": 12, "James Gourmet Coffee": 11, "Sl.ow": 11, "Sprout": 11, "Rogue Wave": 11, "Dayglow": 11, "Established Coffee": 11, "Langøra": 12, "Jolly Bean Roastery": 12, "Light Up Coffee": 12, "Trigger": 12, "Crosby Coffee": 12, "Tandem": 13}   # e.g. {"Monmouth": 10}
+NOTES_RECHECK = {"Wes Ngopi": 13, "Climpson & Sons": 10, "Sydrip": 10, "Fève": 10, "Passage": 10, "The Source": 10, "Terraform": 11, "Lucid Coffee Roasters": 12, "James Gourmet Coffee": 11, "Sl.ow": 11, "Sprout": 11, "Rogue Wave": 11, "Dayglow": 11, "Established Coffee": 11, "Langøra": 12, "Jolly Bean Roastery": 12, "Light Up Coffee": 12, "Trigger": 12, "Crosby Coffee": 12, "Tandem": 13, "Rise & Grind Roastery": 13}   # e.g. {"Monmouth": 10}
 notes_ver = lambda shop: max(NOTES_CHECK, NOTES_RECHECK.get(shop, 0))
 NOTES_V = 2       # page notes read under these list rules; a short list (two or fewer) read under older ones is read once more
 
