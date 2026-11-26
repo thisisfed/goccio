@@ -228,7 +228,7 @@ NOTES_CHECK = 10   # pages read for notes with these rules (10: elbgold's "Noten
 # A fix for one shop's page layout re-reads only that shop: raise its number here (above NOTES_CHECK), not NOTES_CHECK,
 # which re-reads every coffee without notes everywhere (thousands of pages). Raise NOTES_CHECK only for a change to the
 # rules every shop goes through
-NOTES_RECHECK = {"Climpson & Sons": 10, "Sydrip": 10, "Fève": 10, "Passage": 10, "The Source": 10, "Terraform": 11, "Lucid Coffee Roasters": 12, "James Gourmet Coffee": 11, "Sl.ow": 11, "Sprout": 11, "Rogue Wave": 11, "Dayglow": 11, "Established Coffee": 11, "Langøra": 12, "Jolly Bean Roastery": 12, "Light Up Coffee": 12, "Trigger": 12, "Crosby Coffee": 12}   # e.g. {"Monmouth": 10}
+NOTES_RECHECK = {"Climpson & Sons": 10, "Sydrip": 10, "Fève": 10, "Passage": 10, "The Source": 10, "Terraform": 11, "Lucid Coffee Roasters": 12, "James Gourmet Coffee": 11, "Sl.ow": 11, "Sprout": 11, "Rogue Wave": 11, "Dayglow": 11, "Established Coffee": 11, "Langøra": 12, "Jolly Bean Roastery": 12, "Light Up Coffee": 12, "Trigger": 12, "Crosby Coffee": 12, "Tandem": 13}   # e.g. {"Monmouth": 10}
 notes_ver = lambda shop: max(NOTES_CHECK, NOTES_RECHECK.get(shop, 0))
 NOTES_V = 2       # page notes read under these list rules; a short list (two or fewer) read under older ones is read once more
 
@@ -1791,6 +1791,10 @@ NOTES_LEAD_LIST = re.compile(r"(?:notes?|flavou?rs?|tastes?)\b[^\n<.]{0,60}?(?:r
 
 def find_notes(item):
     text = item["body"]
+    # "We hear:" as the notes' label (Tandem: "We hear: Lime, Chamomile, Lychee, Move Inside My Head"); a long title at the end
+    # is their song for the coffee, not a flavour, so items of four words or more are left out
+    text = re.sub(r"(?i)\bwe hear\s*:?\s*(?:</[^>]+>\s*|<br\s*/?>\s*|<[a-z]+[^>]*>\s*)*\n?\s*([^\n<]{3,200})",
+                  lambda m: "Tasting notes: " + ", ".join(x.strip() for x in m.group(1).split(",") if x.strip() and len(x.split()) <= 3) + "\n", text or "")
     # a list item, paragraph or line break ends a line: "<li>Flavours like: Cherry, Apricot, Cola</li></ul>" (Lucid) is read to
     # "Cola" and no further (the markup kept the last note joined to the tags, and it was thrown away as markup)
     text = re.sub(r"(?=</(?:li|p|div|h[1-6]|td|tr|dd|dt)>|<br\s*/?>)", "\n", text, flags=re.I)
