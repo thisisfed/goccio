@@ -67,7 +67,7 @@ n=Math.floor((now-new Date(y,0,0))/864e5),r=Math.PI/180,d=-23.44*Math.cos(2*Math
 B=2*Math.PI*(n-81)/364,eot=9.87*Math.sin(2*B)-7.53*Math.cos(B)-1.5*Math.sin(B),
 h=Math.acos(Math.max(-1,Math.min(1,(Math.sin(-.833*r)-Math.sin(lat*r)*Math.sin(d))/(Math.cos(lat*r)*Math.cos(d)))))/r,noon=12-lon/15-eot/60,u=now.getUTCHours()+now.getUTCMinutes()/60;
 return u<noon-h/15||u>noon+h/15;};
-try{var t=localStorage.getItem("v60.theme");if(t!=="auto")document.documentElement.setAttribute("data-theme",t==="light"?"light":"dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}
+try{var t=localStorage.getItem("v60.theme");if(t==="auto")t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.documentElement.setAttribute("data-theme",t==="light"?"light":"dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}
 </script>
 <style>
 /* Layout idea: Apple product page, warmed up. Cream paper canvas, warm-white rounded tiles, system type set
@@ -812,7 +812,7 @@ details.more summary { color: var(--ink); font-size: var(--fs-s); text-decoratio
 .r-read { font-size: var(--fs-s); }
 .need h3, .log h3 { font-size: 15px; font-weight: 500; }
 .specs { gap: 0 16px; }
-.ro-rec{margin:14px 0 4px;padding:12px 14px;border-radius:var(--r,4px);background:var(--wash)} .ro-rec p{margin:0} .ro-rec-h{font-size:13px;line-height:1.3;color:var(--muted);margin-bottom:4px!important} .ro-rec-t{font-size:15px;line-height:1.4}   /* the roaster's own recipe, beside Goccio's numbers */
+.ro-rec{margin:14px 0 4px;padding:12px 14px;border-radius:var(--r,4px);background:var(--wash)} .ro-rec p{margin:0} .ro-rec-h{font-size:15px;line-height:1.4;font-weight:500;color:var(--muted);margin-bottom:2px!important} .ro-rec-t{font-size:15px;line-height:1.4}   /* the roaster's own recipe, beside Goccio's numbers */
 .spec { justify-items: start; text-align: left; padding: 10px 0 18px; gap: 4px; }
 .spec b { font-size: min(52px, 22cqi); font-weight: 500; letter-spacing: -.045em; order: 2; }
 .spec .sub2 { order: 1; font-size: var(--fs-s); }
@@ -2734,6 +2734,12 @@ html body .wm-screen::after{background:linear-gradient(180deg, rgba(0,0,0,0) 45%
 :root[data-theme="light"] body .wm-screen{background:#000!important;color:#fff}
 :root[data-theme="light"] body .wm-screen .wordmark, :root[data-theme="light"] body .wm-screen .wordmark *, :root[data-theme="light"] body .wm-more .wm-live, :root[data-theme="light"] body .wm-more .wm-lead, :root[data-theme="light"] body .wm-more .wm-tagline, :root[data-theme="light"] body .wm-more .wm-tot{color:#fff!important}
 :root[data-theme="light"] body .wm-more .wm-bag{background:#262626!important;color:#fff!important}   /* the film runs all the way down to the rule over Coffees, a little darker at the foot */
+/* light mode, once the film has played (seen today, or just ended): the header turns to the page's light crema, its words dark */
+html[data-theme="light"]:is(.film-off,.hero-done) body .wm-screen{background:var(--bg)!important;color:var(--ink);transition:background-color .9s ease}
+html[data-theme="light"]:is(.film-off,.hero-done) body .wm-screen::after{opacity:0}
+html[data-theme="light"]:is(.film-off,.hero-done) body .wm-video{opacity:0!important;transition:opacity .9s ease}
+html[data-theme="light"]:is(.film-off,.hero-done) body .wm-screen .wordmark, html[data-theme="light"]:is(.film-off,.hero-done) body .wm-screen .wordmark *, html[data-theme="light"]:is(.film-off,.hero-done) body .wm-more .wm-live, html[data-theme="light"]:is(.film-off,.hero-done) body .wm-more .wm-lead, html[data-theme="light"]:is(.film-off,.hero-done) body .wm-more .wm-tagline, html[data-theme="light"]:is(.film-off,.hero-done) body .wm-more .wm-tot{color:var(--ink)!important}
+html[data-theme="light"]:is(.film-off,.hero-done) body .wm-more .wm-bag{background:var(--pill)!important;color:var(--ink)!important}
 /* the film starts at the very top of the screen, under a see-through top bar, and ends on the rule over Coffees */
 html body .wm-video{transform:none!important}
 /* Methods: each brewer's name on its own line in white, what it's based on under it in grey, a gap between brewers */
@@ -6629,7 +6635,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   function roRecFor(bag) { const el = $("roRec"); if (!el) return; const row = bag && bag.url ? shelf.find((x) => x.url === bag.url) : null, rr = row && row.roaster_recipe;
     if (!rr) { el.hidden = true; el.innerHTML = ""; return; }
     const it = LANG === "it", n = (x) => String(x).replace(".", it ? "," : "."), bits = [];
-    const BN = { v60: "V60", kalita: "Kalita Wave", chemex: "Chemex", aeropress: "AeroPress", origami: "Origami", orea: "Orea", april: "April", clever: "Clever", "french press": it ? "French press" : "French press", moka: "moka", espresso: "espresso", "batch brew": it ? "macchina a filtro" : "batch brew" };
+    const BN = { flat: it ? "dripper a fondo piatto" : "flat-bottom drippers", v60: "V60", kalita: "Kalita Wave", chemex: "Chemex", aeropress: "AeroPress", origami: "Origami", orea: "Orea", april: "April", clever: "Clever", "french press": it ? "French press" : "French press", moka: "moka", espresso: "espresso", "batch brew": it ? "macchina a filtro" : "batch brew" };
     if (rr.dose && rr.water) bits.push(rr.brewer === "espresso" ? (it ? `${n(rr.dose)} g dentro, ${n(rr.water)} g fuori` : `${n(rr.dose)} g in, ${n(rr.water)} g out`) : (it ? `${n(rr.dose)} g di caffè per ${n(rr.water)} g d'acqua` : `${n(rr.dose)} g coffee to ${n(rr.water)} g water`) + (rr.ratio ? ` (1:${n(rr.ratio)})` : ""));
     else if (rr.ratio) bits.push(it ? `rapporto 1:${n(rr.ratio)}` : `a 1:${n(rr.ratio)} ratio`);
     if (rr.temp) bits.push(`${n(rr.temp)} °C`);
@@ -9680,7 +9686,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   const sysDark = matchMedia("(prefers-color-scheme: dark)");
   function applyTheme(t) {
     const root = document.documentElement;
-    if (t === "auto") root.removeAttribute("data-theme"); else root.setAttribute("data-theme", t === "light" ? "light" : "dark");
+    // Auto sets the same light/dark mark as picking it by hand (from the phone's setting, and again when that changes), so every rule for one look applies
+    root.setAttribute("data-theme", (t === "auto" ? (sysDark.matches ? "dark" : "light") : t) === "light" ? "light" : "dark");
     const dark = t === "auto" ? sysDark.matches : t !== "light";
     document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute("content", dark ? "#000000" : "#f7f3ed"));
     // the button shows the look you're in (a moon, a sun, or the half circle for Auto); a tap moves on to the next
@@ -12242,7 +12249,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         const loadLoop = () => { if (lp && !lp.src) { lp.src = lp.dataset.src; lp.preload = "auto"; lp.load(); } };
         v.addEventListener("playing", loadLoop, { once: true });
         v.addEventListener("playing", () => { try { const d = new Date(); localStorage.setItem("v60.filmDay", d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate()); } catch (e) {} }, { once: true });   // seen today
-        const toBlack = () => { v.style.transition = "opacity .9s ease"; v.style.opacity = "0"; };   // the film is over and nothing plays after it: the frame fades to the plain black
+        const toBlack = () => { v.style.transition = "opacity .9s ease"; v.style.opacity = "0"; };
+        v.addEventListener("ended", () => document.documentElement.classList.add("hero-done"));   // light mode: the header turns light once the film is over   // the film is over and nothing plays after it: the frame fades to the plain black
         v.addEventListener("ended", () => { played = true; if (!lp) return toBlack(); loadLoop(); lp.muted = true;
           const go = () => { try { const p = lp.play(); if (p && p.then) p.then(() => { lp.style.visibility = ""; v.style.visibility = "hidden"; }).catch(toBlack); else toBlack(); } catch (e) { toBlack(); } };
           if (lp.readyState >= 2) go(); else lp.addEventListener("canplay", go, { once: true }); });

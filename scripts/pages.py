@@ -238,7 +238,7 @@ def page(title, desc, path, body, extra_head="", nav=True, tight=False):
     url = BASE + path
     return f"""<!doctype html>
 <html lang="en"><head>
-<meta charset="utf-8"><meta name="theme-color" content="#000000"><script>try{{var t=localStorage.getItem("v60.theme");if(t!=="auto")document.documentElement.setAttribute("data-theme",t==="light"?"light":"dark")}}catch(e){{document.documentElement.setAttribute("data-theme","dark")}}</script><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta charset="utf-8"><meta name="theme-color" content="#000000"><script>try{{var t=localStorage.getItem("v60.theme");if(t==="auto")t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.documentElement.setAttribute("data-theme",t==="light"?"light":"dark")}}catch(e){{document.documentElement.setAttribute("data-theme","dark")}}</script><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>{e(title)}</title>
 <meta name="description" content="{e(desc)}">
 <link rel="canonical" href="{e(url)}">
