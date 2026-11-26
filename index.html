@@ -10750,40 +10750,36 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     let gazeLock = false;   // while he hypnotises, his eyes stay on you, whatever the pointer does
     const hypno = () => act(async () => { if (still()) return; gazeLock = true; lookX = 0; lookY = 0; draw();
       const NS = "http://www.w3.org/2000/svg", L = el.querySelector(".gd-l"), R = el.querySelector(".gd-r"); if (!L || !R) return;
-      // the hypnosis pattern, in four soft colours only (pale yellow, sky blue, light green, mint), each ring outlined in thin dark green, like
-      // an old cartoon's hypno eyes (26/11/2026). Rings are born at the middle at uneven gaps, so they come in different widths, and all widen
-      // at one steady speed; the newest sits on top, so colour always meets colour and the ring lines are the only dark
-      const PAL = ["#d4da8e", "#84bbcf", "#b2d99d", "#a2c6b5"], LINE = "#1f4d36", PER = 3600;
-      const spawner = (parents, speed, gap0, gap1, lw) => { const live = []; let nextAt = -1.2 / speed, last = -1;   // starts already full
-        return (t, R, cx, cy) => {
+      // his eyes only (26/11/2026), drawn like an old cartoon's hypno eyes: each stays its own tall oval, outlined dark, and inside it round
+      // rings in four soft colours (pale yellow, sky blue, light green, mint), each with a thin dark green line, set off towards his nose and
+      // a touch low, with a tiny dot in the middle. Rings are born there at uneven gaps (so they come in different widths) and widen slowly
+      const PAL = ["#d4da8e", "#84bbcf", "#b2d99d", "#a2c6b5"], LINE = "#1f4d36", PER = 8000;
+      const spawner = (parents, gap0, gap1, lw) => { const live = []; let nextAt = -1.3, last = -1;   // starts already full
+        return (t, Rm) => {
           while (t >= nextAt) { let ci; do ci = Math.floor(Math.random() * PAL.length); while (ci === last); last = ci;
-            live.push({ b: nextAt, els: parents.map((pg) => { const c = document.createElementNS(NS, "circle"); c.style.fill = PAL[ci]; c.style.stroke = LINE; c.style.strokeWidth = lw; pg.appendChild(c); return c; }) });
+            live.push({ b: nextAt, els: parents.map((pg) => { const c = document.createElementNS(NS, "circle"); c.style.fill = PAL[ci]; c.style.stroke = LINE; c.style.strokeWidth = lw; pg.insertBefore(c, pg.lastChild); return c; }) });
             nextAt += gap0 + Math.random() * (gap1 - gap0); }
-          while (live.length > 1 && (t - live[1].b) * speed * R > R * 1.05) live.shift().els.forEach((c) => c.remove());   // fully covered by the next one: gone
-          live.forEach((d) => { const r = Math.max(0, (t - d.b) * speed * R).toFixed(3); d.els.forEach((c) => { c.setAttribute("r", r); c.setAttribute("cx", cx); c.setAttribute("cy", cy); }); }); }; };
-      const cid = "hypc" + Math.random().toString(36).slice(2, 6), cp = document.createElementNS(NS, "clipPath"), cc = document.createElementNS(NS, "circle");   // cut to the eye, so a ring never leaves it
-      cp.id = cid; cc.setAttribute("r", "2.3"); cp.appendChild(cc); eyes.appendChild(cp);
-      const eyeGs = [];
-      const sp = [L, R].map((e0) => { const g = document.createElementNS(NS, "g"), cl = document.createElementNS(NS, "g"), dot = document.createElementNS(NS, "circle"); g.setAttribute("class", "gd-hyp"); cl.setAttribute("clip-path", `url(#${cid})`);
-        dot.setAttribute("r", "0.2"); dot.style.fill = LINE; dot.style.stroke = "none"; g.appendChild(cl); g.appendChild(dot); eyes.appendChild(g); eyeGs.push(cl); return [e0, g]; });   // a tiny dark dot in the very middle
-      const eyeRings = spawner(eyeGs, 1, 0.1, 0.32, 0.11);
-      // and his whole body turns into the same pattern, widening from his middle, cut to his shape (the clip follows the live outline,
-      // so he can still squash and breathe); his eyes stay on top
-      const bid = body.id || (body.id = "gdb" + Math.random().toString(36).slice(2, 6)), bcp = document.createElementNS(NS, "clipPath"), bu = document.createElementNS(NS, "use");
-      bcp.id = cid + "b"; bu.setAttribute("href", "#" + bid); bcp.appendChild(bu); all.insertBefore(bcp, all.firstChild);
-      const bg = document.createElementNS(NS, "g"); bg.setAttribute("class", "gd-hyp"); bg.setAttribute("clip-path", `url(#${bcp.id})`); eyes.parentNode.insertBefore(bg, eyes);
-      const bodyRings = spawner([bg], 1.4, 0.035, 0.15, 0.4);
+          while (live.length > 1 && (t - live[1].b) * Rm > Rm * 1.05) live.shift().els.forEach((c) => c.remove());   // fully covered by the next one: gone
+          live.forEach((d) => { const r = Math.max(0, (t - d.b) * Rm).toFixed(3); d.els.forEach((c) => c.setAttribute("r", r)); }); }; };
+      const sp = [L, R].map((e0, side) => { const g = document.createElementNS(NS, "g"), cp = document.createElementNS(NS, "clipPath"), ce = document.createElementNS(NS, "ellipse"), cl = document.createElementNS(NS, "g"), mid = document.createElementNS(NS, "g"), dot = document.createElementNS(NS, "circle");
+        cp.id = "hypc" + Math.random().toString(36).slice(2, 6); cp.appendChild(ce); g.appendChild(cp); g.setAttribute("class", "gd-hyp"); cl.setAttribute("clip-path", `url(#${cp.id})`);
+        mid.setAttribute("transform", `translate(${side ? -0.85 : 0.85} 0.45)`); dot.setAttribute("r", "0.2"); dot.style.fill = LINE; dot.style.stroke = "none"; mid.appendChild(dot); cl.appendChild(mid); g.appendChild(cl); eyes.appendChild(g);
+        return { e0, g, ce, mid }; });
+      const rings = spawner(sp.map((x) => x.mid), 0.12, 0.34, 0.11);
       const t0 = performance.now(); let tPh = 0, tLast = t0;
-      const grow = (now) => { const dt = Math.min(80, now - tLast); tLast = now; tPh += dt / PER;   // one steady speed, always
-        let bb = null; try { bb = body.getBBox(); } catch (e) {}
-        if (bb && bb.width) bodyRings(tPh, Math.hypot(bb.width, bb.height) * 0.62, (bb.x + bb.width / 2).toFixed(2), (bb.y + bb.height * 0.58).toFixed(2));
-        eyeRings(tPh, 2.4, "0", "0"); };
-      let on = true; const follow = () => { if (!on) return; sp.forEach(([e0, g]) => { const rx = parseFloat(e0.getAttribute("rx")) || 2.4, ry = parseFloat(e0.getAttribute("ry")) || 3.4, cx = e0.getAttribute("cx"), cy = e0.getAttribute("cy");
-          g.setAttribute("transform", `${e0.getAttribute("transform") || ""} translate(${cx} ${cy}) scale(${(rx / 2.4).toFixed(3)} ${(ry / 2.4).toFixed(3)})`); }); grow(performance.now()); requestAnimationFrame(follow); }; follow();
-      await face({ eyeSL: 1.5, eyeSR: 1.5, rnd: 1 }, 500);   // his eyes open wide to hold the rings
-      sp.forEach(([, g]) => g.classList.add("in")); bg.classList.add("in");   // round eyes full of rings, on top of the pattern (eyes back, 26/11/2026)
-      await wait(11000 + Math.random() * 3000);   // he stays still, straight at you
-      blink = 0.12; draw(); await wait(140); sp.forEach(([, g]) => g.remove()); cp.remove(); bg.classList.remove("in"); eyesOff = false; setTimeout(() => { bg.remove(); bcp.remove(); eyes.style.transition = ""; }, 450); on = false; blink = 1; draw(); await face({ eyeSL: 1, eyeSR: 1, rnd: 0 }, 400); gazeLock = false; }, true);
+      let on = true; const follow = () => { if (!on) return; const now = performance.now(), dt = Math.min(80, now - tLast); tLast = now; tPh += dt / PER;   // one slow, steady speed
+        let ryMax = 3;
+        sp.forEach(({ e0, g, ce }) => { const rx = parseFloat(e0.getAttribute("rx")) || 2.4, ry = parseFloat(e0.getAttribute("ry")) || 3.4, s0 = rx / 2.4, q = eSX / Math.max(0.06, eSY);
+          // the rings stay round on screen, whatever stretch the face has; the clip is the eye's own oval, a hair inside its dark edge
+          g.setAttribute("transform", `${e0.getAttribute("transform") || ""} translate(${e0.getAttribute("cx")} ${e0.getAttribute("cy")}) scale(${s0.toFixed(3)} ${(s0 * q).toFixed(3)})`);
+          const cry = ry / (s0 * q) * 0.94; ce.setAttribute("rx", "2.25"); ce.setAttribute("ry", cry.toFixed(3)); ryMax = Math.max(ryMax, cry); });
+        rings(tPh, Math.hypot(2.25 + 0.85, ryMax + 0.45) * 1.02); requestAnimationFrame(follow); }; follow();
+      // he comes up close to you, eyes wide, then the rings fade in
+      await Promise.all([face({ eyeSL: 1.3, eyeSR: 1.3 }, 900), nearTo(2.4, 50, 1500)]);
+      sp.forEach(({ g }) => g.classList.add("in"));
+      await wait(11000 + Math.random() * 3000);   // he stays still, close, straight at you
+      blink = 0.12; draw(); await wait(140); sp.forEach(({ g }) => g.remove()); on = false; blink = 1; draw();
+      await Promise.all([face({ eyeSL: 1, eyeSR: 1 }, 600), nearTo(1, 0, 1100, "cubic-bezier(.3,.7,.4,1)")]); nearDone(); gazeLock = false; }, true);
     // boop: it rushes up and squashes its face against your screen like glass, holds, then peels off and falls back with a wobble
     const boop = () => act(async () => { if (still()) return; await face({ eyeSL: 1.2, eyeSR: 1.2 }, 150); await nearTo(3, 80, 520, "cubic-bezier(.5,0,.9,.6)");
       el.style.transition = "scale .12s ease-out"; el.style.scale = "3.6 3.25"; rigid = true; await face({ eyeL: 0.45, eyeR: 0.45, eyeSL: 1.45, eyeSR: 1.45, blush: 0.8 }, 120); await wait(900);
