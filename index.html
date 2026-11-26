@@ -10301,7 +10301,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const W0 = 36, H0 = 24, R0 = 15.5;   // at rest: a dome 36 wide, 24 high; falling: a round drop of about the same volume
     const wS = 2 * Math.PI / 0.24, zS = 0.3, wL = 2 * Math.PI / 0.42, zL = 0.45, G = 2600;
     let foldOut = false;   // the folding phone is out: drawn squarer from the moment it appears; every other phone is the normal one
-    const S = { aRest: 0, eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, fone: 0, umb: 0, scroll: 0, jx: 0, blush: 0, turn: 0, armL: 0, armR: 0, armLa: 0, armRa: 0, flip: 0, cold: 0, hot: 0, tumble: 0, cross: 0, float: 0, land: 0, duo: 0, rnd: 0 }; let eSX = 1, eSY = 1; let rigid = false, rollU = 0, gX = 0, gY = 0, inStep = false, jy = 0, jv = 0, ptrX = 0, ptrY = 0, ptrT = 0; let tws = [], a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
+    const S = { aRest: 0, eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, fone: 0, umb: 0, scroll: 0, jx: 0, blush: 0, turn: 0, armL: 0, armR: 0, armLa: 0, armRa: 0, flip: 0, cold: 0, hot: 0, tumble: 0, cross: 0, float: 0, land: 0, duo: 0, rnd: 0 }; let eSX = 1, eSY = 1, eyesOff = false; let rigid = false, rollU = 0, gX = 0, gY = 0, inStep = false, jy = 0, jv = 0, ptrX = 0, ptrY = 0, ptrT = 0; let tws = [], a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
     let glareLoop = 0; const glS = { x: 0, y: 0, t: 0, off: 0 };   // the shine's eased place, and the loop that redraws it while he moves
     const draw = () => {
       // the shape it has just before it falls: round. Squashed or stretched it keeps its volume (taller is narrower); its top
@@ -10329,7 +10329,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       // eased, never snapped: it glides after where the light would be (about a tenth of a second behind), however fast he moves
       { const nw = performance.now(); if (glS.t && nw - glS.t < 400) { const f = 1 - Math.exp(-(nw - glS.t) / 110); glS.x += (gx - glS.x) * f; glS.y += (gy - glS.y) * f; } else { glS.x = gx; glS.y = gy; } glS.t = nw; glS.off = Math.hypot(gx - glS.x, gy - glS.y); gx = glS.x; gy = glS.y; }
       if (hl) hl.setAttribute("transform", `${unspin}translate(${gx.toFixed(2)} ${gy.toFixed(2)}) rotate(-35)`);   /* not with the lean either: shaking his head no, dancing, the light holds still while his head turns under it */   /* the light stays put on his top left: dancing, spinning or turning round, it never slides across him */
-      const tm = ((S.turn % 2) + 2) % 2, back = tm > 0.5 && tm < 1.5, tbA = S.tumble * Math.PI * 2, tv = Math.cos(tbA), tw = Math.sin(tbA); const zf = Math.min(tc, tv); eyes.style.opacity = back && tv >= 0 ? "0" : Math.max(0, Math.min(1, (zf - 0.03) / 0.22)).toFixed(3);   /* how much they face you: a soft fade at the rim, not a blink out */   /* a roly-poly: the face rolls down and under, round the back, and comes back over the top */   /* turn 0→1 shows its back, 0→2 is a whole spin */
+      const tm = ((S.turn % 2) + 2) % 2, back = tm > 0.5 && tm < 1.5, tbA = S.tumble * Math.PI * 2, tv = Math.cos(tbA), tw = Math.sin(tbA); const zf = Math.min(tc, tv); eyes.style.opacity = eyesOff || (back && tv >= 0) ? "0" : Math.max(0, Math.min(1, (zf - 0.03) / 0.22)).toFixed(3);   /* how much they face you: a soft fade at the rim, not a blink out */   /* a roly-poly: the face rolls down and under, round the back, and comes back over the top */   /* turn 0→1 shows its back, 0→2 is a whole spin */
       const bt = el.querySelector(".gd-butt"); if (bt) { bt.style.opacity = back ? "1" : "0"; bt.setAttribute("d", `M ${cx * 0.2} ${(bot - ry * 0.62).toFixed(2)} Q ${(cx * 0.2 + 1.2).toFixed(2)} ${(bot - ry * 0.3).toFixed(2)} 0 ${(bot - 1.2).toFixed(2)}`); }   /* its back: no face, just a little crease */
 
       if (!inStep && !raf && Math.abs(gX - lookX) + Math.abs(gY - lookY) > 0.01) requestAnimationFrame(() => go());   /* a new place to look: the loop eases the eyes there */
@@ -10374,7 +10374,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     let acting = false, solo = false, texT = 0, texting = false;   // one expression at a time; a "solo" (laser eyes, hypnosis, coming up close) can't be cut short by anything
     let wantText = false;   // typing an answer: the phone comes out, but a trick puts it away first and it comes back after
     let runN = 0, pageDent = null;
-    const tidyUp = () => { try { foldOut = false; if (el.style.scale || el.style.translate) nearDone();   /* a folding phone cut short: the next phone is the normal one */ el.style.filter = ""; rigid = false; gazeLock = false; S.rnd = 0; if (pageDent) { pageDent.cancel(); pageDent = null; }
+    const tidyUp = () => { try { foldOut = false; if (el.style.scale || el.style.translate) nearDone();   /* a folding phone cut short: the next phone is the normal one */ el.style.filter = ""; rigid = false; gazeLock = false; S.rnd = 0; eyesOff = false; if (pageDent) { pageDent.cancel(); pageDent = null; }
         el.querySelectorAll(".gd-hyp").forEach((n) => n.remove()); S.flip = 0; S.tumble = 0; if (S.fone) tween("fone", 0, 140); dancing = false; } catch (e) {} };
     // never two moves at once: a move asked for while another runs (after free(): a tap, a chat reply) waits for that one to be cut at its next step, then plays
     const act = async (fn, alone) => { if (acting) { if (freeReq && !solo) { pending = [fn, alone]; if (curRun) abort = true; } return; }
@@ -10771,11 +10771,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           c.setAttribute("cx", cx.toFixed(2)); c.setAttribute("cy", cy.toFixed(2)); c.setAttribute("r", ((f % 1) * Rm).toFixed(3)); }
         brs.slice().sort((p0, p1) => p1.getAttribute("r") - p0.getAttribute("r")).forEach((c) => bg.appendChild(c)); };   // biggest at the back
       const t0 = performance.now(); let hueN = 0; const born = new Array(N).fill(-1);
-      // a random rhythm: the rings drift slowly, then rush, then slow again, never in a pattern; the speed glides to each new pace
-      let tPh = 0, tLast = t0, spd = 0.6, spdTo = 0.5, spdAt = t0 + 1500;
+      let tPh = 0, tLast = t0;
       const grow = (now) => { const dt = Math.min(80, now - tLast); tLast = now;
-        if (now > spdAt) { const fast = spd < 1.2; spdTo = fast ? 1.8 + Math.random() * 2.4 : 0.25 + Math.random() * 0.5; spdAt = now + (fast ? 700 + Math.random() * 1300 : 1200 + Math.random() * 2000); }
-        spd += (spdTo - spd) * Math.min(1, dt / 380); tPh += dt / PER * spd;
+        tPh += dt / PER;   // one steady speed, always (26/11/2026: the random rhythm is gone)
         growBody(tPh); const t = tPh; for (let k = 0; k < N; k++) { const f = t + k / N, ph = f % 1, gen = Math.floor(f);
           if (born[k] !== gen) { born[k] = gen; rings.forEach((rs) => { rs[k].style.fill = HUES[hueN % HUES.length]; }); hueN++; }
           rings.forEach((rs) => { rs[k].setAttribute("r", (ph * ER).toFixed(3)); }); }
@@ -10783,9 +10781,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       let on = true; const follow = () => { if (!on) return; sp.forEach(([e0, g]) => { const rx = parseFloat(e0.getAttribute("rx")) || 2.4, ry = parseFloat(e0.getAttribute("ry")) || 3.4, cx = e0.getAttribute("cx"), cy = e0.getAttribute("cy");
           g.setAttribute("transform", `${e0.getAttribute("transform") || ""} translate(${cx} ${cy}) scale(${(rx / 2.4).toFixed(3)} ${(ry / 2.4).toFixed(3)})`); }); grow(performance.now()); requestAnimationFrame(follow); }; follow();
       await face({ eyeSL: 1.5, eyeSR: 1.5, rnd: 1 }, 500);   // his eyes open wide to hold the rings
-      sp.forEach(([, g]) => g.classList.add("in")); bg.classList.add("in");
+      bg.classList.add("in"); eyes.style.transition = "opacity .4s ease"; eyesOff = true; draw();   // no eyes: the whole of him is the pattern
       await wait(11000 + Math.random() * 3000);   // longer now, so the rhythm has time to speed up and slow down a few times; he stays still, straight at you
-      blink = 0.12; draw(); await wait(140); sp.forEach(([, g]) => g.remove()); cp.remove(); bg.classList.remove("in"); setTimeout(() => { bg.remove(); bcp.remove(); }, 450); on = false; blink = 1; draw(); await face({ eyeSL: 1, eyeSR: 1, rnd: 0 }, 400); gazeLock = false; }, true);
+      blink = 0.12; draw(); await wait(140); sp.forEach(([, g]) => g.remove()); cp.remove(); bg.classList.remove("in"); eyesOff = false; setTimeout(() => { bg.remove(); bcp.remove(); eyes.style.transition = ""; }, 450); on = false; blink = 1; draw(); await face({ eyeSL: 1, eyeSR: 1, rnd: 0 }, 400); gazeLock = false; }, true);
     // boop: it rushes up and squashes its face against your screen like glass, holds, then peels off and falls back with a wobble
     const boop = () => act(async () => { if (still()) return; await face({ eyeSL: 1.2, eyeSR: 1.2 }, 150); await nearTo(3, 80, 520, "cubic-bezier(.5,0,.9,.6)");
       el.style.transition = "scale .12s ease-out"; el.style.scale = "3.6 3.25"; rigid = true; await face({ eyeL: 0.45, eyeR: 0.45, eyeSL: 1.45, eyeSR: 1.45, blush: 0.8 }, 120); await wait(900);
@@ -11438,9 +11436,23 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const howReply = (q, c) => { const s0 = q.toLowerCase().trim(), back = /\b(and you|how about you|what about you|how are you|how're you|how r u|yourself|and u|yours|you too|e tu|e a te|tu come stai|come stai|e la tua|la tua)\b|\b(you|u)\s*\?|how('?s| is| was) (your|it going|things)/i.test(s0);   /* "how's yours?" too (26/11/2026) */
       const neg = /\b(bad|tired|exhausted|meh|not (great|good|well|so good|too good)|stressed|sad|awful|terrible|rough|sleepy|knackered|shattered|ill|sick|unwell|male|stanc[oa]|cos[iì] cos[iì]|non (tanto )?bene|insomma)\b/i.test(s0);
       const pos = !neg && /\b(good|great|fine|well|ok|okay|alright|all right|not bad|fantastic|amazing|brilliant|lovely|happy|excellent|super|grand|bene|benissimo|tutto bene|alla grande|ottimo|bene grazie)\b/i.test(s0);
-      if (!back && !neg && !pos && (s0.split(/\s+/).length > 6 || /\?/.test(s0))) return false;
-      const mood = neg ? pick([T("Sorry to hear that. Coffee won't fix everything, but it helps.", "Mi dispiace. Il caffè non risolve tutto, ma aiuta."), T("Oh no. Let's find you something comforting.", "Oh no. Troviamo qualcosa che ti tiri su.")])
-        : pos ? pick([T("Glad to hear it!", "Che bello!"), T("Love that.", "Mi fa piacere."), T("Nice!", "Bene!")]) : pick([T("Fair enough.", "Ci sta."), T("Got it.", "Capito.")]);
+      // what kind of day or night they're having: a word back that fits, not a shrug ("Bit drunk ready to go home :)", 26/11/2026)
+      const STATES = [
+        [/\b(drunk|tipsy|merry|pissed|hammered|wasted|smashed|sloshed|had a few|few (drinks|pints|beers)|ubriac[oa]|brill[oa]|sbronz[oa]|alticci[oa])\b/, [T("Ha, sounds like a good night! A big glass of water before bed, and save the coffee for the morning.", "Ah, bella serata allora! Un bel bicchiere d'acqua prima di dormire, e il caffè tienilo per domattina.")], 1],
+        [/\b(hungover|hung over|hangover|postumi|doposbornia)\b/, [T("Ouch. Water first, something salty, then a gentle cup. Not the other way round.", "Ahi. Prima acqua, qualcosa di salato, poi una tazza leggera. Non al contrario.")], 0],
+        [/\b(go(ing)? home|head(ing)? home|on (my|the) way home|walk(ing)? home|bus home|train home|tornando a casa|vado a casa|verso casa)\b/, [T("Get home safe!", "Torna a casa sano e salvo!"), T("Safe trip home!", "Buon rientro!")], 0],
+        [/\b(bed|sleep|night night|nanna|a letto|dormire)\b/, [T("Sleep well when you get there.", "Dormi bene, quando ci arrivi.")], 1],
+        [/\b(at work|working|busy|deadline|office|meetings?|lavoro|lavorando|in ufficio|incasinat[oa])\b/, [T("Hope it eases up soon.", "Spero che si calmi presto."), T("Hang in there.", "Tieni duro.")], 0],
+        [/\b(hungry|starving|fame|affamat[oa])\b/, [T("Coffee and a pastry, then.", "Caffè e brioche, allora.")], 0],
+        [/\b(celebrat\w*|party|partying|birthday|weekend|friday|holiday|vacation|day off|festa|compleanno|ferie|vacanza)\b/, [T("Enjoy it!", "Goditela!"), T("Love that. Make the most of it.", "Che bello. Goditela tutta.")], 0],
+        [/\b(relax\w*|chill\w*|lazy|cosy|cozy|sofa|couch|divano|rilass\w*)\b/, [T("Sounds lovely.", "Sembra perfetto.")], 0],
+        [/\b(cold|freezing|raining|rain|wet|freddo|piove)\b/, [T("Perfect weather for a warm cup.", "Il tempo giusto per una tazza calda.")], 0],
+      ];
+      const hits = STATES.filter(([re]) => re.test(s0)).slice(0, 2), late = hits.some((h) => h[2]);
+      const smile = /(:\)|:-\)|:d\b|;\)|😊|🙂|😄|😁|😂|🥳|🍻|🍷)/i.test(s0), frown = /(:\(|:-\(|😩|😴|😞|☹️|😫|🥲)/.test(s0);
+      if (!hits.length && !back && !neg && !pos && !smile && !frown && (s0.split(/\s+/).length > 12 || /\?/.test(s0))) return false;
+      const mood = hits.length ? hits.map((h) => pick(h[1])).join(" ") : neg || frown ? pick([T("Sorry to hear that. Coffee won't fix everything, but it helps.", "Mi dispiace. Il caffè non risolve tutto, ma aiuta."), T("Oh no. Let's find you something comforting.", "Oh no. Troviamo qualcosa che ti tiri su.")])
+        : pos || smile ? pick([T("Glad to hear it!", "Che bello!"), T("Love that.", "Mi fa piacere."), T("Nice!", "Bene!")]) : pick([T("Fair enough.", "Ci sta."), T("Got it.", "Capito.")]);
       const dayQ = /\byours\b|your day|la tua (giornata)?|e la tua/i.test(s0) || /day|giornata/i.test(c.q || "");
             // the same count, and the same day, as the list's own line ("181 coffees added today"): never a number of its own
       const dc = (() => { const all0 = typeof shelf !== "undefined" ? shelf : [], t0 = all0.filter((r) => r.just_in); if (!t0.length) return null; const d0 = String(shelfDate(t0[0]) || "").slice(0, 10);
@@ -11449,8 +11461,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           T("Pretty good, thanks! I've been tasting notes all day. Well, reading them.", "Bene, grazie! Ho assaggiato note tutto il giorno. Beh, le ho lette.")]) : back ? " " + pick([T("I'm great, thanks for asking! A little jittery, but I'm a drop of coffee, so that's normal.", "Benissimo, grazie! Un po' agitato, ma sono una goccia di caffè: è normale."), T("Doing well! I've been reading every coffee that landed today.", "Bene! Ho letto tutti i caffè arrivati oggi."), T("All good here, thanks! Freshly brewed, as always.", "Tutto bene, grazie! Appena fatto, come sempre.")]) : "";
       sayNow(mood + me, null, null);
       // more often than not a little more chat first: one question from a big set, then (after your answer) the coffee
-      const more = Math.random() < 0.6 ? pick(SMALL_TALK) : null;
-      const nx = more ? () => typeDots(0, () => { sayNow(T(more[0], more[1]), null, null); ctx = { t: "chat2", at: Date.now(), next: c.next }; }) : () => c.next();
+      const more = !late && Math.random() < 0.6 ? pick(SMALL_TALK) : null;   // a big night or bedtime: no more questions
+      const nx = more ? () => typeDots(0, () => { sayNow(T(more[0], more[1]), null, null); ctx = { t: "chat2", at: Date.now(), next: c.next }; }) : () => c.next(late);
       if (typing) typing.after = nx; else nx(); return true; };
     // the answer to that question: a word back (a few things it listens for), then the coffee it had in mind
     const chatReply = (q, c) => { const s0 = q.toLowerCase().trim();
@@ -11684,12 +11696,14 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       K0,
       K0,
       K0,
-      [/what'?s up|wassup|\bsup\b|how are you|how r u|how'?s (it going|your day|life|things)|how (have|ve) you been|how (do|are) you feel|how you doing|how do you do|are you (ok|okay|alright|well|good)|you (ok|okay|alright)\b|come (va|stai|ti senti)|tutto (bene|ok)|che si dice|che fai|come butta/i, () => say(pick([
+      [/what'?s up|wassup|\bsup\b|how are you|how r u|how'?s (it going|your day|life|things)|how (have|ve) you been|how (do|are) you feel|how you doing|how do you do|are you (ok|okay|alright|well|good)|you (ok|okay|alright)\b|come (va|stai|ti senti)|tutto (bene|ok)|che si dice|che fai|come butta/i, () => { const ln = pick([
         T("Just brewing ideas. You?", "Sto preparando idee. E tu?"), T("Feeling fresh, a bit fruity, lightly roasted. You?", "Mi sento fresco, un po' fruttato, tostatura chiara. E tu?"), T("Sloshing about happily. What are we brewing?", "Sguazzo felice. Cosa prepariamo?"),
         T(`${pick(["Lots of", "Plenty of"])} new coffees landed ${landedOn((coffees().find((x) => x.just_in)) || null)}, so I'm buzzing.`, `${(() => { const o = landedOn((coffees().find((x) => x.just_in)) || null); return o[0].toUpperCase() + o.slice(1); })()} sono arrivati tanti caffè nuovi, quindi sono su di giri.`), T("Pretty good, thanks! Just waiting for the kettle to boil. You?", "Bene, grazie! Aspetto che bolla l'acqua. E tu?"),
         T("Living my best drop life. How's your coffee today?", "Mi godo la vita da goccia. Com'è il tuo caffè oggi?"), T("Bit of a slow drip today. Ask me something to perk me up!", "Oggi gocciolo lento. Chiedimi qualcosa per svegliarmi!"),
         T("Freshly brewed and ready. How about you?", "Appena fatto e pronto. E tu?"), T("Great, thanks for asking! Hot, sweet and a little bit fruity. You?", "Benissimo, grazie! Caldo, dolce e un po' fruttato. E tu?"),
-        T(`${new Date().getHours() < 11 ? "Waking up slowly, like everyone before the first cup." : new Date().getHours() < 17 ? "Good! Peak coffee hours." : "A bit sleepy. Decaf mood."} And you?`, `${new Date().getHours() < 11 ? "Mi sveglio piano, come tutti prima del primo caffè." : new Date().getHours() < 17 ? "Bene! Sono le ore d'oro del caffè." : "Un po' assonnato. Momento decaffeinato."} E tu?`)]), null, happy)],
+        T(`${new Date().getHours() < 11 ? "Waking up slowly, like everyone before the first cup." : new Date().getHours() < 17 ? "Good! Peak coffee hours." : "A bit sleepy. Decaf mood."} And you?`, `${new Date().getHours() < 11 ? "Mi sveglio piano, come tutti prima del primo caffè." : new Date().getHours() < 17 ? "Bene! Sono le ore d'oro del caffè." : "Un po' assonnato. Momento decaffeinato."} E tu?`)]); say(ln, null, happy);
+        // when he asks back ("You?"), he waits for your answer and replies to it (26/11/2026: "Bit drunk ready to go home :)" got "I don't know that one")
+        if (/\?\s*$/.test(ln)) ctx = { t: "howru", at: Date.now(), q: ln, next: (late) => typeDots(0, () => { nextPills = [[T("Yes", "Sì"), T("Yes", "Sì")], [T("No", "No"), T("No thanks", "No grazie")]]; sayNow(late ? T("Want one lined up for the morning?", "Te ne preparo uno per domattina?") : T("Shall I pick you one of today's new coffees?", "Vuoi che ti scelga uno dei caffè nuovi di oggi?"), null, null); pendingYes = () => pickNew(false); }) }; }],
       // your answer to "and you?": glad, or kind
       [/\b(pick|choose|recommend|suggest|find)( me)? (a |one |something |a good |a nice |an? \w+ )?(coffee|bag|one)\b|\b(what|which) (coffee|bag) should i (buy|get|try|brew|order)|\bsomething (good |nice )?to brew\b|sceglimi un caff|scegli(mi)? un caff|consigliami un caff|che caff[eè] (compro|prendo)/i, () => { const bm = lastQ.match(BREW_RX); pickNew(false, bm ? bm[1] : mem.brewer); }],
       [/^(genius|brilliant|clever|smart|cool|nice|neat|wow|whoa|woah|amazing|awesome|love (it|this|that|you)|perfect|sweet|legend|bravo|grande|geniale|fantastico|bellissimo|figo|che figata|wow davvero)( (one|stuff|answer|drop|goccio))?[ !.❤️👍😍🙌]*$/i, () => say(pick([T("Thanks! I try my best. Well, my best drop.", "Grazie! Ci provo. Goccia dopo goccia."), T("Aw, you're making me blush.", "Oh, così mi fai arrossire."), T("Stop it, I'll spill.", "Smettila, che mi rovescio."), T("I'm only as good as the coffee. What's next?", "Sono bravo quanto il caffè. Cosa facciamo adesso?"), T("High five! Well, high drop.", "Batti cinque! Anzi, batti goccia.")]), null, () => { D.free(); D.happy(); })],
