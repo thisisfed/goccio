@@ -131,6 +131,9 @@ CASES = [
        and scan.flavours.english_notes(["Grué de cacao", "Liqueur d’amande", "Fruit de la passion"]) == ["Cacao nibs", "Almond liqueur", "Passion fruit"]
        and scan.find_notes({"body": "<p>Un caffè con note di pesca, gelsomino e miele.</p>", "title": "X", "tags": []}) == ["Pesca", "Gelsomino", "Miele"]
        and scan.find_notes({"body": "<p>Un café con notas de durazno, panela y naranja.</p>", "title": "X", "tags": []}) == ["Durazno", "Panela", "Naranja"]),
+    # Rise & Grind (26/11/2026): La Leona showed "Creamy"; under "Tasting Notes" each note is bold, then a colon and a description
+    ("Rise & Grind's bold notes over descriptions ('<strong>White chocolate</strong>: soft and creamy') give the bold names, not the descriptions",
+     lambda: scan.find_notes({"body": '<p>It is gentle, creamy and sweet.</p> <h3>Tasting Notes</h3> <ul> <li> <strong>White chocolate</strong>: soft and creamy</li> <li> <strong>Almonds</strong>: smooth and nutty</li> <li> <strong>Berries</strong>: a gentle fruity finish</li> </ul> <h3>The Details</h3> <ul> <li> <strong>Origin:</strong> Quindío, Colombia</li> </ul>', "title": "La Leona", "tags": []}) == ["White chocolate", "Almonds", "Berries"]),
     # Sprout (24/11/2026): the same subtitle layout as Sl.ow, with the name in capitals ("LASSO LASSI", then "Lychee, Tropical, Lactic")
     ("Sprout's 'Lychee, Tropical, Lactic' under 'LASSO LASSI' are the notes",
      lambda: scan.page_notes("Skip to content\nShop\nLASSO LASSI\nLychee, Tropical, Lactic\n\u00a313.00\nSize\n250g\nAdd to cart\nComplex & fruity bang bang baby!", "Lasso Lassi") == ["Lychee", "Tropical", "Lactic"]),

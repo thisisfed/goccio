@@ -1794,6 +1794,14 @@ def find_notes(item):
     # a list item, paragraph or line break ends a line: "<li>Flavours like: Cherry, Apricot, Cola</li></ul>" (Lucid) is read to
     # "Cola" and no further (the markup kept the last note joined to the tags, and it was thrown away as markup)
     text = re.sub(r"(?=</(?:li|p|div|h[1-6]|td|tr|dd|dt)>|<br\s*/?>)", "\n", text, flags=re.I)
+    # a notes heading over a list where each note is bold and followed by a description: "<h3>Tasting Notes</h3><ul><li><strong>White
+    # chocolate</strong>: soft and creamy</li>…" (Rise & Grind): the bold names are the notes, not the words after the colon
+    bl = re.search(r"(?:tasting|flavou?r|cup)\s+notes?\s*:?\s*</(?:h[1-6]|p|strong|b|div)>\s*(?:</?(?:div|p)[^>]*>\s*)*<ul[^>]*>(.*?)</ul>", text, re.I | re.S)
+    if bl:
+        bold = [strip_html(x).strip(" :") for x in re.findall(r"<li[^>]*>\s*(?:<[a-z]+[^>]*>\s*)*<(?:strong|b)\b[^>]*>(.*?)</(?:strong|b)>\s*[:\-–—]", bl.group(1), re.I | re.S)]
+        bold = [x for x in bold if 1 < len(x) < 40]
+        if len(bold) >= 2:
+            text = "Tasting notes: " + ", ".join(bold) + "\n" + text
     # bold, italics and spans inside a line are only looks: "<strong>Tasting notes:</strong> Pomelo, Brazil Nut" (Crosby) lost its first
     # note to the "</strong>" stuck on it; and a word the shop's editor split ("Dried A pricot", "S piced Raisins") comes back whole
     text = re.sub(r"</?(?:strong|b|em|i|u|span|font|mark|small)\b[^>]*>", "", text, flags=re.I)
