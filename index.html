@@ -2981,6 +2981,7 @@ html.gd-full body .gd-head{display:flex;align-items:center;gap:10px;flex:none;bo
 html.gd-full body .gd-head svg{width:30px;height:30px;flex:none;overflow:visible}
 html.gd-full body .gd-head .gh-n{font:600 var(--fs-s)/1.2 var(--sans);color:var(--ink)}
 html.gd-full body .gd-head .gh-b{padding:2px 6px;border:1px solid var(--line);border-radius:var(--r,4px);font:500 12px/1.2 var(--sans);color:var(--muted)}
+html.gd-full body .gd-head .gh-new{margin-left:auto;height:32px;padding:0 12px;border:0;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);cursor:pointer;white-space:nowrap}   /* New chat: a worded pill 12 px left of the X */
 html.gd-full body .gd-dock.gd-dock.gd-dock .gd-x{z-index:6!important;top:calc(env(safe-area-inset-top,0px) + 8px)!important;right:12px!important;width:32px!important;height:32px!important;background:var(--pill)!important;border-radius:var(--r,4px)!important;color:var(--ink)!important}   /* exactly where the top bar's + and brew mode's X are, and the same grey square */
 html.gd-full body .gd-dock.gd-dock.gd-dock .gd-x svg{width:12px!important;height:12px!important}
 html.gd-full body .gd-dock .gd-say{flex:1 1 auto;max-height:none!important;min-height:0!important;margin:0!important;padding:4px 0 0!important;overflow-y:auto}
@@ -3626,6 +3627,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
 
   <footer>
     <div class="fcol">
+    <details class="foot-x foot-ex" id="footEx"><summary class="foot-note refs-h">Example</summary></details>
     <details class="foot-x disc" open><summary class="foot-note refs-h">Disclaimer</summary>
     <p class="foot-note">Coffees come from roasters’ own shop listings, checked every day. Not affiliated with any roaster. Roasters can ask to be removed at any time. Your journal, bags, equipment, scan photos and settings stay on this device. Only how a brew of a listed coffee tasted is counted, anonymously, to make the recipes better.</p>
     </details>
@@ -6257,6 +6259,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     if (el && el.id === "coffee" && el.hidden) { wbOpen = true; el.hidden = false; try { window.syncSecs && syncSecs(); } catch (e) {} }   // asked for: there from now on
     if (el && document.documentElement.classList.contains("brew-in") && el.offsetParent === null && !el.closest(".item.brewing")) { if (brewDone) { brewIn = false; brewHome(); brewKeep = null; softShut = true; } else brewShut(); }   // it's behind the open coffee: fold that first. A brew just ended (to the Journal): the coffee stays chosen until it's logged, so the log adjusts this coffee's recipe
     if (!el) return; const gen = ++jumpGen, html = document.documentElement;
+    try { window.__holdSec && el.id && window.__holdSec(el.id); } catch (e) {}   // the menus show where you're going from the tap, not once you're there
     // the coffee filter bar keeps one shape for the whole jump, so nothing changes size on the way and the target stays put.
     // Passing through the list it stays stuck under the top bar with its dropdowns, as when you scroll; it opens up again on landing
     const tools = document.querySelector(".shelf-tools"), list = $("shelf");
@@ -7948,10 +7951,15 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     if (out && gx.classList.contains("fold")) { const g = gx.getBoundingClientRect(), l = lab.getBoundingClientRect(), o = out.getBoundingClientRect();
       out.style.marginTop = (px(out, "marginTop") - ((o.top - l.bottom) - (l.top - g.top))) + "px"; } }
   window.exAlign = exAlign; addEventListener("resize", () => requestAnimationFrame(exAlign)); if (document.fonts) document.fonts.ready.then(exAlign);
-  if ($("exTog")) { $("exTog").onclick = () => exFold(!document.querySelector(".g-ex").classList.contains("fold")); exFold(true); }   // folded under the intro; the arrow opens it   // open on every visit; the arrow folds it for now
-  setInterval(() => { const fig = document.querySelector(".glimpse"); if (!fig || document.hidden || fig.closest(".g-ex.fold")) return;
+  // the Example lives in the footer with Disclaimer, Methods, Sources and Credits (26/11/2026): its fold is the footer's own
+  // summary, and each example stays 10 s from the moment it opens (the clock starts on opening, not on page load)
+  let exT = 0; const exTick = () => { clearInterval(exT); exT = setInterval(() => { const fig = document.querySelector(".glimpse"); if (!fig || document.hidden || fig.closest(".g-ex.fold")) return;
     const r = fig.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;   // only while you can see it
-    fig.classList.add("swap"); setTimeout(() => { try { renderExample(); } catch (e) {} fig.classList.remove("swap"); }, 300); }, 10000);   // a new one every 10 s
+    fig.classList.add("swap"); setTimeout(() => { try { renderExample(); } catch (e) {} fig.classList.remove("swap"); }, 300); }, 10000); };   // a new one every 10 s
+  { const fe = $("footEx"), gx = document.querySelector(".g-ex");
+    if (fe && gx) { fe.appendChild(gx); if ($("exTog")) $("exTog").hidden = true; exFold(true);
+      fe.addEventListener("toggle", () => { exFold(!fe.open); if (fe.open) exTick(); else clearInterval(exT); }); }
+    else if ($("exTog")) { $("exTog").onclick = () => { const f = document.querySelector(".g-ex").classList.contains("fold"); exFold(!f); if (f) exTick(); }; exFold(true); } }
   // the labels under the example's bar, on one line: each at its step's time. One that would touch the label before it
   // moves right a little (up to 16px) if that's enough; otherwise it's left out (its segment still shows). Done holds the right end.
   function layGlimpse() {
@@ -10060,7 +10068,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       coffee: ["What’s brewing?", "Cosa prepari?"], recipe: ["Recipe", "Ricetta"], journal: ["Journal", "Diario"] };
     const ids = Object.keys(LBL);
     const avail = (id) => { const el = $(id); return el && !el.hidden && !(id === "recipe" && document.querySelector('[data-sec="recipe"]').hidden); };
-    let active = "", active0 = null;
+    let active = "", active0 = null, hold = null;
+    // a jump to a section ("I have a coffee", a pill): both menus show that section at once, through the scroll, until it lands
+    window.__holdSec = (id) => { if (!LBL[id]) return; hold = { id, until: Date.now() + 1600 }; try { sync(); } catch (e) {} };
+    const unhold = () => { hold = null; }; addEventListener("touchstart", unhold, { passive: true }); addEventListener("wheel", unhold, { passive: true });
     const row = document.querySelector("#secList .sec-list-in");
     // the row fades at an edge only where there's more to slide to
     const edges = () => { if (!row) return; const m = row.scrollWidth - row.clientWidth;
@@ -10070,6 +10081,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       ids.forEach((id) => document.querySelectorAll(`[data-sec="${id}"]`).forEach((b) => { if (id === "bags") b.hidden = !avail(id); }));
       const h = top ? top.getBoundingClientRect().bottom : 0, line = h + Math.min(160, innerHeight * 0.3);
       let a = ""; for (const id of ids) { const el = $(id); if (!avail(id)) continue; if (el.getBoundingClientRect().top <= line) a = id; }
+      if (hold && Date.now() < hold.until && avail(hold.id)) a = hold.id; else hold = null;
       active = a;
       document.querySelectorAll("[data-sec]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.sec === a)));
       // the bottom bar: My bags and Journal only once there's something in them; Brew lights for What's brewing and the recipe both
@@ -12299,7 +12311,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     if (window.visualViewport) { visualViewport.addEventListener("resize", fullFit); visualViewport.addEventListener("scroll", fullFit); }
     addEventListener("scroll", () => { if (document.documentElement.classList.contains("gd-full")) { if (window.gdFitWatch) window.gdFitWatch(600); fullFit(); } }, { passive: true });
     const fullHead = () => { if (talkEl.querySelector(".gd-head")) return; const h = document.createElement("span"); h.className = "gd-head"; const sv = $("askGoccio") && $("askGoccio").querySelector("svg"); if (sv) { const c = sv.cloneNode(true); c.style.opacity = ""; h.appendChild(c); }
-      h.insertAdjacentHTML("beforeend", `<span class="gh-n">Goccio</span><span class="gh-b">Beta 0.69.420-λ</span>`); talkEl.prepend(h);
+      h.insertAdjacentHTML("beforeend", `<span class="gh-n">Goccio</span><span class="gh-b">Beta 0.69.420-λ</span><button type="button" class="gh-new">${T("New chat", "Nuova chat")}</button>`); talkEl.prepend(h);
+      // a fresh start: the messages go, and Goccio says hello again (a pill with words, so it never reads as a second close)
+      h.querySelector(".gh-new").addEventListener("click", () => { sayGen++; finishTyping(); msgs = []; saveChat(); sayEl.textContent = ""; chipsEl.textContent = ""; pendingYes = null; ctx = null; replyTo = null; lastMine = null; hello(); });
       let y0 = null; h.addEventListener("touchstart", (e) => { y0 = e.touches[0].clientY; }, { passive: true }); h.addEventListener("touchmove", (e) => { if (y0 != null && e.touches[0].clientY - y0 > 70) { y0 = null; closeTalk(); } }, { passive: true }); };
     openTalk = (top) => { if (talking) { place(top || isFull()); return; } if (isFull()) { top = true; fullHead(); pin(true); document.documentElement.classList.add("gd-full"); } openY = null; setTimeout(() => { openY = scrollY; }, 800); place(top); gdWords(); talking = true; dim(true, top); talkEl.hidden = false; el.setAttribute("aria-expanded", "true"); fullFit(); if (window.gdFitWatch) window.gdFitWatch(1000); toBottom();
       const lastAt = msgs.length ? msgs[msgs.length - 1].at || 0 : 0; if (name && msgs.length && Date.now() - lastAt < 20 * 60000) { showChips(); return; }   // still mid-chat: carry on
