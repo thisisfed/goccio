@@ -2981,6 +2981,7 @@ html.gd-full body .gd-head{display:flex;align-items:center;gap:10px;flex:none;bo
 html.gd-full body .gd-head svg{width:30px;height:30px;flex:none;overflow:visible}
 html.gd-full body .gd-head .gh-n{font:600 var(--fs-s)/1.2 var(--sans);color:var(--ink)}
 html.gd-full body .gd-head .gh-b{padding:2px 6px;border:1px solid var(--line);border-radius:var(--r,4px);font:500 12px/1.2 var(--sans);color:var(--muted)}
+html.gd-full body .gd-head .gh-new{margin-left:auto;height:32px;padding:0 12px;border:0;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);cursor:pointer;white-space:nowrap}   /* New chat: a worded pill 12 px left of the X */
 html.gd-full body .gd-dock.gd-dock.gd-dock .gd-x{z-index:6!important;top:calc(env(safe-area-inset-top,0px) + 8px)!important;right:12px!important;width:32px!important;height:32px!important;background:var(--pill)!important;border-radius:var(--r,4px)!important;color:var(--ink)!important}   /* exactly where the top bar's + and brew mode's X are, and the same grey square */
 html.gd-full body .gd-dock.gd-dock.gd-dock .gd-x svg{width:12px!important;height:12px!important}
 html.gd-full body .gd-dock .gd-say{flex:1 1 auto;max-height:none!important;min-height:0!important;margin:0!important;padding:4px 0 0!important;overflow-y:auto}
@@ -12304,7 +12305,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     if (window.visualViewport) { visualViewport.addEventListener("resize", fullFit); visualViewport.addEventListener("scroll", fullFit); }
     addEventListener("scroll", () => { if (document.documentElement.classList.contains("gd-full")) { if (window.gdFitWatch) window.gdFitWatch(600); fullFit(); } }, { passive: true });
     const fullHead = () => { if (talkEl.querySelector(".gd-head")) return; const h = document.createElement("span"); h.className = "gd-head"; const sv = $("askGoccio") && $("askGoccio").querySelector("svg"); if (sv) { const c = sv.cloneNode(true); c.style.opacity = ""; h.appendChild(c); }
-      h.insertAdjacentHTML("beforeend", `<span class="gh-n">Goccio</span><span class="gh-b">Beta 0.69.420-λ</span>`); talkEl.prepend(h);
+      h.insertAdjacentHTML("beforeend", `<span class="gh-n">Goccio</span><span class="gh-b">Beta 0.69.420-λ</span><button type="button" class="gh-new">${T("New chat", "Nuova chat")}</button>`); talkEl.prepend(h);
+      // a fresh start: the messages go, and Goccio says hello again (a pill with words, so it never reads as a second close)
+      h.querySelector(".gh-new").addEventListener("click", () => { sayGen++; finishTyping(); msgs = []; saveChat(); sayEl.textContent = ""; chipsEl.textContent = ""; pendingYes = null; ctx = null; replyTo = null; lastMine = null; hello(); });
       let y0 = null; h.addEventListener("touchstart", (e) => { y0 = e.touches[0].clientY; }, { passive: true }); h.addEventListener("touchmove", (e) => { if (y0 != null && e.touches[0].clientY - y0 > 70) { y0 = null; closeTalk(); } }, { passive: true }); };
     openTalk = (top) => { if (talking) { place(top || isFull()); return; } if (isFull()) { top = true; fullHead(); pin(true); document.documentElement.classList.add("gd-full"); } openY = null; setTimeout(() => { openY = scrollY; }, 800); place(top); gdWords(); talking = true; dim(true, top); talkEl.hidden = false; el.setAttribute("aria-expanded", "true"); fullFit(); if (window.gdFitWatch) window.gdFitWatch(1000); toBottom();
       const lastAt = msgs.length ? msgs[msgs.length - 1].at || 0 : 0; if (name && msgs.length && Date.now() - lastAt < 20 * 60000) { showChips(); return; }   // still mid-chat: carry on
