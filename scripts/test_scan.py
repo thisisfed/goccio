@@ -522,6 +522,10 @@ CASES = [
     ("The Source: 'cup profile: blood orange - yuzu - hibiscus' was lost to a recipe step further down ('Fermentation: ... with specific yeast')",
      lambda: scan.find_notes({"title": "Thermal Shock Orange Gesha", "tags": [], "body": "variety: orange gesha\n process: thermal shock + yeast inoculation\n region: huila, colombia\n cup profile: blood orange - yuzu - hibiscus\n We sourced this stunning orange gesha from Mi Cafe.\n 6. Fermentation: For 62 hours at temperatures below 25°C with specific yeast. 7. Fermentation completion: After 62 hours, the cherries are dried.\n"})
              == ["Blood orange", "Yuzu", "Hibiscus"]),
+    ("Alchemy: 'BLOOD ORANGE – PORT – CLOVE', a line of notes under the title split by dashes, was missed (and the title 'Colombia – El Paraiso' is not notes)",
+     lambda: scan.find_notes({"title": "Colombia – El Paraiso", "tags": [], "body": "Home Coffee Filter Colombia – El Paraiso\nNew\nColombia – El Paraiso\nBLOOD ORANGE – PORT – CLOVE\nA deliciously complex coffee from producer Arturo Arango, expect a boozy and full bodied cup with plenty of depth, spice and berry notes\n"})
+             == ["Blood orange", "Port", "Clove"]
+       and scan.find_notes({"title": "Ethiopia – Guji", "tags": [], "body": "Ethiopia – Guji – Natural\nCaturra – Castillo – Typica\n"}) == []),
     ("April: 'Taste Description: Stone Fuit, Nougat & Herbs' was missed (and 'Fuit' is a typo for Fruit)",
      lambda: scan.find_notes({"title": "El Socorro", "tags": [], "body": "Varietal: Maracaturra\nProcessing: Washed\nTaste Description: Stone Fuit, Nougat & Herbs\nRoasted Coffee Beans (Ristede hele kaffebønner)\n"})
              == ["Stone Fruit", "Nougat", "Herbs"]),
