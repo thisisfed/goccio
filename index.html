@@ -2981,7 +2981,8 @@ html.gd-full body .gd-head{display:flex;align-items:center;gap:10px;flex:none;bo
 html.gd-full body .gd-head svg{width:30px;height:30px;flex:none;overflow:visible}
 html.gd-full body .gd-head .gh-n{font:600 var(--fs-s)/1.2 var(--sans);color:var(--ink)}
 html.gd-full body .gd-head .gh-b{padding:2px 6px;border:1px solid var(--line);border-radius:var(--r,4px);font:500 12px/1.2 var(--sans);color:var(--muted)}
-html.gd-full body .gd-head .gh-new{margin-left:auto;height:32px;padding:0 12px;border:0;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);cursor:pointer;white-space:nowrap}   /* New chat: a worded pill 12 px left of the X */
+html.gd-full body .gd-head .gh-new{margin-left:auto;margin-right:-8px;height:32px;padding:0 12px;border:0;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);cursor:pointer;white-space:nowrap;transition:background .15s}   /* New chat: a worded pill 4 px left of the X, as the top bar's pills sit */
+@media (hover:hover){ html.gd-full body .gd-head .gh-new:hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))} }   /* the same hover as the top bar's + */
 html.gd-full body .gd-dock.gd-dock.gd-dock .gd-x{z-index:6!important;top:calc(env(safe-area-inset-top,0px) + 8px)!important;right:12px!important;width:32px!important;height:32px!important;background:var(--pill)!important;border-radius:var(--r,4px)!important;color:var(--ink)!important}   /* exactly where the top bar's + and brew mode's X are, and the same grey square */
 html.gd-full body .gd-dock.gd-dock.gd-dock .gd-x svg{width:12px!important;height:12px!important}
 html.gd-full body .gd-dock .gd-say{flex:1 1 auto;max-height:none!important;min-height:0!important;margin:0!important;padding:4px 0 0!important;overflow-y:auto}
@@ -3628,10 +3629,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   <footer>
     <div class="fcol">
     <details class="foot-x foot-ex" id="footEx"><summary class="foot-note refs-h">Example</summary></details>
-    <details class="foot-x disc" open><summary class="foot-note refs-h">Disclaimer</summary>
+    <details class="foot-x disc"><summary class="foot-note refs-h">Disclaimer</summary>
     <p class="foot-note">Coffees come from roasters’ own shop listings, checked every day. Not affiliated with any roaster. Roasters can ask to be removed at any time. Your journal, bags, equipment, scan photos and settings stay on this device. Only how a brew of a listed coffee tasted is counted, anonymously, to make the recipes better.</p>
     </details>
-    <details class="foot-x" open><summary class="foot-note refs-h">Methods</summary>
+    <details class="foot-x"><summary class="foot-note refs-h">Methods</summary>
     <ul class="refs meth">
       <li><span class="rt">V60</span>James Hoffmann’s Better 1-Cup and Ultimate V60, Tetsu Kasuya’s 4:6 and 10-Pour, Scott Rao’s bloom &amp; spin, Onyx Coffee Lab’s V60, CAFEC’s Osmotic Flow (ratio, temperature and technique; the pour weights and times are ours), Matt Winton’s Five-Pour, Lance Hedrick’s double bloom.</li>
       <li><span class="rt">V60 NEO</span>Every V60 method, 2 clicks finer and about 15 s shorter, because the same recipe drained 34 s faster in the NEO in Gizmodo Japan’s side-by-side. Pours centre-out, bed kept covered, as Barista Magazine’s test drive advises. Hario publishes no NEO recipe, so this is our estimate. Tetsu Kasuya’s 10-Pour is written for the NEO and keeps its own grind.</li>
@@ -7957,8 +7958,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const r = fig.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;   // only while you can see it
     fig.classList.add("swap"); setTimeout(() => { try { renderExample(); } catch (e) {} fig.classList.remove("swap"); }, 300); }, 10000); };   // a new one every 10 s
   { const fe = $("footEx"), gx = document.querySelector(".g-ex");
-    if (fe && gx) { fe.appendChild(gx); if ($("exTog")) $("exTog").hidden = true; exFold(true);
-      fe.addEventListener("toggle", () => { exFold(!fe.open); if (fe.open) exTick(); else clearInterval(exT); }); }
+    if (fe && gx) { fe.appendChild(gx); if ($("exTog")) $("exTog").hidden = true;
+      // always unfolded inside: the footer's own slide measures its full height, so opening glides in one go (a fold inside made it jump)
+      exFold(false); document.documentElement.classList.add("ex-fold");
+      fe.addEventListener("toggle", () => { if (fe.open) { try { layGlimpse(); } catch (e) {} exTick(); } else clearInterval(exT); }); }
     else if ($("exTog")) { $("exTog").onclick = () => { const f = document.querySelector(".g-ex").classList.contains("fold"); exFold(!f); if (f) exTick(); }; exFold(true); } }
   // the labels under the example's bar, on one line: each at its step's time. One that would touch the label before it
   // moves right a little (up to 16px) if that's enough; otherwise it's left out (its segment still shows). Done holds the right end.
@@ -10904,7 +10907,12 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // "Show me" a coffee Goccio named: that coffee, not a search for its name. The list narrows to its name and roaster, and its own card
     // (found by its shop link) comes to the middle of the screen
     const showCo = (r) => { const twin = coffees().some((x) => x !== r && x.roaster === r.roaster && shownName(x) === shownName(r)); search(shownName(r) + " " + r.roaster + (twin ? " " + [r.origin, r.process].filter(Boolean).join(" ") : "")); let k = 0;   /* a roaster with two coffees of that name: its origin and process tell them apart */ const find = () => { const it = [...document.querySelectorAll("#shelf .item")].find((x) => [...x.querySelectorAll("a[href]")].some((a) => a.href === r.url));
-        if (it) { it.scrollIntoView({ block: "center", behavior: "smooth" }); it.classList.add("co-flash"); setTimeout(() => it.classList.remove("co-flash"), 1800); } else if (++k < 12) setTimeout(find, 150); }; setTimeout(find, 200); };
+        if (it) { it.classList.add("co-flash"); setTimeout(() => it.classList.remove("co-flash"), 1800);
+          // the search already glides to the Coffees title with the coffee under it: once that glide has stopped, scroll only if
+          // the coffee still isn't on screen (a second glide straight after the first made the page jump about)
+          let y0 = -1, still = 0; const settle = () => { const y = scrollY; still = y === y0 ? still + 1 : 0; y0 = y; if (still < 4) return requestAnimationFrame(settle);
+            const b = it.getBoundingClientRect(), top = (document.querySelector(".top") || {}).offsetHeight || 49; if (b.top < top || b.bottom > innerHeight - 80) it.scrollIntoView({ block: "center", behavior: "smooth" }); };
+          requestAnimationFrame(settle); } else if (++k < 12) setTimeout(find, 150); }; setTimeout(find, 200); };
     const search = (q) => { const a = $("askIn"); window.__gdSearching = true; setTimeout(() => { window.__gdSearching = false; }, 0); a.value = q; a.dispatchEvent(new Event("input", { bubbles: true })); $("askForm").requestSubmit(); if (window.syncAskGo) setTimeout(window.syncAskGo, 0); };   /* the words fill the top bar, its hint gives way */
     const bob = (on) => { clearInterval(bobT); if (on && !still()) bobT = setInterval(() => D.bob(), 210); watch(on ? "you" : null);
       if (D && D.text) D.text(!!on && !document.documentElement.classList.contains("gd-docked")); };   // the big one types its answer on its phone
