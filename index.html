@@ -11393,6 +11393,20 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       if (typing) typing.after = first; else first(); ctx = howQ ? null : { t: "pick", at: Date.now() }; };
     // the answer to "How are you?": a word back for how you are, an answer about itself if you ask, then the coffee it had in mind.
     // Anything that isn't an answer (a coffee question) is handled as usual, and the coffee is let go
+    const SMALL_TALK = [
+      ["What did you brew this morning?", "Cosa ti sei preparato stamattina?"], ["Filter or espresso person?", "Più filtro o espresso?"], ["What's your go-to brewer?", "Qual è il tuo metodo preferito?"],
+      ["Fruity or chocolatey today?", "Oggi fruttato o al cioccolato?"], ["Do you take milk?", "Lo prendi col latte?"], ["How many cups so far today?", "Quante tazze finora oggi?"],
+      ["Got a favourite roaster?", "Hai una torrefazione preferita?"], ["Ever tried a natural Ethiopian?", "Hai mai provato un etiope naturale?"], ["Coffee at home or out today?", "Oggi caffè a casa o fuori?"],
+      ["Light roast or dark?", "Tostatura chiara o scura?"], ["Best coffee you've had lately?", "Il caffè più buono che hai bevuto di recente?"], ["Do you grind fresh?", "Macini al momento?"],
+      ["Morning person or night owl?", "Mattiniero o nottambulo?"], ["Tea ever, or strictly coffee?", "Mai un tè, o solo caffè?"], ["Iced or hot this time of year?", "Freddo o caldo in questo periodo?"],
+      ["What's in your coffee cupboard right now?", "Cosa c'è nella tua dispensa del caffè adesso?"], ["Do you weigh your coffee or eyeball it?", "Pesi il caffè o vai a occhio?"],
+      ["First coffee before or after breakfast?", "Il primo caffè prima o dopo colazione?"], ["Ever been to a coffee farm?", "Sei mai stato in una piantagione di caffè?"],
+      ["What's your favourite tasting note?", "Qual è la tua nota preferita?"], ["Coffee with something sweet, or on its own?", "Il caffè con qualcosa di dolce o da solo?"],
+      ["Bright and juicy, or smooth and mellow?", "Vivace e succoso, o morbido e rotondo?"], ["Gooseneck kettle, or the regular one?", "Bollitore a collo di cigno o quello normale?"],
+      ["Do you drink decaf ever?", "Bevi mai il decaffeinato?"], ["Biggest coffee mistake you've made?", "Il peggior errore che hai fatto col caffè?"],
+      ["Have you got a grinder you love?", "Hai un macinino che adori?"], ["Any coffee plans for the weekend?", "Programmi a base di caffè per il weekend?"],
+      ["Do you like trying new roasters, or stick to one?", "Ti piace provare torrefazioni nuove o resti fedele a una?"], ["Single origin or blends?", "Monorigine o miscele?"],
+      ["What got you into coffee?", "Come ti sei appassionato al caffè?"], ["Mug or cup?", "Tazzone o tazzina?"], ["Ever tried a Gesha?", "Hai mai provato un Gesha?"]];
     const howReply = (q, c) => { const s0 = q.toLowerCase().trim(), back = /\b(and you|how about you|what about you|how are you|how're you|how r u|yourself|and u|yours|you too|e tu|e a te|tu come stai|come stai|e la tua|la tua)\b|\b(you|u)\s*\?|how('?s| is| was) (your|it going|things)/i.test(s0);   /* "how's yours?" too (26/11/2026) */
       const neg = /\b(bad|tired|exhausted|meh|not (great|good|well|so good|too good)|stressed|sad|awful|terrible|rough|sleepy|knackered|shattered|ill|sick|unwell|male|stanc[oa]|cos[iì] cos[iì]|non (tanto )?bene|insomma)\b/i.test(s0);
       const pos = !neg && /\b(good|great|fine|well|ok|okay|alright|all right|not bad|fantastic|amazing|brilliant|lovely|happy|excellent|super|grand|bene|benissimo|tutto bene|alla grande|ottimo|bene grazie)\b/i.test(s0);
@@ -11405,7 +11419,25 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         const n = all0.filter((r) => String(shelfDate(r) || "").slice(0, 10) === d0).length; return n ? { n, on: landedOn(t0[0]) } : null; })();
       const me = back && dayQ && dc ? " " + pick([T(`Mine's been busy: ${dc.n} new coffees landed ${dc.on}, and I've read every one. Thanks for asking!`, `La mia è stata piena: ${dc.on} sono arrivati ${dc.n} caffè nuovi e li ho letti tutti. Grazie di avermelo chiesto!`),
           T("Pretty good, thanks! I've been tasting notes all day. Well, reading them.", "Bene, grazie! Ho assaggiato note tutto il giorno. Beh, le ho lette.")]) : back ? " " + pick([T("I'm great, thanks for asking! A little jittery, but I'm a drop of coffee, so that's normal.", "Benissimo, grazie! Un po' agitato, ma sono una goccia di caffè: è normale."), T("Doing well! I've been reading every coffee that landed today.", "Bene! Ho letto tutti i caffè arrivati oggi."), T("All good here, thanks! Freshly brewed, as always.", "Tutto bene, grazie! Appena fatto, come sempre.")]) : "";
-      sayNow(mood + me, null, null); const nx = () => c.next(); if (typing) typing.after = nx; else nx(); return true; };
+      sayNow(mood + me, null, null);
+      // more often than not a little more chat first: one question from a big set, then (after your answer) the coffee
+      const more = Math.random() < 0.6 ? pick(SMALL_TALK) : null;
+      const nx = more ? () => typeDots(0, () => { sayNow(T(more[0], more[1]), null, null); ctx = { t: "chat2", at: Date.now(), next: c.next }; }) : () => c.next();
+      if (typing) typing.after = nx; else nx(); return true; };
+    // the answer to that question: a word back (a few things it listens for), then the coffee it had in mind
+    const chatReply = (q, c) => { const s0 = q.toLowerCase().trim();
+      if (/\?\s*$/.test(s0) && /^(what|why|how|which|where|who|can|could|should|is|are|do|does|cosa|perch|come|quale|dove|chi)\b/.test(s0) && !/\b(you|u|yours|tu|te)\b/.test(s0)) return false;   // a question of its own: answered as usual
+      const say0 = /\b(espresso|moka)\b/.test(s0) ? [T("Espresso people are my people.", "Chi ama l'espresso è dei miei.")]
+        : /\b(v60|pour.?over|filter|chemex|kalita|origami|aeropress|french press|cafeti[eè]re|clever|switch)\b/.test(s0) ? [T("Good choice. That's how the flavours really show.", "Ottima scelta. Così i sapori si sentono davvero.")]
+        : /\b(milk|latte|cappuccino|flat white|oat|cortado|latte macchiato)\b/.test(s0) ? [T("Milk's lovely with the chocolatey ones.", "Col latte stanno benissimo quelli al cioccolato.")]
+        : /\b(tea|t[eè])\b/.test(s0) ? [T("I'll forgive you the tea. 😉", "Il tè te lo perdono. 😉")]
+        : /\b(decaf|decaffeinat)/.test(s0) ? [T("Decafs are so good these days.", "I decaffeinati oggi sono buonissimi.")]
+        : /\b(fruit|fruity|berr|citrus|floral|bright|light)\w*/.test(s0) ? [T("A bright, fruity cup, then. Noted.", "Una tazza vivace e fruttata, allora. Segnato.")]
+        : /\b(chocolat|nutty|caramel|dark|rich|smooth|cioccolat)\w*/.test(s0) ? [T("Chocolatey and comforting. Noted.", "Cioccolatoso e confortante. Segnato.")]
+        : /\b(no|nope|nah|never|not really|non|mai)\b/.test(s0) ? [T("Fair enough!", "Ci sta!"), T("No worries.", "Nessun problema.")]
+        : /\b(yes|yeah|yep|always|of course|sure|s[iì]|certo|sempre)\b/.test(s0) ? [T("Love that.", "Mi piace."), T("Same here!", "Anch'io!")]
+        : [T("Love that.", "Mi piace."), T("Ha, nice.", "Ah, bello."), T("Good to know!", "Buono a sapersi!"), T("Interesting!", "Interessante!")];
+      sayNow(pick(say0), null, null); const nx = () => c.next(); if (typing) typing.after = nx; else nx(); return true; };
     // now and then, after an answer, it asks you something back: first what it doesn't know about you yet
     const askBack = () => { if (++sinceAsk < 2 || Math.random() > 0.55) return; sinceAsk = 0; const t0 = Date.now();
       const go = () => { if (Date.now() - t0 > 20000 || !talking) return; if (typing || sayEl.querySelector(".gd-typing")) return setTimeout(go, 300);
@@ -12295,6 +12327,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         const PLAIN = /^(black|white|green|red|dark|light|sweet|milk|brown|sugar|fruit|fruity|fruits|clean|bright|juicy|tea|cup|long|body|acidity|soft|rich|smooth|round|notes?|coffee|coffees|something|anything|else|feel|feeling|want|like|show|fancy|mood|really|very|some|another|other|more)$/;
         if (q.toLowerCase().split(/[^a-zà-ÿ]+/).some((w) => w.length >= 4 && !PLAIN.test(w) && voc.has(w)) && tasteFind(q) !== false) { ctx = null; return; } }
       if (ctx && ctx.t === "howru") { const c = ctx; ctx = null; if (Date.now() - c.at < 600000 && howReply(q, c)) return; }
+      if (ctx && ctx.t === "chat2") { const c = ctx; ctx = null; if (Date.now() - c.at < 600000 && chatReply(q, c)) return; }
       if (gbs && gbAnswer(q)) return;
       if (!pendingYes && /^(yes|yeah|yep|yup|sure|ok|okay|no|nope|nah|s[iì]|certo|va bene)\b[ .!]*$/i.test(q)) {   // a yes or no with nothing to answer
         return say(pick([T("Noted! Ask me anything about coffee.", "Ricevuto! Chiedimi qualsiasi cosa sul caffè."), T("Got it. What shall we talk about?", "Capito. Di cosa parliamo?"), T("Okay! I'm all ears. Well, all drop.", "Ok! Sono tutto orecchi. Anzi, tutto goccia.")]), null, smile); }
