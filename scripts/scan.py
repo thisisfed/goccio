@@ -2264,6 +2264,17 @@ def cached_page(url):
     return PAGES[url]
 
 
+def wants_page_origin(item):
+    """A product whose feed names no country is worth opening when it looks like a bag of coffee: a usual bag size, a /coffee/ link,
+    or any weight or bean choice in its options. Tanat's auction lots come in 30 g only ('Poids 30g', 'Mouture: Grains'), so its
+    Panamas (Finca Sophia, Esmeralda, Poma) were dropped unread as 'no origin found' (26/11/2026)."""
+    opts = f"{item.get('title') or ''} {item.get('type') or ''} {' '.join(item.get('tags') or [])} {item.get('variants') or ''}"
+    if "lastmod" in item:   # read from the shop's sitemap: its page has been opened already, so reading it again costs nothing
+        return True
+    return bool(BAG.search(opts) or re.search(r"/coff?ees?/[^/?#]+/?$", item.get("url") or "", re.I)
+                or re.search(r"\b\d{2,4}\s?(?:g|gr|grammes?|grams?)\b|\bgrains?\b|\bmouture\b|\bbohnen\b|\bchicchi\b|\bgrano\b", item.get("variants") or "", re.I))
+
+
 def origin_from_page(item, roaster):
     """Country for a coffee whose feed doesn't name one: a labelled Origin/Country on its page, else the
     country named most in the text right after its title (menus and footers are stripped first)."""
@@ -2335,8 +2346,7 @@ def classify(item, roaster):
     # medium roast espresso, as light)
     roast = roast_labelled(item["body"]) or find_roast(tags_txt, f"{title}\n{item['type']}", item["body"])
     origin = find_origin(title, blob, item["body"])
-    if not origin and (BAG.search(f"{title} {item['type']} {' '.join(item['tags'])} {item['variants']}")
-                       or re.search(r"/coff?ees?/[^/?#]+/?$", item.get("url") or "", re.I)):
+    if not origin and wants_page_origin(item):
         # the shop's feed doesn't say where it's from (Nomad, Dak, Blossom...): read the product page
         origin = origin_from_page(item, roaster)
     if not origin and roaster.get("country") in GROWING_HOME and COFFEE_HINT.search(full) \
