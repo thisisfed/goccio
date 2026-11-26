@@ -10314,11 +10314,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const poke = (amt) => { if (still()) return; va += amt; go(); };
     draw();
     let lastAct = 0; ["scroll", "pointerdown", "keydown"].forEach((t) => addEventListener(t, () => { lastAct = performance.now(); }, { passive: true, capture: true }));
-    // just landed for the first time: a big show first, a roly-poly, laser eyes on his tag, a roll or a backflip, before the quieter life begins
+    // just landed for the first time: he checks his phone first, before the rest of his life begins
     let landedOnce = false;
     const showOff = () => { if (still() || (opt.paused && opt.paused()) || solo) return; acting = false;   /* the hello's smile gives way to the show */ const r0 = el.getBoundingClientRect(); if (r0.bottom < 0 || r0.top > innerHeight) return;
-      const tag0 = el.parentElement && el.parentElement.querySelector(".gd-beta"); if (tag0 && tag0.offsetWidth && Math.random() < 0.35) return laserPoke();   /* now and then the first show is the laser eyes, on the + in the top bar or a footer arrow */
-      (window.gdOnce && window.gdOnce() ? rolypoly : [roll, backflip][Math.floor(Math.random() * 2)])(); };   /* the big show (coming right up to you) only if nothing has interrupted yet; otherwise a roll or a flip in its place */
+      onPhone(); };   /* the first thing he does is check his phone (sometimes turned sideways for a video, sometimes the folding one); then his usual random life */
     // the first time it comes into view it's simply there (it used to drop in from above): a moment later, its first show
     let fell = false;
     const fall = () => { if (fell || still()) return; fell = true; if (!landedOnce) { landedOnce = true; setTimeout(showOff, (opt.delay || 0) + 1600); } };
