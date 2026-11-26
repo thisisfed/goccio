@@ -10226,7 +10226,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       { const ttl = document.getElementById("sh"), bar = document.querySelector(".top"), off = !!(ttl && bar && ttl.getBoundingClientRect().bottom < bar.getBoundingClientRect().bottom + 4);
         hs.forEach((h) => h.classList.toggle("say-what", off)); } };   /* pinned (or held there by the list) and on its way out: the strip over it stays filled, so nothing peeks between it and the bar */
     addEventListener("scroll", () => { if (!q0) q0 = requestAnimationFrame(mark); }, { passive: true });
-    addEventListener("resize", () => { if (!q0) q0 = requestAnimationFrame(mark); }, { passive: true }); }
+    addEventListener("resize", () => { if (!q0) q0 = requestAnimationFrame(mark); }, { passive: true });
+    // also when the page opens part-way down (a refresh keeps the scroll) and when the list changes (Load more, a filter): no scroll
+    // happens then, and an unmarked heading pinned under the bar let the coffees show through above and behind it
+    addEventListener("pageshow", () => requestAnimationFrame(mark)); addEventListener("load", () => { mark(); setTimeout(mark, 400); setTimeout(mark, 1500); });
+    { const sh0 = document.getElementById("shelf"); if (sh0 && "MutationObserver" in window) new MutationObserver(() => { if (!q0) q0 = requestAnimationFrame(mark); }).observe(sh0, { childList: true }); } }
   const makeBuddy = (el, opt = {}) => { const body = el && el.querySelector(".gd-b"), eyes = el && el.querySelector(".gd-e"), all = el && el.querySelector(".gd-all"); if (!el || !body || !all) return null;
     const still = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
     // cold: a blue layer of the same shape over the body (a fill, not a filter: Safari won't filter parts of an SVG)
