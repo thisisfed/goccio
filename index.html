@@ -9181,7 +9181,6 @@ html body footer #tip, html body footer #tip *, html body footer #tip a, html bo
   const FIELD_ROWS = [["roaster", "Roaster"], ["name", "Coffee"], ["origin", "Origin"], ["process", "Process"], ["variety", "Variety"]];   // no roast or roast date here: the Roast row in What’s brewing? has the roast   // no tasting notes: the site never shows or uses them
   let review = null;
   function showReview(fields, raw) {
-    setTimeout(() => { try { const tb = $("askGoccio"); if (tb && tb.move) tb.move("ag-hops"); const B = window.__gdBuddy; if (B && !B.busy() && B.yes) B.yes(); } catch (e) {} }, 300);   // the bag is read: a nod
     const sm = shelfMatch(fields);
     review = { fields, raw, match: sm && sm.pick || null, sure: !!(sm && sm.sure), choices: sm && sm.choices || null };
     // found on today's list: the listing's details are the roaster's own, so they fill the sheet (the label's reading stays where the listing is silent)
@@ -9918,8 +9917,7 @@ html body footer #tip, html body footer #tip *, html body footer #tip a, html bo
   } catch (e) {} }
   document.addEventListener("click", (e) => { if (e.target.closest && e.target.closest('[data-roast], [data-proc], [id^="o-roast-"], [id^="o-process-"], #roastSkip')) window.__specFlash = performance.now() + 1500; }, true);
   /* the brew is finished: Start brewing has done its work and leaves the bottom bar; what was Cancel reads Done. A new coffee, a reset or a saved entry brings it back */
-  window.brewDoneUI = (on) => { if (on && !document.documentElement.classList.contains("brew-done")) setTimeout(() => { try { const tb = $("askGoccio"); if (tb && tb.move) tb.move("ag-dance"); const B = window.__gdBuddy; if (B && !B.busy()) B.happy(); } catch (e) {} }, 400);   /* the brew is done: a little celebration */
-    document.documentElement.classList.toggle("brew-done", !!on); const c = document.querySelector('.botnav [data-bn="cancel"]'); if (c) { if (!c.dataset.t) c.dataset.t = c.textContent; c.textContent = on ? (LANG === "it" ? "Fatto" : "Done") : c.dataset.t; } };
+  window.brewDoneUI = (on) => { document.documentElement.classList.toggle("brew-done", !!on); const c = document.querySelector('.botnav [data-bn="cancel"]'); if (c) { if (!c.dataset.t) c.dataset.t = c.textContent; c.textContent = on ? (LANG === "it" ? "Fatto" : "Done") : c.dataset.t; } };
   document.addEventListener("click", (e) => { if (document.documentElement.classList.contains("brew-done") && e.target.closest && e.target.closest('.shelf .item .btn[data-i], #bags .btn, #bvReset, #wmBag, .botnav [data-bn="cancel"], #coffeeGo')) brewDoneUI(false); }, true);
   /* a roaster's page and an open coffee are not the search's results: the box does not go on showing the search there. It is put back,
      untouched, on returning to the list (the list itself never stopped being filtered) */
@@ -10427,7 +10425,7 @@ html body footer #tip, html body footer #tip *, html body footer #tip a, html bo
     let lastAct = 0; ["scroll", "pointerdown", "keydown"].forEach((t) => addEventListener(t, () => { lastAct = performance.now(); }, { passive: true, capture: true }));
     // just landed for the first time: he checks his phone first, before the rest of his life begins
     let landedOnce = false;
-    const showOff = () => { if (still() || (opt.paused && opt.paused()) || solo) return; freeReq = true;   /* the hello's smile gives way to the show */ const r0 = el.getBoundingClientRect(); if (r0.bottom < 0 || r0.top > innerHeight) return;
+    const showOff = () => { return; /* kept simple: no show on landing */ if (still() || (opt.paused && opt.paused()) || solo) return; freeReq = true;   /* the hello's smile gives way to the show */ const r0 = el.getBoundingClientRect(); if (r0.bottom < 0 || r0.top > innerHeight) return;
       onPhone(); };   /* the first thing he does is check his phone (sometimes turned sideways for a video, sometimes the folding one); then his usual random life */
     // the first time it comes into view it's simply there (it used to drop in from above): a moment later, its first show
     let fell = false;
@@ -10436,14 +10434,13 @@ html body footer #tip, html body footer #tip *, html body footer #tip a, html bo
     // the page moving: a fast lift. It squashes as the page speeds up (it feels heavier), stretches tall as it slows (lighter),
     // and rings in between. Scrolling down carries it up the screen, like a lift going up
     let lastY = scrollY, lastT = performance.now(), lastV = 0, stopT = 0;
-    const lift = () => { const now = performance.now(), v = (scrollY - lastY) / Math.max(8, now - lastT); lastY = scrollY; lastT = now;
+    const lift = () => { return; /* kept simple: the page scrolls, he stays put */ const now = performance.now(), v = (scrollY - lastY) / Math.max(8, now - lastT); lastY = scrollY; lastT = now;
       if (still() || phase === "fall") return; const r = el.getBoundingClientRect(); if (r.bottom < -100 || r.top > innerHeight + 100) { lastV = v; return; }
       const dv = Math.max(-3, Math.min(3, v - lastV)); lastV = v; va -= dv * 2.4; a = Math.max(-0.35, Math.min(0.45, a)); go();
       clearTimeout(stopT); stopT = setTimeout(() => { if (Math.abs(lastV) > 0.05) { va += Math.max(-3, Math.min(3, lastV)) * 2.4; lastV = 0; go(); } }, 90); };   // the page stops: it stretches
     addEventListener("scroll", lift, { passive: true });
     // touched: a squeeze, then it rings (6 to 9% of its size, as a real drop pushed gently)
-    el.addEventListener("pointerdown", () => poke(-2.6));
-    el.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") poke(-1.2); });
+    // kept simple: no squeeze when touched or hovered
     // a blink that closes over 110 ms, holds a moment and opens over 170 ms (a snap shut and open looked mechanical)
     const blinkSoft = (k = 0.1) => new Promise((done) => { const t0 = performance.now(), C = 110, H = 70, O = 170;
       const step = (now) => { const t = now - t0, e = (x) => x * x * (3 - 2 * x); blink = t < C ? 1 - (1 - k) * e(t / C) : t < C + H ? k : t < C + H + O ? k + (1 - k) * e((t - C - H) / O) : 1; draw();
@@ -10957,21 +10954,10 @@ html body footer #tip, html body footer #tip *, html body footer #tip a, html bo
       try { if (D0 && typeof D0.requestPermission === "function") D0.requestPermission().then(keep).catch(() => {}); if (M0 && typeof M0.requestPermission === "function") M0.requestPermission().catch(() => {}); } catch (e) {} };
     // (the motion permission is no longer asked on a tap: Goccio offers it in the chat, "shake your phone", and asks only on a yes)
     // its life at rest: something every few seconds, never on a beat. Mostly happy: smiles, happy eyes, yawns, a dance, a jump now and then
-    // at rest he only shows small signs of life (a blink, a glance, a smile), every 10 to 20 s; the big shows (hypnosis, the laser, coming up
-    // close, a backflip) come once a visit at most, and only when nobody is reading, scrolling or brewing. Tap him, or ask in the chat, for more (26/11/2026)
-    let scrollT = 0; addEventListener("scroll", () => { scrollT = performance.now(); }, { passive: true });
-    const idle = () => { setTimeout(idle, 10000 + Math.random() * 10000); if (document.hidden || still() || phase !== "rest" || acting || (opt.paused && opt.paused())) return;
-      const r = Math.random(), rr = el.getBoundingClientRect(); if (rr.bottom < 0 || rr.top > innerHeight) return;
-      const now = performance.now(), following = now - ptrT < 2500, H = document.documentElement;
-      const calm = now - ptrT > 12000 && now - scrollT > 12000 && now - lastAct > 12000 && !H.classList.contains("brew-in") && !H.classList.contains("brew-done") && !H.classList.contains("gd-open");
-      if (calm && rr.top > 60 && rr.bottom < innerHeight - 40 && window.gdOnce && window.gdOnce("show")) {
-        const SHOWS = [[4, hypno], [2, laserPoke], [2, backflip], [2, dance], [1, rolypoly], [1, boop], [1, leap]];
-        let w = Math.random() * SHOWS.reduce((t, m) => t + m[0], 0); for (const [k, f] of SHOWS) { if ((w -= k) < 0) { f(); return; } } }
-      const MOVES = [
-        [20, () => { blinkSoft().then(() => { if (Math.random() < 0.3) setTimeout(() => blinkSoft(), 160); }); }],
-        [10, smile], [6, happy], [3, wink], [2, curious],
-        [following ? 0 : 8, () => { lookX = (Math.random() < 0.5 ? -1 : 1) * 3; lookY = Math.random() < 0.4 ? -1.5 : 0; draw(); setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900 + Math.random() * 700); }]];
-      let w = r * MOVES.reduce((t, m) => t + m[0], 0); for (const [k, f] of MOVES) { if ((w -= k) < 0) { f(); break; } } };
+    // kept simple (26/11/2026): at rest he only blinks, now and then. No moves of his own, no shows, no reacting to the scroll;
+    // what he does in the chat, he does because you asked
+    const idle = () => { setTimeout(idle, 4000 + Math.random() * 4000); if (document.hidden || still() || phase !== "rest" || acting || (opt.paused && opt.paused())) return;
+      const rr = el.getBoundingClientRect(); if (rr.bottom < 0 || rr.top > innerHeight) return; blinkSoft(); };
     setTimeout(idle, 6000);
     const pfft = (vol = 1, dur0 = 0.42) => { return;   /* Goccio makes no sounds at all */ try { const A = window.__gdA || (window.__gdA = new (window.AudioContext || window.webkitAudioContext)()); if (A.state === "suspended") A.resume();
         const t0 = A.currentTime, dur = dur0, n = A.createBuffer(1, Math.ceil(A.sampleRate * dur), A.sampleRate), ch = n.getChannelData(0); for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1;
@@ -11072,8 +11058,7 @@ html body footer #tip, html body footer #tip *, html body footer #tip a, html bo
     const askedFor = (m) => { const i = msgs.indexOf(m && m._rec); for (let k = (i < 0 ? msgs.length : i) - 1; k >= 0; k--) if (msgs[k].w === "me") return msgs[k].t; return ""; };
     const TAPS = ["❤️", "👍", "👎", "😂", "🔥", "☕", "🙏", "🤤", "😍"];   // nine fit a phone's row (26/11/2026: 🔥 ☕ 🙏 added; 🤤 😍 in place of ‼️ ❓)
     const feel = (e) => { const docked = document.documentElement.classList.contains("gd-docked");
-      if (docked) { littleMove(e === "😂" ? "ag-hops" : e === "❤️" ? "ag-wink" : e === "‼️" ? "ag-flip" : e === "👍" ? "ag-dance" : null); }
-      else if (D && !still()) { D.free(); (e === "❤️" ? D.happy : e === "👍" ? D.happy : e === "😂" ? D.happy : e === "‼️" ? D.surprised : e === "❓" ? D.hmm : D.no)(); }
+      if (!docked && D && !still()) { D.free(); (e === "❤️" ? D.happy : e === "👍" ? D.happy : e === "😂" ? D.happy : e === "‼️" ? D.surprised : e === "❓" ? D.hmm : D.no)(); }
       if (e === "👎" && Math.random() < 0.7) setTimeout(() => sayNow(pick([T("Oops, sorry! Try asking me another way?", "Ops, scusa! Prova a chiedermelo in un altro modo?"), T("Fair. I'm still learning, one drop at a time.", "Giusto. Sto ancora imparando, una goccia alla volta.")]), null, null), 700);
       else if (e === "❓" && Math.random() < 0.6) setTimeout(() => sayNow(pick([T("Too much? Ask me again in fewer words and I'll keep it simple.", "Troppo? Richiedimelo in poche parole e te lo spiego semplice."), T("Hmm, which bit? Ask me about any part of it.", "Mmm, quale parte? Chiedimi di qualsiasi pezzo.")]), null, null), 700);
       else if (e === "❤️" && Math.random() < 0.35) setTimeout(() => sayNow(pick([T("Aww. ☺️", "Ooh. ☺️"), T("Right back at you!", "Anche io!")]), null, null), 700);
@@ -12681,7 +12666,7 @@ html body footer #tip, html body footer #tip *, html body footer #tip a, html bo
     closeTalk = () => { if (!talking) return; talking = false; document.documentElement.classList.remove("gd-full", "gd-kb"); fullFit(); pin(false); dim(false); talkEl.hidden = true; el.setAttribute("aria-expanded", "false"); clearInterval(typeT); bob(false); };
     $("gdX").onclick = closeTalk;
     // the top bar: the little Goccio opens it there; a question typed in the search box goes to Goccio instead of the list
-    { const tb = $("askGoccio"); if (tb) tb.onclick = () => { talking ? closeTalk() : openTalk(true); tb.hop && tb.hop(); }; }
+    { const tb = $("askGoccio"); if (tb) tb.onclick = () => { talking ? closeTalk() : openTalk(true); }; }
     // the little Goccio in the pill is alive too: it leans and looks towards the pointer (or your finger), blinks, and looks around when nobody moves
     { const tb = $("askGoccio"), bo = tb && tb.querySelector(".ag-b"), ey = tb && tb.querySelector(".ag-e"), shy = tb && tb.querySelector(".ag-shy");
       if (bo && ey && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -12743,11 +12728,11 @@ html body footer #tip, html body footer #tip *, html body footer #tip a, html bo
             if (film) { film.addEventListener("play", () => { wideTo = 1; startW(); }); film.addEventListener("timeupdate", startW); }
             setInterval(() => { if (!wRun && now()) startW(); }, 400);   // the canvas film has no events: look in now and then
             // the end of the film: over the moon. Eyes huge, three hops and a spin
-            const wow = () => { if (tb.classList.contains("ag-gone")) return; tx = 0; ty = -1.2; wideTo = 1.45; lidTo = 1; go(); tb.hop(); setTimeout(() => tb.hop(), 560); setTimeout(() => tb.hop(), 1120);
+            const wow = () => { return; /* kept simple */ if (tb.classList.contains("ag-gone")) return; tx = 0; ty = -1.2; wideTo = 1.45; lidTo = 1; go(); tb.hop(); setTimeout(() => tb.hop(), 560); setTimeout(() => tb.hop(), 1120);
               setTimeout(() => tb.move && tb.move("ag-spin"), 1700); setTimeout(() => { wideTo = 1; ty = 0; go(); }, 2800); };
             if (film) film.addEventListener("ended", wow); addEventListener("goccio-film-end", wow);
             startW(); } }
-        (function life() { setTimeout(() => { const r = tb.getBoundingClientRect(); if (!document.hidden && r.width && !tb.classList.contains("ag-gone") && performance.now() - idle > 3000 && r.bottom > 0) (Math.random() < 0.15 ? tb.move("ag-hops") : tb.move("ag-wink")); life(); }, 20000 + Math.random() * 20000); })();   /* calm: a wink, now and then a little hop; the big moves are for moments and for asking */
+        // kept simple (26/11/2026): no moves of his own, he only blinks
         let tg0 = null; addEventListener("deviceorientation", (e) => { if (e.gamma == null || performance.now() - idle < 2500 || filmOn()) return; if (tg0 === null) tg0 = e.gamma; tg0 += (e.gamma - tg0) * 0.003;
           const dx = e.gamma - tg0, db = (e.beta || 0) - 45; if (Math.abs(dx) < 4) return; const k = Math.max(-1, Math.min(1, dx / 30)); tx = k * 3.2; ty = Math.max(-1, Math.min(1, db / 40)) * 1.2; go(); }, { passive: true });
         go(); } }
@@ -12758,7 +12743,7 @@ html body footer #tip, html body footer #tip *, html body footer #tip a, html bo
         let gone = false;
         const set = (g) => { if (g === gone) return; gone = g;
           // while the page is still settling (hidden, or just shown) it simply is where it should be: no gulp, no spit, nothing sliding
-          if (document.documentElement.classList.contains("wait") || !window.__shownAt || performance.now() - window.__shownAt < 900) {
+          if (true) {   /* kept simple: never a gulp or a spit, he is just there or not */
             const qs = [tb, tb.parentElement && tb.parentElement.querySelector(".ask-box")].filter(Boolean); qs.forEach((x) => x.style.setProperty("transition", "none", "important"));
             tb.classList.toggle("ag-gone", g); tb.classList.remove("ag-out"); plus.classList.remove("gulp", "spit"); tb.setAttribute("aria-hidden", g ? "true" : "false"); tb.tabIndex = g ? -1 : 0;
             void tb.offsetWidth; requestAnimationFrame(() => requestAnimationFrame(() => qs.forEach((x) => x.style.removeProperty("transition")))); return; }
@@ -12803,7 +12788,7 @@ html body footer #tip, html body footer #tip *, html body footer #tip a, html bo
     if (!seen && hint && "IntersectionObserver" in window) new IntersectionObserver((es) => { if (hinted || !es[0].isIntersecting || es[0].intersectionRatio < 0.9) return; hinted = true;
       enter().then(() => { const H0 = document.documentElement; if (talking || msgs.length || H0.classList.contains("brew-in") || H0.classList.contains("gd-set")) { hinted = false; return; }   /* already chatting, or brewing: no hello now, maybe later */
         try { localStorage.setItem(HINT_KEY, "1"); } catch (e) {}
-        gdWords(); hint.hidden = false; stick(); document.documentElement.classList.add("gd-hello"); try { D.happy(); setTimeout(() => { try { D.wink(); } catch (e) {} }, 700); } catch (e) {}
+        gdWords(); hint.hidden = false; stick(); document.documentElement.classList.add("gd-hello"); 
         setTimeout(() => { hint.classList.add("out"); document.documentElement.classList.remove("gd-hello"); setTimeout(() => { hint.hidden = true; hint.classList.remove("out"); }, 400); }, 6000); }); }, { threshold: [0, 0.9] }).observe(el);
     { let still = performance.now(), last = 0; const wake = () => { still = performance.now(); };
       ["pointermove", "pointerdown", "keydown", "input", "scroll", "touchstart"].forEach((t) => addEventListener(t, wake, { passive: true, capture: true }));
