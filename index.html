@@ -11275,9 +11275,29 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       if (!n) return /\?\uE002?$/.test(hi) ? say(hi, null, happy) : say(hi + " " + pick([T("Ask me about coffee.", "Chiedimi del caffè."), T("What are we brewing?", "Cosa prepariamo?"), T("Need a hand with your coffee?", "Ti serve una mano col caffè?")]), null, happy);
       const best = today.map((x) => [suits(x) * 3 + (notesOf(x).length ? 1.5 : 0) + Math.random() * 2, x]).sort((a, b) => b[0] - a[0])[0][1], ns = notesOf(best); picked.add(best.url); lastCo = { r: best, at: Date.now() };
       const what = `${shownName(best)} ${T("from", "di")} ${roasteryName(best.roaster)}${ns.length ? T(", tasting of ", ", che sa di ") + andList(ns) : ""}`;
-      const on = landedOn(best);
-      const line = suits(best) ? pick([T(`${n} new coffees landed ${on}, and one's very you: ${what}.`, `${on[0].toUpperCase() + on.slice(1)} sono arrivati ${n} caffè nuovi, e uno è proprio per te: ${what}.`), T(`New ${on}, right up your street: ${what}.`, `Arrivato ${on}, proprio nel tuo stile: ${what}.`)])
-        : pick([T(`${n} new coffees landed ${on}. One caught my eye: ${what}.`, `${on[0].toUpperCase() + on.slice(1)} sono arrivati ${n} caffè nuovi. Uno mi ha colpito: ${what}.`), T(`New ${on}: ${what}, and ${n - 1} more.`, `Novità di ${on}: ${what}, e altri ${n - 1}.`), T(`Guess what landed ${on}? ${what}.`, `Indovina cos'è arrivato ${on}? ${what}.`)]);
+      const on = landedOn(best), On = on[0].toUpperCase() + on.slice(1), one = n === 1;   /* one coffee gets lines of its own: never "1 new coffees" or "and 0 more" */
+      const line = suits(best) ? pick(one ? [T(`One new coffee ${on}, and it's very you: ${what}.`, `${On} un solo caffè nuovo, ed è proprio per te: ${what}.`), T(`New ${on}, right up your street: ${what}.`, `Arrivato ${on}, proprio nel tuo stile: ${what}.`), T(`This one has your name on it, new ${on}: ${what}.`, `Questo porta il tuo nome, arrivato ${on}: ${what}.`)] : [
+          T(`${n} new coffees landed ${on}, and one's very you: ${what}.`, `${On} sono arrivati ${n} caffè nuovi, e uno è proprio per te: ${what}.`),
+          T(`New ${on}, right up your street: ${what}.`, `Arrivato ${on}, proprio nel tuo stile: ${what}.`),
+          T(`${n} new coffees ${on}, and I found one just for you: ${what}.`, `${On} ${n} caffè nuovi, e ne ho trovato uno solo per te: ${what}.`),
+          T(`This one has your name on it, new ${on}: ${what}.`, `Questo porta il tuo nome, arrivato ${on}: ${what}.`),
+          T(`Knowing your taste, I'd go for ${what}. One of ${n} new ${on}.`, `Conoscendo i tuoi gusti, andrei su ${what}. Uno dei ${n} arrivati ${on}.`),
+          T(`I went through ${n} new coffees ${on} with you in mind. This one: ${what}.`, `Ho guardato i ${n} caffè nuovi arrivati ${on} pensando a te. Questo: ${what}.`)])
+        : pick(one ? [T(`One new coffee ${on}: ${what}.`, `${On} un solo caffè nuovo: ${what}.`), T(`Just one new coffee ${on}, and it's a good one: ${what}.`, `${On} solo un caffè nuovo, ma è buono: ${what}.`), T(`Guess what landed ${on}? ${what}.`, `Indovina cos'è arrivato ${on}? ${what}.`), T(`Fresh off the roaster, new ${on}: ${what}.`, `Fresco di tostatura, arrivato ${on}: ${what}.`)] : [
+          T(`${n} new coffees landed ${on}. One caught my eye: ${what}.`, `${On} sono arrivati ${n} caffè nuovi. Uno mi ha colpito: ${what}.`),
+          T(`New ${on}: ${what}, and ${n - 1} more.`, `Novità ${on}: ${what}, e altri ${n - 1}.`),
+          T(`Guess what landed ${on}? ${what}.`, `Indovina cos'è arrivato ${on}? ${what}.`),
+          T(`${n} new coffees ${on}. If I had to pick one: ${what}.`, `${On} ${n} caffè nuovi. Se dovessi sceglierne uno: ${what}.`),
+          T(`Fresh in ${on}: ${n} coffees. My favourite so far: ${what}.`, `Appena arrivati ${on}: ${n} caffè. Il mio preferito finora: ${what}.`),
+          T(`${n} new arrivals ${on}, and I'd start with ${what}.`, `${n} nuovi arrivi ${on}, e io partirei da ${what}.`),
+          T(`Psst, ${n} new coffees ${on}. Don't miss ${what}.`, `Psst, ${on} ${n} caffè nuovi. Non perderti ${what}.`),
+          T(`Out of ${n} new coffees ${on}, this one stood out: ${what}.`, `Tra i ${n} caffè arrivati ${on}, questo spicca: ${what}.`),
+          T(`${n} new coffees ${on}. I'd brew ${what} first.`, `${On} ${n} caffè nuovi. Io preparerei prima ${what}.`),
+          T(`${n} new coffees ${on}. Want my pick? ${what}.`, `${On} ${n} caffè nuovi. Vuoi il mio preferito? ${what}.`),
+          T(`Fresh off the roaster, new ${on}: ${what}.`, `Fresco di tostatura, arrivato ${on}: ${what}.`),
+          T(`The shelf got ${n} new coffees ${on}. Top of my list: ${what}.`, `${On} sullo scaffale ${n} caffè nuovi. In cima alla mia lista: ${what}.`),
+          ...(n >= 20 ? [T(`Busy day: ${n} new coffees ${on}. The one I'm curious about: ${what}.`, `Giornata piena: ${n} caffè nuovi ${on}. Quello che mi incuriosisce: ${what}.`)] : []),
+          ...(n <= 5 ? [T(`Only ${n} new coffees ${on}, but one's a gem: ${what}.`, `Solo ${n} caffè nuovi ${on}, ma uno è una chicca: ${what}.`)] : [])]);
       say(hi + "\n" + line, [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(best); } }], happy); ctx = { t: "pick", at: Date.now() }; };
     // now and then, after an answer, it asks you something back: first what it doesn't know about you yet
     const askBack = () => { if (++sinceAsk < 2 || Math.random() > 0.55) return; sinceAsk = 0; const t0 = Date.now();
@@ -11311,7 +11331,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       return false; };
     const offer = (text, chips) => { const a = (chips || []).find((x) => x && typeof x === "object" && x.f); if (!a) return [text, chips];
       const many = /coffees|their|his|them|caff[eè]$|suoi|loro/i.test(a.t); pendingYes = a.f;
-      return [text + "\n\n" + (a.ask || (many ? T("Want to see them?", "Vuoi vederli?") : T("Want to see it?", "Vuoi vederlo?"))), [{ t: T("Yes", "Sì"), q: T("Yes", "Sì") }, ...chips.filter((x) => x !== a)]]; };   // the question after an empty line
+      return [text, [{ t: T("Yes", "Sì"), q: T("Yes", "Sì") }, ...chips.filter((x) => x !== a)], a.ask || pick(many ? [T("Want to see them?", "Vuoi vederli?"), T("Shall I show you them?", "Te li mostro?"), T("Take a look?", "Diamo un'occhiata?"), T("Fancy a look?", "Ti va di vederli?")]
+        : [T("Want to see it?", "Vuoi vederlo?"), T("Shall I show you?", "Te lo mostro?"), T("Take a look?", "Diamo un'occhiata?"), T("Fancy a look?", "Ti va di vederlo?"), T("Shall I open it?", "Lo apro?"), T("Want a closer look?", "Vuoi vederlo da vicino?")])]; };   // the question comes in a message of its own, just after
     // no hint buttons in the chat, ever: when Goccio offers choices it says them ("…: clean and bright, rich and full or easy?"),
     // and typing one (or something close) picks it, as a tap would have
     let pendingOpts = [];
@@ -11337,12 +11358,16 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         for (let d = wrong.length - 1; d >= 0; d--) { fr.push(done + wrong.slice(0, d)); }   // rubbed out one letter at a time
         for (let h = 0; h < 6; h++) fr.push(done); rest = rest.slice(j + 1, e) + rest.slice(e + 1); }
       step(done, rest); return { fr, text: done + rest }; };
-    const sayNow = (text, chips, mood) => { pendingYes = null; ctxFrom(text); [text, chips] = offer(text, chips); if (pendingYes && !nextPills) nextPills = [[T("Yes", "Sì"), T("Yes", "Sì")], [T("No", "No"), T("No thanks", "No grazie")]];   /* "Want to see it?" gets Yes / No pills, after the words */ text = voice(text, chips); chips = null; text = tidy(text); sayGen++; finishTyping(); const tf = typeFrames(text); text = tf.text; const m = addMsg("it", ""); m._rec.t = text; saveChat(); typing = { m, text, top: replyTo }; let k = 0; bob(true);
+    const sayNow = (text, chips, mood) => { pendingYes = null; ctxFrom(text); let ask2 = null; [text, chips, ask2] = offer(text, chips); const py = pendingYes; text = voice(text, chips); chips = null; text = tidy(text); sayGen++; finishTyping(); const tf = typeFrames(text); text = tf.text; const m = addMsg("it", ""); m._rec.t = text; saveChat(); typing = { m, text, top: replyTo }; let k = 0; bob(true);
       const anchor = replyTo && replyTo.isConnected ? replyTo : m; requestAnimationFrame(() => toTop(anchor, true));   // your question at the top, the answer filling in below it
       // as the answer grows it keeps your question pinned at the top, until it reaches it or you scroll the chat yourself
       // a touch slower than before (2 letters every 32 ms, was 24)
       typeT = setInterval(() => { m.textContent = tf.fr[k] || ""; k++; if (typing && !typing.free && k % 4 === 0) toTop(anchor); if (k >= tf.fr.length) { if (typing && !typing.free) toTop(anchor); finishTyping(); } }, 32);
-      showChips(chips); if (nextPills) { const pl = nextPills; nextPills = null; if (typing) typing.after = () => showPills(pl); else showPills(pl); } if (mood) mood(); };
+      showChips(chips);
+      if (ask2) { const g2 = sayGen, pl2 = nextPills || [[T("Yes", "Sì"), T("Yes", "Sì")], [T("No", "No"), T("No thanks", "No grazie")]]; nextPills = null;   /* "Want to see it?" in a second message once the first is written, then the Yes / No pills */
+        const ask = () => setTimeout(() => { if (sayGen !== g2 || !talking) return; nextPills = pl2; sayNow(ask2, null, null); pendingYes = py; }, 650);
+        if (typing) typing.after = ask; else ask(); }
+      else if (nextPills) { const pl = nextPills; nextPills = null; if (typing) typing.after = () => showPills(pl); else showPills(pl); } if (mood) mood(); };
     // the sample questions: a fresh mix each time, one from each kind, so you get an idea of everything it knows
     const POOL = () => ({
       find: [T("What's new?", "Cosa c'è di nuovo?"), T("Surprise me", "Sorprendimi"), T("Something fruity?", "Qualcosa di fruttato?"), T("What's the best coffee?", "Qual è il caffè migliore?")],
