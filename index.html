@@ -1676,6 +1676,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
   .ps.xdense .ps-pours{font-size:9pt} .ps.xdense .ps-pours td{padding:.9mm 0} .ps.xdense .ps-kick{margin-top:6mm} .ps.xdense .ps-nums{margin-top:7mm}
 }
 #bagBtn[hidden], #buyBtn[hidden], #calBtn[hidden], #mUse[hidden]{display:none!important}
+html body #shelf .item .l p.c-notes, html body #shelf .item .l p.c-notes *{color:var(--ink)!important}   /* the tasting notes in ink: after the name, the first thing you read; origin, process and variety stay grey with their dots */
 /* My bags and the bookmarks are off for now (Nov 2026), until there are logins to keep them with: the buttons, the section and its pills are hidden.
    Anything already saved stays on the device and comes back when this rule goes. */
 html body .shelf .item .r .bag-add.bag-add, html body .bag-add.bag-add.bag-add.bag-add, html body #bagBtn#bagBtn, html body #scBag#scBag, html body #bags#bags, html body .sec-p.sec-p[data-sec="bags"], html body .chip.chip[data-bn="bags"], html body [data-jump="bags"][data-jump="bags"]{display:none!important}
@@ -10262,6 +10263,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const W0 = 36, H0 = 24, R0 = 15.5;   // at rest: a dome 36 wide, 24 high; falling: a round drop of about the same volume
     const wS = 2 * Math.PI / 0.24, zS = 0.3, wL = 2 * Math.PI / 0.42, zL = 0.45, G = 2600;
     const S = { aRest: 0, eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, fone: 0, umb: 0, scroll: 0, jx: 0, blush: 0, turn: 0, armL: 0, armR: 0, armLa: 0, armRa: 0, flip: 0, cold: 0, hot: 0, tumble: 0, cross: 0, float: 0, land: 0, duo: 0 }; let rigid = false, rollU = 0, gX = 0, gY = 0, inStep = false, jy = 0, jv = 0, ptrX = 0, ptrY = 0, ptrT = 0; let tws = [], a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
+    let glareLoop = 0; const glS = { x: 0, y: 0, t: 0, off: 0 };   // the shine's eased place, and the loop that redraws it while he moves
     const draw = () => {
       // the shape it has just before it falls: round. Squashed or stretched it keeps its volume (taller is narrower); its top
       // sways with the page; it sits on its lowest point
@@ -10278,11 +10280,13 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       // the window light is one fixed place, up on the screen's top left: when he leaves his spot (leaping out at you, rushing up close), the shine slides
       // across him to where that light would now catch him (a highlight halfway between the light's direction and yours), and comes back as he returns
       let gx = -rx * 0.45, gy = top + ry * 0.42;
-      if (el.style.scale && el._b) { const sc0 = parseFloat(el.style.scale) || 1;
+      if (el.style.scale && el._b) { const br0 = body.getBoundingClientRect(), sc0 = el._b.width ? br0.width / el._b.width : 1;   /* how big he is right now, mid-transition, not where he's headed: the shine glides, never jumps */
         // the light hangs in front of the screen, up on its left; growing, he comes out towards it, so it reaches him from more to the side
         const hv = (r, k) => { const cx0 = r.left + r.width / 2, cy0 = r.top + r.height / 2, lx = -0.15 * innerWidth - cx0, ly = -0.3 * innerHeight - cy0, lz = 520 / Math.max(0.5, k), n = Math.hypot(lx, ly, lz), hx = lx / n, hy = ly / n, hz = lz / n + 1, m = Math.hypot(hx, hy, hz); return [hx / m, hy / m]; };
-        const a0 = hv(el._b, 1), b0 = hv(body.getBoundingClientRect(), sc0); gx += (b0[0] - a0[0]) * R0 * 1.4; gy += (b0[1] - a0[1]) * R0 * 1.4;
+        const a0 = hv(el._b, 1), b0 = hv(br0, sc0); gx += (b0[0] - a0[0]) * R0 * 1.4; gy += (b0[1] - a0[1]) * R0 * 1.4;
         const dx0 = gx, dy0 = gy - mid, rr = Math.hypot(dx0 / rx, dy0 / ry); if (rr > 0.78) { gx = dx0 / rr * 0.78; gy = mid + dy0 / rr * 0.78; } }   // it never slides off his edge
+      // eased, never snapped: it glides after where the light would be (about a tenth of a second behind), however fast he moves
+      { const nw = performance.now(); if (glS.t && nw - glS.t < 400) { const f = 1 - Math.exp(-(nw - glS.t) / 110); glS.x += (gx - glS.x) * f; glS.y += (gy - glS.y) * f; } else { glS.x = gx; glS.y = gy; } glS.t = nw; glS.off = Math.hypot(gx - glS.x, gy - glS.y); gx = glS.x; gy = glS.y; }
       if (hl) hl.setAttribute("transform", `${unspin}translate(${gx.toFixed(2)} ${gy.toFixed(2)}) rotate(-35)`);   /* not with the lean either: shaking his head no, dancing, the light holds still while his head turns under it */   /* the light stays put on his top left: dancing, spinning or turning round, it never slides across him */
       const tm = ((S.turn % 2) + 2) % 2, back = tm > 0.5 && tm < 1.5, tbA = S.tumble * Math.PI * 2, tv = Math.cos(tbA), tw = Math.sin(tbA); const zf = Math.min(tc, tv); eyes.style.opacity = back && tv >= 0 ? "0" : Math.max(0, Math.min(1, (zf - 0.03) / 0.22)).toFixed(3);   /* how much they face you: a soft fade at the rim, not a blink out */   /* a roly-poly: the face rolls down and under, round the back, and comes back over the top */   /* turn 0→1 shows its back, 0→2 is a whole spin */
       const bt = el.querySelector(".gd-butt"); if (bt) { bt.style.opacity = back ? "1" : "0"; bt.setAttribute("d", `M ${cx * 0.2} ${(bot - ry * 0.62).toFixed(2)} Q ${(cx * 0.2 + 1.2).toFixed(2)} ${(bot - ry * 0.3).toFixed(2)} 0 ${(bot - 1.2).toFixed(2)}`); }   /* its back: no face, just a little crease */
@@ -10686,14 +10690,13 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     let lifted = [];
     const liftUp = () => { if (lifted.length) return; for (let p = el; p && p !== document.body; p = p.parentElement) { const cs = getComputedStyle(p); if (cs.position !== "static" || cs.zIndex !== "auto") { lifted.push([p, p.style.zIndex, p.style.position]); if (cs.position === "static") p.style.position = "relative"; p.style.zIndex = "2147483000"; } } };
     const liftDown = () => { lifted.forEach(([p, z, pos]) => { p.style.zIndex = z; p.style.position = pos; }); lifted = []; };
-    let glareLoop = 0;
     const nearTo = (sc, f, ms, ez, fill) => {   /* f: how much of the way to the middle (1 unless given less); fill: how much of the screen he may take (0.7 high, 0.9 wide unless given) */
       if (!el.style.scale || !el._r) { el._r = el.getBoundingClientRect(); el._b = body.getBoundingClientRect(); }   /* the drop itself, not its box */ const r = el._r, bb = el._b; liftUp();
       sc = Math.max(1, Math.min(sc, innerHeight * (fill || 0.7) / bb.height, innerWidth * Math.max(0.9, fill || 0) / bb.width)); const k = sc === 1 ? 0 : Math.max(0, Math.min(1, f == null || f > 1 ? 1 : f));
       // it grows about the foot of its box; where the middle of the drop then lands, and how far to move it onto the middle of the screen
       const ox = r.left + r.width / 2, oy = r.bottom, bx = bb.left + bb.width / 2, by = bb.top + bb.height / 2;
       const dx = k * (innerWidth / 2 - ox - (bx - ox) * sc), dy = k * (innerHeight / 2 - oy - (by - oy) * sc);
-      const e = ez || "cubic-bezier(.45,0,.55,1)"; if (!glareLoop) { const lp = () => { draw(); glareLoop = el.style.scale ? requestAnimationFrame(lp) : 0; }; glareLoop = requestAnimationFrame(lp); }   /* redrawn every frame on the way, so the shine follows the light */ el.style.transformOrigin = "50% 100%"; el.style.transition = `scale ${ms}ms ${e}, translate ${ms}ms ${e}`; el.style.scale = String(sc); el.style.translate = `${dx.toFixed(1)}px ${dy.toFixed(1)}px`; return wait(ms); };
+      const e = ez || "cubic-bezier(.45,0,.55,1)"; if (!glareLoop) { const lp = () => { draw(); glareLoop = el.style.scale || glS.off > 0.02 ? requestAnimationFrame(lp) : 0; }; glareLoop = requestAnimationFrame(lp); }   /* redrawn every frame on the way, so the shine follows the light */ el.style.transformOrigin = "50% 100%"; el.style.transition = `scale ${ms}ms ${e}, translate ${ms}ms ${e}`; el.style.scale = String(sc); el.style.translate = `${dx.toFixed(1)}px ${dy.toFixed(1)}px`; return wait(ms); };
     const nearDone = () => { el.style.transition = ""; el.style.scale = ""; el.style.translate = ""; el._r = null; liftDown(); };
     // a close look: it leans right in to study you, eyes narrowed, head tilting one way and the other, blinks, and backs off
     const closeLook = () => act(async () => { if (still()) return; lookX = 0; lookY = 0; draw(); await face({ eyeL: 0.55, eyeR: 0.55 }, 300); await nearTo(2.6, 60, 1300);
