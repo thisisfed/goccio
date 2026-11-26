@@ -10754,16 +10754,28 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const rings = [];
       const sp = [L, R].map((e0) => { const g = document.createElementNS(NS, "g"), cl = document.createElementNS(NS, "g"); g.setAttribute("class", "gd-hyp"); cl.setAttribute("clip-path", `url(#${cid})`);
         const rs = []; for (let k = 0; k < N; k++) { const c = document.createElementNS(NS, "circle"); c.setAttribute("cx", "0"); c.setAttribute("cy", "0"); cl.appendChild(c); rs.push(c); } rings.push(rs); g.appendChild(cl); eyes.appendChild(g); return [e0, g]; });
+      // and his whole body turns into the same pattern: bold rings, bright and dark in turn, widening from his middle, cut to his shape
+      // (the clip follows the live outline, so he can still squash and breathe); his eyes stay on top
+      const bid = body.id || (body.id = "gdb" + Math.random().toString(36).slice(2, 6)), bcp = document.createElementNS(NS, "clipPath"), bu = document.createElementNS(NS, "use");
+      bcp.id = cid + "b"; bu.setAttribute("href", "#" + bid); bcp.appendChild(bu); all.insertBefore(bcp, all.firstChild);
+      const bg = document.createElementNS(NS, "g"); bg.setAttribute("class", "gd-hyp"); bg.setAttribute("clip-path", `url(#${bcp.id})`); eyes.parentNode.insertBefore(bg, eyes);
+      const BN = 12, brs = []; for (let k = 0; k < BN; k++) { const c = document.createElementNS(NS, "circle"); bg.appendChild(c); brs.push(c); }
+      const bBorn = new Array(BN).fill(-1); let bHue = 0;
+      const growBody = (t) => { let bb; try { bb = body.getBBox(); } catch (e) { return; } if (!bb.width) return;
+        const cx = bb.x + bb.width / 2, cy = bb.y + bb.height * 0.58, Rm = Math.hypot(bb.width, bb.height) * 0.62, sw = (Rm / BN * 1.04).toFixed(3);
+        for (let k = 0; k < BN; k++) { const f = t * 1.4 + k / BN, gen = Math.floor(f), c = brs[k];
+          if (bBorn[k] !== gen) { bBorn[k] = gen; c.style.stroke = k % 2 ? "#0d0603" : HUES[bHue++ % HUES.length]; }
+          c.setAttribute("cx", cx.toFixed(2)); c.setAttribute("cy", cy.toFixed(2)); c.setAttribute("r", ((f % 1) * Rm).toFixed(3)); c.style.strokeWidth = sw; } };
       const t0 = performance.now(); let hueN = 0; const born = new Array(N).fill(-1);
-      const grow = (now) => { const t = (now - t0) / PER; for (let k = 0; k < N; k++) { const f = t + k / N, ph = f % 1, gen = Math.floor(f);
+      const grow = (now) => { growBody((now - t0) / PER); const t = (now - t0) / PER; for (let k = 0; k < N; k++) { const f = t + k / N, ph = f % 1, gen = Math.floor(f);
           if (born[k] !== gen) { born[k] = gen; rings.forEach((rs) => rs[k].setAttribute("stroke", HUES[hueN % HUES.length])); hueN++; }
           rings.forEach((rs) => { rs[k].setAttribute("r", (ph * 2.5).toFixed(3)); rs[k].style.opacity = Math.min(1, ph * 6).toFixed(2); }); } };
       let on = true; const follow = () => { if (!on) return; sp.forEach(([e0, g]) => { const rx = parseFloat(e0.getAttribute("rx")) || 2.4, ry = parseFloat(e0.getAttribute("ry")) || 3.4, cx = e0.getAttribute("cx"), cy = e0.getAttribute("cy");
           g.setAttribute("transform", `${e0.getAttribute("transform") || ""} translate(${cx} ${cy}) scale(${(rx / 2.4).toFixed(3)} ${(ry / 2.4).toFixed(3)})`); }); grow(performance.now()); requestAnimationFrame(follow); }; follow();
       await face({ eyeSL: 1.5, eyeSR: 1.5 }, 500);   // his eyes open wide to hold the rings
-      sp.forEach(([, g]) => g.classList.add("in"));
+      sp.forEach(([, g]) => g.classList.add("in")); bg.classList.add("in");
       await wait(6000);   // still, straight at you, the rings widening
-      blink = 0.12; draw(); await wait(140); sp.forEach(([, g]) => g.remove()); cp.remove(); on = false; blink = 1; draw(); await face({ eyeSL: 1, eyeSR: 1 }, 400); gazeLock = false; }, true);
+      blink = 0.12; draw(); await wait(140); sp.forEach(([, g]) => g.remove()); cp.remove(); bg.classList.remove("in"); setTimeout(() => { bg.remove(); bcp.remove(); }, 450); on = false; blink = 1; draw(); await face({ eyeSL: 1, eyeSR: 1 }, 400); gazeLock = false; }, true);
     // boop: it rushes up and squashes its face against your screen like glass, holds, then peels off and falls back with a wobble
     const boop = () => act(async () => { if (still()) return; await face({ eyeSL: 1.2, eyeSR: 1.2 }, 150); await nearTo(3, 80, 520, "cubic-bezier(.5,0,.9,.6)");
       el.style.transition = "scale .12s ease-out"; el.style.scale = "3.6 3.25"; rigid = true; await face({ eyeL: 0.45, eyeR: 0.45, eyeSL: 1.45, eyeSR: 1.45, blush: 0.8 }, 120); await wait(900);
