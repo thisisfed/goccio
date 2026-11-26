@@ -10785,12 +10785,16 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       sp.forEach(({ g }) => g.classList.add("in")); setTimeout(() => { if (on) sp.forEach(({ e0 }) => { e0.style.opacity = "0"; }); }, 420);   // his own eyes give way to the cartoon ones
       // right up to the glass, centred, his eyes grown big (close but never overlapping) and just wide enough that their outer sides meet
       // the page's own side margins: worked out before he moves, by drawing the end pose for a moment (never painted) and measuring it
+      // the outline's true left and right on screen (a tilted shape's box is wider than the shape itself, so its points are measured)
+      const tight = (pth) => { try { const m = pth.getScreenCTM(), n = pth.getTotalLength(); let l = 1e9, r = -1e9; const sv = pth.ownerSVGElement;
+        for (let i = 0; i < 120; i++) { const pt = pth.getPointAtLength((i / 120) * n), q0 = sv.createSVGPoint(); q0.x = pt.x; q0.y = pt.y; const o = q0.matrixTransform(m); l = Math.min(l, o.x); r = Math.max(r, o.x); }
+        return { left: l, right: r }; } catch (e) { return pth.getBoundingClientRect(); } };
       const EYES = { eyeSL: 2.2, eyeSR: 2.2, near: 0.4 }, was = {}; Object.keys(EYES).forEach((k) => { was[k] = S[k]; S[k] = EYES[k]; }); draw(); place();
-      const rr = sp.map(({ rim }) => rim.getBoundingClientRect()),   /* the eye's own outline: the rings inside reach far past it, hidden by the clip */ span = Math.max(...rr.map((x) => x.right)) - Math.min(...rr.map((x) => x.left));
+      const rr = sp.map(({ rim }) => tight(rim)),   /* the eye's own outline: the rings inside reach far past it, hidden by the clip */ span = Math.max(...rr.map((x) => x.right)) - Math.min(...rr.map((x) => x.left));
       Object.assign(S, was); draw(); place();
       const pg0 = document.querySelector("main.page"), mg = pg0 ? parseFloat(getComputedStyle(pg0).paddingLeft) || 12 : 12, scTo = span > 0 ? (innerWidth - mg * 2) / span : 5;
       await Promise.all([face(EYES, 900), nearTo(scTo, 1, 1800, null, 99)]); run = true;
-      { const r2 = sp.map(({ rim }) => rim.getBoundingClientRect()), fix = innerWidth / 2 - (Math.max(...r2.map((x) => x.right)) + Math.min(...r2.map((x) => x.left))) / 2;   // the last few px, so they sit exactly in the middle
+      { const r2 = sp.map(({ rim }) => tight(rim)), fix = innerWidth / 2 - (Math.max(...r2.map((x) => x.right)) + Math.min(...r2.map((x) => x.left))) / 2;   // the last few px, so they sit exactly in the middle
         if (Math.abs(fix) > 0.5) { const tr = (el.style.translate || "0px 0px").split(/\s+/).map(parseFloat); el.style.transition = "translate .35s ease-out"; el.style.translate = `${((tr[0] || 0) + fix).toFixed(1)}px ${(tr[1] || 0).toFixed(1)}px`; } }
       await wait(11000 + Math.random() * 3000);   // he stays still, close, straight at you
       blink = 0.12; draw(); await wait(140); sp.forEach(({ g, e0 }) => { e0.style.opacity = ""; g.remove(); }); on = false; blink = 1; draw();
