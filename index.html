@@ -10374,7 +10374,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     let acting = false, solo = false, texT = 0, texting = false;   // one expression at a time; a "solo" (laser eyes, hypnosis, coming up close) can't be cut short by anything
     let wantText = false;   // typing an answer: the phone comes out, but a trick puts it away first and it comes back after
     let runN = 0, pageDent = null;
-    const tidyUp = () => { try { foldOut = false; if (el.style.scale || el.style.translate) nearDone();   /* a folding phone cut short: the next phone is the normal one */ el.style.filter = ""; rigid = false; gazeLock = false; S.rnd = 0; S.near = 0; el.querySelectorAll(".gd-l, .gd-r").forEach((e0) => { e0.style.opacity = ""; }); el.querySelectorAll(".gd-hyp").forEach((g0) => g0.remove()); eyesOff = false; if (pageDent) { pageDent.cancel(); pageDent = null; }
+    const tidyUp = () => { try { foldOut = false; if (el.style.scale || el.style.translate) nearDone();   /* a folding phone cut short: the next phone is the normal one */ el.style.filter = ""; rigid = false; gazeLock = false; S.rnd = 0; S.near = 0; el.querySelectorAll(".gd-l, .gd-r").forEach((e0) => { e0.style.opacity = ""; }); el.querySelectorAll(".gd-hyp").forEach((g0) => g0.remove()); document.querySelectorAll(".gd-hypov").forEach((g0) => g0.remove()); eyesOff = false; if (pageDent) { pageDent.cancel(); pageDent = null; }
         el.querySelectorAll(".gd-hyp").forEach((n) => n.remove()); S.flip = 0; S.tumble = 0; if (S.fone) tween("fone", 0, 140); dancing = false; } catch (e) {} };
     // never two moves at once: a move asked for while another runs (after free(): a tap, a chat reply) waits for that one to be cut at its next step, then plays
     const act = async (fn, alone) => { if (acting) { if (freeReq && !solo) { pending = [fn, alone]; if (curRun) abort = true; } return; }
@@ -10758,9 +10758,17 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const PAL = ["#dedf86", "#6cbfdc", "#a6d896", "#8ed0bf", "#e8e6ec"], LINE = "#1f4d36", EDGE = "#0b0503", PER = 1000, K = 0.1, GAP = 0.4, TRAVEL = 1.8;   // GAP: the average time between rings (each comes a little early or late, so the widths differ); TRAVEL: seconds from dot to edge
       // an egg: half-width a, half-height b, wider at the bottom by k, centred at (x, y)
       const egg = (a, b, k, x, y) => { let d = ""; for (let i = 0; i < 40; i++) { const t = (i / 40) * Math.PI * 2; d += (i ? "L" : "M") + (x + a * Math.cos(t) * (1 + k * Math.sin(t))).toFixed(3) + " " + (y + b * Math.sin(t)).toFixed(3); } return d + "Z"; };
+      // the eyes are drawn in their own full-screen layer, not inside the drop: the drop grows by a CSS scale, which phones draw as a
+      // blown-up picture (soft, blurry lines), while this layer is drawn at real size, so every line stays sharp however close he comes.
+      // Each frame it is lined up with the drop's eyes from where the drop is on screen
+      const ovS = document.createElementNS(NS, "svg"), ov = document.createElementNS(NS, "g"); ovS.setAttribute("class", "gd-hypov"); ovS.setAttribute("aria-hidden", "true");
+      ovS.style.cssText = "position:fixed;left:0;top:0;width:100vw;height:100vh;overflow:visible;pointer-events:none;z-index:2147483001"; ovS.appendChild(ov); document.body.appendChild(ovS);
+      const svg0 = el.querySelector("svg"), vb = (svg0.getAttribute("viewBox") || "-32 -56 64 60").split(/[\s,]+/).map(Number);
+      const lineUp = () => { const r0 = svg0.getBoundingClientRect(), k = Math.min(r0.width / vb[2], r0.height / vb[3]), px = r0.left + (r0.width - vb[2] * k) / 2 - vb[0] * k, py = r0.top + (r0.height - vb[3] * k) / 2 - vb[1] * k;
+        ov.setAttribute("transform", `translate(${px.toFixed(2)} ${py.toFixed(2)}) scale(${k.toFixed(4)}) ${all.getAttribute("transform") || ""} ${eyes.getAttribute("transform") || ""}`); };
       const sp = [L, R].map((e0, side) => { const g = document.createElementNS(NS, "g"), cp = document.createElementNS(NS, "clipPath"), ce = document.createElementNS(NS, "path"), cl = document.createElementNS(NS, "g"), rim = document.createElementNS(NS, "path");
         cp.id = "hypc" + Math.random().toString(36).slice(2, 6); cp.appendChild(ce); g.appendChild(cp); g.setAttribute("class", "gd-hyp"); cl.setAttribute("clip-path", `url(#${cp.id})`); g.appendChild(cl);
-        rim.style.fill = "none"; rim.style.stroke = EDGE; rim.style.strokeWidth = "0.07"; g.appendChild(rim); eyes.appendChild(g);
+        rim.style.fill = "none"; rim.style.stroke = EDGE; rim.style.strokeWidth = "0.07"; g.appendChild(rim); ov.appendChild(g);
         // the rings: a yellow ground, then new ones born at the middle; never the same colour twice in a row, and the two eyes choose apart
         const live = [{ b: -99, el: (() => { const p0 = document.createElementNS(NS, "path"); p0.style.fill = PAL[0]; p0.style.stroke = "none"; cl.appendChild(p0); return p0; })() }];
         let nextAt = 0.05 + side * GAP * 0.5, ci = side ? 2 : 0;
@@ -10777,10 +10785,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const t0 = performance.now(); let tPh = 0, tLast = t0;
       let on = true; const follow = () => { if (!on) return; const now = performance.now(), dt = Math.min(80, now - tLast); tLast = now; if (run) tPh += dt / PER;   // seconds, from the moment the eyes are all yellow
         place(); requestAnimationFrame(follow); };
-      const place = () => sp.forEach(({ e0, g, ce, rim, step, side }) => { const rx = parseFloat(e0.getAttribute("rx")) || 2.4, ry = parseFloat(e0.getAttribute("ry")) || 3.4, s0 = rx / 2.4, q = eSX / Math.max(0.06, eSY);
+      const place = () => { lineUp(); sp.forEach(({ e0, g, ce, rim, step, side }) => { const rx = parseFloat(e0.getAttribute("rx")) || 2.4, ry = parseFloat(e0.getAttribute("ry")) || 3.4, s0 = rx / 2.4, q = eSX / Math.max(0.06, eSY);
           // round rings stay round on screen, whatever stretch the face has; each eye leans out at the top
           g.setAttribute("transform", `${e0.getAttribute("transform") || ""} translate(${e0.getAttribute("cx")} ${e0.getAttribute("cy")}) scale(${s0.toFixed(3)} ${(s0 * q).toFixed(3)}) rotate(${side ? 11 : -11})`);
-          const B = ry / (s0 * q), shape = egg(2.4, B, K, 0, 0); ce.setAttribute("d", shape); rim.setAttribute("d", shape); step(tPh, 2.4, B); });
+          const B = ry / (s0 * q), shape = egg(2.4, B, K, 0, 0); ce.setAttribute("d", shape); rim.setAttribute("d", shape); step(tPh, 2.4, B); }); };
       follow();
       sp.forEach(({ g }) => g.classList.add("in")); setTimeout(() => { if (on) sp.forEach(({ e0 }) => { e0.style.opacity = "0"; }); }, 420);   // his own eyes give way to the cartoon ones
       // right up to the glass, centred, his eyes grown big (close but never overlapping) and just wide enough that their outer sides meet
@@ -10800,7 +10808,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       // a smooth way out, no snap: the rings fade as his own eyes fade back in, while he shrinks back to his place
       sp.forEach(({ g, e0 }) => { g.style.transition = "opacity .7s ease"; g.classList.remove("in"); e0.style.transition = "opacity .7s ease"; e0.style.opacity = ""; });
       await Promise.all([face({ eyeSL: 1, eyeSR: 1, near: 0 }, 1300), nearTo(1, 0, 1600, "cubic-bezier(.45,0,.25,1)")]);
-      on = false; sp.forEach(({ g, e0 }) => { g.remove(); e0.style.transition = ""; }); nearDone(); gazeLock = false; }, true);
+      on = false; sp.forEach(({ g, e0 }) => { g.remove(); e0.style.transition = ""; }); ovS.remove(); nearDone(); gazeLock = false; }, true);
     // boop: it rushes up and squashes its face against your screen like glass, holds, then peels off and falls back with a wobble
     const boop = () => act(async () => { if (still()) return; await face({ eyeSL: 1.2, eyeSR: 1.2 }, 150); await nearTo(3, 80, 520, "cubic-bezier(.5,0,.9,.6)");
       el.style.transition = "scale .12s ease-out"; el.style.scale = "3.6 3.25"; rigid = true; await face({ eyeL: 0.45, eyeR: 0.45, eyeSL: 1.45, eyeSR: 1.45, blush: 0.8 }, 120); await wait(900);
