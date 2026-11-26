@@ -86,8 +86,10 @@ def recipes(coffees):
             except Exception:
                 subprocess.run([sys.executable, "-m", "playwright", "install", "chromium"], check=True)
                 b = p.chromium.launch()
-            pg = b.new_page()
-            pg.goto(f"http://127.0.0.1:{port}/index.html")
+            # a phone-sized window: on a wide one the site opens itself inside a phone column (an iframe) and this page
+            # never finishes loading, which skipped every coffee page from 25/11/2026 on
+            pg = b.new_page(viewport={"width": 390, "height": 844})
+            pg.goto(f"http://127.0.0.1:{port}/index.html?wide", wait_until="domcontentloaded")
             pg.wait_for_function("() => typeof window.bagRecipe === 'function'", timeout=60000)
             out = []
             for i in range(0, len(coffees), 500):
