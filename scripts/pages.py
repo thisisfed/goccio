@@ -552,6 +552,14 @@ def main():
     write("sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
           + "".join(f"<url><loc>{e(u)}</loc><lastmod>{m}</lastmod></url>\n" for u, m in urls) + "</urlset>\n")
     write("robots.txt", f"User-agent: *\nAllow: /\n\nSitemap: {BASE}/sitemap.xml\n")
+    # a page that isn't there answers "not found" (with this page), not the homepage: without a 404.html the host
+    # serves index.html for every unknown address, so Google saw sold-out coffees as copies of the homepage
+    write("404.html", page("This coffee has gone", "This coffee is no longer on the list.", "/404.html",
+        '<div class="spec wide"><span class="k">Not found</span><h1>This one has gone</h1><p style="margin-top:24px">It sold out, or the roaster stopped selling it. '
+        'Today’s new coffees are on the <a href="/">homepage</a><span id="nfR"></span>.</p></div>'
+        '<script>(function(){var m=location.pathname.match(/^\\/(?:it\\/)?coffee\\/([^\\/]+)\\/[^\\/]+/);'
+        'if(m){var s=document.getElementById("nfR");s.innerHTML=", and the roaster’s others on <a href=\\"/coffee/"+encodeURIComponent(decodeURIComponent(m[1]))+"/\\">its page</a>";}})()</script>',
+        extra_head='<meta name="robots" content="noindex">', nav=False, tight=True))
     bad = sum(1 for r in recs if not r)
     print(f"{len(coffees)} coffee pages, {len(by_roaster)} roaster pages, {len(urls)} addresses in the sitemap, {bad} without a recipe")
 
