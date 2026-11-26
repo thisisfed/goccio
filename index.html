@@ -10367,6 +10367,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       tws.push({ key, from: S[key], to, t0: performance.now(), ms, res }); go(); }, delay));
     const setK = (key, v) => { S[key] = v; };
     // one move at a time: when a new move takes over (a tap, a chat reply), the one still running is cut at its next step, and what it left behind is tidied
+    let fxStop = null;   // a running effect's own off switch (the hypno eyes)
     let curRun = 0, abort = false, freeReq = false, pending = null; const CUT = { cut: true };   // curRun: a move is running; abort: it is being cut for the next one
     const face = (o, ms) => { const g = curRun; return Promise.all(Object.entries(o).map(([k, v]) => tween(k, v, ms))).then(() => { if (g && abort) throw CUT; }); };
     const REST = { eyeL: 1, eyeR: 1, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, blush: 0, cross: 0 };
@@ -10753,9 +10754,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       // his eyes only, drawn like an old cartoon's hypno eyes (26/11/2026): two big ovals, a little egg-shaped, leaning apart at the top and
       // close together, each with a thin dark line round it. Inside, nested rings, each with its own thin dark green line: small ones round,
       // bigger ones taking on the eye's oval. Like the classic cartoon hypno eyes (from the clip Federico sent, 26/11/2026): every ring is
-      // born as a dot in the middle and grows outwards at one steady speed (not a zoom: the bands keep their width as they travel), a new
-      // one every 0.4 s or so, always in the same order (yellow, blue, green, mint, white). They start all yellow; the two eyes are out of step
-      const PAL = ["#dedf86", "#6cbfdc", "#a6d896", "#8ed0bf", "#e8e6ec"], LINE = "#1f4d36", EDGE = "#0b0503", PER = 1000, K = 0.1, GAP = 0.4, TRAVEL = 1.8;   // GAP: the average time between rings (each comes a little early or late, so the widths differ); TRAVEL: seconds from dot to edge
+      // born as a dot in the middle and grows outwards, slowly at first and faster towards the edge, a new
+      // one every half second or so, always in the same order (yellow, blue, green, mint, white). They start all yellow; the two eyes are out of step
+      const PAL = ["#dedf86", "#6cbfdc", "#a6d896", "#8ed0bf", "#e8e6ec"], LINE = "#1f4d36", EDGE = "#0b0503", PER = 1000, K = 0.1, GAP = 0.55, TRAVEL = 2.6, EASE = 1.6;   // GAP: the average time between rings (each comes a little early or late, so the widths differ); TRAVEL: seconds from dot to edge
       // an egg: half-width a, half-height b, wider at the bottom by k, centred at (x, y)
       const egg = (a, b, k, x, y) => { let d = ""; for (let i = 0; i < 40; i++) { const t = (i / 40) * Math.PI * 2; d += (i ? "L" : "M") + (x + a * Math.cos(t) * (1 + k * Math.sin(t))).toFixed(3) + " " + (y + b * Math.sin(t)).toFixed(3); } return d + "Z"; };
       // the eyes are drawn in their own full-screen layer, not inside the drop: the drop grows by a CSS scale, which phones draw as a
@@ -10776,14 +10777,14 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           while (t >= nextAt) { ci = (ci + 1) % PAL.length;
             const p0 = document.createElementNS(NS, "path"); p0.style.fill = PAL[ci]; p0.style.stroke = LINE; p0.style.strokeWidth = "0.055"; cl.appendChild(p0); live.push({ b: nextAt, el: p0 });
             nextAt += GAP * (0.6 + Math.random() * 0.8); }
-          const size = (d) => d.b < -50 ? 3 : Math.max(0, t - d.b) / TRAVEL;   // steady growth from a dot
+          const size = (d) => d.b < -50 ? 3 : Math.pow(Math.max(0, t - d.b) / TRAVEL, EASE);   // from a dot: slow at first, lingering small in the middle, then gathering pace to the edge, as in the clip
           while (live.length > 1 && size(live[1]) > 1.3) live.shift().el.remove();   // covered by the next one: gone
           live.forEach((d) => { const u = size(d), m = Math.min(1, u);
             d.el.setAttribute("d", egg(u * A, u * (A + (B - A) * m), K * m, ox * (1 - m), oy * (1 - m))); }); };
         return { e0, g, ce, rim, step, side }; });
       let run = false;
       const t0 = performance.now(); let tPh = 0, tLast = t0;
-      let on = true; const follow = () => { if (!on) return; const now = performance.now(), dt = Math.min(80, now - tLast); tLast = now; if (run) tPh += dt / PER;   // seconds, from the moment the eyes are all yellow
+      let on = true; fxStop = () => { on = false; ovS.remove(); }; const follow = () => { if (!on) return; const now = performance.now(), dt = Math.min(80, now - tLast); tLast = now; if (run) tPh += dt / PER;   // seconds, from the moment the eyes are all yellow
         place(); requestAnimationFrame(follow); };
       const place = () => { lineUp(); sp.forEach(({ e0, g, ce, rim, step, side }) => { const rx = parseFloat(e0.getAttribute("rx")) || 2.4, ry = parseFloat(e0.getAttribute("ry")) || 3.4, s0 = rx / 2.4, q = eSX / Math.max(0.06, eSY);
           // round rings stay round on screen, whatever stretch the face has; each eye leans out at the top
@@ -10808,7 +10809,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       // a smooth way out, no snap: the rings fade as his own eyes fade back in, while he shrinks back to his place
       sp.forEach(({ g, e0 }) => { g.style.transition = "opacity .7s ease"; g.classList.remove("in"); e0.style.transition = "opacity .7s ease"; e0.style.opacity = ""; });
       await Promise.all([face({ eyeSL: 1, eyeSR: 1, near: 0 }, 1300), nearTo(1, 0, 1600, "cubic-bezier(.45,0,.25,1)")]);
-      on = false; sp.forEach(({ g, e0 }) => { g.remove(); e0.style.transition = ""; }); ovS.remove(); nearDone(); gazeLock = false; }, true);
+      on = false; fxStop = null; sp.forEach(({ g, e0 }) => { g.remove(); e0.style.transition = ""; }); ovS.remove(); nearDone(); gazeLock = false; }, true);
     // boop: it rushes up and squashes its face against your screen like glass, holds, then peels off and falls back with a wobble
     const boop = () => act(async () => { if (still()) return; await face({ eyeSL: 1.2, eyeSR: 1.2 }, 150); await nearTo(3, 80, 520, "cubic-bezier(.5,0,.9,.6)");
       el.style.transition = "scale .12s ease-out"; el.style.scale = "3.6 3.25"; rigid = true; await face({ eyeL: 0.45, eyeR: 0.45, eyeSL: 1.45, eyeSR: 1.45, blush: 0.8 }, 120); await wait(900);
@@ -10958,7 +10959,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     addEventListener("pointerdown", (e) => { if (still() || e.pointerType === "mouse") return; const r = el.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;
       const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1; lookX = dx / d * 3; lookY = dy / d * 1.5; draw();
       setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900); }, { passive: true });
-    el.addEventListener("click", () => { if (opt.tap) opt.tap(); else if (!acting) jumps(); });
+    // a tap always reaches him: whatever he's in the middle of (even a big move that nothing else cuts short) stops at once and tidies
+    // itself away, so the chat opens straight away and in front, never behind a drop that's come up close (26/11/2026)
+    const stopNow = () => { if (!acting) return; abort = true; pending = null; freeReq = false; if (fxStop) { try { fxStop(); } catch (e) {} fxStop = null; } tidyUp(); Object.entries(REST).forEach(([k, v]) => tween(k, v, 260)); };
+    el.addEventListener("click", () => { stopNow(); if (opt.tap) opt.tap(); else if (!acting) jumps(); });
     return { S, busy: () => acting, free: () => { if (!solo) freeReq = true; }, betaLaugh, betaAsk, laserBeta, laserWord, laserPoke, laserDraw, hypno, meditate, doze, text, rolypoly, crossEyes, closeLook, boop, leap, look, tilt: (v) => tween("aRest", v, 320), onPhone, roll, landed: () => phase !== "fall", bored, moon, boo, think, backflip, mj: () => dance(), yawn, wink, poke, smile, happy, surprised, sleepy, curious, hmm, yes, no, jumps, dance, draw,
       bob: () => { poke(-0.7 - Math.random() * 0.6); if (Math.random() < 0.3) { jv = -90; go(); } } }; };
     // ---- talking: tap the drop and ask it something. It answers in a bubble, the words typing themselves out while it bobs.
@@ -12742,7 +12746,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       setInterval(() => { const now = performance.now(); if (CALM || !talking || document.hidden || now - still < 15000 || now - last < 11000 || sayEl.querySelector(".gd-typing")) return; last = now;
         if (document.documentElement.classList.contains("gd-docked")) { const tb = $("askGoccio"); if (tb && tb.bored) tb.bored(); } else if (!D.busy()) D.bored(); }, 1000); }
     // a tap elsewhere closes it; a scroll doesn't (a finger that moves is scrolling, and a scroll never makes a click)
-    document.addEventListener("click", (e) => { if (talking && e.target.isConnected && !talkEl.contains(e.target) && !el.contains(e.target) && !e.target.closest("#askGoccio, #askForm, #camView, input[type=file]")) closeTalk();   /* a pill gone as it was tapped (the answer replaced it) is not a tap outside */ }, true);
+    document.addEventListener("click", (e) => { if (talking && e.isTrusted && e.target.isConnected && !talkEl.contains(e.target) && !el.contains(e.target) && !e.target.closest("#askGoccio, #askForm, #camView, input[type=file]")) closeTalk();   /* a pill gone as it was tapped (the answer replaced it) is not a tap outside */ }, true);
     el.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); talking ? closeTalk() : openTalk(); } });
     window.gdrop = D;
     // to try a move out: ?move=hypno (or any of his moves: laserBeta, betaAsk, rolypoly, boop…) brings him into view and plays it,
