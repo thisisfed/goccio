@@ -67,7 +67,7 @@ n=Math.floor((now-new Date(y,0,0))/864e5),r=Math.PI/180,d=-23.44*Math.cos(2*Math
 B=2*Math.PI*(n-81)/364,eot=9.87*Math.sin(2*B)-7.53*Math.cos(B)-1.5*Math.sin(B),
 h=Math.acos(Math.max(-1,Math.min(1,(Math.sin(-.833*r)-Math.sin(lat*r)*Math.sin(d))/(Math.cos(lat*r)*Math.cos(d)))))/r,noon=12-lon/15-eot/60,u=now.getUTCHours()+now.getUTCMinutes()/60;
 return u<noon-h/15||u>noon+h/15;};
-try{var t=localStorage.getItem("v60.theme");document.documentElement.setAttribute("data-theme",t==="light"?"light":"dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}
+try{var t=localStorage.getItem("v60.theme");if(t!=="auto")document.documentElement.setAttribute("data-theme",t==="light"?"light":"dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}
 </script>
 <style>
 /* Layout idea: Apple product page, warmed up. Cream paper canvas, warm-white rounded tiles, system type set
@@ -700,7 +700,7 @@ table.pours { padding: 10px 24px; }
    as wide as the screen, grey square-ish buttons, hairline rules instead of cards, colour only in small dots.
    Everything above stays for layout; this block sets the look. */
 :root {
-  --bg: #fff; --card: #fff; --ink: #000; --muted: #6b6b6b; --rule: #e3e3e3; --line: #a6a6a6; --wash: #ededed; --pill: #e6e6e6;
+  --bg: #f7f3ed; --card: #f7f3ed; --ink: #000; --muted: #69625a; --rule: #e1d9ce; --line: #a8a196; --wash: #ece6dd; --pill: #e7e0d6;   /* light is a pale crema, not paper white: softer on the eyes, text still well over AA contrast */
   --blue: #000; --accent: #000; --coffee: #000; --lift: none; --lift-hi: none; --grain: none;
   --sans: "Helvetica Neue", Helvetica, Arial, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --big: clamp(26px, 3.4vw, 40px); --r: 4px;
@@ -3394,35 +3394,6 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
 </style>
 </head>
 <body>
-<script>
-/* On a computer the site is its phone self: the page opens inside a phone-wide column in the middle of the screen (560 px, as wide as the phone layout goes) (like
-   Instagram or Threads on the web), so there is one design. The page stops loading out here and loads again in the column,
-   where it is simply the phone site. Its address and title are kept in step out here, the wheel scrolls it from anywhere,
-   and the black around it follows its light or dark. Not for search engines and link previews (they read the page as it is),
-   not inside a frame, not on narrow screens; ?wide shows the old wide layout. */
-(() => { try {
-  // inside the column: no scrollbar of its own (the wheel and the trackpad still scroll it), as on a phone
-  if (self !== top) { try { if (parent.document.documentElement.classList.contains("phone-host")) { const ns = document.createElement("style"); ns.textContent = "html{scrollbar-width:none}html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}"; document.head.appendChild(ns); } } catch (e) {} return; }
-  if (innerWidth < 700 || /[?&]wide\b/.test(location.search) || /bot|crawl|spider|slurp|lighthouse|pagespeed|preview|facebookexternalhit|embedly|whatsapp|telegram|discord|twitterbot|linkedin/i.test(navigator.userAgent)) return;
-  window.stop();
-  const H = document.documentElement; H.className = "phone-host";
-  document.head.querySelectorAll("style, link[rel=stylesheet], link[rel=preload]").forEach((e) => e.remove());   // the site's styles are for the page in the column
-  const st = document.createElement("style");
-  st.textContent = "html,body{margin:0;height:100%;overflow:hidden;background:#000;transition:background .3s}.ph{position:fixed;top:0;bottom:0;left:50%;width:560px;max-width:100vw;height:100%;transform:translateX(-50%);border:0;display:block;box-shadow:0 0 0 1px rgba(128,128,128,.18)}";
-  document.head.appendChild(st);
-  document.body.innerHTML = ""; document.body.removeAttribute("class");
-  const f = document.createElement("iframe"); f.className = "ph"; f.title = "Goccio"; f.src = location.href;
-  f.allow = "camera; microphone; geolocation; clipboard-read; clipboard-write; fullscreen; screen-wake-lock";
-  document.body.appendChild(f);
-  setInterval(() => { try { const w = f.contentWindow, href = w.location.href;
-      if (href && href !== location.href && href.startsWith(location.origin)) history.replaceState(null, "", href);
-      if (w.document.title && document.title !== w.document.title) document.title = w.document.title;
-      const bg = getComputedStyle(w.document.body).backgroundColor; if (bg && bg !== "rgba(0, 0, 0, 0)" && document.body.style.backgroundColor !== bg) document.body.style.backgroundColor = bg; } catch (e) {} }, 400);
-  addEventListener("wheel", (e) => { try { f.contentWindow.scrollBy(0, e.deltaY); } catch (er) {} }, { passive: true });
-  f.addEventListener("load", () => { try { f.focus(); } catch (e) {} });
-  addEventListener("keydown", () => { try { f.focus(); } catch (e) {} });
-} catch (e) {} })();
-</script>
 <!-- the hero film lies over the page top, the top bar included: its black is see-through, so the drop falls across the bar into the coffee -->
 <video class="wm-video" id="wmVideo" muted playsinline webkit-playsinline preload="none" poster="/img/goccio-drop2.jpg?v=3" aria-hidden="true" tabindex="-1" disablepictureinpicture><source src="/img/goccio-drop2.mp4?v=7" type="video/mp4"></video><video class="wm-video" id="wmLoop" muted playsinline webkit-playsinline loop preload="none" aria-hidden="true" tabindex="-1" disablepictureinpicture style="visibility:hidden" data-src="/img/goccio-ripples.mp4?v=4"></video><canvas class="wm-video" id="wmFilm" width="640" height="360" aria-hidden="true" hidden></canvas>
 <header class="top">
@@ -9674,8 +9645,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     finally { $("shelf").classList.remove("loading"); $("shelf").removeAttribute("aria-busy"); }
   }
 
-  // ---------- appearance: Dark, or Light if you pick it ----------
-  const THEMES = ["dark", "light"], THEME_LBL = { light: "Light", dark: "Dark" };   // dark unless you pick light
+  // ---------- appearance: Dark (the default), Light (a pale crema) or Auto (follows the phone's own setting) ----------
+  const THEMES = ["dark", "light", "auto"], THEME_LBL = { light: "Light", dark: "Dark", auto: "Auto" };
   // one icon each: half-filled circle for Auto (follows the sun), a sun for Light, a moon for Dark
   const IC = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
   const THEME_IC = {
@@ -9683,20 +9654,24 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     light: IC('<circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'),
     dark: IC('<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>'),
   };
+  const sysDark = matchMedia("(prefers-color-scheme: dark)");
   function applyTheme(t) {
     const root = document.documentElement;
-    const dark = t !== "light";
-    root.setAttribute("data-theme", dark ? "dark" : "light");
-    document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute("content", dark ? "#14100d" : "#f6f1ea"));
-    // the button shows where a tap takes you, like the language button: a moon while it's light, a sun while it's dark
-    if ($("themeBtn")) $("themeBtn").innerHTML = THEME_IC[dark ? "light" : "dark"]; if ($("themeBtn")) $("themeBtn").setAttribute("aria-label", `Appearance: ${THEME_LBL[t]}. Tap for ${dark ? "light" : "dark"}.`);
+    if (t === "auto") root.removeAttribute("data-theme"); else root.setAttribute("data-theme", t === "light" ? "light" : "dark");
+    const dark = t === "auto" ? sysDark.matches : t !== "light";
+    document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute("content", dark ? "#000000" : "#f7f3ed"));
+    // the button shows the look you're in (a moon, a sun, or the half circle for Auto); a tap moves on to the next
+    const nx = THEMES[(THEMES.indexOf(t) + 1) % THEMES.length];
+    if ($("themeBtn")) { $("themeBtn").innerHTML = THEME_IC[t] || THEME_IC.dark; $("themeBtn").setAttribute("aria-label", `Appearance: ${THEME_LBL[t]}. Tap for ${THEME_LBL[nx]}.`); }
   }
-  let theme = (() => { try { return localStorage.getItem("v60.theme") === "light" ? "light" : "dark"; } catch (e) { return "dark"; } })();
+  let theme = (() => { try { const v = localStorage.getItem("v60.theme"); return THEMES.includes(v) ? v : "dark"; } catch (e) { return "dark"; } })();
+  try { sysDark.addEventListener("change", () => { if (theme === "auto") applyTheme("auto"); }); } catch (e) {}
+  window.__theme = { get: () => theme, set: (t) => { theme = t; try { localStorage.setItem("v60.theme", t); } catch (e) {} applyTheme(t); } };   // Goccio's laser flips the look and puts it back
   // IT / EN: kept on this device, and the page reloads in the other language
   if ($("langBtn")) { const b = $("langBtn"); if (LANG === "it") { b.textContent = "EN"; b.lang = "en"; b.setAttribute("aria-label", "English"); }
     b.onclick = () => { try { localStorage.setItem("v60.lang", LANG === "it" ? "en" : "it"); } catch (e) {}
       location.href = (LANG === "it" ? "/" : "/it/") + location.search + location.hash; }; }   // each language at its own address
-  if ($("themeBtn")) $("themeBtn").onclick = () => { theme = theme === "dark" ? "light" : "dark"; try { localStorage.setItem("v60.theme", theme); } catch (e) {} applyTheme(theme); };
+  if ($("themeBtn")) $("themeBtn").onclick = () => { theme = THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length]; try { localStorage.setItem("v60.theme", theme); } catch (e) {} applyTheme(theme); };
 
   // ---------- stay current: a tab left open for days picks up a new version when you come back to it ----------
   // (phones keep tabs alive, so a new grinder or fix would otherwise not show until a manual refresh).
@@ -10440,7 +10415,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           if (!hit && k > 0.35) { hit = true;   // the hit: the + flips to − and back, the Disclaimer folds or opens
             if (tg === plus) { const bar = document.querySelector(".top"), wasOpen = bar && bar.classList.contains("tools-open") && !bar.classList.contains("tools-closing"); plus.click();   // the real thing: + opens the top bar's tools, − folds them away
               if (!wasOpen) { clearTimeout(laserPoke._shut); laserPoke._shut = setTimeout(() => { const b1 = document.querySelector(".top"); if (b1 && b1.classList.contains("tools-open") && !b1.classList.contains("tools-closing")) plus.click(); }, 7000); } }   // and folds them again by itself if nobody does
-            else if (tg === themeB) { themeB.click(); setTimeout(() => themeB.click(), 2600); }   // the look (light or dark) flips, and flips back a moment later
+            else if (tg === themeB) { const was = window.__theme ? window.__theme.get() : null, darkNow = was === "auto" ? matchMedia("(prefers-color-scheme: dark)").matches : was !== "light"; if (window.__theme) { window.__theme.set(darkNow ? "light" : "dark"); setTimeout(() => window.__theme.set(was), 2600); } }   // the look (light or dark) flips, and flips back a moment later
             else if (tg === ask) { if (ask.hop) { ask.hop(); setTimeout(() => ask.hop(), 420); } ask.animate([{ rotate: "0deg" }, { rotate: "-14deg", offset: 0.25 }, { rotate: "10deg", offset: 0.55 }, { rotate: "0deg" }], { duration: 800, easing: "ease-out" }); }   // little Goccio, zapped: he jumps
             else { const d = disc.parentNode, ar = aimAt(), h1 = H0(); d.open = !d.open; disc.classList.add("arrow-burnt");   // the arrow burns away: a scorch and a wisp where it was, back a few seconds later
               const sc = mk("circle", { class: "fx-scorch-dot", cx: (ar[0] - h1.left).toFixed(1), cy: (ar[1] - h1.top).toFixed(1), r: "7" }, host.querySelector(".gd-fx")); sc.animate([{ opacity: 0.9 }, { opacity: 0.9, offset: 0.6 }, { opacity: 0 }], { duration: 3200, fill: "forwards" });
@@ -11027,14 +11002,17 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const gbGo = (g, pre) => { const qn = gbAsk(g); if (qn) say((pre ? pre + " " : "") + qn, null, curious); else gbFinish(g, pre); };
     // started from a line like "I want to brew Uraga from Climpson on a V60" or "I have a bag of …": whatever it names is taken (brewer, grinder, grams),
     // and the rest is your usual when Goccio knows it (your brewer, your grinder, your dose on that brewer); only what's still unknown is asked
-    const gbStart = (r, text, line) => { gbs = { at: Date.now(), r: r || null, text: text || null, tries: 0 }; ctx = null;
-      if (line) { const g = gbs, l0 = String(line).replace(/[’‘]/g, "'"); for (const [re, k] of GB_BREW) if (re.test(l0) && RECIPE_BREWERS[k]) { g.brewer = k; break; }
+    const gbStart = (r, text, line) => { gbs = { at: Date.now(), r: r || null, text: text || null, tries: 0 }; ctx = null; gbFill(gbs, line);
+      gbGo(gbs, r ? T(`${shownName(r)} from ${roasteryName(r.roaster)}, lovely. Let's set it up.`, `${shownName(r)} della ${roasteryName(r.roaster)}, buonissimo. Prepariamolo.`) : T("Let's brew together.", "Prepariamolo insieme.")); };
+    // what a line names (brewer, grinder, grams), and the usual for the rest when Goccio knows it
+    function gbFill(g, line) {
+      if (line) { const l0 = String(line).replace(/[’‘]/g, "'"); for (const [re, k] of GB_BREW) if (re.test(l0) && RECIPE_BREWERS[k]) { g.brewer = k; break; }
         try { const mk = gbMill(l0); if (mk) g.mill = mk; } catch (e) {}
         if (!g.brewer) { const mb = gbMemBrewer(); if (mb && RECIPE_BREWERS[mb]) g.brewer = mb; else if (state && state.brewer && RECIPE_BREWERS[brewerOf(state)] && localStorage.getItem("v60.state")) g.brewer = brewerOf(state); }
         if (!g.mill && prefs.mill && prefs.mill !== "words" && GRINDERS[prefs.mill]) g.mill = prefs.mill;
         const dm = /\b(\d{1,2}(?:[.,]\d)?) ?(g|gr|grams|grammi)\b/i.exec(l0); if (dm && g.brewer) { const d = Math.round(parseFloat(dm[1].replace(",", "."))), B = RECIPE_BREWERS[g.brewer]; if (B.doses.some(([x]) => x === d)) g.dose = d; }
         if (!g.dose && g.brewer && g.brewer === brewerOf(state) && state.dose && RECIPE_BREWERS[g.brewer].doses.some(([x]) => x === state.dose)) g.dose = state.dose; }
-      gbGo(gbs, r ? T(`${shownName(r)} from ${roasteryName(r.roaster)}, lovely. Let's set it up.`, `${shownName(r)} della ${roasteryName(r.roaster)}, buonissimo. Prepariamolo.`) : T("Let's brew together.", "Prepariamolo insieme.")); };
+    }
     // a copy of the big Goccio as it is right now, to show anywhere: its look carried over from the page's styles, with its own gradients
     // (the page's sit in a section that's hidden while a recipe is open, and a hidden gradient paints nothing)
     const cloneBig = () => { const src = el.querySelector("svg"); if (!src) return null; const c = src.cloneNode(true);
@@ -11086,7 +11064,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       if (g.step === "coffee") {
         if (/^(pick( one)?|you (pick|choose)|surprise me|any|anything|whatever|scegli(ne uno)?|sorprendimi|fai tu)\b/i.test(ql)) { g.tries = 0; pickNew(false, mem.brewer, (r) => { g.r = r; return gbAsk(g) || ""; }); if (!gbAsk(g)) gbFinish(g); return true; }
         const qn = norm(q), ro = findRoaster(qn), cs = findCoffees(qn, ro), mine = ro ? cs.filter((r) => r.roaster === ro.name) : cs;
-        if (mine.length) { g.tries = 0; const go = (r) => { g.r = r; g.at = Date.now(); gbGo(g, T(`${shownName(r)} from ${roasteryName(r.roaster)}, lovely.`, `${shownName(r)} della ${roasteryName(r.roaster)}, buonissimo.`)); };
+        if (mine.length) { g.tries = 0; const go = (r) => { g.r = r; g.at = Date.now(); if (!g.brewer && !g.mill) gbFill(g, q); gbGo(g, T(`${shownName(r)} from ${roasteryName(r.roaster)}, lovely.`, `${shownName(r)} della ${roasteryName(r.roaster)}, buonissimo.`)); };
           if (!ro && coByRoaster(mine).length > 1) askWhichCo(mine, go); else go(mine[0]); return true; }
         if (ro) { const rest = qn.split(" ").filter((x) => x && !ro.keys.includes(x) && !/^(from|by|the|a|an|some|one|coffee|coffees|beans|bag|roastery|roasters?|roasting|and|sons|co|di|della|il|un|caff[eè])$/.test(x));
           if (!rest.length && ro.list && ro.list.length) { askRoasterCo(ro, (r) => { g.r = r; g.at = Date.now(); gbGo(g, T(`${shownName(r)} from ${roasteryName(r.roaster)}, lovely.`, `${shownName(r)} della ${roasteryName(r.roaster)}, buonissimo.`)); },
@@ -11125,7 +11103,13 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // the day the newest coffees landed, in the list's own words: today, yesterday, or the date
     const landedOn = (r) => { const d0 = (r && r.found) || ""; const ymd = (k) => { const t = new Date(); t.setDate(t.getDate() - k); return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`; };
       return d0 === ymd(0) || !d0 ? T("today", "oggi") : d0 === ymd(1) ? T("yesterday", "ieri") : T("on ", "il ") + isoDm(d0); };
-    const hello = () => { const all0 = typeof shelf !== "undefined" ? shelf : [], today = all0.filter((r) => r.just_in), n0 = today.length, day0 = n0 ? String(shelfDate(today[0]) || "").slice(0, 10) : "", n = n0 ? all0.filter((r) => String(shelfDate(r) || "").slice(0, 10) === day0).length : 0,   /* the same number the list's heading says ("230 added today"), counted the same way */ hi = pick([T(`Hi${name ? " " + name : ""}!`, `Ciao${name ? " " + name : ""}!`), T(`Hello${name ? " " + name : ""}!`, `Ciao${name ? " " + name : ""}!`), T(`Oh, hi${name ? " " + name : ""}!`, `Oh, ciao${name ? " " + name : ""}!`), T(`Hey${name ? " " + name : ""}!`, `Ehi${name ? " " + name : ""}!`)]);
+    const hello = () => { const all0 = typeof shelf !== "undefined" ? shelf : [], today = all0.filter((r) => r.just_in), n0 = today.length, day0 = n0 ? String(shelfDate(today[0]) || "").slice(0, 10) : "", n = n0 ? all0.filter((r) => String(shelfDate(r) || "").slice(0, 10) === day0).length : 0,   /* the same number the list's heading says ("230 added today"), counted the same way */ hi = (() => {   /* a different hello each time: never the same one twice running, and some only at their time of day */
+        const nm = name ? " " + name : "", nmc = name ? ", " + name : "", h0 = new Date().getHours();
+        const all = [T(`Hi${nm}!`, `Ciao${nm}!`), T(`Hello${nm}!`, `Salve${nm}!`), T(`Oh, hi${nm}!`, `Oh, ciao${nm}!`), T(`Hey${nm}!`, `Ehi${nm}!`), T(`Hey there${nmc}!`, `Eccoti${nmc}!`),
+          T(`Welcome back${nmc}!`, `Bentornato${nmc}!`), T(`Look who's here${nmc}!`, `Guarda chi c'è${nmc}!`), T(`Hello again${nmc}!`, `Rieccoti${nmc}!`), T(`Ciao${nm}!`, `Ciao ciao${nm}!`), T(`Good to see you${nmc}!`, `Che bello vederti${nmc}!`),
+          ...(h0 >= 5 && h0 < 12 ? [T(`Good morning${nmc}!`, `Buongiorno${nmc}!`), T(`Morning${nmc}!`, `Buondì${nmc}!`)] : h0 >= 12 && h0 < 18 ? [T(`Good afternoon${nmc}!`, `Buon pomeriggio${nmc}!`)] : h0 >= 18 && h0 < 23 ? [T(`Good evening${nmc}!`, `Buonasera${nmc}!`), T(`Evening${nmc}!`, `Sera${nmc}!`)] : [T(`Still up${nmc}?`, `Ancora sveglio${nmc}?`)])];
+        let last = ""; try { last = localStorage.getItem("v60.hi") || ""; } catch (e) {}
+        const g0 = pick(all.filter((x) => x !== last).length ? all.filter((x) => x !== last) : all); try { localStorage.setItem("v60.hi", g0); } catch (e) {} return g0; })();
       if (!n) return say(hi + " " + pick([T("Ask me about coffee.", "Chiedimi del caffè."), T("What are we brewing?", "Cosa prepariamo?"), T("Need a hand with your coffee?", "Ti serve una mano col caffè?")]), null, happy);
       const best = today.map((x) => [suits(x) * 3 + (notesOf(x).length ? 1.5 : 0) + Math.random() * 2, x]).sort((a, b) => b[0] - a[0])[0][1], ns = notesOf(best); picked.add(best.url); lastCo = { r: best, at: Date.now() };
       const what = `${shownName(best)} ${T("from", "di")} ${roasteryName(best.roaster)}${ns.length ? T(", tasting of ", ", che sa di ") + andList(ns) : ""}`;
@@ -11165,7 +11149,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       return false; };
     const offer = (text, chips) => { const a = (chips || []).find((x) => x && typeof x === "object" && x.f); if (!a) return [text, chips];
       const many = /coffees|their|his|them|caff[eè]$|suoi|loro/i.test(a.t); pendingYes = a.f;
-      return [text + "\n" + (a.ask || (many ? T("Want to see them?", "Vuoi vederli?") : T("Want to see it?", "Vuoi vederlo?"))), [{ t: T("Yes", "Sì"), q: T("Yes", "Sì") }, ...chips.filter((x) => x !== a)]]; };   // the question on a line of its own
+      return [text + "\n\n" + (a.ask || (many ? T("Want to see them?", "Vuoi vederli?") : T("Want to see it?", "Vuoi vederlo?"))), [{ t: T("Yes", "Sì"), q: T("Yes", "Sì") }, ...chips.filter((x) => x !== a)]]; };   // the question after an empty line
     // no hint buttons in the chat, ever: when Goccio offers choices it says them ("…: clean and bright, rich and full or easy?"),
     // and typing one (or something close) picks it, as a tap would have
     let pendingOpts = [];
@@ -11939,7 +11923,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         if (((q0b) => /\b(want|wanna|would like|'d like|need|like|going|trying|try) to (brew|make)\b/i.test(q0b) && /\b(help|how|don'?t know|not sure|no idea|guide|teach|show|explain)\b/i.test(q0b) || /^(so |ok |okay )?(i )?(want|wanna|would like|'d like) to (brew|make)( (something|anything|a coffee|coffee|some coffee))?( now| today| please)?[ .!…]*$/i.test(q0b) || /\bhelp( me)?( to)? (brew|make)\b|\b(need|want) (some |your |you )?help (with |to )?(brew|brewing|making|make)\b|\bhelp( me)? with (brewing|my brew|a brew)\b|\baiutami a (preparare|fare)\b/i.test(q0b))(q.replace(/[’‘]/g, "'")) ||
           /\b(want|wanna|would like|'d like|need|like) to (brew|make)\b.*\b(don'?t|do not|dunno|not sure|no idea|never)\b.*\bhow\b|\b(don'?t|do not|dunno|not sure)( really)?( know)? how to (brew|make)\b|\bno idea how to (brew|make)|\b(teach|show) me (how )?to (brew|make)\b|\bhow (do|can) i (brew|make) (coffee|a coffee|something)\b|\bnon so (come )?(preparare|fare|fare un|estrarre)|\binsegnami a (preparare|fare)|\bvoglio (preparare|fare) .*\bma non so\b/i.test(q.replace(/[’‘]/g, "'"))) { ctx = null;
           if (recipeOpen) { say(T("Your recipe's open. Say 'start' when the kettle's ready.", "La ricetta è aperta. Di' 'inizia' quando l'acqua è pronta."), null, happy); return; }
-          gbStart(null); return; }
+          // a coffee named in the same breath ("I have Uraga from Climpson, can you help me brew it on an AeroPress?") is the one; the brewer named is taken too
+          try { const qn1 = norm(q), ro1 = findRoaster(qn1), cs1 = findCoffees(qn1, ro1), mine1 = ro1 ? cs1.filter((r) => r.roaster === ro1.name) : cs1;
+            if (mine1.length && (ro1 || mine1.length === 1)) { gbStart(mine1[0], null, q); return; } } catch (e) {}
+          gbStart(null, null, q); return; }
         if (/^(ok |okay |so )?(let'?s |time to |can we |can you |could you |please |i want to |help me |voglio |aiutami a )?(brew|make (a |me a |us a )?coffee|make some coffee|brew (with me|together)|guide me|walk me through( a)?( brew(ing)?)?|brew step by step|guided brew|preparare un caff[eè]|prepariamo|facciamo un caff[eè])( together| with me| it| this| that| this one| that one| now| time| insieme)?[ !.?]*$/i.test(q)) {
           const fresh = lastCo && Date.now() - lastCo.at < 300000 && /\b(it|this|that|lo|la)\b/i.test(q);
           if (recipeOpen && !fresh) { say(T("Your recipe's open. Say 'start' when the kettle's ready.", "La ricetta è aperta. Di' 'inizia' quando l'acqua è pronta."), null, happy); return; }
