@@ -134,6 +134,10 @@ CASES = [
     # Rise & Grind (26/11/2026): La Leona showed "Creamy"; under "Tasting Notes" each note is bold, then a colon and a description
     ("Rise & Grind's bold notes over descriptions ('<strong>White chocolate</strong>: soft and creamy') give the bold names, not the descriptions",
      lambda: scan.find_notes({"body": '<p>It is gentle, creamy and sweet.</p> <h3>Tasting Notes</h3> <ul> <li> <strong>White chocolate</strong>: soft and creamy</li> <li> <strong>Almonds</strong>: smooth and nutty</li> <li> <strong>Berries</strong>: a gentle fruity finish</li> </ul> <h3>The Details</h3> <ul> <li> <strong>Origin:</strong> Quindío, Colombia</li> </ul>', "title": "La Leona", "tags": []}) == ["White chocolate", "Almonds", "Berries"]),
+    # Tandem (26/11/2026): the notes' label is "We hear:", and the list ends with the coffee's song ("Move Inside My Head")
+    ("Tandem's 'We hear: Lime, Chamomile, Lychee, Move Inside My Head' gives Lime, Chamomile, Lychee (the song isn't a note)",
+     lambda: scan.page_notes("Producer\nAbel Salinas\nVarietals\nMejorado\nElevation\n1890 MASL\nProcessing\nWashed\nWe hear\nLime, Chamomile, Lychee, Move Inside My Head\nEven Better With\nJoin Our Mailing List", "Abel Salinas", "") == ["Lime", "Chamomile", "Lychee"]
+       and scan.find_notes({"body": "<p><strong>We hear:</strong><br>Lime, Chamomile, Lychee, Move Inside My Head</p>", "title": "Abel Salinas", "tags": []}) == ["Lime", "Chamomile", "Lychee"]),
     # Sprout (24/11/2026): the same subtitle layout as Sl.ow, with the name in capitals ("LASSO LASSI", then "Lychee, Tropical, Lactic")
     ("Sprout's 'Lychee, Tropical, Lactic' under 'LASSO LASSI' are the notes",
      lambda: scan.page_notes("Skip to content\nShop\nLASSO LASSI\nLychee, Tropical, Lactic\n\u00a313.00\nSize\n250g\nAdd to cart\nComplex & fruity bang bang baby!", "Lasso Lassi") == ["Lychee", "Tropical", "Lactic"]),
