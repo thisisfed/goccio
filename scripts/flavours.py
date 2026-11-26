@@ -371,3 +371,4 @@ for _w, _e in {"naturelles toastées": "toasted nuts", "caramélisées": "carame
                "appricot": "apricot", "quava": "guava", "mayer lemon": "Meyer lemon", "soft abricot": "soft apricot", "pure cherrie": "cherry", "cacaonibs": "cacao nibs",
                "fiori d'arancio": "orange blossom"}.items():
     PHRASES.setdefault(_w, _e)
+_add("muskovado|muskovadosukker", "muscovado")   # Danish / Swedish / German spellings (Pennybridge, 26/11/2026)
