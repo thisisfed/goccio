@@ -199,7 +199,7 @@ CASES = [
     ("Light Up's lucky bag '【店頭受取のご予約】コーヒー福袋2027' is a set, not one coffee", lambda: scan.not_one_coffee(item("【店頭受取のご予約】コーヒー福袋2027")) is not None),
     ("a lucky bag known only by its encoded slug is a set too", lambda: scan.not_one_coffee(item("2027", url="https://lightupcoffee.com/products/%E5%BA%97%E9%A0%AD%E5%8F%97%E5%8F%96%E3%81%AE%E3%81%94%E4%BA%88%E7%B4%84-%E3%82%B3%E3%83%BC%E3%83%92%E3%83%BC%E7%A6%8F%E8%A2%8B2027")) is not None),
     ("lucky bags and blind boxes in any language are sets, not one coffee", lambda: all(scan.not_one_coffee(item(x)) for x in ["New Year Lucky Bag 2027", "Coffee Grab Bag", "Blind Box Espresso", "Surprise Coffee Box", "Kaffee Wundertüte", "コーヒー豆 詰め合わせ", "飲み比べセット"])),
-    ("coffees with happy or lucky in the name stay: 'Happy Hills Ethiopia', 'Lucky Farm Colombia'", lambda: scan.not_one_coffee(item("Happy Hills Ethiopia")) is None and scan.not_one_coffee(item("Lucky Farm Colombia")) is None),
+    ("coffees with happy, lucky or sorpresa in the name stay: 'Happy Hills Ethiopia', 'Lucky Farm Colombia', 'Finca La Sorpresa'", lambda: all(scan.not_one_coffee(item(x)) is None for x in ["Happy Hills Ethiopia", "Lucky Farm Colombia", "Finca La Sorpresa Geisha"]) and scan.not_one_coffee(item("Caja Sorpresa de Café")) is not None),
     ("'Jones Prepaid Weekly 12 months' is a plan, not a coffee", lambda: scan.not_one_coffee(item("Jones Prepaid Weekly 12 months")) is not None),
     ("'Coffee of the Month (6 month Prepaid)' is a plan", lambda: scan.not_one_coffee(item("Coffee of the Month (6 month Prepaid)")) is not None),
     ("'Uphill Espresso - 6 months' is a plan", lambda: scan.not_one_coffee(item("Uphill Espresso - 6 months")) is not None),
