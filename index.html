@@ -9480,7 +9480,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     ["focus", "blur", "input"].forEach((ev) => a.addEventListener(ev, () => setTimeout(sync, 0)));
     $("shelfQ").addEventListener("input", () => setTimeout(sync, 0));
     go.addEventListener("click", (e) => { if (!f.classList.contains("is-done")) return; e.preventDefault(); e.stopImmediatePropagation();
-      a.value = ""; delete a.dataset.fy; const q = $("shelfQ"); q.value = ""; q.dispatchEvent(new Event("input")); sync(); a.dispatchEvent(new Event("blur")); }, true);   // the hint comes back in the empty box
+      a.value = ""; delete a.dataset.fy; const q = $("shelfQ"); q.value = ""; q.dispatchEvent(new Event("input")); sync(); a.dispatchEvent(new Event("blur"));
+      setTimeout(() => jumpTo($("shelves")), 60); }, true);   // the hint comes back in the empty box; the page goes to the Coffees title, as tapping Coffees does
     f.addEventListener("submit", () => setTimeout(sync, 0)); }
   $("shelfQx").onclick = () => { const q = $("shelfQ"); q.value = ""; q.dispatchEvent(new Event("input")); q.focus(); };
   renderBags(); syncBagBtn();
