@@ -384,3 +384,4 @@ _add("bergamont", "bergamot"); _add("hazlenut|hazlenuts", "hazelnut"); _add("che
 _add("molasse|mélasse|melasse", "molasses")
 _add("solbær", "blackcurrant"); _add("tropiske frugter|tropiska frukter", "tropical fruit")
 _add("bonbon|bonbons", "candy"); _add("bonbon au citron|bonbons au citron", "lemon candy")   # Tanat, 26/11/2026
+_add("agrumes d'orange sanguine|agrumes d’orange sanguine|agrumes d'oranges sanguines|agrumes d’oranges sanguines", "blood orange")   # Tanat's Las Flores, 26/11/2026
