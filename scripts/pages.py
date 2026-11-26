@@ -57,7 +57,7 @@ def roaster_recipe_line(c, name):
         bits.append(f'{rr["pours"][0]} g pours every {rr["pours"][1]} s')
     if rr.get("time"):
         bits.append(f'{rr["time"]} in all')
-    return f"{name}: " + ", ".join(bits) + "." if bits else ""
+    return f"{name} suggests " + ", ".join(bits) + "." if bits else ""
 
 
 def slug(s):
