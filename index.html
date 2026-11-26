@@ -3058,6 +3058,11 @@ html body .gd-m.has-tb{margin-top:12px}
 html body .gd-tb{position:absolute;top:-14px;left:-10px;min-width:28px;height:28px;padding:0 4px;box-sizing:border-box;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:15px;line-height:1;
   background:var(--gd-card);border:1px solid color-mix(in srgb,var(--ink) 16%,var(--bg));box-shadow:0 2px 8px rgba(0,0,0,.18);animation:gdTb .4s cubic-bezier(.3,1.9,.5,1)}
 html body .gd-typing .gd-dots{margin-left:4px}
+/* the typing bubble, as in iMessage (26/11/2026): a fixed little pill, three even grey dots in its middle that fade in turn */
+html body .gd-m.gd-it.gd-typing:not(:has(> :not(.gd-dots))){display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;width:58px;height:37px;padding:0}
+html body .gd-m.gd-it.gd-typing:not(:has(> :not(.gd-dots))) .gd-dots{margin:0;gap:5px;color:var(--muted)}
+html body .gd-m.gd-it.gd-typing:not(:has(> :not(.gd-dots))) .gd-dots i{width:7px;height:7px;animation:gdDotFade 1.2s ease-in-out infinite}
+@keyframes gdDotFade{0%,60%,100%{opacity:.3;scale:.85}30%{opacity:1;scale:1}}
 @keyframes gdMsgIn{from{scale:.85;opacity:0}to{scale:1;opacity:1}}
 @keyframes gdTb{from{scale:0}to{scale:1}}
 html body .gd-it .gd-tb{left:auto;right:-10px}   /* your tapback on its message sits on its other corner */
@@ -3066,7 +3071,7 @@ html body .gd-pick{position:absolute;left:0;bottom:calc(100% + 6px);z-index:3;di
 html body .gd-pick.below{bottom:auto;top:calc(100% + 6px);transform-origin:20% 0}
 html body .gd-pick button{width:36px;height:36px;padding:0;border:0;border-radius:18px;background:none;font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
 html body .gd-pick button.on{background:var(--hl)}
-html body .gd-react-tip{display:block;align-self:flex-start;margin:-4px 0 2px 4px;font:500 var(--fs-s)/1.3 var(--sans);color:var(--muted);animation:gdTalkIn .32s ease both}   /* the one-time "hold a message to react" line, under the answer */
+html body .gd-react-tip{display:block;align-self:flex-start;margin:-4px 0 2px 4px;font:500 var(--fs-s)/1.3 var(--sans);color:var(--muted);animation:gdTipIn .4s ease both} @keyframes gdTipIn{from{opacity:0}to{opacity:1}}   /* the one-time "hold a message to react" line, under the answer */
 @media (hover:hover){html body .gd-pick button:hover{background:color-mix(in srgb,var(--ink) 12%,transparent)}}
 @media (prefers-reduced-motion:reduce){html body .gd-m,html body .gd-tb{animation:none}}
 /* the chat open: the page behind dims and blurs a little. Over the drop, the drop and its chat stay bright; from the top bar, the bar stays too */
@@ -11463,9 +11468,12 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         if (ms) { m.classList.add("gd-typing"); const d = document.createElement("span"); d.className = "gd-dots"; d.innerHTML = "<i></i><i></i><i></i>"; m.appendChild(d); }
         typeT = setTimeout(() => { const free = typing && typing.free, r0 = m.getBoundingClientRect(); finishTyping();
           // the dots bubble grows into the message (its width and height glide), and the words fade in as it opens, as in iMessage
-          if (ms && m.animate && !matchMedia("(prefers-reduced-motion: reduce)").matches) { const r1 = m.getBoundingClientRect(), ink = getComputedStyle(m).color;
-            m.style.overflow = "hidden"; const a = m.animate([{ width: r0.width + "px", height: r0.height + "px" }, { width: r1.width + "px", height: r1.height + "px" }], { duration: 280, easing: "cubic-bezier(.2,.8,.2,1)" });
-            m.animate([{ color: "transparent" }, { color: "transparent", offset: 0.3 }, { color: ink }], { duration: 360, easing: "ease-out" }); a.onfinish = a.oncancel = () => { m.style.overflow = ""; }; }
+          // the message is laid out at its full size at once (its words never rewrap); a mask opens from the dots' pill to the whole
+          // bubble, and the words fade in behind it
+          if (ms && m.animate && !matchMedia("(prefers-reduced-motion: reduce)").matches) { const r1 = m.getBoundingClientRect(), ink = getComputedStyle(m).color, rr = getComputedStyle(m).borderRadius || "16px";
+            const dx = Math.max(0, r1.width - r0.width), dy = Math.max(0, r1.height - r0.height);
+            m.animate([{ clipPath: `inset(0 ${dx}px ${dy}px 0 round 18px)` }, { clipPath: `inset(0 0 0 0 round ${rr})` }], { duration: 300, easing: "cubic-bezier(.2,.8,.2,1)" });
+            m.animate([{ color: "transparent" }, { color: "transparent", offset: 0.35 }, { color: ink }], { duration: 380, easing: "ease-out" }); }
           if (!free) requestAnimationFrame(() => toTop(anchor)); }, ms); }
       showChips(chips); if (CALM) mood = null;
       if (ask2) { const g2 = sayGen, pl2 = nextPills || [[T("Yes", "Sì"), T("Yes", "Sì")], [T("No", "No"), T("No thanks", "No grazie")]]; nextPills = null;   /* "Want to see it?" in a second message once the first is written, then the Yes / No pills */
