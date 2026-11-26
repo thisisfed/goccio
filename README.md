@@ -196,11 +196,49 @@ To teach Goccio, send the issue's link to Claude: the answers go into his knowle
 read, coffees, notes, roasters not reached), brew answers (today, this week, all time, the most brewed coffees), roasters
 added in the last 7 days and every shop the scan couldn't read, with the reason. Counts only.
 
+## Safety nets (all free)
+
+Three checks stop a broken change from reaching the site, or say so straight away when something goes wrong. They run on
+GitHub Actions, which costs nothing for a public repository, and the site itself stays on Cloudflare's free plan.
+
+1. **Before a change is merged** (**Scanner tests**, `.github/workflows/tests.yml`): every scanner mistake ever reported
+   (`scripts/test_scan.py`) must stay fixed, and every script in the page must parse (`scripts/check_js.js`: a stray
+   comment once stopped the whole page). A red cross on the change means don't merge.
+2. **Before anything is published** (**Publish to Cloudflare**, `.github/workflows/deploy.yml`): the page's scripts are
+   checked again, the coffee pages and sitemap are built (tried twice), and `scripts/check_build.py` makes sure the folder
+   about to go live holds the whole site: the page, the Italian page, the data, a page for every coffee and roaster, the
+   sitemap and robots.txt. If anything is missing **nothing is published** and the live site stays as it was (on 25/11/2026
+   the coffee pages and sitemap quietly went missing for 15 hours; that can't happen silently any more). The run fails and
+   GitHub emails you.
+3. **Every morning and after every publish** (**Site check**, `.github/workflows/site-check.yml`, `scripts/site_check.py`):
+   a look at the live www.goccio.co.uk as a visitor and as Google see it: robots.txt, the sitemap (real XML, thousands of
+   addresses), three random coffee pages, today's coffee data (full and at most two days old), Goccio's answers, and the
+   home page in a real browser on a phone and a computer (coffees listed, no script errors, Goccio drawn).
+
+### Where to look
+
+- **Today's report:** GitHub > thisisfed/goccio > **Actions** > **Site check** > the latest run: its summary page is a
+  table of every check, ✅ or ❌. https://github.com/thisisfed/goccio/actions/workflows/site-check.yml
+- **When something is wrong:** an issue labelled **site-check** opens by itself (GitHub emails it to you) and gets a new
+  comment each time the check fails again; it closes by itself once everything passes.
+  https://github.com/thisisfed/goccio/issues?q=label%3Asite-check
+- **A publish that stopped:** Actions > **Publish to Cloudflare**, the red run: the lines starting with "Error" say what
+  was missing. Fix it (or ask Claude with the run's link), and the next publish goes out.
+- **The scan and the brew answers:** the health page, www.goccio.co.uk/health/ (below).
+- **Search:** Google Search Console, property goccio.co.uk: Sitemaps (should say Success, about 10,000 pages) and Pages.
+
 ## Publishing
 
 **Publish to Cloudflare** runs on every change to the main branch, after every daily scan and after a promotion. It copies
 the site, the data, the coffee and roaster pages (`scripts/pages.py`), fonts, icons and images to Cloudflare Pages
-(free plan). Run it by hand if the site ever looks out of date.
+(free plan), after the checks above. Run it by hand if the site ever looks out of date.
+
+## Light, dark and Auto
+
+The look button cycles Dark (the default) → Light (a pale crema) → Auto. Auto follows the sun where you are: light from
+sunrise, dark from sunset, switching by itself at that moment. "Where you are" is the rough town Cloudflare already knows
+from the connection (`functions/api/where.js`, asked once a day, kept on the device); until it's known, Auto follows the
+phone's own light/dark setting.
 
 ## Domain
 

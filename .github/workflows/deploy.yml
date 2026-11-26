@@ -54,6 +54,8 @@ jobs:
       - name: Publish
         if: steps.gate.outputs.go == 'yes'
         run: |
+          # safety net 1: every script in the page must parse, or nothing is published (the live site stays as it was)
+          node scripts/check_js.js index.html
           # only what the site serves: the page, its data, the share-image function and the home screen icons
           mkdir -p /tmp/site
           cp index.html CNAME /tmp/site/ 2>/dev/null || cp index.html /tmp/site/
@@ -71,8 +73,14 @@ jobs:
           cp -r fonts /tmp/site/fonts   # ALT Riviera: Medium for the whole site, Regular (four letters) for the big Goccio
           cp -r icons /tmp/site/icons && cp icons/apple-touch-icon.png /tmp/site/apple-touch-icon.png && cp icons/favicon.ico /tmp/site/favicon.ico   # iPhones look at /apple-touch-icon.png, browsers at /favicon.ico
           # a page per coffee and per roaster, plus sitemap.xml, for search engines; the recipes come from the app's own engine.
-          # If this step fails the site still goes out, just without those pages.
-          pip install -q playwright==1.63.0 && python scripts/pages.py /tmp/site || echo "Coffee pages skipped this time"
+          # Tried twice. If it still fails, nothing is published: the live site keeps yesterday's pages instead of losing them
+          # (on 25/11/2026 a quiet "skipped" left the site without them for 15 hours)
+          pip install -q playwright==1.63.0
+          python scripts/pages.py /tmp/site || { sleep 20; python scripts/pages.py /tmp/site; } || { echo "::error::Coffee pages failed twice: not publishing, the site stays as it was"; exit 1; }
+          # safety net 2: the folder about to go live must hold the whole site (page, Italian page, data, coffee pages, sitemap)
+          python scripts/check_build.py /tmp/site
+          node scripts/check_js.js /tmp/site/index.html /tmp/site/it/index.html
+          for f in /tmp/site/assets/*.js /tmp/site/lib/*.js; do [ -f "$f" ] && node --check "$f"; done   # the page's code, split out into files
           # the listing form files requests as issues with this token (Settings > Secrets > Actions). It's checked first: it makes the
           # "listing" label (201) or finds it there (422); 401/403 = an old or wrong token. Only a working one is handed to the site,
           # so a stale GitHub secret never replaces a good token set straight in Cloudflare
