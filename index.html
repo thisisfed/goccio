@@ -3453,6 +3453,9 @@ html body #askLbl{position:absolute!important;width:1px!important;height:1px!imp
 /* 26/11/2026: "Free, no ads. Buy me a coffee, or send me a bag…" in a pill of its own, like the brew pills: the same grey, corners and padding */
 html body footer #tip{display:block!important;margin-top:10px!important;padding:10px 12px!important;background:var(--pill)!important;border-radius:var(--r,4px)!important;color:var(--ink)!important}
 html body footer #tip, html body footer #tip *, html body footer #tip a, html body footer #tip a *{color:var(--ink)!important}   /* everything in the support pill, links included, in full ink for readability */
+
+/* 26/11/2026: on a phone the first visit's film stops short enough that the first coffee shows at the foot of the first screen, whatever the phone's height (a taller one keeps the full 524 px) */
+@media (max-width:899px){ html body .wm-screen{height:clamp(400px, calc(100svh - var(--top-h, 49px) - 170px), 524px)!important;min-height:0!important} }
 </style>
 </head>
 <body>
@@ -3483,10 +3486,10 @@ html body footer #tip, html body footer #tip *, html body footer #tip a, html bo
       <div class="wm-screen">
         <p class="wordmark" aria-hidden="true" translate="no"><span id="wm">Goccio</span></p>
         <div class="wm-more">
-          <p class="wm-tagline">Read the bag. Goccio does the rest.</p>
+          <h1 class="wm-tagline">Every new coffee, with its recipe.</h1>
           <p class="wm-live wm-tot" id="wmTot" hidden></p>
-          <p class="wm-ctas"><button type="button" class="btn wm-go" id="wmFind">Find a coffee</button><button type="button" class="btn wm-bag" id="wmBag">I have a coffee</button></p>
-          <h1 class="wm-lead">Every new coffee, with its recipe.</h1>
+          <p class="wm-ctas"><button type="button" class="btn wm-go" id="wmFind">Find a coffee</button><button type="button" class="btn wm-bag" id="wmBag">I have a bag</button></p>
+          <p class="wm-lead">Read the bag. Goccio does the rest.</p>
           <p class="wm-live" id="wmLive" hidden><i class="live-dot" aria-hidden="true"></i><span id="wmLiveT"></span></p>
         </div>
       </div>
@@ -8198,7 +8201,7 @@ html body footer #tip, html body footer #tip *, html body footer #tip a, html bo
       if (!parts.length) { suStep = 1; return renderSetup(); }   // all skipped: back to the first question
       q.textContent = it ? "Fatto." : "Set.";
       c.innerHTML = `<p class="su-done">${it ? "Ogni ricetta ora è per " : "Every recipe is now for your "}${esc(parts.slice(0, -1).join(", ") + (parts.length > 1 ? (it ? " e " : " and ") : "") + parts[parts.length - 1])}${it ? ". Scegli un caffè:" : ". Now pick a coffee:"}</p>`
-        + `<div class="chips"><button type="button" class="chip" id="suFind">${it ? "Trova un caffè" : "Find a coffee"}</button><button type="button" class="chip" id="suBag">${it ? "Ho un caffè" : "I have a coffee"}</button></div>`;
+        + `<div class="chips"><button type="button" class="chip" id="suFind">${it ? "Trova un caffè" : "Find a coffee"}</button><button type="button" class="chip" id="suBag">${it ? "Ho un sacchetto" : "I have a bag"}</button></div>`;
       $("suFind").onclick = () => $("wmFind").click(); $("suBag").onclick = () => $("wmBag").click(); return; }
     c.querySelectorAll("button").forEach((x) => x.onclick = () => {
       if (x.dataset.more) { suAll = true; return renderSetup(); }
@@ -9718,7 +9721,7 @@ html body footer #tip, html body footer #tip *, html body footer #tip a, html bo
           if ($("wmTot")) $("wmTot").hidden = true;   // the totals live in the search box now (25/11/2026), not under the slogan
           // what a newcomer needs: how many shops are read, and that it happens daily ("792 roasters checked every morning."), not the day's joiners
           // one promise with the scale in it, no dot line under it: "Every new coffee from 792 roasters, with its recipe before you buy."
-          { const ld = document.querySelector(".wm-more .wm-lead"); if (ld) ld.textContent = it0 ? "Ogni caffè nuovo, con la sua ricetta." : "Every new coffee, with its recipe."; }   // short (26/11/2026): the roaster count is already in the search box above it
+          { const ld = document.querySelector(".wm-more .wm-tagline"); if (ld) ld.textContent = it0 ? "Ogni caffè nuovo, con la sua ricetta." : "Every new coffee, with its recipe."; }   /* 26/11/2026: the promise is the line under the name now, "Read the bag" closes the first screen */   // short (26/11/2026): the roaster count is already in the search box above it
           if ($("wmLive")) $("wmLive").hidden = true; } }
       renderShelfV();
       renderShelf();
