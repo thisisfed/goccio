@@ -10852,7 +10852,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     let pendingYes = null;
     // what the chat is about right now, so a short follow-up ("best one?", "another", "V60") makes sense: set from what Goccio just said
     let ctx = null, picked = new Set(), lastCo = null;   // lastCo: the coffee it last talked about, for "why that one?", "how do I brew it?"
-    const BREW_ASK = /^(let'?s |please |can you |can we |could you )?(brew|make|prepare|start brewing)\b|\bbrew me\b|^prepara(mi|mo)?\b|\b(how (should|do|can|would|shall) (i|we) (brew|make|prepare)|how to (brew|make)|recipe|brew (it|this|that)|best way to brew|ricetta|come (lo|la) (preparo|faccio|estraggo)|come si prepara)\b/i;
+    const BREW_ASK = /^(let'?s |please |can you |can we |could you )?(brew|make|prepare|start brewing)\b|\b(i )?(want|wanna|would like|'d like|need|am going|'m going|gonna|plan) to (brew|make|prepare)\b|\bi('m| am) (brewing|making)\b|\b(i )?(have|'ve got|got|bought|just got) (a |some |this )?(bag|pack|packet|box)( of)?\b|\bho (un |una )?(sacchetto|busta|pacco)\b|\bvoglio (preparare|fare)\b|\bbrew me\b|^prepara(mi|mo)?\b|\b(how (should|do|can|would|shall) (i|we) (brew|make|prepare)|how to (brew|make)|recipe|brew (it|this|that)|best way to brew|ricetta|come (lo|la) (preparo|faccio|estraggo)|come si prepara)\b/i;
     // its recipe: the coffee's own Brew, opened from the list
     const brewIt = (r, after) => { closeTalk(); search(shownName(r) + " " + r.roaster); setTimeout(() => { const b = [...document.querySelectorAll("#shelf button[data-i]")].find((x) => shelf[+x.dataset.i] === r); if (b && !b.closest(".item.brewing")) b.click(); if (after) after(); }, 500); };
     // why it likes a coffee: what the bag says, in plain words
@@ -11015,7 +11015,15 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     document.addEventListener("click", (e) => { if (!e.isTrusted || !document.documentElement.classList.contains("gd-set")) return;
       if (e.target.closest && e.target.closest('#shelf .item .btn[data-i], #bags .btn, #wmBag, #wmFind, #suBag, #go, [data-bn="cancel"], [data-bn="coffee"], #bvReset')) document.documentElement.classList.remove("gd-set"); }, true);
     const gbGo = (g, pre) => { const qn = gbAsk(g); if (qn) say((pre ? pre + " " : "") + qn, null, curious); else gbFinish(g, pre); };
-    const gbStart = (r, text) => { gbs = { at: Date.now(), r: r || null, text: text || null, tries: 0 }; ctx = null;
+    // started from a line like "I want to brew Uraga from Climpson on a V60" or "I have a bag of …": whatever it names is taken (brewer, grinder, grams),
+    // and the rest is your usual when Goccio knows it (your brewer, your grinder, your dose on that brewer); only what's still unknown is asked
+    const gbStart = (r, text, line) => { gbs = { at: Date.now(), r: r || null, text: text || null, tries: 0 }; ctx = null;
+      if (line) { const g = gbs, l0 = String(line).replace(/[’‘]/g, "'"); for (const [re, k] of GB_BREW) if (re.test(l0) && RECIPE_BREWERS[k]) { g.brewer = k; break; }
+        try { const mk = gbMill(l0); if (mk) g.mill = mk; } catch (e) {}
+        if (!g.brewer) { const mb = gbMemBrewer(); if (mb && RECIPE_BREWERS[mb]) g.brewer = mb; else if (state && state.brewer && RECIPE_BREWERS[brewerOf(state)] && localStorage.getItem("v60.state")) g.brewer = brewerOf(state); }
+        if (!g.mill && prefs.mill && prefs.mill !== "words" && GRINDERS[prefs.mill]) g.mill = prefs.mill;
+        const dm = /\b(\d{1,2}(?:[.,]\d)?) ?(g|gr|grams|grammi)\b/i.exec(l0); if (dm && g.brewer) { const d = Math.round(parseFloat(dm[1].replace(",", "."))), B = RECIPE_BREWERS[g.brewer]; if (B.doses.some(([x]) => x === d)) g.dose = d; }
+        if (!g.dose && g.brewer && g.brewer === brewerOf(state) && state.dose && RECIPE_BREWERS[g.brewer].doses.some(([x]) => x === state.dose)) g.dose = state.dose; }
       gbGo(gbs, r ? T(`${shownName(r)} from ${roasteryName(r.roaster)}, lovely. Let's set it up.`, `${shownName(r)} della ${roasteryName(r.roaster)}, buonissimo. Prepariamolo.`) : T("Let's brew together.", "Prepariamolo insieme.")); };
     // a copy of the big Goccio as it is right now, to show anywhere: its look carried over from the page's styles, with its own gradients
     // (the page's sit in a section that's hidden while a recipe is open, and a hidden gradient paints nothing)
@@ -11868,9 +11876,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         say(T(`${roasteryName(ro.name)} is ${w ? "based in " + w : "on Goccio, though it doesn't say where it's based"}. ${n} coffee${n === 1 ? "" : "s"} from them on Goccio right now.`, `${roasteryName(ro.name)} ${w ? "ha sede a " + w : "è su Goccio, ma non dice dove ha sede"}. Adesso ha ${n} caffè su Goccio.`),
           [{ t: T("See their coffees", "Vedi i loro caffè"), f: () => openRoaster(ro.name) }], happy); return true; }
       if (mine.length && !ro && coByRoaster(mine).length > 1 && !whichCo) { const brew = BREW_ASK.test(q) && !/^(how|what|which|best|recipe|ricetta|come)\b/i.test(q.trim()), q0 = q;
-        askWhichCo(mine, (r) => { if (brew) gbStart(r); else lookUp(shownName(r) + " " + r.roaster + " " + q0.replace(/\b(brew|make|prepare|let'?s)\b/gi, " ")); }); return true; }
+        askWhichCo(mine, (r) => { if (brew) gbStart(r, null, q0); else lookUp(shownName(r) + " " + r.roaster + " " + q0.replace(/\b(brew|make|prepare|let'?s)\b/gi, " ")); }); return true; }
       if (mine.length) { const r = mine[0], more = mine.length - 1; lastCo = { r, at: Date.now() };
-        if (BREW_ASK.test(q) && !/^(how|what|which|best|recipe|ricetta|come)\b/i.test(q.trim())) { ctx = null; gbStart(r); return true; }
+        if (BREW_ASK.test(q) && !/^(how|what|which|best|recipe|ricetta|come)\b/i.test(q.trim())) { ctx = null; gbStart(r, null, q); return true; }
         if (BREW_ASK.test(q) || (ctx && ctx.t === "brewwhich")) { ctx = null; say(T(`${shownName(r)} from ${roasteryName(r.roaster)}, lovely. Here's how to brew it.`, `${shownName(r)} della ${roasteryName(r.roaster)}, buonissimo. Ecco come prepararlo.`), null, happy); setTimeout(() => brewIt(r), 1400); return true; }
         say(describe(r) + (more ? T(` (${more} more with that name.)`, ` (Altri ${more} con quel nome.)`) : ""), [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); search(shownName(r) + (ro ? "" : " " + r.roaster)); } }], happy); return true; }
       if (ro && cs.length) { const others = [...new Set(cs.map((r) => r.roaster))].slice(0, 3).map(roasteryName);
