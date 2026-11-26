@@ -232,7 +232,7 @@ def _german_compound(w):
 
 
 # words that are English as well: a note made only of these (and words we don't know) is already English, left alone
-EN_WORDS = set("fruit fruits orange oranges rose roses tropical citrus yogurt clementine whiskey verbena cassis mango banana papaya kiwi "
+EN_WORDS = set("rosehip rosehips fruit fruits orange oranges rose roses tropical citrus yogurt clementine whiskey verbena cassis mango banana papaya kiwi "
                "lime melon caramel chocolate vanilla tea cream jam nougat marzipan pecan macadamia lychee guava raisins raisin prunes prune "
                "violet cranberry bergamot nectarine grapefruit rum floral coco honey almond date dates fig figs cherry lemon peach plum pear "
                "apple grape mandarin tangerine apricot strawberry raspberry blueberry blackberry currant pineapple coconut cocoa cacao toffee "
