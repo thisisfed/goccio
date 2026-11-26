@@ -125,6 +125,12 @@ CASES = [
     ("Assembly's page 'Recipe' drop-down gives 15 g to 255 ml (1:17), 2:15–2:45, 98 °C, a 50 g bloom, flat-bottom",
      lambda: scan.roaster_recipe('<nav><a>Brew guide</a><a>Recipes</a></nav><script>var x={"recipe":"15g"}</script><details><summary>Recipe <svg><path d="M1 1"/></svg></summary><div><p>Pour Over (flat-bottom)</p><ul><li>Brew Ratio - 15g to 255ml (1:17)</li><li>Brew Time - 2:15-2:45</li><li>Water Temp - 98°C</li><li>Bloom - 50g, 30 seconds</li></ul><p>After bloom, pour to 100g.</p></div></details>')
        == {"dose": 15, "water": 255, "ratio": 17, "temp": 98, "time": "2:15–2:45", "bloom": 50, "brewer": "flat"}),
+    # Mokxa (26/11/2026): no notes on any coffee; the French description says them in a sentence, "aux notes intenses de …, … et …"
+    ("Mokxa's 'aux notes intenses de grué de cacao, liqueur d'amande et fruit de la passion' gives three notes (cacao nibs, almond liqueur, passion fruit in English); Italian and Spanish too",
+     lambda: scan.find_notes({"body": "<p>Un café enveloppant aux notes intenses de grué de cacao, liqueur d’amande et fruit de la passion.</p>", "title": "Serinen", "tags": []}) == ["Grué de cacao", "Liqueur d’amande", "Fruit de la passion"]
+       and scan.flavours.english_notes(["Grué de cacao", "Liqueur d’amande", "Fruit de la passion"]) == ["Cacao nibs", "Almond liqueur", "Passion fruit"]
+       and scan.find_notes({"body": "<p>Un caffè con note di pesca, gelsomino e miele.</p>", "title": "X", "tags": []}) == ["Pesca", "Gelsomino", "Miele"]
+       and scan.find_notes({"body": "<p>Un café con notas de durazno, panela y naranja.</p>", "title": "X", "tags": []}) == ["Durazno", "Panela", "Naranja"]),
     # Sprout (24/11/2026): the same subtitle layout as Sl.ow, with the name in capitals ("LASSO LASSI", then "Lychee, Tropical, Lactic")
     ("Sprout's 'Lychee, Tropical, Lactic' under 'LASSO LASSI' are the notes",
      lambda: scan.page_notes("Skip to content\nShop\nLASSO LASSI\nLychee, Tropical, Lactic\n\u00a313.00\nSize\n250g\nAdd to cart\nComplex & fruity bang bang baby!", "Lasso Lassi") == ["Lychee", "Tropical", "Lactic"]),
