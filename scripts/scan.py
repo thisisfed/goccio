@@ -207,7 +207,7 @@ NOTES_RE = re.compile(r"(?:tasting notes?|flavou?rs? like|aromatics|flavour note
                       r"note di degustazione|note aromatiche|note|geschmacksnoten|geschmack|aromen|notes de dégustation|"
                       r"smaksnoter|smagsnoter|smaksnotater|notas de cata|notas|notes)\s*[:\-–]\s*([^\n.]{3,120})", re.I)
 # notes said in a sentence: "Expect notes of pineapple, red apple and hazelnut in a layered, sweet cup"
-NOTES_SENT = re.compile(r"(?:notes? of|flavou?rs? of|tastes? of|hints? of|aromas? of|we(?:'re| are)? (?:getting|tasting)|expect(?:ing)?(?! notes)|tasting like|in the cup,? (?:we|you(?:'ll| will)?|i) (?:find|get|taste|have|pick up))\s+"
+NOTES_SENT = re.compile(r"(?:notes? of|flavou?rs? of|tastes? of|hints? of|aromas? of|(?:aroma|nose|palate|cup|fragrance) (?:presents|shows|offers|gives|brings|reveals)|on the palate,?|we(?:'re| are)? (?:getting|tasting)|expect(?:ing)?(?! notes)|tasting like|in the cup,? (?:we|you(?:'ll| will)?|i) (?:find|get|taste|have|pick up))\s+"
                         r"((?:[A-Za-z][\w'’\-]*(?:\s(?!and\b)[A-Za-z][\w'’\-]*){0,2})(?:\s*(?:,|&|\band\b)\s*[A-Za-z][\w'’\-]*(?:\s(?!and\b)[A-Za-z][\w'’\-]*){0,2}){1,5})", re.I)
 # a label on a line of its own with the notes on the next ("Tasting notes\nStrawberry, blueberry, nectarine"; Standout)
 NOTES_LINE = re.compile(r"(?:tasting notes?|flavou?rs? like|aromatics|flavou?r notes|flavou?r composition|flavou?r descriptions?|cup profile|flavou?r profile|cup(?:ping)? notes|in the cup|smaksnoter|smagsnoter|smaksnotater|geschmacksnoten|"
@@ -229,7 +229,7 @@ NOTES_CHECK = 10   # pages read for notes with these rules (10: elbgold's "Noten
 # A fix for one shop's page layout re-reads only that shop: raise its number here (above NOTES_CHECK), not NOTES_CHECK,
 # which re-reads every coffee without notes everywhere (thousands of pages). Raise NOTES_CHECK only for a change to the
 # rules every shop goes through
-NOTES_RECHECK = {"Climpson & Sons": 10, "Sydrip": 10, "Fève": 10, "Passage": 10, "The Source": 10, "Terraform": 11, "Lucid Coffee Roasters": 12, "James Gourmet Coffee": 11, "Sl.ow": 11, "Sprout": 11, "Rogue Wave": 11, "Dayglow": 11, "Established Coffee": 11, "Langøra": 12, "Jolly Bean Roastery": 12, "Light Up Coffee": 12, "Trigger": 12, "Crosby Coffee": 12, "Tandem": 13}   # e.g. {"Monmouth": 10}
+NOTES_RECHECK = {"Wes Ngopi": 13, "Climpson & Sons": 10, "Sydrip": 10, "Fève": 10, "Passage": 10, "The Source": 10, "Terraform": 11, "Lucid Coffee Roasters": 12, "James Gourmet Coffee": 11, "Sl.ow": 11, "Sprout": 11, "Rogue Wave": 11, "Dayglow": 11, "Established Coffee": 11, "Langøra": 12, "Jolly Bean Roastery": 12, "Light Up Coffee": 12, "Trigger": 12, "Crosby Coffee": 12, "Tandem": 13}   # e.g. {"Monmouth": 10}
 notes_ver = lambda shop: max(NOTES_CHECK, NOTES_RECHECK.get(shop, 0))
 NOTES_V = 2       # page notes read under these list rules; a short list (two or fewer) read under older ones is read once more
 
@@ -267,7 +267,7 @@ def stop_notes(text):
     return None
 
 
-NOTES_TAIL = re.compile(r"\s(?:in|with|for|that|which|on|to|from|giving|making|alongside|plus|throughout|backed|balanced|layered|all|as|when|while)\b.*$", re.I)
+NOTES_TAIL = re.compile(r"\s(?:in|with|for|that|which|on|to|from|giving|making|alongside|plus|throughout|backed|balanced|layered|all|as|when|while|leads?|lead(?:ing)?|follow(?:s|ed|ing)?|come|comes|appear|appears)\b.*$", re.I)   # "... blueberry jam lead, followed by" (Wes Ngopi)
 
 
 # the same in French, Italian and Spanish: "aux notes intenses de grué de cacao, liqueur d'amande et fruit de la passion" (Mokxa),
