@@ -22,10 +22,16 @@ rel = json.loads((ROOT / "data" / "releases.json").read_text())["releases"]
 seen = Counter()
 for r in rel:
     seen.update({w for n in r.get("notes") or [] for w in re.findall(r"[a-zà-ÿ]+", n.lower())})
-TASTE = {w for w, c in seen.items() if c >= 6} | set(flavours.EN_WORDS) | {w for k in flavours.W for w in k.split()}
+TASTE = {w for w, c in seen.items() if c >= 6} | set(flavours.EN_WORDS) | {w for k in flavours.W for w in k.split()} | {w for k, v in flavours.W.items() for w in v[0].split()}
+# real tastes that few coffees mention, so they aren't flagged (from the first lists, 26/11/2026)
+TASTE |= set("""roasted starfruit osmanthus panettone satsuma woody rosemary rosewater speculoos zingy limoncello mangosteen tangy hawthorn calamansi longan
+stevia granola loquat pastry tiramisu candyfloss maltesers banoffee herbaceous hops effervescent umami chrysanthemum lingonberry sandalwood barquillo
+jackfruit ganache frangipane lollipop darjeeling viscous gooseberries gooseberry vermouth cereals flowery mulberry cointreau boysenberry dragonfruit dandelion
+daisy botanical biscoff chewy waffle peachy camomile limeade choco allspice cognac snickers savory sapodilla velvet smoke quince lactic gianduja malic
+carnation amarula soldum blaeberries refreshers fruitiness nuttiness balanced complex round long smoked oak wood rye puchao love hearts""".split())
 # words that describe a coffee, its place or its making, not how it tastes
-NOT_TASTE = set("""typical typically classic dynamic balanced complex structured structure profile region regional origin process processed
-washed natural anaerobic altitude roast roasted espresso filter notes note hints hint where when which this that our
+NOT_TASTE = set("""typical typically classic dynamic structured structure profile region regional origin process processed
+washed natural anaerobic altitude roast espresso filter notes note hints hint where when which this that our
 we you perfect great delicious amazing lovely nice unique specialty quality harvest farm producer variety coffee cup brew
 recommended ideal suitable everyday daily house blend""".split())
 

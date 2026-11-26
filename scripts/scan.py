@@ -1614,7 +1614,12 @@ NOTE_NOT = re.compile(r"^(?:courtesy|half|now|let|whilst|while|these|those|full|
 
 
 # page markup read as a note: an image's address or srcset ("https://…-1024x717.png 1024w"), a tag ("<svg", "<img"), an attribute ("Class=\"…", "Alt=\"Chocolate")
-NOTE_JUNK = re.compile(r"[<>]|=\s*[\"'“”]|https?:|//|\.(?:png|jpe?g|gif|svg|webp|avif)\b|\b\d{2,4}w\b|\bsizes=|\bsrcset\b", re.I)
+NOTE_JUNK = re.compile(r"[<>]|=\s*[\"'“”]|https?:|//|\.(?:png|jpe?g|gif|svg|webp|avif)\b|\b\d{2,4}w\b|\bsizes=|\bsrcset\b|"
+                       # not tastes, from the odd-notes list (26/11/2026): placeholders, hashtags run together, product details, praise, names
+                       r"^x{3,}$|^(?:insta|grep|med|small|alta|nso|rices|blackc|con cue|pth to|ferentes|es producteur|singleorigin|specialtycoffee|"
+                       r"en grain|pur arabica(?: [ée]quitable)?|filter coffee|cafeti[eè]re coffee|iced coffee|origin|unusual coffee|consistent|crafted|designed|wonderful|"
+                       r"exciting|enticing|distinct|unique|typically|nostalgia|but still delicious|mittelkr[äa]ftig|breit|[ée]tincelle|raffinatezza|eleganza|"
+                       r"inconfondibili|avvolgenti|sentori caldi|maracaturra|minas gerais|yirgacheffe)$", re.I)
 
 
 # a brew guide's headings read as notes ("Ratios, dose, bloom"; The Source): how to brew it, not how it tastes
@@ -1659,7 +1664,8 @@ def tidy_note(n):
     'Butterscotch followed by' -> 'Butterscotch', 'A caramel finish' -> 'Caramel finish', 'Rounded out by' and 'Hints of' -> '' (dropped)."""
     n = re.sub(r"[\xa0\u2009\u202f\s]+", " ", re.sub(r"[\u200b-\u200d\ufeff]", "", n or "")).strip()   # no-break spaces: "Blood\xa0orange"
     n = re.sub(r"^[^\w\s(\"'“<]+\s*", "", n)   # an emoji in front: "🍫Chocolate" -> "Chocolate"
-    n = re.sub(r"^(?:imagine|expect|tasting notes?|notes?|taste|with)\s*:?\s+", "", n, flags=re.I)
+    n = re.sub(r"^(?:imagine|expect|tasting notes?|notes?|taste|with|profile)\s*[:：]?\s+", "", n, flags=re.I)   # also "Notes： Black plum" (a wide colon), "Profile Fruity"
+    n = re.sub(r"\s+(?:flavou?r\s+)?profile$|\s+notes?;.*$", "", n, flags=re.I)   # "Fruit-forward profile", "Lemon notes; bright"
     n = re.sub(r"^(?:where|when|while|whereas|which|and then|then)\s+", "", n, flags=re.I)   # cut from a sentence: "Where juicy mandarin" -> "Juicy mandarin" (Greytone, 26/11/2026)
     n = re.sub(r"^super-?\s?sweet\s+", "", n, flags=re.I)   # "Expect super-sweet plum" -> "Plum"
     for _ in range(2):   # "Cherry notes up front" -> "Cherry", "Red berry flavour notes" -> "Red berry"
@@ -1951,7 +1957,20 @@ def clean_name_raw(title, roaster, origin):
     return name
 
 
+def strip_marks(name):
+    """Shop marks round a name: "*NEW Special Release Blackberry Coferment*" (Jolly Bean), bag sizes "12oz Ethiopia Kochere",
+    "Caffeinate Mars 2.0, 12oz, Whole Bean" (26/11/2026). A name that would be left empty keeps what it had."""
+    n0 = name or ""
+    n = re.sub(r"(?:(?<=^)|(?<=\s))\*+\s*(?:new|nuovo|nuevo|nouveau|neu)\b\s*", " ", n0, flags=re.I)
+    n = re.sub(r"(?:(?<=^)|(?<=\s))\*+|\*+(?=\s|$)", " ", n)   # asterisks round words go; inside a word stay ("Holy Sh*t")
+    n = re.sub(r"(?:(?<=^)|(?<=[\s,]))\d+(?:[.,]\d+)?\s?(?:oz|lbs?|kg|g|gr)\b\.?,?", " ", n, flags=re.I)
+    n = re.sub(r",?\s*(?:whole ?beans?|in grani|en grains?|ganze bohnen?)\s*$", "", n, flags=re.I)
+    n = re.sub(r"\s*,\s*(?=,|$)", "", re.sub(r"\s{2,}", " ", n)).strip(" ,-–")
+    return n if re.search(r"[A-Za-zÀ-ÿ]{2}", n) else n0
+
+
 def _clean_name(title, roaster, origin):
+    title = strip_marks(re.sub(r"<[^>]+>", "", re.sub(r"<br\s*/?>", " ", html.unescape(title), flags=re.I)))
     title = re.sub(r"<br\s*/?>", " ", html.unescape(title), flags=re.I)
     title = re.sub(r"<[^>]+>", "", title)
     title = re.sub(r"^\s*\d{1,2}/\d{1,2}\s+\d{1,2}:\d{2}\s*[~〜～]\s*", "", title)   # Philocoffea: "11/16 10:00~" release stamp

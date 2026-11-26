@@ -372,3 +372,12 @@ for _w, _e in {"naturelles toastées": "toasted nuts", "caramélisées": "carame
                "fiori d'arancio": "orange blossom"}.items():
     PHRASES.setdefault(_w, _e)
 _add("muskovado|muskovadosukker", "muscovado")   # Danish / Swedish / German spellings (Pennybridge, 26/11/2026)
+
+# 26/11/2026, from the odd-notes list: words shops wrote that stayed untranslated or misspelt
+_add("cassonade", "brown sugar"); _add("canelle|cannelle", "cinnamon"); _add("mélilot|melilot", "sweet clover"); _add("citronnelle", "lemongrass")
+_add("complexité|complexe|komplex|complejo|complessità", "complex", "a"); _add("acidité", "acidity"); _add("citrique", "citric", "a")
+_add("tourbée|tourbé", "peaty", "a"); _add("profondeur", "depth"); _add("douceur", "sweetness"); _add("sucrée|sucré", "sweet", "a")
+_add("samtig", "velvety", "a"); _add("voll|voller", "full", "a"); _add("vanilje", "vanilla"); _add("arancio", "orange"); _add("tropisk", "tropical", "a")
+_add("afrutado|frutal|fruttato", "fruity", "a"); _add("achocolatado", "chocolatey", "a"); _add("equilibrado|equilibrato", "balanced", "a")
+_add("dolcezza", "sweetness"); _add("setosità", "silkiness"); _add("fruktkola", "fruit cola"); _add("pasta frolla", "shortcrust pastry")
+_add("bergamont", "bergamot"); _add("hazlenut|hazlenuts", "hazelnut"); _add("chery", "cherry"); _add("chocolaty", "chocolatey", "a")
