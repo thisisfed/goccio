@@ -10,7 +10,11 @@ try { var fd = new Date(), fday = fd.getFullYear() + "-" + (fd.getMonth() + 1) +
 /* the Italian words, only for the Italian page: goccio.co.uk/it, or Italian picked on this device */
 try { if (/^\/it(\/|$)/.test(location.pathname) || localStorage.getItem("v60.lang") === "it") document.write('<script src="/lib/it.js?v=1"><\/script>'); } catch (e) {}
 setTimeout(() => document.documentElement.classList.remove("wait"), 6000);
+/* nothing slides into place as the page appears: no transitions until it has been on screen for two frames (26/11/2026) */
+document.documentElement.classList.add("boot");
+new MutationObserver(function (m, o) { var h = document.documentElement; if (h.classList.contains("wait")) return; o.disconnect(); window.__shownAt = performance.now(); requestAnimationFrame(function () { requestAnimationFrame(function () { h.classList.remove("boot"); }); }); }).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
 </script>
+<style>html.boot :is(#_#_#_, *), html.boot :is(#_#_#_, *)::before, html.boot :is(#_#_#_, *)::after { transition: none !important; }   /* the id trick outranks every other transition rule */</style>
 <script>
 /* The site used to live at two older addresses (below) and now lives at www.goccio.co.uk. Browser storage belongs to one
    address, so an old address packs this device's journal, preferences and recipe into the link and the new one unpacks them. */
@@ -3746,7 +3750,7 @@ html body footer #tip, html body footer #tip *, html body footer #tip a, html bo
     <div class="fcol f-cred">
     <details class="foot-x" id="footCredits" open><summary class="foot-note refs-h foot-credits">Credits</summary>
     <p class="foot-note" id="credit">Made by <a href="https://thisisfed.xyz/" target="_blank" rel="noopener">Federico R. T. Ferrari</a>.<br><span id="tip">Free, no ads. <a href="https://buymeacoffee.com/thisisfed" target="_blank" rel="noopener">Buy me a coffee</a><span id="bagTip">, or send me a bag: an <a href="https://gustatory.co/products/gift-a-drink" target="_blank" rel="noopener" style="white-space:nowrap">e-gift card</a> for coffee from independent roasters, emailed to <a class="mail mail-txt" href="#" data-m="ku.oc.oiccog@nu">us</a></span>.</span></p>
-    <p class="foot-note" id="rights">Set in ALT Riviera, with thanks to <a href="https://alt-tf.com/" target="_blank" rel="noopener">Alt Type Foundry</a>.<br>Hosted on <a href="https://pages.cloudflare.com/" target="_blank" rel="noopener">Cloudflare</a>, domain by <a href="https://www.spaceship.com/" target="_blank" rel="noopener">Spaceship</a>.<br>Coffee names and tasting notes belong to their roasters.</p>
+    <p class="foot-note" id="rights">Set in ALT Riviera, with thanks to <a href="https://alt-tf.com/" target="_blank" rel="noopener">Alt Type Foundry</a>.<br>Hosted on <a href="https://pages.cloudflare.com/" target="_blank" rel="noopener">Cloudflare</a>, domain by <a href="https://www.spaceship.com/" target="_blank" rel="noopener">Spaceship</a>.</p>
     <p class="foot-note foot-copy">© <span id="cYear">2026</span> Federico R. T. Ferrari. All rights reserved.</p>
     </details>
     <p class="foot-note foot-all foot-links"><a href="/new/">New this week</a><a href="/coffee/">Every coffee, by roaster</a><a href="/list/">Get your roastery listed</a><a href="/list/#remove">Remove your roastery</a><a href="/privacy/">Privacy</a><a class="mail" href="#" data-m="ku.oc.oiccog@nu">Email us</a></p>
@@ -7131,6 +7135,7 @@ html body footer #tip, html body footer #tip *, html body footer #tip a, html bo
     .sort((a, b) => pk(a.roaster) - pk(b.roaster)); };
   // ---------- shelves ----------
   let knownRoasters = [];   // every roaster we follow, for reading their names off a bag
+  let shelfDayN = null, shelfSibs = [];   // set while only the first part of the list is in
   let shelfPart = 0;   // while only today's coffees are in: how many the full list holds
   let shelf = [], shelfF = "all", shelfR = "all", shelfAll = false, shelfV = "all", shelfO = "all", shelfRo = "", shelfN = 10;   // one list: every coffee
   // Made for, picked by you (Everything until you do). Filter: roasted for filter or omni, single origins, and blends
@@ -7867,15 +7872,15 @@ html body footer #tip, html body footer #tip *, html body footer #tip a, html bo
     // only the coffees on screen and their roaster's others are looked at (each name worked out once and kept), so it costs nothing
     // the variety and the process are in the tags: said again at the end of the name ("El Pergamino Bourbon Natural") they only make it long
     const nm = (r) => r._nm ?? (r._nm = tailTrim(coffeeName(r) ?? shortName(r), r)), seen = new Map();
-    if (!shelf._byRo) { shelf._byRo = new Map(); shelf.forEach((r) => { const a = shelf._byRo.get(r.roaster); a ? a.push(r) : shelf._byRo.set(r.roaster, [r]); }); }
-    const inList = new Set(list);
+    if (!shelf._byRo) { shelf._byRo = new Map(); shelf.concat(shelfPart ? shelfSibs : []).forEach((r) => { const a = shelf._byRo.get(r.roaster); a ? a.push(r) : shelf._byRo.set(r.roaster, [r]); }); }
+    const inList = new Set(list); const whole = shelfPart && list.length === shelf.length; if (whole) shelfSibs.forEach((r) => inList.add(r));   // the whole list on screen, only its first part in: the namesakes still waiting count too
     // two coffees of one roaster under one short name get their full names, unless the tags already tell them apart (El Pergamino: natural, honey, washed)
     const tagKey = (r) => "|" + String(r.process || "").toLowerCase() + "|" + String(r.variety || "").toLowerCase();
     shown.forEach((r) => { const k = r.roaster + "|" + String(nm(r)).toLowerCase() + tagKey(r); if (seen.has(k)) return;
       seen.set(k, new Set((shelf._byRo.get(r.roaster) || []).filter((o) => inList.has(o) && String(nm(o)).toLowerCase() === String(nm(r)).toLowerCase() && tagKey(o) === tagKey(r)).map((o) => String(o.name).toLowerCase()))); });
     const fullName = (r) => String(r.name || "").replace(/^\s*(?:espresso|filter|filtro|omni)\s*[-–—:|]\s*/i, "").replace(/["“”]/g, "").replace(/\s{2,}/g, " ").trim();
     // how many coffees each day holds in the list as it stands (filters and all), for the day's heading: "Added yesterday, 345 coffees"
-    const dayN = new Map(); list.forEach((r) => { const k = String(shelfDate(r) || "").slice(0, 10); if (k) dayN.set(k, (dayN.get(k) || 0) + 1); });
+    const dayN = new Map(); list.forEach((r) => { const k = String(shelfDate(r) || "").slice(0, 10); if (k) dayN.set(k, (dayN.get(k) || 0) + 1); }); if (whole && shelfDayN) Object.entries(shelfDayN).forEach(([k, v]) => { if (dayN.has(k)) dayN.set(k, v); });   // the day's whole count, not the part that is in yet
     let lastGroup = null, lastDay = null; const byDay = !q; window.__dayT = {};   // in date order (no search), the day is said once, as a heading over that day's coffees, not on every card
     brewHome();   // the recipe sits inside a row while a listed coffee is being brewed: out before the rows are redrawn, back in after
     $("shelf").innerHTML = shown.length ? shown.map((r) => {
@@ -9688,6 +9693,7 @@ html body footer #tip, html body footer #tip *, html body footer #tip a, html bo
       let full = null;
       const apply = (d, part) => {
       shelfPart = part ? (d.total || 0) : 0;
+      shelfDayN = part && d.day_n ? d.day_n : null; shelfSibs = part && Array.isArray(d.sibs) ? d.sibs.filter((r) => r && r.name && r.roaster) : [];   // the small first file says how many each day holds in the whole list, and brings the coffees that share a name with one on it, so nothing on screen changes when the full list takes over
       shelf = (d.releases || []).filter((r) => r.name && r.roaster);
       knownRoasters = (d.roasters || []).map((r) => r && r.name).filter(Boolean);
       roShops = new Map((d.roasters || []).filter((r) => r && r.name && r.shop).map((r) => [r.name, r.shop]));
@@ -9716,6 +9722,7 @@ html body footer #tip, html body footer #tip *, html body footer #tip a, html bo
           if ($("wmLive")) $("wmLive").hidden = true; } }
       renderShelfV();
       renderShelf();
+      if (window.__filmFit) try { window.__filmFit(); } catch (e) {}   // the film measured against the list as it shows, not as it was before it came in
       document.documentElement.classList.remove("wait");
       // ?howwasit: a look at the end of a brew without brewing. Opens the newest coffee and goes straight to its "How was it?"
       // (answers given here are kept on this device only, never counted)
@@ -10245,7 +10252,7 @@ html body footer #tip, html body footer #tip *, html body footer #tip a, html bo
         const rule = document.querySelector(".hero-sec ~ .sec .sec-head, .sec-head"), want = rule ? docTop(rule) : docTop(h) + h.offsetHeight;
         let H = Math.round(docTop(h) + h.offsetHeight); v.style.height = H + "px";
         const foot = docTop(v) + v.offsetHeight; if (foot > 0 && want > 0) { H = Math.round(H * want / foot); v.style.height = H + "px"; } const lp = $("wmLoop"); if (lp) lp.style.height = v.style.height; const c = $("wmFilm"); if (c) c.style.height = v.style.height; };
-      let fw = innerWidth; fit(); addEventListener("resize", () => { if (innerWidth !== fw) { fw = innerWidth; fit(); } });   // only a new width re-fits: a phone's address bar folding away is not one
+      window.__filmFit = fit; let fw = innerWidth; fit(); addEventListener("resize", () => { if (innerWidth !== fw) { fw = innerWidth; fit(); } });   // only a new width re-fits: a phone's address bar folding away is not one
       setTimeout(fit, 400); setTimeout(fit, 2000); if (document.fonts) document.fonts.ready.then(fit);
       const sc = () => document.documentElement.classList.toggle("scrolled", scrollY > 2); sc(); addEventListener("scroll", sc, { passive: true });
       // while the drop is in the air it stays in front of the bar, scrolled or not (on a phone the film often starts with the first scroll)
@@ -12695,28 +12702,7 @@ html body footer #tip, html body footer #tip *, html body footer #tip a, html bo
         let filmOn = () => false;
         setInterval(() => { if (document.hidden || performance.now() - idle < 4000 || filmOn()) return; const a = Math.random() * Math.PI * 2; tx = Math.cos(a) * 2.6; ty = Math.sin(a) * 1.8; go(); setTimeout(() => { if (performance.now() - idle >= 4000) { tx = 0; ty = 0; go(); } }, 1400); }, 3500);
         tb.hop = () => { hopT = performance.now(); go(); };
-        // the page opens with the search box reaching over him; a moment later he comes away from its end like a drop of water,
-        // stretched as he pulls free, round again with a little bounce, and blinks. Each page view, at the top of the page only
-        { const box = tb.parentElement && tb.parentElement.querySelector(".ask-box");
-          // a reload or a step back puts the page back where it was a moment later: no show then, only on a fresh visit to the top
-          // (a reload where you were at the top plays it too: where you were is noted as you leave)
-          let navT = "navigate", wasY = 0; try { navT = (performance.getEntriesByType("navigation")[0] || {}).type || "navigate"; wasY = +sessionStorage.getItem("v60.leftAt") || 0; } catch (e) {}
-          addEventListener("pagehide", () => { try { sessionStorage.setItem("v60.leftAt", String(Math.round(scrollY))); } catch (e) {} });
-          if (box && (navT === "navigate" || wasY < 40) && scrollY < 40 && !location.hash && !document.documentElement.classList.contains("brew-in")) {
-            const br = box.getBoundingClientRect(), gr = tb.getBoundingClientRect(), cover = gr.right - br.right;
-            if (cover > 0 && cover < 120) {
-              box.style.position = "relative"; box.style.zIndex = "2"; box.style.marginRight = -cover + "px"; tb.style.opacity = "0";
-              const undo = () => { box.style.marginRight = ""; box.style.zIndex = ""; box.style.position = ""; tb.style.opacity = ""; };
-              const away = () => { if (scrollY > 40) { removeEventListener("scroll", away); undo(); } }; addEventListener("scroll", away, { passive: true });
-              setTimeout(() => { removeEventListener("scroll", away); if (scrollY > 40 || box.style.marginRight === "") return undo();   /* scrolled away meanwhile: just there */ const ease = "cubic-bezier(.45,0,.2,1)";
-                box.animate([{ marginRight: -cover + "px" }, { marginRight: -cover * 0.35 + "px", offset: 0.55 }, { marginRight: "0px" }], { duration: 650, easing: ease, fill: "forwards" })
-                  .finished.then(() => { box.style.marginRight = ""; box.style.zIndex = ""; box.style.position = ""; box.getAnimations().forEach((a) => a.cancel()); }).catch(() => {});
-                tb.style.opacity = "";
-                tb.animate([{ transform: `translateX(${-cover * 0.6}px) scale(.5,.7)`, opacity: 1, borderRadius: "50%" },   /* under the box's end: it comes out of it */
-                  { transform: `translateX(${-cover * 0.2}px) scale(1.35,.7)`, opacity: 1, offset: 0.45 },   /* pulled long as it comes away */
-                  { transform: "translateX(2px) scale(.88,1.12)", offset: 0.72 },   /* free: it snaps round */
-                  { transform: "none", opacity: 1 }], { duration: 800, easing: ease });
-                setTimeout(() => blinkOnce(), 820); }, 1000); } } }
+        // no show on arrival: he is in his place, beside the box, from the first frame (26/11/2026)
         // dozing: eyes close as its head drops, then it jerks awake
         tb.doze = () => { lidTo = .1; tx = 0; ty = 2.8; go(); setTimeout(() => { if (lidTo > .5) return; lidTo = 1; ty = -1; wideTo = 1.3; tb.hop(); go(); setTimeout(() => { wideTo = 1; ty = 0; go(); }, 650); }, 1800); };
         tb.look = (x, y) => { tx = x; ty = y; idle = performance.now(); go(); };   // the chat steers its eyes
@@ -12764,12 +12750,21 @@ html body footer #tip, html body footer #tip *, html body footer #tip a, html bo
     { const tb = $("askGoccio"), plus = $("toolsBtn");
       if (tb && plus && "IntersectionObserver" in window) {
         let gone = false;
-        const set = (g) => { if (g === gone) return; gone = g; tb.classList.toggle("ag-gone", g); tb.setAttribute("aria-hidden", g ? "true" : "false"); tb.tabIndex = g ? -1 : 0;
+        const set = (g) => { if (g === gone) return; gone = g;
+          // while the page is still settling (hidden, or just shown) it simply is where it should be: no gulp, no spit, nothing sliding
+          if (document.documentElement.classList.contains("wait") || !window.__shownAt || performance.now() - window.__shownAt < 900) {
+            const qs = [tb, tb.parentElement && tb.parentElement.querySelector(".ask-box")].filter(Boolean); qs.forEach((x) => x.style.setProperty("transition", "none", "important"));
+            tb.classList.toggle("ag-gone", g); tb.classList.remove("ag-out"); plus.classList.remove("gulp", "spit"); tb.setAttribute("aria-hidden", g ? "true" : "false"); tb.tabIndex = g ? -1 : 0;
+            void tb.offsetWidth; requestAnimationFrame(() => requestAnimationFrame(() => qs.forEach((x) => x.style.removeProperty("transition")))); return; }
+          tb.classList.toggle("ag-gone", g); tb.setAttribute("aria-hidden", g ? "true" : "false"); tb.tabIndex = g ? -1 : 0;
           if (g) { tb.classList.remove("ag-out"); plus.classList.remove("gulp", "spit"); void plus.offsetWidth; setTimeout(() => plus.classList.add("gulp"), 260); }
           // coming back it's still liquid: the + squeezes it out and it lands with a wobble, like a drop settling
           else { plus.classList.remove("gulp", "spit"); tb.classList.remove("ag-out"); void plus.offsetWidth; plus.classList.add("spit"); tb.classList.add("ag-out"); } };
         tb.addEventListener("animationend", (e) => { if (e.animationName === "agOut") tb.classList.remove("ag-out"); });   // bubbles up from the svg
-        new IntersectionObserver((es) => es.forEach((e) => set(e.isIntersecting)), { threshold: .3 }).observe(el);
+        // watched only once the list is in and the page shows: before that the page is short and the big one sits in view for a moment
+        const watchBig = () => new IntersectionObserver((es) => es.forEach((e) => set(e.isIntersecting)), { threshold: .3 }).observe(el);
+        if (!document.documentElement.classList.contains("wait")) watchBig();
+        else new MutationObserver((m, o) => { if (document.documentElement.classList.contains("wait")) return; o.disconnect(); watchBig(); }).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
         plus.addEventListener("animationend", (e) => { if (e.animationName === "agGulp" || e.animationName === "agSpit" || (e.animationName === "drop-p" && plus.classList.contains("spit"))) plus.classList.remove("gulp", "spit"); }); } }
     // the little Goccio is simply in its pill from the first moment: no fly-in, no hello bubble, no hints
     const isQuestion = (t) => /\?\s*$/.test(t) || /^(goccio\b|hey goccio|hi goccio|ciao goccio|what|why|how|who|where|when|which|is it|are|does|do i|can|should|tell me|explain|cos|perch[eé]|come mai|come si|quando|dove|chi|quant[oai])\b/i.test(t.trim());
