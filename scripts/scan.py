@@ -450,7 +450,7 @@ NOT_ONE_COFFEE = re.compile(r"\ball[- ]?\d\b|\b\d\s?x\s?\d{2,3}\s?g\b|roaster'?s
                             r"\b(?:weekly|fortnightly|monthly|quarterly)\b|assinatura|por m[eê]s|al mes\b|"
                             # a Japanese New Year lucky bag: a surprise set of coffees (Light Up's "コーヒー福袋2027", 26/11/2026)
                             # and its cousins: blind boxes and grab bags in any language, Japanese assortments and tasting sets
-                            r"福袋|福箱|ラッキーバッグ|ハッピーバッグ|詰め合わせ|飲み比べ|\blucky[- ]bags?\b|\bfukubukuro\b|\bhappy[- ]bags?\b|\bgrab[- ]bags?\b|"
+                            r"福袋|福箱|ラッキーバッグ|ハッピーバッグ|詰め合わせ|飲み比べ|半額セール|セール(?!ス)|お試しセット|選べる|\blucky[- ]bags?\b|\bfukubukuro\b|\bhappy[- ]bags?\b|\bgrab[- ]bags?\b|"
                             r"\bblind[- ]box\b|\bsurprise[- ](?:bag|box|pack|coffee)s?\b|wundert[üu]te|[üu]berraschungs|\b(?:sacchetto|busta|scatola|caja|bolsa) sorpresa\b", re.I)   # not "sorpresa" alone: Finca La Sorpresa is a farm
 BLEND_TITLE = re.compile(r"(?<!field )\bblends?\b|low[- ]caff?\b|house[- ](?:roast|coffee|blend|espresso)|signature[- ](?:roast|blend|coffee)|"
                          r"seasonal[- ](?:filter|espresso|blend|roast)|half[- ]caff|miscela|m[ée]lange|mezcla|mischung", re.I)
