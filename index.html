@@ -2981,6 +2981,7 @@ html.gd-full body .gd-head{display:flex;align-items:center;gap:10px;flex:none;bo
 html.gd-full body .gd-head svg{width:30px;height:30px;flex:none;overflow:visible}
 html.gd-full body .gd-head .gh-n{font:600 var(--fs-s)/1.2 var(--sans);color:var(--ink)}
 html.gd-full body .gd-head .gh-b{padding:2px 6px;border:1px solid var(--line);border-radius:var(--r,4px);font:500 12px/1.2 var(--sans);color:var(--muted)}
+@media (max-width:899px){ html body .wm-screen{min-height:524px!important;height:524px!important;margin-bottom:-24px} html body .wm-screen > .wordmark{translate:0 20px} html body .wm-screen > .wm-more{translate:0 8px} }   /* the hero sits 32 px lower (26/11/2026): its last line as far over the rule as the rule is over Coffees (about 13 px); the film reaches down to the rule, so nothing is cut, and the list below doesn't move */
 html body footer .foot-ex .g-ex{border-top:0!important;padding-top:0!important;margin-top:0!important;margin-bottom:-7px!important}   /* in the footer: no rule under its title, and the gap under the title the same as Disclaimer's */
 html.gd-full body .gd-head .gh-new{margin-left:auto;margin-right:-8px;height:32px;padding:0 12px;border:0;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);cursor:pointer;white-space:nowrap;transition:background .15s}   /* New chat: a worded pill 4 px left of the X, as the top bar's pills sit */
 @media (hover:hover){ html.gd-full body .gd-head .gh-new:hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))} }   /* the same hover as the top bar's + */
@@ -12199,6 +12200,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         if (hit) { if (typeof hit === "string") { lastQ = q = hit; } else if (hit.a) { hit.a(); return; } else if (hit.f) { hit.f(); return; } else if (hit.q) { lastQ = q = hit.q; } } }
       if (whichCo && whichAnswer(q)) return;
       if (gbs && Date.now() - gbs.at > 900000) gbs = null;
+      // "I want to brew something", "let's brew", "I want to make a coffee": a fresh start that names no coffee. It never assumes one
+      // (a word of it matched a coffee's name: "SaiPan kannatuskahvi, lovely"), and it starts again even mid-way through a brew
+      if (/^(so |ok |okay |hey |hi |right,? )?(i )?((want|wanna|would like|'d like|'m going|am going|need|feel like) to |let'?s |can we |can you |could you |help me |time to |shall we )?(brew|make)( me| us)?( (something|anything|a coffee|coffee|some coffee|a cup|a brew|one))?( (together|with me|now|today|please))*[ .!…?]*$/i.test(q)
+        || /^(voglio |vorrei |posso )?(preparare|fare)( un| qualcosa| un caff[eè]| del caff[eè])?[ .!?]*$|^prepariamo( qualcosa| un caff[eè])?[ .!?]*$/i.test(q)) { whichCo = null; gbStart(null, null, q); return; }
       if (gbs && gbAnswer(q)) return;
       if (!pendingYes && /^(yes|yeah|yep|yup|sure|ok|okay|no|nope|nah|s[iì]|certo|va bene)\b[ .!]*$/i.test(q)) {   // a yes or no with nothing to answer
         return say(pick([T("Noted! Ask me anything about coffee.", "Ricevuto! Chiedimi qualsiasi cosa sul caffè."), T("Got it. What shall we talk about?", "Capito. Di cosa parliamo?"), T("Okay! I'm all ears. Well, all drop.", "Ok! Sono tutto orecchi. Anzi, tutto goccia.")]), null, smile); }
@@ -12355,7 +12360,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const fullHead = () => { if (talkEl.querySelector(".gd-head")) return; const h = document.createElement("span"); h.className = "gd-head"; const sv = $("askGoccio") && $("askGoccio").querySelector("svg"); if (sv) { const c = sv.cloneNode(true); c.style.opacity = ""; h.appendChild(c); }
       h.insertAdjacentHTML("beforeend", `<span class="gh-n">Goccio</span><span class="gh-b">Beta 0.69.420-λ</span><button type="button" class="gh-new">${T("New chat", "Nuova chat")}</button>`); talkEl.prepend(h);
       // a fresh start: the messages go, and Goccio says hello again (a pill with words, so it never reads as a second close)
-      h.querySelector(".gh-new").addEventListener("click", () => { sayGen++; finishTyping(); msgs = []; saveChat(); sayEl.textContent = ""; chipsEl.textContent = ""; pendingYes = null; ctx = null; replyTo = null; lastMine = null; hello(); });
+      h.querySelector(".gh-new").addEventListener("click", () => { sayGen++; finishTyping(); msgs = []; saveChat(); sayEl.textContent = ""; chipsEl.textContent = ""; pendingYes = null; ctx = null; replyTo = null; lastMine = null; gbs = null; whichCo = null; hello(); });   // nothing carried over: a brew half set up is forgotten too
       let y0 = null; h.addEventListener("touchstart", (e) => { y0 = e.touches[0].clientY; }, { passive: true }); h.addEventListener("touchmove", (e) => { if (y0 != null && e.touches[0].clientY - y0 > 70) { y0 = null; closeTalk(); } }, { passive: true }); };
     openTalk = (top) => { if (talking) { place(top || isFull()); return; } if (isFull()) { top = true; fullHead(); pin(true); document.documentElement.classList.add("gd-full"); } openY = null; setTimeout(() => { openY = scrollY; }, 800); place(top); gdWords(); talking = true; dim(true, top); talkEl.hidden = false; el.setAttribute("aria-expanded", "true"); fullFit(); if (window.gdFitWatch) window.gdFitWatch(1000); toBottom();
       const lastAt = msgs.length ? msgs[msgs.length - 1].at || 0 : 0; if (name && msgs.length && Date.now() - lastAt < 20 * 60000) { showChips(); return; }   // still mid-chat: carry on
