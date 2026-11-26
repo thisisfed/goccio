@@ -142,6 +142,14 @@ CASES = [
        and [scan.tidy_note(x) for x in ["Honey-like sweetness", "Dried mango-like sweetness", "Accompanying aftertaste"]] == ["Honey", "Dried mango", ""]),
     ("Tanat: 'Agrumes d'orange sanguine' is blood orange",
      lambda: __import__("flavours").to_english("Agrumes d'orange sanguine") == "Blood orange" and __import__("flavours").to_english("Agrumes d’orange sanguine") == "Blood orange"),
+    # Hälla (26/11/2026): new roaster, every coffee without notes; Swedish sentence notes and "Process: Tvättat"
+    ("Hälla: 'smakprofil med toner av svart te, lakrits och len mjölkchoklad, avrundad…' gives three notes; 'Tvättat' is washed",
+     lambda: [__import__("flavours").to_english(n) for n in scan.find_notes({"body": "Kaffeinfo:\nEcuador,\nVäxer på 1800-2100m\nArabica:  Typical\nProcess: Tvättat\nEn fyllig och balanserad smakprofil med toner av svart te, lakrits och len mjölkchoklad, avrundad med en djup och lätt bitter karaktär av kakao.\n", "title": "Chito Community", "tags": []})] in (["Black tea", "Liquorice", "Smooth milk chocolate"], ["Black tea", "Licorice", "Smooth milk chocolate"])
+       and scan.find_process("Process: Tvättat") == "Washed"),
+    # To kawa (26/11/2026): no notes on any coffee; the label is "Profil sensoryczny" (Polish), notes in Polish
+    ("To kawa: 'Profil sensoryczny: nugat, czekolada mleczna, prażone orzechy laskowe' gives Nougat, Milk chocolate, Roasted hazelnuts",
+     lambda: [__import__("flavours").to_english(n) for n in scan.page_notes("Odmiana: Typica, Bourbon, Caturra, Catuai\nProfil sensoryczny: nugat, czekolada mleczna, prażone orzechy laskowe\nWaga\n", "Guatemala Huehuetenango", "")] == ["Nougat", "Milk chocolate", "Roasted hazelnuts"]
+       and [__import__("flavours").to_english(n) for n in scan.page_notes("Profil sensoryczny: karmel, mleczna czekolada, czereśnie, agrest\nWaga\n", "Kenia Kamathura", "")] == ["Caramel", "Milk chocolate", "Sweet cherry", "Gooseberry"]),
     # Tandem (26/11/2026): the notes' label is "We hear:", and the list ends with the coffee's song ("Move Inside My Head")
     ("Tandem's 'We hear: Lime, Chamomile, Lychee, Move Inside My Head' gives Lime, Chamomile, Lychee (the song isn't a note)",
      lambda: scan.page_notes("Producer\nAbel Salinas\nVarietals\nMejorado\nElevation\n1890 MASL\nProcessing\nWashed\nWe hear\nLime, Chamomile, Lychee, Move Inside My Head\nEven Better With\nJoin Our Mailing List", "Abel Salinas", "") == ["Lime", "Chamomile", "Lychee"]

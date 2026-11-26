@@ -385,3 +385,9 @@ _add("molasse|mélasse|melasse", "molasses")
 _add("solbær", "blackcurrant"); _add("tropiske frugter|tropiska frukter", "tropical fruit")
 _add("bonbon|bonbons", "candy"); _add("bonbon au citron|bonbons au citron", "lemon candy")   # Tanat, 26/11/2026
 _add("agrumes d'orange sanguine|agrumes d’orange sanguine|agrumes d'oranges sanguines|agrumes d’oranges sanguines", "blood orange")   # Tanat's Las Flores, 26/11/2026
+_add("len|lena|lent", "smooth", "a")   # Swedish: "len mjölkchoklad" (Hälla, 26/11/2026)
+_add("mjölkchoklad|mælkechokolade|melkesjokolade", "milk chocolate"); _add("mörk choklad|mørk chokolade|mørk sjokolade", "dark chocolate")
+# Polish (To kawa, 26/11/2026): "nugat, czekolada mleczna, prażone orzechy laskowe", "karmel, mleczna czekolada, czereśnie, agrest"
+_add("czekolada mleczna", "milk chocolate"); _add("orzechy laskowe|orzech laskowy|orzechów laskowych", "hazelnuts")
+_add("prażone|prażony|prażona|palone|palony", "roasted", "a"); _add("czereśnie|czereśnia|czereśni", "sweet cherry"); _add("agrest|agrestu", "gooseberry")
+_add("prażone orzechy laskowe|prażonych orzechów laskowych", "roasted hazelnuts")
