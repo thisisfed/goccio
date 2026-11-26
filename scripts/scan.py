@@ -229,7 +229,7 @@ NOTES_CHECK = 10   # pages read for notes with these rules (10: elbgold's "Noten
 # A fix for one shop's page layout re-reads only that shop: raise its number here (above NOTES_CHECK), not NOTES_CHECK,
 # which re-reads every coffee without notes everywhere (thousands of pages). Raise NOTES_CHECK only for a change to the
 # rules every shop goes through
-NOTES_RECHECK = {"Supreme Roastworks": 11, "Alchemy": 11, "April": 11, "Intermission": 11, "Wes Ngopi": 13, "Climpson & Sons": 10, "Sydrip": 10, "Fève": 10, "Passage": 10, "The Source": 10, "Terraform": 11, "Lucid Coffee Roasters": 12, "James Gourmet Coffee": 11, "Sl.ow": 11, "Sprout": 11, "Rogue Wave": 11, "Dayglow": 11, "Established Coffee": 11, "Langøra": 12, "Jolly Bean Roastery": 12, "Light Up Coffee": 12, "Trigger": 12, "Crosby Coffee": 12, "Tandem": 13, "Rise & Grind Roastery": 13, "Kurasu": 13, "Hälla Kafferosteri": 14, "To kawa": 14}   # e.g. {"Monmouth": 10}
+NOTES_RECHECK = {"Smith Street Coffee": 11, "Corby Coffee Roasting Co": 11, "Supreme Roastworks": 11, "Alchemy": 11, "April": 11, "Intermission": 11, "Wes Ngopi": 13, "Climpson & Sons": 10, "Sydrip": 10, "Fève": 10, "Passage": 10, "The Source": 10, "Terraform": 11, "Lucid Coffee Roasters": 12, "James Gourmet Coffee": 11, "Sl.ow": 11, "Sprout": 11, "Rogue Wave": 11, "Dayglow": 11, "Established Coffee": 11, "Langøra": 12, "Jolly Bean Roastery": 12, "Light Up Coffee": 12, "Trigger": 12, "Crosby Coffee": 12, "Tandem": 13, "Rise & Grind Roastery": 13, "Kurasu": 13, "Hälla Kafferosteri": 14, "To kawa": 14}   # e.g. {"Monmouth": 10}
 notes_ver = lambda shop: max(NOTES_CHECK, NOTES_RECHECK.get(shop, 0))
 NOTES_V = 2       # page notes read under these list rules; a short list (two or fewer) read under older ones is read once more
 
@@ -248,6 +248,28 @@ def dot_notes(text):
                                  r"single origin|blend|subscription|gift|home|shop|cart|menu|about|contact|wholesale|coffees?|beans?|products?|collections?|all|equipment|merch)\b", x, re.I) for x in parts):
             return ", ".join(parts)
     return stop_notes(text)
+
+
+def row_notes(text):
+    """A tasting table, one note a row, the label and its note set apart by spaces: 'Aroma      Liquorice.' / 'Flavour      Light treacle.' /
+    'Sweetness   Nougat.' (Corby). Two or more such rows make the list; acidity and body rows ('Acidity  Mild.') are not notes."""
+    got = []
+    for m in re.finditer(r"^[ \t\xa0]*(?:aroma|fragrance|flavou?r|taste|sweetness|finish|after-?taste)[ \t\xa0]*:?[ \t\xa0]{2,}([^\W\d_][^\n.:,]{1,38}?)\.?[ \t\xa0]*$", text or "", re.I | re.M):
+        v = m.group(1).strip()
+        if len(v.split()) <= 4 and v.lower() not in got:
+            got.append(v)
+    return ", ".join(got) if len(got) >= 2 else None
+
+
+def caps_notes(text):
+    """A line of flavours in capitals, split only by spaces: 'BERRIES STONEFRUITS CHOCOLATE' (Smith Street). Every word must be a
+    flavour, so a menu line in capitals ('QUICK BREW GUIDES', 'LA MANUELA') is never taken."""
+    for line in (text or "").splitlines():
+        ws = line.split()
+        if 2 <= len(ws) <= 5 and line.strip().isupper() and all(re.fullmatch(r"[A-Z]+", w) for w in ws):
+            if all(w.lower() in flavours.EN_WORDS or w.lower().rstrip("s") in flavours.EN_WORDS or w.lower() in ("stonefruit", "stonefruits") for w in ws):
+                return ", ".join(w.capitalize() for w in ws)
+    return None
 
 
 def stop_notes(text):
@@ -1707,6 +1729,7 @@ def tidy_note(n):
     n = re.sub(r"^notes_", "", n, flags=re.I)   # a shop's tag: "Notes_Caramel" -> "Caramel" (York Coffee Emporium)   # "Imagine lollipop!", "Tasting Notes: Plum"
     n = re.sub(r"\s*[(\[][^)\]]*$", "", n)   # an aside the list cut open: "Tropical fruits (pineapple" -> "Tropical fruits"
     n = re.sub(r"\s*!+$", "", n)   # "Lemon cake!" -> "Lemon cake"
+    n = re.sub(r"\b([Ss])tone([Ff])ruit(s?)\b", lambda m: m.group(1) + "tone " + m.group(2) + "ruit" + m.group(3), n)   # "Stonefruits" -> "Stone fruits" (Smith Street)
     n = re.sub(r"\bfuits?\b", lambda m: m.group(0)[0] + "ruit" + ("s" if m.group(0).endswith("s") else ""), n, flags=re.I) if re.search(r"\bfuits?\b", n, re.I) else n   # a shop's typo: "Stone Fuit" (April)
     if re.fullmatch(r"(?:very\s+)?complex(?:ity)?", n.strip(), re.I):   # a word about the cup, not a flavour: "..., Stone Fruit, Complex" (Intermission)
         return ""
@@ -1909,6 +1932,8 @@ def find_notes(item):
     raw = cands[0] if cands else None
     if not raw:
         raw = dot_notes(text)
+    if not raw:
+        raw = row_notes(text) or caps_notes(text)
     if not raw:
         raw = notes_from_text(text)
     if not raw:
