@@ -1,0 +1,45 @@
+name: Odd coffees
+
+# Every morning, once the scan is in: today's new coffees whose name or tasting notes look odd (a "[ ] 2027", a bag size, a gift
+# box, notes like "Typical of the region" or "Dynamic") go into an issue labelled "odd-coffees", so GitHub emails the list.
+# Nothing on the site changes: reply to Claude with what to rename, fix or ban. Yesterday's issue closes when today's opens.
+# Free: a public repo's Actions minutes cost nothing.
+on:
+  workflow_run:
+    workflows: ["Daily roaster scan"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: odd-coffees
+  cancel-in-progress: false
+
+jobs:
+  odd:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Find today's odd coffees
+        run: python scripts/odd_coffees.py
+      - name: Email them (as an issue)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          grep -q "^- " odd-coffees.md || { echo "Nothing odd today"; exit 0; }
+          gh label create odd-coffees --color fbca04 --description "Today's new coffees with an odd name or odd tasting notes" 2>/dev/null || true
+          n=$(grep -c "^- " odd-coffees.md); day=$(date -u +%d/%m/%Y); title="Odd coffees $day ($n)"
+          old=$(gh issue list --label odd-coffees --state open --json number,title -q '.[] | select(.title | startswith("Odd coffees '"$day"'")) | .number' | head -1)
+          if [ -n "$old" ]; then gh issue edit "$old" --title "$title" --body-file odd-coffees.md; exit 0; fi
+          for x in $(gh issue list --label odd-coffees --state open --json number -q '.[].number'); do gh issue close "$x" --comment "Replaced by today's list." >/dev/null; done
+          gh issue create --title "$title" --label odd-coffees --body-file odd-coffees.md
