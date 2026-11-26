@@ -1316,7 +1316,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 .w-pc input::placeholder { text-transform: none; color: var(--muted); }
 .w-pcn { font-size: var(--fs-s); color: var(--muted); margin: 0 !important; }
 /* live scan */
-.cam { position: fixed; inset: 0; z-index: 60; background: #000; color: #fff; }
+.cam { position: fixed; inset: 0; z-index: 90; background: #000; color: #fff; }   /* over everything, the full-screen chat included */
 .cam video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .cam-guide { position: absolute; left: 8%; right: 8%; top: 18%; bottom: 22%; border: 2px solid rgba(255,255,255,.9); border-radius: 12px; box-shadow: 0 0 0 100vmax rgba(0,0,0,.55); }
 .cam { overflow: hidden; }
@@ -9129,6 +9129,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       put("name", calm(m.name)); put("roaster", m.roaster); put("origin", m.origin); put("variety", m.variety);
       if (m.process && PROC_OPTS.some(([k]) => k === procKey(m.process))) put("process", procKey(m.process));
       if (m.roast && ROAST_OPTS.some(([k]) => k === m.roast)) put("roast", m.roast); }
+    if (window.__bagHook && window.__bagHook.until > Date.now()) { if (applyReview(false)) return; const h = window.__bagHook; window.__bagHook = null; $("scanMsg").textContent = ""; h("", null); return; }   // asked from the chat: no sheet on the page, the reading goes straight back to the chat (it can be corrected there)
     const box = $("scanReview"), dot = (c) => `<i class="sc-dot ${c || "none"}" title="${c ? c + " confidence" : "not found"}"></i>`;
     const input = (k, f) => k === "process" || k === "roast"
       ? `<select data-f="${k}">${(k === "process" ? PROC_OPTS : ROAST_OPTS).map(([v, t]) => `<option value="${v}"${(f.v || "") === v ? " selected" : ""}>${t}</option>`).join("")}</select>`
@@ -11117,12 +11118,13 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const isQ = /\?\s*$/.test(ql) || /^(what|why|how|who|when|where|which|is|are|does|do|can|should|cosa|perch|come|chi|quando|dove|quale)\b/i.test(ql);
       const miss = () => { g.tries++; if (isQ || g.tries > 2) { gbs = null; return false; } say(pick([T("Sorry, I didn't catch that. ", "Scusa, non ho capito. "), T("Hmm, not sure I follow. ", "Mmm, non ti seguo. ")]) + gbAsk(g), null, hmm); return true; };
       g.at = Date.now();
-      if (q === "__scanbag" && g.step === "coffee") { g.tries = 0; closeTalk();
+      if (q === "__scanbag" && g.step === "coffee") { g.tries = 0;   /* the camera opens over the chat: the page never shows */
         window.__bagHook = Object.assign((line, mt) => { setTimeout(() => { openTalk(true); g.at = Date.now();
+          if (!line && !mt) { gbGo(g, T("I couldn't read that bag. Try again in better light, or type its name.", "Non riesco a leggere il sacchetto. Riprova con più luce, o scrivi il nome.")); return; }
           if (mt) { g.r = mt; gbGo(g, T(`Got it: ${shownName(mt)} from ${roasteryName(mt.roaster)}.`, `Trovato: ${shownName(mt)} della ${roasteryName(mt.roaster)}.`)); }
           else { g.text = line; gbGo(g, T(`Got it: ${line}.`, `Letto: ${line}.`)); } }, 350); }, { until: Date.now() + 5 * 60000 });
         setTimeout(() => window.__scanBag(), 300); return true; }
-      if (q === "__scanbeans" && g.step === "roast") { g.tries = 0; closeTalk();
+      if (q === "__scanbeans" && g.step === "roast") { g.tries = 0;
         window.__beanHook = Object.assign((got) => { setTimeout(() => { openTalk(true); g.at = Date.now(); const k = got && got.roast && got.roast.key;
           if (k && k !== "unsure" && ROAST[k]) { g.roast = k; gbGo(g, T(`Those beans read ${ROAST[k].label}.`, `Questi chicchi sono di tostatura ${({ vlight: "molto chiara", light: "chiara", medium: "media", mdark: "medio-scura", dark: "scura" })[k] || ROAST[k].label}.`)); }
           else gbGo(g, (got && got.roast && got.roast.why ? got.roast.why + " " : T("I couldn't read them. ", "Non riesco a leggerli. "))); }, 350); }, { until: Date.now() + 5 * 60000 });
@@ -12264,7 +12266,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       setInterval(() => { const now = performance.now(); if (!talking || document.hidden || now - still < 15000 || now - last < 11000 || sayEl.querySelector(".gd-typing")) return; last = now;
         if (document.documentElement.classList.contains("gd-docked")) { const tb = $("askGoccio"); if (tb && tb.bored) tb.bored(); } else if (!D.busy()) D.bored(); }, 1000); }
     // a tap elsewhere closes it; a scroll doesn't (a finger that moves is scrolling, and a scroll never makes a click)
-    document.addEventListener("click", (e) => { if (talking && !talkEl.contains(e.target) && !el.contains(e.target) && !e.target.closest("#askGoccio, #askForm")) closeTalk(); }, true);
+    document.addEventListener("click", (e) => { if (talking && e.target.isConnected && !talkEl.contains(e.target) && !el.contains(e.target) && !e.target.closest("#askGoccio, #askForm, #camView, input[type=file]")) closeTalk();   /* a pill gone as it was tapped (the answer replaced it) is not a tap outside */ }, true);
     el.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); talking ? closeTalk() : openTalk(); } });
     window.gdrop = D;
     // to try a move out: ?move=hypno (or any of his moves: laserBeta, betaAsk, rolypoly, boop…) brings him into view and plays it,
