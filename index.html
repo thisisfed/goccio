@@ -1676,6 +1676,11 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
   .ps.xdense .ps-pours{font-size:9pt} .ps.xdense .ps-pours td{padding:.9mm 0} .ps.xdense .ps-kick{margin-top:6mm} .ps.xdense .ps-nums{margin-top:7mm}
 }
 #bagBtn[hidden], #buyBtn[hidden], #calBtn[hidden], #mUse[hidden]{display:none!important}
+/* the count ("44 added today") is no longer a line under the Coffees title: it shows only once the title has scrolled out of view, pinned under the bar.
+   The line keeps its place (20 px up, so the rule sits under the title), so nothing moves when its words appear */
+html body #shelf > .grp.day-g:first-child, html body #shelf > .grp.bare:first-child + .grp.day-g{margin-top:-33px!important}
+html body #shelf > .grp.day-g:not(.say-what) .day-t{visibility:hidden}
+html body #shelf > .grp.day-g:not(.stuck){background:transparent!important}
 html body #stage{height:auto!important;min-height:0!important;aspect-ratio:auto!important} html body #stage > .scene.final{position:relative!important;inset:auto!important}   /* the desktop intro is one headline now: the box is as tall as it, no room kept for lines that no longer cycle */
 html body #shelf .item .l p.c-notes, html body #shelf .item .l p.c-notes *{color:var(--ink)!important}   /* the tasting notes in ink: after the name, the first thing you read; origin, process and variety stay grey with their dots */
 /* My bags and the bookmarks are off for now (Nov 2026), until there are logins to keep them with: the buttons, the section and its pills are hidden.
@@ -3142,7 +3147,7 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
 /* desktop: two columns of coffees */
 @media (min-width:1000px){ #shelf{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:32px;margin-top:-10px} #shelf > .item{margin-top:0!important} #shelf > .grp:not(.bare), #shelf > p{grid-column:1/-1} }   /* both columns start level, under the first one's pull-up */
 @media (min-width:1000px){ html body #shelf.shelf > .item:last-child{border-bottom:1px solid var(--line)!important} }
-@media (min-width:1000px){ html body #shelf.shelf > .grp.day-g{margin-top:-3px!important} }   /* the two-column list starts 10 px higher: its count line comes back down under "Coffees", as on a phone */   /* two columns: the last coffee keeps its rule, level with the one beside it */
+@media (min-width:1000px){ html body #shelf.shelf > .grp.day-g{margin-top:-23px!important} }   /* the two-column list starts 10 px higher: its count line comes back down under "Coffees", as on a phone */   /* two columns: the last coffee keeps its rule, level with the one beside it */
 /* under the recipe: grey pills like every other action */
 .share .btn, .share a.btn, .hero-pill[data-jump="recipe"]{background:var(--pill)!important;color:var(--ink)!important;border:0!important;box-shadow:none!important}
 .share .btn:hover, .hero-pill[data-jump="recipe"]:hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))!important}
