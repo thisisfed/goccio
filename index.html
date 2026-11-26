@@ -1676,6 +1676,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
   .ps.xdense .ps-pours{font-size:9pt} .ps.xdense .ps-pours td{padding:.9mm 0} .ps.xdense .ps-kick{margin-top:6mm} .ps.xdense .ps-nums{margin-top:7mm}
 }
 #bagBtn[hidden], #buyBtn[hidden], #calBtn[hidden], #mUse[hidden]{display:none!important}
+html body #shelf > .item.co-flash{animation:coflash 1.8s ease-out} @keyframes coflash{0%,30%{background:color-mix(in srgb,var(--hl,#ff5a14) 12%,var(--bg))}100%{background:var(--bg)}}   /* the coffee Goccio showed you, lit for a moment */
 /* the count ("44 added today") is no longer a line under the Coffees title: it shows as soon as it pins under the bar.
    The line keeps its place (20 px up, so the rule sits under the title), so nothing moves when its words appear */
 html body #shelf > .grp.day-g:first-child, html body #shelf > .grp.bare:first-child + .grp.day-g{margin-top:-33px!important}
@@ -10646,19 +10647,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const names = [...document.querySelectorAll("#shelf .item .name, .sec-head .cap")].filter((e) => e.offsetWidth && !e.closest("[hidden]") && near(e));
       const nameR = names.length ? (() => { const e = names[Math.floor(Math.random() * names.length)], rg = document.createRange(); rg.selectNodeContents(e); return rg.getBoundingClientRect(); })() : null;
       // the shapes, as strokes of points relative to the host
-      const heart = (r) => { const c = rel(r), cx = c.x + c.w / 2, cy = c.y + c.h * 0.52, sx = Math.max(c.w, 40) * 1.5 / 32, sy = sx * 0.78, pts = [];
-        for (let i = 0; i <= 90; i++) { const t = Math.PI + (i / 90) * Math.PI * 2 * -1; pts.push([cx + sx * 16 * Math.pow(Math.sin(t), 3), cy - sy * (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t) + 1.5)]); } return [pts]; };
-      const ring = (r) => { const c = rel(r), cx = c.x + c.w / 2, cy = c.y + c.h / 2, ax = c.w / 2 + 10, ay = c.h / 2 + 8, pts = []; for (let i = 0; i <= 72; i++) { const t = -Math.PI / 2 + (i / 72) * Math.PI * 2.1; pts.push([cx + ax * Math.cos(t), cy + ay * Math.sin(t)]); } return [pts]; };
-      const star = (r) => { const c = rel(r), R = 13, cx = Math.min(h0.width + 40, c.x + c.w + R + 8), cy = c.y + c.h * 0.35, pts = []; for (let i = 0; i <= 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? R * 0.45 : R; pts.push([cx + rr * Math.cos(a), cy + rr * Math.sin(a)]); } return [pts]; };
-      const wave = (r) => { const c = rel(r), y = c.y + c.h + 5, pts = []; for (let i = 0; i <= 60; i++) { const x = c.x + c.w * i / 60; pts.push([x, y + 2.4 * Math.sin(i / 60 * Math.PI * 6)]); } return [pts]; };
-      const smiley = () => { const cx = b0.left - h0.left - 46, cy = b0.top - h0.top + b0.height * 0.35, R = 18, face = [], mouth = [];
-        for (let i = 0; i <= 60; i++) { const t = (i / 60) * Math.PI * 2; face.push([cx + R * Math.cos(t), cy + R * Math.sin(t)]); }
-        for (let i = 0; i <= 20; i++) { const t = Math.PI * 0.15 + (i / 20) * Math.PI * 0.7; mouth.push([cx + R * 0.6 * Math.cos(t), cy + R * 0.6 * Math.sin(t)]); }
-        const eye = (x) => [[cx + x, cy - R * 0.3], [cx + x, cy - R * 0.1]]; return [face, eye(-R * 0.35), eye(R * 0.35), mouth]; };
       // a heart round himself: drawn from the dip at the top, down one side to the point and up the other, big enough to hold him
       const heartMe = () => { const bb = body.getBoundingClientRect(), c = rel(bb), sx = Math.max(c.w, 40) * 2.9 / 32, sy = sx * 0.86, cx = c.x + c.w / 2, cy = c.y + c.h * 0.5 + c.w * 0.06, pts = [];   /* sized so all of him sits inside it */
         for (let i = 0; i <= 110; i++) { const t = (i / 110) * Math.PI * 2; pts.push([cx + sx * 16 * Math.pow(Math.sin(t), 3), cy - sy * (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t) + 1.5)]); } return [pts]; };
-      const opts = [["heartme", heartMe], good && vis(good) ? ["heart", () => heart(good)] : null, tagR && vis(tagR) ? ["ring", () => ring(tagR)] : null, nameR ? ["star", () => star(nameR)] : null, nameR ? ["wave", () => wave(nameR)] : null, ["smiley", smiley]].filter(Boolean);
+      const opts = [["heartme", heartMe]];   // 26/11/2026: the heart round himself is his only drawing (no more hearts round words, rings, stars, waves or smileys)
       const pickd = opts.find((o) => o[0] === want) || opts[Math.floor(Math.random() * opts.length)]; const strokes = pickd[1]();
       const flat = strokes.flat(), first = flat[0];
       const look = (px, py) => { const bb = body.getBoundingClientRect(), dx = px - (bb.left + bb.width / 2), dy = py - (bb.top + bb.height * 0.42), dd = Math.hypot(dx, dy) || 1; lookX = 4.4 * dx / dd; lookY = 4.4 * dy / dd; draw(); };
@@ -10894,6 +10886,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const newest = () => { const cs = coffees(); let day = ""; for (const r of cs) { const d = String(r.found || "").slice(0, 10); if (d > day) day = d; } return { day, list: cs.filter((r) => String(r.found || "").slice(0, 10) === day) }; };
     const dayWord = (iso) => { const t = new Date(), y = new Date(); y.setDate(t.getDate() - 1); const f = (d) => d.toISOString().slice(0, 10);
       return iso === f(t) ? T("today", "oggi") : iso === f(y) ? T("yesterday", "ieri") : T("on ", "il ") + (typeof isoDm === "function" ? isoDm(iso) : iso); };
+    // "Show me" a coffee Goccio named: that coffee, not a search for its name. The list narrows to its name and roaster, and its own card
+    // (found by its shop link) comes to the middle of the screen
+    const showCo = (r) => { const twin = coffees().some((x) => x !== r && x.roaster === r.roaster && shownName(x) === shownName(r)); search(shownName(r) + " " + r.roaster + (twin ? " " + [r.origin, r.process].filter(Boolean).join(" ") : "")); let k = 0;   /* a roaster with two coffees of that name: its origin and process tell them apart */ const find = () => { const it = [...document.querySelectorAll("#shelf .item")].find((x) => [...x.querySelectorAll("a[href]")].some((a) => a.href === r.url));
+        if (it) { it.scrollIntoView({ block: "center", behavior: "smooth" }); it.classList.add("co-flash"); setTimeout(() => it.classList.remove("co-flash"), 1800); } else if (++k < 12) setTimeout(find, 150); }; setTimeout(find, 200); };
     const search = (q) => { const a = $("askIn"); window.__gdSearching = true; setTimeout(() => { window.__gdSearching = false; }, 0); a.value = q; a.dispatchEvent(new Event("input", { bubbles: true })); $("askForm").requestSubmit(); if (window.syncAskGo) setTimeout(window.syncAskGo, 0); };   /* the words fill the top bar, its hint gives way */
     const bob = (on) => { clearInterval(bobT); if (on && !still()) bobT = setInterval(() => D.bob(), 210); watch(on ? "you" : null);
       if (D && D.text) D.text(!!on && !document.documentElement.classList.contains("gd-docked")); };   // the big one types its answer on its phone
@@ -10987,7 +10983,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     let ctx = null, picked = new Set(), lastCo = null;   // lastCo: the coffee it last talked about, for "why that one?", "how do I brew it?"
     const BREW_ASK = /^(let'?s |please |can you |can we |could you )?(brew|make|prepare|start brewing)\b|\b(i )?(want|wanna|would like|'d like|need|am going|'m going|gonna|plan) to (brew|make|prepare)\b|\bi('m| am) (brewing|making)\b|\b(i )?(have|'ve got|got|bought|just got) (a |some |this )?(bag|pack|packet|box)( of)?\b|\bho (un |una )?(sacchetto|busta|pacco)\b|\bvoglio (preparare|fare)\b|\bbrew me\b|^prepara(mi|mo)?\b|\b(how (should|do|can|would|shall) (i|we) (brew|make|prepare)|how to (brew|make)|recipe|brew (it|this|that)|best way to brew|ricetta|come (lo|la) (preparo|faccio|estraggo)|come si prepara)\b/i;
     // its recipe: the coffee's own Brew, opened from the list
-    const brewIt = (r, after) => { closeTalk(); search(shownName(r) + " " + r.roaster); setTimeout(() => { const b = [...document.querySelectorAll("#shelf button[data-i]")].find((x) => shelf[+x.dataset.i] === r); if (b && !b.closest(".item.brewing")) b.click(); if (after) after(); }, 500); };
+    const brewIt = (r, after) => { closeTalk(); showCo(r); setTimeout(() => { const b = [...document.querySelectorAll("#shelf button[data-i]")].find((x) => shelf[+x.dataset.i] === r); if (b && !b.closest(".item.brewing")) b.click(); if (after) after(); }, 500); };
     // why it likes a coffee: what the bag says, in plain words
     const reasons = (r) => { const out = [], ns = notesOf(r), v = String(r.variety || ""), pr = String(r.process || "").toLowerCase();
       if (suits(r)) out.push(T("it's exactly your kind of flavours", "ha proprio i sapori che piacciono a te"));
@@ -11009,7 +11005,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       if (!otherName && BREW_ASK.test(ql) && (/\b(it|this|that|one|lo|la|questo|quello)\b/i.test(ql) || ql.split(/\s+/).length <= 5)) { say(pick([T(`Let's brew it! Here's the recipe for ${shownName(r)}.`, `Prepariamolo! Ecco la ricetta per ${shownName(r)}.`), T(`Good bag. Opening the recipe for ${shownName(r)}.`, `Ottima busta. Apro la ricetta per ${shownName(r)}.`)]), null, happy); setTimeout(() => brewIt(r), 1300); return true; }
       if (!/\b(sour|bitter|weak|watery|thin|strong|harsh|astringent|acid(ic)?|flat|muddy|dry|salty|fast|slow|clog|stall|drain|aspro|amaro|acquoso|acido)/i.test(q) && /\bwhy\b.*\b(like|love|pick|picked|chose|choose|recommend|that|this|it)\b|what'?s (so )?(good|special|great) about (it|that|this)|is it (any )?good|perch[eé] (ti piace|proprio|quello|questo|l'?hai scelto)|cosa (ha|c'?è) di (speciale|buono)/i.test(ql)) {
         const rs = reasons(r); say(T(`Because ${rs.length > 2 ? rs.slice(0, -1).join("; ") + "; and " + rs[rs.length - 1] : andList(rs)}.`, `Perché ${rs.length > 2 ? rs.slice(0, -1).join("; ") + "; e " + rs[rs.length - 1] : andList(rs)}.`), [{ t: T("Recipe", "Ricetta"), ask: T("Want the recipe?", "Vuoi la ricetta?"), f: () => brewIt(r) }], happy); lastCo.at = Date.now(); return true; }
-      if (/\b(how much (is|does|for) (it|this|that|a bag)|^how much\??$|price|cost|costs|where (can|do) i (buy|get)|buy it|quanto costa|prezzo|dove lo (compro|trovo))\b/i.test(ql)) { say(r.price ? T(`About ${r.price} a bag${r.bag_g ? ` (${r.bag_g} g)` : ""}, from ${roasteryName(r.roaster)}'s own shop.`, `Circa ${r.price} la busta${r.bag_g ? ` (${r.bag_g} g)` : ""}, dal negozio della ${roasteryName(r.roaster)}.`) : T("The roaster doesn't show a price for it.", "La torrefazione non indica il prezzo."), [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); search(shownName(r) + " " + r.roaster); } }], happy); return true; }
+      if (/\b(how much (is|does|for) (it|this|that|a bag)|^how much\??$|price|cost|costs|where (can|do) i (buy|get)|buy it|quanto costa|prezzo|dove lo (compro|trovo))\b/i.test(ql)) { say(r.price ? T(`About ${r.price} a bag${r.bag_g ? ` (${r.bag_g} g)` : ""}, from ${roasteryName(r.roaster)}'s own shop.`, `Circa ${r.price} la busta${r.bag_g ? ` (${r.bag_g} g)` : ""}, dal negozio della ${roasteryName(r.roaster)}.`) : T("The roaster doesn't show a price for it.", "La torrefazione non indica il prezzo."), [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(r); } }], happy); return true; }
       if (/\b(what does it taste|how does it taste|tasting notes|che sapore|di cosa sa)\b/i.test(ql)) { const ns = notesOf(r); say(ns.length ? T(`The roaster says ${andList(ns)}.`, `La torrefazione dice ${andList(ns)}.`) : T("The roaster doesn't list tasting notes for it.", "La torrefazione non indica le note."), null, happy); return true; }
       return false; };
     // what you've told it, kept on this device across visits: your brewer and the flavours you like
@@ -11042,7 +11038,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const lead = again ? pick([T("How about this one: ", "Che ne dici di questo: "), T("Another good one: ", "Un altro buono: "), T("Then try ", "Allora prova ")]) : pick([T("My pick of today's: ", "Il mio preferito di oggi: "), T("If I had to choose one today: ", "Se dovessi sceglierne uno oggi: "), T("This one caught my eye: ", "Questo mi ha colpito: ")]);
       const yours = suits(r) ? T(" Right up your street.", " Proprio nel tuo stile.") : "", br = bw ? (fits(r) > 0 ? T(` Roasted for ${forEsp ? "espresso" : "filter"}, so it suits ${/^[aeiou]/i.test(brewName(bw)) ? "an" : "a"} ${brewName(bw)}.`, ` Tostato per ${forEsp ? "espresso" : "filtro"}, perfetto per ${brewName(bw)}.`) : "") : mem.brewer && Math.random() < 0.5 ? T(` Lovely in your ${brewName(mem.brewer)}.`, ` Ottimo nel tuo ${brewName(mem.brewer)}.`) : "";
       if (then) { say(lead + describe(r) + " " + then(r), null, happy); return r; }
-      say(lead + describe(r) + yours + br, [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); search(shownName(r) + " " + r.roaster); } }], happy); ctx = { t: "pick", at: Date.now(), brew: bw || null }; return r; };
+      say(lead + describe(r) + yours + br, [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(r); } }], happy); ctx = { t: "pick", at: Date.now(), brew: bw || null }; return r; };
 
 
     // ---------- one name, several roasters: Goccio lists them and you pick ----------
@@ -11280,7 +11276,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const on = landedOn(best);
       const line = suits(best) ? pick([T(`${n} new coffees landed ${on}, and one's very you: ${what}.`, `${on[0].toUpperCase() + on.slice(1)} sono arrivati ${n} caffè nuovi, e uno è proprio per te: ${what}.`), T(`New ${on}, right up your street: ${what}.`, `Arrivato ${on}, proprio nel tuo stile: ${what}.`)])
         : pick([T(`${n} new coffees landed ${on}. One caught my eye: ${what}.`, `${on[0].toUpperCase() + on.slice(1)} sono arrivati ${n} caffè nuovi. Uno mi ha colpito: ${what}.`), T(`New ${on}: ${what}, and ${n - 1} more.`, `Novità di ${on}: ${what}, e altri ${n - 1}.`), T(`Guess what landed ${on}? ${what}.`, `Indovina cos'è arrivato ${on}? ${what}.`)]);
-      say(hi + "\n" + line, [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); search(shownName(best) + " " + best.roaster); } }], happy); ctx = { t: "pick", at: Date.now() }; };
+      say(hi + "\n" + line, [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(best); } }], happy); ctx = { t: "pick", at: Date.now() }; };
     // now and then, after an answer, it asks you something back: first what it doesn't know about you yet
     const askBack = () => { if (++sinceAsk < 2 || Math.random() > 0.55) return; sinceAsk = 0; const t0 = Date.now();
       const go = () => { if (Date.now() - t0 > 20000 || !talking) return; if (typing || sayEl.querySelector(".gd-typing")) return setTimeout(go, 300);
@@ -11428,7 +11424,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         if (!cs.length) { cs = coffees().filter((x) => want.some((w) => has(x, w))); partly = true; } if (!cs.length) return false; moreQ = lastQ;
         const r = pick(cs.slice(0, 300)), ns = notesOf(r);
         say(T(`${partly ? "Not all of that in one cup, but close: " : ""}try ${shownName(r)} from ${roasteryName(r.roaster)}${r.origin ? ", " + r.origin : ""}. It tastes of ${andList(ns)}.${cs.length > 1 ? ` (${cs.length} on Goccio have ${want.length > 1 && !partly ? "those notes" : "that note"}.)` : ""}`.replace(/^t/, "T"), `${partly ? "Non tutto in una tazza, ma ci siamo: " : ""}prova ${shownName(r)} della ${roasteryName(r.roaster)}${r.origin ? ", " + r.origin : ""}. Sa di ${andList(ns)}.`.replace(/^p/, "P")),
-          [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); search(shownName(r)); } }, T("Another one", "Un altro")], happy); }],
+          [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(r); } }, T("Another one", "Un altro")], happy); }],
       // filled in after a check of 120 everyday questions (25/11/2026)
       K0,
       K0,
@@ -11615,17 +11611,17 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         if (!cs.length) return say(T("Give me a second, the coffees are still on their way.", "Un attimo, i caffè stanno arrivando."));
         const r = pick(cs.slice(0, 300)), ns = notesOf(r);
         say(T(`Try ${shownName(r)} from ${roasteryName(r.roaster)}${r.origin ? ", " + r.origin : ""}. It tastes of ${andList(ns)}.`, `Prova ${shownName(r)} della ${roasteryName(r.roaster)}${r.origin ? ", " + r.origin : ""}. Sa di ${andList(ns)}.`),
-          [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); search(shownName(r)); } }, T("Another one", "Un altro")], happy); }],
+          [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(r); } }, T("Another one", "Un altro")], happy); }],
       [/surprise|recommend|suggest|pick|choose|delicious|tasty|something good|what should i (try|buy|drink|get)|which coffee|consigli|sorprend|scegli|buono|quale caff/i, () => { const fresh = /new|recent|latest|release|this week|today|nuov|ultim|recent/i.test(lastQ), pool = fresh ? newest().list : coffees(); if (!/^(another|one more|un altro|altro)\b/i.test(lastQ)) moreQ = "";
         const cs = pool.filter((x) => notesOf(x).length >= 2); if (!cs.length) return say(T("Give me a second, the coffees are still on their way.", "Un attimo, i caffè stanno arrivando."));
         const r = pick(cs.slice(0, 300)), ns = notesOf(r);
         say(T(`Try ${shownName(r)} from ${roasteryName(r.roaster)}${r.origin ? ", " + r.origin : ""}. It tastes of ${andList(ns)}.`, `Prova ${shownName(r)} della ${roasteryName(r.roaster)}${r.origin ? ", " + r.origin : ""}. Sa di ${andList(ns)}.`),
-          [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); search(shownName(r)); } }, T("Another one", "Un altro")], happy); }],
+          [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(r); } }, T("Another one", "Un altro")], happy); }],
       [/^(?:(?:so |and |ok |okay )?(?:what'?s|what is|whats|anything|any|got any|show me(?: the)?|what are(?: the)?|what came|what landed|what arrived)\b.{0,30}\b(?:new|today|latest|recent|in)\b|(?:new|latest|recent|today'?s) (?:coffees?|arrivals?|ones?|drops?|beans?|bags?)\b|(?:new|today|latest|news|nuovi|novit[aà]|oggi|ultimi)[?!. ]*$|cosa c'?è di nuovo|(?:caff[eè] )?nuov[io]\b.{0,20}\b(?:oggi|ieri|caff)|novit[aà])/i, () => { const { day, list } = newest(); if (!list.length) return say(T("The list is still loading. Ask me again in a second.", "La lista sta ancora arrivando. Richiedimelo tra un attimo."));
         const r = pick(list.filter((x) => notesOf(x).length).concat(list).slice(0, 40)), ns = notesOf(r); lastCo = { r, at: Date.now() };
         say(T(`${list.length} new coffees came in ${dayWord(day)}. One I like: ${shownName(r)} from ${roasteryName(r.roaster)}${ns.length ? ", " + andList(ns) : ""}.`,
           `${list.length} caffè nuovi ${dayWord(day)}. Uno che mi piace: ${shownName(r)} della ${roasteryName(r.roaster)}${ns.length ? ", " + andList(ns) : ""}.`),
-          [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); search(shownName(r)); } }, T("Surprise me", "Sorprendimi")], happy); }],
+          [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(r); } }, T("Surprise me", "Sorprendimi")], happy); }],
       [/^(another|one more|un altro|altro)\b/i, () => ask(moreQ || T("Surprise me", "Sorprendimi"))],
       [/how many (coffees|roasters)|quanti (caff|torref)/i, () => { const cs = { length: window.__coN || coffees().length }, ro = window.__roN || new Set(coffees().map((r) => r.roaster)).size;
         say(T(`Right now I know ${cs.length.toLocaleString("en-GB")} coffees from ${ro.toLocaleString("en-GB")} roasters, and more arrive every day.`, `Adesso conosco ${cs.length.toLocaleString("it-IT")} caffè di ${ro} torrefazioni, e ogni giorno ne arrivano altri.`), null, surprised); }],
@@ -12089,7 +12085,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       if (mine.length) { const r = mine[0], more = mine.length - 1; lastCo = { r, at: Date.now() };
         if (BREW_ASK.test(q) && !/^(how|what|which|best|recipe|ricetta|come)\b/i.test(q.trim())) { ctx = null; gbStart(r, null, q); return true; }
         if (BREW_ASK.test(q) || (ctx && ctx.t === "brewwhich")) { ctx = null; say(T(`${shownName(r)} from ${roasteryName(r.roaster)}, lovely. Here's how to brew it.`, `${shownName(r)} della ${roasteryName(r.roaster)}, buonissimo. Ecco come prepararlo.`), null, happy); setTimeout(() => brewIt(r), 1400); return true; }
-        say(describe(r) + (more ? T(` (${more} more with that name.)`, ` (Altri ${more} con quel nome.)`) : ""), [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); search(shownName(r) + (ro ? "" : " " + r.roaster)); } }], happy); return true; }
+        say(describe(r) + (more ? T(` (${more} more with that name.)`, ` (Altri ${more} con quel nome.)`) : ""), [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(r); } }], happy); return true; }
       if (ro && cs.length) { const others = [...new Set(cs.map((r) => r.roaster))].slice(0, 3).map(roasteryName);
         say(T(`${roasteryName(ro.name)} doesn't have that one on Goccio right now. ${others.length ? "It's from " + andList(others) + "." : ""}`, `${roasteryName(ro.name)} adesso non ce l'ha su Goccio. ${others.length ? "Ce l'ha " + andList(others) + "." : ""}`),
           [{ t: T("Show me", "Fammeli vedere"), f: () => { closeTalk(); search(shownName(cs[0])); } }, { t: T("Their coffees", "I loro caffè"), f: () => openRoaster(ro.name) }], hmm); return true; }
