@@ -10241,7 +10241,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const c = Math.max(-1, Math.min(1, S.smile)), lift = c > 0 ? c : 0, sad = c < 0 ? -c : 0;
       L.setAttribute("ry", (parseFloat(L.getAttribute("ry")) * (1 - 0.38 * lift)).toFixed(2)); R.setAttribute("ry", (parseFloat(R.getAttribute("ry")) * (1 - 0.38 * lift)).toFixed(2));
       // shut eyes are gone, not a thin slit: once an eye is nearly closed it vanishes and only the body shows
-      [L, R].forEach((e0) => { if (parseFloat(e0.getAttribute("ry")) < 0.9) e0.setAttribute("ry", "0"); });
+      [L, R].forEach((e0) => { const shut = parseFloat(e0.getAttribute("ry")) < 0.9; if (shut) e0.setAttribute("ry", "0"); e0.style.visibility = shut ? "hidden" : ""; });   /* hidden too: Safari still drew a flat ellipse as a thin black line */
       L.setAttribute("transform", `translate(${(1.6 * S.cross).toFixed(2)} ${(-1.1 * lift + 1.4 * sad - 0.6 * S.happy + 0.25 * S.cross).toFixed(2)}) rotate(${(-28 * sad + 9 * S.cross).toFixed(1)} -6 -12)`); R.setAttribute("transform", `translate(${(-1.6 * S.cross).toFixed(2)} ${(-1.1 * lift + 1.4 * sad - 0.6 * S.happy + 0.25 * S.cross).toFixed(2)}) rotate(${(28 * sad - 9 * S.cross).toFixed(1)} 6 -12)`);   /* cross-eyed: both drift a little towards each other and tip in slightly */   /* sad: tipped and a little lower */
       // (no cheeks: the shy blush was taken out, 25/11/2026)
       // its phone: held low in front, screen lit; the light tints its eyes and lights its face from below
@@ -12089,8 +12089,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           if (shy) shy.setAttribute("transform", `translate(0 ${(-up).toFixed(2)})`);   /* the light on his head stays put while he looks about: only a hop carries it */
           // the little one at the top of the chat is the same Goccio: it looks about, blinks and hops with him
           { const hd = document.querySelector(".gd-head svg"); if (hd) { const hb = hd.querySelector(".ag-b"), he = hd.querySelector(".ag-e"), hs = hd.querySelector(".ag-shy");
-              if (hb) hb.setAttribute("transform", bo.getAttribute("transform")); if (he) he.setAttribute("transform", ey.getAttribute("transform")); if (hs && shy) hs.setAttribute("transform", shy.getAttribute("transform")); } }
-          wide += (wideTo - wide) * .2; lid += (lidTo - lid) * .08; ey.setAttribute("transform", `translate(${(x * 1.1).toFixed(2)} ${(y * 1.1).toFixed(2)}) translate(0 -1) scale(${wide.toFixed(3)} ${(blink * wide * lid < 0.26 ? 0 : blink * wide * lid).toFixed(3)}) translate(0 1)`);   /* shut eyes vanish, no slit */
+              if (hb) hb.setAttribute("transform", bo.getAttribute("transform")); if (he) { he.setAttribute("transform", ey.getAttribute("transform")); he.style.visibility = ey.style.visibility; } if (hs && shy) hs.setAttribute("transform", shy.getAttribute("transform")); } }
+          wide += (wideTo - wide) * .2; lid += (lidTo - lid) * .08; ey.setAttribute("transform", `translate(${(x * 1.1).toFixed(2)} ${(y * 1.1).toFixed(2)}) translate(0 -1) scale(${wide.toFixed(3)} ${(blink * wide * lid < 0.26 ? 0 : blink * wide * lid).toFixed(3)}) translate(0 1)`); ey.style.visibility = blink * wide * lid < 0.26 ? "hidden" : "";   /* shut eyes vanish, no slit */
           if (Math.abs(tx - x) + Math.abs(ty - y) > .02 || Math.abs(wideTo - wide) > .01 || Math.abs(lidTo - lid) > .01 || hopT) run = requestAnimationFrame(loop); else { run = 0; lt = 0; } };
         const go = () => { if (!run) run = requestAnimationFrame(loop); };
         const aim = (cx, cy) => { const r = tb.getBoundingClientRect(); if (!r.width) return; const dx = cx - (r.left + r.width / 2), dy = cy - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1, m = Math.min(1, d / 160) * 3.2;
