@@ -1,8 +1,9 @@
 name: Odd coffees
 
 # Every morning, once the scan is in: today's new coffees whose name or tasting notes look odd (a "[ ] 2027", a bag size, a gift
-# box, notes like "Typical of the region" or "Dynamic") go into an issue labelled "odd-coffees", so GitHub emails the list.
-# Nothing on the site changes: reply to Claude with what to rename, fix or ban. Yesterday's issue closes when today's opens.
+# box, notes that are mostly not tastes) were held back by the scan (data/held.json) and go into an issue labelled "odd-coffees",
+# so GitHub emails the list. Each has two boxes: tick "Show it" and it goes on the site, "Ban it" and it goes for good (the
+# Odd coffees: answer workflow). Unticked, it stays off. Yesterday's issue closes when today's opens.
 # Free: a public repo's Actions minutes cost nothing.
 on:
   workflow_run:
@@ -41,5 +42,5 @@ jobs:
           n=$(grep -c "^- " odd-coffees.md); day=$(date -u +%d/%m/%Y); title="Odd coffees $day ($n)"
           old=$(gh issue list --label odd-coffees --state open --json number,title -q '.[] | select(.title | startswith("Odd coffees '"$day"'")) | .number' | head -1)
           if [ -n "$old" ]; then gh issue edit "$old" --title "$title" --body-file odd-coffees.md; exit 0; fi
-          for x in $(gh issue list --label odd-coffees --state open --json number -q '.[].number'); do gh issue close "$x" --comment "Replaced by today's list." >/dev/null; done
+          for x in $(gh issue list --label odd-coffees --state open --json number -q '.[].number'); do gh issue close "$x" --comment "Replaced by today's list. Anything not ticked here stays held back." >/dev/null; done
           gh issue create --title "$title" --label odd-coffees --body-file odd-coffees.md
