@@ -522,6 +522,13 @@ CASES = [
     ("The Source: 'cup profile: blood orange - yuzu - hibiscus' was lost to a recipe step further down ('Fermentation: ... with specific yeast')",
      lambda: scan.find_notes({"title": "Thermal Shock Orange Gesha", "tags": [], "body": "variety: orange gesha\n process: thermal shock + yeast inoculation\n region: huila, colombia\n cup profile: blood orange - yuzu - hibiscus\n We sourced this stunning orange gesha from Mi Cafe.\n 6. Fermentation: For 62 hours at temperatures below 25°C with specific yeast. 7. Fermentation completion: After 62 hours, the cherries are dried.\n"})
              == ["Blood orange", "Yuzu", "Hibiscus"]),
+    ("April: 'Taste Description: Stone Fuit, Nougat & Herbs' was missed (and 'Fuit' is a typo for Fruit)",
+     lambda: scan.find_notes({"title": "El Socorro", "tags": [], "body": "Varietal: Maracaturra\nProcessing: Washed\nTaste Description: Stone Fuit, Nougat & Herbs\nRoasted Coffee Beans (Ristede hele kaffebønner)\n"})
+             == ["Stone Fruit", "Nougat", "Herbs"]),
+    ("Intermission: 'Cup: Blueberries, Earl Grey, Kiwi, Stone Fruit, Complex' was missed; 'Complex' is not a flavour, and 'Cup' needs its colon",
+     lambda: scan.find_notes({"title": "A Midsummer Night's Dream", "tags": [], "body": "£19.00 – £115.00\nCup: Blueberries, Earl Grey, Kiwi, Stone Fruit, Complex\nOrigin: Huila, Colombia\n"})
+             == ["Blueberries", "Earl Grey", "Kiwi", "Stone Fruit"]
+       and scan.NOTES_CELL.search("Cup sizes 250ml, 350ml and 500ml") is None),
     ("elbgold: 'Noten: Nougat | Biscuit | Pflaume' (German label, a list split by bars) was missed",
      lambda: scan.find_notes({"title": "La Pradera", "tags": [], "body": "FILTER - DIREKTHANDEL\nProduzent: Oscar Daza\nUrsprung: Kolumbien | Santander | Aratoca\nAnbauhöhe: 1800m\nVarietät: Tabi\nAufbereitung: Honey\nNoten: Nougat | Biscuit | Pflaume\nMenge:\n"})
              == ["Nougat", "Biscuit", "Pflaume"]),
