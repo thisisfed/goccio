@@ -54,6 +54,9 @@ W = {}
 def _add(words, en, kind="n"):
     for w in words.split("|"):
         W[w] = (en, kind)
+        # also without its accents, as shops often type it: KB's "Mures" is mûres, blackberries (26/11/2026)
+        bare = "".join(c for c in __import__("unicodedata").normalize("NFD", w) if __import__("unicodedata").category(c) != "Mn")
+        W.setdefault(bare, (en, kind))
 
 # Slovak and Czech
 _add("čučoriedky|čučoriedka|borůvky|borůvka", "blueberry"); _add("jahoda|jahody", "strawberry"); _add("malina|maliny", "raspberry")
