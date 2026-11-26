@@ -383,3 +383,4 @@ _add("dolcezza", "sweetness"); _add("setosità", "silkiness"); _add("fruktkola",
 _add("bergamont", "bergamot"); _add("hazlenut|hazlenuts", "hazelnut"); _add("chery", "cherry"); _add("chocolaty", "chocolatey", "a")
 _add("molasse|mélasse|melasse", "molasses")
 _add("solbær", "blackcurrant"); _add("tropiske frugter|tropiska frukter", "tropical fruit")
+_add("bonbon|bonbons", "candy"); _add("bonbon au citron|bonbons au citron", "lemon candy")   # Tanat, 26/11/2026
