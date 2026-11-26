@@ -10776,14 +10776,22 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       let run = false;
       const t0 = performance.now(); let tPh = 0, tLast = t0;
       let on = true; const follow = () => { if (!on) return; const now = performance.now(), dt = Math.min(80, now - tLast); tLast = now; if (run) tPh += dt / PER;   // seconds, from the moment the eyes are all yellow
-        sp.forEach(({ e0, g, ce, rim, step, side }) => { const rx = parseFloat(e0.getAttribute("rx")) || 2.4, ry = parseFloat(e0.getAttribute("ry")) || 3.4, s0 = rx / 2.4, q = eSX / Math.max(0.06, eSY);
+        place(); requestAnimationFrame(follow); };
+      const place = () => sp.forEach(({ e0, g, ce, rim, step, side }) => { const rx = parseFloat(e0.getAttribute("rx")) || 2.4, ry = parseFloat(e0.getAttribute("ry")) || 3.4, s0 = rx / 2.4, q = eSX / Math.max(0.06, eSY);
           // round rings stay round on screen, whatever stretch the face has; each eye leans out at the top
           g.setAttribute("transform", `${e0.getAttribute("transform") || ""} translate(${e0.getAttribute("cx")} ${e0.getAttribute("cy")}) scale(${s0.toFixed(3)} ${(s0 * q).toFixed(3)}) rotate(${side ? 11 : -11})`);
           const B = ry / (s0 * q), shape = egg(2.4, B, K, 0, 0); ce.setAttribute("d", shape); rim.setAttribute("d", shape); step(tPh, 2.4, B); });
-        requestAnimationFrame(follow); }; follow();
+      follow();
       sp.forEach(({ g }) => g.classList.add("in")); setTimeout(() => { if (on) sp.forEach(({ e0 }) => { e0.style.opacity = "0"; }); }, 420);   // his own eyes give way to the cartoon ones
-      // right up to the glass (centred, bigger than the screen); his eyes grow big, close but never overlapping
-      await Promise.all([face({ eyeSL: 2.2, eyeSR: 2.2, near: 0.4 }, 900), nearTo(5, 1, 1800, null, 1.25)]); run = true;
+      // right up to the glass, centred, his eyes grown big (close but never overlapping) and just wide enough that their outer sides meet
+      // the page's own side margins: worked out before he moves, by drawing the end pose for a moment (never painted) and measuring it
+      const EYES = { eyeSL: 2.2, eyeSR: 2.2, near: 0.4 }, was = {}; Object.keys(EYES).forEach((k) => { was[k] = S[k]; S[k] = EYES[k]; }); draw(); place();
+      const rr = sp.map(({ rim }) => rim.getBoundingClientRect()),   /* the eye's own outline: the rings inside reach far past it, hidden by the clip */ span = Math.max(...rr.map((x) => x.right)) - Math.min(...rr.map((x) => x.left));
+      Object.assign(S, was); draw(); place();
+      const pg0 = document.querySelector("main.page"), mg = pg0 ? parseFloat(getComputedStyle(pg0).paddingLeft) || 12 : 12, scTo = span > 0 ? (innerWidth - mg * 2) / span : 5;
+      await Promise.all([face(EYES, 900), nearTo(scTo, 1, 1800, null, 99)]); run = true;
+      { const r2 = sp.map(({ rim }) => rim.getBoundingClientRect()), fix = innerWidth / 2 - (Math.max(...r2.map((x) => x.right)) + Math.min(...r2.map((x) => x.left))) / 2;   // the last few px, so they sit exactly in the middle
+        if (Math.abs(fix) > 0.5) { const tr = (el.style.translate || "0px 0px").split(/\s+/).map(parseFloat); el.style.transition = "translate .35s ease-out"; el.style.translate = `${((tr[0] || 0) + fix).toFixed(1)}px ${(tr[1] || 0).toFixed(1)}px`; } }
       await wait(11000 + Math.random() * 3000);   // he stays still, close, straight at you
       blink = 0.12; draw(); await wait(140); sp.forEach(({ g, e0 }) => { e0.style.opacity = ""; g.remove(); }); on = false; blink = 1; draw();
       await Promise.all([face({ eyeSL: 1, eyeSR: 1, near: 0 }, 600), nearTo(1, 0, 1100, "cubic-bezier(.3,.7,.4,1)")]); nearDone(); gazeLock = false; }, true);
