@@ -10781,7 +10781,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       let on = true; const follow = () => { if (!on) return; sp.forEach(([e0, g]) => { const rx = parseFloat(e0.getAttribute("rx")) || 2.4, ry = parseFloat(e0.getAttribute("ry")) || 3.4, cx = e0.getAttribute("cx"), cy = e0.getAttribute("cy");
           g.setAttribute("transform", `${e0.getAttribute("transform") || ""} translate(${cx} ${cy}) scale(${(rx / 2.4).toFixed(3)} ${(ry / 2.4).toFixed(3)})`); }); grow(performance.now()); requestAnimationFrame(follow); }; follow();
       await face({ eyeSL: 1.5, eyeSR: 1.5, rnd: 1 }, 500);   // his eyes open wide to hold the rings
-      bg.classList.add("in"); eyes.style.transition = "opacity .4s ease"; eyesOff = true; draw();   // no eyes: the whole of him is the pattern
+      sp.forEach(([, g]) => g.classList.add("in")); bg.classList.add("in");   // round eyes full of rings, on top of the pattern (eyes back, 26/11/2026)
       await wait(11000 + Math.random() * 3000);   // longer now, so the rhythm has time to speed up and slow down a few times; he stays still, straight at you
       blink = 0.12; draw(); await wait(140); sp.forEach(([, g]) => g.remove()); cp.remove(); bg.classList.remove("in"); eyesOff = false; setTimeout(() => { bg.remove(); bcp.remove(); eyes.style.transition = ""; }, 450); on = false; blink = 1; draw(); await face({ eyeSL: 1, eyeSR: 1, rnd: 0 }, 400); gazeLock = false; }, true);
     // boop: it rushes up and squashes its face against your screen like glass, holds, then peels off and falls back with a wobble
