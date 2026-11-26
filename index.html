@@ -1665,7 +1665,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 @media (prefers-reduced-motion: reduce){ #shelfX .chip, .fy-n, .fy-old {transition:none!important;animation:none!important} }
 /* Load 10 more: halfway between the last coffee's pills and the next section's rule (55px each side) */
 #shelfMore{margin-top:29px!important}
-#shelves{margin-bottom:-72px} #shelves::after{content:"";display:block;height:41px}   /* the section runs to the next rule, so the sticky menu is pushed away only when that rule reaches the menu's own bottom rule */   /* What's brewing: the next rule as close under its last row as its own rule is above its heading */
+#shelves{margin-bottom:-17px}   /* What's brewing: the next rule as close under its last row as its own rule is above its heading */
 @media (max-width: 760px){ #shelves{margin-top:-67px} html.ex-fold #shelves{margin-top:-60px} }   /* measured from the baseline, so Example sits centred between the rules */
 .g-ex{border-top:1px solid var(--line);padding-top:12px}
 .g-ex > .glimpse{margin-top:0!important}
@@ -7861,9 +7861,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       // pinned under the bar, the Coffees title is gone from view: the heading then says what it counts ("230 coffees added today")
       const dayT = !dN ? day : it1 ? `${dN.toLocaleString("it-IT")}<span class="day-what"> caffè</span> ${dN === 1 ? "aggiunto" : "aggiunti"} ${rest}` : `${dN.toLocaleString("en-GB")}<span class="day-what"> ${dN === 1 ? "coffee" : "coffees"}</span> added ${/^\d/.test(rest) ? "on " : ""}${rest}`;
       // only the first day's count, under the Coffees title ("230 added today"), pinned under the bar as you scroll: no heading over each later day
-      const dayHead = byDay && !isSp && day && lastDay === null ? `<h3 class="grp day-g"><span class="day-t">${dayT}</span></h3>` : ""; if (byDay && !isSp && day) lastDay = day;   // one span: the heading lays out its children in a row
+      const dayHead = byDay && !isSp && day && lastDay === null ? `<h3 class="grp day-g" data-day="${String(shelfDate(r) || "").slice(0, 10)}"><span class="day-t">${dayT}</span></h3>` : ""; if (byDay && !isSp && day) lastDay = day;   // one span: the heading lays out its children in a row
       tagBits.push(...coffeeLabels(r, shown).map((l) => `<span class="tg lbl" style="--vc:${LABEL_DOT[l] || "#8e8e93"}">${l}</span>`));
-      return `${head}${dayHead}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}">
+      return `${head}${dayHead}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}" data-day="${isSp ? "" : String(shelfDate(r) || "").slice(0, 10)}">
         <div class="l">
           <p class="c-where">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : ""}<a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a>${r.roaster_city || r.roaster_country ? `<span class="rcity">${r.roaster_city ? ", " : " "}${esc(cityL(r.roaster_city))}${r.roaster_country ? `${r.roaster_city ? " " : ""}(${esc(r.roaster_country === "GB" ? "UK" : r.roaster_country)})` : ""}</span>` : ""}${byDay && !isSp ? "" : `<br class="rn-br"><span class="day">${day}</span>`}</p>
           <span class="name">${esc(capName(calm(shown)))}</span>
@@ -10217,7 +10217,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   // (rather than holding on until the end of the whole list and then jumping away)
   { let q0 = 0; const mark = () => { q0 = 0; const hs = document.querySelectorAll(".shelf .grp.day-g"); if (!hs.length) return; const t0 = parseFloat(getComputedStyle(hs[0]).top) || 61;
       hs.forEach((h) => { const was = parseFloat(h.dataset.dy || "0"), t = h.getBoundingClientRect().top - was;   // where it would be without the push
-        let last = null; for (let n = h.nextElementSibling; n && !n.classList.contains("day-g"); n = n.nextElementSibling) if (n.classList.contains("item")) last = n;
+        // it goes away with the day's last coffee: the list runs on into older ones with no heading of their own, so it stops where the day changes
+        let last = null; for (let n = h.nextElementSibling; n && !n.classList.contains("day-g"); n = n.nextElementSibling) if (n.classList.contains("item")) { if (h.dataset.day && n.dataset.day && n.dataset.day !== h.dataset.day) break; last = n; }
         const row = last && (last.querySelector(":scope > .r") || last), lim = row ? row.getBoundingClientRect().bottom : Infinity;   /* its line meets the bottom of the buttons, then they go up together */
         const dy = Math.min(0, lim - (t + h.offsetHeight));
         if (Math.abs(dy - was) > 0.25) { h.dataset.dy = dy.toFixed(1); h.style.transform = dy ? `translateY(${dy.toFixed(1)}px)` : ""; }
