@@ -10796,9 +10796,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       await Promise.all([face(EYES, 900), nearTo(scTo, 1, 1800, null, 99)]); run = true;
       { const r2 = sp.map(({ rim }) => tight(rim)), fix = innerWidth / 2 - (Math.max(...r2.map((x) => x.right)) + Math.min(...r2.map((x) => x.left))) / 2;   // the last few px, so they sit exactly in the middle
         if (Math.abs(fix) > 0.5) { const tr = (el.style.translate || "0px 0px").split(/\s+/).map(parseFloat); el.style.transition = "translate .35s ease-out"; el.style.translate = `${((tr[0] || 0) + fix).toFixed(1)}px ${(tr[1] || 0).toFixed(1)}px`; } }
-      await wait(11000 + Math.random() * 3000);   // he stays still, close, straight at you
-      blink = 0.12; draw(); await wait(140); sp.forEach(({ g, e0 }) => { e0.style.opacity = ""; g.remove(); }); on = false; blink = 1; draw();
-      await Promise.all([face({ eyeSL: 1, eyeSR: 1, near: 0 }, 600), nearTo(1, 0, 1100, "cubic-bezier(.3,.7,.4,1)")]); nearDone(); gazeLock = false; }, true);
+      await wait(7000 + Math.random() * 2000);   // he stays still, close, straight at you (a little shorter: was 11 to 14 s)
+      // a smooth way out, no snap: the rings fade as his own eyes fade back in, while he shrinks back to his place
+      sp.forEach(({ g, e0 }) => { g.style.transition = "opacity .7s ease"; g.classList.remove("in"); e0.style.transition = "opacity .7s ease"; e0.style.opacity = ""; });
+      await Promise.all([face({ eyeSL: 1, eyeSR: 1, near: 0 }, 1300), nearTo(1, 0, 1600, "cubic-bezier(.45,0,.25,1)")]);
+      on = false; sp.forEach(({ g, e0 }) => { g.remove(); e0.style.transition = ""; }); nearDone(); gazeLock = false; }, true);
     // boop: it rushes up and squashes its face against your screen like glass, holds, then peels off and falls back with a wobble
     const boop = () => act(async () => { if (still()) return; await face({ eyeSL: 1.2, eyeSR: 1.2 }, 150); await nearTo(3, 80, 520, "cubic-bezier(.5,0,.9,.6)");
       el.style.transition = "scale .12s ease-out"; el.style.scale = "3.6 3.25"; rigid = true; await face({ eyeL: 0.45, eyeR: 0.45, eyeSL: 1.45, eyeSR: 1.45, blush: 0.8 }, 120); await wait(900);
