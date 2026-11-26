@@ -10223,7 +10223,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // a mouth: the whole lower third of the body, a wide grin that opens with joy and shuts tight when sad
     const W0 = 36, H0 = 24, R0 = 15.5;   // at rest: a dome 36 wide, 24 high; falling: a round drop of about the same volume
     const wS = 2 * Math.PI / 0.24, zS = 0.3, wL = 2 * Math.PI / 0.42, zL = 0.45, G = 2600;
-    const S = { aRest: 0, eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, fone: 0, umb: 0, scroll: 0, jx: 0, blush: 0, turn: 0, armL: 0, armR: 0, armLa: 0, armRa: 0, flip: 0, cold: 0, hot: 0, tumble: 0, cross: 0, float: 0 }; let rigid = false, rollU = 0, gX = 0, gY = 0, inStep = false, jy = 0, jv = 0, ptrX = 0, ptrY = 0, ptrT = 0; let tws = [], a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
+    const S = { aRest: 0, eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, fone: 0, umb: 0, scroll: 0, jx: 0, blush: 0, turn: 0, armL: 0, armR: 0, armLa: 0, armRa: 0, flip: 0, cold: 0, hot: 0, tumble: 0, cross: 0, float: 0, land: 0 }; let rigid = false, rollU = 0, gX = 0, gY = 0, inStep = false, jy = 0, jv = 0, ptrX = 0, ptrY = 0, ptrT = 0; let tws = [], a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
     const draw = () => {
       // the shape it has just before it falls: round. Squashed or stretched it keeps its volume (taller is narrower); its top
       // sways with the page; it sits on its lowest point
@@ -10258,7 +10258,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       L.setAttribute("transform", `translate(${(1.6 * S.cross).toFixed(2)} ${(-1.1 * lift + 1.4 * sad - 0.6 * S.happy + 0.25 * S.cross).toFixed(2)}) rotate(${(-28 * sad + 9 * S.cross).toFixed(1)} -6 -12)`); R.setAttribute("transform", `translate(${(-1.6 * S.cross).toFixed(2)} ${(-1.1 * lift + 1.4 * sad - 0.6 * S.happy + 0.25 * S.cross).toFixed(2)}) rotate(${(28 * sad - 9 * S.cross).toFixed(1)} 6 -12)`);   /* cross-eyed: both drift a little towards each other and tip in slightly */   /* sad: tipped and a little lower */
       // (no cheeks: the shy blush was taken out, 25/11/2026)
       // its phone: held low in front, screen lit; the light tints its eyes and lights its face from below
-      { const fo = el.querySelector(".gd-fone"), gl = el.querySelector(".gd-glow"); if (fo) { fo.style.opacity = S.fone.toFixed(2); fo.setAttribute("transform", `translate(${(lean * 0.4).toFixed(2)} ${(y - 3.5 + (1 - S.fone) * 9).toFixed(2)}) rotate(0)`);   /* held straight up */
+      { const fo = el.querySelector(".gd-fone"), gl = el.querySelector(".gd-glow"); if (fo) { fo.style.opacity = S.fone.toFixed(2); fo.setAttribute("transform", `translate(${(lean * 0.4).toFixed(2)} ${(y - 3.5 + (1 - S.fone) * 9).toFixed(2)}) rotate(${(90 * S.land).toFixed(2)} 0 0.25)`);   /* held straight up, or turned on its side to watch something */
           }   /* its back faces you, all black: you only see it light up the face */
         if (gl) { if (S.fone > 0.01) { if (!tvRaf) tvRaf = requestAnimationFrame(tvTick); } else gl.style.opacity = "0"; }
         eyes.style.fill = ""; }
@@ -10330,7 +10330,16 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const fl = tvLvl * (0.9 + 0.1 * Math.sin(now / 37) * Math.sin(now / 91)), col = `rgb(${tvCol.map((c) => Math.round(c)).join(",")})`;
       st.forEach((x) => x.setAttribute("stop-color", col)); gl.style.opacity = (S.fone * fl).toFixed(3); gl.setAttribute("cx", tvX.toFixed(2));
       tvRaf = requestAnimationFrame(tvTick); };
-    const onPhone = () => act(async () => { S.scroll = 0; await face({ fone: 1 }, 380);
+    // now and then he turns the phone on its side and watches something: eyes fixed on it, the screen's light flickering on his face, a laugh or a wow
+    const watchPhone = async () => { lookY = 1.6; lookX = 0; draw(); await tween("land", 1, 520); await face({ eyeL: 0.9, eyeR: 0.9, eyeSL: 1.08, eyeSR: 1.08 }, 300);
+      const end = performance.now() + 4500 + Math.random() * 2500;
+      while (performance.now() < end) { await wait(900 + Math.random() * 900); const r0 = Math.random();
+        if (r0 < 0.25) { await face({ smile: 1, happy: 1, eyeL: 0.7, eyeR: 0.7 }, 160); for (let i = 0; i < 3; i++) { poke(i % 2 ? 1.2 : -1.4); await wait(180); } await face({ smile: 0, happy: 0, eyeL: 0.9, eyeR: 0.9 }, 260); }
+        else if (r0 < 0.4) { await face({ eyeSL: 1.35, eyeSR: 1.35 }, 140); poke(-1.2); await wait(700); await face({ eyeSL: 1.08, eyeSR: 1.08 }, 300); }
+        else if (r0 < 0.55) await blinkSoft(); }
+      await face({ eyeSL: 1, eyeSR: 1 }, 200); await tween("land", 0, 420); };
+    const onPhone = () => act(async () => { S.scroll = 0; S.land = 0; await face({ fone: 1 }, 380);
+      if (Math.random() < 0.35) { lookY = 2.2; draw(); await face({ eyeL: 0.8, eyeR: 0.8 }, 200); await wait(500); await watchPhone(); await wait(300); lookY = 0; draw(); await face({ fone: 0, eyeL: 1, eyeR: 1, smile: 0, happy: 0 }, 320); S.scroll = 0; return; }
       lookY = 2.2; lookX = 0; draw(); await face({ eyeL: 0.8, eyeR: 0.8 }, 200);
       // what he reads gets a face: a laugh, a fright, boredom, dozing off over it, a wow, a sad face. One or two per look at the phone
       const REACT = {
