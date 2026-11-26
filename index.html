@@ -2293,7 +2293,7 @@ html.bn-off .dock{bottom:0 !important}
   font:500 var(--fs-s)/var(--pill-h) var(--sans);color:var(--muted)}   /* the grey of every other hint (What's brewing's box too) */
 .ask-line .ask-ph[hidden]{display:none}
 .ask-line .ask-ph .ph-t{position:absolute;left:0;right:0;top:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:transform .4s cubic-bezier(.2,.7,.2,1), opacity .4s ease}
-.ask-line .ask-ph .ph-t.ph-q{color:var(--ink);letter-spacing:-.015em}
+.ask-line .ask-ph .ph-t.ph-q{color:var(--muted);letter-spacing:-.015em}
 .ask-line .ask-ph .ph-t.in{transform:translateY(100%);opacity:0;transition:none}
 .ask-line .ask-ph .ph-t.out{transform:translateY(-100%);opacity:0}
 /* the bar over everything from the first frame: on iPhones a layer lower down (the wordmark) could paint over its line until the page scrolled */
@@ -3415,13 +3415,13 @@ html.no-recipe #coffee > .wb-sign{display:block;margin:0;margin-top:auto;padding
 @supports (height:100dvh){ html.no-recipe #coffee{min-height:calc(100dvh - var(--top-h, 49px) - var(--bot-h) - 13px)!important} }   /* the screen as it is right now: on an iPhone the browser's bar shrinks as you scroll, and the rule has to follow the bottom bar */
 html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h) - 13px);align-content:start;grid-template-rows:none;grid-auto-rows:max-content}
 /* the search box stands out from the bar: a lighter fill, white words, and a caret while its hint types itself */
-.ask-line .ask-ph .ph-t.ph-q{color:var(--ink)!important;letter-spacing:0!important}
+.ask-line .ask-ph .ph-t.ph-q{color:var(--muted)!important;letter-spacing:0!important}
 .ask-line .ask-ph .ph-type::after{content:"";display:inline-block;width:1.5px;height:1.05em;margin-left:2px;vertical-align:-.16em;background:var(--hl);animation:phCaret .9s steps(1) infinite}
 .ask-line .ask-ph .ph-type.done::after{animation:phCaret .9s steps(1) 3 forwards}
 @keyframes phCaret{0%{opacity:1}50%{opacity:0}100%{opacity:0}}
 @media (prefers-reduced-motion: reduce){.ask-line .ask-ph .ph-type::after{display:none}}
 /* the search box is the brightest thing in the bar: a clear outline, a lighter fill, white words and a white lens */
-.ask-line .ask-ph .ph-t.ph-q{color:var(--ink)!important;font-weight:500}
+.ask-line .ask-ph .ph-t.ph-q{color:var(--muted)!important;font-weight:500}   /* softer than typed words, so it never reads as a search already in (26/11/2026); still 5.5:1 or more on the box, both themes */
 .ask-line .ask-go{color:var(--ink)!important}
 /* the lens sits inside the outlined box: nothing covers the outline's right end */
 .ask-line #askIn{padding-right:calc(var(--pill-h) + 4px)!important}
@@ -10915,7 +10915,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // the list, and the page glides to the Coffees title. Hidden by a filter: then it is searched for, as before
     const showCo = (r) => { const a = $("askIn"), sq = $("shelfQ"), was = (a && a.value.trim()) || sq.value.trim();
       if (a) { a.value = ""; delete a.dataset.fy; } sq.value = ""; $("shelfQx").hidden = true; window.__pinCo = { url: r.url, q: "" };
-      if (was) sq.dispatchEvent(new Event("input")); else renderShelf(); if (window.syncAskGo) setTimeout(window.syncAskGo, 0);
+      if (was) sq.dispatchEvent(new Event("input")); else renderShelf(); if (window.syncAskGo) window.syncAskGo(); if (a) a.dispatchEvent(new Event("blur"));   // the box empty, with the homepage's hint back in it
       let k = 0; const find = () => { const it = [...document.querySelectorAll("#shelf .item")].find((x) => [...x.querySelectorAll("a[href]")].some((a) => a.href === r.url));
         if (it) return jumpTo($("shelves"));   // the Coffees title at its usual place, the coffee first under it
         if (++k < 6) return setTimeout(find, 120);
