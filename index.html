@@ -10655,7 +10655,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         for (let i = 0; i <= 60; i++) { const t = (i / 60) * Math.PI * 2; face.push([cx + R * Math.cos(t), cy + R * Math.sin(t)]); }
         for (let i = 0; i <= 20; i++) { const t = Math.PI * 0.15 + (i / 20) * Math.PI * 0.7; mouth.push([cx + R * 0.6 * Math.cos(t), cy + R * 0.6 * Math.sin(t)]); }
         const eye = (x) => [[cx + x, cy - R * 0.3], [cx + x, cy - R * 0.1]]; return [face, eye(-R * 0.35), eye(R * 0.35), mouth]; };
-      const opts = [good && vis(good) ? ["heart", () => heart(good)] : null, tagR && vis(tagR) ? ["ring", () => ring(tagR)] : null, nameR ? ["star", () => star(nameR)] : null, nameR ? ["wave", () => wave(nameR)] : null, ["smiley", smiley]].filter(Boolean);
+      // a heart round himself: drawn from the dip at the top, down one side to the point and up the other, big enough to hold him
+      const heartMe = () => { const bb = body.getBoundingClientRect(), c = rel(bb), sx = Math.max(c.w, 40) * 2.9 / 32, sy = sx * 0.86, cx = c.x + c.w / 2, cy = c.y + c.h * 0.5 + c.w * 0.06, pts = [];   /* sized so all of him sits inside it */
+        for (let i = 0; i <= 110; i++) { const t = (i / 110) * Math.PI * 2; pts.push([cx + sx * 16 * Math.pow(Math.sin(t), 3), cy - sy * (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t) + 1.5)]); } return [pts]; };
+      const opts = [["heartme", heartMe], good && vis(good) ? ["heart", () => heart(good)] : null, tagR && vis(tagR) ? ["ring", () => ring(tagR)] : null, nameR ? ["star", () => star(nameR)] : null, nameR ? ["wave", () => wave(nameR)] : null, ["smiley", smiley]].filter(Boolean);
       const pickd = opts.find((o) => o[0] === want) || opts[Math.floor(Math.random() * opts.length)]; const strokes = pickd[1]();
       const flat = strokes.flat(), first = flat[0];
       const look = (px, py) => { const bb = body.getBoundingClientRect(), dx = px - (bb.left + bb.width / 2), dy = py - (bb.top + bb.height * 0.42), dd = Math.hypot(dx, dy) || 1; lookX = 4.4 * dx / dd; lookY = 4.4 * dy / dd; draw(); };
