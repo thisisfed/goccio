@@ -1676,6 +1676,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
   .ps.xdense .ps-pours{font-size:9pt} .ps.xdense .ps-pours td{padding:.9mm 0} .ps.xdense .ps-kick{margin-top:6mm} .ps.xdense .ps-nums{margin-top:7mm}
 }
 #bagBtn[hidden], #buyBtn[hidden], #calBtn[hidden], #mUse[hidden]{display:none!important}
+html body #stage{height:auto!important;min-height:0!important;aspect-ratio:auto!important} html body #stage > .scene.final{position:relative!important;inset:auto!important}   /* the desktop intro is one headline now: the box is as tall as it, no room kept for lines that no longer cycle */
 html body #shelf .item .l p.c-notes, html body #shelf .item .l p.c-notes *{color:var(--ink)!important}   /* the tasting notes in ink: after the name, the first thing you read; origin, process and variety stay grey with their dots */
 /* My bags and the bookmarks are off for now (Nov 2026), until there are logins to keep them with: the buttons, the section and its pills are hidden.
    Anything already saved stays on the device and comes back when this rule goes. */
@@ -3450,14 +3451,6 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       </div>
       <div class="hero-row">
       <div class="stage" id="stage">
-        <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">Love</span> <span class="w" style="--i:1">coffee?</span></p>
-        <p class="scene words" aria-hidden="true"><span class="w" style="--i:0">You</span> <span class="w" style="--i:1">will</span> <span class="w hw" style="--i:2"><svg class="heart" viewBox="0 0 24 24" role="img" aria-label="love"><path pathLength="1" d="M12 20.2S3.5 15 3.5 9.1A4.6 4.6 0 0 1 12 6.6a4.6 4.6 0 0 1 8.5 2.5c0 5.9-8.5 11.1-8.5 11.1z"/></svg></span> <span class="w" style="--i:3">every</span> <span class="w" style="--i:4">cup.</span></p>
-        <div class="scene stat" aria-hidden="true" id="sceneStat"><span class="stat-n"><span id="statN">0</span> coffees.</span><span class="stat-s" id="statS">From near and far.</span></div>
-        <p class="scene words two just" aria-hidden="true" id="sceneJust"><span class="ln"><span class="w" style="--i:0">Just</span> <span class="w" style="--i:1">in.</span></span><span id="justLn"></span></p>
-        <p class="scene words roasters" aria-hidden="true"><span class="w rs" style="--i:0">Square Mile&nbsp;<span class="cc">UK</span></span> <span class="w rs" style="--i:1">Tim Wendelboe&nbsp;<span class="cc">NO</span></span> <span class="w rs" style="--i:2">La Cabra&nbsp;<span class="cc">DK</span></span> <span class="w rs" style="--i:3">Sey&nbsp;<span class="cc">US</span></span> <span class="w rs" style="--i:4">Onyx&nbsp;<span class="cc">US</span></span> <span class="w rs" style="--i:5">Glitch&nbsp;<span class="cc">JP</span></span></p>
-        <p class="scene words two" aria-hidden="true"><span class="ln"><span class="w" style="--i:0">14</span> <span class="w" style="--i:1">brewers.</span></span><span class="ln"><span class="w hw" style="--i:2"><svg class="heart inf" viewBox="1 5 22 14" role="img" aria-label="infinite"><path pathLength="1" d="M12 12C14 9.4 16 8 18 8a4 4 0 0 1 0 8C16 16 14 14.6 12 12C10 9.4 8 8 6 8a4 4 0 0 0 0 8C8 16 10 14.6 12 12z"/></svg></span> <span class="w" style="--i:3">possibilities.</span></span></p>
-        <div class="scene stat" aria-hidden="true" id="sceneGrind"><span class="stat-k" id="gB">V60</span><span class="stat-n">Got <span class="hw"><svg class="heart doodle" viewBox="0 0 24 24" role="img" aria-label="timer"><path pathLength="1" style="--p:0" d="M12 21.5a8 8 0 1 0 0-16 8 8 0 0 0 0 16z"/><path class="hm" pathLength="1" style="--p:1" d="M12 13.5V10"/><path class="hs" pathLength="1" style="--p:1.4" d="M12 13.5V7.8"/><path pathLength="1" style="--p:2" d="M10 2.5h4"/><path pathLength="1" style="--p:3" d="M12 2.5v3"/></svg></span> <span id="gT">3:15</span>?</span><span class="stat-s">It’s all it takes.</span></div>
-        <p class="scene words one-line" aria-hidden="true"><span class="w" style="--i:0">Pour.</span> <span class="w" style="--i:1">Taste.</span> <span class="w" style="--i:2">Tweak.</span> <span class="w" style="--i:3">Nail</span> <span class="w hw" style="--i:4">it.&nbsp;<svg class="heart doodle" viewBox="0 0 24 24" role="img" aria-label="done"><path pathLength="1" style="--p:0" d="M4 12.5l5 5L20 6.5"/></svg></span></p>
         <div class="scene final on"><h1 id="h1">New coffees. <span class="serif">The recipe for each bag.</span></h1></div>
       </div>
       <div class="hero-side">
@@ -3919,7 +3912,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     document.documentElement.lang = "it";
     // the hero and the closing text are built word by word for their animations, so they are rebuilt in Italian
     const W = (a, from = 0) => a.map((w, j) => `<span class="w" style="--i:${from + j}">${w}</span>`).join(" ");
-    const sc = [...document.querySelectorAll("#stage > .scene")];
+    const sc = [...document.querySelectorAll("#stage > .scene:not(.final)")];   // none now: the desktop intro is the one headline
     const heart = (sel) => { const s = sc.find((x) => x.querySelector(sel)); return s ? s.querySelector(sel).outerHTML : ""; };
     const hLove = heart("svg.heart:not(.doodle)").replace('aria-label="love"', 'aria-label="amore"');
     const hTimer = heart('svg[aria-label="timer"]'), hDone = heart('svg[aria-label="done"]').replace('aria-label="done"', 'aria-label="fatto"');
@@ -9989,6 +9982,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   })();
   (function heroLoop() {
     const scenes = [...document.querySelectorAll("#stage .scene")];
+    // Nov 2026: the desktop intro no longer cycles (Love coffee?, the count, roasters, brewers, timer, Pour. Taste. Tweak.): it's the one headline, calm like the phone
+    if (scenes.length < 2) return;
     const HOLD = [2200, 2400, 2900, 4600, 3400, 2900, 4800, 3400, 5200];
     if (!scenes.length || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let i = scenes.length - 1, timer = null, visible = true;
