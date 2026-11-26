@@ -2683,7 +2683,11 @@ def labelled(text, key, start=0):
     for m in [*PAGE_LABEL[key].finditer(text, start), *GLUED_LABEL[key].finditer(text, start)]:
         window = text[m.end():m.end() + 90]
         if key == "process":
-            got = find_process(window)
+            # only the label's own line (or the next one, when the label stands alone): the 90 letters used to run on into the
+            # tasting notes, and "Process: Washed / Tasting notes: Orange, Honey" read as honey (Rover Coffee Lab, 26/11/2026)
+            line = next((l for l in window.split("\n") if l.strip(" :-\xa0\t")), "")
+            line = re.split(r"(?:\s+|(?<=[a-z]))(?=(?:tasting notes?|notes?|flavou?rs?|cup|variety|varietal|altitude|elevation|region|origin|producer|farm|harvest)\s*:)", line, flags=re.I)[0]
+            got = find_process(line)
             if got:
                 return got
         else:
