@@ -10298,6 +10298,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // a mouth: the whole lower third of the body, a wide grin that opens with joy and shuts tight when sad
     const W0 = 36, H0 = 24, R0 = 15.5;   // at rest: a dome 36 wide, 24 high; falling: a round drop of about the same volume
     const wS = 2 * Math.PI / 0.24, zS = 0.3, wL = 2 * Math.PI / 0.42, zL = 0.45, G = 2600;
+    let foldOut = false;   // the folding phone is out: drawn squarer from the moment it appears; every other phone is the normal one
     const S = { aRest: 0, eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, fone: 0, umb: 0, scroll: 0, jx: 0, blush: 0, turn: 0, armL: 0, armR: 0, armLa: 0, armRa: 0, flip: 0, cold: 0, hot: 0, tumble: 0, cross: 0, float: 0, land: 0, duo: 0 }; let rigid = false, rollU = 0, gX = 0, gY = 0, inStep = false, jy = 0, jv = 0, ptrX = 0, ptrY = 0, ptrT = 0; let tws = [], a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
     let glareLoop = 0; const glS = { x: 0, y: 0, t: 0, off: 0 };   // the shine's eased place, and the loop that redraws it while he moves
     const draw = () => {
@@ -10347,7 +10348,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       // (no cheeks: the shy blush was taken out, 25/11/2026)
       // its phone: held low in front, screen lit; the light tints its eyes and lights its face from below
       { const fo = el.querySelector(".gd-fone"), gl = el.querySelector(".gd-glow"); if (fo) { fo.style.opacity = S.fone.toFixed(2); fo.setAttribute("transform", `translate(${(lean * 0.4 - 4.15 * S.duo).toFixed(2)} ${(y - 3.5 + (1 - S.fone) * 9).toFixed(2)}) rotate(${(90 * S.land).toFixed(2)} 0 0.25)`);
-            { const sq = Math.max(0, Math.min(1, S.sq || 0)); fo.querySelectorAll(".gd-fone-b").forEach((rc) => { rc.setAttribute("y", (-6 + 1.4 * sq).toFixed(2)); rc.setAttribute("height", (12.5 - 2.8 * sq).toFixed(2)); rc.setAttribute("rx", (1.6 + 0.6 * sq).toFixed(2)); }); }   /* the folding one is squarer: each half about 8 by 9.7, rounder corners; open, it's a little tablet */
+            { const sq = foldOut ? 1 : 0; fo.querySelectorAll(".gd-fone-b").forEach((rc) => { rc.setAttribute("y", (-6 + 1.4 * sq).toFixed(2)); rc.setAttribute("height", (12.5 - 2.8 * sq).toFixed(2)); rc.setAttribute("rx", (1.6 + 0.6 * sq).toFixed(2)); }); }   /* the folding one is squarer: each half about 8 by 9.7, rounder corners; open, it's a little tablet */
             { const f2 = fo.querySelector(".gd-fone-2"); if (f2) { f2.setAttribute("opacity", S.duo > 0.02 ? "1" : "0"); f2.setAttribute("transform", `translate(4.3 0) scale(${Math.max(0.001, S.duo).toFixed(3)} 1) translate(-4.3 0)`); } }   /* the folding phone: a second screen swings open beside the first */   /* held straight up, or turned on its side to watch something */
           }   /* its back faces you, all black: you only see it light up the face */
         if (gl) { if (S.fone > 0.01) { if (!tvRaf) tvRaf = requestAnimationFrame(tvTick); } else gl.style.opacity = "0"; }
@@ -10368,7 +10369,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     let acting = false, solo = false, texT = 0, texting = false;   // one expression at a time; a "solo" (laser eyes, hypnosis, coming up close) can't be cut short by anything
     let wantText = false;   // typing an answer: the phone comes out, but a trick puts it away first and it comes back after
     let runN = 0, pageDent = null;
-    const tidyUp = () => { try { if (el.style.scale || el.style.translate) nearDone(); el.style.filter = ""; rigid = false; gazeLock = false; if (pageDent) { pageDent.cancel(); pageDent = null; }
+    const tidyUp = () => { try { foldOut = false; if (el.style.scale || el.style.translate) nearDone();   /* a folding phone cut short: the next phone is the normal one */ el.style.filter = ""; rigid = false; gazeLock = false; if (pageDent) { pageDent.cancel(); pageDent = null; }
         el.querySelectorAll(".gd-hyp").forEach((n) => n.remove()); S.flip = 0; S.tumble = 0; if (S.fone) tween("fone", 0, 140); dancing = false; } catch (e) {} };
     // never two moves at once: a move asked for while another runs (after free(): a tap, a chat reply) waits for that one to be cut at its next step, then plays
     const act = async (fn, alone) => { if (acting) { if (freeReq && !solo) { pending = [fn, alone]; if (curRun) abort = true; } return; }
@@ -10440,11 +10441,12 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       await face({ eyeSL: 1, eyeSR: 1 }, 200); await tween("land", 0, 420); };
     // the folding phone is the same size shut and open (26/11/2026): when it's the folding one it comes out already squarer, and
     // opening it only swings the second screen out beside the first; nothing else grows or shrinks
-    const onPhone = () => act(async () => { const fold = Math.random() < 0.18; S.scroll = 0; S.land = 0; S.duo = 0; S.sq = fold ? 1 : 0; await face({ fone: 1 }, 380);
+    const onPhone = () => act(async () => { const fold = Math.random() < 0.18; S.scroll = 0; S.land = 0; S.duo = 0; try { if (S.fone > 0.05) await face({ fone: 0 }, 160); foldOut = fold; await onPhone0(fold); } finally { foldOut = false; } });   /* a phone still out from a move cut short goes away first: no phone ever changes size in his hand */
+    const onPhone0 = async (fold) => { await face({ fone: 1 }, 380);
       // now and then it's a folding phone: it opens out to two screens, he scrolls, a wow, and folds it shut again
       if (fold) { lookY = 2.2; draw(); await face({ eyeL: 0.8, eyeR: 0.8 }, 200); await wait(300); await tween("duo", 1, 650); await face({ eyeSL: 1.3, eyeSR: 1.3 }, 160); poke(-1.2); await wait(700); await face({ eyeSL: 1, eyeSR: 1 }, 300);
         for (let i = 0; i < 3; i++) { lookX = i % 2 ? 1.6 : -1.6; draw(); await wait(700 + Math.random() * 400); await tween("scroll", S.scroll + 1, 260); }
-        lookX = 0; draw(); await face({ smile: 0.8, happy: 0.6 }, 200); await wait(600); await tween("duo", 0, 450); await wait(250); lookY = 0; draw(); await face({ fone: 0, eyeL: 1, eyeR: 1, smile: 0, happy: 0 }, 320); S.scroll = 0; S.sq = 0; return; }
+        lookX = 0; draw(); await face({ smile: 0.8, happy: 0.6 }, 200); await wait(600); await tween("duo", 0, 450); await wait(250); lookY = 0; draw(); await face({ fone: 0, eyeL: 1, eyeR: 1, smile: 0, happy: 0 }, 320); S.scroll = 0; return; }
       if (Math.random() < 0.35) { lookY = 2.2; draw(); await face({ eyeL: 0.8, eyeR: 0.8 }, 200); await wait(500); await watchPhone(); await wait(300); lookY = 0; draw(); await face({ fone: 0, eyeL: 1, eyeR: 1, smile: 0, happy: 0 }, 320); S.scroll = 0; return; }
       lookY = 2.2; lookX = 0; draw(); await face({ eyeL: 0.8, eyeR: 0.8 }, 200);
       // what he reads gets a face: a laugh, a fright, boredom, dozing off over it, a wow, a sad face. One or two per look at the phone
@@ -10461,7 +10463,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       for (let i = 0; i < 3; i++) { await wait(500 + Math.random() * 400); await tween("scroll", S.scroll + 1, 260); }
       await REACT[first]();
       if (Math.random() < 0.5) { const nx = keys.filter((k) => k !== first)[Math.floor(Math.random() * (keys.length - 1))]; await wait(400); await tween("scroll", S.scroll + 1, 260); await wait(500); await REACT[nx](); }
-      await tween("scroll", S.scroll + 1, 260); await wait(500); lookY = 0; draw(); await face({ fone: 0, eyeL: 1, eyeR: 1, smile: 0, happy: 0 }, 320); S.scroll = 0; });
+      await tween("scroll", S.scroll + 1, 260); await wait(500); lookY = 0; draw(); await face({ fone: 0, eyeL: 1, eyeR: 1, smile: 0, happy: 0 }, 320); S.scroll = 0; };
     const yawn = () => act(async () => { tween("aRest", 0.18, 650); await face({ eyeL: 0.08, eyeR: 0.08, eyeSL: 1.15, eyeSR: 1.15 }, 650); leanTo = -1.5;
       // at the top of the stretch: a small twitch (nothing slips out any more)
       poke(-0.6); await wait(650);
