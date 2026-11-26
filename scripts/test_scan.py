@@ -112,6 +112,15 @@ CASES = [
     ("Sey's 'In the cup we find dark berries, tamarind, and hibiscus.' gives the three notes",
      lambda: scan.find_notes({"body": '<p><span>This is a distinctive coffee and one of the few Maragogypes we have ever released. We are grateful to Stephan and Lost Origin for the work that went into producing it. In the cup we find dark berries, tamarind, and hibiscus.</span></p>', "title": "2026 Stephan Muller x Lost Origin; Dobe Mara", "tags": []}) == ["Dark berries", "Tamarind", "Hibiscus"]
        and scan.find_notes({"body": "<p>In the cup, you'll find stone fruit and honey.</p>", "title": "X", "tags": []}) == ["Stone fruit", "Honey"]),
+    # Poma (26/11/2026): the roaster's own recipe under "Brewing Parameters" is read as numbers, shown beside Goccio's
+    ("Poma's 'Brewing Parameters' paragraph gives 13 g to 200 g, 92 °C, coarse about 900 µm, 50 g every 40 s, 3:00",
+     lambda: scan.roaster_recipe('<p>Brewing Parameters</p><p>We recommend using 13 grams of coffees to 200 grams of water. A coarse grind size approximately 900 micron. Brewing temperature 92C. Our brewing pattern is a 50g circular pour every 40 seconds. Total brew time is 3:00.</p>')
+       == {"dose": 13, "water": 200, "ratio": 15.4, "temp": 92, "grind_um": 900, "grind": "coarse", "time": "3:00", "pours": [50, 40]}),
+    ("A roaster's espresso recipe ('18g in, 40g out in 28-32 seconds at 93°C') and a V60 list are read; '1:16' is a ratio, not a time; no recipe without one",
+     lambda: scan.roaster_recipe('<p>Espresso recipe: 18g in, 40g out in 28-32 seconds at 93°C.</p>') == {"dose": 18, "water": 40, "ratio": 2.2, "temp": 93, "time": "28–32 s", "brewer": "espresso"}
+       and scan.roaster_recipe('<h3>Our V60 recipe</h3><ul><li>15g coffee</li><li>250g water</li><li>94°C</li><li>Medium-fine grind</li><li>Total time 2:45</li></ul>')["brewer"] == "v60"
+       and scan.roaster_recipe('<p>We recommend brewing this at a 1:16 ratio with water at 96°C.</p>') == {"ratio": 16, "temp": 96}
+       and scan.roaster_recipe('<p>Roasted for filter. Notes of plum. 250g bag.</p>') is None),
     # Sprout (24/11/2026): the same subtitle layout as Sl.ow, with the name in capitals ("LASSO LASSI", then "Lychee, Tropical, Lactic")
     ("Sprout's 'Lychee, Tropical, Lactic' under 'LASSO LASSI' are the notes",
      lambda: scan.page_notes("Skip to content\nShop\nLASSO LASSI\nLychee, Tropical, Lactic\n\u00a313.00\nSize\n250g\nAdd to cart\nComplex & fruity bang bang baby!", "Lasso Lassi") == ["Lychee", "Tropical", "Lactic"]),
