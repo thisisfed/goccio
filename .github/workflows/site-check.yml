@@ -1,0 +1,63 @@
+name: Site check
+
+# Safety net 3: a look at the live www.goccio.co.uk, as a visitor and as Google see it (scripts/site_check.py):
+# robots.txt, the sitemap (XML, thousands of addresses), three random coffee pages, today's coffee data (full, at most two
+# days old), Goccio's answers, and the home page in a real browser on a phone and a computer (coffees listed, no script
+# errors, Goccio drawn). Every morning after the scan, a few minutes after every publish, and by hand.
+# The report is the run's summary page (Actions > Site check). When something is wrong the run fails (GitHub emails it) and an
+# issue labelled "site-check" is opened (or updated); it closes by itself once a check passes again. Free: a public repo's
+# Actions minutes cost nothing.
+on:
+  schedule:
+    - cron: "41 8 * * *"
+  workflow_run:
+    workflows: ["Publish to Cloudflare"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: site-check
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Wait for the new version to reach Cloudflare
+        if: github.event_name == 'workflow_run'
+        run: sleep 90
+      - name: Check the live site
+        id: check
+        run: |
+          pip install -q playwright==1.63.0 && python -m playwright install --with-deps chromium >/dev/null
+          python scripts/site_check.py https://www.goccio.co.uk
+      - name: Open or update the issue
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh label create site-check --color d93f0b --description "The daily site check found a problem" 2>/dev/null || true
+          url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          body="$(cat site-check.md 2>/dev/null || echo 'The check could not run.')
+
+          Run: $url"
+          n=$(gh issue list --label site-check --state open --json number -q '.[0].number')
+          if [ -n "$n" ]; then gh issue comment "$n" --body "$body"; else gh issue create --title "Site check: something is wrong on www.goccio.co.uk" --label site-check --body "$body"; fi
+      - name: Close the issue when it's fixed
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for n in $(gh issue list --label site-check --state open --json number -q '.[].number'); do
+            gh issue close "$n" --comment "All checks pass again: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          done

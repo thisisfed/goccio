@@ -4,9 +4,9 @@ name: Scanner tests
 # scanner, on any branch, so a change that brings an old mistake back shows a red cross before it's merged.
 on:
   push:
-    paths: ["scripts/**", ".github/workflows/tests.yml"]
+    paths: ["scripts/**", "index.html", ".github/workflows/tests.yml"]
   pull_request:
-    paths: ["scripts/**"]
+    paths: ["scripts/**", "index.html"]
   workflow_dispatch:
 
 permissions:
@@ -22,3 +22,5 @@ jobs:
         with:
           python-version: "3.12"
       - run: python3 scripts/test_scan.py
+      # every script in the page must parse (a stray comment once stopped the whole page)
+      - run: node scripts/check_js.js index.html

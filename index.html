@@ -67,7 +67,7 @@ n=Math.floor((now-new Date(y,0,0))/864e5),r=Math.PI/180,d=-23.44*Math.cos(2*Math
 B=2*Math.PI*(n-81)/364,eot=9.87*Math.sin(2*B)-7.53*Math.cos(B)-1.5*Math.sin(B),
 h=Math.acos(Math.max(-1,Math.min(1,(Math.sin(-.833*r)-Math.sin(lat*r)*Math.sin(d))/(Math.cos(lat*r)*Math.cos(d)))))/r,noon=12-lon/15-eot/60,u=now.getUTCHours()+now.getUTCMinutes()/60;
 return u<noon-h/15||u>noon+h/15;};
-try{var t=localStorage.getItem("v60.theme");if(t==="auto")t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.documentElement.setAttribute("data-theme",t==="light"?"light":"dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}
+try{window.__sun=function(la,lo,d){d=d||new Date();var r=Math.PI/180,y=Date.UTC(d.getUTCFullYear(),0,0),n=Math.floor((d-y)/864e5),g=2*Math.PI/365*(n-1+(d.getUTCHours()-12)/24),eq=229.18*(7.5e-5+.001868*Math.cos(g)-.032077*Math.sin(g)-.014615*Math.cos(2*g)-.040849*Math.sin(2*g)),de=.006918-.399912*Math.cos(g)+.070257*Math.sin(g)-.006758*Math.cos(2*g)+.000907*Math.sin(2*g)-.002697*Math.cos(3*g)+.00148*Math.sin(3*g),c=Math.cos(90.833*r)/(Math.cos(la*r)*Math.cos(de))-Math.tan(la*r)*Math.tan(de),m=d.getUTCHours()*60+d.getUTCMinutes()+d.getUTCSeconds()/60,M=function(x){return((x%1440)+1440)%1440};if(c>1)return{dark:true,next:null};if(c<-1)return{dark:false,next:null};var h=Math.acos(c)/r*4,nn=720-4*lo-eq,ri=nn-h,se=nn+h,day=M(m-ri)<se-ri;return{dark:!day,next:day?M(se-m):M(ri-m)}};var t=localStorage.getItem("v60.theme");if(t==="auto"){var sp=JSON.parse(localStorage.getItem("v60.sun")||"null");t=sp&&sp.la!=null?(window.__sun(sp.la,sp.lo).dark?"dark":"light"):(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");}document.documentElement.setAttribute("data-theme",t==="light"?"light":"dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}
 </script>
 <style>
 /* Layout idea: Apple product page, warmed up. Cream paper canvas, warm-white rounded tiles, system type set
@@ -2613,7 +2613,7 @@ html:not(.mine) body #coffee#coffee#coffee{min-height:0!important;padding-top:0!
 html:not(.mine) body #coffee > .wb-sign{padding-top:21px!important;margin-top:0!important}   /* 43 px from Load more to the sign-off, as from the last coffee to Load more */
 html:not(.mine) body #coffee#coffee#coffee{height:auto!important;min-height:0!important;padding-bottom:0!important;margin-bottom:-87px!important}   /* 13 px from the sign-off to the rule under it, as when the form is out */   /* as far under Load more as Load more is under the last coffee; over the bottom rule exactly as before */
 /* tags stay on one line: a tag too long for it (a list of varieties) is cut with an ellipsis, the longest giving way first */
-html body .item .tags{column-gap:20px!important;display:flex!important;flex-wrap:nowrap!important;min-width:0;max-width:100%;overflow:hidden}
+html body .item .tags{column-gap:16px!important;display:flex!important;flex-wrap:nowrap!important;min-width:0;max-width:100%;overflow:hidden}
 html body .item .tags > *{flex:0 1 auto;min-width:0;white-space:nowrap!important;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal!important}
 html body .item .tags > .vdot{flex-shrink:1000}
 html body .item .tags > :not(.vdot){min-width:max-content}
@@ -3148,7 +3148,7 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
 .tech-lbl:has(+ #tech[hidden]), .tech-lbl:has(+ #tech:empty){display:none}
 /* Example: white like Why this recipe, the same size and weight */
 .glimpse figcaption button.g-tag, .glimpse figcaption .g-tag{color:var(--ink)!important;font-size:15px!important;font-weight:500!important}
-.g-ex.fold .glimpse figcaption button.g-tag{margin-left:0;width:100%;justify-content:space-between}   /* folded: Example on the left, its arrow on the right, like the folds above */
+.g-ex.fold .glimpse figcaption button.g-tag{margin-left:auto;width:auto;justify-content:flex-end}   /* folded: Example on the right, next to its arrow */
 .glimpse figcaption button.g-tag::after{margin-right:10px}
 /* Brew, the thing Goccio is for: a white pill on the cards, Buy and Save stay grey */
 .shelf .item > .r > .btn{background:var(--ink)!important;color:var(--bg)!important}
@@ -3459,7 +3459,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       <p class="lede-need">You’ll need a scale, and ideally a grinder.</p>
       <div class="g-ex fold">
       <figure class="glimpse" aria-label="Example recipe: washed Ethiopia, light roast. 15 g coffee to 255 g water, 99°C, about 3:15. Pours at 0:00 to 51 g, 0:45 to 102 g, 1:10 to 153 g, 1:30 to 204 g, 1:50 to 255 g.">
-        <figcaption><span class="g-name">Washed Ethiopia, light roast</span><button type="button" class="g-tag" id="exTog" aria-expanded="false" aria-label="Show the example">Brewing example</button></figcaption>
+        <figcaption><span class="g-name">Washed Ethiopia, light roast</span><button type="button" class="g-tag" id="exTog" aria-expanded="false" aria-label="Show the example">Example</button></figcaption>
         <div class="g-specs num" aria-hidden="true"><span><b>15</b><span class="arr">→</span><b>255</b> g</span><span><b>99</b>°C</span></div>
         <ol class="g-pours num" aria-hidden="true">
           <li style="--t:0"><span>0:00</span><b>51</b></li><li style="--t:45"><span>0:45</span><b>102</b></li><li style="--t:70"><span>1:10</span><b>153</b></li><li style="--t:90"><span>1:30</span><b>204</b></li><li style="--t:110"><span>1:50</span><b>255</b></li><li class="end"><span>3:15</span><i>Done</i></li>
@@ -3543,7 +3543,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       </details>
       <input type="file" accept="image/*" capture="environment" id="roastPhotoIn" hidden>
     </div>
-    <p class="wb-sign"><span class="gdrop" id="gdrop" role="button" tabindex="0" aria-label="Ask Goccio about coffee" aria-expanded="false"><svg viewBox="-32 -56 64 60" aria-hidden="true"><defs><radialGradient id="gdFill" gradientUnits="userSpaceOnUse" cx="1.8" cy="-9.3" r="22.3" fx="2.5" fy="-6.8"><stop offset="0" stop-color="#7d4524"/><stop offset=".38" stop-color="#4c2311"/><stop offset=".78" stop-color="#261107"/><stop offset="1" stop-color="#120702"/></radialGradient><radialGradient id="gdGlow"><stop offset="0" stop-color="#bfe3ff" stop-opacity=".55"/><stop offset="1" stop-color="#bfe3ff" stop-opacity="0"/></radialGradient></defs><g class="gd-all"><path class="gd-arm" d=""/><path class="gd-arm" d=""/><path class="gd-b" d=""/><path class="gd-butt" d=""/><ellipse class="gd-h" cx="0" cy="0" rx="3.4" ry="1.9"/><g class="gd-e"><ellipse class="gd-l" cx="-6" cy="-12" rx="2.4" ry="3.4"/><ellipse class="gd-r" cx="6" cy="-12" rx="2.4" ry="3.4"/></g><ellipse class="gd-glow" cx="0" cy="-9" rx="12" ry="9" fill="url(#gdGlow)"/><g class="gd-fone"><rect class="gd-fone-b" x="-4" y="-6" width="8" height="12.5" rx="1.6"/></g></g><g class="gd-n"></g></svg></span><span class="gd-beta" aria-hidden="true" translate="no">Beta 0.9.42-λ</span><span class="gd-hint" id="gdHint" hidden>Hi, I’m Goccio and I answer your coffee questions.</span><span class="gd-talk" id="gdTalk" role="dialog" aria-label="Goccio" hidden><button type="button" class="gd-x" id="gdX" aria-label="Close"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 2l8 8M10 2l-8 8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button><span class="gd-say" id="gdSay" aria-live="polite"></span><span class="gd-chips" id="gdChips"></span><span class="gd-ask"><input id="gdIn" type="text" enterkeyhint="send" autocomplete="off" placeholder="Ask Goccio about coffee" aria-label="Ask Goccio"><button type="button" id="gdMic" aria-label="Ask out loud" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6.5v3M5 4v8M8 2v12M11 4.5v7M14 6.5v3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button><button type="button" id="gdGo" aria-label="Ask"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></span></span>Brew something good.</p>
+    <p class="wb-sign"><span class="gdrop" id="gdrop" role="button" tabindex="0" aria-label="Ask Goccio about coffee" aria-expanded="false"><svg viewBox="-32 -56 64 60" aria-hidden="true"><defs><radialGradient id="gdFill" gradientUnits="userSpaceOnUse" cx="1.8" cy="-9.3" r="22.3" fx="2.5" fy="-6.8"><stop offset="0" stop-color="#7d4524"/><stop offset=".38" stop-color="#4c2311"/><stop offset=".78" stop-color="#261107"/><stop offset="1" stop-color="#120702"/></radialGradient><radialGradient id="gdGlow"><stop offset="0" stop-color="#bfe3ff" stop-opacity=".55"/><stop offset="1" stop-color="#bfe3ff" stop-opacity="0"/></radialGradient></defs><g class="gd-all"><path class="gd-arm" d=""/><path class="gd-arm" d=""/><path class="gd-b" d=""/><path class="gd-butt" d=""/><ellipse class="gd-h" cx="0" cy="0" rx="3.4" ry="1.9"/><g class="gd-e"><ellipse class="gd-l" cx="-6" cy="-12" rx="2.4" ry="3.4"/><ellipse class="gd-r" cx="6" cy="-12" rx="2.4" ry="3.4"/></g><ellipse class="gd-glow" cx="0" cy="-9" rx="12" ry="9" fill="url(#gdGlow)"/><g class="gd-fone"><rect class="gd-fone-b" x="-4" y="-6" width="8" height="12.5" rx="1.6"/><rect class="gd-fone-b gd-fone-2" x="4.3" y="-6" width="8" height="12.5" rx="1.6" opacity="0"/></g></g><g class="gd-n"></g></svg></span><span class="gd-beta" aria-hidden="true" translate="no">Beta 0.9.42-λ</span><span class="gd-hint" id="gdHint" hidden>Hi, I’m Goccio and I answer your coffee questions.</span><span class="gd-talk" id="gdTalk" role="dialog" aria-label="Goccio" hidden><button type="button" class="gd-x" id="gdX" aria-label="Close"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 2l8 8M10 2l-8 8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button><span class="gd-say" id="gdSay" aria-live="polite"></span><span class="gd-chips" id="gdChips"></span><span class="gd-ask"><input id="gdIn" type="text" enterkeyhint="send" autocomplete="off" placeholder="Ask Goccio about coffee" aria-label="Ask Goccio"><button type="button" id="gdMic" aria-label="Ask out loud" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6.5v3M5 4v8M8 2v12M11 4.5v7M14 6.5v3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button><button type="button" id="gdGo" aria-label="Ask"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></span></span>Brew something good.</p>
   </section>
 
   <section class="sec" id="recipe" aria-labelledby="rtitle">
@@ -7923,7 +7923,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   const exFold = (on) => { const ex = document.querySelector(".g-ex"), b = $("exTog"); if (!ex || !b) return;
     ex.classList.toggle("fold", on); document.documentElement.classList.toggle("ex-fold", on); b.setAttribute("aria-expanded", String(!on)); b.setAttribute("aria-label", on ? "Show the example" : "Hide the example");
     // folded it is the fold's title; open, a short tag on the right, so the coffee's name keeps to one line and every example sits at the same height
-    b.textContent = on ? (LANG === "it" ? "Esempio di preparazione" : "Brewing example") : (LANG === "it" ? "Esempio" : "Example");
+    b.textContent = LANG === "it" ? "Esempio" : "Example";   // folded or open: one short word on the right, next to its arrow
     if (!on) try { layGlimpse(); } catch (e) {} requestAnimationFrame(() => { try { exAlign(); } catch (e) {} }); };
   // the Example under the recipe's buttons: its rule as far below them as the rule above them; folded, its label as far over the
   // next rule as under its own, like the folds above (measured, so it holds in every browser and at every size)
@@ -9683,7 +9683,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     finally { $("shelf").classList.remove("loading"); $("shelf").removeAttribute("aria-busy"); }
   }
 
-  // ---------- appearance: Dark (the default), Light (a pale crema) or Auto (follows the phone's own setting) ----------
+  // ---------- appearance: Dark (the default), Light (a pale crema) or Auto (light by day, dark from sunset, where you are) ----------
   const THEMES = ["dark", "light", "auto"], THEME_LBL = { light: "Light", dark: "Dark", auto: "Auto" };
   // one icon each: half-filled circle for Auto (follows the sun), a sun for Light, a moon for Dark
   const IC = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
@@ -9693,24 +9693,36 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     dark: IC('<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>'),
   };
   const sysDark = matchMedia("(prefers-color-scheme: dark)");
+  // Auto follows the sun where you are: light from sunrise, dark from sunset, switching by itself at the moment it happens.
+  // Where you are is the rough town Cloudflare already knows (/api/where, asked once a day, kept on this device); until it's
+  // known, Auto follows the phone's own light/dark setting
+  const sunPlace = () => { try { const p = JSON.parse(localStorage.getItem("v60.sun") || "null"); return p && p.la != null && p.lo != null ? p : null; } catch (e) { return null; } };
+  const autoDark = () => { const p = sunPlace(); return p && window.__sun ? window.__sun(p.la, p.lo).dark : sysDark.matches; };
+  let sunT = 0;
+  const sunWatch = () => { clearTimeout(sunT); if (theme !== "auto") return; const p = sunPlace(), s0 = p && window.__sun ? window.__sun(p.la, p.lo) : null;
+    const mins = s0 && s0.next != null ? Math.min(s0.next + 0.5, 30) : 10; sunT = setTimeout(() => { if (theme === "auto") applyTheme("auto"); sunWatch(); }, mins * 60000); };   // looked at again at sunrise or sunset, and every half hour anyway
+  const sunFetch = () => { const p = sunPlace(); if (p && Date.now() - (p.at || 0) < 864e5) return;
+    fetch("/api/where", { cache: "no-store" }).then((r) => r.json()).then((w) => { if (w && w.la != null && w.lo != null) { try { localStorage.setItem("v60.sun", JSON.stringify({ la: w.la, lo: w.lo, at: Date.now() })); } catch (e) {} if (theme === "auto") { applyTheme("auto"); sunWatch(); } } }).catch(() => {}); };
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && theme === "auto") { applyTheme("auto"); sunWatch(); } });
   function applyTheme(t) {
     const root = document.documentElement;
     // Auto sets the same light/dark mark as picking it by hand (from the phone's setting, and again when that changes), so every rule for one look applies
-    root.setAttribute("data-theme", (t === "auto" ? (sysDark.matches ? "dark" : "light") : t) === "light" ? "light" : "dark");
-    const dark = t === "auto" ? sysDark.matches : t !== "light";
+    const dark = t === "auto" ? autoDark() : t !== "light";
+    root.setAttribute("data-theme", dark ? "dark" : "light");
     document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute("content", dark ? "#000000" : "#f7f3ed"));
     // the button shows the look you're in (a moon, a sun, or the half circle for Auto); a tap moves on to the next
     const nx = THEMES[(THEMES.indexOf(t) + 1) % THEMES.length];
     if ($("themeBtn")) { $("themeBtn").innerHTML = THEME_IC[t] || THEME_IC.dark; $("themeBtn").setAttribute("aria-label", `Appearance: ${THEME_LBL[t]}. Tap for ${THEME_LBL[nx]}.`); }
   }
   let theme = (() => { try { const v = localStorage.getItem("v60.theme"); return THEMES.includes(v) ? v : "dark"; } catch (e) { return "dark"; } })();
-  try { sysDark.addEventListener("change", () => { if (theme === "auto") applyTheme("auto"); }); } catch (e) {}
+  try { sysDark.addEventListener("change", () => { if (theme === "auto" && !sunPlace()) applyTheme("auto"); }); } catch (e) {}
+  if (theme === "auto") { sunFetch(); sunWatch(); }
   window.__theme = { get: () => theme, set: (t) => { theme = t; try { localStorage.setItem("v60.theme", t); } catch (e) {} applyTheme(t); } };   // Goccio's laser flips the look and puts it back
   // IT / EN: kept on this device, and the page reloads in the other language
   if ($("langBtn")) { const b = $("langBtn"); if (LANG === "it") { b.textContent = "EN"; b.lang = "en"; b.setAttribute("aria-label", "English"); }
     b.onclick = () => { try { localStorage.setItem("v60.lang", LANG === "it" ? "en" : "it"); } catch (e) {}
       location.href = (LANG === "it" ? "/" : "/it/") + location.search + location.hash; }; }   // each language at its own address
-  if ($("themeBtn")) $("themeBtn").onclick = () => { theme = THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length]; try { localStorage.setItem("v60.theme", theme); } catch (e) {} applyTheme(theme); };
+  if ($("themeBtn")) $("themeBtn").onclick = () => { theme = THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length]; try { localStorage.setItem("v60.theme", theme); } catch (e) {} applyTheme(theme); if (theme === "auto") { sunFetch(); sunWatch(); } };
 
   // ---------- stay current: a tab left open for days picks up a new version when you come back to it ----------
   // (phones keep tabs alive, so a new grinder or fix would otherwise not show until a manual refresh).
@@ -10228,7 +10240,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // a mouth: the whole lower third of the body, a wide grin that opens with joy and shuts tight when sad
     const W0 = 36, H0 = 24, R0 = 15.5;   // at rest: a dome 36 wide, 24 high; falling: a round drop of about the same volume
     const wS = 2 * Math.PI / 0.24, zS = 0.3, wL = 2 * Math.PI / 0.42, zL = 0.45, G = 2600;
-    const S = { aRest: 0, eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, fone: 0, umb: 0, scroll: 0, jx: 0, blush: 0, turn: 0, armL: 0, armR: 0, armLa: 0, armRa: 0, flip: 0, cold: 0, hot: 0, tumble: 0, cross: 0, float: 0, land: 0 }; let rigid = false, rollU = 0, gX = 0, gY = 0, inStep = false, jy = 0, jv = 0, ptrX = 0, ptrY = 0, ptrT = 0; let tws = [], a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
+    const S = { aRest: 0, eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, fone: 0, umb: 0, scroll: 0, jx: 0, blush: 0, turn: 0, armL: 0, armR: 0, armLa: 0, armRa: 0, flip: 0, cold: 0, hot: 0, tumble: 0, cross: 0, float: 0, land: 0, duo: 0 }; let rigid = false, rollU = 0, gX = 0, gY = 0, inStep = false, jy = 0, jv = 0, ptrX = 0, ptrY = 0, ptrT = 0; let tws = [], a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
     const draw = () => {
       // the shape it has just before it falls: round. Squashed or stretched it keeps its volume (taller is narrower); its top
       // sways with the page; it sits on its lowest point
@@ -10263,7 +10275,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       L.setAttribute("transform", `translate(${(1.6 * S.cross).toFixed(2)} ${(-1.1 * lift + 1.4 * sad - 0.6 * S.happy + 0.25 * S.cross).toFixed(2)}) rotate(${(-28 * sad + 9 * S.cross).toFixed(1)} -6 -12)`); R.setAttribute("transform", `translate(${(-1.6 * S.cross).toFixed(2)} ${(-1.1 * lift + 1.4 * sad - 0.6 * S.happy + 0.25 * S.cross).toFixed(2)}) rotate(${(28 * sad - 9 * S.cross).toFixed(1)} 6 -12)`);   /* cross-eyed: both drift a little towards each other and tip in slightly */   /* sad: tipped and a little lower */
       // (no cheeks: the shy blush was taken out, 25/11/2026)
       // its phone: held low in front, screen lit; the light tints its eyes and lights its face from below
-      { const fo = el.querySelector(".gd-fone"), gl = el.querySelector(".gd-glow"); if (fo) { fo.style.opacity = S.fone.toFixed(2); fo.setAttribute("transform", `translate(${(lean * 0.4).toFixed(2)} ${(y - 3.5 + (1 - S.fone) * 9).toFixed(2)}) rotate(${(90 * S.land).toFixed(2)} 0 0.25)`);   /* held straight up, or turned on its side to watch something */
+      { const fo = el.querySelector(".gd-fone"), gl = el.querySelector(".gd-glow"); if (fo) { fo.style.opacity = S.fone.toFixed(2); fo.setAttribute("transform", `translate(${(lean * 0.4 - 4.15 * S.duo).toFixed(2)} ${(y - 3.5 + (1 - S.fone) * 9).toFixed(2)}) rotate(${(90 * S.land).toFixed(2)} 0 0.25)`);
+            { const f2 = fo.querySelector(".gd-fone-2"); if (f2) { f2.setAttribute("opacity", S.duo > 0.02 ? "1" : "0"); f2.setAttribute("transform", `translate(4.3 0) scale(${Math.max(0.001, S.duo).toFixed(3)} 1) translate(-4.3 0)`); } }   /* the folding phone: a second screen swings open beside the first */   /* held straight up, or turned on its side to watch something */
           }   /* its back faces you, all black: you only see it light up the face */
         if (gl) { if (S.fone > 0.01) { if (!tvRaf) tvRaf = requestAnimationFrame(tvTick); } else gl.style.opacity = "0"; }
         eyes.style.fill = ""; }
@@ -10343,7 +10356,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         else if (r0 < 0.4) { await face({ eyeSL: 1.35, eyeSR: 1.35 }, 140); poke(-1.2); await wait(700); await face({ eyeSL: 1.08, eyeSR: 1.08 }, 300); }
         else if (r0 < 0.55) await blinkSoft(); }
       await face({ eyeSL: 1, eyeSR: 1 }, 200); await tween("land", 0, 420); };
-    const onPhone = () => act(async () => { S.scroll = 0; S.land = 0; await face({ fone: 1 }, 380);
+    const onPhone = () => act(async () => { S.scroll = 0; S.land = 0; S.duo = 0; await face({ fone: 1 }, 380);
+      // now and then it's a folding phone: it opens out to two screens, he scrolls, a wow, and folds it shut again
+      if (Math.random() < 0.18) { lookY = 2.2; draw(); await face({ eyeL: 0.8, eyeR: 0.8 }, 200); await wait(300); await tween("duo", 1, 650); await face({ eyeSL: 1.3, eyeSR: 1.3 }, 160); poke(-1.2); await wait(700); await face({ eyeSL: 1, eyeSR: 1 }, 300);
+        for (let i = 0; i < 3; i++) { lookX = i % 2 ? 1.6 : -1.6; draw(); await wait(700 + Math.random() * 400); await tween("scroll", S.scroll + 1, 260); }
+        lookX = 0; draw(); await face({ smile: 0.8, happy: 0.6 }, 200); await wait(600); await tween("duo", 0, 450); await wait(250); lookY = 0; draw(); await face({ fone: 0, eyeL: 1, eyeR: 1, smile: 0, happy: 0 }, 320); S.scroll = 0; return; }
       if (Math.random() < 0.35) { lookY = 2.2; draw(); await face({ eyeL: 0.8, eyeR: 0.8 }, 200); await wait(500); await watchPhone(); await wait(300); lookY = 0; draw(); await face({ fone: 0, eyeL: 1, eyeR: 1, smile: 0, happy: 0 }, 320); S.scroll = 0; return; }
       lookY = 2.2; lookX = 0; draw(); await face({ eyeL: 0.8, eyeR: 0.8 }, 200);
       // what he reads gets a face: a laugh, a fright, boredom, dozing off over it, a wow, a sad face. One or two per look at the phone
