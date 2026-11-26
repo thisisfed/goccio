@@ -40,6 +40,10 @@ jobs:
         if: steps.gate.outputs.go == 'yes'
         with:
           ref: main
+      - uses: ./.github/actions/private   # the scanner and Goccio's knowledge live in the private repo
+        if: steps.gate.outputs.go == 'yes'
+        with:
+          token: ${{ secrets.PRIVATE_REPO_TOKEN }}
 
       - uses: actions/setup-node@v5
         if: steps.gate.outputs.go == 'yes'

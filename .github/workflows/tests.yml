@@ -18,9 +18,13 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v5
+      - uses: ./.github/actions/private   # the scanner and Goccio's knowledge live in the private repo
+        with:
+          token: ${{ secrets.PRIVATE_REPO_TOKEN }}
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      - run: python3 scripts/test_scan.py
+      - run: |   # quiet: the logs of a public repo are public, so only the count and any failure's name are shown, never the list of fixes
+          python3 scripts/test_scan.py > /tmp/tests.log 2>&1 && tail -n 1 /tmp/tests.log || { grep '^FAIL' /tmp/tests.log | cut -c1-80; tail -n 1 /tmp/tests.log; exit 1; }
       # every script in the page must parse (a stray comment once stopped the whole page)
       - run: node scripts/check_js.js index.html
