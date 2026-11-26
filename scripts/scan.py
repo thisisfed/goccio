@@ -269,6 +269,13 @@ def stop_notes(text):
 NOTES_TAIL = re.compile(r"\s(?:in|with|for|that|which|on|to|from|giving|making|alongside|plus|throughout|backed|balanced|layered|all|as|when|while)\b.*$", re.I)
 
 
+# the same in French, Italian and Spanish: "aux notes intenses de grué de cacao, liqueur d'amande et fruit de la passion" (Mokxa),
+# "note di pesca, gelsomino e miele", "notas de durazno, panela y naranja"; a note may be up to five words ("fruit de la passion")
+_W = r"[^\W\d_][\w'’\-]*"
+NOTES_SENT_ROM = re.compile(r"(?:notes?|arômes?|saveurs?|note|aromi|sentori|notas|sabores)\s+(?:[^\W\d_]+\s+){0,2}?(?:de|d['’]|di|des)\s*"
+                            r"(" + _W + r"(?:\s(?!(?:et|e|y)\b)" + _W + r"){0,4}(?:\s*(?:,|\b(?:et|e|y)\b)\s*" + _W + r"(?:\s(?!(?:et|e|y)\b)" + _W + r"){0,4}){1,6})", re.I)
+
+
 def notes_from_text(text):
     """Notes in a sentence ("notes of A, B and C"), the list cut where the sentence moves on ("... in a sweet cup")."""
     for m in NOTES_SENT.finditer(text or ""):
@@ -280,6 +287,11 @@ def notes_from_text(text):
             continue   # "hints of the terroir and the farm's history" is a story, not tasting notes
         if True in story:   # "notes of chocolate cherries, strawberry cake, crisp apple and a rich, candy-like sweetness": the list ends where the story starts
             parts = parts[:story.index(True)]
+        if len(parts) >= 2:
+            return ", ".join(parts)
+    for m in NOTES_SENT_ROM.finditer(text or ""):
+        parts = [p.strip(" .;:") for p in re.split(r",|\b(?:et|e|y)\b", m.group(1))]
+        parts = [p for p in parts if p and len(p.split()) <= 5]
         if len(parts) >= 2:
             return ", ".join(parts)
     return None

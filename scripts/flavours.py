@@ -327,7 +327,7 @@ PHRASES.update({
     "uva-passa": "raisin", "algodón de azúcar": "cotton candy", "algodon de azucar": "cotton candy", "vino oporto": "port wine",
     "fruta deshidratada": "dried fruit", "jugo de manzana": "apple juice", "agua de rosas": "rose water", "jugo de fresa": "strawberry juice",
     "fresa liofilizada": "freeze-dried strawberry", "volles aroma": "full flavour", "haselnuss-noten": "hazelnut", "harmonisch süss": "sweet",
-    "harmonisch süß": "sweet", "fèves de cacao": "cacao nibs", "bonbon cerise": "cherry sweets", "bonbons aux fruits rouges": "red fruit sweets",
+    "harmonisch süß": "sweet", "fèves de cacao": "cacao nibs", "grué de cacao": "cacao nibs", "grue de cacao": "cacao nibs", "grués de cacao": "cacao nibs", "éclats de cacao": "cacao nibs", "liqueur d'amande": "almond liqueur", "liqueur d’amande": "almond liqueur", "bonbon cerise": "cherry sweets", "bonbons aux fruits rouges": "red fruit sweets",
     "cafe glace": "iced coffee", "café glacé": "iced coffee",
 })
 for _w, _e in {"ciocolata": "chocolate", "ciocolată": "chocolate", "caise": "apricot", "vanilie": "vanilla", "mure": "blackberry", "nuci": "nuts",
