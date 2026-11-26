@@ -2981,7 +2981,7 @@ html.gd-full body .gd-head{display:flex;align-items:center;gap:10px;flex:none;bo
 html.gd-full body .gd-head svg{width:30px;height:30px;flex:none;overflow:visible}
 html.gd-full body .gd-head .gh-n{font:600 var(--fs-s)/1.2 var(--sans);color:var(--ink)}
 html.gd-full body .gd-head .gh-b{padding:2px 6px;border:1px solid var(--line);border-radius:var(--r,4px);font:500 12px/1.2 var(--sans);color:var(--muted)}
-html body footer .foot-ex .g-ex{border-top:0!important;padding-top:0!important;margin-top:0!important}   /* in the footer: no rule under its title, and the gap under the title the same as Disclaimer's */
+html body footer .foot-ex .g-ex{border-top:0!important;padding-top:0!important;margin-top:0!important;margin-bottom:-7px!important}   /* in the footer: no rule under its title, and the gap under the title the same as Disclaimer's */
 html.gd-full body .gd-head .gh-new{margin-left:auto;margin-right:-8px;height:32px;padding:0 12px;border:0;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);cursor:pointer;white-space:nowrap;transition:background .15s}   /* New chat: a worded pill 4 px left of the X, as the top bar's pills sit */
 @media (hover:hover){ html.gd-full body .gd-head .gh-new:hover{background:color-mix(in srgb,var(--pill) 80%,var(--ink))} }   /* the same hover as the top bar's + */
 html.gd-full body .gd-dock.gd-dock.gd-dock .gd-x{z-index:6!important;top:calc(env(safe-area-inset-top,0px) + 8px)!important;right:12px!important;width:32px!important;height:32px!important;background:var(--pill)!important;border-radius:var(--r,4px)!important;color:var(--ink)!important}   /* exactly where the top bar's + and brew mode's X are, and the same grey square */
@@ -7829,6 +7829,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       : shelfT ? [...list].sort((a, b) => (b._p100 ?? -1) - (a._p100 ?? -1)) : shelfGV ? [...list].sort((a, b) => a._p100 - b._p100) : qf.price === "cheap" ? list : interleave(list);   // Cheapest first keeps its order: the mixing by roaster put dearer coffees among the first rows   // good value: cheapest first   // top lots: dearest first
     if (!shelfAll) shelfN = 10;   // a new filter or search starts again from the ten newest
     shelfAll = true;
+    // the coffee Goccio just showed you ("Yes" in the chat): in the full list, and moved to the top if it isn't among the rows
+    // already shown; it keeps that place until you search or filter
+    { const pin = window.__pinCo; if (pin && (pin.q !== q || shelfRo)) window.__pinCo = null;
+      else if (pin) { const i = list.findIndex((r) => r.url === pin.url); if (i > 0) list = [list[i], ...list.slice(0, i), ...list.slice(i + 1)]; } }   // first, right under the Coffees title
     let shown = list.slice(0, shelfN);
     // paid promotion: each promoted roaster's newest coffees that pass the filters, pinned first and labelled
     const pins = !q && !shelfRo && !fy ? promosNow().flatMap((p) => list.filter((r) => r.roaster === p.roaster)
@@ -10907,13 +10911,16 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       return iso === f(t) ? T("today", "oggi") : iso === f(y) ? T("yesterday", "ieri") : T("on ", "il ") + (typeof isoDm === "function" ? isoDm(iso) : iso); };
     // "Show me" a coffee Goccio named: that coffee, not a search for its name. The list narrows to its name and roaster, and its own card
     // (found by its shop link) comes to the middle of the screen
-    const showCo = (r) => { const twin = coffees().some((x) => x !== r && x.roaster === r.roaster && shownName(x) === shownName(r)); search(shownName(r) + " " + r.roaster + (twin ? " " + [r.origin, r.process].filter(Boolean).join(" ") : "")); let k = 0;   /* a roaster with two coffees of that name: its origin and process tell them apart */ const find = () => { const it = [...document.querySelectorAll("#shelf .item")].find((x) => [...x.querySelectorAll("a[href]")].some((a) => a.href === r.url));
-        if (it) {   // no highlight behind it (26/11/2026): the search line over it already says it's the one
-          // the search already glides to the Coffees title with the coffee under it: once that glide has stopped, scroll only if
-          // the coffee still isn't on screen (a second glide straight after the first made the page jump about)
-          let y0 = -1, still = 0; const settle = () => { const y = scrollY; still = y === y0 ? still + 1 : 0; y0 = y; if (still < 4) return requestAnimationFrame(settle);
-            const b = it.getBoundingClientRect(), top = (document.querySelector(".top") || {}).offsetHeight || 49; if (b.top < top || b.bottom > innerHeight - 80) it.scrollIntoView({ block: "center", behavior: "smooth" }); };
-          requestAnimationFrame(settle); } else if (++k < 12) setTimeout(find, 150); }; setTimeout(find, 200); };
+    // "Yes": the coffee in the full list, not a search for it (26/11/2026). Any search is cleared, the coffee is moved to the top of
+    // the list, and the page glides to the Coffees title. Hidden by a filter: then it is searched for, as before
+    const showCo = (r) => { const a = $("askIn"), sq = $("shelfQ"), was = (a && a.value.trim()) || sq.value.trim();
+      if (a) { a.value = ""; delete a.dataset.fy; } sq.value = ""; $("shelfQx").hidden = true; window.__pinCo = { url: r.url, q: "" };
+      if (was) sq.dispatchEvent(new Event("input")); else renderShelf(); if (window.syncAskGo) setTimeout(window.syncAskGo, 0);
+      let k = 0; const find = () => { const it = [...document.querySelectorAll("#shelf .item")].find((x) => [...x.querySelectorAll("a[href]")].some((a) => a.href === r.url));
+        if (it) return jumpTo($("shelves"));   // the Coffees title at its usual place, the coffee first under it
+        if (++k < 6) return setTimeout(find, 120);
+        window.__pinCo = null; const twin = coffees().some((x) => x !== r && x.roaster === r.roaster && shownName(x) === shownName(r));
+        search(shownName(r) + " " + r.roaster + (twin ? " " + [r.origin, r.process].filter(Boolean).join(" ") : "")); }; setTimeout(find, 120); };
     const search = (q) => { const a = $("askIn"); window.__gdSearching = true; setTimeout(() => { window.__gdSearching = false; }, 0); a.value = q; a.dispatchEvent(new Event("input", { bubbles: true })); $("askForm").requestSubmit(); if (window.syncAskGo) setTimeout(window.syncAskGo, 0); };   /* the words fill the top bar, its hint gives way */
     const bob = (on) => { clearInterval(bobT); if (on && !still()) bobT = setInterval(() => D.bob(), 210); watch(on ? "you" : null);
       if (D && D.text) D.text(!!on && !document.documentElement.classList.contains("gd-docked")); };   // the big one types its answer on its phone
