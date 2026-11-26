@@ -3066,6 +3066,8 @@ html body .gd-m.gd-it.gd-typing:not(:has(> :not(.gd-dots))) .gd-dots i{width:7px
 @keyframes gdMsgIn{from{scale:.85;opacity:0}to{scale:1;opacity:1}}
 @keyframes gdTb{from{scale:0}to{scale:1}}
 html body .gd-it .gd-tb{left:auto;right:-10px}   /* your tapback on its message sits on its other corner */
+html body .gd-m.gd-it{max-width:calc(100% - 12px)!important}   /* room on the right for a tapback on its corner: a full-width answer cut it off (26/11/2026) */
+html body .gd-m{flex-shrink:0}   /* a bubble never squeezes when the chat is full (the typing dots came out flattened at the bottom) */
 html body .gd-it{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}   /* hold for tapbacks, as in Messages */
 html body .gd-pick{position:absolute;left:0;bottom:calc(100% + 6px);z-index:3;display:flex;gap:2px;padding:4px;border-radius:22px;background:var(--gd-card);border:1px solid color-mix(in srgb,var(--ink) 16%,var(--bg));box-shadow:0 6px 20px rgba(0,0,0,.3);animation:gdTb .3s cubic-bezier(.3,1.6,.5,1);transform-origin:20% 100%}
 html body .gd-pick.below{bottom:auto;top:calc(100% + 6px);transform-origin:20% 0}
@@ -11434,12 +11436,40 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         : /\b(milk|latte|cappuccino|flat white|oat|cortado|latte macchiato)\b/.test(s0) ? [T("Milk's lovely with the chocolatey ones.", "Col latte stanno benissimo quelli al cioccolato.")]
         : /\b(tea|t[eè])\b/.test(s0) ? [T("I'll forgive you the tea. 😉", "Il tè te lo perdono. 😉")]
         : /\b(decaf|decaffeinat)/.test(s0) ? [T("Decafs are so good these days.", "I decaffeinati oggi sono buonissimi.")]
+        : /\b(very|extra|super|ultra)[- ]light|nordic/.test(s0) ? [T("Very light it is. My kind of cup.", "Chiarissima, allora. Proprio come piace a me.")]
+        : /\blight(er)? roast|^light\b/.test(s0) ? [T("Light and bright it is.", "Chiara e vivace, allora.")]
+        : /\bdark(er)?\b/.test(s0) ? [T("Dark and cosy it is.", "Scura e avvolgente, allora.")]
+        : /\bmedium\b/.test(s0) ? [T("Medium: the sweet spot.", "Media: il giusto mezzo.")]
         : /\b(fruit|fruity|berr|citrus|floral|bright|light)\w*/.test(s0) ? [T("A bright, fruity cup, then. Noted.", "Una tazza vivace e fruttata, allora. Segnato.")]
         : /\b(chocolat|nutty|caramel|dark|rich|smooth|cioccolat)\w*/.test(s0) ? [T("Chocolatey and comforting. Noted.", "Cioccolatoso e confortante. Segnato.")]
         : /\b(no|nope|nah|never|not really|non|mai)\b/.test(s0) ? [T("Fair enough!", "Ci sta!"), T("No worries.", "Nessun problema.")]
         : /\b(yes|yeah|yep|always|of course|sure|s[iì]|certo|sempre)\b/.test(s0) ? [T("Love that.", "Mi piace."), T("Same here!", "Anch'io!")]
         : [T("Love that.", "Mi piace."), T("Ha, nice.", "Ah, bello."), T("Good to know!", "Buono a sapersi!"), T("Interesting!", "Interessante!")];
-      sayNow(pick(say0), null, null); const nx = () => c.next(); if (typing) typing.after = nx; else nx(); return true; };
+      // what the answer asked for steers the coffee: a roast, a process, a style, decaf. The roast and process must be stated on the
+      // bag: "very light" never brings a coffee whose roast isn't given (26/11/2026)
+      const want = {};
+      if (/\b(very|extra|super|ultra)[- ]light|nordic|molto chiar/.test(s0)) want.roast = ["vlight"];
+      else if (/\blight(er)?\b|\bchiar/.test(s0)) want.roast = ["vlight", "light"];
+      else if (/medium[- ]dark|full city/.test(s0)) want.roast = ["mdark"];
+      else if (/\bmedium\b|\bmedi[ao]\b/.test(s0)) want.roast = ["medium"];
+      else if (/\bdark(er)?\b|\bscur/.test(s0)) want.roast = ["mdark", "dark"];
+      const pw = /\bnatural|naturale/.test(s0) ? "natural" : /\bwashed|lavat/.test(s0) ? "washed" : /\banaerobic|anaerobic/.test(s0) ? "anaerobic" : /\bhoney\b/.test(s0) && /process|processed|lavorazione/.test(s0) ? "honey" : null; if (pw) want.process = pw;
+      if (/\b(decaf|decaffeinat)/.test(s0)) want.decaf = true;
+      if (/\b(fruit|fruity|berr|citrus|floral|juicy|bright)\w*/.test(s0) && !want.roast) want.style = "fruit"; else if (/\b(chocolat|nutty|caramel|cioccolat|rich|comforting)\w*/.test(s0) && !want.roast) want.style = "choc";
+      if (/\b(espresso)\b/.test(s0)) want.esp = true;
+      const steer = Object.keys(want).length ? () => prefPick(want) || c.next() : () => c.next();
+      sayNow(pick(say0), null, null); const nx = steer; if (typing) typing.after = nx; else nx(); return true; };
+    // a coffee that fits what you just said: today's first, else the newest that fit; nothing that doesn't say it fits
+    const prefPick = (w) => { const FRUIT = /berr|cherr|citrus|lemon|lime|orange|mandarin|grapefruit|peach|apricot|plum|mango|pineapple|passion|tropical|floral|jasmine|rose|grape|apple|pear|raspberr|strawberr|blackcurrant|lychee|melon|kiwi|fruit/i, CHOC = /chocolate|cocoa|cacao|caramel|toffee|nut|hazelnut|almond|praline|fudge|brown sugar|molasses|biscuit/i;
+      const ok = (r) => (!w.roast || (r.roast && w.roast.includes(r.roast))) && (!w.process || (r.process && String(r.process).toLowerCase().includes(w.process))) && (!w.decaf || isDecaf(r))
+        && (!w.esp || r.roast_for === "espresso") && (!w.style || ((ns0) => ns0.length && ns0.filter((n) => (w.style === "fruit" ? FRUIT : CHOC).test(n)).length >= Math.min(2, ns0.length))(notesOf(r)));   /* a fruity cup is mostly fruit, not one fruit among cacao and liqueur */
+      const all0 = coffees(), today = all0.filter((r) => r.just_in && ok(r)), pool = today.length ? today : all0.filter(ok).sort((a, b) => String(shelfDate(b) || "").localeCompare(String(shelfDate(a) || ""))).slice(0, 40);
+      const noted = pool.filter((r) => notesOf(r).length), pool1 = noted.length ? noted : pool;   /* one that says how it tastes, when there is one */
+      const fresh = pool1.filter((r) => !picked.has(r.url)); if (!pool.length) return false; const r = pick(fresh.length ? fresh : pool1), ns = notesOf(r); picked.add(r.url); lastCo = { r, at: Date.now() };
+      const how = [w.roast ? (ROAST[r.roast] ? ROAST[r.roast].label.toLowerCase() + " roast" : "") : "", w.process ? String(r.process).toLowerCase() : "", w.decaf ? T("decaf", "decaffeinato") : ""].filter(Boolean).join(", ");
+      say(T(`Then here's one for you: ${shownName(r)} from ${roasteryName(r.roaster)}${how ? ", " + how : ""}${ns.length ? ", tasting of " + andList(ns) : ""}.${today.length ? "" : " Not from today, but recent."}`,
+        `Allora eccone uno per te: ${shownName(r)} della ${roasteryName(r.roaster)}${how ? ", " + how : ""}${ns.length ? ", che sa di " + andList(ns) : ""}.${today.length ? "" : " Non è di oggi, ma è recente."}`),
+        [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(r); } }], happy); ctx = { t: "pick", at: Date.now() }; return true; };
     // now and then, after an answer, it asks you something back: first what it doesn't know about you yet
     const askBack = () => { if (++sinceAsk < 2 || Math.random() > 0.55) return; sinceAsk = 0; const t0 = Date.now();
       const go = () => { if (Date.now() - t0 > 20000 || !talking) return; if (typing || sayEl.querySelector(".gd-typing")) return setTimeout(go, 300);
@@ -11459,11 +11489,12 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       if ((ctx.t === "new" || ctx.t === "pick") && !ownTopic && s0.split(/\s+/).length <= 7) {
         if (/\b(another|other|else|next|more|different|altro|altri|un altro|diverso|prossimo)\b/i.test(s0) && ctx.t === "pick") { pickNew(true); return true; }
         if (/\b(best|top|favou?rite|recommend|suggest|pick|any good|what are they|worth (it|trying)|migliore|preferito|consigli|scegli)\b|\bwhich (one|ones|of them|is (the )?best)\b|^which\??$|^quale\??$|\bone\??$/i.test(s0)) { pickNew(ctx.t === "pick"); return true; } }
-      if (ctx.t === "brewing" && s0.split(/\s+/).length <= 8) {
+      const askingBack = /\?\s*$/.test(s0) && /^(what|how|why|which|who|where|when|is|are|can|could|do|does|should|cosa|come|perch|quale|chi|dove)\b/.test(s0);   // "What is an AeroPress?" is a question, not "my brewer is an AeroPress"
+      if (ctx.t === "brewing" && !askingBack && s0.split(/\s+/).length <= 8) {
         const br = s0.match(/\b(v60|chemex|aeropress|french press|cafetiere|kalita|origami|clever|switch|moka|espresso|filter|pour.?over|cold brew|orea|melitta|napoletana)\b/i);
         if (br) { mem.brewer = br[1].toLowerCase(); saveMem(); say(pick([T(`Nice, a ${br[1].replace(/^v60$/i, "V60")}! Which coffee is in it? Tell me its name and I'll find the recipe.`, `Bello, un ${br[1].replace(/^v60$/i, "V60")}! Che caffè c'è dentro? Dimmi il nome e ti trovo la ricetta.`), T(`Good choice. What are you putting through the ${br[1].replace(/^v60$/i, "V60")} today?`, `Ottima scelta. Che caffè ci metti oggi?`)]), null, happy); ctx = { t: "which", at: Date.now() }; return true; }
       }
-      if (ctx.t === "flavours" && s0.split(/\s+/).length <= 12) { const fl = flavsIn(s0);
+      if (ctx.t === "flavours" && !askingBack && s0.split(/\s+/).length <= 12) { const fl = flavsIn(s0);
         if (fl.length) { mem.likes = [...new Set([...(mem.likes || []), ...fl])].slice(-4); saveMem(); say(T(`Lovely: ${andList(fl.map(likeName))}. I'll remember that.`, `Che bello: ${andList(fl.map(likeName))}. Me lo ricordo.`), [{ t: T("Pick one", "Scegline uno"), ask: T("Want me to find you one of today's coffees like that?", "Vuoi che ti trovi un caffè di oggi così?"), f: () => pickNew(false) }], happy); return true; } }
       if ((ctx.t === "brewing" || ctx.t === "which") && /^(nothing|none|no coffee|not today|not now|nope|niente|nulla|nessuno|oggi no)\b/i.test(s0)) { ctx = null;
         say(pick([T("Fair enough. Tomorrow, then: tell me what's in the bag and I'll find the recipe.", "Va bene. Domani allora: dimmi cosa c'è nella busta e ti trovo la ricetta."), T("Good call. Ask me again when it's coffee time.", "Giusto. Richiedimelo quando è l'ora del caffè.")]), null, smile); return true; }
@@ -11631,7 +11662,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       K0,
       [/what'?s up|wassup|\bsup\b|how are you|how r u|how'?s (it going|your day|life|things)|how (have|ve) you been|how (do|are) you feel|how you doing|how do you do|are you (ok|okay|alright|well|good)|you (ok|okay|alright)\b|come (va|stai|ti senti)|tutto (bene|ok)|che si dice|che fai|come butta/i, () => say(pick([
         T("Just brewing ideas. You?", "Sto preparando idee. E tu?"), T("Feeling fresh, a bit fruity, lightly roasted. You?", "Mi sento fresco, un po' fruttato, tostatura chiara. E tu?"), T("Sloshing about happily. What are we brewing?", "Sguazzo felice. Cosa prepariamo?"),
-        T(`${pick(["Lots of", "Plenty of"])} new coffees landed ${landedOn((coffees().find((x) => x.just_in)) || null)}, so I'm buzzing.`, `${(() => { const o = landedOn((coffees().find((x) => x.just_in)) || null); return o[0].toUpperCase() + o.slice(1); })()} sono arrivati tanti caffè nuovi, quindi sono su di giri.`), T("Not much, just waiting for the kettle to boil.", "Niente di che, aspetto che bolla il bollitore."),
+        T(`${pick(["Lots of", "Plenty of"])} new coffees landed ${landedOn((coffees().find((x) => x.just_in)) || null)}, so I'm buzzing.`, `${(() => { const o = landedOn((coffees().find((x) => x.just_in)) || null); return o[0].toUpperCase() + o.slice(1); })()} sono arrivati tanti caffè nuovi, quindi sono su di giri.`), T("Pretty good, thanks! Just waiting for the kettle to boil. You?", "Bene, grazie! Aspetto che bolla l'acqua. E tu?"),
         T("Living my best drop life. How's your coffee today?", "Mi godo la vita da goccia. Com'è il tuo caffè oggi?"), T("Bit of a slow drip today. Ask me something to perk me up!", "Oggi gocciolo lento. Chiedimi qualcosa per svegliarmi!"),
         T("Freshly brewed and ready. How about you?", "Appena fatto e pronto. E tu?"), T("Great, thanks for asking! Hot, sweet and a little bit fruity. You?", "Benissimo, grazie! Caldo, dolce e un po' fruttato. E tu?"),
         T(`${new Date().getHours() < 11 ? "Waking up slowly, like everyone before the first cup." : new Date().getHours() < 17 ? "Good! Peak coffee hours." : "A bit sleepy. Decaf mood."} And you?`, `${new Date().getHours() < 11 ? "Mi sveglio piano, come tutti prima del primo caffè." : new Date().getHours() < 17 ? "Bene! Sono le ore d'oro del caffè." : "Un po' assonnato. Momento decaffeinato."} E tu?`)]), null, happy)],
