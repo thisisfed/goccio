@@ -381,3 +381,5 @@ _add("samtig", "velvety", "a"); _add("voll|voller", "full", "a"); _add("vanilje"
 _add("afrutado|frutal|fruttato", "fruity", "a"); _add("achocolatado", "chocolatey", "a"); _add("equilibrado|equilibrato", "balanced", "a")
 _add("dolcezza", "sweetness"); _add("setosità", "silkiness"); _add("fruktkola", "fruit cola"); _add("pasta frolla", "shortcrust pastry")
 _add("bergamont", "bergamot"); _add("hazlenut|hazlenuts", "hazelnut"); _add("chery", "cherry"); _add("chocolaty", "chocolatey", "a")
+_add("molasse|mélasse|melasse", "molasses")
+_add("solbær", "blackcurrant"); _add("tropiske frugter|tropiska frukter", "tropical fruit")

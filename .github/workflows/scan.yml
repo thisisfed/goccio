@@ -119,6 +119,8 @@ jobs:
         run: |
           mkdir -p parts
           if [ -n "$ONLY" ]; then python3 scripts/scan.py --only "$ONLY" --merge parts; else python3 scripts/scan.py --merge parts; fi
+      - name: Hold back today's odd coffees (data/held.json; publishing leaves them off until you tick Show it in the email)
+        run: python3 scripts/odd_coffees.py --hold || echo "Nothing held this time"
       - name: Commit updated list
         env:
           ONLY: ${{ github.event.inputs.only }}
@@ -126,6 +128,7 @@ jobs:
           git config user.name "v60-scan-bot"
           git config user.email "v60-scan-bot@users.noreply.github.com"
           git add data/releases.json data/seen.json
+          if [ -f data/held.json ]; then git add data/held.json; fi   # today's odd coffees, held back for a look
           if [ -f data/scan_report.json ]; then git add data/scan_report.json; fi   # what the run left for tomorrow
           if [ -f data/weak.json ]; then git add data/weak.json; fi       # shops on watch for rarely stating process or variety
           if [ -f data/banned.json ]; then git add data/banned.json; fi   # shops banned for not being specialty
