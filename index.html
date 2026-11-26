@@ -11323,7 +11323,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           ...(n >= 20 ? [T(`Busy day: ${n} new coffees ${on}. The one I'm curious about: ${what}.`, `Giornata piena: ${n} caffè nuovi ${on}. Quello che mi incuriosisce: ${what}.`)] : []),
           ...(n <= 5 ? [T(`Only ${n} new coffees ${on}, but one's a gem: ${what}.`, `Solo ${n} caffè nuovi ${on}, ma uno è una chicca: ${what}.`)] : [])]);
       // three messages, typed one after the other: the hello, the coffee, then "Want to see it?"
-      sayNow(hi, null, happy); const nextOne = () => typeDots(1000 + Math.random() * 600, () => { sayNow(line, [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(best); } }], happy); ctx = { t: "pick", at: Date.now() }; });
+      sayNow(hi, null, happy); const nextOne = () => typeDots(dotsFor(line), () => { sayNow(line, [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(best); } }], happy); ctx = { t: "pick", at: Date.now() }; });
       if (typing) typing.after = nextOne; else nextOne(); ctx = { t: "pick", at: Date.now() }; };
     // now and then, after an answer, it asks you something back: first what it doesn't know about you yet
     const askBack = () => { if (++sinceAsk < 2 || Math.random() > 0.55) return; sinceAsk = 0; const t0 = Date.now();
@@ -11386,6 +11386,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       step(done, rest); return { fr, text: done + rest }; };
     // a pause, then the typing dots for a moment, then the next message: what Goccio says in two or three messages reads as typed
     // one after the other. Anything said meanwhile (your next question) cancels it
+    // how long the dots show: as if typed, so a long message takes longer than a short one (about 14 ms a letter, 0.6 to 2.6 s)
+    const dotsFor = (t) => Math.min(2600, 600 + String(t || "").length * 14) * (0.9 + Math.random() * 0.2);
     const typeDots = (ms, then, g0) => { const g = g0 == null ? sayGen : g0; setTimeout(() => { if (sayGen !== g || !talking) return; const tb = bubble("it", ""); tb.classList.add("gd-typing"); const d = document.createElement("span"); d.className = "gd-dots"; d.innerHTML = "<i></i><i></i><i></i>"; tb.appendChild(d); toBottom();
       setTimeout(() => { tb.remove(); if (sayGen === g && talking) then(); }, ms); }, 400); };
     const sayNow = (text, chips, mood) => { pendingYes = null; ctxFrom(text); let ask2 = null; [text, chips, ask2] = offer(text, chips); const py = pendingYes; text = voice(text, chips); chips = null; text = tidy(text); sayGen++; finishTyping(); const tf = typeFrames(text); text = tf.text; const m = addMsg("it", ""); m._rec.t = text; saveChat(); typing = { m, text, top: replyTo }; let k = 0; bob(true);
@@ -11395,7 +11397,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       typeT = setInterval(() => { m.textContent = tf.fr[k] || ""; k++; if (typing && !typing.free && k % 4 === 0) toTop(anchor); if (k >= tf.fr.length) { if (typing && !typing.free) toTop(anchor); finishTyping(); } }, 32);
       showChips(chips);
       if (ask2) { const g2 = sayGen, pl2 = nextPills || [[T("Yes", "Sì"), T("Yes", "Sì")], [T("No", "No"), T("No thanks", "No grazie")]]; nextPills = null;   /* "Want to see it?" in a second message once the first is written, then the Yes / No pills */
-        const ask = () => typeDots(900 + Math.random() * 500, () => { nextPills = pl2; sayNow(ask2, null, null); pendingYes = py; }, g2);
+        const ask = () => typeDots(dotsFor(ask2), () => { nextPills = pl2; sayNow(ask2, null, null); pendingYes = py; }, g2);
         if (typing) typing.after = ask; else ask(); }
       else if (nextPills) { const pl = nextPills; nextPills = null; if (typing) typing.after = () => showPills(pl); else showPills(pl); } if (mood) mood(); };
     // the sample questions: a fresh mix each time, one from each kind, so you get an idea of everything it knows
