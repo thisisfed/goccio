@@ -159,6 +159,11 @@ CASES = [
      lambda: scan.labelled(" Process: Washed\n Tasting notes: Orange, Honey, Caramel, Black Tea\n", "process") == "Washed"
        and scan.labelled(" Process: Washed — 48-hour fermentation\n Tasting notes: Raspberry, Cherry, Honey, Floral\n", "process") == "Washed"
        and scan.labelled("Process:\nNatural\n", "process") == "Natural"),
+    # Spanish, a full pass (26/11/2026): labels "Sabor:", "Perfil de taza:", lead-ins "notas de", and Latin American words
+    ("Spanish: 'Sabor: frutas tropicales, toronja' gives Tropical fruit, Grapefruit; 'notas de chocolate' is Chocolate; uchuva, guanábana, tomate de árbol, cajeta translate",
+     lambda: [__import__("flavours").to_english(n) for n in scan.find_notes({"body": "Sabor: frutas tropicales, toronja\n", "title": "x", "tags": []})] == ["Tropical fruit", "Grapefruit"]
+       and scan.tidy_note("notas de chocolate").lower() == "chocolate"
+       and [__import__("flavours").to_english(x) for x in ["uchuva", "guanábana", "tomate de árbol", "cajeta", "caramelo salado", "frutos rojos maduros", "chabacano", "parchita"]] == ["Golden berry", "Soursop", "Tamarillo", "Goat's milk caramel", "Salted caramel", "Ripe red berries", "Apricot", "Passion fruit"]),
     # Tandem (26/11/2026): the notes' label is "We hear:", and the list ends with the coffee's song ("Move Inside My Head")
     ("Tandem's 'We hear: Lime, Chamomile, Lychee, Move Inside My Head' gives Lime, Chamomile, Lychee (the song isn't a note)",
      lambda: scan.page_notes("Producer\nAbel Salinas\nVarietals\nMejorado\nElevation\n1890 MASL\nProcessing\nWashed\nWe hear\nLime, Chamomile, Lychee, Move Inside My Head\nEven Better With\nJoin Our Mailing List", "Abel Salinas", "") == ["Lime", "Chamomile", "Lychee"]

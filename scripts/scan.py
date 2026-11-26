@@ -205,23 +205,23 @@ COFFEE_HINT = re.compile(r"single origin|single-origin|altitude|masl|variet|proc
                          r"fazenda|s[ií]tio|gr[aã]os?\b|torra\b|torrado|tostad[oa]|tueste|grano|variedade?s?|processo|proceso|colheita|cosecha", re.I)
 NOTES_RE = re.compile(r"(?:tasting notes?|flavou?rs? like|aromatics|flavour notes|flavor notes|flavour profile|in the cup|tastes like|we taste|cup notes|"
                       r"note di degustazione|note aromatiche|note|geschmacksnoten|geschmack|aromen|notes de dégustation|"
-                      r"smaksnoter|smagsnoter|smaksnotater|notas de cata|notas|notes)\s*[:\-–]\s*([^\n.]{3,120})", re.I)
+                      r"smaksnoter|smagsnoter|smaksnotater|notas de cata|notas (?:en|de) taza|notas sensoriales|perfil de (?:sabor|taza)|sabor(?:es)?|descriptores|notas|notes)\s*[:\-–]\s*([^\n.]{3,120})", re.I)
 # notes said in a sentence: "Expect notes of pineapple, red apple and hazelnut in a layered, sweet cup"
 NOTES_SENT = re.compile(r"(?:notes? of|flavou?rs? of|tastes? of|hints? of|aromas? of|(?:aroma|nose|palate|cup|fragrance) (?:presents|shows|offers|gives|brings|reveals)|on the palate,?|we(?:'re| are)? (?:getting|tasting)|expect(?:ing)?(?! notes)|tasting like|in the cup,? (?:we|you(?:'ll| will)?|i) (?:find|get|taste|have|pick up))\s+"
                         r"((?:[A-Za-z][\w'’\-]*(?:\s(?!and\b)[A-Za-z][\w'’\-]*){0,2})(?:\s*(?:,|&|\band\b)\s*[A-Za-z][\w'’\-]*(?:\s(?!and\b)[A-Za-z][\w'’\-]*){0,2}){1,5})", re.I)
 # a label on a line of its own with the notes on the next ("Tasting notes\nStrawberry, blueberry, nectarine"; Standout)
 NOTES_LINE = re.compile(r"(?:tasting notes?|flavou?rs? like|aromatics|flavou?r notes?|profil sensoryczny|sensory profile|flavou?r composition|flavou?r descriptions?|cup profile|flavou?r profile|cup(?:ping)? notes|in the cup|smaksnoter|smagsnoter|smaksnotater|geschmacksnoten|"
-                        r"notas de cata|note di degustazione|notes de d[ée]gustation)[ \t]*(?:\n|\s{2,})\s*([^\n.]{3,120})", re.I)
+                        r"notas de cata|notas (?:en|de) taza|notas sensoriales|perfil de (?:sabor|taza)|sabor(?:es)?|descriptores|note di degustazione|notes de d[ée]gustation)[ \t]*(?:\n|\s{2,})\s*([^\n.]{3,120})", re.I)
 # a table row read as one line, label and notes split by a single space ("Tasting notes Citrus, Lemon Peel, White Florals"; Dak).
 # The line must be the label and a list and nothing else, so a sentence ("tasting notes of ...", "tasting notes are ...") is never taken.
 # Also a bare label ("Notes", "Flavor", "Aroma", "Tastes like") and other languages ("Note de degustare", "NOTES DE DÉGUSTATIONS"),
 # with the list split by commas, spaced dashes or bullets ("Fraise - Myrtille - Mûre - Figue"; Tanat, Mabó, Dropshot, Coffea Circulor)
-NOTES_CELL = re.compile(r"^[ \t\xa0]*(?:tasting notes?|flavou?rs? like|aromatics|tastes?(?![ \t]+like)|flavou?r notes?|profil sensoryczny|sensory profile|flavou?r composition|flavou?r descriptions?|cup profile|flavou?r profile|notes? de d[ée]gustations?|d[ée]gustation|note de degustare|note di degustazione|notas de cata|"
+NOTES_CELL = re.compile(r"^[ \t\xa0]*(?:tasting notes?|flavou?rs? like|aromatics|tastes?(?![ \t]+like)|flavou?r notes?|profil sensoryczny|sensory profile|flavou?r composition|flavou?r descriptions?|cup profile|flavou?r profile|notes? de d[ée]gustations?|d[ée]gustation|note de degustare|note di degustazione|notas de cata|notas (?:en|de) taza|notas sensoriales|perfil de (?:sabor|taza)|sabor(?:es)?|descriptores|"
                         r"sensory profile|cup(?:ping)? notes|tastes like|smaksnoter|smagsnoter|smaksnotater|geschmacksnoten|flavou?rs?|aromas?|noten|notes)[ \t\xa0]*:?[ \t\xa0]+"
                         r"(?!(?:of|are|is|include|from|with|that|we|you|and|the|a|an)\b)(?![^\n]*\b(?:coffee|roasters?|roastery|caf[ée])\b)"
                         r"([^\n.:]{3,120}?(?:,|&|\band\b|\s[-–•·]\s|\s?//\s?|\s\|\s)[^\n.:]{2,160}?)[ \t\xa0]*\.?[ \t\xa0]*$", re.I | re.M)
 # the same label alone on its line and the list alone on the next ("Notes\nGem de fragi, Mar rosu, Stafide"; Dropshot, Mabó, Inverness)
-NOTES_NEXT = re.compile(r"^[ \t\xa0]*(?:tasting notes?|flavou?rs? like|aromatics|tastes?(?![ \t]+like)|flavou?r notes?|profil sensoryczny|sensory profile|flavou?r composition|flavou?r descriptions?|cup profile|flavou?r profile|notes? de d[ée]gustations?|d[ée]gustation|note de degustare|note di degustazione|notas de cata|"
+NOTES_NEXT = re.compile(r"^[ \t\xa0]*(?:tasting notes?|flavou?rs? like|aromatics|tastes?(?![ \t]+like)|flavou?r notes?|profil sensoryczny|sensory profile|flavou?r composition|flavou?r descriptions?|cup profile|flavou?r profile|notes? de d[ée]gustations?|d[ée]gustation|note de degustare|note di degustazione|notas de cata|notas (?:en|de) taza|notas sensoriales|perfil de (?:sabor|taza)|sabor(?:es)?|descriptores|"
                         r"sensory profile|cup(?:ping)? notes|tastes like|smaksnoter|smagsnoter|smaksnotater|geschmacksnoten|flavou?rs?|aromas?|noten|notes)[ \t\xa0]*:?[ \t\xa0]*\n[ \t\xa0]*"
                         r"(?!(?:of|are|is|include|from|with|that|we|you|and|the|a|an)\b)(?![^\n]*\b(?:coffee|roasters?|roastery|caf[ée])\b)"
                         r"([^\n.:]{3,120}?(?:,|&|\band\b|\s[-–•·]\s|\s?//\s?|\s\|\s)[^\n.:]{2,160}?)[ \t\xa0]*$", re.I | re.M)
@@ -1677,6 +1677,8 @@ def tidy_note(n):
     n = re.sub(r"\s+(?:flavou?r\s+)?profile$|\s+notes?;.*$", "", n, flags=re.I)   # "Fruit-forward profile", "Lemon notes; bright"
     n = re.sub(r"^(?:where|when|while|whereas|which|and then|then)\s+", "", n, flags=re.I)   # cut from a sentence: "Where juicy mandarin" -> "Juicy mandarin" (Greytone, 26/11/2026)
     n = re.sub(r"^super-?\s?sweet\s+", "", n, flags=re.I)   # "Expect super-sweet plum" -> "Plum"
+    n = re.sub(r"^(?:(?:con |y )?notas? (?:de|a)|toques? de|sabor(?:es)? (?:a|de)|aromas? (?:a|de)|matices de|recuerdos de|base de|una? (?:sutil|ligera|suave)|de\s+(?=[a-zà-ÿ])|d['’]\s*(?=[a-zà-ÿ]))\s*", "", n, flags=re.I)   # Spanish lead-ins ("notas de chocolate", "Con notas a rooibos", "Toques de nuez") and French fragments ("De caramel", "D’abricot")
+    n = re.sub(r"\s*;\s*(?:\S+\s+){1,}\S+.*$", "", n)   # "De miel; es dulce": a sentence after the semicolon goes ("Chocolate; Nut" stays)
     n = re.split(r"(?<=[a-zåäöøæ]{3})(?=[A-ZÅÄÖØÆ][a-zåäöøæ])", n)[0]   # the next paragraph glued on: "KrämigVi skickar kaffe som" -> "Krämig" (Hälla)
     if re.search(r"[åäöøæ]|\b(?:vi|med|möter|som|av|af)\b", n, re.I):   # a Nordic list running on into the sentence: "Granatäpple möter sötma av", "Len fudge med en", "Lemonad Vi skickar kaffe"
         n = re.sub(r"\s+(?:vi|med|möter|mot|som|till|från|ger|på|av|af|ett|en)\b.*$", "", n, flags=re.I)

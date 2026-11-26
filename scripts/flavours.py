@@ -284,7 +284,7 @@ def english_notes(notes):
     """The list in English, without duplicates the translation creates ('Fresa', 'Fraise' -> 'Strawberry')."""
     out = []
     # two notes joined with a plus ("Strawberries + White Lily", ST. ALi) are two notes: split, shown with a comma between
-    parts = [q.strip() for n in notes or [] if isinstance(n, str) for q in re.split(r"\s+\+\s+|\s*\+\s*(?=[A-Za-zÀ-ÿ])", n)]
+    parts = [q.strip()[:1].upper() + q.strip()[1:] for n in notes or [] if isinstance(n, str) for q in re.split(r"\s+\+\s+|\s*\+\s*(?=[A-Za-zÀ-ÿ])|\s+y\s+(?=[a-záéíóúñ])", n)]   # and two Spanish notes joined by "y" ("Avellanas y regaliz")
     for n in parts:
         if not n:
             continue
@@ -405,3 +405,35 @@ _add("przyprawy korzenne", "baking spices"); _add("śliwka węgierka|węgierka",
 _add("czerwona porzeczka", "redcurrant"); _add("mandarynka|mandarynki", "mandarin"); _add("papya|papaja", "papaya"); _add("kwiatowa|kwiatowy|kwiatowe", "floral", "a")
 _add("żółte słodkie śliwki", "sweet yellow plums"); _add("słodkie|słodki|słodka", "sweet", "a"); _add("żółte|żółty|żółta", "yellow", "a"); _add("śliwki|śliwka", "plums")
 _add("frutas de hueso|fruta de hueso|frutas con hueso", "stone fruit")   # Spanish, Bluebell 26/11/2026
+# Spanish, a full pass (26/11/2026): Latin American and Spanish words for fruit, sweets and the cup
+_add("nueces tostadas", "toasted walnuts"); _add("chabacano|chabacanos", "apricot"); _add("parchita|parcha|granadilla", "passion fruit"); _add("banano|banana|cambur", "banana")
+_add("toronja|toronjas", "grapefruit"); _add("frutas cítricas|frutas citricas", "citrus fruit"); _add("frutas amarillas|fruta amarilla", "yellow fruit"); _add("flor de jamaica|jamaica", "hibiscus")
+_add("hierbabuena|yerbabuena", "spearmint"); _add("cajeta", "goat's milk caramel"); _add("malta", "malt"); _add("vino tinto", "red wine"); _add("vino blanco", "white wine"); _add("licor|licores", "liqueur")
+_add("cuerpo sedoso", "silky body"); _add("cuerpo cremoso", "creamy body"); _add("acidez brillante", "bright acidity"); _add("acidez jugosa", "juicy acidity"); _add("final largo", "long finish"); _add("final dulce", "sweet finish")
+_add("compota de manzana", "apple compote"); _add("compota", "compote"); _add("nibs de cacao|cacao nibs|nibs", "cacao nibs"); _add("panal de miel|panal", "honeycomb")
+_add("guanábana|guanabana", "soursop"); _add("uchuva|uchuvas|aguaymanto", "golden berry"); _add("tomate de árbol|tomate de arbol", "tamarillo"); _add("silvestre|silvestres", "wild", "a")
+_add("mora silvestre", "wild blackberry"); _add("lulo|naranjilla", "lulo"); _add("feijoa", "feijoa"); _add("pitahaya|pitaya", "dragon fruit"); _add("carambola", "star fruit"); _add("maracuya|maracuyá", "passion fruit")
+_add("níspero|nispero", "loquat"); _add("membrillo", "quince"); _add("arándano rojo|arandano rojo", "cranberry"); _add("grosella|grosellas", "redcurrant"); _add("grosella negra|casis", "blackcurrant")
+_add("zarzamora|zarzamoras", "blackberry"); _add("mandarina|mandarinas", "mandarin"); _add("limón|limon", "lemon"); _add("lima|limas", "lime"); _add("naranja sanguina", "blood orange")
+_add("melón|melon", "melon"); _add("sandía|sandia", "watermelon"); _add("frutos amarillos", "yellow fruit"); _add("frutos negros", "dark berries"); _add("frutos oscuros", "dark fruit")
+_add("azúcar morena|azucar morena|azúcar moreno", "brown sugar"); _add("azúcar mascabado|mascabado", "muscovado"); _add("piloncillo|rapadura|chancaca", "panela"); _add("almíbar|almibar|jarabe", "syrup")
+_add("jarabe de arce|sirope de arce|miel de maple", "maple syrup"); _add("bombón|bombon|bombones", "bonbon"); _add("praliné|praline", "praline"); _add("galleta|galletas", "biscuit"); _add("pan dulce", "sweet bread")
+_add("bizcocho|pastel", "cake"); _add("brownie", "brownie"); _add("arequipe|manjar", "dulce de leche"); _add("chocolate blanco", "white chocolate"); _add("chocolate oscuro|chocolate negro|chocolate amargo", "dark chocolate")
+_add("chocolate con leche", "milk chocolate"); _add("cacao en polvo", "cocoa powder"); _add("avellanas tostadas", "roasted hazelnuts"); _add("almendras tostadas", "toasted almonds"); _add("pistacho|pistachos", "pistachio")
+_add("anís|anis", "anise"); _add("pimienta|pimienta negra", "black pepper"); _add("especias|especiado", "spice"); _add("tabaco", "tobacco"); _add("cuero", "leather"); _add("madera|amaderado", "wood")
+_add("té de jazmín|te de jazmin", "jasmine tea"); _add("té blanco|te blanco", "white tea"); _add("té oolong|te oolong", "oolong tea"); _add("earl grey", "Earl Grey"); _add("hoja de té|hojas de té", "tea leaves")
+_add("flor de naranjo|flor de azahar|azahar", "orange blossom"); _add("flor de café|flores de café", "coffee blossom"); _add("lila|lilas", "lilac"); _add("violeta|violetas", "violet"); _add("madreselva", "honeysuckle")
+_add("cítrico|citrico|cítricos|citricos", "citrus"); _add("afrutado|frutal|frutado", "fruity", "a"); _add("achocolatado", "chocolatey", "a"); _add("acaramelado", "caramelised", "a"); _add("meloso", "honeyed", "a")
+_add("jugoso|jugosa", "juicy", "a"); _add("cremoso|cremosa", "creamy", "a"); _add("sedoso|sedosa", "silky", "a"); _add("brillante", "bright", "a"); _add("limpio|limpia", "clean", "a"); _add("balanceado|equilibrado", "balanced", "a")
+_add("maduro|madura|maduros|maduras", "ripe", "a"); _add("tostado|tostada|tostados|tostadas", "toasted", "a"); _add("confitado|confitada|confitados|caramelizado", "candied", "a"); _add("deshidratado|seco|seca|secos|secas", "dried", "a")
+_add("rojo|roja|rojos|rojas", "red", "a"); _add("negro|negra|negros|negras", "black", "a"); _add("verde|verdes", "green", "a"); _add("amarillo|amarilla", "yellow", "a"); _add("blanco|blanca|blancos|blancas", "white", "a"); _add("dulce|dulces", "sweet", "a")
+_add("fresas|fresa", "strawberry"); _add("salado|salada|salados", "salted", "a"); _add("chocolate de leche", "milk chocolate"); _add("miel de abeja|miel de abejas", "honey")
+_add("ácido|ácida|acido|acida", "tart", "a"); _add("frutos rojos maduros", "ripe red berries"); _add("frutos rojos", "red berries"); _add("caramelo salado", "salted caramel")
+_add("fresas confitadas", "candied strawberries"); _add("lima ácida|lima acida", "lime")
+_add("ciruela pasa|ciruelas pasas|ciruela seca|ciruelas secas", "prunes"); _add("rosada|rosado|rosadas|rosados", "pink", "a"); _add("toronja rosada", "pink grapefruit")
+_add("regaliz|orozuz", "liquorice"); _add("melaza|melazas", "molasses"); _add("cebada", "barley"); _add("malta de cebada", "barley malt"); _add("almendra garrapiñada|almendras garrapiñadas|garrapiñada", "candied almond")
+_add("coulis de mango", "mango coulis"); _add("limón pie|lemon pie|pie de limón", "lemon pie"); _add("acidez cítrica|acidez citrica", "citrus acidity"); _add("sutil|sutiles", "subtle", "a"); _add("fruta|frutas", "fruit"); _add("nuez|nueces", "walnut")
+_add("abricot séché|abricots séchés|abricot sec|abricots secs", "dried apricot")
+_add("coco nibs|cocoa nibs", "cacao nibs"); _add("acidez baja|baja acidez", "low acidity"); _add("acidez media", "medium acidity"); _add("acidez alta", "high acidity"); _add("agridulce", "bittersweet", "a")
+_add("chocolate agridulce", "bittersweet chocolate"); _add("toques florales|notas florales|florales", "florals"); _add("delicados toques florales|delicadas notas florales", "delicate florals")
+_add("dulzura equilibrada|una dulzura equilibrada", "balanced sweetness"); _add("dulzura", "sweetness"); _add("notas frutales|frutales", "fruity notes"); _add("miel en boca", "honey"); _add("pan di zenzero|lpan di zenzero", "gingerbread")
