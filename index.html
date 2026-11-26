@@ -10818,7 +10818,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       sayEl.appendChild(m); while (sayEl.children.length > MAX_MSG) sayEl.firstChild.remove(); if (who === "me") toBottom(); return m; };
     let replyTo = null;
     const addMsg = (who, text) => { const m = bubble(who, text); const rec = { w: who, t: text, at: Date.now() }; msgs.push(rec); m._rec = rec; saveChat(); if (who === "me") { lastMine = m; replyTo = m; } return m; };
-    const finishTyping = () => { if (typing) { clearInterval(typeT); typing.m.textContent = typing.text; typing = null; bob(false); } };
+    const finishTyping = () => { if (typing) { clearInterval(typeT); typing.m.textContent = typing.text; const after = typing.after; typing = null; bob(false); if (after) after(); } };   // the answer's pills come once its words are all there
     // a tapback on your last message: a heart for thanks, a laugh for jokes, a ‼️ for a fright, a ❓ when it doesn't know
     const react = (emoji, delay) => { const m = lastMine; if (!m || m.querySelector(".gd-tb")) return; setTimeout(() => { if (m.querySelector(".gd-tb")) return;
       const t = document.createElement("span"); t.className = "gd-tb"; t.textContent = emoji; m.appendChild(t); m.classList.add("has-tb"); if (m._rec) { m._rec.r = emoji; saveChat(); } }, delay == null ? 450 : delay); };
@@ -10995,7 +10995,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const gbList = (g, opts) => { g.opts = opts; nextPills = opts; return ""; };   // the choices as pills under the question: tap one, or type
     // the amounts a brewer takes, in words people know: the grams and about how much it makes (or the pot, or the shot)
     const gbDoses = (B) => { const rt = (B.ratio && (B.ratio.balanced || B.ratio.light)) || 16; return B.doses.map(([d, lb]) => [B.shot ? T(`${d} g, ${d >= 18 ? "a double" : d <= 14 ? "a single" : "a big single"}`, `${d} g, ${d >= 18 ? "doppio" : "singolo"}`)
-      : /cup/.test(lb) ? T(`${d} g, the ${lb} pot`, `${d} g, moka da ${lb.replace("-cup", "")}`) : T(`${d} g, about ${Math.round(d * rt / 10) * 10} ml${d === B.dose ? " (one mug)" : ""}`, `${d} g, circa ${Math.round(d * rt / 10) * 10} ml${d === B.dose ? " (una tazza)" : ""}`), `${d} g`]); };
+      : /cup/.test(lb) ? T(`${d} g, the ${lb} pot`, `${d} g, moka da ${lb.replace("-cup", "")}`) : T(`${d} g, about ${Math.round(d * rt / 10) * 10} ml`, `${d} g, circa ${Math.round(d * rt / 10) * 10} ml`), `${d} g`]); };
     const gbAsk = (g) => {
       g.opts = null; g.yn = false;
       if (!g.r && !g.text) { g.step = "coffee"; return T("Which coffee? Tell me its name, what the bag says (roaster, origin, process, roast), or say 'pick one'.", "Quale caffè? Dimmi il nome, cosa dice il sacchetto (torrefazione, origine, processo, tostatura), o di' 'scegline uno'."); }
@@ -11205,7 +11205,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const anchor = replyTo && replyTo.isConnected ? replyTo : m; requestAnimationFrame(() => toTop(anchor, true));   // your question at the top, the answer filling in below it
       // as the answer grows it keeps your question pinned at the top, until it reaches it or you scroll the chat yourself
       typeT = setInterval(() => { k += 2; m.textContent = text.slice(0, k); if (typing && !typing.free && k % 8 === 0) toTop(anchor); if (k >= text.length) { if (typing && !typing.free) toTop(anchor); finishTyping(); } }, 24);
-      showChips(chips); if (nextPills) { const pl = nextPills; nextPills = null; showPills(pl); } if (mood) mood(); };
+      showChips(chips); if (nextPills) { const pl = nextPills; nextPills = null; if (typing) typing.after = () => showPills(pl); else showPills(pl); } if (mood) mood(); };
     // the sample questions: a fresh mix each time, one from each kind, so you get an idea of everything it knows
     const POOL = () => ({
       find: [T("What's new?", "Cosa c'è di nuovo?"), T("Surprise me", "Sorprendimi"), T("Something fruity?", "Qualcosa di fruttato?"), T("What's the best coffee?", "Qual è il caffè migliore?")],
