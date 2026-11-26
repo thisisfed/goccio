@@ -5408,6 +5408,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   }
   function grabSmall(v, guide) { const c = grabFrame(v, guide); if (!c) return null; const k = Math.min(1, 320 / Math.max(c.width, c.height));
     const o = document.createElement("canvas"); o.width = Math.round(c.width * k); o.height = Math.round(c.height * k); o.getContext("2d").drawImage(c, 0, 0, o.width, o.height); return o; }
+  window.__scanBeans = () => beanScan("rpMsgOpts");   // and the bean camera
   async function beanScan(msgId) {
     photoMsgId = msgId;
     if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) return askPhoto(msgId);
@@ -5503,6 +5504,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     if (bagScanId) { const id = bagScanId, k = got.roast && got.roast.key, b = bags.find((x) => x.id === id); bagScanId = null;
       if (b && k) { b.roast = k; b.roastYou = true; saveBags(); renderBags(); return; }
       const m = $(where); if (m) { m.hidden = false; m.textContent = (got.roast && got.roast.why) || "Couldn’t read the roast. Try again closer, in daylight."; } return; }
+    if (window.__beanHook && window.__beanHook.until > Date.now()) { const h = window.__beanHook; window.__beanHook = null; h(got); }
     beanCard = { ...got, where };
     const k = got.roast && got.roast.key; if (k) { state.roast = k; state.roastPhoto = { key: k, L: got.L, hex: got.hex }; saveState(); } }
   $("roastPhotoIn").addEventListener("change", async (e) => {
@@ -9170,6 +9172,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const roastKnown = f.roast && f.roast.v && (f.roast.src === "list" || /last scan/.test(f.roast.why || "")) ? f.roast.v : null;
     const line = [v("roaster"), v("name"), v("origin"), v("variety"), v("process") ? PL[v("process")] : null, roastKnown ? ROAST[roastKnown].label + " roast" : null].filter(Boolean).join(", ");
     if (!line.trim()) { $("scanMsg").textContent = "Nothing to use yet. Type the coffee, or scan again."; return false; }
+    if (window.__bagHook && window.__bagHook.until > Date.now()) { const h = window.__bagHook, mt = review.match || null; window.__bagHook = null; closeReview(); $("scanMsg").textContent = ""; h(line, mt); return true; }   // asked by the chat: the reading goes back there
     // remember what you confirmed, so this bag reads better next time
     if (v("roaster") && v("name")) { const mem = scanMem(), k = norm(v("roaster")) + "|" + norm(v("name"));
       mem[k] = { origin: v("origin"), process: v("process"), variety: v("variety"), roast: roastKnown };
@@ -9187,6 +9190,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   // ---- 5. getting the picture: live camera when there is one, a photo otherwise ----
   const pickPhoto = () => { const i = $("scanIn"); i.value = ""; i.click(); };
   const startScan = () => (navigator.mediaDevices && navigator.mediaDevices.getUserMedia ? liveScan() : pickPhoto());
+  window.__scanBag = () => { closeReview(); startScan(); };   // Goccio's chat opens the bag camera too
   $("scanBtn").onclick = () => { closeReview(); startScan(); };
   // a computer has no camera to scan with: the scan pills show a QR code that opens this page, this recipe, on the phone
   const DESK = matchMedia("(hover: hover) and (pointer: fine)").matches;
@@ -11001,13 +11005,15 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const gbName = (g) => g.r ? `${shownName(g.r)}` : (g.text || "").split(/[,.]/).slice(0, 2).map((x) => x.trim()).filter(Boolean).join(", ") || T("your coffee", "il tuo caffè");
     // the next question, or null when there's nothing left to ask
     // choices as a numbered list, one per row: answer with the number or in words
-    const gbList = (g, opts) => { g.opts = opts; nextPills = opts; return ""; };   // the choices as pills under the question: tap one, or type
+    const gbList = (g, opts) => { g.opts = opts; nextPills = opts; return ""; };
+    // the cameras, from the chat: only on a phone (a computer has none to scan with)
+    const CAM_OK = () => !!(window.__scanBeans && window.__scanBag) && !matchMedia("(hover: hover) and (pointer: fine)").matches;   // the choices as pills under the question: tap one, or type
     // the amounts a brewer takes, in words people know: the grams and about how much it makes (or the pot, or the shot)
     const gbDoses = (B) => { const rt = (B.ratio && (B.ratio.balanced || B.ratio.light)) || 16; return B.doses.map(([d, lb]) => [B.shot ? T(`${d} g, ${d >= 18 ? "a double" : d <= 14 ? "a single" : "a big single"}`, `${d} g, ${d >= 18 ? "doppio" : "singolo"}`)
       : /cup/.test(lb) ? T(`${d} g, the ${lb} pot`, `${d} g, moka da ${lb.replace("-cup", "")}`) : T(`${d} g, about ${Math.round(d * rt / 10) * 10} ml`, `${d} g, circa ${Math.round(d * rt / 10) * 10} ml`), `${d} g`]); };
     const gbAsk = (g) => {
       g.opts = null; g.yn = false;
-      if (!g.r && !g.text) { g.step = "coffee"; return T("Which coffee? Tell me its name, what the bag says (roaster, origin, process, roast), or say 'pick one'.", "Quale caffè? Dimmi il nome, cosa dice il sacchetto (torrefazione, origine, processo, tostatura), o di' 'scegline uno'."); }
+      if (!g.r && !g.text) { g.step = "coffee"; if (CAM_OK()) gbList(g, [[T("Scan the bag", "Scansiona il sacchetto"), "__scanbag"], [T("Pick one for me", "Scegline uno tu"), "pick one"]]); return T("Which coffee? Tell me its name, what the bag says (roaster, origin, process, roast), or say 'pick one'.", "Quale caffè? Dimmi il nome, cosa dice il sacchetto (torrefazione, origine, processo, tostatura), o di' 'scegline uno'."); }
       if (!g.brewer) { g.step = "brewer"; const mb = gbMemBrewer();
         // no list to pick from: Goccio covers nearly every brewer, so it just asks; one it can't do gets told what it can (gbNoBrewer)
         if (mb && !g.noMem) { g.yn = true; return T(`What are you brewing with? Your ${RECIPE_BREWERS[mb].name} again?`, `Con cosa lo prepari? Ancora il tuo ${RECIPE_BREWERS[mb].name}?`) + gbList(g, [[T(`Yes, the ${RECIPE_BREWERS[mb].name}`, `Sì, il ${RECIPE_BREWERS[mb].name}`), "yes"], [T("Something else", "Un altro"), "no"]]); }
@@ -11022,7 +11028,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const B = RECIPE_BREWERS[g.brewer];
       if (!g.dose && !B.cup && B.doses.length > 1) { g.step = "dose"; return T(`How much coffee in the ${B.name}? Tap one, or say the grams.`, `Quanto caffè nel ${B.name}? Toccane uno, o dimmi i grammi.`) + gbList(g, gbDoses(B)); }
       const miss = gbMissing(g);
-      if (miss.includes("roast") && !g.roast) { g.step = "roast"; return T(`The ${g.r ? "listing" : "bag"} doesn't say the roast. How do the beans look?`, `${g.r ? "La scheda" : "Il sacchetto"} non dice la tostatura. Come sono i chicchi?`) + gbList(g, [[T("Very light", "Molto chiara"), "very light"], [T("Light", "Chiara"), "light"], [T("Medium", "Media"), "medium"], [T("Medium-dark", "Medio-scura"), "medium-dark"], [T("Dark", "Scura"), "dark"], [T("Not sure", "Non so"), "not sure"]]); }
+      if (miss.includes("roast") && !g.roast) { g.step = "roast"; return T(`The ${g.r ? "listing" : "bag"} doesn't say the roast. How do the beans look?`, `${g.r ? "La scheda" : "Il sacchetto"} non dice la tostatura. Come sono i chicchi?`) + gbList(g, [...(CAM_OK() ? [[T("Scan the beans", "Scansiona i chicchi"), "__scanbeans"]] : []), [T("Very light", "Molto chiara"), "very light"], [T("Light", "Chiara"), "light"], [T("Medium", "Media"), "medium"], [T("Medium-dark", "Medio-scura"), "medium-dark"], [T("Dark", "Scura"), "dark"], [T("Not sure", "Non so"), "not sure"]]); }
       if (miss.includes("process") && !g.process) { g.step = "process"; return T("And the process?", "E il processo?") + gbList(g, [[T("Washed", "Lavato"), "washed"], [T("Natural", "Naturale"), "natural"], ["Honey", "honey"], [T("Anaerobic", "Anaerobico"), "anaerobic"], [T("Co-ferment", "Co-fermentato"), "co-ferment"], [T("Decaf", "Decaffeinato"), "decaf"], [T("Not sure", "Non so"), "not sure"]]); }
       g.step = null; return null; };
     // everything answered: open the recipe with it all set
@@ -11100,6 +11106,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       document.addEventListener("click", (e) => { if (!e.isTrusted) return; if (e.target.closest && e.target.closest("#shelf .item .btn[data-i], #bags .btn")) setTimeout(peek, 1500); }, true);
       new MutationObserver(() => { const H = document.documentElement; if (pk && (!H.classList.contains("brew-in") || H.classList.contains("brew-on") || H.classList.contains("gd-full"))) hide(); }).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] }); }
     // an answer to the question asked; false hands the message back to the rest of the chat
+    // a camera opened from the chat and closed without a reading: back to the chat, same question
+    { const cc = document.getElementById("camClose"); if (cc) cc.addEventListener("click", () => { if (!window.__beanHook && !window.__bagHook) return; window.__beanHook = window.__bagHook = null;
+        setTimeout(() => { openTalk(true); if (gbs) gbGo(gbs, T("No problem.", "Nessun problema.")); }, 350); }); }
     const gbAnswer = (q) => { const g = gbs; let ql = q.toLowerCase().trim();
       { const n = ql.match(/^(?:number |n\.? ?|#|option )?(\d{1,2})[.)]?$/); if (n && g.opts && g.opts[+n[1] - 1]) { q = g.opts[+n[1] - 1][1]; ql = q; } }
       if (/^(stop|cancel|never ?mind|forget it|no thanks|not now|later|basta|lascia stare|annulla|niente)\b/i.test(ql)) { gbs = null; say(T("No problem. Say 'let's brew' when you're ready.", "Nessun problema. Di' 'prepariamo' quando sei pronto."), null, smile); return true; }
@@ -11108,6 +11117,16 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const isQ = /\?\s*$/.test(ql) || /^(what|why|how|who|when|where|which|is|are|does|do|can|should|cosa|perch|come|chi|quando|dove|quale)\b/i.test(ql);
       const miss = () => { g.tries++; if (isQ || g.tries > 2) { gbs = null; return false; } say(pick([T("Sorry, I didn't catch that. ", "Scusa, non ho capito. "), T("Hmm, not sure I follow. ", "Mmm, non ti seguo. ")]) + gbAsk(g), null, hmm); return true; };
       g.at = Date.now();
+      if (q === "__scanbag" && g.step === "coffee") { g.tries = 0; closeTalk();
+        window.__bagHook = Object.assign((line, mt) => { setTimeout(() => { openTalk(true); g.at = Date.now();
+          if (mt) { g.r = mt; gbGo(g, T(`Got it: ${shownName(mt)} from ${roasteryName(mt.roaster)}.`, `Trovato: ${shownName(mt)} della ${roasteryName(mt.roaster)}.`)); }
+          else { g.text = line; gbGo(g, T(`Got it: ${line}.`, `Letto: ${line}.`)); } }, 350); }, { until: Date.now() + 5 * 60000 });
+        setTimeout(() => window.__scanBag(), 300); return true; }
+      if (q === "__scanbeans" && g.step === "roast") { g.tries = 0; closeTalk();
+        window.__beanHook = Object.assign((got) => { setTimeout(() => { openTalk(true); g.at = Date.now(); const k = got && got.roast && got.roast.key;
+          if (k && k !== "unsure" && ROAST[k]) { g.roast = k; gbGo(g, T(`Those beans read ${ROAST[k].label}.`, `Questi chicchi sono di tostatura ${({ vlight: "molto chiara", light: "chiara", medium: "media", mdark: "medio-scura", dark: "scura" })[k] || ROAST[k].label}.`)); }
+          else gbGo(g, (got && got.roast && got.roast.why ? got.roast.why + " " : T("I couldn't read them. ", "Non riesco a leggerli. "))); }, 350); }, { until: Date.now() + 5 * 60000 });
+        setTimeout(() => window.__scanBeans(), 300); return true; }
       if (g.step === "coffee") {
         if (/^(pick( one)?|you (pick|choose)|surprise me|any|anything|whatever|scegli(ne uno)?|sorprendimi|fai tu)\b/i.test(ql)) { g.tries = 0; pickNew(false, mem.brewer, (r) => { g.r = r; return gbAsk(g) || ""; }); if (!gbAsk(g)) gbFinish(g); return true; }
         const qn = norm(q), ro = findRoaster(qn), cs = findCoffees(qn, ro), mine = ro ? cs.filter((r) => r.roaster === ro.name) : cs;
