@@ -10750,38 +10750,38 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     let gazeLock = false;   // while he hypnotises, his eyes stay on you, whatever the pointer does
     const hypno = () => act(async () => { if (still()) return; gazeLock = true; lookX = 0; lookY = 0; draw();
       const NS = "http://www.w3.org/2000/svg", L = el.querySelector(".gd-l"), R = el.querySelector(".gd-r"); if (!L || !R) return;
-      // his eyes only (26/11/2026), drawn like an old cartoon's hypno eyes: each stays its own tall oval, outlined dark, and inside it round
-      // rings in four soft colours (pale yellow, sky blue, light green, mint), each with a thin dark green line, set off towards his nose and
-      // a touch low, with a tiny dot in the middle. Rings are born there at uneven gaps (so they come in different widths) and widen slowly
-      const PAL = ["#d4da8e", "#84bbcf", "#b2d99d", "#a2c6b5"], LINE = "#1f4d36", PER = 8000;
-      // the eyes start all yellow; then rings in the other colours are born in the middle and the whole palette follows
-      const spawner = (parents, gap0, gap1, lw) => { const live = [{ b: -99, els: parents.map((pg) => { const c = document.createElementNS(NS, "circle"); c.style.fill = PAL[0]; c.style.stroke = "none"; c.setAttribute("r", "60"); pg.insertBefore(c, pg.firstChild); return c; }) }]; let nextAt = 0, last = 0;
-        return (t, Rm) => {
+      // his eyes only, drawn like an old cartoon's hypno eyes (26/11/2026): two big ovals, a little egg-shaped, leaning apart at the top and
+      // overlapping in the middle, each with a thin dark line round it. Inside, nested rings in soft colours, each with its own thin dark green
+      // line: small ones round and set off towards his nose, bigger ones taking on the eye's oval and settling into its middle. They start
+      // all yellow, then rings are born at uneven gaps (different widths) and widen slowly; each eye picks its own colours, so the two differ
+      const PAL = ["#d8dc8c", "#82bed4", "#b4dd9b", "#9fdcc6", "#ebe8ef", "#a4c7b4"], LINE = "#1f4d36", EDGE = "#0b0503", PER = 8000, K = 0.1;
+      // an egg: half-width a, half-height b, wider at the bottom by k, centred at (x, y)
+      const egg = (a, b, k, x, y) => { let d = ""; for (let i = 0; i < 40; i++) { const t = (i / 40) * Math.PI * 2; d += (i ? "L" : "M") + (x + a * Math.cos(t) * (1 + k * Math.sin(t))).toFixed(3) + " " + (y + b * Math.sin(t)).toFixed(3); } return d + "Z"; };
+      const sp = [L, R].map((e0, side) => { const g = document.createElementNS(NS, "g"), cp = document.createElementNS(NS, "clipPath"), ce = document.createElementNS(NS, "path"), cl = document.createElementNS(NS, "g"), rim = document.createElementNS(NS, "path");
+        cp.id = "hypc" + Math.random().toString(36).slice(2, 6); cp.appendChild(ce); g.appendChild(cp); g.setAttribute("class", "gd-hyp"); cl.setAttribute("clip-path", `url(#${cp.id})`); g.appendChild(cl);
+        rim.style.fill = "none"; rim.style.stroke = EDGE; rim.style.strokeWidth = "0.07"; g.appendChild(rim); eyes.appendChild(g);
+        // the rings: a yellow ground, then new ones born at the middle; never the same colour twice in a row, and the two eyes choose apart
+        const live = [{ b: -99, el: (() => { const p0 = document.createElementNS(NS, "path"); p0.style.fill = PAL[0]; p0.style.stroke = "none"; cl.appendChild(p0); return p0; })() }];
+        let nextAt = 0.04 + side * 0.09, last = 0;
+        const step = (t, A, B) => { const ox = side ? -0.75 : 0.75, oy = side ? -0.35 : 0.45;
           while (t >= nextAt) { let ci; do ci = Math.floor(Math.random() * PAL.length); while (ci === last); last = ci;
-            live.push({ b: nextAt, els: parents.map((pg) => { const c = document.createElementNS(NS, "circle"); c.style.fill = PAL[ci]; c.style.stroke = LINE; c.style.strokeWidth = lw; pg.insertBefore(c, pg.lastChild); return c; }) });
-            nextAt += gap0 + Math.random() * (gap1 - gap0); }
-          while (live.length > 1 && (t - live[1].b) * Rm > Rm * 1.05) live.shift().els.forEach((c) => c.remove());   // fully covered by the next one: gone
-          live.forEach((d) => { if (d.b < -50) return; const r = Math.max(0, (t - d.b) * Rm).toFixed(3); d.els.forEach((c) => c.setAttribute("r", r)); }); }; };
-      const sp = [L, R].map((e0, side) => { const g = document.createElementNS(NS, "g"), cp = document.createElementNS(NS, "clipPath"), ce = document.createElementNS(NS, "path"), out = document.createElementNS(NS, "path"), cl = document.createElementNS(NS, "g"), mid = document.createElementNS(NS, "g"), dot = document.createElementNS(NS, "circle");
-        cp.id = "hypc" + Math.random().toString(36).slice(2, 6); cp.appendChild(ce); g.appendChild(cp); out.style.fill = getComputedStyle(e0).fill || "#0b0503"; out.style.stroke = "none"; g.appendChild(out); g.setAttribute("class", "gd-hyp"); cl.setAttribute("clip-path", `url(#${cp.id})`);
-        mid.setAttribute("transform", `translate(${side ? -0.85 : 0.85} 0.45)`); dot.setAttribute("r", "0.2"); dot.style.fill = LINE; dot.style.stroke = "none"; mid.appendChild(dot); cl.appendChild(mid); g.appendChild(cl); eyes.appendChild(g);
-        return { e0, g, ce, out, mid }; });
-      // an egg: wider at the bottom, narrower at the top (a: half its width, b: half its height, in the rings' own units)
-      const egg = (a, b, k) => { let d = ""; for (let i = 0; i < 48; i++) { const t = (i / 48) * Math.PI * 2, x = a * Math.cos(t) * (1 + k * Math.sin(t)), y = b * Math.sin(t); d += (i ? "L" : "M") + x.toFixed(3) + " " + y.toFixed(3); } return d + "Z"; };
+            const p0 = document.createElementNS(NS, "path"); p0.style.fill = PAL[ci]; p0.style.stroke = LINE; p0.style.strokeWidth = "0.055"; cl.appendChild(p0); live.push({ b: nextAt, el: p0 });
+            nextAt += 0.1 + Math.random() * 0.24; }
+          while (live.length > 1 && t - live[1].b > 1.25) live.shift().el.remove();   // covered by the next one: gone
+          live.forEach((d) => { const u = d.b < -50 ? 3 : Math.max(0, t - d.b), m = Math.min(1, u);
+            d.el.setAttribute("d", egg(u * A, u * (A + (B - A) * m), K * m, ox * (1 - m), oy * (1 - m))); }); };
+        return { e0, g, ce, rim, step, side }; });
       let run = false;
-      const rings = spawner(sp.map((x) => x.mid), 0.12, 0.34, 0.11);
       const t0 = performance.now(); let tPh = 0, tLast = t0;
       let on = true; const follow = () => { if (!on) return; const now = performance.now(), dt = Math.min(80, now - tLast); tLast = now; if (run) tPh += dt / PER;   // one slow, steady speed, from the moment the eyes are all yellow
-        let ryMax = 3;
-        sp.forEach(({ e0, g, ce, out }) => { const rx = parseFloat(e0.getAttribute("rx")) || 2.4, ry = parseFloat(e0.getAttribute("ry")) || 3.4, s0 = rx / 2.4, q = eSX / Math.max(0.06, eSY);
-          // the rings stay round on screen, whatever stretch the face has; the clip is the eye's own oval, a hair inside its dark edge
-          g.setAttribute("transform", `${e0.getAttribute("transform") || ""} translate(${e0.getAttribute("cx")} ${e0.getAttribute("cy")}) scale(${s0.toFixed(3)} ${(s0 * q).toFixed(3)})`);
-          const b0 = ry / (s0 * q); out.setAttribute("d", egg(2.4, b0, 0.2)); ce.setAttribute("d", egg(2.4 * 0.93, b0 - 2.4 * 0.07, 0.2)); ryMax = Math.max(ryMax, b0); });
-        rings(tPh, Math.hypot(2.4 * 1.12 + 0.85, ryMax + 0.45) * 1.02); requestAnimationFrame(follow); }; follow();
-      // he comes up close to you, eyes wide, then the rings fade in
-      sp.forEach(({ g }) => g.classList.add("in")); setTimeout(() => { if (on) sp.forEach(({ e0 }) => { e0.style.opacity = "0"; }); }, 420);   // his own eyes give way to the egg-shaped yellow ones
-      // right up to the glass (centred, bigger than the screen); his eyes grow big and draw in till they almost touch
-      await Promise.all([face({ eyeSL: 2.15, eyeSR: 2.15, near: 0.3 }, 900), nearTo(5, 1, 1800, null, 1.25)]); run = true;
+        sp.forEach(({ e0, g, ce, rim, step, side }) => { const rx = parseFloat(e0.getAttribute("rx")) || 2.4, ry = parseFloat(e0.getAttribute("ry")) || 3.4, s0 = rx / 2.4, q = eSX / Math.max(0.06, eSY);
+          // round rings stay round on screen, whatever stretch the face has; each eye leans out at the top
+          g.setAttribute("transform", `${e0.getAttribute("transform") || ""} translate(${e0.getAttribute("cx")} ${e0.getAttribute("cy")}) scale(${s0.toFixed(3)} ${(s0 * q).toFixed(3)}) rotate(${side ? 11 : -11})`);
+          const B = ry / (s0 * q), shape = egg(2.4, B, K, 0, 0); ce.setAttribute("d", shape); rim.setAttribute("d", shape); step(tPh, 2.4, B); });
+        requestAnimationFrame(follow); }; follow();
+      sp.forEach(({ g }) => g.classList.add("in")); setTimeout(() => { if (on) sp.forEach(({ e0 }) => { e0.style.opacity = "0"; }); }, 420);   // his own eyes give way to the cartoon ones
+      // right up to the glass (centred, bigger than the screen); his eyes grow big and draw in till they overlap a little
+      await Promise.all([face({ eyeSL: 2.2, eyeSR: 2.2, near: 1.1 }, 900), nearTo(5, 1, 1800, null, 1.25)]); run = true;
       await wait(11000 + Math.random() * 3000);   // he stays still, close, straight at you
       blink = 0.12; draw(); await wait(140); sp.forEach(({ g, e0 }) => { e0.style.opacity = ""; g.remove(); }); on = false; blink = 1; draw();
       await Promise.all([face({ eyeSL: 1, eyeSR: 1, near: 0 }, 600), nearTo(1, 0, 1100, "cubic-bezier(.3,.7,.4,1)")]); nearDone(); gazeLock = false; }, true);
