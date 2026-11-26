@@ -11307,12 +11307,31 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           T(`Welcome back${nmc}!`, `Bentornato${nmc}!`), ...[0, 1, 2].map(() => T(`Hey${nm}. How are you \uE000doing\uE001brewing today?\uE002`, `Ehi${nm}. Come va \uE000la giornata\uE001il caffè oggi?\uE002`)), T(`Look who's here${nmc}!`, `Guarda chi c'è${nmc}!`), T(`Hello again${nmc}!`, `Rieccoti${nmc}!`), T(`Ciao${nm}!`, `Ciao ciao${nm}!`), T(`Good to see you${nmc}!`, `Che bello vederti${nmc}!`),
           ...(h0 >= 5 && h0 < 12 ? [T(`Good morning${nmc}!`, `Buongiorno${nmc}!`), T(`Morning${nmc}!`, `Buondì${nmc}!`)] : h0 >= 12 && h0 < 18 ? [T(`Good afternoon${nmc}!`, `Buon pomeriggio${nmc}!`)] : h0 >= 18 && h0 < 23 ? [T(`Good evening${nmc}!`, `Buonasera${nmc}!`), T(`Evening${nmc}!`, `Sera${nmc}!`)] : [T(`Still up${nmc}?`, `Ancora sveglio${nmc}?`)])];
         let last = ""; try { last = localStorage.getItem("v60.hi") || ""; } catch (e) {}
-        const g0 = pick(all.filter((x) => x !== last).length ? all.filter((x) => x !== last) : all); try { localStorage.setItem("v60.hi", g0); } catch (e) {} return g0; })();
+        // the time of day, more often than not (26/11/2026): good morning, a first cup, good evening, still up
+        const timed = (h0 >= 5 && h0 < 12 ? [T(`Good morning${nmc}!`, `Buongiorno${nmc}!`), T(`Morning${nmc}! First cup yet?`, `Buongiorno${nmc}! Già preso il primo caffè?`), T(`Morning${nmc}!`, `Buondì${nmc}!`)]
+          : h0 >= 12 && h0 < 14 ? [T(`Good afternoon${nmc}!`, `Buon pomeriggio${nmc}!`), T(`Hi${nm}! Lunchtime coffee?`, `Ciao${nm}! Caffè dopo pranzo?`)]
+          : h0 >= 14 && h0 < 18 ? [T(`Good afternoon${nmc}!`, `Buon pomeriggio${nmc}!`), T(`Afternoon${nmc}!`, `Buon pomeriggio${nmc}!`)]
+          : h0 >= 18 && h0 < 23 ? [T(`Good evening${nmc}!`, `Buonasera${nmc}!`), T(`Evening${nmc}!`, `Sera${nmc}!`)] : [T(`Still up${nmc}?`, `Ancora sveglio${nmc}?`), T(`Hello, night owl${nmc}!`, `Ciao, nottambulo${nmc}!`)]).filter((x) => x !== last);
+        const g0 = timed.length && Math.random() < 0.6 ? pick(timed) : pick(all.filter((x) => x !== last).length ? all.filter((x) => x !== last) : all); try { localStorage.setItem("v60.hi", g0); } catch (e) {} return g0; })();
       if (!n) return /\?\uE002?$/.test(hi) ? say(hi, null, happy) : say(hi + " " + pick([T("Ask me about coffee.", "Chiedimi del caffè."), T("What are we brewing?", "Cosa prepariamo?"), T("Need a hand with your coffee?", "Ti serve una mano col caffè?")]), null, happy);
-      const best = today.map((x) => [suits(x) * 3 + (notesOf(x).length ? 1.5 : 0) + Math.random() * 2, x]).sort((a, b) => b[0] - a[0])[0][1], ns = notesOf(best); picked.add(best.url); lastCo = { r: best, at: Date.now() };
+      // after 2pm (and through the night) the pick is a decaf, today's if there is one, else the newest on the list, and it says why
+      const hNow = new Date().getHours(), late = hNow >= 14 || hNow < 5, rank = (x) => suits(x) * 3 + (notesOf(x).length ? 1.5 : 0) + Math.random() * 2;
+      const decafs = late ? (today.some(isDecaf) ? today.filter(isDecaf) : all0.filter(isDecaf).sort((a, b) => String(shelfDate(b) || "").localeCompare(String(shelfDate(a) || ""))).slice(0, 12)) : [];
+      const dec = decafs.length ? decafs.map((x) => [rank(x), x]).sort((a, b) => b[0] - a[0])[0][1] : null;
+      const best = dec || today.map((x) => [rank(x), x]).sort((a, b) => b[0] - a[0])[0][1], ns = notesOf(best); picked.add(best.url); lastCo = { r: best, at: Date.now() };
       const what = `${shownName(best)} ${T("from", "di")} ${roasteryName(best.roaster)}${ns.length ? T(", tasting of ", ", che sa di ") + andList(ns) : ""}`;
       const on = landedOn(best), On = on[0].toUpperCase() + on.slice(1), one = n === 1;   /* one coffee gets lines of its own: never "1 new coffees" or "and 0 more" */
-      const line = suits(best) ? pick(one ? [T(`One new coffee ${on}, and it's very you: ${what}.`, `${On} un solo caffè nuovo, ed è proprio per te: ${what}.`), T(`New ${on}, right up your street: ${what}.`, `Arrivato ${on}, proprio nel tuo stile: ${what}.`), T(`This one has your name on it, new ${on}: ${what}.`, `Questo porta il tuo nome, arrivato ${on}: ${what}.`)] : [
+      const decafLine = !dec ? null : pick(hNow >= 18 || hNow < 5 ? [
+          T(`Evening cup? Make it a decaf: ${what}. Half the caffeine in a cup is still with you five hours later.`, `Un caffè stasera? Che sia decaffeinato: ${what}. Metà della caffeina di una tazza è ancora in circolo cinque ore dopo.`),
+          T(`At this hour I'd go decaf: ${what}. All the flavour, and you'll still sleep.`, `A quest'ora andrei sul decaffeinato: ${what}. Tutto il sapore, e dormi lo stesso.`)] : [
+          T(`It's past 2pm, so I'd go decaf: ${what}. Caffeine takes about five hours to halve, so an afternoon cup is still with you at bedtime.`, `Sono passate le 14, quindi andrei sul decaffeinato: ${what}. La caffeina ci mette circa cinque ore a dimezzarsi: un caffè del pomeriggio è ancora lì all'ora di dormire.`),
+          T(`An afternoon pick without the caffeine: ${what}. Coffee after 2pm can cost you sleep; this one keeps the flavour.`, `Una scelta da pomeriggio, senza caffeina: ${what}. Il caffè dopo le 14 può rubarti il sonno; questo tiene il sapore.`)]);
+      // mornings, now and then, it's about the first cup
+      const morningLine = dec || !(hNow >= 5 && hNow < 12) || Math.random() < 0.5 ? null : pick([
+          T(`For your first cup today: ${what}. One of ${n} new ${on}.`, `Per il primo caffè di oggi: ${what}. Uno dei ${n} arrivati ${on}.`),
+          T(`A good one to start the day: ${what}.`, `Uno buono per iniziare la giornata: ${what}.`),
+          T(`Morning coffee sorted: ${what}, new ${on}.`, `Il caffè del mattino è servito: ${what}, arrivato ${on}.`)]);
+      const line = decafLine || morningLine || (suits(best) ? pick(one ? [T(`One new coffee ${on}, and it's very you: ${what}.`, `${On} un solo caffè nuovo, ed è proprio per te: ${what}.`), T(`New ${on}, right up your street: ${what}.`, `Arrivato ${on}, proprio nel tuo stile: ${what}.`), T(`This one has your name on it, new ${on}: ${what}.`, `Questo porta il tuo nome, arrivato ${on}: ${what}.`)] : [
           T(`${n} new coffees landed ${on}, and one's very you: ${what}.`, `${On} sono arrivati ${n} caffè nuovi, e uno è proprio per te: ${what}.`),
           T(`New ${on}, right up your street: ${what}.`, `Arrivato ${on}, proprio nel tuo stile: ${what}.`),
           T(`${n} new coffees ${on}, and I found one just for you: ${what}.`, `${On} ${n} caffè nuovi, e ne ho trovato uno solo per te: ${what}.`),
@@ -11333,7 +11352,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           T(`Fresh off the roaster, new ${on}: ${what}.`, `Fresco di tostatura, arrivato ${on}: ${what}.`),
           T(`The shelf got ${n} new coffees ${on}. Top of my list: ${what}.`, `${On} sullo scaffale ${n} caffè nuovi. In cima alla mia lista: ${what}.`),
           ...(n >= 20 ? [T(`Busy day: ${n} new coffees ${on}. The one I'm curious about: ${what}.`, `Giornata piena: ${n} caffè nuovi ${on}. Quello che mi incuriosisce: ${what}.`)] : []),
-          ...(n <= 5 ? [T(`Only ${n} new coffees ${on}, but one's a gem: ${what}.`, `Solo ${n} caffè nuovi ${on}, ma uno è una chicca: ${what}.`)] : [])]);
+          ...(n <= 5 ? [T(`Only ${n} new coffees ${on}, but one's a gem: ${what}.`, `Solo ${n} caffè nuovi ${on}, ma uno è una chicca: ${what}.`)] : [])]));
       // three messages, typed one after the other: the hello, the coffee, then "Want to see it?"
       sayNow(hi, null, happy); const nextOne = () => typeDots(dotsFor(line), () => { sayNow(line, [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(best); } }], happy); ctx = { t: "pick", at: Date.now() }; });
       if (typing) typing.after = nextOne; else nextOne(); ctx = { t: "pick", at: Date.now() }; };
