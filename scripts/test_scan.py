@@ -201,6 +201,7 @@ CASES = [
     ("lucky bags and blind boxes in any language are sets, not one coffee", lambda: all(scan.not_one_coffee(item(x)) for x in ["New Year Lucky Bag 2027", "Coffee Grab Bag", "Blind Box Espresso", "Surprise Coffee Box", "Kaffee Wundertüte", "コーヒー豆 詰め合わせ", "飲み比べセット"])),
     ("coffees with happy, lucky or sorpresa in the name stay: 'Happy Hills Ethiopia', 'Lucky Farm Colombia', 'Finca La Sorpresa'", lambda: all(scan.not_one_coffee(item(x)) is None for x in ["Happy Hills Ethiopia", "Lucky Farm Colombia", "Finca La Sorpresa Geisha"]) and scan.not_one_coffee(item("Caja Sorpresa de Café")) is not None),
     ("a flavour typed without its accent is still translated: KB's 'Mures' (mûres) is blackberry", lambda: __import__("flavours").to_english("Mures") == "Blackberry"),
+    ("a note cut from a sentence loses its 'where': 'Where juicy mandarin' -> 'Juicy mandarin'", lambda: scan.tidy_note("Where juicy mandarin").lower() == "juicy mandarin"),
     ("'Jones Prepaid Weekly 12 months' is a plan, not a coffee", lambda: scan.not_one_coffee(item("Jones Prepaid Weekly 12 months")) is not None),
     ("'Coffee of the Month (6 month Prepaid)' is a plan", lambda: scan.not_one_coffee(item("Coffee of the Month (6 month Prepaid)")) is not None),
     ("'Uphill Espresso - 6 months' is a plan", lambda: scan.not_one_coffee(item("Uphill Espresso - 6 months")) is not None),
