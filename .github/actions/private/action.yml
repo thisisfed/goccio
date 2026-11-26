@@ -1,0 +1,22 @@
+name: Private code
+description: Brings in Goccio's private code (the scanner, Goccio's knowledge and the server code) from thisisfed/goccio-private, so it never sits in this public repo
+inputs:
+  token:
+    description: A read-only token for thisisfed/goccio-private (the PRIVATE_REPO_TOKEN secret)
+    required: true
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v5
+      with:
+        repository: thisisfed/goccio-private
+        token: ${{ inputs.token }}
+        path: .private
+    - shell: bash
+      run: |
+        # scripts/ (the scanner and its tools), functions/ (Goccio's knowledge and the site's server code), workers/ (the scan clock)
+        for d in scripts functions workers; do
+          if [ -d ".private/$d" ]; then rm -rf "$d"; cp -r ".private/$d" "$d"; fi
+        done
+        rm -rf .private
+        echo "Private code in place: $(ls scripts | wc -l) scripts, $(ls functions/api | wc -l) server files"

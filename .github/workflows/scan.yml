@@ -42,6 +42,9 @@ jobs:
         with:
           ref: main
           fetch-depth: 50
+      - uses: ./.github/actions/private   # the scanner and Goccio's knowledge live in the private repo
+        with:
+          token: ${{ secrets.PRIVATE_REPO_TOKEN }}
       - id: sha
         run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - name: Skip if today's full scan is already in
@@ -58,7 +61,8 @@ jobs:
           python-version: "3.12"
       - name: Check the scanner against every reported mistake
         # if an old mistake is back, the scan stops here and yesterday's list stays up
-        run: python3 scripts/test_scan.py
+        run: |   # quiet: the logs of a public repo are public, so only the count and any failure's name are shown, never the list of fixes
+          python3 scripts/test_scan.py > /tmp/tests.log 2>&1 && tail -n 1 /tmp/tests.log || { grep '^FAIL' /tmp/tests.log | cut -c1-80; tail -n 1 /tmp/tests.log; exit 1; }
       - name: Inspect pages (nothing is saved)
         if: github.event.inputs.inspect != ''
         env:
@@ -79,6 +83,9 @@ jobs:
       - uses: actions/checkout@v5
         with:
           ref: ${{ needs.prep.outputs.sha }}
+      - uses: ./.github/actions/private   # the scanner and Goccio's knowledge live in the private repo
+        with:
+          token: ${{ secrets.PRIVATE_REPO_TOKEN }}
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
@@ -105,6 +112,9 @@ jobs:
         with:
           ref: main
           fetch-depth: 50
+      - uses: ./.github/actions/private   # the scanner and Goccio's knowledge live in the private repo
+        with:
+          token: ${{ secrets.PRIVATE_REPO_TOKEN }}
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
