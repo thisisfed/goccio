@@ -9390,6 +9390,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const hintText = () => { if (typeof shelfRo !== "undefined" && shelfRo) { const k0 = shelf.filter((r) => r.roaster === shelfRo).length, bx = document.getElementById("askIn"), narrow = bx && bx.clientWidth && bx.clientWidth < 330;
         return LANG === "it" ? `Caffè di ${shelfRo}` : `Coffees from ${shelfRo}`; }   /* on a roaster's page the box says whose coffees it holds (no "Search": asked 25/11/2026) */
       if (false) { const k = shelf.filter((r) => r.roaster === shelfRo).length; return LANG === "it" ? `Cerca tra ${k} caffè` : `Search ${k} coffee${k === 1 ? "" : "s"}`; }   // on a roaster's page: that roaster's coffees
+      // the day's count is pinned under the bar ("208 coffees added today"): two numbers at once is one too many, so the box just says Search
+      if (document.querySelector(".shelf .grp.day-g.stuck:not([hidden])")) return LANG === "it" ? "Cerca" : "Search";
       const n = window.__coN || (typeof shelfPart !== "undefined" && shelfPart) || (typeof shelf !== "undefined" && shelf.length) || 0;   // the whole list, also while only its first part is in
       const box = document.getElementById("askIn"), nr = box && box.clientWidth && box.clientWidth < 290 ? 0 : (window.__roN || 0);   // and the roasters: "Search 8,757 coffees, 732 roasters" (a very narrow phone keeps just the coffees)
       // the size of the list: "Search 9,033 coffees from 754 roasters" (the roasters are left out until their count is in)
@@ -9410,7 +9412,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     calm = true; show();
     // the hint is simply there, as soon as the list's count is known: no typing
     const put = () => { const el = document.createElement("span"); el.className = "ph-t ph-q"; el.textContent = hintText(); ph.appendChild(el); if (cur) cur.remove(); cur = el; };
-    put(); window.__searchHint = () => { if (cur && cur.textContent !== hintText()) put(); }; const wait = (n) => { window.__searchHint(); if (n < 80) setTimeout(() => wait(n + 1), 250); };
+    put(); window.__searchHint = () => { const t = hintText(); if (cur && cur.textContent !== t) { if (t === "Search" || t === "Cerca" || /^(Search|Cerca)$/.test(cur.textContent)) roll(t, true); else put(); } };   /* to and from Search it rolls, like the examples */ const wait = (n) => { window.__searchHint(); if (n < 80) setTimeout(() => wait(n + 1), 250); };
     wait(0); }
   // the ask line: its words go into the search (which reads them as an ask), the brewer it names becomes the brewer, and the page goes to the list
   // the brewer the ask names becomes the brewer; "6 cup" (or 3-cup, 1 cup) picks that size where the brewer has one
@@ -10255,7 +10257,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         const row = last && (last.querySelector(":scope > .r") || last), lim = row ? row.getBoundingClientRect().bottom : Infinity;   /* its line meets the bottom of the buttons, then they go up together */
         const dy = Math.min(0, lim - (t + h.offsetHeight));
         if (Math.abs(dy - was) > 0.25) { h.dataset.dy = dy.toFixed(1); h.style.transform = dy ? `translateY(${dy.toFixed(1)}px)` : ""; }
-        h.classList.toggle("stuck", t <= t0 + 1.5);
+        { const was0 = h.classList.contains("stuck"); h.classList.toggle("stuck", t <= t0 + 1.5); if (was0 !== h.classList.contains("stuck") && window.__searchHint) window.__searchHint(); }   // the box's hint becomes "Search" while this line is pinned
         // its words follow the coffee under it: "25 coffees added today", then "170 coffees added yesterday" once yesterday's come up (no line in the list itself)
         { const dt = window.__dayT || {}, edge = h.getBoundingClientRect().bottom; let d = h.dataset.day;
           if (h.classList.contains("stuck")) for (const n of document.querySelectorAll(".shelf .item[data-day]")) { if (!n.dataset.day) continue; if (n.getBoundingClientRect().bottom > edge + 1) { d = n.dataset.day; break; } }
