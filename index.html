@@ -10750,39 +10750,39 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     let gazeLock = false;   // while he hypnotises, his eyes stay on you, whatever the pointer does
     const hypno = () => act(async () => { if (still()) return; gazeLock = true; lookX = 0; lookY = 0; draw();
       const NS = "http://www.w3.org/2000/svg", L = el.querySelector(".gd-l"), R = el.querySelector(".gd-r"); if (!L || !R) return;
-      // rings of odd, bright colours, born at the middle of each eye and slowly widening to its edge, where the eye cuts them off
-      const HUES = ["#ff2bd6", "#7cff3a", "#ff7a00", "#6a3cff", "#00e5ff", "#fff35c", "#ff3b5c", "#3bff9e", "#b14dff"], N = 6, PER = 3600, ER = 2.3 * N / (N - 1) * 1.03;   // filled discs, the newest on top: colour touches colour, never a black gap
+      // the hypnosis pattern, in four soft colours only (pale yellow, sky blue, light green, mint), each ring outlined in thin dark green, like
+      // an old cartoon's hypno eyes (26/11/2026). Rings are born at the middle at uneven gaps, so they come in different widths, and all widen
+      // at one steady speed; the newest sits on top, so colour always meets colour and the ring lines are the only dark
+      const PAL = ["#d4da8e", "#84bbcf", "#b2d99d", "#a2c6b5"], LINE = "#1f4d36", PER = 3600;
+      const spawner = (parents, speed, gap0, gap1, lw) => { const live = []; let nextAt = -1.2 / speed, last = -1;   // starts already full
+        return (t, R, cx, cy) => {
+          while (t >= nextAt) { let ci; do ci = Math.floor(Math.random() * PAL.length); while (ci === last); last = ci;
+            live.push({ b: nextAt, els: parents.map((pg) => { const c = document.createElementNS(NS, "circle"); c.style.fill = PAL[ci]; c.style.stroke = LINE; c.style.strokeWidth = lw; pg.appendChild(c); return c; }) });
+            nextAt += gap0 + Math.random() * (gap1 - gap0); }
+          while (live.length > 1 && (t - live[1].b) * speed * R > R * 1.05) live.shift().els.forEach((c) => c.remove());   // fully covered by the next one: gone
+          live.forEach((d) => { const r = Math.max(0, (t - d.b) * speed * R).toFixed(3); d.els.forEach((c) => { c.setAttribute("r", r); c.setAttribute("cx", cx); c.setAttribute("cy", cy); }); }); }; };
       const cid = "hypc" + Math.random().toString(36).slice(2, 6), cp = document.createElementNS(NS, "clipPath"), cc = document.createElementNS(NS, "circle");   // cut to the eye, so a ring never leaves it
       cp.id = cid; cc.setAttribute("r", "2.3"); cp.appendChild(cc); eyes.appendChild(cp);
-      const rings = [];
-      const sp = [L, R].map((e0) => { const g = document.createElementNS(NS, "g"), cl = document.createElementNS(NS, "g"); g.setAttribute("class", "gd-hyp"); cl.setAttribute("clip-path", `url(#${cid})`);
-        const rs = []; for (let k = 0; k < N; k++) { const c = document.createElementNS(NS, "circle"); c.setAttribute("cx", "0"); c.setAttribute("cy", "0"); cl.appendChild(c); rs.push(c); } rings.push(rs); g.appendChild(cl); eyes.appendChild(g); return [e0, g]; });
-      // and his whole body turns into the same pattern: bands of bright colour, edge to edge, widening from his middle, cut to his shape
-      // (the clip follows the live outline, so he can still squash and breathe); his eyes stay on top
+      const eyeGs = [];
+      const sp = [L, R].map((e0) => { const g = document.createElementNS(NS, "g"), cl = document.createElementNS(NS, "g"), dot = document.createElementNS(NS, "circle"); g.setAttribute("class", "gd-hyp"); cl.setAttribute("clip-path", `url(#${cid})`);
+        dot.setAttribute("r", "0.2"); dot.style.fill = LINE; dot.style.stroke = "none"; g.appendChild(cl); g.appendChild(dot); eyes.appendChild(g); eyeGs.push(cl); return [e0, g]; });   // a tiny dark dot in the very middle
+      const eyeRings = spawner(eyeGs, 1, 0.1, 0.32, 0.11);
+      // and his whole body turns into the same pattern, widening from his middle, cut to his shape (the clip follows the live outline,
+      // so he can still squash and breathe); his eyes stay on top
       const bid = body.id || (body.id = "gdb" + Math.random().toString(36).slice(2, 6)), bcp = document.createElementNS(NS, "clipPath"), bu = document.createElementNS(NS, "use");
       bcp.id = cid + "b"; bu.setAttribute("href", "#" + bid); bcp.appendChild(bu); all.insertBefore(bcp, all.firstChild);
       const bg = document.createElementNS(NS, "g"); bg.setAttribute("class", "gd-hyp"); bg.setAttribute("clip-path", `url(#${bcp.id})`); eyes.parentNode.insertBefore(bg, eyes);
-      const BN = 12, brs = []; for (let k = 0; k < BN; k++) { const c = document.createElementNS(NS, "circle"); bg.appendChild(c); brs.push(c); }
-      const bBorn = new Array(BN).fill(-1); let bHue = 0;
-      const growBody = (t) => { let bb; try { bb = body.getBBox(); } catch (e) { return; } if (!bb.width) return;
-        const cx = bb.x + bb.width / 2, cy = bb.y + bb.height * 0.58, Rm = Math.hypot(bb.width, bb.height) * 0.62 * BN / (BN - 1);
-        for (let k = 0; k < BN; k++) { const f = t * 1.4 + k / BN, gen = Math.floor(f), c = brs[k];
-          if (bBorn[k] !== gen) { bBorn[k] = gen; c.style.fill = HUES[bHue++ % HUES.length]; }
-          c.setAttribute("cx", cx.toFixed(2)); c.setAttribute("cy", cy.toFixed(2)); c.setAttribute("r", ((f % 1) * Rm).toFixed(3)); }
-        brs.slice().sort((p0, p1) => p1.getAttribute("r") - p0.getAttribute("r")).forEach((c) => bg.appendChild(c)); };   // biggest at the back
-      const t0 = performance.now(); let hueN = 0; const born = new Array(N).fill(-1);
-      let tPh = 0, tLast = t0;
-      const grow = (now) => { const dt = Math.min(80, now - tLast); tLast = now;
-        tPh += dt / PER;   // one steady speed, always (26/11/2026: the random rhythm is gone)
-        growBody(tPh); const t = tPh; for (let k = 0; k < N; k++) { const f = t + k / N, ph = f % 1, gen = Math.floor(f);
-          if (born[k] !== gen) { born[k] = gen; rings.forEach((rs) => { rs[k].style.fill = HUES[hueN % HUES.length]; }); hueN++; }
-          rings.forEach((rs) => { rs[k].setAttribute("r", (ph * ER).toFixed(3)); }); }
-        rings.forEach((rs) => rs.slice().sort((p0, p1) => p1.getAttribute("r") - p0.getAttribute("r")).forEach((c) => c.parentNode.appendChild(c))); };
+      const bodyRings = spawner([bg], 1.4, 0.035, 0.15, 0.4);
+      const t0 = performance.now(); let tPh = 0, tLast = t0;
+      const grow = (now) => { const dt = Math.min(80, now - tLast); tLast = now; tPh += dt / PER;   // one steady speed, always
+        let bb = null; try { bb = body.getBBox(); } catch (e) {}
+        if (bb && bb.width) bodyRings(tPh, Math.hypot(bb.width, bb.height) * 0.62, (bb.x + bb.width / 2).toFixed(2), (bb.y + bb.height * 0.58).toFixed(2));
+        eyeRings(tPh, 2.4, "0", "0"); };
       let on = true; const follow = () => { if (!on) return; sp.forEach(([e0, g]) => { const rx = parseFloat(e0.getAttribute("rx")) || 2.4, ry = parseFloat(e0.getAttribute("ry")) || 3.4, cx = e0.getAttribute("cx"), cy = e0.getAttribute("cy");
           g.setAttribute("transform", `${e0.getAttribute("transform") || ""} translate(${cx} ${cy}) scale(${(rx / 2.4).toFixed(3)} ${(ry / 2.4).toFixed(3)})`); }); grow(performance.now()); requestAnimationFrame(follow); }; follow();
       await face({ eyeSL: 1.5, eyeSR: 1.5, rnd: 1 }, 500);   // his eyes open wide to hold the rings
       sp.forEach(([, g]) => g.classList.add("in")); bg.classList.add("in");   // round eyes full of rings, on top of the pattern (eyes back, 26/11/2026)
-      await wait(11000 + Math.random() * 3000);   // longer now, so the rhythm has time to speed up and slow down a few times; he stays still, straight at you
+      await wait(11000 + Math.random() * 3000);   // he stays still, straight at you
       blink = 0.12; draw(); await wait(140); sp.forEach(([, g]) => g.remove()); cp.remove(); bg.classList.remove("in"); eyesOff = false; setTimeout(() => { bg.remove(); bcp.remove(); eyes.style.transition = ""; }, 450); on = false; blink = 1; draw(); await face({ eyeSL: 1, eyeSR: 1, rnd: 0 }, 400); gazeLock = false; }, true);
     // boop: it rushes up and squashes its face against your screen like glass, holds, then peels off and falls back with a wobble
     const boop = () => act(async () => { if (still()) return; await face({ eyeSL: 1.2, eyeSR: 1.2 }, 150); await nearTo(3, 80, 520, "cubic-bezier(.5,0,.9,.6)");
