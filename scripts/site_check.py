@@ -23,7 +23,8 @@ def note(ok, what, detail=""):
 def get(path, data=None, tries=3):
     for i in range(tries):
         try:
-            req = urllib.request.Request(BASE + path, data=data, headers={"User-Agent": UA, "content-type": "application/json"} if data else {"User-Agent": UA})
+            hd = {"User-Agent": UA, "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", "Accept-Language": "en-GB,en;q=0.9"}   # as a browser or Googlebot asks
+            req = urllib.request.Request(BASE + path, data=data, headers={**hd, "content-type": "application/json"} if data else hd)
             with urllib.request.urlopen(req, timeout=30) as r:
                 return r.status, r.read().decode("utf-8", "replace")
         except urllib.error.HTTPError as e:
@@ -44,7 +45,8 @@ note(st == 200 and smap.lstrip().startswith("<?xml") and len(locs) >= 5000, "Sit
 coffee = [u for u in locs if u.count("/coffee/") and u.rstrip("/").count("/") >= 5]
 for u in random.sample(coffee, min(3, len(coffee))):
     st, page = get(u.replace("https://www.goccio.co.uk", "").replace(BASE, ""))
-    note(st == 200 and "Recipe" in page and "application/ld+json" in page, "Coffee page", f"HTTP {st} {u}")
+    tt = (re.search(r"<title>([^<]*)</title>", page or "") or [None, "no title"])[1]
+    note(st == 200 and "Recipe" in page and "application/ld+json" in page, "Coffee page", f"HTTP {st} {u} ({tt})")
 
 # 2. the data: today's list, recent enough and full
 st, raw = get("/data/releases.json")
