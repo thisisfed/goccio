@@ -229,7 +229,7 @@ NOTES_CHECK = 10   # pages read for notes with these rules (10: elbgold's "Noten
 # A fix for one shop's page layout re-reads only that shop: raise its number here (above NOTES_CHECK), not NOTES_CHECK,
 # which re-reads every coffee without notes everywhere (thousands of pages). Raise NOTES_CHECK only for a change to the
 # rules every shop goes through
-NOTES_RECHECK = {"Alchemy": 11, "April": 11, "Intermission": 11, "Wes Ngopi": 13, "Climpson & Sons": 10, "Sydrip": 10, "Fève": 10, "Passage": 10, "The Source": 10, "Terraform": 11, "Lucid Coffee Roasters": 12, "James Gourmet Coffee": 11, "Sl.ow": 11, "Sprout": 11, "Rogue Wave": 11, "Dayglow": 11, "Established Coffee": 11, "Langøra": 12, "Jolly Bean Roastery": 12, "Light Up Coffee": 12, "Trigger": 12, "Crosby Coffee": 12, "Tandem": 13, "Rise & Grind Roastery": 13, "Kurasu": 13, "Hälla Kafferosteri": 14, "To kawa": 14}   # e.g. {"Monmouth": 10}
+NOTES_RECHECK = {"Supreme Roastworks": 11, "Alchemy": 11, "April": 11, "Intermission": 11, "Wes Ngopi": 13, "Climpson & Sons": 10, "Sydrip": 10, "Fève": 10, "Passage": 10, "The Source": 10, "Terraform": 11, "Lucid Coffee Roasters": 12, "James Gourmet Coffee": 11, "Sl.ow": 11, "Sprout": 11, "Rogue Wave": 11, "Dayglow": 11, "Established Coffee": 11, "Langøra": 12, "Jolly Bean Roastery": 12, "Light Up Coffee": 12, "Trigger": 12, "Crosby Coffee": 12, "Tandem": 13, "Rise & Grind Roastery": 13, "Kurasu": 13, "Hälla Kafferosteri": 14, "To kawa": 14}   # e.g. {"Monmouth": 10}
 notes_ver = lambda shop: max(NOTES_CHECK, NOTES_RECHECK.get(shop, 0))
 NOTES_V = 2       # page notes read under these list rules; a short list (two or fewer) read under older ones is read once more
 
@@ -279,6 +279,10 @@ NOTES_SENT_ROM = re.compile(r"(?:notes?|arômes?|saveurs?|note|aromi|sentori|not
                             r"(" + _W + r"(?:\s(?!(?:et|e|y)\b)" + _W + r"){0,4}(?:\s*(?:,|\b(?:et|e|y)\b)\s*" + _W + r"(?:\s(?!(?:et|e|y)\b)" + _W + r"){0,4}){1,6})", re.I)
 
 
+OPEN_SENT = re.compile(r"(?:^|[.!?]\s+|\n)([A-Z][a-z]+(?:\s[a-z]+)?(?:\s*,\s*[a-z]+(?:\s[a-z]+)?){0,3}\s*,?\s*(?:and|&)\s+[a-z]+(?:\s[a-z]+)?)\s+"
+                       r"(?:make|makes|open|opens|lead|leads|greet|greets|give|gives|come|comes|start|starts|burst|bursts|fill|fills|shine|shines|dominate|dominates)\b[^.\n]{0,80}?\b(?:nose|aroma|first impression|first sip|palate|cup)\b")
+
+
 def notes_from_text(text):
     """Notes in a sentence ("notes of A, B and C"), the list cut where the sentence moves on ("... in a sweet cup")."""
     for m in NOTES_SENT.finditer(text or ""):
@@ -303,6 +307,16 @@ def notes_from_text(text):
         parts = [p.strip(" .;:") for p in re.split(r",|\b(?:et|e|y)\b", m.group(1))]
         parts = [p for p in parts if p and len(p.split()) <= 5]
         if len(parts) >= 2:
+            return ", ".join(parts)
+    # a sentence that opens with its flavours, on the nose or in the cup: "Peach and apricot make an inviting first impression on the nose,
+    # carrying through into a fruity cup with notes of rosehip" (Supreme Roastworks). Every part must be a flavour word, and one more
+    # note named just after ("with notes of rosehip") joins the list
+    for m in OPEN_SENT.finditer(text or ""):
+        parts = [p.strip() for p in re.split(r",|&|\band\b", m.group(1)) if p.strip()]
+        if len(parts) >= 2 and all(p.split()[-1].lower() in flavours.EN_WORDS for p in parts):
+            more = re.search(r"\bnotes? of ([a-z]+(?:\s[a-z]+)?)\s*[.,;]", text[m.end():m.end() + 220], re.I)
+            if more and more.group(1).split()[-1].lower() in flavours.EN_WORDS:
+                parts.append(more.group(1))
             return ", ".join(parts)
     return None
 
