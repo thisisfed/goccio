@@ -10347,7 +10347,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       // (no cheeks: the shy blush was taken out, 25/11/2026)
       // its phone: held low in front, screen lit; the light tints its eyes and lights its face from below
       { const fo = el.querySelector(".gd-fone"), gl = el.querySelector(".gd-glow"); if (fo) { fo.style.opacity = S.fone.toFixed(2); fo.setAttribute("transform", `translate(${(lean * 0.4 - 4.15 * S.duo).toFixed(2)} ${(y - 3.5 + (1 - S.fone) * 9).toFixed(2)}) rotate(${(90 * S.land).toFixed(2)} 0 0.25)`);
-            { const sq = Math.max(0, Math.min(1, S.duo)); fo.querySelectorAll(".gd-fone-b").forEach((rc) => { rc.setAttribute("y", (-6 + 1.4 * sq).toFixed(2)); rc.setAttribute("height", (12.5 - 2.8 * sq).toFixed(2)); rc.setAttribute("rx", (1.6 + 0.6 * sq).toFixed(2)); }); }   /* the folding one is squarer: each half about 8 by 9.7, rounder corners; open, it's a little tablet */
+            { const sq = Math.max(0, Math.min(1, S.sq || 0)); fo.querySelectorAll(".gd-fone-b").forEach((rc) => { rc.setAttribute("y", (-6 + 1.4 * sq).toFixed(2)); rc.setAttribute("height", (12.5 - 2.8 * sq).toFixed(2)); rc.setAttribute("rx", (1.6 + 0.6 * sq).toFixed(2)); }); }   /* the folding one is squarer: each half about 8 by 9.7, rounder corners; open, it's a little tablet */
             { const f2 = fo.querySelector(".gd-fone-2"); if (f2) { f2.setAttribute("opacity", S.duo > 0.02 ? "1" : "0"); f2.setAttribute("transform", `translate(4.3 0) scale(${Math.max(0.001, S.duo).toFixed(3)} 1) translate(-4.3 0)`); } }   /* the folding phone: a second screen swings open beside the first */   /* held straight up, or turned on its side to watch something */
           }   /* its back faces you, all black: you only see it light up the face */
         if (gl) { if (S.fone > 0.01) { if (!tvRaf) tvRaf = requestAnimationFrame(tvTick); } else gl.style.opacity = "0"; }
@@ -10438,11 +10438,13 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         else if (r0 < 0.4) { await face({ eyeSL: 1.35, eyeSR: 1.35 }, 140); poke(-1.2); await wait(700); await face({ eyeSL: 1.08, eyeSR: 1.08 }, 300); }
         else if (r0 < 0.55) await blinkSoft(); }
       await face({ eyeSL: 1, eyeSR: 1 }, 200); await tween("land", 0, 420); };
-    const onPhone = () => act(async () => { S.scroll = 0; S.land = 0; S.duo = 0; await face({ fone: 1 }, 380);
+    // the folding phone is the same size shut and open (26/11/2026): when it's the folding one it comes out already squarer, and
+    // opening it only swings the second screen out beside the first; nothing else grows or shrinks
+    const onPhone = () => act(async () => { const fold = Math.random() < 0.18; S.scroll = 0; S.land = 0; S.duo = 0; S.sq = fold ? 1 : 0; await face({ fone: 1 }, 380);
       // now and then it's a folding phone: it opens out to two screens, he scrolls, a wow, and folds it shut again
-      if (Math.random() < 0.18) { lookY = 2.2; draw(); await face({ eyeL: 0.8, eyeR: 0.8 }, 200); await wait(300); await tween("duo", 1, 650); await face({ eyeSL: 1.3, eyeSR: 1.3 }, 160); poke(-1.2); await wait(700); await face({ eyeSL: 1, eyeSR: 1 }, 300);
+      if (fold) { lookY = 2.2; draw(); await face({ eyeL: 0.8, eyeR: 0.8 }, 200); await wait(300); await tween("duo", 1, 650); await face({ eyeSL: 1.3, eyeSR: 1.3 }, 160); poke(-1.2); await wait(700); await face({ eyeSL: 1, eyeSR: 1 }, 300);
         for (let i = 0; i < 3; i++) { lookX = i % 2 ? 1.6 : -1.6; draw(); await wait(700 + Math.random() * 400); await tween("scroll", S.scroll + 1, 260); }
-        lookX = 0; draw(); await face({ smile: 0.8, happy: 0.6 }, 200); await wait(600); await tween("duo", 0, 450); await wait(250); lookY = 0; draw(); await face({ fone: 0, eyeL: 1, eyeR: 1, smile: 0, happy: 0 }, 320); S.scroll = 0; return; }
+        lookX = 0; draw(); await face({ smile: 0.8, happy: 0.6 }, 200); await wait(600); await tween("duo", 0, 450); await wait(250); lookY = 0; draw(); await face({ fone: 0, eyeL: 1, eyeR: 1, smile: 0, happy: 0 }, 320); S.scroll = 0; S.sq = 0; return; }
       if (Math.random() < 0.35) { lookY = 2.2; draw(); await face({ eyeL: 0.8, eyeR: 0.8 }, 200); await wait(500); await watchPhone(); await wait(300); lookY = 0; draw(); await face({ fone: 0, eyeL: 1, eyeR: 1, smile: 0, happy: 0 }, 320); S.scroll = 0; return; }
       lookY = 2.2; lookX = 0; draw(); await face({ eyeL: 0.8, eyeR: 0.8 }, 200);
       // what he reads gets a face: a laugh, a fright, boredom, dozing off over it, a wow, a sad face. One or two per look at the phone
@@ -10880,7 +10882,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       const quiet = performance.now() - ptrT > 6000, closeOk = performance.now() - lastAct > 10000 && !document.documentElement.classList.contains("brew-in"), MOVES = [   /* coming right up to you: only when you've been still for 10 s */
         [20, () => { blinkSoft().then(() => { if (Math.random() < 0.3) setTimeout(() => blinkSoft(), 160); }); }],
         [14, happy], [12, smile], [2.5, yawn], [8, dance], [8, jumps], [5, yes], [5, no], [3, curious], [2.5, hmm], [2, () => think(1800)], [2, bored], [2, surprised],
-        [2, wink], [1.4, betaLaugh], [1.2, betaAsk], [0.8, hypno], [0.7, meditate], [7, laserPoke], [0.6, crossEyes], [1.6, sleepy], [1.6, doze], [5, onPhone], [1.2, backflip], [0.8, roll], [closeOk ? 0.8 : 0, rolypoly],
+        [2, wink], [1.4, betaLaugh], [1.2, betaAsk], [7, hypno], [0.7, meditate], [7, laserPoke], [0.6, crossEyes], [1.6, sleepy], [1.6, doze], [5, onPhone], [1.2, backflip], [0.8, roll], [closeOk ? 0.8 : 0, rolypoly],
         [closeOk ? 0.7 : 0, boop], [closeOk ? 1.4 : 0, leap], [quiet ? 0.4 : 0, boo],
         [following ? 0 : 5, () => { lookX = (Math.random() < 0.5 ? -1 : 1) * 3; lookY = Math.random() < 0.4 ? -1.5 : 0; draw(); setTimeout(() => { lookX = 0; lookY = 0; draw(); }, 900 + Math.random() * 700); }],
         [2, () => poke(-0.9)]];
@@ -11464,9 +11466,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       // like iMessage (26/11/2026): the typing dots for as long as the message would take to type, then the whole message at once.
       // Only a message that rubs a word out ("How are you doing… brewing today?") is still typed letter by letter, for the joke
       if (rubs) typeT = setInterval(() => { m.textContent = tf.fr[k] || ""; k++; if (typing && !typing.free && k % 4 === 0) toTop(anchor); if (k >= tf.fr.length) { if (typing && !typing.free) toTop(anchor); finishTyping(); } }, 32);
-      else { const ms = noDots ? 0 : Math.min(2200, 450 + text.length * 12) * (0.9 + Math.random() * 0.2); noDots = false;
+      else { const ms = noDots ? 0 : Math.min(2200, 450 + text.length * 12) * (0.9 + Math.random() * 0.2); if (noDots) m.style.animation = "gdTipIn .3s ease both"; noDots = false;   /* straight after its thinking dots: it fades in where it stands, no pop */
         if (ms) { m.classList.add("gd-typing"); const d = document.createElement("span"); d.className = "gd-dots"; d.innerHTML = "<i></i><i></i><i></i>"; m.appendChild(d); }
-        typeT = setTimeout(() => { const free = typing && typing.free, r0 = m.getBoundingClientRect(); finishTyping();
+        typeT = setTimeout(() => { const free = typing && typing.free, r0 = m.getBoundingClientRect(); if (ms) m.style.animation = "none"; finishTyping();   /* the pop-in already played for the dots: it doesn't play again (it dropped the words 20 px and slid them back) */
           // the dots bubble grows into the message (its width and height glide), and the words fade in as it opens, as in iMessage
           // the message is laid out at its full size at once (its words never rewrap); a mask opens from the dots' pill to the whole
           // bubble, and the words fade in behind it
