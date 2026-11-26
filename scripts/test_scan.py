@@ -150,6 +150,9 @@ CASES = [
     ("To kawa: 'Profil sensoryczny: nugat, czekolada mleczna, prażone orzechy laskowe' gives Nougat, Milk chocolate, Roasted hazelnuts",
      lambda: [__import__("flavours").to_english(n) for n in scan.page_notes("Odmiana: Typica, Bourbon, Caturra, Catuai\nProfil sensoryczny: nugat, czekolada mleczna, prażone orzechy laskowe\nWaga\n", "Guatemala Huehuetenango", "")] == ["Nougat", "Milk chocolate", "Roasted hazelnuts"]
        and [__import__("flavours").to_english(n) for n in scan.page_notes("Profil sensoryczny: karmel, mleczna czekolada, czereśnie, agrest\nWaga\n", "Kenia Kamathura", "")] == ["Caramel", "Milk chocolate", "Sweet cherry", "Gooseberry"]),
+    ("Hälla: Swedish notes that run on into the sentence or the next paragraph end at the flavour, and translate",
+     lambda: [scan.tidy_note(x) for x in ["KrämigVi skickar kaffe som", "Granatäpple möter sötma av", "Len fudge med en", "Lemonad Vi skickar kaffe", "Mogen plommonfrukt med ljus", "McIntosh apple"]] == ["Krämig", "Granatäpple", "Len fudge", "Lemonad", "Mogen plommonfrukt", "McIntosh apple"]
+       and [__import__("flavours").to_english(x) for x in ["Mörka körsbär", "Rörsocker", "Rostade nötter", "Ciemna czekolada", "Śliwka węgierka"]] == ["Dark cherries", "Cane sugar", "Roasted nuts", "Dark chocolate", "Damson plum"]),
     # Tandem (26/11/2026): the notes' label is "We hear:", and the list ends with the coffee's song ("Move Inside My Head")
     ("Tandem's 'We hear: Lime, Chamomile, Lychee, Move Inside My Head' gives Lime, Chamomile, Lychee (the song isn't a note)",
      lambda: scan.page_notes("Producer\nAbel Salinas\nVarietals\nMejorado\nElevation\n1890 MASL\nProcessing\nWashed\nWe hear\nLime, Chamomile, Lychee, Move Inside My Head\nEven Better With\nJoin Our Mailing List", "Abel Salinas", "") == ["Lime", "Chamomile", "Lychee"]

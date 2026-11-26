@@ -229,7 +229,7 @@ NOTES_CHECK = 10   # pages read for notes with these rules (10: elbgold's "Noten
 # A fix for one shop's page layout re-reads only that shop: raise its number here (above NOTES_CHECK), not NOTES_CHECK,
 # which re-reads every coffee without notes everywhere (thousands of pages). Raise NOTES_CHECK only for a change to the
 # rules every shop goes through
-NOTES_RECHECK = {"Wes Ngopi": 13, "Climpson & Sons": 10, "Sydrip": 10, "Fève": 10, "Passage": 10, "The Source": 10, "Terraform": 11, "Lucid Coffee Roasters": 12, "James Gourmet Coffee": 11, "Sl.ow": 11, "Sprout": 11, "Rogue Wave": 11, "Dayglow": 11, "Established Coffee": 11, "Langøra": 12, "Jolly Bean Roastery": 12, "Light Up Coffee": 12, "Trigger": 12, "Crosby Coffee": 12, "Tandem": 13, "Rise & Grind Roastery": 13, "Kurasu": 13, "Hälla Kafferosteri": 13, "To kawa": 13}   # e.g. {"Monmouth": 10}
+NOTES_RECHECK = {"Wes Ngopi": 13, "Climpson & Sons": 10, "Sydrip": 10, "Fève": 10, "Passage": 10, "The Source": 10, "Terraform": 11, "Lucid Coffee Roasters": 12, "James Gourmet Coffee": 11, "Sl.ow": 11, "Sprout": 11, "Rogue Wave": 11, "Dayglow": 11, "Established Coffee": 11, "Langøra": 12, "Jolly Bean Roastery": 12, "Light Up Coffee": 12, "Trigger": 12, "Crosby Coffee": 12, "Tandem": 13, "Rise & Grind Roastery": 13, "Kurasu": 13, "Hälla Kafferosteri": 14, "To kawa": 14}   # e.g. {"Monmouth": 10}
 notes_ver = lambda shop: max(NOTES_CHECK, NOTES_RECHECK.get(shop, 0))
 NOTES_V = 2       # page notes read under these list rules; a short list (two or fewer) read under older ones is read once more
 
@@ -1677,6 +1677,9 @@ def tidy_note(n):
     n = re.sub(r"\s+(?:flavou?r\s+)?profile$|\s+notes?;.*$", "", n, flags=re.I)   # "Fruit-forward profile", "Lemon notes; bright"
     n = re.sub(r"^(?:where|when|while|whereas|which|and then|then)\s+", "", n, flags=re.I)   # cut from a sentence: "Where juicy mandarin" -> "Juicy mandarin" (Greytone, 26/11/2026)
     n = re.sub(r"^super-?\s?sweet\s+", "", n, flags=re.I)   # "Expect super-sweet plum" -> "Plum"
+    n = re.split(r"(?<=[a-zåäöøæ]{3})(?=[A-ZÅÄÖØÆ][a-zåäöøæ])", n)[0]   # the next paragraph glued on: "KrämigVi skickar kaffe som" -> "Krämig" (Hälla)
+    if re.search(r"[åäöøæ]|\b(?:vi|med|möter|som|av|af)\b", n, re.I):   # a Nordic list running on into the sentence: "Granatäpple möter sötma av", "Len fudge med en", "Lemonad Vi skickar kaffe"
+        n = re.sub(r"\s+(?:vi|med|möter|mot|som|till|från|ger|på|av|af|ett|en)\b.*$", "", n, flags=re.I)
     n = re.sub(r"-like\s+(?:sweetness|acidity|body|finish|aroma)$", "", n, flags=re.I)   # Kurasu: "Honey-like sweetness" -> "Honey", "Dried mango-like sweetness" -> "Dried mango"
     if re.fullmatch(r"(?:(?:a|an|accompanying|lingering|long|clean|pleasant|sweet|lasting)\s+)?after-?taste", n, re.I):   # Kurasu's "Accompanying aftertaste": not a flavour
         return ""
