@@ -3627,6 +3627,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
 
   <footer>
     <div class="fcol">
+    <details class="foot-x foot-ex" id="footEx"><summary class="foot-note refs-h">Example</summary></details>
     <details class="foot-x disc" open><summary class="foot-note refs-h">Disclaimer</summary>
     <p class="foot-note">Coffees come from roasters’ own shop listings, checked every day. Not affiliated with any roaster. Roasters can ask to be removed at any time. Your journal, bags, equipment, scan photos and settings stay on this device. Only how a brew of a listed coffee tasted is counted, anonymously, to make the recipes better.</p>
     </details>
@@ -7950,10 +7951,15 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     if (out && gx.classList.contains("fold")) { const g = gx.getBoundingClientRect(), l = lab.getBoundingClientRect(), o = out.getBoundingClientRect();
       out.style.marginTop = (px(out, "marginTop") - ((o.top - l.bottom) - (l.top - g.top))) + "px"; } }
   window.exAlign = exAlign; addEventListener("resize", () => requestAnimationFrame(exAlign)); if (document.fonts) document.fonts.ready.then(exAlign);
-  if ($("exTog")) { $("exTog").onclick = () => exFold(!document.querySelector(".g-ex").classList.contains("fold")); exFold(true); }   // folded under the intro; the arrow opens it   // open on every visit; the arrow folds it for now
-  setInterval(() => { const fig = document.querySelector(".glimpse"); if (!fig || document.hidden || fig.closest(".g-ex.fold")) return;
+  // the Example lives in the footer with Disclaimer, Methods, Sources and Credits (26/11/2026): its fold is the footer's own
+  // summary, and each example stays 10 s from the moment it opens (the clock starts on opening, not on page load)
+  let exT = 0; const exTick = () => { clearInterval(exT); exT = setInterval(() => { const fig = document.querySelector(".glimpse"); if (!fig || document.hidden || fig.closest(".g-ex.fold")) return;
     const r = fig.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;   // only while you can see it
-    fig.classList.add("swap"); setTimeout(() => { try { renderExample(); } catch (e) {} fig.classList.remove("swap"); }, 300); }, 10000);   // a new one every 10 s
+    fig.classList.add("swap"); setTimeout(() => { try { renderExample(); } catch (e) {} fig.classList.remove("swap"); }, 300); }, 10000); };   // a new one every 10 s
+  { const fe = $("footEx"), gx = document.querySelector(".g-ex");
+    if (fe && gx) { fe.appendChild(gx); if ($("exTog")) $("exTog").hidden = true; exFold(true);
+      fe.addEventListener("toggle", () => { exFold(!fe.open); if (fe.open) exTick(); else clearInterval(exT); }); }
+    else if ($("exTog")) { $("exTog").onclick = () => { const f = document.querySelector(".g-ex").classList.contains("fold"); exFold(!f); if (f) exTick(); }; exFold(true); } }
   // the labels under the example's bar, on one line: each at its step's time. One that would touch the label before it
   // moves right a little (up to 16px) if that's enough; otherwise it's left out (its segment still shows). Done holds the right end.
   function layGlimpse() {
