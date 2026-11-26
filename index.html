@@ -10767,14 +10767,19 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           if (bBorn[k] !== gen) { bBorn[k] = gen; c.style.stroke = k % 2 ? "#0d0603" : HUES[bHue++ % HUES.length]; }
           c.setAttribute("cx", cx.toFixed(2)); c.setAttribute("cy", cy.toFixed(2)); c.setAttribute("r", ((f % 1) * Rm).toFixed(3)); c.style.strokeWidth = sw; } };
       const t0 = performance.now(); let hueN = 0; const born = new Array(N).fill(-1);
-      const grow = (now) => { growBody((now - t0) / PER); const t = (now - t0) / PER; for (let k = 0; k < N; k++) { const f = t + k / N, ph = f % 1, gen = Math.floor(f);
+      // a random rhythm: the rings drift slowly, then rush, then slow again, never in a pattern; the speed glides to each new pace
+      let tPh = 0, tLast = t0, spd = 0.6, spdTo = 0.5, spdAt = t0 + 1500;
+      const grow = (now) => { const dt = Math.min(80, now - tLast); tLast = now;
+        if (now > spdAt) { const fast = spd < 1.2; spdTo = fast ? 1.8 + Math.random() * 2.4 : 0.25 + Math.random() * 0.5; spdAt = now + (fast ? 700 + Math.random() * 1300 : 1200 + Math.random() * 2000); }
+        spd += (spdTo - spd) * Math.min(1, dt / 380); tPh += dt / PER * spd;
+        growBody(tPh); const t = tPh; for (let k = 0; k < N; k++) { const f = t + k / N, ph = f % 1, gen = Math.floor(f);
           if (born[k] !== gen) { born[k] = gen; rings.forEach((rs) => rs[k].setAttribute("stroke", HUES[hueN % HUES.length])); hueN++; }
           rings.forEach((rs) => { rs[k].setAttribute("r", (ph * 2.5).toFixed(3)); rs[k].style.opacity = Math.min(1, ph * 6).toFixed(2); }); } };
       let on = true; const follow = () => { if (!on) return; sp.forEach(([e0, g]) => { const rx = parseFloat(e0.getAttribute("rx")) || 2.4, ry = parseFloat(e0.getAttribute("ry")) || 3.4, cx = e0.getAttribute("cx"), cy = e0.getAttribute("cy");
           g.setAttribute("transform", `${e0.getAttribute("transform") || ""} translate(${cx} ${cy}) scale(${(rx / 2.4).toFixed(3)} ${(ry / 2.4).toFixed(3)})`); }); grow(performance.now()); requestAnimationFrame(follow); }; follow();
       await face({ eyeSL: 1.5, eyeSR: 1.5 }, 500);   // his eyes open wide to hold the rings
       sp.forEach(([, g]) => g.classList.add("in")); bg.classList.add("in");
-      await wait(6000);   // still, straight at you, the rings widening
+      await wait(11000 + Math.random() * 3000);   // longer now, so the rhythm has time to speed up and slow down a few times; he stays still, straight at you
       blink = 0.12; draw(); await wait(140); sp.forEach(([, g]) => g.remove()); cp.remove(); bg.classList.remove("in"); setTimeout(() => { bg.remove(); bcp.remove(); }, 450); on = false; blink = 1; draw(); await face({ eyeSL: 1, eyeSR: 1 }, 400); gazeLock = false; }, true);
     // boop: it rushes up and squashes its face against your screen like glass, holds, then peels off and falls back with a wobble
     const boop = () => act(async () => { if (still()) return; await face({ eyeSL: 1.2, eyeSR: 1.2 }, 150); await nearTo(3, 80, 520, "cubic-bezier(.5,0,.9,.6)");
