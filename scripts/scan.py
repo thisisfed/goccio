@@ -1659,6 +1659,7 @@ def tidy_note(n):
     n = re.sub(r"[\xa0\u2009\u202f\s]+", " ", re.sub(r"[\u200b-\u200d\ufeff]", "", n or "")).strip()   # no-break spaces: "Blood\xa0orange"
     n = re.sub(r"^[^\w\s(\"'“<]+\s*", "", n)   # an emoji in front: "🍫Chocolate" -> "Chocolate"
     n = re.sub(r"^(?:imagine|expect|tasting notes?|notes?|taste|with)\s*:?\s+", "", n, flags=re.I)
+    n = re.sub(r"^(?:where|when|while|whereas|which|and then|then)\s+", "", n, flags=re.I)   # cut from a sentence: "Where juicy mandarin" -> "Juicy mandarin" (Greytone, 26/11/2026)
     n = re.sub(r"^super-?\s?sweet\s+", "", n, flags=re.I)   # "Expect super-sweet plum" -> "Plum"
     for _ in range(2):   # "Cherry notes up front" -> "Cherry", "Red berry flavour notes" -> "Red berry"
         n = re.sub(r"(?<=\w)\s+(?:notes?|flavou?rs?|tones?)(?:\s+(?:up front|upfront|first|to finish|at the end|throughout|on the finish))?$", "", n, flags=re.I)
