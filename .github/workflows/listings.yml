@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: write
+  actions: write   # to start a scan of just the new roasters
   issues: write
 
 concurrency:
@@ -30,7 +31,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.LISTING_TOKEN }}   # it reaches the private requests repo; the workflow's own token can't
           REQUESTS_REPO: thisisfed/goccio-requests
-        run: python scripts/discover.py --listings
+        run: cp data/roasters.json /tmp/roasters_before.json && python scripts/discover.py --listings
       - name: Save new roasters
         run: |
           if ! git diff --quiet data/roasters.json data/removed.json; then
@@ -39,3 +40,7 @@ jobs:
             git commit -qam "Listing and removal requests $(date -u +'%d %b %Y')"
             git push -q
           fi
+      - name: Scan the new roasters now if today's scan has already gone by
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: sh scripts/scan_new.sh /tmp/roasters_before.json
