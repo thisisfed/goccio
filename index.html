@@ -1676,7 +1676,6 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
   .ps.xdense .ps-pours{font-size:9pt} .ps.xdense .ps-pours td{padding:.9mm 0} .ps.xdense .ps-kick{margin-top:6mm} .ps.xdense .ps-nums{margin-top:7mm}
 }
 #bagBtn[hidden], #buyBtn[hidden], #calBtn[hidden], #mUse[hidden]{display:none!important}
-.gd-disco{position:fixed;left:50%;margin-left:-20px;width:40px;height:64px;z-index:30;pointer-events:none;opacity:0}   /* the disco ball: always in the middle of the screen, above his head */
 /* the count ("44 added today") is no longer a line under the Coffees title: it shows as soon as it pins under the bar.
    The line keeps its place (20 px up, so the rule sits under the title), so nothing moves when its words appear */
 html body #shelf > .grp.day-g:first-child, html body #shelf > .grp.bare:first-child + .grp.day-g{margin-top:-33px!important}
@@ -10336,7 +10335,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     let wantText = false;   // typing an answer: the phone comes out, but a trick puts it away first and it comes back after
     let runN = 0, pageDent = null;
     const tidyUp = () => { try { if (el.style.scale || el.style.translate) nearDone(); el.style.filter = ""; rigid = false; gazeLock = false; if (pageDent) { pageDent.cancel(); pageDent = null; }
-        el.querySelectorAll(".gd-hyp").forEach((n) => n.remove()); S.flip = 0; S.tumble = 0; if (S.fone) tween("fone", 0, 140); discoOff(); dancing = false; } catch (e) {} };
+        el.querySelectorAll(".gd-hyp").forEach((n) => n.remove()); S.flip = 0; S.tumble = 0; if (S.fone) tween("fone", 0, 140); dancing = false; } catch (e) {} };
     // never two moves at once: a move asked for while another runs (after free(): a tap, a chat reply) waits for that one to be cut at its next step, then plays
     const act = async (fn, alone) => { if (acting) { if (freeReq && !solo) { pending = [fn, alone]; if (curRun) abort = true; } return; }
       acting = true; solo = !!alone; freeReq = false; curRun = ++runN; if (texting) { texting = false; clearInterval(texT); tween("fone", 0, 140); }
@@ -10808,33 +10807,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     let dancing = false;
     // dancing: no notes, just moves, on a 120 bpm beat. A bounce, a spin, side steps, a spin the other way, pumps, a jump with a double spin
     const spin = (turns, ms) => { const to = S.turn + 2 * turns; return tween("turn", to, ms).then(() => { S.turn = 0; draw(); }); };
-    // dancing under a disco ball: it hangs above his head in the middle of the screen, turning, and throws little white lights that sweep
-    // across the top of his head. The ball stays put; step left or right and the lights land where they would from where it hangs
-    let disco = null;
-    const discoOn = () => { if (disco || still()) return; const NS0 = "http://www.w3.org/2000/svg", sv = body.ownerSVGElement, wrap = eyes && eyes.parentNode; if (!sv || !wrap) return;
-      const ball = document.createElement("div"); ball.className = "gd-disco"; ball.setAttribute("aria-hidden", "true");
-      ball.innerHTML = '<svg viewBox="-20 -44 40 64" width="40" height="64"><line x1="0" y1="-30" x2="0" y2="-16" stroke="#8a8a8a" stroke-width="1"/>'
-        + '<defs><radialGradient id="dbG" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ffffff"/><stop offset=".45" stop-color="#c9ced3"/><stop offset="1" stop-color="#5d6368"/></radialGradient>'
-        + '<clipPath id="dbC"><circle r="15.5"/></clipPath></defs><circle r="16" fill="url(#dbG)"/><g clip-path="url(#dbC)" stroke="#4a4f54" stroke-width=".8" opacity=".55"><g class="db-t"></g>'
-        + '<path d="M-16 -10.5H16M-16 -5.25H16M-16 0H16M-16 5.25H16M-16 10.5H16" fill="none"/></g><circle class="db-s" r="1.6" fill="#fff" cx="-6" cy="-7"/></svg>';
-      document.body.appendChild(ball); const tl = ball.querySelector(".db-t");
-      const g = document.createElementNS(NS0, "g"); g.setAttribute("class", "gd-spots"); wrap.insertBefore(g, wrap.firstChild);
-      const N = 7, dots = []; for (let k = 0; k < N; k++) { const c = document.createElementNS(NS0, "circle"); c.setAttribute("fill", "#fff"); g.appendChild(c); dots.push(c); }
-      const t0 = performance.now(); disco = { ball, g, on: true, fade: 0 };
-      const loop = () => { if (!disco) return; const now = performance.now(), t = (now - t0) / 1000; disco.fade = Math.max(0, Math.min(1, disco.fade + (disco.on ? 0.06 : -0.06)));
-        const er = el.getBoundingClientRect(); ball.style.opacity = disco.fade.toFixed(2); ball.style.top = (er.top + er.height * 0.373 - 26 - 44) + "px";   /* its middle 26 px above the tip of his head, at rest */
-        // the tiles turn: vertical seams sliding across the ball
-        let seams = ""; for (let k = -4; k <= 4; k++) { const x = ((k * 5.2 + t * 9) % 41.6 + 41.6) % 41.6 - 20.8; seams += `M${x.toFixed(2)} -16V16`; } tl.innerHTML = `<path d="${seams}" fill="none"/>`;
-        // where the ball hangs, in his own drawing's units: the lights come from that side
-        let a0 = 0; try { const m = (all.getScreenCTM() || null), bb = ball.getBoundingClientRect(); if (m) { const pt = sv.createSVGPoint(); pt.x = bb.left + bb.width / 2; pt.y = bb.top + bb.height * 0.69; const q = pt.matrixTransform(m.inverse()); a0 = Math.atan2(q.x, -(q.y + 15.5)); } } catch (e) {}
-        const rx = 15.5, ry = 15.5, mid = -15.5;
-        dots.forEach((c, k) => { const u = ((k / N + t * 0.22) % 1), ph = a0 * 0.9 + (u * 2 - 1) * 1.25, sz = 0.55 + 0.45 * ((k * 37) % 5) / 4;
-          c.setAttribute("cx", (Math.sin(ph) * rx * 0.86).toFixed(2)); c.setAttribute("cy", (mid - Math.cos(ph) * ry * 0.86 + ((k % 3) - 1) * 1.6).toFixed(2)); c.setAttribute("r", sz.toFixed(2));
-          c.setAttribute("opacity", (Math.sin(Math.PI * u) * 0.9 * disco.fade * (0.6 + 0.4 * Math.abs(Math.sin(t * 7 + k)))).toFixed(2)); });
-        if (!disco.on && disco.fade <= 0) { ball.remove(); g.remove(); disco = null; return; } requestAnimationFrame(loop); };
-      requestAnimationFrame(loop); };
-    const discoOff = () => { if (disco) disco.on = false; };
-    const dance = () => act(async () => { dancing = true; discoOn(); for (let b = 0; b < 2; b++) { tween("aRest", 0.1, 160); await wait(250); tween("aRest", -0.06, 160); await wait(250); } tween("aRest", 0, 120);
+    const dance = () => act(async () => { dancing = true; for (let b = 0; b < 2; b++) { tween("aRest", 0.1, 160); await wait(250); tween("aRest", -0.06, 160); await wait(250); } tween("aRest", 0, 120);
       await face({ happy: 1, smile: 1 }, 160); const B = 500;
       for (let b = 0; b < 2; b++) { poke(-2.4); leanTo = b ? 3.5 : -3.5; draw(); await wait(B); }   // bounce, bounce
       jv = -170; go(); await spin(1, B); poke(-2);   // a spin with a little hop
@@ -10842,7 +10815,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       await spin(-1, B); poke(-2);   // and back the other way
       for (let b = 0; b < 4; b++) { tween("aRest", b % 2 ? -0.14 : 0.16, 200); leanTo = b % 2 ? -2.5 : 2.5; lookX = b % 2 ? -1.5 : 1.5; draw(); await wait(B / 2); }   // pumps, up and down
       tween("aRest", 0, 160); lookX = 0; jv = -300; go(); await spin(2, 640); poke(-3.2);   // the big finish: a jump with a double spin
-      leanTo = 0; await wait(350); discoOff(); await face({ happy: 0 }, 200); dancing = false; });
+      leanTo = 0; await wait(350); await face({ happy: 0 }, 200); dancing = false; });
     // follows the pointer with its eyes, wherever it is on the page, no tap needed
     let ptrRaf = 0;
     addEventListener("pointermove", (e) => { if (still() || gazeLock) return; ptrX = e.clientX; ptrY = e.clientY; ptrT = performance.now();
@@ -11362,7 +11335,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         for (let d = wrong.length - 1; d >= 0; d--) { fr.push(done + wrong.slice(0, d)); }   // rubbed out one letter at a time
         for (let h = 0; h < 6; h++) fr.push(done); rest = rest.slice(j + 1, e) + rest.slice(e + 1); }
       step(done, rest); return { fr, text: done + rest }; };
-    const sayNow = (text, chips, mood) => { pendingYes = null; ctxFrom(text); [text, chips] = offer(text, chips); text = voice(text, chips); chips = null; text = tidy(text); sayGen++; finishTyping(); const tf = typeFrames(text); text = tf.text; const m = addMsg("it", ""); m._rec.t = text; saveChat(); typing = { m, text, top: replyTo }; let k = 0; bob(true);
+    const sayNow = (text, chips, mood) => { pendingYes = null; ctxFrom(text); [text, chips] = offer(text, chips); if (pendingYes && !nextPills) nextPills = [[T("Yes", "Sì"), T("Yes", "Sì")], [T("No", "No"), T("No thanks", "No grazie")]];   /* "Want to see it?" gets Yes / No pills, after the words */ text = voice(text, chips); chips = null; text = tidy(text); sayGen++; finishTyping(); const tf = typeFrames(text); text = tf.text; const m = addMsg("it", ""); m._rec.t = text; saveChat(); typing = { m, text, top: replyTo }; let k = 0; bob(true);
       const anchor = replyTo && replyTo.isConnected ? replyTo : m; requestAnimationFrame(() => toTop(anchor, true));   // your question at the top, the answer filling in below it
       // as the answer grows it keeps your question pinned at the top, until it reaches it or you scroll the chat yourself
       // a touch slower than before (2 letters every 32 ms, was 24)
