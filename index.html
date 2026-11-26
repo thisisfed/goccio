@@ -10949,7 +10949,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // the answer types itself out, the drop bobbing as if it were saying it
     // a real question sometimes gets a moment's thought first: "Mmm, let me think about this one" with three dots flowing,
     // or the dots and then "Good question!". Anything said in the meantime cancels the pause
-    let thinkNext = null, sayGen = 0;
+    let thinkNext = null, sayGen = 0, noDots = false;
     // the chat: every message is kept as a thread, yours on the right and Goccio's on the left, like a messaging app.
     // It lasts for the visit (kept in this tab, so a reload doesn't lose it), and Goccio sometimes reacts to yours with an emoji, like a tapback
     const MAX_MSG = 40, CHAT_KEY = "v60.gdChat"; let msgs = [], typing = null, lastMine = null;
@@ -10962,7 +10962,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       sayEl.appendChild(m); while (sayEl.children.length > MAX_MSG) sayEl.firstChild.remove(); if (who === "me") toBottom(); return m; };
     let replyTo = null;
     const addMsg = (who, text) => { const m = bubble(who, text); const rec = { w: who, t: text, at: Date.now() }; msgs.push(rec); m._rec = rec; saveChat(); if (who === "me") { lastMine = m; replyTo = m; } return m; };
-    const finishTyping = () => { if (typing) { clearInterval(typeT); typing.m.textContent = typing.text; const after = typing.after; typing = null; bob(false); if (after) after(); } };   // the answer's pills come once its words are all there
+    const finishTyping = () => { if (typing) { clearInterval(typeT); clearTimeout(typeT); typing.m.classList.remove("gd-typing"); typing.m.textContent = typing.text; const after = typing.after; typing = null; bob(false); if (after) after(); } };   // the answer's pills come once its words are all there
     // a tapback on your last message: a heart for thanks, a laugh for jokes, a ‼️ for a fright, a ❓ when it doesn't know
     const react = (emoji, delay) => { const m = lastMine; if (!m || m.querySelector(".gd-tb")) return; setTimeout(() => { if (m.querySelector(".gd-tb")) return;
       const t = document.createElement("span"); t.className = "gd-tb"; t.textContent = emoji; m.appendChild(t); m.classList.add("has-tb"); if (m._rec) { m._rec.r = emoji; saveChat(); } }, delay == null ? 450 : delay); };
@@ -11020,7 +11020,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     try { (JSON.parse(sessionStorage.getItem(CHAT_KEY) || "[]") || []).forEach((r) => { const m = bubble(r.w, r.t, r.r); m._rec = r; msgs.push(r); if (r.w === "me") lastMine = m; }); } catch (e) {}
     const say = (text, chips, mood) => { const th = thinkNext; thinkNext = null; if (!th) return sayNow(text, chips, mood); const g = ++sayGen;
       finishTyping(); chipsEl.textContent = ""; const tb = bubble("it", th.lead); tb.classList.add("gd-typing"); const dots = document.createElement("span"); dots.className = "gd-dots"; dots.innerHTML = "<i></i><i></i><i></i>"; tb.appendChild(dots); toBottom();
-      toTop(lastMine, true); if (D && !still() && !CALM) { if (document.documentElement.classList.contains("gd-docked")) { D.free(); D.think(th.ms); } else D.text(true); }   /* the typing dots: the big one is already tapping away on its phone */ setTimeout(() => { tb.remove(); if (g === sayGen) sayNow(th.pre + text, chips, mood); }, th.ms); };
+      toTop(lastMine, true); if (D && !still() && !CALM) { if (document.documentElement.classList.contains("gd-docked")) { D.free(); D.think(th.ms); } else D.text(true); }   /* the typing dots: the big one is already tapping away on its phone */ setTimeout(() => { tb.remove(); if (g === sayGen) { noDots = true; sayNow(th.pre + text, chips, mood); } }, th.ms); };   // its dots were these: no second set
     // long answers read like a well-written message, not a wall: numbered steps on their own lines, and the rest in short
     // paragraphs of a sentence or two. Text that already has its own line breaks is left as it is
     const tidy = (t) => { t = String(t); if (/\n/.test(t) || t.length < 200) return t;
@@ -11372,17 +11372,19 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       sayNow(hi, null, happy); const nextOne = () => typeDots(dotsFor(line), () => { sayNow(line, [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(best); } }], happy); ctx = { t: "pick", at: Date.now() }; });
       // now and then, after the hi, it asks how you are and waits: your answer gets a word back (and an answer if you ask it), then the coffee
       const howQ = !/\?/.test(hi) && Math.random() < 0.3 ? pick([T("How are you?", "Come stai?"), T("How's your day going?", "Come va la giornata?"), T("How are you doing today?", "Come va oggi?")]) : null;
-      const first = howQ ? () => typeDots(dotsFor(howQ), () => { sayNow(howQ, null, null); ctx = { t: "howru", at: Date.now(), next: nextOne }; }) : nextOne;
+      const first = howQ ? () => typeDots(dotsFor(howQ), () => { sayNow(howQ, null, null); ctx = { t: "howru", at: Date.now(), next: nextOne, q: howQ }; }) : nextOne;
       if (typing) typing.after = first; else first(); ctx = howQ ? null : { t: "pick", at: Date.now() }; };
     // the answer to "How are you?": a word back for how you are, an answer about itself if you ask, then the coffee it had in mind.
     // Anything that isn't an answer (a coffee question) is handled as usual, and the coffee is let go
-    const howReply = (q, c) => { const s0 = q.toLowerCase().trim(), back = /\b(and you|how about you|how are you|how're you|how r u|yourself|and u|e tu|tu come stai|come stai|e te)\b|\b(you|u)\s*\?/i.test(s0);
+    const howReply = (q, c) => { const s0 = q.toLowerCase().trim(), back = /\b(and you|how about you|what about you|how are you|how're you|how r u|yourself|and u|yours|you too|e tu|e a te|tu come stai|come stai|e la tua|la tua)\b|\b(you|u)\s*\?|how('?s| is| was) (your|it going|things)/i.test(s0);   /* "how's yours?" too (26/11/2026) */
       const neg = /\b(bad|tired|exhausted|meh|not (great|good|well|so good|too good)|stressed|sad|awful|terrible|rough|sleepy|knackered|shattered|ill|sick|unwell|male|stanc[oa]|cos[iì] cos[iì]|non (tanto )?bene|insomma)\b/i.test(s0);
       const pos = !neg && /\b(good|great|fine|well|ok|okay|alright|all right|not bad|fantastic|amazing|brilliant|lovely|happy|excellent|super|grand|bene|benissimo|tutto bene|alla grande|ottimo|bene grazie)\b/i.test(s0);
       if (!back && !neg && !pos && (s0.split(/\s+/).length > 6 || /\?/.test(s0))) return false;
       const mood = neg ? pick([T("Sorry to hear that. Coffee won't fix everything, but it helps.", "Mi dispiace. Il caffè non risolve tutto, ma aiuta."), T("Oh no. Let's find you something comforting.", "Oh no. Troviamo qualcosa che ti tiri su.")])
         : pos ? pick([T("Glad to hear it!", "Che bello!"), T("Love that.", "Mi fa piacere."), T("Nice!", "Bene!")]) : pick([T("Fair enough.", "Ci sta."), T("Got it.", "Capito.")]);
-      const me = back ? " " + pick([T("I'm great, thanks for asking! A little jittery, but I'm a drop of coffee, so that's normal.", "Benissimo, grazie! Un po' agitato, ma sono una goccia di caffè: è normale."), T("Doing well! I've been reading every coffee that landed today.", "Bene! Ho letto tutti i caffè arrivati oggi."), T("All good here, thanks! Freshly brewed, as always.", "Tutto bene, grazie! Appena fatto, come sempre.")]) : "";
+      const dayQ = /\byours\b|your day|la tua (giornata)?|e la tua/i.test(s0) || /day|giornata/i.test(c.q || "");
+      const me = back && dayQ ? " " + pick([T(`Mine's been busy: ${typeof shelf !== "undefined" ? shelf.filter((r) => r.just_in).length || "lots of" : "lots of"} new coffees landed today, and I've read every one. Thanks for asking!`, `La mia è stata piena: oggi sono arrivati ${typeof shelf !== "undefined" ? shelf.filter((r) => r.just_in).length || "tanti" : "tanti"} caffè nuovi e li ho letti tutti. Grazie di avermelo chiesto!`),
+          T("Pretty good, thanks! I've been tasting notes all day. Well, reading them.", "Bene, grazie! Ho assaggiato note tutto il giorno. Beh, le ho lette.")]) : back ? " " + pick([T("I'm great, thanks for asking! A little jittery, but I'm a drop of coffee, so that's normal.", "Benissimo, grazie! Un po' agitato, ma sono una goccia di caffè: è normale."), T("Doing well! I've been reading every coffee that landed today.", "Bene! Ho letto tutti i caffè arrivati oggi."), T("All good here, thanks! Freshly brewed, as always.", "Tutto bene, grazie! Appena fatto, come sempre.")]) : "";
       sayNow(mood + me, null, null); const nx = () => c.next(); if (typing) typing.after = nx; else nx(); return true; };
     // now and then, after an answer, it asks you something back: first what it doesn't know about you yet
     const askBack = () => { if (++sinceAsk < 2 || Math.random() > 0.55) return; sinceAsk = 0; const t0 = Date.now();
@@ -11447,13 +11449,17 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // one after the other. Anything said meanwhile (your next question) cancels it
     // how long the dots show: as if typed, so a long message takes longer than a short one (about 14 ms a letter, 0.6 to 2.6 s)
     const dotsFor = (t) => Math.min(2600, 600 + String(t || "").length * 14) * (0.9 + Math.random() * 0.2);
-    const typeDots = (ms, then, g0) => { const g = g0 == null ? sayGen : g0; setTimeout(() => { if (sayGen !== g || !talking) return; const tb = bubble("it", ""); tb.classList.add("gd-typing"); const d = document.createElement("span"); d.className = "gd-dots"; d.innerHTML = "<i></i><i></i><i></i>"; tb.appendChild(d); toBottom();
-      setTimeout(() => { tb.remove(); if (sayGen === g && talking) then(); }, ms); }, 400); };
-    const sayNow = (text, chips, mood) => { pendingYes = null; ctxFrom(text); let ask2 = null; [text, chips, ask2] = offer(text, chips); const py = pendingYes; text = voice(text, chips); chips = null; text = tidy(text); sayGen++; finishTyping(); const tf = typeFrames(text); text = tf.text; if (tipEl) { tipEl.remove(); tipEl = null; } const m = addMsg("it", ""); m._rec.t = text; saveChat(); tipAfter(m); typing = { m, text, top: replyTo }; let k = 0; bob(true);
+    const typeDots = (ms, then, g0) => { const g = g0 == null ? sayGen : g0; setTimeout(() => { if (sayGen === g && talking) then(); }, 500); };   // a short pause: the message itself shows the dots first
+    const sayNow = (text, chips, mood) => { pendingYes = null; ctxFrom(text); let ask2 = null; [text, chips, ask2] = offer(text, chips); const py = pendingYes; text = voice(text, chips); chips = null; text = tidy(text); sayGen++; finishTyping(); const rubs = /\uE000/.test(text); const tf = typeFrames(text); text = tf.text; if (tipEl) { tipEl.remove(); tipEl = null; } const m = addMsg("it", ""); m._rec.t = text; saveChat(); tipAfter(m); typing = { m, text, top: replyTo }; let k = 0; bob(true);
       const anchor = replyTo && replyTo.isConnected ? replyTo : m; requestAnimationFrame(() => toTop(anchor, true));   // your question at the top, the answer filling in below it
       // as the answer grows it keeps your question pinned at the top, until it reaches it or you scroll the chat yourself
       // a touch slower than before (2 letters every 32 ms, was 24)
-      typeT = setInterval(() => { m.textContent = tf.fr[k] || ""; k++; if (typing && !typing.free && k % 4 === 0) toTop(anchor); if (k >= tf.fr.length) { if (typing && !typing.free) toTop(anchor); finishTyping(); } }, 32);
+      // like iMessage (26/11/2026): the typing dots for as long as the message would take to type, then the whole message at once.
+      // Only a message that rubs a word out ("How are you doing… brewing today?") is still typed letter by letter, for the joke
+      if (rubs) typeT = setInterval(() => { m.textContent = tf.fr[k] || ""; k++; if (typing && !typing.free && k % 4 === 0) toTop(anchor); if (k >= tf.fr.length) { if (typing && !typing.free) toTop(anchor); finishTyping(); } }, 32);
+      else { const ms = noDots ? 0 : Math.min(2200, 450 + text.length * 12) * (0.9 + Math.random() * 0.2); noDots = false;
+        if (ms) { m.classList.add("gd-typing"); const d = document.createElement("span"); d.className = "gd-dots"; d.innerHTML = "<i></i><i></i><i></i>"; m.appendChild(d); }
+        typeT = setTimeout(() => { const free = typing && typing.free; finishTyping(); if (!free) requestAnimationFrame(() => toTop(anchor)); }, ms); }
       showChips(chips); if (CALM) mood = null;
       if (ask2) { const g2 = sayGen, pl2 = nextPills || [[T("Yes", "Sì"), T("Yes", "Sì")], [T("No", "No"), T("No thanks", "No grazie")]]; nextPills = null;   /* "Want to see it?" in a second message once the first is written, then the Yes / No pills */
         const ask = () => typeDots(dotsFor(ask2), () => { nextPills = pl2; sayNow(ask2, null, null); pendingYes = py; }, g2);
