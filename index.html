@@ -10973,7 +10973,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       try { const body = JSON.stringify({ q, lang: LANG === "it" ? "it" : "en", why }); if (!(navigator.sendBeacon && navigator.sendBeacon("/api/learn", new Blob([body], { type: "application/json" })))) fetch("/api/learn", { method: "POST", headers: { "content-type": "application/json" }, body, keepalive: true }).catch(() => {}); } catch (e) {} };
     // the question a message of its answered: the last thing you said before it
     const askedFor = (m) => { const i = msgs.indexOf(m && m._rec); for (let k = (i < 0 ? msgs.length : i) - 1; k >= 0; k--) if (msgs[k].w === "me") return msgs[k].t; return ""; };
-    const TAPS = ["❤️", "👍", "👎", "😂", "🔥", "☕", "🙏", "‼️", "❓"];   // nine fit a phone's row (26/11/2026: 🔥 ☕ 🙏 added)
+    const TAPS = ["❤️", "👍", "👎", "😂", "🔥", "☕", "🙏", "🤤", "😍"];   // nine fit a phone's row (26/11/2026: 🔥 ☕ 🙏 added; 🤤 😍 in place of ‼️ ❓)
     const feel = (e) => { const docked = document.documentElement.classList.contains("gd-docked");
       if (docked) { littleMove(e === "😂" ? "ag-hops" : e === "❤️" ? "ag-wink" : e === "‼️" ? "ag-flip" : e === "👍" ? "ag-dance" : null); }
       else if (D && !still()) { D.free(); (e === "❤️" ? D.happy : e === "👍" ? D.happy : e === "😂" ? D.jumps : e === "‼️" ? D.surprised : e === "❓" ? D.hmm : D.no)(); }
@@ -10982,6 +10982,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       else if (e === "❤️" && Math.random() < 0.35) setTimeout(() => sayNow(pick([T("Aww. ☺️", "Ooh. ☺️"), T("Right back at you!", "Anche io!")]), null, null), 700);
       else if (e === "🔥" && Math.random() < 0.4) setTimeout(() => sayNow(pick([T("Hot take, I know. 🔥", "Lo so, scotta. 🔥"), T("Careful, it's freshly brewed!", "Attento, è appena fatto!")]), null, null), 700);
       else if (e === "☕" && Math.random() < 0.5) setTimeout(() => sayNow(pick([T("Kettle on? ☕", "Metto su l'acqua? ☕"), T("Coffee break it is.", "Pausa caffè, allora.")]), null, null), 700);
+      else if (e === "🤤" && Math.random() < 0.5) setTimeout(() => sayNow(pick([T("Same. I'd drink that right now.", "Anche io. Lo berrei subito."), T("I know, right? 🤤", "Vero? 🤤")]), null, null), 700);
+      else if (e === "😍" && Math.random() < 0.4) setTimeout(() => sayNow(pick([T("It's a beauty, isn't it?", "È una meraviglia, vero?"), T("Love at first sip.", "Amore al primo sorso.")]), null, null), 700);
       else if (e === "🙏" && Math.random() < 0.5) setTimeout(() => sayNow(pick([T("Any time!", "Quando vuoi!"), T("Happy to help. Brew well!", "Felice di aiutarti. Buon caffè!")]), null, null), 700); };
     let picker = null; const unpick = () => { if (picker) { picker.remove(); picker = null; } };
     // how people learn they can react: once per device, under the first answer to something they asked, a small line says how.
@@ -11328,7 +11330,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         const g0 = timed.length && Math.random() < 0.6 ? pick(timed) : pick(all.filter((x) => x !== last).length ? all.filter((x) => x !== last) : all); try { localStorage.setItem("v60.hi", g0); } catch (e) {} return g0; })();
       if (!n) return /\?\uE002?$/.test(hi) ? say(hi, null, happy) : say(hi + " " + pick([T("Ask me about coffee.", "Chiedimi del caffè."), T("What are we brewing?", "Cosa prepariamo?"), T("Need a hand with your coffee?", "Ti serve una mano col caffè?")]), null, happy);
       // after 2pm (and through the night) the pick is a decaf, today's if there is one, else the newest on the list, and it says why
-      const hNow = new Date().getHours(), late = hNow >= 14 || hNow < 5, rank = (x) => suits(x) * 3 + (notesOf(x).length ? 1.5 : 0) + Math.random() * 2;
+      const hNow = new Date().getHours(), late = (hNow >= 14 || hNow < 5) && Math.random() < 0.4, rank = (x) => suits(x) * 3 + (notesOf(x).length ? 1.5 : 0) + Math.random() * 2;
       const decafs = late ? (today.some(isDecaf) ? today.filter(isDecaf) : all0.filter(isDecaf).sort((a, b) => String(shelfDate(b) || "").localeCompare(String(shelfDate(a) || ""))).slice(0, 12)) : [];
       const dec = decafs.length ? decafs.map((x) => [rank(x), x]).sort((a, b) => b[0] - a[0])[0][1] : null;
       const best = dec || today.map((x) => [rank(x), x]).sort((a, b) => b[0] - a[0])[0][1], ns = notesOf(best); picked.add(best.url); lastCo = { r: best, at: Date.now() };
@@ -11368,7 +11370,20 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
           ...(n <= 5 ? [T(`Only ${n} new coffees ${on}, but one's a gem: ${what}.`, `Solo ${n} caffè nuovi ${on}, ma uno è una chicca: ${what}.`)] : [])]));
       // three messages, typed one after the other: the hello, the coffee, then "Want to see it?"
       sayNow(hi, null, happy); const nextOne = () => typeDots(dotsFor(line), () => { sayNow(line, [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(best); } }], happy); ctx = { t: "pick", at: Date.now() }; });
-      if (typing) typing.after = nextOne; else nextOne(); ctx = { t: "pick", at: Date.now() }; };
+      // now and then, after the hi, it asks how you are and waits: your answer gets a word back (and an answer if you ask it), then the coffee
+      const howQ = !/\?/.test(hi) && Math.random() < 0.3 ? pick([T("How are you?", "Come stai?"), T("How's your day going?", "Come va la giornata?"), T("How are you doing today?", "Come va oggi?")]) : null;
+      const first = howQ ? () => typeDots(dotsFor(howQ), () => { sayNow(howQ, null, null); ctx = { t: "howru", at: Date.now(), next: nextOne }; }) : nextOne;
+      if (typing) typing.after = first; else first(); ctx = howQ ? null : { t: "pick", at: Date.now() }; };
+    // the answer to "How are you?": a word back for how you are, an answer about itself if you ask, then the coffee it had in mind.
+    // Anything that isn't an answer (a coffee question) is handled as usual, and the coffee is let go
+    const howReply = (q, c) => { const s0 = q.toLowerCase().trim(), back = /\b(and you|how about you|how are you|how're you|how r u|yourself|and u|e tu|tu come stai|come stai|e te)\b|\b(you|u)\s*\?/i.test(s0);
+      const neg = /\b(bad|tired|exhausted|meh|not (great|good|well|so good|too good)|stressed|sad|awful|terrible|rough|sleepy|knackered|shattered|ill|sick|unwell|male|stanc[oa]|cos[iì] cos[iì]|non (tanto )?bene|insomma)\b/i.test(s0);
+      const pos = !neg && /\b(good|great|fine|well|ok|okay|alright|all right|not bad|fantastic|amazing|brilliant|lovely|happy|excellent|super|grand|bene|benissimo|tutto bene|alla grande|ottimo|bene grazie)\b/i.test(s0);
+      if (!back && !neg && !pos && (s0.split(/\s+/).length > 6 || /\?/.test(s0))) return false;
+      const mood = neg ? pick([T("Sorry to hear that. Coffee won't fix everything, but it helps.", "Mi dispiace. Il caffè non risolve tutto, ma aiuta."), T("Oh no. Let's find you something comforting.", "Oh no. Troviamo qualcosa che ti tiri su.")])
+        : pos ? pick([T("Glad to hear it!", "Che bello!"), T("Love that.", "Mi fa piacere."), T("Nice!", "Bene!")]) : pick([T("Fair enough.", "Ci sta."), T("Got it.", "Capito.")]);
+      const me = back ? " " + pick([T("I'm great, thanks for asking! A little jittery, but I'm a drop of coffee, so that's normal.", "Benissimo, grazie! Un po' agitato, ma sono una goccia di caffè: è normale."), T("Doing well! I've been reading every coffee that landed today.", "Bene! Ho letto tutti i caffè arrivati oggi."), T("All good here, thanks! Freshly brewed, as always.", "Tutto bene, grazie! Appena fatto, come sempre.")]) : "";
+      sayNow(mood + me, null, null); const nx = () => c.next(); if (typing) typing.after = nx; else nx(); return true; };
     // now and then, after an answer, it asks you something back: first what it doesn't know about you yet
     const askBack = () => { if (++sinceAsk < 2 || Math.random() > 0.55) return; sinceAsk = 0; const t0 = Date.now();
       const go = () => { if (Date.now() - t0 > 20000 || !talking) return; if (typing || sayEl.querySelector(".gd-typing")) return setTimeout(go, 300);
@@ -11641,7 +11656,20 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       [/yemen/i, "Yemen", "Yemen", "where coffee was first drunk: wild, winey, spicy and dried-fruit sweet", "dove il caffè è stato bevuto per la prima volta: selvaggio, vinoso, speziato e dolce di frutta secca"]];
     const littleMove = (m) => { const tb = $("askGoccio"); if (tb && tb.move) tb.move(m); const hs = talkEl.querySelector(".gd-head svg"); if (hs && m) { hs.classList.add(m); setTimeout(() => hs.classList.remove(m), 1400); } };   // the little one in the top bar joins in
     let moreQ = "", lastTrick = null, prevTrick = null;   // a trick can be asked for again ("again!")   // what "Another one" asks again: the last flavour asked for, or a plain surprise
+    let curQ = "";   // the question being answered, for the answers that need its words
+    // what a brewer is ("What is a V60?" had no answer, 26/11/2026)
+    const BREWER_IS = [
+      [/v-?60/i, ["A V60 is Hario's cone-shaped pour-over dripper: a 60° cone with spiral ribs and one big hole, so how fast you pour sets how fast it drains. Clean, bright cups, and a little practice pays off.", "Il V60 è il dripper a cono di Hario: un cono a 60° con nervature a spirale e un solo foro grande, così la velocità con cui versi decide quanto scende. Tazze pulite e brillanti, con un po' di pratica."]],
+      [/aero ?press/i, ["An AeroPress is a plastic tube and plunger: coffee steeps, then you press it through a paper filter. Forgiving, quick and easy to travel with.", "L'AeroPress è un tubo con stantuffo: il caffè resta in infusione, poi lo premi attraverso un filtro di carta. Perdona molto, è veloce e facile da portare in viaggio."]],
+      [/chemex/i, ["A Chemex is an hourglass glass brewer with thick paper filters that hold back the oils: very clean, tea-like cups, best for two or more.", "La Chemex è una caraffa di vetro a clessidra con filtri di carta spessi che trattengono gli oli: tazze pulitissime, quasi da tè, ideale per due o più."]],
+      [/french press|cafeti[eè]re/i, ["A French press steeps coarse coffee in the water for about four minutes, then a metal mesh holds the grounds back. Full-bodied and rich, with some sediment.", "La French press lascia il caffè macinato grosso in infusione per circa quattro minuti, poi un filtro di metallo trattiene i fondi. Corposo e ricco, con un po' di sedimento."]],
+      [/moka/i, ["A moka pot (the Bialetti) pushes water up through the coffee with steam pressure on the stove: strong, intense, close to espresso but not quite.", "La moka (la Bialetti) spinge l'acqua attraverso il caffè con la pressione del vapore sul fornello: forte e intensa, vicina all'espresso ma non uguale."]],
+      [/kalita/i, ["A Kalita Wave is a flat-bottomed pour-over dripper with three small holes and wavy filters: steadier and more forgiving than a cone.", "La Kalita Wave è un dripper a fondo piatto con tre piccoli fori e filtri ondulati: più costante e più facile di un cono."]],
+      [/clever|hario switch|\bswitch\b/i, ["It's a pour-over dripper with a valve: the coffee steeps like a French press, then you open it and it drains through paper. Easy and very consistent.", "È un dripper con una valvola: il caffè resta in infusione come in una French press, poi apri e scende attraverso la carta. Facile e molto costante."]],
+      [/origami/i, ["The Origami is a Japanese ceramic dripper with deep pleats; it takes cone or flat filters, so it brews like a V60 or a Kalita.", "L'Origami è un dripper giapponese in ceramica con pieghe profonde; accetta filtri a cono o piatti, quindi prepara come un V60 o una Kalita."]]];
     const ANSWERS = [
+      [/^(what('?s| is)( an?| the)?|cos'?[eè]( una?| il| la| lo)?|che cos'?[eè]( una?| il| la| lo)?) (v-?60|aero ?press|chemex|french press|cafeti[eè]re|moka( pot)?|bialetti|kalita( wave)?|origami|hario switch|clever( dripper)?)\b[ ?!.]*$/i,
+        () => { const b = BREWER_IS.find(([re]) => re.test(curQ)); if (!b) return false; say(T(b[1][0], b[1][1]), null, curious); }],
       [/^(hi|hello|hey|hiya|ciao|salve|buongiorno|buonasera|yo)\b/i, () => say(name ? T(`Hi ${name}! What are we brewing?`, `Ciao ${name}! Cosa prepariamo?`) : T("Hi! I'm Goccio. Ask me anything about coffee.", "Ciao! Sono Goccio. Chiedimi qualcosa sul caffè."), null, happy)],
       [/what('?s| is) my name|who am i|come mi chiamo|sai il mio nome/i, () => { if (!name) askingName = true; say(name ? T(`You're ${name}. I never forget a friend.`, `Sei ${name}. Non dimentico mai un amico.`) : T("You haven't told me yet. What should I call you?", "Non me l'hai ancora detto. Come ti chiamo?"), null, name ? happy : curious); }],
       [/forget my name|dimentica il mio nome/i, () => { name = ""; try { localStorage.removeItem("v60.dropName"); } catch (e) {} say(T("Done, forgotten. Still friends?", "Fatto, dimenticato. Amici come prima?"), null, smile); }],
@@ -12196,7 +12224,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       return false; };
     const nice = () => say(T(`Nice to meet you, ${name}! Ask me anything about coffee.`, `Piacere, ${name}! Chiedimi qualsiasi cosa sul caffè.`), null, happy);
     let lastQ = "";
-    const ask = (q, silent) => { q = String(q || "").trim(); const said = q; if (nick) { const nr = nick.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); q = q.replace(new RegExp("^((hey|hi|ciao|ok)\\s+)?" + nr + "[,:!\\s]+(?=\\S)", "i"), "") || q; } if (!q) return; know(q); if (!silent) inEl.value = ""; lastQ = q; if (!silent) addMsg("me", said); prevTrick = lastTrick; lastTrick = null;
+    const ask = (q, silent) => { q = String(q || "").trim(); curQ = q; const said = q; if (nick) { const nr = nick.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); q = q.replace(new RegExp("^((hey|hi|ciao|ok)\\s+)?" + nr + "[,:!\\s]+(?=\\S)", "i"), "") || q; } if (!q) return; know(q); if (!silent) inEl.value = ""; lastQ = q; if (!silent) addMsg("me", said); prevTrick = lastTrick; lastTrick = null;
       const rx = /tiramis|affogato|dessert|dolce|torta|cake/i.test(q) ? "🤤" : /\b(thanks?|thank you|thx|cheers|grazie|love (you|it|this)|ti amo|you'?re (great|the best|amazing|awesome|cute)|sei (bravo|fantastico|il migliore|carino)|well done|bravo|amazing|awesome|perfect|fantastic|brilliant|lovely|great job)\b/i.test(q) ? "❤️"
         : /\b(ha(ha)+|ah(ah)+|lol|lmao|rofl|joke|barzellett\w*|funny|divertente)\b|😂|🤣/i.test(q) ? "😂"
         : /\b(scare|boo|wow|omg|whoa|woah|incredible|no way|davvero|incredibile|accidenti)\b|!{2,}/i.test(q) ? "‼️"
@@ -12216,6 +12244,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       // (a word of it matched a coffee's name: "SaiPan kannatuskahvi, lovely"), and it starts again even mid-way through a brew
       if (/^(so |ok |okay |hey |hi |right,? )?(i )?((want|wanna|would like|'d like|'m going|am going|need|feel like) to |let'?s |can we |can you |could you |help me |time to |shall we )?(brew|make)( me| us)?( (something|anything|a coffee|coffee|some coffee|a cup|a brew|one))?( (together|with me|now|today|please))*[ .!…?]*$/i.test(q)
         || /^(voglio |vorrei |posso )?(preparare|fare)( un| qualcosa| un caff[eè]| del caff[eè])?[ .!?]*$|^prepariamo( qualcosa| un caff[eè])?[ .!?]*$/i.test(q)) { whichCo = null; gbStart(null, null, q); return; }
+      if (ctx && ctx.t === "howru") { const c = ctx; ctx = null; if (Date.now() - c.at < 600000 && howReply(q, c)) return; }
       if (gbs && gbAnswer(q)) return;
       if (!pendingYes && /^(yes|yeah|yep|yup|sure|ok|okay|no|nope|nah|s[iì]|certo|va bene)\b[ .!]*$/i.test(q)) {   // a yes or no with nothing to answer
         return say(pick([T("Noted! Ask me anything about coffee.", "Ricevuto! Chiedimi qualsiasi cosa sul caffè."), T("Got it. What shall we talk about?", "Capito. Di cosa parliamo?"), T("Okay! I'm all ears. Well, all drop.", "Ok! Sono tutto orecchi. Anzi, tutto goccia.")]), null, smile); }
