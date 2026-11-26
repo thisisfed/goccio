@@ -437,7 +437,9 @@ NOT_ONE_COFFEE = re.compile(r"\ball[- ]?\d\b|\b\d\s?x\s?\d{2,3}\s?g\b|roaster'?s
                             # prepaid plans: "Jones Prepaid Weekly 12 months", "Coffee of the Month (6 month Prepaid)",
                             # "Uphill Espresso - 6 months", "Seasonal Special Coffee Plan" ("Plan Vivo" is a coffee)
                             r"pre-?paid|(?<!aged )(?<!rested )\b\d{1,2}\s?months?\b|\bof the month\b|\bcoffee plan\b|"
-                            r"\b(?:weekly|fortnightly|monthly|quarterly)\b|assinatura|por m[eê]s|al mes\b", re.I)
+                            r"\b(?:weekly|fortnightly|monthly|quarterly)\b|assinatura|por m[eê]s|al mes\b|"
+                            # a Japanese New Year lucky bag: a surprise set of coffees (Light Up's "コーヒー福袋2027", 26/11/2026)
+                            r"福袋|\blucky[- ]bag\b|\bfukubukuro\b|\bhappy[- ]bag\b", re.I)
 BLEND_TITLE = re.compile(r"(?<!field )\bblends?\b|low[- ]caff?\b|house[- ](?:roast|coffee|blend|espresso)|signature[- ](?:roast|blend|coffee)|"
                          r"seasonal[- ](?:filter|espresso|blend|roast)|half[- ]caff|miscela|m[ée]lange|mezcla|mischung", re.I)
 # "a blend of harvests / lots / varieties / producers" is still one origin, and so is a "field blend"
@@ -477,7 +479,7 @@ def _slug(item):
 
 def not_one_coffee(item):
     """Why an item is a bundle / subscription / sampler rather than one coffee, or None."""
-    m = NOT_ONE_COFFEE.search(f"{item['title']} {item.get('type') or ''} {_slug(item)}")
+    m = NOT_ONE_COFFEE.search(f"{item['title']} {item.get('type') or ''} {urllib.parse.unquote(_slug(item))}")   # the slug read as text: %E7%A6%8F… is 福…
     return f"title says '{m.group(0)}'" if m else None
 
 

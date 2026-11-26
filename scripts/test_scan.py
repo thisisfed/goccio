@@ -196,6 +196,8 @@ CASES = [
     ("Tags naming two roasts (a shop's filter menu) say nothing about the coffee",
      lambda: (kept(item("Kenya Gichuka AB", COFFEE_BODY.replace("Colombia", "Kenya"), tags=["Light Roast", "Dark Roast"])) or {}).get("roast") is None),
     # prepaid plans (16/11/2026)
+    ("Light Up's lucky bag '【店頭受取のご予約】コーヒー福袋2027' is a set, not one coffee", lambda: scan.not_one_coffee(item("【店頭受取のご予約】コーヒー福袋2027")) is not None),
+    ("a lucky bag known only by its encoded slug is a set too", lambda: scan.not_one_coffee(item("2027", url="https://lightupcoffee.com/products/%E5%BA%97%E9%A0%AD%E5%8F%97%E5%8F%96%E3%81%AE%E3%81%94%E4%BA%88%E7%B4%84-%E3%82%B3%E3%83%BC%E3%83%92%E3%83%BC%E7%A6%8F%E8%A2%8B2027")) is not None),
     ("'Jones Prepaid Weekly 12 months' is a plan, not a coffee", lambda: scan.not_one_coffee(item("Jones Prepaid Weekly 12 months")) is not None),
     ("'Coffee of the Month (6 month Prepaid)' is a plan", lambda: scan.not_one_coffee(item("Coffee of the Month (6 month Prepaid)")) is not None),
     ("'Uphill Espresso - 6 months' is a plan", lambda: scan.not_one_coffee(item("Uphill Espresso - 6 months")) is not None),
