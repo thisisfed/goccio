@@ -6257,6 +6257,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     if (el && el.id === "coffee" && el.hidden) { wbOpen = true; el.hidden = false; try { window.syncSecs && syncSecs(); } catch (e) {} }   // asked for: there from now on
     if (el && document.documentElement.classList.contains("brew-in") && el.offsetParent === null && !el.closest(".item.brewing")) { if (brewDone) { brewIn = false; brewHome(); brewKeep = null; softShut = true; } else brewShut(); }   // it's behind the open coffee: fold that first. A brew just ended (to the Journal): the coffee stays chosen until it's logged, so the log adjusts this coffee's recipe
     if (!el) return; const gen = ++jumpGen, html = document.documentElement;
+    try { window.__holdSec && el.id && window.__holdSec(el.id); } catch (e) {}   // the menus show where you're going from the tap, not once you're there
     // the coffee filter bar keeps one shape for the whole jump, so nothing changes size on the way and the target stays put.
     // Passing through the list it stays stuck under the top bar with its dropdowns, as when you scroll; it opens up again on landing
     const tools = document.querySelector(".shelf-tools"), list = $("shelf");
@@ -10060,7 +10061,10 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       coffee: ["What’s brewing?", "Cosa prepari?"], recipe: ["Recipe", "Ricetta"], journal: ["Journal", "Diario"] };
     const ids = Object.keys(LBL);
     const avail = (id) => { const el = $(id); return el && !el.hidden && !(id === "recipe" && document.querySelector('[data-sec="recipe"]').hidden); };
-    let active = "", active0 = null;
+    let active = "", active0 = null, hold = null;
+    // a jump to a section ("I have a coffee", a pill): both menus show that section at once, through the scroll, until it lands
+    window.__holdSec = (id) => { if (!LBL[id]) return; hold = { id, until: Date.now() + 1600 }; try { sync(); } catch (e) {} };
+    const unhold = () => { hold = null; }; addEventListener("touchstart", unhold, { passive: true }); addEventListener("wheel", unhold, { passive: true });
     const row = document.querySelector("#secList .sec-list-in");
     // the row fades at an edge only where there's more to slide to
     const edges = () => { if (!row) return; const m = row.scrollWidth - row.clientWidth;
@@ -10070,6 +10074,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       ids.forEach((id) => document.querySelectorAll(`[data-sec="${id}"]`).forEach((b) => { if (id === "bags") b.hidden = !avail(id); }));
       const h = top ? top.getBoundingClientRect().bottom : 0, line = h + Math.min(160, innerHeight * 0.3);
       let a = ""; for (const id of ids) { const el = $(id); if (!avail(id)) continue; if (el.getBoundingClientRect().top <= line) a = id; }
+      if (hold && Date.now() < hold.until && avail(hold.id)) a = hold.id; else hold = null;
       active = a;
       document.querySelectorAll("[data-sec]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.sec === a)));
       // the bottom bar: My bags and Journal only once there's something in them; Brew lights for What's brewing and the recipe both
