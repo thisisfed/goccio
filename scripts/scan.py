@@ -32,6 +32,7 @@ import flavours  # noqa: E402  (tasting notes in English)
 ROASTERS = ROOT / "data" / "roasters.json"
 
 
+BANNED_COFFEES = ROOT / "data" / "banned_coffees.json"   # single coffees taken off by hand: {url: {"name", "roaster", "on", "why"}}
 BANNED = ROOT / "data" / "banned.json"   # shops taken off for not being specialty: {host: {"name", "why", "on"}}. Never scanned, never added back
 
 
@@ -3427,6 +3428,20 @@ def main():
             if en and en != x["notes"]:
                 x.setdefault("notes_orig", x["notes"])
                 x["notes"] = en
+
+    # single coffees taken off by hand (data/banned_coffees.json, {url: {"name", "roaster", "on", "why"}}): never listed again,
+    # while the rest of that roaster's coffees stay
+    try:
+        gone_co = json.loads(BANNED_COFFEES.read_text())
+    except Exception:
+        gone_co = {}
+    if gone_co:
+        key = lambda u: (u or "").split("?")[0].split("#")[0].rstrip("/").lower()
+        drop = {key(u) for u in gone_co}
+        n0 = len(found)
+        found = [x for x in found if key(x.get("url")) not in drop]
+        if n0 != len(found):
+            print(f"Banned coffees left out: {n0 - len(found)}")
 
     # no price, no listing: a coffee you can't see the price of is almost always sold out, or not sold on its page
     all_found = found
