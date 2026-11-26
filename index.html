@@ -11226,11 +11226,11 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     const hello = () => { const all0 = typeof shelf !== "undefined" ? shelf : [], today = all0.filter((r) => r.just_in), n0 = today.length, day0 = n0 ? String(shelfDate(today[0]) || "").slice(0, 10) : "", n = n0 ? all0.filter((r) => String(shelfDate(r) || "").slice(0, 10) === day0).length : 0,   /* the same number the list's heading says ("230 added today"), counted the same way */ hi = (() => {   /* a different hello each time: never the same one twice running, and some only at their time of day */
         const nm = name ? " " + name : "", nmc = name ? ", " + name : "", h0 = new Date().getHours();
         const all = [T(`Hi${nm}!`, `Ciao${nm}!`), T(`Hello${nm}!`, `Salve${nm}!`), T(`Oh, hi${nm}!`, `Oh, ciao${nm}!`), T(`Hey${nm}!`, `Ehi${nm}!`), T(`Hey there${nmc}!`, `Eccoti${nmc}!`),
-          T(`Welcome back${nmc}!`, `Bentornato${nmc}!`), T(`Look who's here${nmc}!`, `Guarda chi c'è${nmc}!`), T(`Hello again${nmc}!`, `Rieccoti${nmc}!`), T(`Ciao${nm}!`, `Ciao ciao${nm}!`), T(`Good to see you${nmc}!`, `Che bello vederti${nmc}!`),
+          T(`Welcome back${nmc}!`, `Bentornato${nmc}!`), ...[0, 1, 2].map(() => T(`Hey${nm}. How are you \uE000doing\uE001brewing today?\uE002`, `Ehi${nm}. Come va \uE000la giornata\uE001il caffè oggi?\uE002`)), T(`Look who's here${nmc}!`, `Guarda chi c'è${nmc}!`), T(`Hello again${nmc}!`, `Rieccoti${nmc}!`), T(`Ciao${nm}!`, `Ciao ciao${nm}!`), T(`Good to see you${nmc}!`, `Che bello vederti${nmc}!`),
           ...(h0 >= 5 && h0 < 12 ? [T(`Good morning${nmc}!`, `Buongiorno${nmc}!`), T(`Morning${nmc}!`, `Buondì${nmc}!`)] : h0 >= 12 && h0 < 18 ? [T(`Good afternoon${nmc}!`, `Buon pomeriggio${nmc}!`)] : h0 >= 18 && h0 < 23 ? [T(`Good evening${nmc}!`, `Buonasera${nmc}!`), T(`Evening${nmc}!`, `Sera${nmc}!`)] : [T(`Still up${nmc}?`, `Ancora sveglio${nmc}?`)])];
         let last = ""; try { last = localStorage.getItem("v60.hi") || ""; } catch (e) {}
         const g0 = pick(all.filter((x) => x !== last).length ? all.filter((x) => x !== last) : all); try { localStorage.setItem("v60.hi", g0); } catch (e) {} return g0; })();
-      if (!n) return say(hi + " " + pick([T("Ask me about coffee.", "Chiedimi del caffè."), T("What are we brewing?", "Cosa prepariamo?"), T("Need a hand with your coffee?", "Ti serve una mano col caffè?")]), null, happy);
+      if (!n) return /\?\uE002?$/.test(hi) ? say(hi, null, happy) : say(hi + " " + pick([T("Ask me about coffee.", "Chiedimi del caffè."), T("What are we brewing?", "Cosa prepariamo?"), T("Need a hand with your coffee?", "Ti serve una mano col caffè?")]), null, happy);
       const best = today.map((x) => [suits(x) * 3 + (notesOf(x).length ? 1.5 : 0) + Math.random() * 2, x]).sort((a, b) => b[0] - a[0])[0][1], ns = notesOf(best); picked.add(best.url); lastCo = { r: best, at: Date.now() };
       const what = `${shownName(best)} ${T("from", "di")} ${roasteryName(best.roaster)}${ns.length ? T(", tasting of ", ", che sa di ") + andList(ns) : ""}`;
       const on = landedOn(best);
@@ -11286,10 +11286,19 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
       // the pills take room from the messages: the question they answer moves up so it stays whole above them
       requestAnimationFrame(() => requestAnimationFrame(() => { const last = [...sayEl.querySelectorAll(".gd-m")].pop(); if (!last) return;
         const over = last.getBoundingClientRect().bottom - sayEl.getBoundingClientRect().bottom + 12; if (over > 0) sayEl.scrollBy({ top: over, behavior: "smooth" }); })); };
-    const sayNow = (text, chips, mood) => { pendingYes = null; ctxFrom(text); [text, chips] = offer(text, chips); text = voice(text, chips); chips = null; text = tidy(text); sayGen++; finishTyping(); const m = addMsg("it", ""); m._rec.t = text; saveChat(); typing = { m, text, top: replyTo }; let k = 0; bob(true);
+    // a word typed, thought better of and rubbed out: "How are you \uE000doing\uE001brewing today?\uE002" types "doing", stops, deletes it, types "brewing today?"
+    const typeFrames = (text) => { const fr = [], step = (a, b) => { for (let i = 2; i <= b.length; i += 2) fr.push(a + b.slice(0, i)); if (b.length % 2) fr.push(a + b); };
+      let done = "", rest = text; for (;;) { const i = rest.indexOf("\uE000"), j = rest.indexOf("\uE001", i), e = rest.indexOf("\uE002", j); if (i < 0 || j < 0 || e < 0) break;
+        step(done, rest.slice(0, i)); done += rest.slice(0, i); const wrong = rest.slice(i + 1, j); step(done, wrong);
+        for (let h = 0; h < 18; h++) fr.push(done + wrong);   // a beat: no, not that word
+        for (let d = wrong.length - 1; d >= 0; d--) { fr.push(done + wrong.slice(0, d)); }   // rubbed out one letter at a time
+        for (let h = 0; h < 6; h++) fr.push(done); rest = rest.slice(j + 1, e) + rest.slice(e + 1); }
+      step(done, rest); return { fr, text: done + rest }; };
+    const sayNow = (text, chips, mood) => { pendingYes = null; ctxFrom(text); [text, chips] = offer(text, chips); text = voice(text, chips); chips = null; text = tidy(text); sayGen++; finishTyping(); const tf = typeFrames(text); text = tf.text; const m = addMsg("it", ""); m._rec.t = text; saveChat(); typing = { m, text, top: replyTo }; let k = 0; bob(true);
       const anchor = replyTo && replyTo.isConnected ? replyTo : m; requestAnimationFrame(() => toTop(anchor, true));   // your question at the top, the answer filling in below it
       // as the answer grows it keeps your question pinned at the top, until it reaches it or you scroll the chat yourself
-      typeT = setInterval(() => { k += 2; m.textContent = text.slice(0, k); if (typing && !typing.free && k % 8 === 0) toTop(anchor); if (k >= text.length) { if (typing && !typing.free) toTop(anchor); finishTyping(); } }, 24);
+      // a touch slower than before (2 letters every 32 ms, was 24)
+      typeT = setInterval(() => { m.textContent = tf.fr[k] || ""; k++; if (typing && !typing.free && k % 4 === 0) toTop(anchor); if (k >= tf.fr.length) { if (typing && !typing.free) toTop(anchor); finishTyping(); } }, 32);
       showChips(chips); if (nextPills) { const pl = nextPills; nextPills = null; if (typing) typing.after = () => showPills(pl); else showPills(pl); } if (mood) mood(); };
     // the sample questions: a fresh mix each time, one from each kind, so you get an idea of everything it knows
     const POOL = () => ({
