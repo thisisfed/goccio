@@ -40,6 +40,16 @@ js_url = store(minify(big_js.group(2), "js"), "js")
 # replace from the end so the earlier position stays right
 for m, new in sorted([(big_css, f'<link rel="stylesheet" href="{css_url}">'), (big_js, f'<script src="{js_url}"></script>')], key=lambda x: -x[0].start()):
     html = html[:m.start()] + new + html[m.end():]
+# the intro's count ("9,653 coffees. From 791 roasters.") is in the page itself, not only counted up by the code: anything that reads the page
+# before the code runs (search engines, reviewers, a slow phone) saw "0 coffees. From near and far." (Nov 2026)
+try:
+    rel = json.loads((site / "data" / "releases.json").read_text(encoding="utf-8")).get("releases", [])
+    n_co, n_ro = len(rel), len({r.get("roaster") for r in rel if r.get("roaster")})
+    if n_co:
+        html = html.replace('<span id="statN">0</span>', f'<span id="statN">{n_co:,}</span>', 1)
+        html = html.replace('<span class="stat-s" id="statS">From near and far.</span>', f'<span class="stat-s" id="statS">From {n_ro:,} roasters.</span>', 1)
+except Exception as e:
+    print("intro count not written:", e)
 # the app's code starts downloading with the page, not when the parser reaches the end of it
 html = html.replace("</title>", f'</title><link rel="preload" href="{js_url}" as="script">', 1)
 (site / "index.html").write_text(html, encoding="utf-8")

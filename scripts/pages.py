@@ -131,10 +131,10 @@ def recipes(coffees):
 
 # ---------- the look: the site's own, black and white plus the accent, 15/24/39/63 ----------
 CSS = """
-:root{--bg:#f7f3ed;--ink:#000;--muted:#69625a;--rule:#e1d9ce;--line:#a8a196;--pill:#e7e0d6;--hl:#ff4f00;
+:root{--bg:#f7f3ed;--ink:#000;--muted:#5c564f;--rule:#e1d9ce;--line:#a8a196;--pill:#e7e0d6;--hl:#ff4f00;
 --sans:"ALT Riviera","Helvetica Neue",Helvetica,Arial,-apple-system,BlinkMacSystemFont,system-ui,sans-serif}
 @font-face{font-family:"ALT Riviera";src:url("/fonts/alt-medium.woff2") format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
-@media (prefers-color-scheme:dark){:root{--bg:#000;--ink:#fff;--muted:#8c8c8c;--rule:#262626;--line:#595959;--pill:#222;--hl:#ff5a14}}
+@media (prefers-color-scheme:dark){:root{--bg:#000;--ink:#fff;--muted:#9e9e9e;--rule:#262626;--line:#595959;--pill:#222;--hl:#ff5a14}}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;overflow-x:clip}
 body{margin:0;background:var(--bg);color:var(--ink);font:500 15px/1.35 var(--sans);letter-spacing:-.011em}
@@ -204,8 +204,8 @@ footer p{margin:0}
 .page:has(> section:last-child > .list){padding-bottom:0}   /* a page ending on a list: its last rule is the footer's rule */
 .page > section:last-child > .list > li:last-child{border-bottom:0}
 /* the main page's look: its Dark / Light (dark unless you pick light), its type drawn the same (thin smoothing, no extra tracking) */
-:root[data-theme="light"]{--bg:#f7f3ed;--ink:#000;--muted:#69625a;--rule:#e1d9ce;--line:#a8a196;--pill:#e7e0d6;--hl:#ff4f00}
-:root[data-theme="dark"]{--bg:#000;--ink:#fff;--muted:#8c8c8c;--rule:#262626;--line:#595959;--pill:#222;--hl:#ff5a14}
+:root[data-theme="light"]{--bg:#f7f3ed;--ink:#000;--muted:#5c564f;--rule:#e1d9ce;--line:#a8a196;--pill:#e7e0d6;--hl:#ff4f00}
+:root[data-theme="dark"]{--bg:#000;--ink:#fff;--muted:#9e9e9e;--rule:#262626;--line:#595959;--pill:#222;--hl:#ff5a14}
 body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 *{letter-spacing:0!important}
 .spec b,.spec h1,.list .name{letter-spacing:-.01em!important}
