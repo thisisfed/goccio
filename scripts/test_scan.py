@@ -104,6 +104,14 @@ CASES = [
      lambda: scan.find_notes({"body": "<p>This natural coffee is sweet and floral with notes that remind us of:</p><ul><li>Tangerine</li><li>Strawberry</li><li>Blackberry</li><li>Watermelon</li><li>Grape</li><li>Floral</li></ul>", "title": "Mullugeta Muntasha Arbegona", "tags": []}) == ["Tangerine", "Strawberry", "Blackberry", "Watermelon", "Grape", "Floral"]),
     ("…and as lines on the page, stopping at 'Size'",
      lambda: scan.find_notes({"body": "This natural coffee is sweet and floral with notes that remind us of:\nTangerine\nStrawberry\nBlackberry\nWatermelon\nGrape\nFloral\nSize\n340 g", "title": "Mullugeta Muntasha Arbegona", "tags": []}) == ["Tangerine", "Strawberry", "Blackberry", "Watermelon", "Grape", "Floral"]),
+    # Rogue Wave (26/11/2026): Nyeri Hill Factory was listed as "Grapefruit, Mapl"; the page has the five notes as a styled list under "…reminds us of:"
+    ("Rogue Wave's page list ('reminds us of:' over ul.product-taste-list) gives all five notes, Maple Syrup whole",
+     lambda: scan.page_notes(scan._visible('<div class="product-short-desc">This washed process coffee is tangy, bright, and juicy with tasting notes that reminds us of:</div><div class="product-taste"><ul class="product-taste-list"><li class="grapefruit">Grapefruit</li><li class="maple-syrup">Maple Syrup</li><li class="red-currant">Red Currant</li><li class="plum">Plum</li><li class="floral">Floral</li></ul></div><form><label>Size</label></form>'), "Nyeri Hill Factory", "")
+       == ["Grapefruit", "Maple Syrup", "Red Currant", "Plum", "Floral"]),
+    # Sey (26/11/2026): Dobe Mara had no notes; they close the description: "In the cup we find dark berries, tamarind, and hibiscus."
+    ("Sey's 'In the cup we find dark berries, tamarind, and hibiscus.' gives the three notes",
+     lambda: scan.find_notes({"body": '<p><span>This is a distinctive coffee and one of the few Maragogypes we have ever released. We are grateful to Stephan and Lost Origin for the work that went into producing it. In the cup we find dark berries, tamarind, and hibiscus.</span></p>', "title": "2026 Stephan Muller x Lost Origin; Dobe Mara", "tags": []}) == ["Dark berries", "Tamarind", "Hibiscus"]
+       and scan.find_notes({"body": "<p>In the cup, you'll find stone fruit and honey.</p>", "title": "X", "tags": []}) == ["Stone fruit", "Honey"]),
     # Sprout (24/11/2026): the same subtitle layout as Sl.ow, with the name in capitals ("LASSO LASSI", then "Lychee, Tropical, Lactic")
     ("Sprout's 'Lychee, Tropical, Lactic' under 'LASSO LASSI' are the notes",
      lambda: scan.page_notes("Skip to content\nShop\nLASSO LASSI\nLychee, Tropical, Lactic\n\u00a313.00\nSize\n250g\nAdd to cart\nComplex & fruity bang bang baby!", "Lasso Lassi") == ["Lychee", "Tropical", "Lactic"]),
