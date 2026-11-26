@@ -2317,6 +2317,7 @@ def classify(item, roaster):
         "process": process,
         "variety": variety,
         "notes": find_notes(item),
+        "roaster_recipe": roaster_recipe(item["body"]),
         "price": (item.get("price_prefix") or "") + money(item["price"], price_ccy(item, roaster)) if item["price"] else None,
         "url": item["url"],
         "bag_g": bag_grams(item),
@@ -2335,6 +2336,83 @@ def classify(item, roaster):
     if roaster.get("nation"):
         rec["roaster_nation"] = roaster["nation"]
     return {k: v for k, v in rec.items() if v not in (None, "", [])}
+
+
+# ---------- the roaster's own recipe ----------
+# Some roasters say how they brew the coffee ("We recommend using 13 grams of coffee to 200 grams of water. A coarse grind size
+# approximately 900 micron. Brewing temperature 92C. … a 50g circular pour every 40 seconds. Total brew time is 3:00." Poma).
+# Read only after a cue that a recipe follows, and kept only when it has a dose and water (or a ratio) and at least one of
+# temperature, grind or time: just the numbers, never the roaster's words.
+RECIPE_CUE = re.compile(r"(?:brew(?:ing)?\s+(?:parameters|recipe|guide|ratio|recommendations?|suggestions?|specs?)|(?:filter|espresso|pour[- ]?over|v60|aeropress|chemex|kalita|batch brew|our|house)\s+recipe|\brecipe\s*:|how we (?:brew|like to brew|dial)|we (?:recommend|suggest)\s+(?:using|brewing|a\s+(?:ratio|dose))|we(?:'re| are)? brewing (?:it|this)|we brew (?:it|this)|dial[- ]in|brew guide)", re.I)
+RR_BREWERS = [("v60", r"\bv60\b|hario"), ("kalita", r"kalita|wave\b"), ("chemex", r"chemex"), ("aeropress", r"aero ?press"), ("origami", r"origami"),
+              ("orea", r"\borea\b"), ("april", r"\bapril\b brewer"), ("clever", r"clever dripper|\bclever\b"), ("french press", r"french press|cafeti[eè]re|plunger"),
+              ("moka", r"\bmoka\b|stove ?top"), ("espresso", r"espresso|\bshot\b|\byield\b"), ("batch brew", r"batch brew|moccamaster|filter machine")]
+
+
+def roaster_recipe(body):
+    if not body:
+        return None
+    text = re.sub(r"(?=</(?:li|p|div|h[1-6]|td|tr)>|<br\s*/?>)", "\n", body, flags=re.I)
+    text = html.unescape(strip_html(text)).replace("\xa0", " ")
+    cue = RECIPE_CUE.search(text)
+    if not cue:
+        return None
+    w = text[max(0, cue.start() - 40):cue.end() + 700]
+    num = lambda x: float(x.replace(",", "."))
+    out = {}
+    m = re.search(r"(\d{1,2}(?:[.,]\d)?)\s?(?:g|gr|grams?)\b\s*(?:of\s+)?(?:(?:ground\s+)?coffees?|beans|dose|in\b)", w, re.I) or re.search(r"\b(?:dose|coffee|in)\s*[:\-–]?\s*(\d{1,2}(?:[.,]\d)?)\s?(?:g|gr|grams?)\b", w, re.I)
+    if m and 5 <= num(m.group(1)) <= 40:
+        out["dose"] = num(m.group(1))
+    m = re.search(r"(\d{2,4}(?:[.,]\d)?)\s?(?:g|gr|grams?|ml)\b\s*(?:of\s+)?(?:(?:hot\s+)?water|out\b|yield|beverage|in the cup)", w, re.I) or re.search(r"\b(?:water|yield|out)\s*[:\-–]?\s*(\d{2,4}(?:[.,]\d)?)\s?(?:g|gr|grams?|ml)\b", w, re.I)
+    if m and 15 <= num(m.group(1)) <= 1500:
+        out["water"] = num(m.group(1))
+    m = re.search(r"(?<!time )(?<!time: )\b1\s?[:/]\s?(\d{1,2}(?:[.,]\d)?)\b(?!\s*(?:min|minutes|total|in total))", w, re.I)
+    if m and 1 <= num(m.group(1)) <= 20:
+        out["ratio"] = num(m.group(1))
+    if out.get("dose") and out.get("water") and "ratio" not in out:
+        out["ratio"] = round(out["water"] / out["dose"], 1)
+    m = re.search(r"(\d{2}(?:[.,]\d)?)\s?(?:°|º|degrees?\s?)?\s?(?:c|celsius)\b", w, re.I)
+    if m and 80 <= num(m.group(1)) <= 100:
+        out["temp"] = num(m.group(1))
+    m = re.search(r"(\d{3,4})\s?(?:µm|μm|um|microns?)\b", w, re.I)
+    if m and 150 <= int(m.group(1)) <= 1500:
+        out["grind_um"] = int(m.group(1))
+    m = re.search(r"\b(extra[- ]fine|medium[- ]fine|medium[- ]coarse|fine|medium|coarse)\b(?=[^.\n]{0,20}\bgrind)|\bgrind(?: size| setting)?\s*[:\-–]?\s*(?:is\s+|of\s+)?(extra[- ]fine|medium[- ]fine|medium[- ]coarse|fine|medium|coarse)\b", w, re.I)
+    if m:
+        out["grind"] = (m.group(1) or m.group(2)).lower().replace(" ", "-")
+    m = re.search(r"(\d{1,3})\s?clicks?(?:\s+on\s+(?:an?\s+|the\s+|our\s+)?([A-Z][\w-]+(?: [A-Z0-9][\w-]+)?))?", w)
+    if m and 3 <= int(m.group(1)) <= 120:
+        out["clicks"] = int(m.group(1))
+        if m.group(2):
+            out["grinder"] = m.group(2)
+    # a time is labelled, or a bare m:ss of 2 minutes or more ("1:16" on its own is a ratio)
+    m = re.search(r"(?:total|brew|extraction|contact)?\s*(?:brew\s+)?time[^0-9\n]{0,20}(\d{1,2}:\d{2})|(\d{1,2}:\d{2})\s*(?:min(?:utes)?\b|(?:in\s+)?total|brew time)", w, re.I) or re.search(r"\b([2-9]:[0-5]\d|1\d:[0-5]\d)\b(?!\s*ratio)", w)
+    if m:
+        out["time"] = next(g for g in m.groups() if g)
+    else:
+        m = re.search(r"(\d{2})\s?(?:-|–|to)\s?(\d{2})\s?(?:s|sec|secs|seconds)\b|(\d{2})\s?(?:s|sec|secs|seconds)\b(?! (?:bloom|pre-?infusion))", w, re.I)
+        if m and re.search(r"espresso|\bshot\b|\byield\b|\bout\b", w, re.I):
+            out["time"] = f"{m.group(1)}–{m.group(2)} s" if m.group(1) else f"{m.group(3)} s"
+    m = re.search(r"(\d{2,3})\s?(?:g|ml)\s+(?:[a-z]+\s+){0,2}pours?\s+every\s+(\d{2})\s?(?:s|sec|secs|seconds)\b", w, re.I)
+    if m:
+        out["pours"] = [int(m.group(1)), int(m.group(2))]
+    m = re.search(r"(\d{2,3})\s?(?:g|ml)\s+(?:of\s+water\s+)?(?:to\s+)?bloom|bloom(?:ing)?\s+(?:with\s+)?(\d{2,3})\s?(?:g|ml)", w, re.I)
+    if m:
+        out["bloom"] = int(m.group(1) or m.group(2))
+    for k, rx in RR_BREWERS:
+        if re.search(rx, w, re.I):
+            out["brewer"] = k
+            break
+    if out.get("brewer") == "espresso" and out.get("water", 0) > 120:
+        out.pop("brewer")
+    if not (("dose" in out and "water" in out) or "ratio" in out):
+        return None
+    if not any(k in out for k in ("temp", "grind", "grind_um", "clicks", "time")):
+        return None
+    for k in ("dose", "water", "ratio", "temp"):
+        if k in out and float(out[k]).is_integer():
+            out[k] = int(out[k])
+    return out
 
 
 # ---------- product page details ----------

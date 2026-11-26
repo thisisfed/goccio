@@ -812,6 +812,7 @@ details.more summary { color: var(--ink); font-size: var(--fs-s); text-decoratio
 .r-read { font-size: var(--fs-s); }
 .need h3, .log h3 { font-size: 15px; font-weight: 500; }
 .specs { gap: 0 16px; }
+.ro-rec{margin:14px 0 4px;padding:12px 14px;border-radius:var(--r,4px);background:var(--wash)} .ro-rec p{margin:0} .ro-rec-h{font-size:13px;line-height:1.3;color:var(--muted);margin-bottom:4px!important} .ro-rec-t{font-size:15px;line-height:1.4}   /* the roaster's own recipe, beside Goccio's numbers */
 .spec { justify-items: start; text-align: left; padding: 10px 0 18px; gap: 4px; }
 .spec b { font-size: min(52px, 22cqi); font-weight: 500; letter-spacing: -.045em; order: 2; }
 .spec .sub2 { order: 1; font-size: var(--fs-s); }
@@ -3349,7 +3350,8 @@ html[lang="it"] :is(#adjOpts,#moreOpts) > summary{grid-template-columns:max-cont
 footer #tip{margin-top:10px!important}footer #tip a{color:var(--ink);text-decoration:underline;text-decoration-color:color-mix(in srgb,currentColor 40%,transparent);text-underline-offset:2px}
 /* the hero is a film: one drop falling into black coffee, the ripples settling, black at the top and the foot so it runs into the page */
 .wm-screen{background:#000!important}
-html.film-off body .wm-screen{min-height:360px!important;height:360px!important}   /* seen the film today: a shorter header over its still, the coffees come up sooner */
+html.film-off body .wm-screen{min-height:360px!important;height:360px!important}
+html.film-off body .wm-video{visibility:hidden!important}   /* seen the film today: just the black, no still frame */   /* seen the film today: a shorter header over its still, the coffees come up sooner */
 .wm-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 42%;z-index:0;pointer-events:none;border:0;background:#000}
 .wm-video::-webkit-media-controls{display:none!important}
 @media (min-width:641px){
@@ -3545,6 +3547,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     <div class="rbody" id="rbody">
     <div class="adjusted" id="adjusted" hidden></div>
     <div class="specs" id="specs"></div>
+    <div class="ro-rec" id="roRec" hidden></div>
     <div class="cf-nudge" id="cfNudge" role="status" hidden>
       <p class="cf-h">It’s after 2 pm. Fine for some, but it may keep you up. Got a decaf?</p>
       <p class="ro-acts cf-row"><button type="button" class="ro-pill" id="cfDecafs">Show decafs</button><button type="button" class="ro-pill" id="cfFine">Brew anyway</button><button type="button" class="ro-pill" id="cfNever">Don’t ask again</button></p>
@@ -5885,6 +5888,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     renderMine(r);
     const showRet = r.tds != null;
     { const bn = BREWERS[r.brewer].name; $("recTitle").textContent = LANG === "it" ? `Ricetta per ${bn}` : `Recipe for ${bn}`; }   // the brewer, in the title
+    try { roRecFor(state.bag); } catch (e) {}
     crowdFor(state.bag);   // how everyone's brews of this coffee came out, once there are enough
     const noMillYet = !!mill().words;
     $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}${k === "key" && mill().words ? " wide" : ""}"><b>${v}${u ? `<small>${u === "-cup" ? u : " " + u}</small>` : ""}</b><span class="sub2">${l.charAt(0).toUpperCase() + l.slice(1)}${badge ? ` <span class="yr">${esc(badge)}</span>` : ""}</span>${k === "key" && isC40() && prefs.zero ? `<span class="zo">${sign(prefs.zero).replace(/^(.)/, "$1 ")} zero offset</span>` : ""}${k === "key" && K === "shot" && mill().noEsp ? `<span class="sub2">Not an espresso grinder</span>` : k === "key" && !isC40() && (onMill(r.clicks).atMax || onMill(r.clicks).atMin) ? `<span class="sub2">${onMill(r.clicks).atMax ? "Coarsest setting, may still run fast" : "Finest setting"}</span>` : ""}${k === "dose" ? (() => { const ds = BREWERS[r.brewer].doses, i = ds.findIndex(([v]) => v === r.dose); if (ds.length < 2 || i < 0) return "";
@@ -6621,6 +6625,24 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
   }
   // how this coffee's brews came out for everyone who logged one (functions/api/taste.js): said once there are CROWD_MIN answers
   const CROWD_MIN = 5, crowdSeen = new Map();
+  // the roaster's own recipe, when its shop page gives one: their numbers, next to Goccio's, read by the scanner (roaster_recipe)
+  function roRecFor(bag) { const el = $("roRec"); if (!el) return; const row = bag && bag.url ? shelf.find((x) => x.url === bag.url) : null, rr = row && row.roaster_recipe;
+    if (!rr) { el.hidden = true; el.innerHTML = ""; return; }
+    const it = LANG === "it", n = (x) => String(x).replace(".", it ? "," : "."), bits = [];
+    const BN = { v60: "V60", kalita: "Kalita Wave", chemex: "Chemex", aeropress: "AeroPress", origami: "Origami", orea: "Orea", april: "April", clever: "Clever", "french press": it ? "French press" : "French press", moka: "moka", espresso: "espresso", "batch brew": it ? "macchina a filtro" : "batch brew" };
+    if (rr.dose && rr.water) bits.push(rr.brewer === "espresso" ? (it ? `${n(rr.dose)} g dentro, ${n(rr.water)} g fuori` : `${n(rr.dose)} g in, ${n(rr.water)} g out`) : (it ? `${n(rr.dose)} g di caffè per ${n(rr.water)} g d'acqua` : `${n(rr.dose)} g coffee to ${n(rr.water)} g water`) + (rr.ratio ? ` (1:${n(rr.ratio)})` : ""));
+    else if (rr.ratio) bits.push(it ? `rapporto 1:${n(rr.ratio)}` : `a 1:${n(rr.ratio)} ratio`);
+    if (rr.temp) bits.push(`${n(rr.temp)} °C`);
+    const GW = { "extra-fine": it ? "extra fine" : "extra fine", fine: it ? "fine" : "fine", "medium-fine": it ? "medio-fine" : "medium-fine", medium: it ? "media" : "medium", "medium-coarse": it ? "medio-grossa" : "medium-coarse", coarse: it ? "grossa" : "coarse" };
+    if (rr.grind || rr.grind_um) { const um = rr.grind_um ? (it ? `circa ${rr.grind_um} µm` : `about ${rr.grind_um} µm`) : "";
+      bits.push(rr.grind ? (it ? `macinatura ${GW[rr.grind] || rr.grind}` : `${GW[rr.grind] || rr.grind} grind`) + (um ? ` (${um})` : "") : (it ? `macinatura a ${um}` : `${um} grind`)); }
+    if (rr.clicks) bits.push(`${rr.clicks} ${it ? "scatti" : "clicks"}${rr.grinder ? (it ? " su " : " on ") + rr.grinder : ""}`);
+    if (rr.bloom) bits.push(it ? `${rr.bloom} g di pre-infusione` : `a ${rr.bloom} g bloom`);
+    if (rr.pours) bits.push(it ? `versate da ${rr.pours[0]} g ogni ${rr.pours[1]} s` : `${rr.pours[0]} g pours every ${rr.pours[1]} s`);
+    if (rr.time) bits.push(it ? `${rr.time} in tutto` : `${rr.time} in all`);
+    const who = row.roaster, br = rr.brewer && BN[rr.brewer] ? (it ? ` (per ${BN[rr.brewer]})` : ` (for ${BN[rr.brewer]})`) : "";
+    el.innerHTML = `<p class="ro-rec-h">${it ? "La ricetta della torrefazione" : "The roaster’s recipe"}${esc(br)}</p><p class="ro-rec-t">${esc(who)}: ${esc(bits.join(", ")).replace(/(\d) (g|s|°C|µm|clicks|scatti)\b/g, "$1\u00a0$2")}.</p>`;
+    el.hidden = false; }
   function crowdFor(bag) { const el = $("crowd"); if (!el) return; const u = bag && bag.url;
     const show = (t) => { const n = t ? (t.sour || 0) + (t.balanced || 0) + (t.bitter || 0) : 0; if (n < CROWD_MIN) { el.hidden = true; return; }
       const it = LANG === "it", bits = [[t.balanced, it ? "perfetto" : "just right"], [t.sour, it ? "troppo acido" : "too sour"], [t.bitter, it ? "troppo amaro" : "too bitter"]].filter((x) => x[0]);
@@ -12220,8 +12242,9 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
         const loadLoop = () => { if (lp && !lp.src) { lp.src = lp.dataset.src; lp.preload = "auto"; lp.load(); } };
         v.addEventListener("playing", loadLoop, { once: true });
         v.addEventListener("playing", () => { try { const d = new Date(); localStorage.setItem("v60.filmDay", d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate()); } catch (e) {} }, { once: true });   // seen today
-        v.addEventListener("ended", () => { played = true; if (!lp) return; loadLoop(); lp.muted = true;
-          const go = () => { try { const p = lp.play(); if (p && p.then) p.then(() => { lp.style.visibility = ""; v.style.visibility = "hidden"; }).catch(() => {}); } catch (e) {} };   // refused: the drop rests on its last frame, as before
+        const toBlack = () => { v.style.transition = "opacity .9s ease"; v.style.opacity = "0"; };   // the film is over and nothing plays after it: the frame fades to the plain black
+        v.addEventListener("ended", () => { played = true; if (!lp) return toBlack(); loadLoop(); lp.muted = true;
+          const go = () => { try { const p = lp.play(); if (p && p.then) p.then(() => { lp.style.visibility = ""; v.style.visibility = "hidden"; }).catch(toBlack); else toBlack(); } catch (e) { toBlack(); } };
           if (lp.readyState >= 2) go(); else lp.addEventListener("canplay", go, { once: true }); });
         if (h0 && "IntersectionObserver" in window) new IntersectionObserver((es) => { const off = !es[0].isIntersecting; window.__heroOff = off;
             if (lp && played && lp.src) { if (off) lp.pause(); else { const p = lp.play(); if (p && p.catch) p.catch(() => {}); } } }).observe(h0);

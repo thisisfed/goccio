@@ -34,6 +34,32 @@ GRINDER = "Comandante C40"
 e = lambda s: html.escape(str(s or ""), quote=True)
 
 
+def roaster_recipe_line(c, name):
+    """The roaster's own recipe in words (the same wording as the app), or "" when its page gives none."""
+    rr = c.get("roaster_recipe") or {}
+    if not rr:
+        return ""
+    bits = []
+    if rr.get("dose") and rr.get("water"):
+        bits.append((f'{rr["dose"]} g in, {rr["water"]} g out' if rr.get("brewer") == "espresso" else f'{rr["dose"]} g coffee to {rr["water"]} g water') + (f' (1:{rr["ratio"]})' if rr.get("ratio") else ""))
+    elif rr.get("ratio"):
+        bits.append(f'a 1:{rr["ratio"]} ratio')
+    if rr.get("temp"):
+        bits.append(f'{rr["temp"]} °C')
+    if rr.get("grind") or rr.get("grind_um"):
+        um = f'about {rr["grind_um"]} µm' if rr.get("grind_um") else ""
+        bits.append((rr["grind"].replace("-", "-") + " grind" + (f" ({um})" if um else "")) if rr.get("grind") else um + " grind")
+    if rr.get("clicks"):
+        bits.append(f'{rr["clicks"]} clicks' + (f' on {rr["grinder"]}' if rr.get("grinder") else ""))
+    if rr.get("bloom"):
+        bits.append(f'a {rr["bloom"]} g bloom')
+    if rr.get("pours"):
+        bits.append(f'{rr["pours"][0]} g pours every {rr["pours"][1]} s')
+    if rr.get("time"):
+        bits.append(f'{rr["time"]} in all')
+    return f"{name}: " + ", ".join(bits) + "." if bits else ""
+
+
 def slug(s):
     s = unicodedata.normalize("NFKD", str(s or "")).encode("ascii", "ignore").decode().lower()
     s = re.sub(r"&", " and ", s)
@@ -105,7 +131,7 @@ def recipes(coffees):
 
 # ---------- the look: the site's own, black and white plus the accent, 15/24/39/63 ----------
 CSS = """
-:root{--bg:#fff;--ink:#000;--muted:#808080;--rule:#e3e3e3;--line:#a6a6a6;--pill:#e6e6e6;--hl:#ff4f00;
+:root{--bg:#f7f3ed;--ink:#000;--muted:#69625a;--rule:#e1d9ce;--line:#a8a196;--pill:#e7e0d6;--hl:#ff4f00;
 --sans:"ALT Riviera","Helvetica Neue",Helvetica,Arial,-apple-system,BlinkMacSystemFont,system-ui,sans-serif}
 @font-face{font-family:"ALT Riviera";src:url("/fonts/alt-medium.woff2") format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
 @media (prefers-color-scheme:dark){:root{--bg:#000;--ink:#fff;--muted:#8c8c8c;--rule:#262626;--line:#595959;--pill:#222;--hl:#ff5a14}}
@@ -159,6 +185,7 @@ a.ro-n{justify-self:start;text-decoration:underline;text-decoration-color:color-
 .facts dt{color:var(--muted)}.facts dd{margin:0;overflow-wrap:anywhere}
 .notes{margin:12px 0 0}
 .r-read{margin:12px 0 0}
+.ro-rec{margin:16px 0 0;padding:12px 14px;border-radius:4px;background:var(--pill)} .ro-rec p{margin:0} .ro-rec .k{font-size:13px;opacity:.7;margin-bottom:4px}
 .pours{width:100%;border-collapse:collapse;margin:12px 0 0}
 .pours th{text-align:left;font-weight:500;color:var(--muted);padding:0 10px 8px 0;border-bottom:1px solid var(--line)}
 .pours td{padding:11px 10px 11px 0;border-bottom:1px solid var(--line);vertical-align:top}
@@ -177,7 +204,7 @@ footer p{margin:0}
 .page:has(> section:last-child > .list){padding-bottom:0}   /* a page ending on a list: its last rule is the footer's rule */
 .page > section:last-child > .list > li:last-child{border-bottom:0}
 /* the main page's look: its Dark / Light (dark unless you pick light), its type drawn the same (thin smoothing, no extra tracking) */
-:root[data-theme="light"]{--bg:#fff;--ink:#000;--muted:#808080;--rule:#e3e3e3;--line:#a6a6a6;--pill:#e6e6e6;--hl:#ff4f00}
+:root[data-theme="light"]{--bg:#f7f3ed;--ink:#000;--muted:#69625a;--rule:#e1d9ce;--line:#a8a196;--pill:#e7e0d6;--hl:#ff4f00}
 :root[data-theme="dark"]{--bg:#000;--ink:#fff;--muted:#8c8c8c;--rule:#262626;--line:#595959;--pill:#222;--hl:#ff5a14}
 body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 *{letter-spacing:0!important}
@@ -211,7 +238,7 @@ def page(title, desc, path, body, extra_head="", nav=True, tight=False):
     url = BASE + path
     return f"""<!doctype html>
 <html lang="en"><head>
-<meta charset="utf-8"><meta name="theme-color" content="#000000"><script>try{{document.documentElement.setAttribute("data-theme",localStorage.getItem("v60.theme")==="light"?"light":"dark")}}catch(e){{document.documentElement.setAttribute("data-theme","dark")}}</script><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta charset="utf-8"><meta name="theme-color" content="#000000"><script>try{{var t=localStorage.getItem("v60.theme");if(t!=="auto")document.documentElement.setAttribute("data-theme",t==="light"?"light":"dark")}}catch(e){{document.documentElement.setAttribute("data-theme","dark")}}</script><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>{e(title)}</title>
 <meta name="description" content="{e(desc)}">
 <link rel="canonical" href="{e(url)}">
@@ -400,8 +427,10 @@ def main():
                 if miss:
                     what = "roast or process" if len(miss) == 2 else miss[0]
                     hint = f'<p class="note">The roaster doesn’t state the {what}, so this starts from the middle of the range. Pick it in the app to sharpen the recipe.</p>'
+                ro_rec = roaster_recipe_line(c, name)
                 body.append("<section>" + '<div class="sec-head"><span>Recipe.</span></div>'
                             + f'<p class="r-read">{e(r["method"])}, 1:{r["ratio"]}</p>' + specs
+                            + (f'<div class="ro-rec"><p class="k">The roaster’s recipe</p><p>{e(ro_rec)}</p></div>' if ro_rec else "")
                             + (f'<table class="pours"><thead><tr><th>At</th><th>Target</th><th>How</th></tr></thead><tbody>{rows}</tbody></table>' if rows else "") + hint
                             + '<p class="note">Another grinder or brewer (Chemex, Kalita, AeroPress, French press and more), a timer for every pour, and a journal that adjusts the next cup: all in the app.</p>'
                             + go + "</section>")
