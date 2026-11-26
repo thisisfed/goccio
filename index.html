@@ -3386,7 +3386,7 @@ html[lang="it"] :is(#adjOpts,#moreOpts) > summary{grid-template-columns:max-cont
 .chip.gear-more > .pn{color:var(--ink);font:500 var(--fs-s)/1 var(--sans);font-variant-numeric:tabular-nums;letter-spacing:0}
 /* the phone's first screen ends cleanly under the list's filter pills: nothing is sliced by the bottom bar */
 @media (max-width:640px){ .wm-screen{min-height:max(340px, calc(100svh - var(--top-h, 49px) - var(--bot-h) - var(--fold, 114px)))!important} }
-footer #tip{margin-top:10px!important}footer #tip a{color:var(--ink);text-decoration:underline;text-decoration-color:color-mix(in srgb,currentColor 40%,transparent);text-underline-offset:2px}
+footer #tip{margin-top:10px!important}footer #bagTip a{color:var(--ink);text-decoration:underline;text-decoration-color:color-mix(in srgb,currentColor 40%,transparent);text-underline-offset:2px}footer #tip a{color:var(--ink);text-decoration:underline;text-decoration-color:color-mix(in srgb,currentColor 40%,transparent);text-underline-offset:2px}
 /* the hero is a film: one drop falling into black coffee, the ripples settling, black at the top and the foot so it runs into the page */
 .wm-screen{background:#000!important}
 html.film-off body .wm-screen{min-height:360px!important;height:360px!important}
@@ -3731,7 +3731,7 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     <details class="foot-x" id="footCredits" open><summary class="foot-note refs-h foot-credits">Credits</summary>
     <p class="foot-note" id="credit">Made by <a href="https://thisisfed.xyz/" target="_blank" rel="noopener">Federico R. T. Ferrari</a>.<br>Set in ALT Riviera, with thanks to <a href="https://alt-tf.com/" target="_blank" rel="noopener">Alt Type Foundry</a>.<br>Hosted on <a href="https://pages.cloudflare.com/" target="_blank" rel="noopener">Cloudflare</a>, domain by <a href="https://www.spaceship.com/" target="_blank" rel="noopener">Spaceship</a>.</p>
     <p class="foot-note" id="rights">All rights reserved. Coffee names and tasting notes belong to their roasters.</p>
-    <p class="foot-note foot-copy">© <span id="cYear">2026</span> Federico R. T. Ferrari.<br><span id="tip">Free, no ads. <a href="https://buymeacoffee.com/thisisfed" target="_blank" rel="noopener">Buy me a coffee</a>.</span></p>
+    <p class="foot-note foot-copy">© <span id="cYear">2026</span> Federico R. T. Ferrari.<br><span id="tip">Free, no ads. <a href="https://buymeacoffee.com/thisisfed" target="_blank" rel="noopener">Buy me a coffee</a>.</span><br><span id="bagTip">Or send me a bag: an e-gift card from <a href="https://assemblycoffee.co.uk/products/assembly-gift-cards" target="_blank" rel="noopener">Assembly</a> or <a href="https://scenery.coffee/products/gift-card" target="_blank" rel="noopener">Scenery</a>, emailed to <a class="mail mail-txt" href="#" data-m="ku.oc.oiccog@nu">us</a>.</span></p>
     </details>
     <p class="foot-note foot-all foot-links"><a href="/new/">New this week</a><a href="/coffee/">Every coffee, by roaster</a><a href="/list/">Get your roastery listed</a><a href="/list/#remove">Remove your roastery</a><a href="/privacy/">Privacy</a><a class="mail" href="#" data-m="ku.oc.oiccog@nu">Email us</a></p>
     <script>try { document.getElementById("cYear").textContent = new Date().getFullYear(); } catch (e) {}</script>
@@ -10828,8 +10828,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
     // whole drop travels (as when he rolls), so nothing of him is cut off at his box's edge
     const room = () => { const sv = el.querySelector("svg"), sr = sv && sv.getBoundingClientRect(), bb = body.getBoundingClientRect(), u = sr && sr.width ? sr.width / 64 : 3, half = bb.width / 2 / u, pad = 16 / u;
       return { u, L: Math.max(8, (bb.left + bb.width / 2) / u - half - pad), R: Math.max(8, (innerWidth - (bb.left + bb.width / 2)) / u - half - pad) }; };
-    // hops over to x, a few small hops rather than one long slide; home again with x = 0
-    const hopTo = async (x, v, ms) => { const n = Math.max(1, Math.ceil(Math.abs(x - S.jx) / 16)); for (let i = n; i >= 1; i--) { await hop(v, S.jx + (x - S.jx) / i, ms); if (i > 1) await wait(60); } };
+    // one jump all the way over, in the same time as his little hops: further means higher, not longer (26/11/2026)
+    const hopTo = (x, v, ms) => { const d = Math.abs(x - S.jx); return hop(v * (1 + Math.min(1, d / 50) * 0.6), x, ms); };
     const roam = async (fn) => { const r0 = room(); rollU = r0.u; try { await fn(r0); } finally { S.jx = 0; rollU = 0; el.style.translate = ""; draw(); } };
     const jumps = () => act(async () => { const s0 = Math.random() < 0.5 ? -1 : 1; await face({ smile: 0.7 }, 150);
       await roam(async (r0) => { await hopTo(s0 < 0 ? -r0.L : r0.R, 240, 330); await wait(160); await hopTo(s0 < 0 ? r0.R : -r0.L, 260, 330); await wait(160); await hopTo(0, 200, 300); }); await wait(200); });
@@ -12705,7 +12705,8 @@ sm.addEventListener("click",function(e){if(still.matches||!d.animate)return;e.pr
 var from=d.offsetHeight,opening=!d.open;d.open=true;var full=d.offsetHeight;d.open=false;var shut=d.offsetHeight;d.open=true;
 var to=opening?full:shut;d.style.overflow="hidden";var a=d.animate({height:[from+"px",to+"px"]},{duration:Math.min(420,180+Math.abs(to-from)*0.6),easing:"cubic-bezier(.2,.7,.2,1)"});d._a=a;
 a.onfinish=function(){d._a=null;d.style.overflow="";if(!opening)d.open=false;};a.oncancel=function(){d.style.overflow="";};});});})();</script>
-<script>document.querySelectorAll("a.mail").forEach(function(a){var go=function(){a.href="mailto:"+a.dataset.m.split("").reverse().join("");};a.addEventListener("pointerdown",go);a.addEventListener("focus",go);a.addEventListener("click",function(){go();});});</script>
+<script>document.querySelectorAll("a.mail-txt").forEach(function(a){a.textContent=a.dataset.m.split("").reverse().join("");});   /* the gift card's address, readable, so it can be typed into the roaster's form */
+document.querySelectorAll("a.mail").forEach(function(a){var go=function(){a.href="mailto:"+a.dataset.m.split("").reverse().join("");};a.addEventListener("pointerdown",go);a.addEventListener("focus",go);a.addEventListener("click",function(){go();});});</script>
 <script>(function(){var own=location.hostname;function ext(root){(root.querySelectorAll?root:document).querySelectorAll('a[href^="http"]').forEach(function(a){try{if(new URL(a.href).hostname!==own){a.target="_blank";if(!/noopener/.test(a.rel))a.rel=(a.rel+" noopener").trim();}}catch(e){}});}
 ext(document);new MutationObserver(function(ms){ms.forEach(function(m){m.addedNodes.forEach(function(n){if(n.nodeType===1){if(n.matches&&n.matches('a[href^="http"]'))ext(n.parentNode||document);else ext(n);}});});}).observe(document.body,{childList:true,subtree:true});})();</script>
 </body>
