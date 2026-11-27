@@ -1,7 +1,8 @@
 name: New roasters worldwide
 
 # Every night, before the morning scans: roasteries on OpenStreetMap that aren't on the list yet are read the way the daily
-# scan reads them, and up to 10 that sell specialty coffee beans are added to data/roasters.json. None found: nothing changes.
+# scan reads them, and every one that sells specialty coffee beans is added to data/roasters.json (no daily cap since 27/11/2026).
+# Sources: the map's roasteries, coffee-bean shops and roasting cafés, the whole UK roaster directory and Wikidata.
 # Started at 00:31 UTC by the scan clock (Cloudflare), so the 02:31 scan reads the new roasters. GitHub's own schedule
 # below is only a backup and often runs hours late: roasters it adds after the day's scan are scanned straight away.
 on:
@@ -11,10 +12,10 @@ on:
     inputs:
       max_add:
         description: "Most roasters to add this run"
-        default: "25"
+        default: "1000"
       max_try:
         description: "Most shops to try this run"
-        default: "100"
+        default: "1800"
 
 permissions:
   contents: write
@@ -27,7 +28,7 @@ concurrency:
 jobs:
   world:
     runs-on: ubuntu-latest
-    timeout-minutes: 240   # the map region by region (with a retry each), then eight shops at a time, about a minute each
+    timeout-minutes: 300   # the map region by region (with a retry each), then twelve shops at a time, about a minute each (up to 1,800)
     steps:
       - uses: actions/checkout@v5
       - uses: ./.github/actions/private   # the scanner and Goccio's knowledge live in the private repo
