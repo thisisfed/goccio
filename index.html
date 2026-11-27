@@ -73,6 +73,7 @@ html body #shelf .item .name.sent .s-f, html body #shelf .item .name.sent .s-f a
 html body #shelf .item .name.sent .s-f a{text-decoration:underline;text-decoration-thickness:.05em;text-underline-offset:.1em}
 html body #shelf .item .name.sent .s-n{color:var(--ink)}
 html body .pill.buy-p .buy-u{color:var(--muted);margin-left:2px;font-weight:500}
+html body #shelf .item .name.sent .s-t.s-line{display:block}   /* the notes on a line of their own */
 /* three tones, every one easy to read (27/11/2026, from the research: WCAG 4.5:1 or more): the name full, the taste a step down,
    "by Poma:" a further step; the roaster is a link by its underline, not by being faint */
 html body #shelf .item .name.sent .s-t{color:#bfbfbf}
@@ -8347,9 +8348,10 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
             const nm = esc(capName(calm(shown))).replace(/[.!?…]+$/, "");
             // "Volcán Azul: coffee blossom, grapefruit and apricot. Roasted by: Poma, Copenhagen (DK)." (27/11/2026): the name, then how it
             // tastes, then who roasted it. No notes: "Volcán Azul. Roasted by: …". Read aloud in the order it's seen
-            // option B (27/11/2026): "Volcán Azul by Poma: coffee blossom, grapefruit and apricot." The tags stay on top; three tones:
-            // the name brightest, the taste a step down, "by Poma:" grey. On a roaster's page "by …" drops out
-            return `<p class="name sent"><span class="s-n" role="heading" aria-level="3">${nm}</span>${ro(it ? "di" : "by").replace('<span class="s-f">', '<span class="s-f"> ').replace(/\.<\/span>$/, "</span>")}<span class="s-d">${tl ? ":" : "."}</span>${tl ? ` <span class="s-t">${tl}.</span>` : ""}</p>${real ? "" : cardNotes(r)}`; })()}
+            // "Poma: Volcán Azul" then, on its own line, "Coffee blossom, grapefruit and apricot." (27/11/2026): who roasted it, what it's
+            // called, how it tastes. On a roaster's page the roaster drops out; no notes, just the first line
+            const roL = `<span class="s-f"><a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(String(r.roaster).replace(/[.!]+$/, ""))}</a><span class="s-d">:</span> </span>`;
+            return `<p class="name sent">${roL}<span class="s-n" role="heading" aria-level="3">${nm}</span>${tl ? `<span class="s-t s-line">${tl.charAt(0).toUpperCase() + tl.slice(1)}.</span>` : ""}</p>${real ? "" : cardNotes(r)}`; })()}
           ${cardPrice(r)}
         </div>
         <div class="r${rowOpen.has(rowKey(r)) ? " more-open" : ""}">
