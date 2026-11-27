@@ -64,6 +64,8 @@ html body #shelf .item .name.sent{display:block;margin:0;text-wrap:pretty}
 html body #shelf .item .name.sent .s-f, html body #shelf .item .name.sent .s-f a{color:var(--muted)}
 html body #shelf .item .name.sent .s-f a{text-decoration:underline;text-decoration-thickness:.05em;text-underline-offset:.1em}
 html body #shelf .item .name.sent .s-t{color:color-mix(in srgb,var(--muted) 55%,var(--bg))}
+html body #shelf .item .name.sent.tf .s-t{color:var(--muted)}
+html body #shelf .item .name.sent.tf .s-f, html body #shelf .item .name.sent.tf .s-f a{color:color-mix(in srgb,var(--muted) 55%,var(--bg))}   /* the taste comes second now, so it takes the darker grey */
 html.ro-page body #shelf .item .name.sent .s-f{display:none}
 html body #shelf .item .name.sent .s-dot{display:none}
 html.ro-page body #shelf .item .name.sent .s-dot{display:inline}   /* on a roaster's page the roaster goes, so the name ends its own sentence */
@@ -8062,7 +8064,10 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
             const low = (n) => n.split(" ").map((x) => /^[A-ZÀ-Ý][a-zà-ÿ'’-]*$/.test(x) ? x.toLowerCase() : x).join(" "), and = it ? " e " : " and ";
             const place = r.roaster_city || r.roaster_country ? `${r.roaster_city ? ", " + esc(cityL(r.roaster_city)) : ""}${r.roaster_country ? ` (${esc(r.roaster_country === "GB" ? "UK" : r.roaster_country)})` : ""}` : "";
             const tastes = real ? ns.slice(0, 3).map((n) => esc(low(n))) : [];
-            return `<p class="name sent"><span class="s-n">${esc(capName(calm(shown)))}</span><span class="s-dot">.</span> <span class="s-f">${it ? "di" : "from"} <a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a>${place}.</span>${tastes.length ? ` <span class="s-t">${it ? "Sa di" : "Tastes like"} ${tastes.length > 1 ? tastes.slice(0, -1).join(", ") + and + tastes[tastes.length - 1] : tastes[0]}.</span>` : ""}</p>${real ? "" : cardNotes(r)}`; })()}
+            const ro = (w) => `<span class="s-f">${w} <a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a>${place}.</span>`;
+            return tastes.length   /* name, then the taste, then who roasted it (27/11/2026) */
+              ? `<p class="name sent tf"><span class="s-n">${esc(capName(calm(shown)))}</span>. <span class="s-t">${it ? "Sa di" : "Tastes like"} ${tastes.length > 1 ? tastes.slice(0, -1).join(", ") + and + tastes[tastes.length - 1] : tastes[0]}.</span> ${ro(it ? "Di" : "From")}</p>${real ? "" : cardNotes(r)}`
+              : `<p class="name sent"><span class="s-n">${esc(capName(calm(shown)))}</span><span class="s-dot">.</span> ${ro(it ? "di" : "from")}</p>${real ? "" : cardNotes(r)}`; })()}
           ${cardPrice(r)}
         </div>
         <div class="r${rowOpen.has(rowKey(r)) ? " more-open" : ""}">
