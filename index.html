@@ -72,9 +72,12 @@ html body #shelf .item .name.sent{display:block;margin:0;text-wrap:pretty}
 html body #shelf .item .name.sent .s-f, html body #shelf .item .name.sent .s-f a{color:var(--muted)}
 html body #shelf .item .name.sent .s-f a{text-decoration:underline;text-decoration-thickness:.05em;text-underline-offset:.1em}
 html body #shelf .item .name.sent .s-n{color:var(--ink)}
-html body #shelf .item .name.sent .s-t{color:color-mix(in srgb,var(--ink) 75%,var(--bg))}   /* three clear tones (27/11/2026): the name full, the taste two-thirds, "by Poma:" grey */
-html body #shelf .item .name.sent .s-d, html body #shelf .item .name.sent .s-f, html body #shelf .item .name.sent .s-f a{color:color-mix(in srgb,var(--muted) 70%,var(--bg))}
-html[data-theme="light"] body #shelf .item .name.sent :is(.s-d, .s-f, .s-f a){color:color-mix(in srgb,var(--muted) 62%,var(--bg))} html[data-theme="light"] body #shelf .item .name.sent .s-t{color:color-mix(in srgb,var(--ink) 66%,var(--bg))}   /* in light the grey goes paler, so the three tones stay as far apart as in dark */
+html body .pill.buy-p .buy-u{color:var(--muted);margin-left:2px;font-weight:500}
+/* three tones, every one easy to read (27/11/2026, from the research: WCAG 4.5:1 or more): the name full, the taste a step down,
+   "by Poma:" a further step; the roaster is a link by its underline, not by being faint */
+html body #shelf .item .name.sent .s-t{color:#bfbfbf}
+html body #shelf .item .name.sent .s-d, html body #shelf .item .name.sent .s-f, html body #shelf .item .name.sent .s-f a{color:#8c8c8c}
+html[data-theme="light"] body #shelf .item .name.sent :is(.s-d, .s-f, .s-f a){color:#736b62} html[data-theme="light"] body #shelf .item .name.sent .s-t{color:#3b3835}   /* in light the grey goes paler, so the three tones stay as far apart as in dark */
 html body #shelf .item .l > .c-top.c-gone{display:none!important}   /* three tones: the name in white, the taste a softer white, the roaster in grey (27/11/2026) */
 html.ro-page body #shelf .item .name.sent .s-f{display:none}
 html body #shelf .item .name.sent .s-dot{display:none}
@@ -130,19 +133,19 @@ if (/iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIn
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <title>Goccio: every new coffee, with its recipe before you buy</title>
-<meta name="description" content="Every new coffee, with its recipe before you buy. Specialty coffees from over 700 roasters, checked every day, each with the recipe for your brewer and grinder: grind, ratio, temperature and every step.">
+<meta name="description" content="Every new coffee, with its recipe before you buy. Specialty coffees from over 800 roasters, checked every day, each with the recipe for your brewer and grinder: grind, ratio, temperature and every step.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://www.goccio.co.uk/"><link rel="canonical" href="https://www.goccio.co.uk/"><link rel="alternate" hreflang="en" href="https://www.goccio.co.uk/"><link rel="alternate" hreflang="it" href="https://www.goccio.co.uk/it/"><link rel="alternate" hreflang="x-default" href="https://www.goccio.co.uk/">
 <meta property="og:site_name" content="Goccio">
 <meta property="og:title" content="Goccio: every new coffee, with its recipe before you buy">
-<meta property="og:description" content="Every new coffee, with its recipe before you buy. Specialty coffees from over 700 roasters, checked every day, each with the recipe for your brewer and grinder: grind, ratio, temperature and every step.">
+<meta property="og:description" content="Every new coffee, with its recipe before you buy. Specialty coffees from over 800 roasters, checked every day, each with the recipe for your brewer and grinder: grind, ratio, temperature and every step.">
 <meta property="og:image" content="https://www.goccio.co.uk/og/card-8.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Goccio: every new coffee, with its recipe before you buy, over a drop of coffee">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Goccio: every new coffee, with its recipe before you buy">
-<meta name="twitter:description" content="Every new coffee, with its recipe before you buy. Specialty coffees from over 700 roasters, checked every day, each with the recipe for your brewer and grinder: grind, ratio, temperature and every step.">
+<meta name="twitter:description" content="Every new coffee, with its recipe before you buy. Specialty coffees from over 800 roasters, checked every day, each with the recipe for your brewer and grinder: grind, ratio, temperature and every step.">
 <meta name="twitter:image" content="https://www.goccio.co.uk/og/card-8.png">
 <!-- home screen icon: Goccio, the glossy drop, on black (iPhone rounds the corners itself); the profile picture is og/goccio-profile.png -->
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png?v=17">
@@ -3711,10 +3714,10 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       <div class="wm-screen">
         <p class="wordmark" aria-hidden="true" translate="no"><span id="wm">Goccio</span></p>
         <div class="wm-more">
-          <h1 class="wm-tagline">Every new coffee, with its recipe.</h1>
+          <h1 class="wm-tagline">Every new coffee, with a recipe for your brewer.</h1>
           <p class="wm-live wm-tot" id="wmTot" hidden></p>
-          <p class="wm-ctas"><button type="button" class="btn wm-go" id="wmFind">Find a coffee</button><button type="button" class="btn wm-bag" id="wmBag">I have a bag</button></p>
-          <p class="wm-lead">Read the bag. Goccio does the rest.</p>
+          <p class="wm-ctas"><button type="button" class="btn wm-go" id="wmFind">Find a coffee</button><button type="button" class="btn wm-bag" id="wmBag">Scan a bag</button></p>
+          <p class="wm-lead">New coffees from 800+ roasters, daily and free.</p>
           <p class="wm-live" id="wmLive" hidden><i class="live-dot" aria-hidden="true"></i><span id="wmLiveT"></span></p>
         </div>
       </div>
@@ -3742,7 +3745,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
 
   <section class="sec" id="shelves" aria-labelledby="sh">
     <div class="sec-head"><span class="cap" id="sh" role="heading" aria-level="2"><span class="sh-t">Coffees</span><span class="ro-title" id="roName" translate="no"></span></span><span class="ro-tools"><a class="chip ro-shop-top" id="roShopTop" target="_blank" rel="noopener" hidden>Visit shop</a><button type="button" class="chip ro-follow" id="roFollow" aria-pressed="false">Follow</button></span><button type="button" class="chip fy-pill" id="fyPill" aria-pressed="false">For you</button></div>
-    <nav class="co-tabs" id="coTabs" aria-label="Kinds of coffee"><div class="co-in"><button type="button" data-q="" data-en="New today" data-it="Nuovi oggi" aria-pressed="true">New today</button><button type="button" data-q="this week" data-en="This week" data-it="Questa settimana" aria-pressed="false">This week</button><button type="button" data-q="__near" data-en="Near you" data-it="Vicino a te" aria-pressed="false">Near you</button><button type="button" data-q="fruity" data-en="Fruity" data-it="Fruttati" aria-pressed="false">Fruity</button><button type="button" data-q="chocolatey" data-en="Chocolatey" data-it="Cioccolato" aria-pressed="false">Chocolatey</button><button type="button" data-q="floral" data-en="Floral" data-it="Floreali" aria-pressed="false">Floral</button><button type="button" data-q="nutty" data-en="Nutty" data-it="Frutta secca" aria-pressed="false">Nutty</button><button type="button" data-q="something funky" data-en="Funky" data-it="Funky" aria-pressed="false">Funky</button><button type="button" data-q="natural" data-en="Natural" data-it="Naturali" aria-pressed="false">Natural</button><button type="button" data-q="decaf" data-en="Decaf" data-it="Deca" aria-pressed="false">Decaf</button><button type="button" data-q="espresso" data-en="Espresso" data-it="Espresso" aria-pressed="false">Espresso</button><button type="button" data-q="under £15" data-en="Under £15" data-it="Sotto 15 £" aria-pressed="false">Under £15</button><button type="button" data-q="over £30" data-en="Treats" data-it="Speciali" aria-pressed="false">Treats</button></div></nav>
+    <nav class="co-tabs" id="coTabs" aria-label="Kinds of coffee"><div class="co-in"><button type="button" data-q="" data-en="New today" data-it="Nuovi oggi" aria-pressed="true">New today</button><button type="button" data-q="this week" data-en="This week" data-it="Questa settimana" aria-pressed="false">This week</button><button type="button" data-q="__near" data-en="Near you" data-it="Vicino a te" aria-pressed="false">Near you</button><button type="button" data-q="fruity" data-en="Fruity" data-it="Fruttati" aria-pressed="false">Fruity</button><button type="button" data-q="chocolatey" data-en="Chocolatey" data-it="Cioccolato" aria-pressed="false">Chocolatey</button><button type="button" data-q="floral" data-en="Floral" data-it="Floreali" aria-pressed="false">Floral</button><button type="button" data-q="nutty" data-en="Nutty" data-it="Frutta secca" aria-pressed="false">Nutty</button><button type="button" data-q="something funky" data-en="Wild ferments" data-it="Fermentazioni" aria-pressed="false">Wild ferments</button><button type="button" data-q="natural" data-en="Natural" data-it="Naturali" aria-pressed="false">Natural</button><button type="button" data-q="decaf" data-en="Decaf" data-it="Deca" aria-pressed="false">Decaf</button><button type="button" data-q="espresso" data-en="Espresso" data-it="Espresso" aria-pressed="false">Espresso</button><button type="button" data-q="under £15" data-en="Under £15" data-it="Sotto 15 £" aria-pressed="false">Under £15</button><button type="button" data-q="over £30" data-en="Over £30" data-it="Oltre 30 £" aria-pressed="false">Over £30</button></div></nav>
     <p class="fy-note fy-top" id="followNote" hidden></p>
     <p class="fy-note fy-top" id="fyNote" role="status" hidden></p>
     <p class="shelf-meta" id="shelfMeta" hidden></p>
@@ -3771,7 +3774,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   <!-- For roasters (27/11/2026): Get your roastery listed and Ask to be removed, a page in the page at /#list and /#remove -->
   <section class="sec lv" id="listView" aria-labelledby="lvH" hidden>
     <h2 class="lv-title" id="lvH">Get your roastery listed or removed</h2>
-    <p class="lv-lead">Listing is free. Every new coffee you put in your shop appears in the daily list, with a recipe for each drinker’s own brewer and grinder and a link straight to your shop to buy it.</p>
+    <p class="lv-lead">Listing is free. Every new coffee you add to your shop appears in Goccio’s daily list. Each gets a recipe for the drinker’s own brewer and grinder, and a Buy link straight to your shop. Ask to be removed at any time and your coffees come off within a day.</p>
     <p class="lv-p">Want your coffees first? A paid promotion pins your newest coffees to the top of the list for the weeks you choose, under a Paid promotion heading so drinkers know. Email us for dates and prices.</p>
     <p class="lv-acts"><a class="lv-pill mail" href="#" data-m="ku.oc.oiccog@nu" data-s="Paid promotion">Email us</a></p>
     <h3 class="lv-h">What you get</h3>
@@ -7551,7 +7554,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     const mine = shelf.filter((r) => r.roaster === shelfRo), r0 = mine[0];
     let country = r0.roaster_country || "";
     try { country = country ? new Intl.DisplayNames([LANG === "it" ? "it" : "en"], { type: "region" }).of(country) : ""; } catch (e) {}
-    $("roName").textContent = roasteryName(shelfRo) + ".";   // "People Possession Roastery.", as the list writes it
+    $("roName").textContent = roasteryName(shelfRo);   // a name, so no full stop (27/11/2026)
     /* one line, written as the list writes it: "Paris (FR), 18 coffees" */
     { const cc = r0.roaster_country === "GB" ? "UK" : (r0.roaster_country || ""), place = r0.roaster_city ? cityL(r0.roaster_city) + (cc ? ` (${cc})` : "") : country;
       $("roWhere").textContent = [place, mine.length === 1 ? (LANG === "it" ? "1 caffè" : "1 coffee") : `${mine.length} ${LANG === "it" ? "caffè" : "coffees"}`].filter(Boolean).join(", ") + "."; }   /* "Highland (UK), 3 coffees." a sentence, as the cards' (27/11/2026) */
@@ -8156,7 +8159,11 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     // always pounds and pence, the pence small and level with the top of the pounds: "£15.00", "£13.50"
     const p = p1.replace(/(\d+)(?:([.,])(\d{1,2}))?(?!\d|[.,]\d)/, (m, a, sep, d) => `${a}<span class="pd">${sep || "."}${(d || "").padEnd(2, "0")}</span>`);
     if (priceOnly) return p.replace(/<[^>]+>/g, "");
-    return `<a class="pill buy-p" href="${esc(r.url)}" target="_blank" rel="noopener" aria-label="${it ? "Compra" : "Buy"} ${esc(r.name)} ${it ? "da" : "from"} ${esc(r.roaster)}">${it ? "Compra" : "Buy"}${p ? ` <span class="buy-pr">${p}</span>` : ""}</a>`; };   // the price is said once, on the pill that spends it
+    // the bag and the price per kilo, so a 150 g Gesha and a 1 kg bag compare fairly (27/11/2026, UK unit pricing): "250 g, £56/kg"
+    const pGBP = gbp != null ? gbp : /£/.test(own) ? n0 : null, g = +r.bag_g || 0;
+    const kg = pGBP && g >= 50 && g <= 5000 ? pGBP * 1000 / g : null, kgT = kg ? `£${kg >= 10 ? Math.round(kg) : kg.toFixed(2)}/kg` : "";
+    const unit = g >= 50 && g <= 5000 ? `${g >= 1000 && g % 1000 === 0 ? g / 1000 + " kg" : g + " g"}${kgT ? ", " + kgT : ""}` : "";
+    return `<a class="pill buy-p" href="${esc(r.url)}" target="_blank" rel="noopener" aria-label="${it ? "Compra" : "Buy"} ${esc(r.name)} ${it ? "da" : "from"} ${esc(r.roaster)}${unit ? ", " + unit : ""}">${it ? "Compra" : "Buy"}${p ? ` <span class="buy-pr">${p}</span>` : ""}${unit ? ` <span class="buy-u">${unit}</span>` : ""}</a>`; };   // the price is said once, on the pill that spends it
   /* ways on from a search that found nothing: one of each kind, picked afresh for every new search, each tested to find coffees (Nov 2026) */
   const TRY_POOLS = [
     ["blueberry", "strawberry", "peach", "jasmine", "chocolate", "caramel", "mango", "raspberry", "bergamot", "lychee", "hazelnut", "cherry", "pineapple", "hibiscus", "floral", "juicy", "tea-like"],
@@ -8296,7 +8303,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       const tg = (t, c = "") => `<span class="tg${c ? " " + c : ""}">${t}</span>`;
       const tagBits = [
         r.process ? tg(esc(r.process), procTone(r.process)) : tg("Process not listed", "miss"),
-        r.variety && !/^\s*\d+\s?(?:g|gr|kg|oz|lb)\b/i.test(r.variety) ? varietyTag(r.variety) : "",   // a bag size read as the variety ("250g") is not shown
+        r.variety && !/^\s*\d+\s?(?:g|gr|kg|oz|lb)\b/i.test(r.variety) ? varietyTag(r.variety) : tg(LANG === "it" ? "Varietà non indicata" : "Variety not listed", "miss"),   // a bag size read as the variety ("250g") is not shown; unknown says so, as the process does (27/11/2026)
       ];
       const origins = originTag(r.origin, r.region);
       const place = origins;
@@ -8314,7 +8321,9 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       const rN = !shelfRo && !q ? roN.get(String(shelfDate(r) || "").slice(0, 10)) || 0 : 0;   // "108 coffees and 14 roasters added today"
       const roW = !rN ? "" : it1 ? ` e ${rN} ${rN === 1 ? "torrefazione" : "torrefazioni"}` : ` and ${rN} ${rN === 1 ? "roaster" : "roasters"}`;
       const wkB = !shelfRo && window.__wkHint;   /* This week: the band under the kinds row counts the whole week, whichever day is going by (27/11/2026) */
-      const dayT = wkB ? (it1 ? `${wkB.n.toLocaleString("it-IT")}<span class="day-what"> caffè</span> e ${wkB.ro} torrefazioni aggiunti questa settimana` : `${wkB.n.toLocaleString("en-GB")}<span class="day-what"> coffees</span> and ${wkB.ro} roasters added this week`) : !dN ? day : it1 ? `${dN.toLocaleString("it-IT")}<span class="day-what"> caffè</span>${roW} ${dN === 1 && !rN ? "aggiunto" : "aggiunti"} ${rest}` : `${dN.toLocaleString("en-GB")}<span class="day-what"> ${dN === 1 ? "coffee" : "coffees"}</span>${roW} added ${/^\d/.test(rest) ? "on " : ""}${rest}`;
+      // "141 new coffees today, from 15 roasters" (27/11/2026): "… and 15 roasters added today" read as 15 new roasters
+      const fromR = (n) => !n ? "" : it1 ? `, da ${n} ${n === 1 ? "torrefazione" : "torrefazioni"}` : `, from ${n} ${n === 1 ? "roaster" : "roasters"}`;
+      const dayT = wkB ? (it1 ? `${wkB.n.toLocaleString("it-IT")}<span class="day-what"> caffè nuovi</span> questa settimana${fromR(wkB.ro)}` : `${wkB.n.toLocaleString("en-GB")}<span class="day-what"> new coffees</span> this week${fromR(wkB.ro)}`) : !dN ? day : it1 ? `${dN.toLocaleString("it-IT")}<span class="day-what"> ${dN === 1 ? "caffè nuovo" : "caffè nuovi"}</span> ${rest}${fromR(rN)}` : `${dN.toLocaleString("en-GB")}<span class="day-what"> new ${dN === 1 ? "coffee" : "coffees"}</span> ${/^\d/.test(rest) ? "on " : ""}${rest}${fromR(rN)}`;
       // each day's count where its coffees start ("25 added today", then "230 added yesterday"…), pinned under the bar while its coffees go by; the next day's pushes it away
       if (byDay && !isSp && day) (window.__dayT = window.__dayT || {})[String(shelfDate(r) || "").slice(0, 10)] = dayT;   // every day's words, for the one pinned line to switch to as its coffees go by
       const dayHead = byDay && !isSp && day && lastDay === null ? `<h3 class="grp day-g" data-day="${String(shelfDate(r) || "").slice(0, 10)}"><span class="day-t${dWait ? " day-wait" : ""}">${dayT}</span></h3>` : ""; if (byDay && !isSp && day) lastDay = day;   // one span: the heading lays out its children in a row
@@ -8325,7 +8334,12 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
           ${/* one sentence in three greys (27/11/2026): the name; who roasted it and where; how it tastes. Guessed notes stay a small line under it */ ""}${(() => { const ns = noteList(r), real = ns.length && !(ns.length === 1 && !/\s/.test(ns[0].trim())), it = LANG === "it";
             const low = (n) => n.split(" ").map((x) => /^[A-ZÀ-Ý][a-zà-ÿ'’-]*$/.test(x) ? x.toLowerCase() : x).join(" "), and = it ? " e " : " and ";
             const place = "";   /* just the roaster, no town or country: the lightest line (27/11/2026) */
-            const tastes = real ? ns.filter((n) => !/^(coarse|medium|fine|extra fine|whole ?beans?|ground|percolator|cafeti[eè]re|plunger|french press|moka( pot)?|stovetop|aeropress|chemex|espresso|filter)$/i.test(n.trim())).slice(0, 3).map((n) => esc(low(n))) : [];   /* a grind or a brewer isn't a taste */
+            // three notes, the concrete ones first (27/11/2026, research: foods and flowers sell, "juicy" or "clean" say little);
+            // the roaster's own words, never ours; a grind or a brewer isn't a taste
+            const nt0 = real ? ns.filter((n) => !/^(coarse|medium|fine|extra fine|whole ?beans?|ground|percolator|cafeti[eè]re|plunger|french press|moka( pot)?|stovetop|aeropress|chemex|espresso|filter)$/i.test(n.trim())) : [];
+            const vague = /^(?:juicy|sweet|sweetness|clean|bright|brightness|balanced|complex|complexity|smooth|delicate|vibrant|rich|round|rounded|silky|elegant|lively|crisp|refreshing|lingering|long finish|structured|intense|fresh|soft|mild|bold|full(?:[- ]bodied)?|light|heavy|syrupy|creamy|velvety|tea-like|winey|acidity|body|aftertaste|finish)$/i;
+            const tastes = (() => { const conc = nt0.filter((n) => !vague.test(n.trim())), pick = (conc.length ? conc.concat(nt0.filter((n) => vague.test(n.trim()))) : nt0).slice(0, 3);
+              return nt0.filter((n) => pick.includes(n)).map((n) => esc(low(n))); })();   /* kept in the roaster's order */
             const ro = (w) => `<span class="s-f">${w} <a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(String(r.roaster).replace(/[.!]+$/, ""))}</a>${place}.</span>`;   /* the roaster's own name, no "Roastery" added (27/11/2026) */
             // what a buyer asks first, brightest first (27/11/2026): how it tastes; who roasted it (the link); then its name, dimmest.
             // No notes: the roaster leads. Three statements, one size; the order read aloud is the order seen
@@ -8335,11 +8349,11 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
             // tastes, then who roasted it. No notes: "Volcán Azul. Roasted by: …". Read aloud in the order it's seen
             // option B (27/11/2026): "Volcán Azul by Poma: coffee blossom, grapefruit and apricot." The tags stay on top; three tones:
             // the name brightest, the taste a step down, "by Poma:" grey. On a roaster's page "by …" drops out
-            return `<p class="name sent"><span class="s-n">${nm}</span>${ro(it ? "di" : "by").replace('<span class="s-f">', '<span class="s-f"> ').replace(/\.<\/span>$/, "</span>")}<span class="s-d">${tl ? ":" : "."}</span>${tl ? ` <span class="s-t">${tl}.</span>` : ""}</p>${real ? "" : cardNotes(r)}`; })()}
+            return `<p class="name sent"><span class="s-n" role="heading" aria-level="3">${nm}</span>${ro(it ? "di" : "by").replace('<span class="s-f">', '<span class="s-f"> ').replace(/\.<\/span>$/, "</span>")}<span class="s-d">${tl ? ":" : "."}</span>${tl ? ` <span class="s-t">${tl}.</span>` : ""}</p>${real ? "" : cardNotes(r)}`; })()}
           ${cardPrice(r)}
         </div>
         <div class="r${rowOpen.has(rowKey(r)) ? " more-open" : ""}">
-          <button class="btn" type="button" data-i="${i}">Brew</button><button type="button" class="row-more" data-more="${esc(rowKey(r))}" aria-expanded="${rowOpen.has(rowKey(r))}" aria-label="${LANG === "it" ? "Compra o salva" : "Buy or save"}"><svg viewBox="0 0 12 12" aria-hidden="true"><path class="tb-v" d="M6 2v8"/><path d="M2 6h8"/></svg></button>${cardBuy(r)}<a class="pill buy-p ro-all" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${LANG === "it" ? "Torrefattore" : "Roaster"}</a>
+          <button class="btn" type="button" data-i="${i}" aria-label="${LANG === "it" ? "Prepara" : "Brew"} ${esc(r.name)}">Brew</button><button type="button" class="row-more" data-more="${esc(rowKey(r))}" aria-expanded="${rowOpen.has(rowKey(r))}" aria-label="${LANG === "it" ? "Compra o salva" : "Buy or save"}"><svg viewBox="0 0 12 12" aria-hidden="true"><path class="tb-v" d="M6 2v8"/><path d="M2 6h8"/></svg></button>${cardBuy(r)}<a class="pill buy-p ro-all" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${LANG === "it" ? "Torrefattore" : "Roaster"}</a>
           <button type="button" class="pill bag-add ico${hasBag(r) ? " in" : ""}" data-b="${i}" aria-pressed="${hasBag(r)}" aria-label="${hasBag(r) ? (LANG === "it" ? "Nei miei sacchetti" : "In my bags") : (LANG === "it" ? "Salva nei miei sacchetti" : "Save to my bags")}">${BAG_ICO}</button>
         </div></article>`; }).join("") : (() => { if (shelfRo) { const an = $("askNote"), back = `<a href="#" class="ro-back-q">${LANG === "it" ? "Torna a tutti i caffè" : "Back to all coffees"}</a>`;
             if (!an.hidden && an.textContent) { an.innerHTML = esc(an.textContent).replace(/([^.])$/, "$1.") + "<br>" + back + "."; return ""; } return `<p class="muted" style="padding:16px 0;margin:0">${back}.</p>`; }
@@ -8618,7 +8632,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       if (!parts.length) { suStep = 1; return renderSetup(); }   // all skipped: back to the first question
       q.textContent = it ? "Fatto." : "Set.";
       c.innerHTML = `<p class="su-done">${it ? "Ogni ricetta ora è per " : "Every recipe is now for your "}${esc(parts.slice(0, -1).join(", ") + (parts.length > 1 ? (it ? " e " : " and ") : "") + parts[parts.length - 1])}${it ? ". Scegli un caffè:" : ". Now pick a coffee:"}</p>`
-        + `<div class="chips"><button type="button" class="chip" id="suFind">${it ? "Trova un caffè" : "Find a coffee"}</button><button type="button" class="chip" id="suBag">${it ? "Ho un sacchetto" : "I have a bag"}</button></div>`;
+        + `<div class="chips"><button type="button" class="chip" id="suFind">${it ? "Trova un caffè" : "Find a coffee"}</button><button type="button" class="chip" id="suBag">${it ? "Leggi un sacchetto" : "Scan a bag"}</button></div>`;
       $("suFind").onclick = () => $("wmFind").click(); $("suBag").onclick = () => $("wmBag").click(); return; }
     c.querySelectorAll("button").forEach((x) => x.onclick = () => {
       if (x.dataset.more) { suAll = true; return renderSetup(); }
@@ -10223,7 +10237,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
           if ($("wmTot")) $("wmTot").hidden = true;   // the totals live in the search box now (25/11/2026), not under the slogan
           // what a newcomer needs: how many shops are read, and that it happens daily ("792 roasters checked every morning."), not the day's joiners
           // one promise with the scale in it, no dot line under it: "Every new coffee from 792 roasters, with its recipe before you buy."
-          { const ld = document.querySelector(".wm-more .wm-tagline"); if (ld) ld.textContent = it0 ? "Ogni caffè nuovo, con la sua ricetta." : "Every new coffee, with its recipe."; }   /* 26/11/2026: the promise is the line under the name now, "Read the bag" closes the first screen */   // short (26/11/2026): the roaster count is already in the search box above it
+          { const ld = document.querySelector(".wm-more .wm-tagline"); if (ld) ld.textContent = it0 ? "Ogni caffè nuovo, con la ricetta per il tuo metodo." : "Every new coffee, with a recipe for your brewer."; }   /* 26/11/2026: the promise is the line under the name now, "Read the bag" closes the first screen */   // short (26/11/2026): the roaster count is already in the search box above it
           if ($("wmLive")) $("wmLive").hidden = true; } }
       renderShelfV();
       renderShelf();
