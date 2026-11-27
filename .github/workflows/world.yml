@@ -16,6 +16,9 @@ on:
       max_try:
         description: "Most shops to try this run"
         default: "1800"
+      audit:
+        description: "Instead: re-read the roasters it added before for shops selling other roasters' coffee (report, or fix to take them off)"
+        default: ""
 
 permissions:
   contents: write
@@ -38,10 +41,13 @@ jobs:
         with:
           python-version: "3.12"
       - name: Find and check
-        run: cp data/roasters.json /tmp/roasters_before.json && python scripts/world.py
+        run: |
+          cp data/roasters.json /tmp/roasters_before.json
+          if [ "$AUDIT" = "fix" ]; then python scripts/world.py --audit --fix; elif [ -n "$AUDIT" ]; then python scripts/world.py --audit; else python scripts/world.py; fi
         env:
           WORLD_MAX_ADD: ${{ inputs.max_add }}
           WORLD_MAX_TRY: ${{ inputs.max_try }}
+          AUDIT: ${{ inputs.audit }}
       - name: Save
         run: |
           git add data/roasters.json data/world_seen.json data/world_map.json 2>/dev/null || true
