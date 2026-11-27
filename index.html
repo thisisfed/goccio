@@ -2762,42 +2762,58 @@ html body #recipe table.pours.steps{margin-bottom:-14px!important}   /* the last
 #consTop .cons-top{margin:0;padding:0;background:none;color:var(--ink);font-size:var(--fs-s);line-height:1.35}
 /* Why these numbers: each setting and why, in view over How to pour (27/11/2026) */
 /* For roasters, a page in the page (27/11/2026): the homepage's top bar, its sizes, colours and pills; everything else steps aside */
-html.lv-page body main > .sec:not(#listView), html.lv-page body .wm-video, html.lv-page body .botnav{display:none!important}
-html.lv-page body #listView{display:block!important}
+html.lv-page body main > .sec:not(.lv-on), html.lv-page body .wm-video, html.lv-page body .botnav{display:none!important}
+html.lv-page body main > .sec.lv.lv-on{display:block!important}
+html.lv-page body main > #coffee{display:none!important}   /* the empty brew panel stays out of the pages in the page */
+:is(#listView,#pvView,#roView) .lv-msg:empty{display:none}   /* no message yet: Send sits 16 px over the next rule, as text does (27/11/2026) */
 /* its top bar: the name Goccio where the search box was, and a Homepage pill beside the little Goccio (27/11/2026) */
 .top .lv-mark, .top .lv-home{display:none}
 html.lv-page body .top .ask-box, html.lv-page body .top .ask-q{display:none!important}
 html.lv-page body .top .lv-mark{display:flex;align-items:center;flex:1 1 auto;min-width:0;height:var(--pill-h);font:500 var(--fs-s)/1 var(--sans);color:var(--ink);text-decoration:none}
 html.lv-page body .top .lv-home{display:inline-flex;align-items:center;flex:none;height:var(--pill-h);padding:0 12px;margin-right:0;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);text-decoration:none}
-#listView{padding:0 0 8px}
-#listView .lv-p, #listView .lv-steps{max-width:760px} #listView .lv-lead{max-width:1100px}
+:is(#listView,#pvView,#roView){padding:0 0 8px}
+:is(#listView,#pvView,#roView) .lv-p, :is(#listView,#pvView,#roView) .lv-steps{max-width:760px} :is(#listView,#pvView,#roView) .lv-lead{max-width:1100px}
 /* its title in a bar like the day's count: small type, 44 px line to line, pinned under the top bar (27/11/2026) */
-#listView .lv-title{position:sticky;top:var(--top-h,44px);z-index:4;display:flex;align-items:center;box-sizing:border-box;height:44px;margin:0 0 15px;padding:1px 0 0;background:var(--bg);font:500 var(--fs-s)/1.2 var(--sans);color:var(--ink);letter-spacing:0;max-width:none!important}
-#listView .lv-title::after{content:"";position:absolute;left:calc(50% - 50vw);width:100vw;bottom:0;height:1px;background:var(--line)}
-#listView .lv-title::before{content:"";position:absolute;inset:0 calc(50% - 50vw);background:var(--bg);z-index:-1}
+:is(#listView,#pvView,#roView) .lv-title{position:sticky;top:var(--top-h,44px);z-index:4;display:flex;align-items:center;box-sizing:border-box;height:44px;margin:0 0 15px;padding:1px 0 0;background:var(--bg);font:500 var(--fs-s)/1.2 var(--sans);color:var(--ink);letter-spacing:0;max-width:none!important}
+:is(#listView,#pvView,#roView) .lv-title::after{content:"";position:absolute;left:calc(50% - 50vw);width:100vw;bottom:0;height:1px;background:var(--line)}
+:is(#listView,#pvView,#roView) .lv-title::before{content:"";position:absolute;inset:0 calc(50% - 50vw);background:var(--bg);z-index:-1}
 /* the lead as big as a coffee's name */
-#listView .lv-lead{margin:0 0 12px;font-size:var(--fs-xl);line-height:.98;letter-spacing:-.01em;color:var(--ink);text-wrap:pretty}
-@media (min-width:900px){#listView .lv-lead{font-size:var(--fs-l)}}
-#listView .lv-p{margin:12px 0 0;font-size:var(--fs-s);line-height:1.35;color:var(--muted)}
-#listView .lv-p a, #listView .lv-lead a{color:var(--ink);text-decoration:underline;text-underline-offset:2px}
-#listView .lv-h{margin:16px 0 0;padding-top:15px;border-top:1px solid var(--line);font-size:var(--fs-xl);line-height:.98;letter-spacing:-.01em;font-weight:500;color:var(--ink);scroll-margin-top:calc(var(--top-h,44px) + 12px)}
-@media (min-width:900px){#listView .lv-h{font-size:var(--fs-l)}}   /* the section titles in the lead's type (27/11/2026) */
-#listView .lv-steps{margin:12px 0 0;padding-left:20px;display:grid;gap:6px;font-size:var(--fs-s);line-height:1.35;color:var(--muted)}
-#listView .lv-form{display:grid;gap:12px;margin:16px 0 0;max-width:560px}
-#listView .lv-form label{display:grid;gap:6px;font-size:var(--fs-s);color:var(--muted)}
-#listView .lv-form input{width:100%;box-sizing:border-box;height:43px;padding:0 12px;border:0;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1.2 var(--sans);-webkit-appearance:none;appearance:none}
-@supports (-webkit-touch-callout:none){#listView .lv-form input{font-size:16px}}
-#listView .lv-hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
-#listView .lv-go{justify-self:start;height:43px;padding:0 20px;border:0;border-radius:var(--r,4px);background:var(--hl);color:var(--on-hl,#000);font:500 var(--fs-s)/1 var(--sans);cursor:pointer}
-#listView .lv-go[disabled]{opacity:.5;cursor:default}
-#listView .lv-msg{margin:0;min-height:20px;font-size:var(--fs-s)}
-#listView .lv-acts{margin:16px 0 0}
-#listView .lv-acts + .lv-h{margin-top:16px}
+:is(#listView,#pvView,#roView) .lv-lead{margin:0 0 12px;font-size:var(--fs-xl);line-height:.98;letter-spacing:-.01em;color:var(--ink);text-wrap:pretty}
+@media (min-width:900px){:is(#listView,#pvView,#roView) .lv-lead{font-size:var(--fs-l)}}
+:is(#listView,#pvView,#roView) .lv-p{margin:12px 0 0;font-size:var(--fs-s);line-height:1.35;color:var(--muted)}
+:is(#listView,#pvView,#roView) .lv-p a, :is(#listView,#pvView,#roView) .lv-lead a{color:var(--ink);text-decoration:underline;text-underline-offset:2px}
+:is(#listView,#pvView,#roView) .lv-h{margin:16px 0 0;padding-top:15px;border-top:1px solid var(--line);font-size:var(--fs-xl);line-height:.98;letter-spacing:-.01em;font-weight:500;color:var(--ink);scroll-margin-top:calc(var(--top-h,44px) + 12px)}
+@media (min-width:900px){:is(#listView,#pvView,#roView) .lv-h{font-size:var(--fs-l)}}   /* the section titles in the lead's type (27/11/2026) */
+:is(#listView,#pvView,#roView) .lv-steps{margin:12px 0 0;padding-left:20px;display:grid;gap:6px;font-size:var(--fs-s);line-height:1.35;color:var(--muted)}
+:is(#listView,#pvView,#roView) .lv-form{display:grid;gap:12px;margin:16px 0 0;max-width:560px}
+:is(#listView,#pvView,#roView) .lv-form label{display:grid;gap:6px;font-size:var(--fs-s);color:var(--muted)}
+:is(#listView,#pvView,#roView) .lv-form input{width:100%;box-sizing:border-box;height:43px;padding:0 12px;border:0;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1.2 var(--sans);-webkit-appearance:none;appearance:none}
+@supports (-webkit-touch-callout:none){:is(#listView,#pvView,#roView) .lv-form input{font-size:16px}}
+:is(#listView,#pvView,#roView) .lv-hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+:is(#listView,#pvView,#roView) .lv-go{justify-self:start;height:43px;padding:0 20px;border:0;border-radius:var(--r,4px);background:var(--hl);color:var(--on-hl,#000);font:500 var(--fs-s)/1 var(--sans);cursor:pointer}
+:is(#listView,#pvView,#roView) .lv-go[disabled]{opacity:.5;cursor:default}
+:is(#listView,#pvView,#roView) .lv-msg{margin:0;min-height:20px;font-size:var(--fs-s)}
+:is(#listView,#pvView,#roView) .lv-acts{margin:16px 0 0}
+:is(#listView,#pvView,#roView) .lv-acts + .lv-h{margin-top:16px}
 html.lv-page body footer{margin-top:-66px!important}   /* the roasters view ends on its text: the footer's rule 16 px under its letters, the one rule (27/11/2026) */
-#listView :is(.lv-p, .lv-steps) + :is(.lv-h, .lv-back){margin-top:14px}   /* a section ending in text: its letters, not its line's leading, 16 px over the rule, as Brew and Buy (27/11/2026) */   /* a pill to the next rule: 16 px, as Brew and Buy sit over a card's rule */
-#listView .lv-pill{display:inline-flex;align-items:center;height:var(--pill-h,43px);padding:0 16px;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);text-decoration:none}
-@media (hover:hover){#listView .lv-pill:hover, #listView .lv-out:hover{opacity:.88}}
-#listView .lv-msg.ok{color:var(--ink)} #listView .lv-msg.no{color:var(--hl)}
+:is(#listView,#pvView,#roView) :is(.lv-p, .lv-steps) + :is(.lv-h, .lv-back){margin-top:14px}   /* a section ending in text: its letters, not its line's leading, 16 px over the rule, as Brew and Buy (27/11/2026) */   /* a pill to the next rule: 16 px, as Brew and Buy sit over a card's rule */
+:is(#listView,#pvView,#roView) .lv-pill{display:inline-flex;align-items:center;height:var(--pill-h,43px);padding:0 16px;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);text-decoration:none}
+@media (hover:hover){:is(#listView,#pvView,#roView) .lv-pill:hover, :is(#listView,#pvView,#roView) .lv-out:hover{opacity:.88}}
+:is(#listView,#pvView,#roView) .lv-msg.ok{color:var(--ink)} :is(#listView,#pvView,#roView) .lv-msg.no{color:var(--hl)}
+/* Privacy and Every coffee, by roaster: pages in the page too, in the same type (27/11/2026) */
+:is(#listView,#pvView,#roView) .lv-form textarea{width:100%;box-sizing:border-box;min-height:120px;padding:10px 12px;border:0;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1.35 var(--sans);resize:vertical}
+@supports (-webkit-touch-callout:none){:is(#listView,#pvView,#roView) .lv-form textarea{font-size:16px}}
+#pvView ul.lv-steps{list-style:disc}
+#roView .ro-az{margin:16px 0 0;padding:0;list-style:none;columns:1;column-gap:24px;font-size:var(--fs-s);line-height:1.35}
+@media (min-width:700px){#roView .ro-az{columns:2}} @media (min-width:1100px){#roView .ro-az{columns:3}}
+#roView .ro-az li{break-inside:avoid;padding:0 0 6px}
+#roView .ro-az{margin-bottom:-6px}
+#roView .ro-az a{color:var(--ink);text-decoration:none}
+#roView .ro-az a .n{text-decoration:underline;text-decoration-color:color-mix(in srgb,currentColor 35%,transparent);text-underline-offset:2px}
+@media (hover:hover){#roView .ro-az a:hover .n{text-decoration-color:currentColor}}
+#roView .ro-az .w{color:var(--muted)}
+#roView .ro-az .L{display:block;padding:10px 0 4px;color:var(--muted);break-after:avoid}
+#roView .ro-az li:first-child .L{padding-top:0}
 #listView .lv-back{margin:16px 0 0;padding-top:12px;border-top:1px solid var(--line)}
 #listView .lv-out{height:43px;padding:0 16px;border:0;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);cursor:pointer}
 /* the footer's folds (Example, Disclaimer, Methods, Sources, Credits): 44 px line to line, as the top bar, the kinds row and the day band (27/11/2026) */
@@ -3651,7 +3667,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
   <form class="ask-line" id="askForm" role="search" autocomplete="off">
     <label for="askIn" class="ask-q">How do you want your coffee today?</label>
     <div class="ask-box"><div class="ask-sug" id="askSug" hidden></div><input type="search" id="askIn" placeholder="Fruity, under £15" enterkeyhint="search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"><div class="ask-segs" id="askSegs" aria-label="Find a coffee by taste, brewer and price"><label class="seg"><span class="seg-k" data-en="Taste" data-it="Gusto">Taste</span><span class="seg-v"></span><select data-seg="t" aria-label="Taste"><option value="">Any taste</option><option>Fruity</option><option>Chocolatey</option><option>Floral</option><option>Nutty</option><option>Caramel</option><option>Citrus</option><option>Berry</option><option>Decaf</option><option value="__own">Type your own…</option></select></label><label class="seg"><span class="seg-k" data-en="Brewer" data-it="Metodo">Brewer</span><span class="seg-v"></span><select data-seg="b" aria-label="Brewer"><option value="">Any brewer</option><option>V60</option><option>Chemex</option><option>AeroPress</option><option>Espresso</option><option>French press</option><option>Moka pot</option><option value="__own">Type your own…</option></select></label><label class="seg"><span class="seg-k" data-en="Price" data-it="Prezzo">Price</span><span class="seg-v"></span><select data-seg="p" aria-label="Price"><option value="">Any price</option><option value="under £10">Under £10</option><option value="£10 to £15">£10 to £15</option><option value="£15 to £20">£15 to £20</option><option value="£20 to £30">£20 to £30</option><option value="£30 to £50">£30 to £50</option><option value="£50 to £100">£50 to £100</option><option value="over £100">Over £100</option></select></label><span class="seg-type" data-en="or type anything" data-it="o scrivi quello che vuoi">or type anything</span></div><button type="submit" class="ask-go" aria-label="Find my coffee"><svg class="ask-lens" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10.4 10.4l3.6 3.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><svg class="ask-xi" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div>
-    <a class="lv-mark" href="/" translate="no">Goccio</a><a class="lv-home" id="lvHome" href="/">Homepage</a>
+    <a class="lv-mark" href="/" translate="no">Goccio</a><a class="lv-home" id="lvHome" href="/">Home</a>
     <button type="button" class="ask-goccio" id="askGoccio" aria-label="Ask Goccio"><svg viewBox="-20 -20 40 40" aria-hidden="true"><defs><radialGradient id="agFill" gradientUnits="userSpaceOnUse" cx="1.74" cy="6" r="21.6" fx="2.42" fy="8.42"><stop offset="0" stop-color="#7d4524"/><stop offset=".45" stop-color="#4c2311"/><stop offset=".85" stop-color="#261107"/><stop offset="1" stop-color="#120702"/></radialGradient><radialGradient id="agShine"><stop offset="0" stop-color="#f4dfcd" stop-opacity=".56"/><stop offset=".22" stop-color="#e9c8ae" stop-opacity=".42"/><stop offset=".5" stop-color="#cc9c7b" stop-opacity=".19"/><stop offset=".78" stop-color="#a06a48" stop-opacity=".06"/><stop offset="1" stop-color="#7d4524" stop-opacity="0"/></radialGradient><clipPath id="agClip"><path d="M -15 0 C -15 -11.61 -2.13 -15.98 0 -17.52 C 2.13 -15.98 15 -11.61 15 0 C 15 8.28 8.28 15 0 15 C -8.28 15 -15 8.28 -15 0 Z"/></clipPath></defs><g class="ag-b"><path d="M -15 0 C -15 -11.61 -2.13 -15.98 0 -17.52 C 2.13 -15.98 15 -11.61 15 0 C 15 8.28 8.28 15 0 15 C -8.28 15 -15 8.28 -15 0 Z" fill="url(#agFill)"/><g class="ag-e"><ellipse cx="-5.81" cy="-0.97" rx="2.32" ry="3.29"/><ellipse cx="5.81" cy="-0.97" rx="2.32" ry="3.29"/></g></g><g class="ag-shw"><g class="ag-shy" clip-path="url(#agClip)"><ellipse class="ag-shine" cx="-6.76" cy="-8.7" rx="8.23" ry="5.42" transform="rotate(-35 -6.76 -8.7)" fill="url(#agShine)"/></g></g></svg></button>
   </form>
   <div class="sec-list" id="secList" inert aria-hidden="true"><div class="sec-list-in"><button type="button" class="sec-p" data-jump="shelves" data-sec="shelves">Coffees</button><button type="button" class="sec-p" data-jump="bags" data-sec="bags">My bags</button><button type="button" class="sec-p" data-jump="coffee" data-sec="coffee">What’s brewing?</button><button type="button" class="sec-p" data-jump="recipe" data-sec="recipe">Recipe</button><button type="button" class="sec-p" data-jump="journal" data-sec="journal">Journal</button></div></div>
@@ -3753,7 +3769,51 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
       <button type="submit" class="lv-go">Send</button>
       <p class="lv-msg" role="status"></p>
     </form>
-    <p class="lv-p">The email shows the request comes from the roastery, and we use it only to reply. Nothing else on this site collects or keeps personal data. <a href="/privacy/">Privacy</a>.</p>
+    <p class="lv-p">The email shows the request comes from the roastery, and we use it only to reply. Nothing else on this site collects or keeps personal data. <a href="/#privacy">Privacy</a>.</p>
+  </section>
+  <!-- Privacy, a page in the page at /#privacy (27/11/2026); /privacy/ stays for search engines -->
+  <section class="sec lv" id="pvView" aria-labelledby="pvH" hidden>
+    <h2 class="lv-title" id="pvH">Privacy</h2>
+    <p class="lv-lead">No accounts, no cookies, no tracking and no ads. What you save stays on your device. Only how a brew tasted is counted, anonymously.</p>
+    <h3 class="lv-h">On your device</h3>
+    <ul class="lv-steps">
+      <li>Your equipment, water, bags, journal and settings are kept in your browser’s own storage on this device. They are never sent to us.</li>
+      <li>One exception, to make the recipes better: when you say how a brew tasted (too sour, just right or too bitter) for a coffee from Goccio’s list, that answer is counted. What is sent: the coffee (its shop link, roaster and name, already public on Goccio), your brewer, the recipe’s numbers (grind, temperature, ratio, dose), the drain time and the answer. Nothing about you: no name, no address, no device, no cookie, no id. Coffees you type or scan are never sent, and neither is your note.</li>
+      <li>When Goccio can’t answer a question, or you give one of its answers a 👎, the question’s words are sent so it can be taught the answer: cut to 200 characters, with anything that looks like an email, a phone number or a link taken out, plus its language. Nothing about you: no name, no address, no device. They’re kept in a private list, read once a week.</li>
+      <li>For you is worked out on this device from the coffees you save.</li>
+      <li>When you ask Goccio about the weather, your town, or your location rounded to about 1 km, is kept on this device so it doesn’t ask again. It is sent only to Open-Meteo to get the forecast. Ask about the weather “here” or “where I am” to update it.</li>
+      <li>Near you asks your browser for your location once, works out how far each roaster is on this device, and keeps it there.</li>
+      <li>When you scan a bag, the photo is read on the phone and never uploaded.</li>
+      <li>Clearing this site’s data in your browser deletes all of it.</li>
+    </ul>
+    <h3 class="lv-h">What other services see</h3>
+    <ul class="lv-steps">
+      <li>The site is hosted on Cloudflare Pages. Like any host, Cloudflare sees each visit’s network address in order to send the page. We use Cloudflare Web Analytics to count visits: it sets no cookies, doesn’t fingerprint or follow you across sites, and gives us only totals (pages viewed, countries, which site sent you, device type), never who you are.</li>
+      <li>The first time you scan a bag, the label reader (Tesseract) is downloaded from jsDelivr, which sees that download.</li>
+      <li>Links to a roaster’s shop take you to their site, under their own privacy policy.</li>
+    </ul>
+    <h3 class="lv-h">Roasters</h3>
+    <ul class="lv-steps">
+      <li>Once a day we read each roaster’s public product list, under our own name and following their robots.txt. We keep each coffee’s name, origin, process, variety, roast, tasting notes, price and link, and never copy photos or descriptions.</li>
+      <li>If you ask to be listed or removed, the details you send go into a private record and are used only to reply about your request. Ask and we delete them.</li>
+      <li>Roasters can <a href="/#remove">ask to be removed</a> at any time. Your coffees come off the site within a day.</li>
+    </ul>
+    <h3 class="lv-h">Questions</h3>
+    <form class="lv-form" id="pvAsk" novalidate>
+      <input type="hidden" name="want" value="ask">
+      <label>Your question<textarea name="note" required></textarea></label>
+      <label>Email, if you’d like a reply (optional)<input type="email" name="email" autocomplete="email"></label>
+      <label class="lv-hp" aria-hidden="true">Leave this empty<input type="text" name="website2" tabindex="-1" autocomplete="off"></label>
+      <button type="submit" class="lv-go">Send</button>
+      <p class="lv-msg" role="status"></p>
+    </form>
+    <p class="lv-p">Updated 27/11/2026.</p>
+  </section>
+  <!-- Every coffee, by roaster: a page in the page at /#roasters (27/11/2026); /coffee/ stays for search engines -->
+  <section class="sec lv" id="roView" aria-labelledby="roH" hidden>
+    <h2 class="lv-title" id="roH">Every coffee, by roaster</h2>
+    <p class="lv-lead" id="roLead">Every roaster on Goccio, A to Z. Pick one for its coffees.</p>
+    <ul class="ro-az" id="roAz"></ul>
   </section>
   <section class="sec" id="bags" aria-labelledby="bh" hidden>
     <div class="sec-head"><span class="cap" id="bh" role="heading" aria-level="2">My bags</span></div>
@@ -3970,7 +4030,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
     <p class="foot-note" id="rights">Set in ALT Riviera, with thanks to <a href="https://alt-tf.com/" target="_blank" rel="noopener">Alt Type Foundry</a>.<br>Hosted on <a href="https://pages.cloudflare.com/" target="_blank" rel="noopener">Cloudflare</a>, domain by <a href="https://www.spaceship.com/" target="_blank" rel="noopener">Spaceship</a>.</p>
     <p class="foot-note foot-copy">© <span id="cYear">2026</span> Federico R. T. Ferrari. All rights reserved.</p>
     </details>
-    <p class="foot-note foot-all foot-links"><a href="/coffee/">Every coffee, by roaster</a><a href="/#list">Get your roastery listed or removed</a><a href="/privacy/">Privacy</a><a class="mail" href="#" data-m="ku.oc.oiccog@nu">Email us</a></p>
+    <p class="foot-note foot-all foot-links"><a href="/#roasters">Every coffee, by roaster</a><a href="/#list">Get your roastery listed or removed</a><a href="/#privacy">Privacy</a><a class="mail" href="#" data-m="ku.oc.oiccog@nu">Email us</a></p>
     <script>try { document.getElementById("cYear").textContent = new Date().getFullYear(); } catch (e) {}</script>
     </div>
   </footer>
@@ -10152,20 +10212,35 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
   // ---------- For roasters: Get your roastery listed and Ask to be removed, a page in the page (27/11/2026) ----------
   { const v = $("listView"), H = document.documentElement;
     if (v) {
+      // the pages in the page (27/11/2026): roasters (#list, #remove), Privacy (#privacy) and Every coffee, by roaster (#roasters)
+      const VIEWS = [...document.querySelectorAll("main > .sec.lv")], ROUTES = { "#list": ["listView"], "#remove": ["listView", "lvRemove"], "#privacy": ["pvView"], "#roasters": ["roView"] };
       let yBack = 0;
-      const open = (rm) => { if (!H.classList.contains("lv-page")) yBack = scrollY; v.hidden = false; H.classList.add("lv-page");
-        requestAnimationFrame(() => { if (rm) { const h = $("lvRemove"); if (h) h.scrollIntoView({ block: "start" }); } else scrollTo(0, 0); }); };
-      const close = () => { if (!H.classList.contains("lv-page")) return; H.classList.remove("lv-page"); v.hidden = true; if (/^#(list|remove)$/.test(location.hash)) history.replaceState(null, "", location.pathname + location.search); requestAnimationFrame(() => scrollTo(0, yBack)); };
-      const route = () => { if (location.hash === "#list") open(false); else if (location.hash === "#remove") open(true); else close(); };
+      const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+      // every roaster, A to Z, with its town and how many coffees: a tap opens its coffees in the page
+      const fillRo = () => { const ul = $("roAz"); if (!ul || typeof shelf === "undefined" || !shelf.length) return false; const by = new Map();
+        for (const r of shelf) { if (r.sponsored) continue; const o = by.get(r.roaster) || { n: 0, c: r.roaster_city || "" }; o.n++; by.set(r.roaster, o); }
+        const names = [...by.keys()].sort((a, b) => a.localeCompare(b, "en", { sensitivity: "base" })); let L = "", html = "";
+        for (const nm of names) { const o = by.get(nm), l0 = (nm.normalize("NFD").replace(/[^A-Za-z0-9]/g, "")[0] || "#").toUpperCase(), l = /[0-9]/.test(l0) ? "#" : l0;
+          html += `<li>${l !== L ? `<span class="L">${l}</span>` : ""}<a href="#roaster=${encodeURIComponent(nm)}" data-ro="${esc(nm)}"><span class="n">${esc(nm)}</span><span class="w">${o.c ? ", " + esc(o.c) : ""} · ${o.n}</span></a></li>`; L = l; }
+        ul.innerHTML = html; const lead = $("roLead"); if (lead) lead.textContent = `${names.length.toLocaleString("en-GB")} roasters and ${shelf.length.toLocaleString("en-GB")} coffees, A to Z. Pick a roaster for its coffees.`; return true; };
+      const open = (id, at) => { if (!H.classList.contains("lv-page")) yBack = scrollY;
+        VIEWS.forEach((x) => { const on = x.id === id; x.hidden = !on; x.classList.toggle("lv-on", on); }); H.classList.add("lv-page");
+        if (id === "roView" && !fillRo()) { let k = 0; const t = setInterval(() => { if (fillRo() || ++k > 60) clearInterval(t); }, 250); }
+        requestAnimationFrame(() => { const h = at && $(at); if (h) h.scrollIntoView({ block: "start" }); else scrollTo(0, 0); }); };
+      const close = () => { if (!H.classList.contains("lv-page")) return; H.classList.remove("lv-page"); VIEWS.forEach((x) => { x.hidden = true; x.classList.remove("lv-on"); });
+        if (ROUTES[location.hash]) history.replaceState(null, "", location.pathname + location.search); requestAnimationFrame(() => scrollTo(0, yBack)); };
+      const route = () => { const r = ROUTES[location.hash]; if (r) open(r[0], r[1]); else close(); };
       addEventListener("hashchange", route); route();
+      $("roAz") && $("roAz").addEventListener("click", (e) => { const a = e.target.closest("a[data-ro]"); if (!a || !window.openRoaster) return; e.preventDefault();
+        H.classList.remove("lv-page"); VIEWS.forEach((x) => { x.hidden = true; x.classList.remove("lv-on"); }); window.openRoaster(a.dataset.ro); });
       { const hm = $("lvHome"), mk = document.querySelector(".top .lv-mark"), home = (e) => { if (!H.classList.contains("lv-page")) return; e.preventDefault(); close(); requestAnimationFrame(() => requestAnimationFrame(() => scrollTo(0, 0))); };
         if (hm) hm.addEventListener("click", home); if (mk) mk.addEventListener("click", home); }
       if ($("lvBack")) $("lvBack").onclick = () => { if (history.length > 1 && document.referrer && new URL(document.referrer).origin === location.origin) history.back(); else close(); };
-      v.querySelectorAll("form").forEach((f) => { const go = f.querySelector("button"), msg = f.querySelector(".lv-msg");
+      VIEWS.forEach((vv) => vv.querySelectorAll("form").forEach((f) => { const go = f.querySelector("button"), msg = f.querySelector(".lv-msg");
         f.addEventListener("submit", async (e) => { e.preventDefault(); go.disabled = true; msg.className = "lv-msg"; msg.textContent = f.id === "lvList" ? "Checking your shop…" : "Sending…";
           try { const r = await fetch("/api/list", { method: "POST", body: new FormData(f) }), d = await r.json(); msg.className = "lv-msg " + (d.ok ? "ok" : "no"); msg.textContent = d.msg; if (d.ok) f.reset(); }
           catch (err) { msg.className = "lv-msg no"; msg.textContent = "That didn't go through. Check your connection and try again."; }
-          go.disabled = false; }); });
+          go.disabled = false; }); }));
       v.querySelectorAll("a.mail").forEach((a) => { const go = () => { a.href = "mailto:" + a.dataset.m.split("").reverse().join("") + (a.dataset.s ? "?subject=" + encodeURIComponent(a.dataset.s) : ""); }; a.addEventListener("pointerdown", go); a.addEventListener("focus", go); a.addEventListener("click", go); }); } }
   // ---------- appearance: Dark (the default), Light (a pale crema) or Auto (light by day, dark from sunset, where you are) ----------
   const THEMES = ["dark", "light", "auto"], THEME_LBL = { light: "Light", dark: "Dark", auto: "Auto" };
