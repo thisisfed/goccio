@@ -10383,7 +10383,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
     const W0 = 36, H0 = 24, R0 = 15.5;   // at rest: a dome 36 wide, 24 high; falling: a round drop of about the same volume
     const wS = 2 * Math.PI / 0.24, zS = 0.3, wL = 2 * Math.PI / 0.42, zL = 0.45, G = 2600;
     let foldOut = false;   // the folding phone is out: drawn squarer from the moment it appears; every other phone is the normal one
-    const S = { aRest: 0, eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, fone: 0, umb: 0, scroll: 0, jx: 0, blush: 0, turn: 0, armL: 0, armR: 0, armLa: 0, armRa: 0, flip: 0, cold: 0, hot: 0, tumble: 0, cross: 0, float: 0, land: 0, duo: 0, rnd: 0, near: 0 }; let eSX = 1, eSY = 1, eyesOff = false;   /* near: eyes drawn in towards each other (hypnosis) */ let rigid = false, rollU = 0, gX = 0, gY = 0, inStep = false, jy = 0, jv = 0, ptrX = 0, ptrY = 0, ptrT = 0; let tws = [], a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
+    const S = { grin: 0, aRest: 0, eyeL: 1, eyeR: 1, mouth: 0, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, fone: 0, umb: 0, scroll: 0, jx: 0, blush: 0, turn: 0, armL: 0, armR: 0, armLa: 0, armRa: 0, flip: 0, cold: 0, hot: 0, tumble: 0, cross: 0, float: 0, land: 0, duo: 0, rnd: 0, near: 0 }; let eSX = 1, eSY = 1, eyesOff = false;   /* near: eyes drawn in towards each other (hypnosis) */ let rigid = false, rollU = 0, gX = 0, gY = 0, inStep = false, jy = 0, jv = 0, ptrX = 0, ptrY = 0, ptrT = 0; let tws = [], a = 0, va = 0, lean = 0, vl = 0, leanTo = 0, y = 0, vy = 0, phase = "rest", round = 0, lookX = 0, lookY = 0, blink = 1, raf = 0, last = 0, quiet = 0;
     let glareLoop = 0; const glS = { x: 0, y: 0, t: 0, off: 0 };   // the shine's eased place, and the loop that redraws it while he moves
     const draw = () => {
       // the shape it has just before it falls: round. Squashed or stretched it keeps its volume (taller is narrower); its top
@@ -10424,6 +10424,9 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
       L.setAttribute("rx", (2.4 * S.eyeSL * big).toFixed(2)); L.setAttribute("ry", Math.max(0, 3.4 * blink * S.eyeL * S.eyeSL * op * big).toFixed(2));
       R.setAttribute("rx", (2.4 * S.eyeSR * big).toFixed(2)); R.setAttribute("ry", Math.max(0, 3.4 * blink * S.eyeR * S.eyeSR * op * big).toFixed(2));
 
+      // a small smile under the eyes, only while he smiles at rest (27/11/2026): one curved line, the eyes' own colour
+      { let mo = eyes.querySelector(".gd-grin"); if (!mo && S.grin > 0.01) { mo = document.createElementNS("http://www.w3.org/2000/svg", "path"); mo.setAttribute("class", "gd-grin"); mo.setAttribute("fill", "none"); mo.setAttribute("stroke-linecap", "round"); mo.setAttribute("stroke-width", "1.25"); mo.setAttribute("stroke", getComputedStyle(L).fill || "#000"); eyes.appendChild(mo); }
+        if (mo) { const g = Math.max(0, Math.min(1, S.grin)); mo.setAttribute("d", `M -3 -5.9 Q 0 ${(-5.9 + 2.9 * g).toFixed(2)} 3 -5.9`); mo.style.opacity = g.toFixed(2); } }
       // no mouth: a smile lifts the lower lids (smiling eyes); a frown tips the eyes down at the outer corners (sad); a yawn squeezes them
       const c = Math.max(-1, Math.min(1, S.smile)), lift = c > 0 ? c : 0, sad = c < 0 ? -c : 0;
       L.setAttribute("ry", (parseFloat(L.getAttribute("ry")) * (1 - 0.38 * lift)).toFixed(2)); R.setAttribute("ry", (parseFloat(R.getAttribute("ry")) * (1 - 0.38 * lift)).toFixed(2));
@@ -10452,7 +10455,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
     let fxStop = null;   // a running effect's own off switch (the hypno eyes)
     let curRun = 0, abort = false, freeReq = false, pending = null; const CUT = { cut: true };   // curRun: a move is running; abort: it is being cut for the next one
     const face = (o, ms) => { const g = curRun; return Promise.all(Object.entries(o).map(([k, v]) => tween(k, v, ms))).then(() => { if (g && abort) throw CUT; }); };
-    const REST = { eyeL: 1, eyeR: 1, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, blush: 0, cross: 0 };
+    const REST = { grin: 0, eyeL: 1, eyeR: 1, smile: 0, happy: 0, eyeSL: 1, eyeSR: 1, blush: 0, cross: 0 };
     const wait = (ms) => { const g = curRun; return new Promise((r, j) => setTimeout(() => g && abort ? j(CUT) : r(), ms)); };
     let acting = false, solo = false, texT = 0, texting = false;   // one expression at a time; a "solo" (laser eyes, hypnosis, coming up close) can't be cut short by anything
     let wantText = false;   // typing an answer: the phone comes out, but a trick puts it away first and it comes back after
@@ -11018,6 +11021,10 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
     const blinks = () => { const r = Math.random(); return r < 0.55 ? 1 : r < 0.85 ? 2 : 3; };
     const idle = () => { const n = blinks(); setTimeout(idle, 1500 + Math.random() * 7500 + n * 450); if (document.hidden || still() || phase !== "rest" || acting || (opt.paused && opt.paused())) return;
       const rr = el.getBoundingClientRect(); if (rr.bottom < 0 || rr.top > innerHeight) return;
+      // now and then, instead of a blink, a small smile or a slow stretch (27/11/2026): tall and thin, a held breath, then back with a soft settle
+      const r1 = Math.random();
+      if (r1 < 0.16) return void act(async () => { await face({ grin: 1, smile: 0.45 }, 320); await wait(1500 + Math.random() * 900); await face({ grin: 0, smile: 0 }, 320); });
+      if (r1 < 0.26) return void act(async () => { await tween("aRest", 0.2, 900); await face({ eyeL: 0.55, eyeR: 0.55 }, 300); await wait(700); await tween("aRest", -0.05, 260); await tween("aRest", 0, 420); await face({ eyeL: 1, eyeR: 1, grin: 1, smile: 0.45 }, 300); await wait(900); await face({ grin: 0, smile: 0 }, 300); });
       (async () => { for (let i = 0; i < n; i++) { await blinkSoft(); if (i < n - 1) await wait(90 + Math.random() * 140); } })().catch(() => {}); };
     setTimeout(idle, 6000);
     const pfft = (vol = 1, dur0 = 0.42) => { return;   /* Goccio makes no sounds at all */ try { const A = window.__gdA || (window.__gdA = new (window.AudioContext || window.webkitAudioContext)()); if (A.state === "suspended") A.resume();
