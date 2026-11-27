@@ -7683,7 +7683,11 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
   const roastRank = (r) => { const k = r.roast && ROAST[r.roast] ? r.roast : r.roast_level === "dark" ? "dark" : r.roast_level === "medium-dark" ? "mdark" : r.roast_level === "medium" ? "medium" : r.roast_level === "light" ? "light" : "";
     return { vlight: 0, light: 1, medium: 2, mdark: 3, dark: 4 }[k]; };
   // the price of the bag in pounds, for "under £15"
-  const bagGBP = (r) => { const n = priceNum(r.price), k = GBP_PER[roCcy.get(r.roaster) || "GBP"]; return n && k ? n * k : null; };
+  // a bag's price in pounds, worked out exactly as its Buy pill shows it (27/11/2026: "over £100" let through 125 kr bags, read as £125)
+  const bagGBP = (r) => { const own = String(r.price || "").replace(/^From\s+/i, ""), ccy = ccyOf(r), n0 = priceNum(own), k0 = GBP_PER[ccy];
+    if (/£/.test(own)) return n0 || null;
+    if (ccy === "GBP") return /kr|€|\$|chf|zł|kč|¥|eur|sek|dkk|nok|usd|czk|pln|vnd|₫|jpy|aud|cad|nzd|sgd|myr|krw|₩|\brp\b|idr|thb|฿/i.test(own) ? null : n0 && n0 < 1000 ? n0 : null;   // a price in another money the shop's currency doesn't say: no guess
+    const g = r._p100 != null && r.bag_g ? r._p100 * r.bag_g / 100 : n0 && k0 ? n0 * k0 : null; return g != null && g < 1000 ? g : null; };   // a bag over £1,000 is a misread price, not a bag
   function askScore(want) {
     const W = { taste: 3, proc: 2, roast: 2, land: 2.5, word: 2.5, fresh: 1, treat: 1.5, cheap: 1.5, filter: 1 };
     return (r) => {
