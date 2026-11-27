@@ -11172,7 +11172,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
       for (const x of ss) { if (cur && (cur.length + x.length > 170 || (cur.match(/[.!?](\s|$)/g) || []).length >= 2)) { out.push(cur); cur = x; } else cur = cur ? cur + " " + x : x; }
       if (cur) out.push(cur); return out.join("\n\n"); };
     // an answer that could show you something asks first ("Want to see it?"), and a yes shows it, typed or tapped
-    let pendingYes = null;
+    let pendingYes = null, pendingNo = null;   // pendingNo: what a no does, when the question has a better answer to no than "okay" (27/11/2026)
     // what the chat is about right now, so a short follow-up ("best one?", "another", "V60") makes sense: set from what Goccio just said
     let ctx = null, picked = new Set(), lastCo = null;   // lastCo: the coffee it last talked about, for "why that one?", "how do I brew it?"
     const BREW_ASK = /^(let'?s |please |can you |can we |could you )?(brew|make|prepare|start brewing)\b|\b(i )?(want|wanna|would like|'d like|need|am going|'m going|gonna|plan) to (brew|make|prepare)\b|\bi('m| am) (brewing|making)\b|\b(i )?(have|'ve got|got|bought|just got) (a |some |this )?(bag|pack|packet|box)( of)?\b|\bho (un |una )?(sacchetto|busta|pacco)\b|\bvoglio (preparare|fare)\b|\bbrew me\b|^prepara(mi|mo)?\b|\b(how (should|do|can|would|shall) (i|we) (brew|make|prepare)|how to (brew|make)|recipe|brew (it|this|that)|best way to brew|ricetta|come (lo|la) (preparo|faccio|estraggo)|come si prepara)\b/i;
@@ -11458,6 +11458,50 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
       if (g.step === "process") { const k = /co.?ferment|infus|co.?fermentat/i.test(ql) ? "cofer" : /anaerob|carbonic/i.test(ql) ? "anaerobic" : /decaf|deca/i.test(ql) ? "decaf" : /honey|miele/i.test(ql) ? "honey" : /natur|dry/i.test(ql) ? "natural" : /wash|lavat|wet/i.test(ql) ? "washed" : unsure ? "unsure" : null;
         if (!k) return miss(); if (k !== "unsure") g.process = k; else g.process = "auto"; g.tries = 0; gbGo(g, ""); return true; }
       gbs = null; return false; };
+    // coffee did-you-knows (27/11/2026): sometimes the hello opens with one instead of a coffee, and "tell me a fact" asks for one.
+    // Never the same one twice until most have been seen
+    const FACTS = [
+      ["Coffee beans are seeds. They grow in pairs inside a red cherry, and the plant is a cousin of the gardenia.", "I chicchi di caffè sono semi. Crescono in coppia dentro una ciliegia rossa, e la pianta è cugina della gardenia."],
+      ["Caffeine is the plant's own insecticide: it makes it to keep bugs off its leaves and seeds.", "La caffeina è l'insetticida della pianta: la produce per tenere lontani gli insetti da foglie e semi."],
+      ["Coffee flowers put a little caffeine in their nectar, and it helps bees remember them and come back.", "I fiori del caffè mettono un po' di caffeina nel nettare, e questo aiuta le api a ricordarli e a tornare."],
+      ["A shot of espresso has less caffeine than a mug of filter coffee: about 60 to 65 mg against 100 or more.", "Un espresso ha meno caffeina di una tazza di filtro: circa 60-65 mg contro 100 e oltre."],
+      ["Roasting barely touches the caffeine. Dark beans are lighter, though, so a scoop of dark has a little less.", "La tostatura tocca appena la caffeina. Ma i chicchi scuri pesano meno, quindi un misurino di scuro ne ha un po' meno."],
+      ["Beans lose around 15 to 20 percent of their weight in the roaster, mostly water, and swell to nearly twice their size.", "In tostatura i chicchi perdono il 15-20 per cento del peso, soprattutto acqua, e si gonfiano fin quasi al doppio."],
+      ["First crack is water turning to steam inside the bean and splitting it open, at around 196°C. It sounds like popcorn.", "Il primo crack è l'acqua che diventa vapore dentro il chicco e lo apre, intorno ai 196°C. Suona come i popcorn."],
+      ["Fresh coffee bubbles when you pour the first water: that's carbon dioxide from the roast escaping. It's called the bloom.", "Il caffè fresco fa le bolle al primo versamento: è l'anidride carbonica della tostatura che esce. Si chiama bloom."],
+      ["Gesha is named after the Gesha forest in Ethiopia, not after Japanese geishas. Panama made it famous in 2004.", "Il Gesha prende il nome dalla foresta di Gesha in Etiopia, non dalle geishe giapponesi. Panama lo ha reso famoso nel 2004."],
+      ["Arabica is a natural cross of two other coffee species, and it carries four sets of chromosomes instead of two.", "L'arabica è un incrocio naturale di altre due specie di caffè, e ha quattro serie di cromosomi invece di due."],
+      ["Arabica pollinates itself. Most other coffee species need a neighbour to cross with.", "L'arabica si impollina da sola. Quasi tutte le altre specie di caffè hanno bisogno di una pianta vicina."],
+      ["Robusta has roughly twice the caffeine of arabica, which is part of why it tastes more bitter.", "La robusta ha circa il doppio della caffeina dell'arabica, ed è anche per questo che è più amara."],
+      ["About one cherry in twenty grows a single round seed instead of two flat ones. That's a peaberry.", "Circa una ciliegia su venti ha un solo seme tondo invece di due piatti. È il peaberry, o caracolillo."],
+      ["Decaf is decaffeinated green, before it's roasted. The Swiss Water method uses nothing but water.", "Il decaffeinato si fa sul caffè verde, prima della tostatura. Il metodo Swiss Water usa solo acqua."],
+      ["A cup of filter coffee is about 98.5 percent water, so the water you brew with really matters.", "Una tazza di caffè filtro è acqua per circa il 98,5 per cento: l'acqua che usi conta davvero."],
+      ["The dried skins of coffee cherries make a fruity tea called cascara. It tastes of hibiscus and rosehip.", "Le bucce essiccate delle ciliegie di caffè diventano una tisana fruttata, la cascara. Sa di ibisco e rosa canina."],
+      ["The word coffee came to Europe from the Turkish kahve, which comes from the Arabic qahwa.", "La parola caffè è arrivata in Europa dal turco kahve, che viene dall'arabo qahwa."],
+      ["The first espresso machine was patented in Turin in 1884, by Angelo Moriondo.", "La prima macchina per espresso fu brevettata a Torino nel 1884, da Angelo Moriondo."],
+      ["Crema as we know it arrived with Achille Gaggia's lever machine after the war. Before that, espresso had none.", "La crema come la conosciamo arriva con la macchina a leva di Achille Gaggia nel dopoguerra. Prima l'espresso non l'aveva."],
+      ["The paper coffee filter was invented in 1908 by Melitta Bentz in Dresden, using a sheet from her son's school book.", "Il filtro di carta fu inventato nel 1908 da Melitta Bentz a Dresda, con un foglio del quaderno di suo figlio."],
+      ["The V60 takes its name from the 60 degree angle of its cone. The V stands for vector.", "Il V60 prende il nome dall'angolo di 60 gradi del suo cono. La V sta per vettore."],
+      ["The AeroPress was invented in 2005 by Alan Adler, the man behind the Aerobie flying ring.", "L'AeroPress fu inventata nel 2005 da Alan Adler, lo stesso che inventò il disco volante Aerobie."],
+      ["Finland drinks more coffee per person than anywhere else: around 12 kg of beans a year each.", "La Finlandia beve più caffè a persona di qualunque altro paese: circa 12 kg di chicchi a testa all'anno."],
+      ["Brazil grows about a third of all the world's coffee.", "Il Brasile coltiva circa un terzo di tutto il caffè del mondo."],
+      ["Lloyd's of London started in the 1680s as Edward Lloyd's coffee house, where sailors and merchants traded news.", "I Lloyd's di Londra nacquero negli anni Ottanta del Seicento come la caffetteria di Edward Lloyd, dove marinai e mercanti si scambiavano notizie."],
+      ["Beethoven is said to have counted exactly 60 beans for every cup he made.", "Si dice che Beethoven contasse esattamente 60 chicchi per ogni tazza."],
+      ["There's been an espresso machine in space: the ISSpresso reached the International Space Station in 2015.", "Una macchina per espresso è andata nello spazio: la ISSpresso è arrivata sulla Stazione Spaziale nel 2015."],
+      ["In an Ethiopian coffee ceremony the green beans are roasted in a pan in front of you, then brewed for three rounds.", "Nella cerimonia del caffè etiope i chicchi verdi si tostano in padella davanti a te, poi si servono tre giri."],
+      ["Coffee grown high up ripens slowly, and the beans come out denser and sweeter. That's why altitude is on the bag.", "Il caffè coltivato in alto matura piano, e i chicchi vengono più densi e dolci. Per questo l'altitudine è sul sacchetto."],
+      ["Caffeine is only a small part of coffee's bitterness. Most of it comes from compounds the roast creates.", "La caffeina è solo una piccola parte dell'amaro del caffè. Il grosso viene da composti creati dalla tostatura."],
+      ["Coffee changes as it cools: let a cup drop a little and the sweetness and fruit come forward.", "Il caffè cambia raffreddandosi: lascia scendere un po' la tazza e dolcezza e frutta vengono fuori."],
+      ["A natural coffee dries inside its whole cherry for weeks. That's where the jammy, winey notes come from.", "Un caffè naturale si secca per settimane dentro la ciliegia intera. Da lì vengono le note di marmellata e di vino."],
+      ["Water with a little magnesium pulls more flavour out of coffee than very soft or very hard water.", "Un'acqua con un po' di magnesio estrae più sapore di un'acqua molto dolce o molto dura."],
+      ["Coffee keeps best whole, airtight, away from light. Ground, it loses much of its aroma within the hour.", "Il caffè si conserva meglio in grani, chiuso e al buio. Macinato, perde gran parte dell'aroma in un'ora."]];
+    const factPick = () => { let seen = []; try { seen = JSON.parse(localStorage.getItem("v60.facts") || "[]"); } catch (e) {}
+      let pool = FACTS.map((f, i) => i).filter((i) => !seen.includes(i)); if (!pool.length) { seen = []; pool = FACTS.map((f, i) => i); }
+      const i = pick(pool); seen.push(i); try { localStorage.setItem("v60.facts", JSON.stringify(seen.slice(-(FACTS.length - 4)))); } catch (e) {} return T(FACTS[i][0], FACTS[i][1]); };
+    const sayFact = (best) => sayNow(T("Did you know? ", "Lo sapevi? ") + factPick(), [{ t: T("Another one", "Un'altra"), ask: pick([T("Another one?", "Un'altra?"), T("Want another?", "Ne vuoi un'altra?")]), f: () => sayFact(best),
+      no: () => best ? sayNow(pick([T(`Back to coffee, then. Today I'd brew ${shownName(best)} from ${roasteryName(best.roaster)}.`, `Torniamo al caffè, allora. Oggi preparerei ${shownName(best)} di ${roasteryName(best.roaster)}.`), T(`Enough trivia. Here's what I'd drink today: ${shownName(best)} from ${roasteryName(best.roaster)}.`, `Basta curiosità. Ecco cosa berrei oggi: ${shownName(best)} di ${roasteryName(best.roaster)}.`)]), [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(best); } }], happy)
+        : say(pick([T("Fair enough. Ask me anything about coffee.", "Va bene. Chiedimi qualsiasi cosa sul caffè."), T("Okay! What are we brewing?", "Ok! Cosa prepariamo?")]), null, smile) },
+      { t: T("Find me a coffee", "Trovami un caffè"), q: T("Find me a coffee", "Trovami un caffè") }], happy);
     // the hello: a fresh one each time, with something from what landed today (one that suits you, if it knows your taste)
     // the day the newest coffees landed, in the list's own words: today, yesterday, or the date
     const landedOn = (r) => { const d0 = (r && r.found) || ""; const ymd = (k) => { const t = new Date(); t.setDate(t.getDate() - k); return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`; };
@@ -11477,6 +11521,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
         const dawn = h0 >= 5 && h0 < 10 ? [T(`Morning${nmc}! First coffee of the day, let's make it a good one.`, `Buongiorno${nmc}! Il primo caffè della giornata: facciamolo bene.`),
           T(`Good morning${nmc}! Kettle on? Your first cup is on me.`, `Buongiorno${nmc}! Bollitore acceso? Il primo caffè lo scelgo io.`), T(`Morning${nmc}! Nothing before the first coffee. Here's yours.`, `Buongiorno${nmc}! Prima di tutto, il primo caffè. Eccolo.`)].filter((x) => x !== last) : [];
         const g0 = dawn.length ? pick(dawn) : timed.length && Math.random() < 0.6 ? pick(timed) : pick(all.filter((x) => x !== last).length ? all.filter((x) => x !== last) : all); try { localStorage.setItem("v60.hi", g0); } catch (e) {} return g0; })();
+      if (!n && Math.random() < 0.4) { sayNow(hi, null, happy); return typeDots(dotsFor("did you know"), () => sayFact(null)); }
       if (!n) return /\?\uE002?$/.test(hi) ? say(hi, null, happy) : say(hi + " " + pick([T("Ask me about coffee.", "Chiedimi del caffè."), T("What are we brewing?", "Cosa prepariamo?"), T("Need a hand with your coffee?", "Ti serve una mano col caffè?")]), null, happy);
       // after 2pm (and through the night) the pick is a decaf, today's if there is one, else the newest on the list, and it says why
       const hNow = new Date().getHours(), late = (hNow >= 14 || hNow < 5) && Math.random() < 0.4, rank = (x) => suits(x) * 3 + (notesOf(x).length ? 1.5 : 0) + Math.random() * 2;
@@ -11528,7 +11573,9 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
           ...(n >= 20 ? [T(`Busy day: ${n} new coffees ${on}. The one I'm curious about: ${what}.`, `Giornata piena: ${n} caffè nuovi ${on}. Quello che mi incuriosisce: ${what}.`)] : []),
           ...(n <= 5 ? [T(`Only ${n} new coffees ${on}, but one's a gem: ${what}.`, `Solo ${n} caffè nuovi ${on}, ma uno è una chicca: ${what}.`)] : [])]));
       // three messages, typed one after the other: the hello, the coffee, then "Want to see it?"
-      sayNow(hi, null, happy); const nextOne = () => typeDots(dotsFor(line), () => { sayNow(line, [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(best); } }], happy); ctx = { t: "pick", at: Date.now() }; });
+      // about one hello in three (never first thing in the morning, nor when it's steering you to a decaf or to tomorrow) opens with a did-you-know
+      const factFirst = !(hNow >= 5 && hNow < 10) && !nightLine && !decafLine && Math.random() < 0.35;
+      sayNow(hi, null, happy); const nextOne = factFirst ? () => typeDots(dotsFor("did you know, coffee"), () => { sayFact(best); ctx = { t: "pick", at: Date.now() }; }) : () => typeDots(dotsFor(line), () => { sayNow(line, [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(best); } }], happy); ctx = { t: "pick", at: Date.now() }; });
       // now and then, after the hi, it asks how you are and waits: your answer gets a word back (and an answer if you ask it), then the coffee
       const howQ = !/\?/.test(hi) && !(hNow >= 5 && hNow < 10) && Math.random() < 0.3 ? pick([T("How are you?", "Come stai?"), T("How's your day going?", "Come va la giornata?"), T("How are you doing today?", "Come va oggi?")]) : null;
       const first = howQ ? () => typeDots(dotsFor(howQ), () => { sayNow(howQ, null, null); ctx = { t: "howru", at: Date.now(), next: nextOne, q: howQ }; }) : nextOne;
@@ -11660,7 +11707,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
         if (/\b(nothing|none|not yet|no coffee|out of coffee|run out|ran out|niente|ancora niente|finito|nessuno)\b/i.test(s0)) { say(T("No coffee? We can fix that.", "Niente caffè? Rimediamo subito."), null, surprised); setTimeout(() => pickNew(false), 1400); return true; } }
       return false; };
     const offer = (text, chips) => { const a = (chips || []).find((x) => x && typeof x === "object" && x.f); if (!a) return [text, chips];
-      const many = /coffees|their|his|them|caff[eè]$|suoi|loro/i.test(a.t); pendingYes = a.f;
+      const many = /coffees|their|his|them|caff[eè]$|suoi|loro/i.test(a.t); pendingYes = a.f; pendingNo = a.no || null;
       return [text, [{ t: T("Yes", "Sì"), q: T("Yes", "Sì") }, ...chips.filter((x) => x !== a)], a.ask || pick(many ? [T("Want to see them?", "Vuoi vederli?"), T("Shall I show you them?", "Te li mostro?"), T("Take a look?", "Diamo un'occhiata?"), T("Fancy a look?", "Ti va di vederli?")]
         : [T("Want to see it?", "Vuoi vederlo?"), T("Shall I show you?", "Te lo mostro?"), T("Take a look?", "Diamo un'occhiata?"), T("Fancy a look?", "Ti va di vederlo?"), T("Shall I open it?", "Lo apro?"), T("Want a closer look?", "Vuoi vederlo da vicino?")])]; };   // the question comes in a message of its own, just after
     // no hint buttons in the chat, ever: when Goccio offers choices it says them ("…: clean and bright, rich and full or easy?"),
@@ -11694,7 +11741,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
     // how long the dots show: as if typed, so a long message takes longer than a short one (about 14 ms a letter, 0.6 to 2.6 s)
     const dotsFor = (t) => Math.min(2600, 600 + String(t || "").length * 14) * (0.9 + Math.random() * 0.2);
     const typeDots = (ms, then, g0) => { const g = g0 == null ? sayGen : g0; setTimeout(() => { if (sayGen === g && talking) then(); }, 500); };   // a short pause: the message itself shows the dots first
-    const sayNow = (text, chips, mood) => { pendingYes = null; ctxFrom(text); let ask2 = null; [text, chips, ask2] = offer(text, chips); const py = pendingYes; text = voice(text, chips); chips = null; text = tidy(text); sayGen++; finishTyping(); const rubs = false;   /* no more rub-out joke (26/11/2026): every message lands whole */ const tf = typeFrames(text); text = tf.text; if (tipEl) { tipEl.remove(); tipEl = null; } const m = addMsg("it", ""); m._rec.t = text; saveChat(); tipAfter(m); typing = { m, text, top: replyTo }; let k = 0; bob(true);
+    const sayNow = (text, chips, mood) => { pendingYes = null; pendingNo = null; ctxFrom(text); let ask2 = null; [text, chips, ask2] = offer(text, chips); const py = pendingYes, pn = pendingNo; text = voice(text, chips); chips = null; text = tidy(text); sayGen++; finishTyping(); const rubs = false;   /* no more rub-out joke (26/11/2026): every message lands whole */ const tf = typeFrames(text); text = tf.text; if (tipEl) { tipEl.remove(); tipEl = null; } const m = addMsg("it", ""); m._rec.t = text; saveChat(); tipAfter(m); typing = { m, text, top: replyTo }; let k = 0; bob(true);
       const anchor = replyTo && replyTo.isConnected ? replyTo : m; requestAnimationFrame(() => toTop(anchor, true));   // your question at the top, the answer filling in below it
       // as the answer grows it keeps your question pinned at the top, until it reaches it or you scroll the chat yourself
       // a touch slower than before (2 letters every 32 ms, was 24)
@@ -11714,7 +11761,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
           if (!free) requestAnimationFrame(() => toTop(anchor)); }, ms); }
       showChips(chips); if (CALM) mood = null;
       if (ask2) { const g2 = sayGen, pl2 = nextPills || [[T("Yes", "Sì"), T("Yes", "Sì")], [T("No", "No"), T("No thanks", "No grazie")]]; nextPills = null;   /* "Want to see it?" in a second message once the first is written, then the Yes / No pills */
-        const ask = () => typeDots(dotsFor(ask2), () => { nextPills = pl2; sayNow(ask2, null, null); pendingYes = py; }, g2);
+        const ask = () => typeDots(dotsFor(ask2), () => { nextPills = pl2; sayNow(ask2, null, null); pendingYes = py; pendingNo = pn; }, g2);
         if (typing) typing.after = ask; else ask(); }
       else if (nextPills) { const pl = nextPills; nextPills = null; if (typing) typing.after = () => showPills(pl); else showPills(pl); } if (mood) mood(); };
     // the sample questions: a fresh mix each time, one from each kind, so you get an idea of everything it knows
@@ -11762,6 +11809,8 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
     const WBC_LAST = Math.max(...Object.keys(WBC).map(Number));
     let wbcAt = 0;   // when the barista champions last came up, so a bare year that follows is read as "who won then?"
     const EARLY = [
+      // "tell me a fact", "did you know?", "una curiosità": a coffee did-you-know (27/11/2026)
+      [/\b(?:(?:fun |random |coffee )?facts?|did you know|tell me something (?:interesting|cool|new)|trivia|curiosit[àa]|lo sapevi|qualcosa di interessante)\b/i, () => { sayFact(null); return true; }],
       // "I have a bag": a photo of it is the quickest way in (27/11/2026: he said he didn't know)
       [/^\s*(i(?:'ve| have)(?: got)? (?:a |some |this )?(?:bag|coffee|beans)|i got (?:a |some )?(?:bag|beans)|ho (?:un |dei |questo )?(?:sacchetto|caffè|caffe|chicchi))\b[.!]*\s*$/i, () => {
         nextPills = [[T("Send a photo", "Manda una foto"), "__photo"], [T("Type its name", "Scrivi il nome"), "__type"]];
@@ -12599,6 +12648,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
       if (!pendingYes && /^(yes|yeah|yep|yup|sure|ok|okay|no|nope|nah|s[iì]|certo|va bene)\b[ .!]*$/i.test(q)) {   // a yes or no with nothing to answer
         return say(pick([T("Noted! Ask me anything about coffee.", "Ricevuto! Chiedimi qualsiasi cosa sul caffè."), T("Got it. What shall we talk about?", "Capito. Di cosa parliamo?"), T("Okay! I'm all ears. Well, all drop.", "Ok! Sono tutto orecchi. Anzi, tutto goccia.")]), null, smile); }
       if (pendingYes) { const f = pendingYes; pendingYes = null; if (/^(yes|yeah|yep|yup|sure|ok|okay|please|go on|go ahead|show me|let'?s see|s[iì]|certo|dai|va bene|vediamo|fammi vedere)\b/i.test(q) && !/\b(else|another|other|more|different|instead|altro|altri|diverso)\b/i.test(q)) {   /* "Show me something else" is not a yes */ if (!silent) react("👍", 200); setTimeout(f, 650); return; }
+        if (/^(no|nope|nah|no thanks|not now|maybe later|non ora|no grazie)\b[ .!]*$/i.test(q) && pendingNo) { const g = pendingNo; pendingNo = null; return g(); }
         if (/^(no|nope|nah|no thanks|not now|maybe later|non ora|no grazie)\b[ .!]*$/i.test(q)) return say(pick([T("No worries.", "Nessun problema."), T("Okay, another time.", "Ok, un'altra volta."), T("Fair enough.", "Va bene.")]), null, smile); }
       // brewing from the chat: "start brewing" with a recipe open starts it; "let's brew" with nothing named asks which coffee
       { const recipeOpen = $("recipe") && !$("recipe").hidden && $("startBrew");
