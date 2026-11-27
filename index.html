@@ -2792,6 +2792,7 @@ html.lv-page body .top .lv-home{display:inline-flex;align-items:center;flex:none
 #listView .lv-msg{margin:0;min-height:20px;font-size:var(--fs-s)}
 #listView .lv-acts{margin:16px 0 0}
 #listView .lv-acts + .lv-h{margin-top:16px}
+html.lv-page body footer{margin-top:-66px!important}   /* the roasters view ends on its text: the footer's rule 16 px under its letters, the one rule (27/11/2026) */
 #listView :is(.lv-p, .lv-steps) + :is(.lv-h, .lv-back){margin-top:14px}   /* a section ending in text: its letters, not its line's leading, 16 px over the rule, as Brew and Buy (27/11/2026) */   /* a pill to the next rule: 16 px, as Brew and Buy sit over a card's rule */
 #listView .lv-pill{display:inline-flex;align-items:center;height:var(--pill-h,43px);padding:0 16px;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);text-decoration:none}
 @media (hover:hover){#listView .lv-pill:hover, #listView .lv-out:hover{opacity:.88}}
@@ -3752,7 +3753,6 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
       <p class="lv-msg" role="status"></p>
     </form>
     <p class="lv-p">The email shows the request comes from the roastery, and we use it only to reply. Nothing else on this site collects or keeps personal data. <a href="/privacy/">Privacy</a>.</p>
-    <p class="lv-back"><button type="button" class="lv-out" id="lvBack">Back to the coffees</button></p>
   </section>
   <section class="sec" id="bags" aria-labelledby="bh" hidden>
     <div class="sec-head"><span class="cap" id="bh" role="heading" aria-level="2">My bags</span></div>
@@ -10159,7 +10159,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
       addEventListener("hashchange", route); route();
       { const hm = $("lvHome"), mk = document.querySelector(".top .lv-mark"), home = (e) => { if (!H.classList.contains("lv-page")) return; e.preventDefault(); close(); requestAnimationFrame(() => requestAnimationFrame(() => scrollTo(0, 0))); };
         if (hm) hm.addEventListener("click", home); if (mk) mk.addEventListener("click", home); }
-      $("lvBack").onclick = () => { if (history.length > 1 && document.referrer && new URL(document.referrer).origin === location.origin) history.back(); else close(); };
+      if ($("lvBack")) $("lvBack").onclick = () => { if (history.length > 1 && document.referrer && new URL(document.referrer).origin === location.origin) history.back(); else close(); };
       v.querySelectorAll("form").forEach((f) => { const go = f.querySelector("button"), msg = f.querySelector(".lv-msg");
         f.addEventListener("submit", async (e) => { e.preventDefault(); go.disabled = true; msg.className = "lv-msg"; msg.textContent = f.id === "lvList" ? "Checking your shop…" : "Sending…";
           try { const r = await fetch("/api/list", { method: "POST", body: new FormData(f) }), d = await r.json(); msg.className = "lv-msg " + (d.ok ? "ok" : "no"); msg.textContent = d.msg; if (d.ok) f.reset(); }
