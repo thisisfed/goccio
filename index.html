@@ -74,6 +74,7 @@ html body #shelf .item .name.sent .s-f a{text-decoration:underline;text-decorati
 html body #shelf .item .name.sent .s-n{color:var(--ink)}
 html body .pill.buy-p .buy-u{color:var(--muted);margin-left:2px;font-weight:500}
 html body #shelf .item .name.sent .s-t.s-line{display:block}   /* the notes on a line of their own */
+html body #shelf .item .name.sent .s-f, html body #shelf .item .name.sent .s-n{color:var(--ink)!important}   /* "Poma: Volcán Azul" all in the name's colour; the notes stay a step softer */
 /* three tones, every one easy to read (27/11/2026, from the research: WCAG 4.5:1 or more): the name full, the taste a step down,
    "by Poma:" a further step; the roaster is a link by its underline, not by being faint */
 html body #shelf .item .name.sent .s-t{color:#bfbfbf}
@@ -8350,7 +8351,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
             // tastes, then who roasted it. No notes: "Volcán Azul. Roasted by: …". Read aloud in the order it's seen
             // "Poma: Volcán Azul" then, on its own line, "Coffee blossom, grapefruit and apricot." (27/11/2026): who roasted it, what it's
             // called, how it tastes. On a roaster's page the roaster drops out; no notes, just the first line
-            const roL = `<span class="s-f"><a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(String(r.roaster).replace(/[.!]+$/, ""))}</a><span class="s-d">:</span> </span>`;
+            const roL = `<span class="s-f">${esc(String(r.roaster).replace(/[.!]+$/, ""))}:</span> `;   /* plain text, not a link (27/11/2026): the first line in one colour */
             return `<p class="name sent">${roL}<span class="s-n" role="heading" aria-level="3">${nm}</span>${tl ? `<span class="s-t s-line">${tl.charAt(0).toUpperCase() + tl.slice(1)}.</span>` : ""}</p>${real ? "" : cardNotes(r)}`; })()}
           ${cardPrice(r)}
         </div>
