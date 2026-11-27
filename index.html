@@ -2791,6 +2791,7 @@ html.lv-page body .top .lv-home{display:inline-flex;align-items:center;flex:none
 #listView .lv-go[disabled]{opacity:.5;cursor:default}
 #listView .lv-msg{margin:0;min-height:20px;font-size:var(--fs-s)}
 #listView .lv-acts{margin:16px 0 0}
+#listView .lv-acts + .lv-h{margin-top:16px}   /* a pill to the next rule: 16 px, as Brew and Buy sit over a card's rule */
 #listView .lv-pill{display:inline-flex;align-items:center;height:var(--pill-h,43px);padding:0 16px;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);text-decoration:none}
 @media (hover:hover){#listView .lv-pill:hover, #listView .lv-out:hover{opacity:.88}}
 #listView .lv-msg.ok{color:var(--ink)} #listView .lv-msg.no{color:var(--hl)}
@@ -2800,9 +2801,11 @@ html.lv-page body .top .lv-home{display:inline-flex;align-items:center;flex:none
 html body details.foot-x > summary{height:43px!important;min-height:0!important;padding-top:1px!important;padding-bottom:0!important;box-sizing:border-box!important;display:flex!important;align-items:center!important}
 html body .botnav .chip{height:43px!important}
 html body .gd-chips > button{height:43px!important}
-/* every clickable pill acts as Find a coffee and I have a bag do (27/11/2026): a slight fade on hover, a squash when pressed (the press is in the rule above) */
-@media (hover:hover){ html body :is(.chip, .btn, .ro-pill, .hero-pill, .gear-dd, .gear-btn, .pill.bag-add, .shelf .item > .r > *, .botnav .chip, #toolsBtn, #langBtn, #themeBtn, .ask-go, .step button, .mill-btn, .bv-go, .bv-reset, .bv-x, .ask-goccio, .lv-home, .lv-pill, .lv-go, .lv-out, .gd-chips > button, #recipe .share > *, .fy-pill, .gd-offer, .gh-new, .bag-ro .ro-dd):hover:not(:disabled):not([aria-pressed="true"]){opacity:.88} }
-:where(.chip, .btn, .ro-pill, .hero-pill, .gear-dd, .gear-btn, .pill.bag-add, .shelf .item > .r > *, .botnav .chip, #toolsBtn, #langBtn, #themeBtn, .ask-go, .step button, .mill-btn, .bv-go, .bv-reset, .bv-x, .ask-goccio, .lv-home, .lv-pill, .lv-go, .lv-out, .gd-chips > button, #recipe .share > *, .fy-pill, .gd-offer, .gh-new, .bag-ro .ro-dd){transition:scale .35s cubic-bezier(.34,1.7,.5,1),opacity .2s ease}   /* the chat's answer pills (Yes, No) */   /* the bottom bar's pills too */
+/* every clickable pill: a squash when pressed (the rule above); on hover the grey ones lift to a clearly lighter grey (a deeper beige
+   in light), and the accent ones (Find a coffee, Send, Start brewing) fade a touch, as Find a coffee always has (27/11/2026) */
+@media (hover:hover){ html body :is(.chip, .btn, .ro-pill, .hero-pill, .gear-dd, .gear-btn, .pill.bag-add, .shelf .item > .r > *, .botnav .chip, #toolsBtn, #langBtn, #themeBtn, .ask-go, .step button, .mill-btn, .bv-go, .bv-reset, .bv-x, .ask-goccio, .lv-home, .lv-pill, .lv-go, .lv-out, .gd-chips > button, #recipe .share > *, .fy-pill, .gd-offer, .gh-new, .bag-ro .ro-dd):hover:not(:disabled):not([aria-pressed="true"]):not(.wm-go):not(.lv-go):not(.bn-go):not(.armed):not(.in):not(.on){background-color:color-mix(in srgb,var(--pill) 76%,var(--ink))!important;opacity:1!important;filter:none!important}
+  html body :is(.wm-go, .lv-go, .bn-go):hover:not(:disabled){opacity:.88!important} }
+:where(.chip, .btn, .ro-pill, .hero-pill, .gear-dd, .gear-btn, .pill.bag-add, .shelf .item > .r > *, .botnav .chip, #toolsBtn, #langBtn, #themeBtn, .ask-go, .step button, .mill-btn, .bv-go, .bv-reset, .bv-x, .ask-goccio, .lv-home, .lv-pill, .lv-go, .lv-out, .gd-chips > button, #recipe .share > *, .fy-pill, .gd-offer, .gh-new, .bag-ro .ro-dd){transition:scale .35s cubic-bezier(.34,1.7,.5,1),opacity .2s ease,background-color .15s ease}
 /* the search's result line in a band like the day's count: 44 px line to line, small type, pinned under the kinds row; a long line slides sideways */
 html body #shelves .co-tabs ~ #askNote.nb-band.fy-note:not([hidden]){position:sticky!important;top:calc(var(--top-h,44px) + 44px)!important;z-index:4;display:block!important;box-sizing:border-box!important;height:44px!important;margin:-14px calc(50% - 50vw) -2px!important;padding:1px calc(50vw - 50%) 0!important;
   transform:none!important;border-radius:0!important;background:var(--bg)!important;box-shadow:none!important;border-bottom:1px solid var(--line)!important;
