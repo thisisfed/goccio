@@ -29,7 +29,12 @@ new MutationObserver(function (m, o) { var h = document.documentElement; if (h.c
 .ask-segs .seg-type{flex:1;display:flex;align-items:center;padding:0 12px;color:var(--muted);cursor:text;min-width:0;overflow:hidden;white-space:nowrap}
 .ask-segs .seg-type::before{content:"";position:relative;margin-right:12px;width:1px;align-self:stretch;margin-top:8px;margin-bottom:8px;background:var(--line)}
 @media (max-width:640px){ .ask-segs .seg{flex:1;justify-content:center;padding:0 6px;gap:.3em} .ask-segs .seg-type{display:none} .ask-segs .seg-v{max-width:5.2em;overflow:hidden;text-overflow:ellipsis} .ask-segs .seg:not(.on) .seg-v{display:none} }
-/* notes first on the cards: the notes in the name's place, fading after the first; the name under them */
+/* the name stays the big line; the roaster's own notes come right under it, in ink, a size up from the small lines (27/11/2026) */
+#shelf .item .c-notes.nb-line{font:500 21px/1.2 var(--sans);letter-spacing:-.02em;color:var(--ink);margin:4px 0 8px;text-wrap:pretty}
+@media (min-width:1000px){ #shelf .item .c-notes.nb-line{font-size:24px} }
+#shelf .item .c-notes.nb-line .nb-more{color:var(--muted)}
+html body #shelf .item .l > .c-notes.nb-line, html body #shelf .item .l > .c-notes.nb-line *{line-height:1.17!important}
+html body #shelf .item .l > .c-notes.nb-line{margin:3px 0 7px!important}
 #shelf .item .name.nb .nb2{color:var(--muted)}
 #shelf .item .name.nb .nb3{color:color-mix(in srgb,var(--muted) 55%,var(--bg))}
 #shelf .item .co-nm{display:block;font:600 21px/1.2 var(--sans);letter-spacing:-.02em;color:var(--ink);margin:6px 0 4px}
@@ -7761,7 +7766,8 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
       const rx = own ? new RegExp(`(?<![a-z])(${reE(t)}${t.length >= 4 ? "[a-z]*" : ""})(?![a-z])`, "gi") : new RegExp(`(${reE(t)}[a-z]*)`, "gi"); h = h.replace(rx, "<mark>$1</mark>"); }); return h; };
     const low = (n, k) => { const t = n.split(" ").map((x) => /^[A-ZÀ-Ý][a-zà-ÿ'’-]*$/.test(x) ? x.toLowerCase() : x).join(" "); return k ? t : t.charAt(0).toUpperCase() + t.slice(1); };
     const top = ns.slice(0, 3), rest = ns.slice(3), and = LANG === "it" ? " e " : " and ";
-    return { big: top.map((n, k) => `<span class="nb${k + 1}">${lit(low(n, k))}${k < top.length - 1 ? "," : ""}</span>`).join(" "),
+    return { line: `<p class="c-notes nb-line">${top.map((n, k) => lit(low(n, k))).join(", ")}${rest.length ? `<span class="nb-more">, ${rest.map((n) => lit(low(n, 1))).join(", ")}</span>` : ""}</p>`,
+      big: top.map((n, k) => `<span class="nb${k + 1}">${lit(low(n, k))}${k < top.length - 1 ? "," : ""}</span>`).join(" "),
       rest: rest.length ? `<p class="c-notes">${LANG === "it" ? "Anche " : "Also "}${rest.map((n) => lit(low(n, 1))).reduce((a, b, i, A) => a + (i ? (i === A.length - 1 ? and : ", ") : "") + b, "")}</p>` : "" }; };
   const cardNotes = (r) => { const ns = (Array.isArray(r.notes) ? r.notes : []).filter((n) => !NOTE_JUNK.test(n) && !NOTE_BREW.test(String(n).trim()) && !NOTE_BADGE.test(String(n).trim()) && !NOTE_SENT.test(String(n))).map(noteClean).filter((n) => /\p{L}/u.test(n)); if (!ns.length) return cardTypical(r);   // every note the roaster lists, not the first three
     if (ns.length === 1 && !/\s/.test(ns[0].trim())) { const t = cardTypical(r); if (t) return t; }   // a single word ("Nuts") says less than what the origin usually gives; a phrase ("Frosted Cinnamon Bun") is the roaster's own and stays
@@ -7984,9 +7990,9 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
       return `${head}${dayHead}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}" data-day="${isSp ? "" : String(shelfDate(r) || "").slice(0, 10)}">
         <div class="l">
           <p class="c-where">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : ""}<a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a>${r.roaster_city || r.roaster_country ? `<span class="rcity">${r.roaster_city ? ", " : " "}${esc(cityL(r.roaster_city))}${r.roaster_country ? `${r.roaster_city ? " " : ""}(${esc(r.roaster_country === "GB" ? "UK" : r.roaster_country)})` : ""}</span>` : ""}${byDay && !isSp ? "" : `<br class="rn-br"><span class="day">${day}</span>`}</p>
-          ${(() => { const bn = bigNotes(r); return bn ? `<span class="name nb">${bn.big}</span><span class="co-nm">${esc(capName(calm(shown)))}</span>
+          ${(() => { const bn = bigNotes(r); return bn ? `<span class="name">${esc(capName(calm(shown)))}</span>${bn.line}
           <p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p>
-          ${bn.rest}${cardPrice(r)}` : `<span class="name">${esc(capName(calm(shown)))}</span>
+          ${cardPrice(r)}` : `<span class="name">${esc(capName(calm(shown)))}</span>
           <p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p>
           ${cardNotes(r)}${cardPrice(r)}`; })()}
         </div>
@@ -9621,7 +9627,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
       segs.querySelector(".seg-type").addEventListener("click", () => { box.classList.remove("segs-on"); a.focus(); });
       // the lens with picks made: the picks become the search ("Fruity, V60, under £15") before the search itself runs
       document.addEventListener("submit", (e) => { if (e.target !== f || a.value.trim() || !box.classList.contains("segs-on")) return;
-        const q = [...segs.querySelectorAll("select")].map((x) => x.value).filter(Boolean).join(", "); if (!q) { box.classList.remove("segs-on"); return; } a.value = q; }, true);
+        const q = [...segs.querySelectorAll("select")].map((x) => x.value).filter(Boolean).join(", "); if (!q) { box.classList.remove("segs-on"); return; } a.value = q; a.dispatchEvent(new Event("input", { bubbles: true })); }, true);   // as if typed: the count under it steps aside
       const reset = () => { if (!a.value.trim()) segs.querySelectorAll("select").forEach((x) => { x.value = ""; show(x); }); sync(); };
       ["focus", "blur", "input", "search"].forEach((ev) => a.addEventListener(ev, () => setTimeout(ev === "input" || ev === "search" ? reset : sync, 0)));
       $("shelfQ").addEventListener("input", () => setTimeout(reset, 0)); setInterval(sync, 1500); sync(); } }
