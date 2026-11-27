@@ -86,10 +86,10 @@ html body #shelf .item .name:not(.nb){line-height:.98!important}
 html body #shelves .shelf > .item:not(.brewing) > .r{margin-top:var(--below-name, 13px)!important}
 @media (min-width:900px){ html body #shelves .shelf > .item:not(.brewing) > .r{--below-name:10.5px} }
 /* Brew and Buy as tall as the bottom bar's buttons (Cancel, Start brewing): 44 px (27/11/2026) */
-html body .shelf .item > .r > .btn, html body .shelf .item > .r > .pill, html body .shelf .item > .r > .buy-p{height:44px!important;padding:0 16px!important}
-html body .shelf .item > .r > .row-more, html body .shelf .item > .r > .bag-add.ico{width:44px!important;height:44px!important}
+html body .shelf .item > .r > .btn, html body .shelf .item > .r > .pill, html body .shelf .item > .r > .buy-p{height:43px!important;padding:0 16px!important}
+html body .shelf .item > .r > .row-more, html body .shelf .item > .r > .bag-add.ico{width:43px!important;height:43px!important}
 /* the recipe's last buttons (Buy, copy, share) stop as far above the bottom bar's line as its buttons sit below it: 8 px (27/11/2026) */
-@media (max-width:899px){ html.brew-in body .item.brewing{padding-bottom:0!important} html.brew-in body .item.brewing #recipe{padding-bottom:0!important} html.brew-in body .item.brewing #recipe .share{margin-bottom:-10.5px} }
+@media (max-width:899px){ html.brew-in body .item.brewing{padding-bottom:0!important} html.brew-in body .item.brewing #recipe{padding-bottom:0!important} html.brew-in body .item.brewing #recipe .share{margin-bottom:-9.5px} }
 /* the name stays the big line; the roaster's own notes come right under it, in ink, a size up from the small lines (27/11/2026) */
 #shelf .item .c-notes.nb-line{font:500 24px/1.2 var(--sans);letter-spacing:-.02em;color:var(--ink);margin:4px 0 8px;text-wrap:pretty}
 @media (min-width:1000px){ #shelf .item .c-notes.nb-line{font-size:24px} }
@@ -1091,7 +1091,8 @@ details.clk > summary .muted { margin-left: auto; overflow: hidden; text-overflo
 
 /* ================= MODULE SKIN, PART 3 ================= */
 /* one pill: every chip, select, stepper and small button the same height, padding and type */
-:root { --pill-h: 32px; --btn-h: 40px; --fs-xl: 39px; }   /* 15 × 1.618 = 24, 24 × 1.618 = 39 */
+:root { --pill-h: 43px; --btn-h: 43px; --fs-xl: 39px; }   /* every pill 43 px, the top bar's height without its line (27/11/2026) */
+header.top{--pill-h:32px;--btn-h:32px}   /* the top bar keeps its pills at 32 so the bar stays 44 */   /* 15 × 1.618 = 24, 24 × 1.618 = 39 */
 .chip, .need .chip, .w-body .chip, .taste .chip, .nav button, .nav .theme-btn, .entry button, .rp-go, .notes-list span, .pill, .oc, .ji-tag {
   display: inline-flex; align-items: center; height: var(--pill-h); padding: 0 10px; font: 500 var(--fs-s)/1 var(--sans); border-radius: var(--r); white-space: nowrap; box-sizing: border-box; }
 .pill, .oc, .ji-tag, .notes-list span { height: 24px; padding: 0 8px; }
@@ -2550,7 +2551,7 @@ html body footer .fcol .foot-links{margin-top:0!important;padding-top:13px!impor
 footer .fcol:first-child > .foot-x:first-of-type{border-top:0!important}
 @media (min-width:641px){ footer .fcol > .foot-x:first-of-type{border-top:0!important} }
 html body footer{padding-top:0!important}   /* Disclaimer sits under the footer's rule exactly as Methods sits under its own */
-#scanBtn{height:44px!important;padding:0 16px!important}   /* the one action of the empty What's brewing screen: as tall as the pills in the bottom bar */
+#scanBtn{height:43px!important;padding:0 16px!important}   /* the one action of the empty What's brewing screen: as tall as the pills in the bottom bar */
 .scan-opt{display:block!important} .scan-opt > span{display:none!important}
 .scan-opt .scan-row{display:flex!important;flex-direction:column;align-items:center;gap:8px;width:100%}   /* Scan the bag in the middle of the screen */
 .scan-opt .scan-msg{text-align:center}
@@ -2653,7 +2654,7 @@ html.brew-in .shelf > .item.brewing{padding-bottom:14px!important}
 .wm-more .wm-tagline{margin-bottom:20px!important}   /* the tagline as far over the two buttons as they are over the text under them; Goccio comes down with it */
 /* the first screen's two buttons are the bottom bar's two pills exactly: same height, corners, gap and width */
 .wm-more .wm-ctas{gap:4px!important;max-width:none!important}
-.wm-more .wm-ctas .btn{height:44px!important;min-height:44px!important;border-radius:var(--r)!important}
+.wm-more .wm-ctas .btn{height:43px!important;min-height:43px!important;border-radius:var(--r)!important}
 @media (min-width:900px){ .wm-more .wm-ctas{grid-template-columns:150px 150px!important} }
 .wm-screen + .hero-row{margin-top:-15px!important}
 .pours.steps.timed th{white-space:nowrap}
@@ -2763,28 +2764,34 @@ html body #recipe table.pours.steps{margin-bottom:-14px!important}   /* the last
 /* For roasters, a page in the page (27/11/2026): the homepage's top bar, its sizes, colours and pills; everything else steps aside */
 html.lv-page body main > .sec:not(#listView), html.lv-page body .wm-video, html.lv-page body .botnav{display:none!important}
 html.lv-page body #listView{display:block!important}
-#listView{padding:24px 0 8px}
-#listView .lv-title, #listView .lv-lead, #listView .lv-p, #listView .lv-steps{max-width:760px}
-#listView .lv-title{margin:0 0 20px;font-size:var(--fs-xl);line-height:1.05;letter-spacing:-.01em;font-weight:500;text-wrap:balance}
-@media (min-width:900px){#listView .lv-title{font-size:var(--fs-l)}}
-#listView .lv-lead{margin:0 0 12px;font-size:var(--fs-m);line-height:1.2;color:var(--ink)}
+#listView{padding:0 0 8px}
+#listView .lv-p, #listView .lv-steps{max-width:760px} #listView .lv-lead{max-width:1100px}
+/* its title in a bar like the day's count: small type, 44 px line to line, pinned under the top bar (27/11/2026) */
+#listView .lv-title{position:sticky;top:var(--top-h,44px);z-index:4;display:flex;align-items:center;box-sizing:border-box;height:44px;margin:0 0 20px;padding:1px 0 0;background:var(--bg);font:500 var(--fs-s)/1.2 var(--sans);color:var(--ink);letter-spacing:0;max-width:none!important}
+#listView .lv-title::after{content:"";position:absolute;left:calc(50% - 50vw);width:100vw;bottom:0;height:1px;background:var(--line)}
+#listView .lv-title::before{content:"";position:absolute;inset:0 calc(50% - 50vw);background:var(--bg);z-index:-1}
+/* the lead as big as a coffee's name */
+#listView .lv-lead{margin:0 0 12px;font-size:var(--fs-xl);line-height:.98;letter-spacing:-.01em;color:var(--ink);text-wrap:pretty}
+@media (min-width:900px){#listView .lv-lead{font-size:var(--fs-l)}}
 #listView .lv-p{margin:12px 0 0;font-size:var(--fs-s);line-height:1.35;color:var(--muted)}
 #listView .lv-p a, #listView .lv-lead a{color:var(--ink);text-decoration:underline;text-underline-offset:2px}
 #listView .lv-h{margin:40px 0 0;padding-top:12px;border-top:1px solid var(--line);font-size:var(--fs-m);line-height:1.2;font-weight:500;color:var(--ink);scroll-margin-top:calc(var(--top-h,44px) + 12px)}
 #listView .lv-steps{margin:12px 0 0;padding-left:20px;display:grid;gap:6px;font-size:var(--fs-s);line-height:1.35;color:var(--muted)}
 #listView .lv-form{display:grid;gap:12px;margin:16px 0 0;max-width:560px}
 #listView .lv-form label{display:grid;gap:6px;font-size:var(--fs-s);color:var(--muted)}
-#listView .lv-form input{width:100%;box-sizing:border-box;height:44px;padding:0 12px;border:0;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1.2 var(--sans);-webkit-appearance:none;appearance:none}
+#listView .lv-form input{width:100%;box-sizing:border-box;height:43px;padding:0 12px;border:0;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1.2 var(--sans);-webkit-appearance:none;appearance:none}
 @supports (-webkit-touch-callout:none){#listView .lv-form input{font-size:16px}}
 #listView .lv-hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
-#listView .lv-go{justify-self:start;height:44px;padding:0 20px;border:0;border-radius:var(--r,4px);background:var(--hl);color:var(--on-hl,#000);font:500 var(--fs-s)/1 var(--sans);cursor:pointer}
+#listView .lv-go{justify-self:start;height:43px;padding:0 20px;border:0;border-radius:var(--r,4px);background:var(--hl);color:var(--on-hl,#000);font:500 var(--fs-s)/1 var(--sans);cursor:pointer}
 #listView .lv-go[disabled]{opacity:.5;cursor:default}
 #listView .lv-msg{margin:0;min-height:20px;font-size:var(--fs-s)}
 #listView .lv-msg.ok{color:var(--ink)} #listView .lv-msg.no{color:var(--hl)}
 #listView .lv-back{margin:40px 0 0;padding-top:12px;border-top:1px solid var(--line)}
-#listView .lv-out{height:44px;padding:0 16px;border:0;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);cursor:pointer}
+#listView .lv-out{height:43px;padding:0 16px;border:0;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);cursor:pointer}
 /* the footer's folds (Example, Disclaimer, Methods, Sources, Credits): 44 px line to line, as the top bar, the kinds row and the day band (27/11/2026) */
 html body details.foot-x > summary{height:43px!important;min-height:0!important;padding-top:1px!important;padding-bottom:0!important;box-sizing:border-box!important;display:flex!important;align-items:center!important}
+html body .botnav .chip{height:43px!important}
+html body .gd-chips > button{height:43px!important}   /* the chat's answer pills (Yes, No) */   /* the bottom bar's pills too */
 #whyNums{margin:0 0 20px}
 #whyNums .wn-h{margin:0 0 8px;font-size:var(--fs-s);font-weight:500;color:var(--ink)}
 #whyNums .wn{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:var(--fs-s);line-height:1.35;color:var(--muted)}
@@ -3690,7 +3697,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
 
   <!-- For roasters (27/11/2026): Get your roastery listed and Ask to be removed, a page in the page at /#list and /#remove -->
   <section class="sec lv" id="listView" aria-labelledby="lvH" hidden>
-    <h2 class="lv-title" id="lvH">Get your roastery listed.</h2>
+    <h2 class="lv-title" id="lvH">Get your roastery listed</h2>
     <p class="lv-lead">Listing is free. Every new coffee you put in your shop appears in the daily list, with a recipe for each drinker’s own brewer and grinder and a link straight to your shop to buy it.</p>
     <p class="lv-p">Want your coffees first? A paid promotion pins your newest coffees to the top of the list for the weeks you choose, under a Paid promotion heading so drinkers know. <a class="mail" href="#" data-m="ku.oc.oiccog@nu" data-s="Paid promotion">Email us</a> for dates and prices.</p>
     <h3 class="lv-h">What you get.</h3>
@@ -3938,7 +3945,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
     <p class="foot-note" id="rights">Set in ALT Riviera, with thanks to <a href="https://alt-tf.com/" target="_blank" rel="noopener">Alt Type Foundry</a>.<br>Hosted on <a href="https://pages.cloudflare.com/" target="_blank" rel="noopener">Cloudflare</a>, domain by <a href="https://www.spaceship.com/" target="_blank" rel="noopener">Spaceship</a>.</p>
     <p class="foot-note foot-copy">© <span id="cYear">2026</span> Federico R. T. Ferrari. All rights reserved.</p>
     </details>
-    <p class="foot-note foot-all foot-links"><a href="/#new">New this week</a><a href="/coffee/">Every coffee, by roaster</a><a href="/#list">Get your roastery listed</a><a href="/#remove">Remove your roastery</a><a href="/privacy/">Privacy</a><a class="mail" href="#" data-m="ku.oc.oiccog@nu">Email us</a></p>
+    <p class="foot-note foot-all foot-links"><a href="/#new">New this week</a><a href="/coffee/">Every coffee, by roaster</a><a href="/#list">Get your roastery listed or removed</a><a href="/privacy/">Privacy</a><a class="mail" href="#" data-m="ku.oc.oiccog@nu">Email us</a></p>
     <script>try { document.getElementById("cYear").textContent = new Date().getFullYear(); } catch (e) {}</script>
     </div>
   </footer>
