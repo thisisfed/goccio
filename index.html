@@ -29,6 +29,23 @@ new MutationObserver(function (m, o) { var h = document.documentElement; if (h.c
 @media (max-width:640px){ .ask-segs .seg{flex:1;justify-content:center;padding:0 6px;gap:.3em} .ask-segs .seg-type{display:none} .ask-segs .seg-v{max-width:5.2em;overflow:hidden;text-overflow:ellipsis} .ask-segs .seg:not(.on) .seg-v{display:none} }
 #shelf .item .c-where .day-sep{color:var(--muted)}
 #shelves.ro-on #shelf .item .c-where .day-sep{display:none}
+/* the card's top line: origin, process and variety on the left, the day on the right (27/11/2026) */
+html body #shelf .item > .l{align-self:stretch;width:100%}
+html body #shelf .item .l > .c-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin:0 0 6px}
+html body #shelf .item .l > .c-top > .tags{margin:0!important;min-width:0;flex-wrap:wrap!important;white-space:normal!important;overflow:visible!important;row-gap:2px}
+html body #shelf .item .l > .c-top > .tags .tg{max-width:none!important;overflow:visible!important;text-overflow:clip!important}
+html body #shelf .item .l > .c-top > .day{flex:none;font-size:var(--fs-s);color:var(--muted);white-space:nowrap;line-height:19px}
+html body #shelf .item .l > .c-top > .day.today{color:var(--hl)}
+html body #shelf .item .l > .c-where{margin:6px 0 0!important}
+html body #shelf .item .l > .c-notes:not(.nb-line){margin-top:2px!important}
+/* a row of kinds, words only, the one you're on underlined (27/11/2026) */
+.co-tabs{display:flex;gap:28px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--line);margin:0 0 0;padding:0}
+.co-tabs::-webkit-scrollbar{display:none}
+.co-tabs button{flex:none;background:none;border:0;border-radius:0;padding:14px 0 12px;font:500 var(--fs-s)/1.2 var(--sans);color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;min-height:0}
+.co-tabs button:hover{color:var(--ink)}
+.co-tabs button[aria-pressed="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+html.ro-page .co-tabs{display:none}
+@media (max-width:640px){ .co-tabs{gap:22px} }
 /* a wrapped name sits tighter (27/11/2026) */
 html body #shelf .item .name:not(.nb){line-height:.98!important}
 /* the name stays the big line; the roaster's own notes come right under it, in ink, a size up from the small lines (27/11/2026) */
@@ -3567,6 +3584,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
     <div class="sec-head"><span class="cap" id="sh" role="heading" aria-level="2"><span class="sh-t">Coffees</span><span class="ro-title" id="roName" translate="no"></span></span><span class="ro-tools"><a class="chip ro-shop-top" id="roShopTop" target="_blank" rel="noopener" hidden>Visit shop</a><button type="button" class="chip ro-follow" id="roFollow" aria-pressed="false">Follow</button></span><button type="button" class="chip fy-pill" id="fyPill" aria-pressed="false">For you</button></div>
     <p class="fy-note fy-top" id="followNote" hidden></p>
     <p class="fy-note fy-top" id="fyNote" role="status" hidden></p>
+    <nav class="co-tabs" id="coTabs" aria-label="Kinds of coffee"><button type="button" data-q="" data-en="New today" data-it="Nuovi oggi" aria-pressed="true">New today</button><button type="button" data-q="fruity" data-en="Fruity" data-it="Fruttati" aria-pressed="false">Fruity</button><button type="button" data-q="chocolatey" data-en="Chocolatey" data-it="Cioccolato" aria-pressed="false">Chocolatey</button><button type="button" data-q="floral" data-en="Floral" data-it="Floreali" aria-pressed="false">Floral</button><button type="button" data-q="decaf" data-en="Decaf" data-it="Deca" aria-pressed="false">Decaf</button><button type="button" data-q="espresso" data-en="Espresso" data-it="Espresso" aria-pressed="false">Espresso</button><button type="button" data-q="filter" data-en="Filter" data-it="Filtro" aria-pressed="false">Filter</button><button type="button" data-q="natural" data-en="Natural" data-it="Naturali" aria-pressed="false">Natural</button><button type="button" data-q="washed" data-en="Washed" data-it="Lavati" aria-pressed="false">Washed</button><button type="button" data-q="under £15" data-en="Under £15" data-it="Sotto 15 £" aria-pressed="false">Under £15</button><button type="button" data-q="over £30" data-en="Treats" data-it="Speciali" aria-pressed="false">Treats</button></nav>
     <p class="shelf-meta" id="shelfMeta" hidden></p>
     <div class="shelf-tools">
       <div class="chips quick" id="quick" role="group" aria-label="Quick filters"></div>
@@ -8000,12 +8018,10 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
       tagBits.push(...coffeeLabels(r, shown).map((l) => `<span class="tg lbl" style="--vc:${LABEL_DOT[l] || "#8e8e93"}">${l}</span>`));
       return `${head}${dayHead}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}" data-day="${isSp ? "" : String(shelfDate(r) || "").slice(0, 10)}">
         <div class="l">
-          <p class="c-where">${isSp || !day ? "" : `<span class="day">${day}</span><span class="day-sep" aria-hidden="true"> · </span>`}${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : ""}<a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a>${r.roaster_city || r.roaster_country ? `<span class="rcity">${r.roaster_city ? ", " : " "}${esc(cityL(r.roaster_city))}${r.roaster_country ? `${r.roaster_city ? " " : ""}(${esc(r.roaster_country === "GB" ? "UK" : r.roaster_country)})` : ""}</span>` : ""}</p>
-          ${(() => { const bn = bigNotes(r); return bn ? `<span class="name">${esc(capName(calm(shown)))}</span>${bn.line}
-          <p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p>
-          ${cardPrice(r)}` : `<span class="name">${esc(capName(calm(shown)))}</span>
-          <p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p>
-          ${cardNotes(r)}${cardPrice(r)}`; })()}
+          ${/* the order of the typographic mockup (27/11/2026): what it is and when it came, the name, how it tastes, who roasted it */ ""}<div class="c-top"><p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p>${isSp || !day ? "" : `<span class="day${r.just_in ? " today" : ""}">${day}</span>`}</div>
+          <span class="name">${esc(capName(calm(shown)))}</span>${(() => { const bn = bigNotes(r); return bn ? bn.line : cardNotes(r); })()}
+          <p class="c-where">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : ""}<a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a>${r.roaster_city || r.roaster_country ? `<span class="rcity">${r.roaster_city ? ", " : " "}${esc(cityL(r.roaster_city))}${r.roaster_country ? `${r.roaster_city ? " " : ""}(${esc(r.roaster_country === "GB" ? "UK" : r.roaster_country)})` : ""}</span>` : ""}</p>
+          ${cardPrice(r)}
         </div>
         <div class="r${rowOpen.has(rowKey(r)) ? " more-open" : ""}">
           <button class="btn" type="button" data-i="${i}">Brew</button><button type="button" class="row-more" data-more="${esc(rowKey(r))}" aria-expanded="${rowOpen.has(rowKey(r))}" aria-label="${LANG === "it" ? "Compra o salva" : "Buy or save"}"><svg viewBox="0 0 12 12" aria-hidden="true"><path class="tb-v" d="M6 2v8"/><path d="M2 6h8"/></svg></button>${cardBuy(r)}<a class="pill buy-p ro-all" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${LANG === "it" ? "Torrefattore" : "Roaster"}</a>
@@ -9647,6 +9663,14 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
       document.addEventListener("submit", (e) => { if (e.target !== f || a.value.trim() || !box.classList.contains("segs-on")) return;
         const q = [...segs.querySelectorAll("select")].map((x) => x.value).filter(Boolean).join(", "); if (!q) { box.classList.remove("segs-on"); return; } a.value = q; a.dispatchEvent(new Event("input", { bubbles: true })); }, true);   // as if typed: the count under it steps aside
       const reset = () => { if (!a.value.trim()) segs.querySelectorAll("select").forEach((x) => { x.value = ""; show(x); }); sync(); };
+      // the kinds row: a tap shows that kind at once; "New today" is the whole list again. It lights the kind the list is on
+      const tabs = $("coTabs"); if (tabs) { tabs.querySelectorAll("[data-en]").forEach((b) => b.textContent = it ? b.dataset.it : b.dataset.en);
+        const light = () => { const sq = $("shelfQ").value.trim().toLowerCase(); tabs.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.q === sq))); };
+        tabs.addEventListener("click", (e) => { const b = e.target.closest("button[data-q]"); if (!b) return; const q = b.dataset.q, sq = $("shelfQ");
+          segs.querySelectorAll("select").forEach((x) => { x.value = ""; show(x); }); a.value = ""; segQ = q;
+          if (sq.value !== q) { sq.value = q; $("shelfQx").hidden = !q; shelfAll = false; renderShelf(); } if (q) askBrewer(q); jumpTo($("shelves")); light(); sync();
+          b.scrollIntoView({ block: "nearest", inline: "nearest" }); });
+        $("shelfQ").addEventListener("input", () => setTimeout(light, 0)); setInterval(light, 1200); }
       ["focus", "blur", "input", "search"].forEach((ev) => a.addEventListener(ev, () => setTimeout(ev === "input" || ev === "search" ? reset : sync, 0)));
       $("shelfQ").addEventListener("input", () => setTimeout(reset, 0)); setInterval(sync, 1500); sync(); } }
 
@@ -11651,7 +11675,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
       // about one hello in three (never first thing in the morning, nor when it's steering you to a decaf or to tomorrow) opens with a did-you-know
       // every hello (27/11/2026: "I do not see the fun coffee facts"): the greeting, a did-you-know, then the coffee
       const coffeeLine = () => typeDots(dotsFor(line), () => { sayNow(line, [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(best); } }], happy); ctx = { t: "pick", at: Date.now() }; });
-      sayNow(hi, null, happy); const nextOne = () => typeDots(dotsFor("did you know, coffee"), () => { sayNow(T("Did you know? ", "Lo sapevi? ") + factPick(), null, happy); if (typing) typing.after = coffeeLine; else coffeeLine(); });
+      sayNow(hi, null, happy); const nextOne = () => typeDots(dotsFor("did you know, coffee"), () => { sayNow(T("Did you know? ", "Lo sapevi? ") + factPick(), null, happy); ctx = null; });   // the hello and a did-you-know, then he waits (27/11/2026: "stop after fun fact")
       // now and then, after the hi, it asks how you are and waits: your answer gets a word back (and an answer if you ask it), then the coffee
       const howQ = !/\?/.test(hi) && !(hNow >= 5 && hNow < 10) && Math.random() < 0.3 ? pick([T("How are you?", "Come stai?"), T("How's your day going?", "Come va la giornata?"), T("How are you doing today?", "Come va oggi?")]) : null;
       const first = howQ ? () => typeDots(dotsFor(howQ), () => { sayNow(howQ, null, null); ctx = { t: "howru", at: Date.now(), next: nextOne, q: howQ }; }) : nextOne;
