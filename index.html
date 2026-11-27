@@ -82,6 +82,11 @@ html body #shelf .item .name:not(.nb){line-height:.98!important}
    pushed down to line up with the card beside them (27/11/2026) */
 html body #shelves .shelf > .item:not(.brewing) > .r{margin-top:var(--below-name, 13px)!important}
 @media (min-width:900px){ html body #shelves .shelf > .item:not(.brewing) > .r{--below-name:10.5px} }
+/* Brew and Buy as tall as the bottom bar's buttons (Cancel, Start brewing): 44 px (27/11/2026) */
+html body .shelf .item > .r > .btn, html body .shelf .item > .r > .pill, html body .shelf .item > .r > .buy-p{height:44px!important;padding:0 16px!important}
+html body .shelf .item > .r > .row-more, html body .shelf .item > .r > .bag-add.ico{width:44px!important;height:44px!important}
+/* the recipe's last buttons (Buy, copy, share) stop as far above the bottom bar's line as its buttons sit below it: 8 px (27/11/2026) */
+@media (max-width:899px){ html.brew-in body .item.brewing{padding-bottom:0!important} html.brew-in body .item.brewing #recipe{padding-bottom:0!important} html.brew-in body .item.brewing #recipe .share{margin-bottom:-10.5px} }
 /* the name stays the big line; the roaster's own notes come right under it, in ink, a size up from the small lines (27/11/2026) */
 #shelf .item .c-notes.nb-line{font:500 24px/1.2 var(--sans);letter-spacing:-.02em;color:var(--ink);margin:4px 0 8px;text-wrap:pretty}
 @media (min-width:1000px){ #shelf .item .c-notes.nb-line{font-size:24px} }
@@ -2847,8 +2852,8 @@ html[data-theme="light"]:is(.film-off,.hero-done) body .wm-screen .wordmark, htm
 html[data-theme="light"]:is(.film-off,.hero-done) body .wm-more .wm-bag{background:var(--pill)!important;color:var(--ink)!important}
 /* the still behind the header once the film has played (seen today): a coffee crown in dark, a milk crown in light, the two splashes
    in the same place (27/11/2026) */
-html.film-off:not([data-theme="light"]) body .wm-screen{background:#000 url("/img/goccio-hero-coffee.jpg?v=2") center var(--hero-y, 62%) / cover no-repeat!important}
-html[data-theme="light"]:is(.film-off,.hero-done) body .wm-screen{background:var(--bg) url("/img/goccio-hero-milk.jpg?v=2") center var(--hero-y, 62%) / cover no-repeat!important}
+html.film-off:not([data-theme="light"]) body .wm-screen{background:#000 url("/img/goccio-hero-coffee.jpg?v=3") center var(--hero-y, 92%) / cover no-repeat!important}
+html[data-theme="light"]:is(.film-off,.hero-done) body .wm-screen{background:var(--bg) url("/img/goccio-hero-milk.jpg?v=3") center var(--hero-y, 92%) / cover no-repeat!important}
 html[data-theme="light"]:is(.film-off,.hero-done) body .wm-screen::after{opacity:1!important;background:linear-gradient(180deg, transparent 55%, var(--bg) 100%)!important}   /* the milk melts into the page */
 /* the film starts at the very top of the screen, under a see-through top bar, and ends on the rule over Coffees */
 html body .wm-video{transform:none!important}
@@ -3132,7 +3137,7 @@ html body .wb-sign .gd-ask input{font-size:15px!important}   /* one size in the 
 /* Goccio thinking: three dots flowing after its words */
 html body .gd-dots{display:inline-flex;gap:3px;margin-left:6px;vertical-align:middle}
 html body .gd-dots i{width:5px;height:5px;border-radius:50%;background:currentColor;animation:gdDot 1.1s ease-in-out infinite}
-html body .gd-dots i:nth-child(2){animation-delay:.18s} html body .gd-dots i:nth-child(3){animation-delay:.36s}
+html body .gd-dots i:nth-child(2){animation-delay:.15s} html body .gd-dots i:nth-child(3){animation-delay:.3s}
 @keyframes gdDot{0%,70%,100%{opacity:.25;translate:0 0}35%{opacity:1;translate:0 -3px}}
 @media (prefers-reduced-motion:reduce){html body .gd-dots i{animation:none;opacity:.6}}
 html body .gd-intro-move{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px}
@@ -3157,7 +3162,8 @@ html body .gd-typing .gd-dots{margin-left:4px}
 /* the typing bubble, as in iMessage (26/11/2026): a fixed little pill, three even grey dots in its middle that fade in turn */
 html body .gd-m.gd-it.gd-typing:not(:has(> :not(.gd-dots))){display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;width:58px;height:37px;padding:0}
 html body .gd-m.gd-it.gd-typing:not(:has(> :not(.gd-dots))) .gd-dots{margin:0;gap:5px;color:var(--muted)}
-html body .gd-m.gd-it.gd-typing:not(:has(> :not(.gd-dots))) .gd-dots i{width:7px;height:7px;animation:gdDotFade 1.2s ease-in-out infinite}
+html body .gd-m.gd-it.gd-typing:not(:has(> :not(.gd-dots))) .gd-dots i{width:7px;height:7px;animation:gdDotWave 1.1s ease-in-out infinite}
+@keyframes gdDotWave{0%,55%,100%{translate:0 0;opacity:.45}25%{translate:0 -4px;opacity:1}}   /* the three dots go up and down one after the other, a wave (27/11/2026) */
 @keyframes gdDotFade{0%,60%,100%{opacity:.3;scale:.85}30%{opacity:1;scale:1}}
 @keyframes gdMsgIn{from{scale:.85;opacity:0}to{scale:1;opacity:1}}
 @keyframes gdTb{from{scale:0}to{scale:1}}
@@ -3536,7 +3542,8 @@ html.no-recipe #coffee{min-height:calc(100svh - var(--top-h, 49px) - var(--bot-h
 html:not(.ro-page) body #sh .sh-t{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important}
 html:not(.ro-page) body #shelves > .sec-head:not(:has(.fy-pill:not([hidden]))){height:0!important;min-height:0!important;margin:7px 0 0!important;padding:0!important;overflow:hidden!important}
 html:not(.ro-page) body #shelf > .grp.day-g:first-child, html:not(.ro-page) body #shelf > .grp.bare:first-child + .grp.day-g{margin-top:0!important}
-html:not(.ro-page) body #shelves > #shelf{margin-top:-3.5px!important}   /* and the rule above sits as far under "Every new coffee, with its recipe." as that line sits under the buttons (7 px more room above the rule) */   /* "208 coffees added today" exactly halfway between the rule above it and the one below (11.5 px each side, phone and computer) */
+html:not(.ro-page) body #shelves > #shelf{margin-top:-3.5px!important}
+html:not(.ro-page) body #shelves > .co-tabs ~ #shelf#shelf{margin-top:-2px!important}   /* under the kinds row, the day band is 43 px from line to line, as the row is (it was 41.5, 27/11/2026) */   /* and the rule above sits as far under "Every new coffee, with its recipe." as that line sits under the buttons (7 px more room above the rule) */   /* "208 coffees added today" exactly halfway between the rule above it and the one below (11.5 px each side, phone and computer) */
 html:not(.ro-page) body #shelf > .grp.day-g:not(.stuck) .day-t{visibility:visible!important}
 html:not(.ro-page) body #shelf > .grp.day-g .day-what{display:inline!important}
 html:not(.ro-page) body #shelf > .grp.day-g:not(.stuck)::after{opacity:1!important}
@@ -3551,7 +3558,7 @@ html body #askLbl{position:absolute!important;width:1px!important;height:1px!imp
 /* 27/11/2026, the same air either side of every line in the list: a coffee's Brew and Buy sit as far above its closing line (16 px) as its
    roaster's name sits under the line that opens it; the day's count sits in the exact middle of its two lines (cap height to baseline) */
 html body #shelf .item{padding-bottom:16px!important}
-html body #shelf > .grp.day-g .day-t{position:relative;top:.25px}   /* the words midway between the line above and the line below (27/11/2026) */
+html body #shelf > .grp.day-g .day-t{position:relative;top:-.25px}   /* the words midway between the line above and the line below (27/11/2026) */
 
 /* 27/11/2026, a roaster's page: its top line as far under "Read the bag" as the list's line on the homepage, and Visit shop and Follow
    in a row under the place line, as Brew and Buy sit under a coffee, the same 16 px over the closing line */
@@ -12075,8 +12082,11 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
           // bubble, and the words fade in behind it
           if (ms && m.animate && !matchMedia("(prefers-reduced-motion: reduce)").matches) { const r1 = m.getBoundingClientRect(), ink = getComputedStyle(m).color, rr = getComputedStyle(m).borderRadius || "16px";
             const dx = Math.max(0, r1.width - r0.width), dy = Math.max(0, r1.height - r0.height);
-            m.animate([{ clipPath: `inset(0 ${dx}px ${dy}px 0 round 18px)` }, { clipPath: `inset(0 0 0 0 round ${rr})` }], { duration: 300, easing: "cubic-bezier(.2,.8,.2,1)" });
-            m.animate([{ color: "transparent" }, { color: "transparent", offset: 0.35 }, { color: ink }], { duration: 380, easing: "ease-out" }); }
+            // like liquid (27/11/2026): the dots' bubble swells into the message from its corner by Goccio, a touch past its size, then settles
+            const sx = Math.min(1, r0.width / r1.width), sy = Math.min(1, r0.height / r1.height);
+            m.style.transformOrigin = "0 100%";
+            m.animate([{ transform: `scale(${sx}, ${sy})` }, { transform: "scale(1.03, 1.05)", offset: 0.5 }, { transform: "scale(.992, .985)", offset: 0.75 }, { transform: "none" }], { duration: 520, easing: "cubic-bezier(.3,.7,.4,1)" });
+            m.animate([{ color: "transparent" }, { color: "transparent", offset: 0.4 }, { color: ink }], { duration: 480, easing: "ease-out" }); }
           if (!free) requestAnimationFrame(() => toTop(anchor)); }, ms); }
       showChips(chips); if (CALM) mood = null;
       if (ask2) { const g2 = sayGen, pl2 = nextPills || [[T("Yes", "Sì"), T("Yes", "Sì")], [T("No", "No"), T("No thanks", "No grazie")]]; nextPills = null;   /* "Want to see it?" in a second message once the first is written, then the Yes / No pills */
@@ -13276,7 +13286,15 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
         const watchBig = () => new IntersectionObserver((es) => es.forEach((e) => set(e.isIntersecting)), { threshold: .3 }).observe(el);
         if (!document.documentElement.classList.contains("wait")) watchBig();
         else new MutationObserver((m, o) => { if (document.documentElement.classList.contains("wait")) return; o.disconnect(); watchBig(); }).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
-        plus.addEventListener("animationend", (e) => { if (e.animationName === "agGulp" || e.animationName === "agSpit" || (e.animationName === "drop-p" && plus.classList.contains("spit"))) plus.classList.remove("gulp", "spit"); }); } }
+        plus.addEventListener("animationend", (e) => { if (e.animationName === "agGulp" || e.animationName === "agSpit" || (e.animationName === "drop-p" && plus.classList.contains("spit"))) plus.classList.remove("gulp", "spit"); });
+        // every load: he starts inside the + and the + squeezes him out, the same liquid spring as coming back from the big Goccio (27/11/2026)
+        { const H0 = document.documentElement, qs = [tb, tb.parentElement && tb.parentElement.querySelector(".ask-box")].filter(Boolean);
+          if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            qs.forEach((x) => x.style.setProperty("transition", "none", "important")); tb.classList.add("ag-gone"); void tb.offsetWidth;
+            requestAnimationFrame(() => qs.forEach((x) => x.style.removeProperty("transition")));
+            const out = () => { if (gone) return; tb.classList.remove("ag-gone", "ag-out"); plus.classList.remove("gulp", "spit"); void plus.offsetWidth; plus.classList.add("spit"); tb.classList.add("ag-out"); };
+            const go = () => { if (H0.classList.contains("wait")) return setTimeout(go, 120); setTimeout(out, 450); };
+            go(); } } } }
     // the little Goccio is simply in its pill from the first moment: no fly-in, no hello bubble, no hints
     const isQuestion = (t) => /\?\s*$/.test(t) || /^(goccio\b|hey goccio|hi goccio|ciao goccio|what|why|how|who|where|when|which|is it|are|does|do i|can|should|tell me|explain|cos|perch[eé]|come mai|come si|quando|dove|chi|quant[oai])\b/i.test(t.trim());
     $("askForm").addEventListener("submit", (e) => { const a = $("askIn"), t = a.value.trim(); if (window.__gdSearching || !t || !isQuestion(t)) return;
