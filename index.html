@@ -11528,7 +11528,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
         const dawn = h0 >= 5 && h0 < 10 ? [T(`Morning${nmc}! First coffee of the day, let's make it a good one.`, `Buongiorno${nmc}! Il primo caffè della giornata: facciamolo bene.`),
           T(`Good morning${nmc}! Kettle on? Your first cup is on me.`, `Buongiorno${nmc}! Bollitore acceso? Il primo caffè lo scelgo io.`), T(`Morning${nmc}! Nothing before the first coffee. Here's yours.`, `Buongiorno${nmc}! Prima di tutto, il primo caffè. Eccolo.`)].filter((x) => x !== last) : [];
         const g0 = dawn.length ? pick(dawn) : timed.length && Math.random() < 0.6 ? pick(timed) : pick(all.filter((x) => x !== last).length ? all.filter((x) => x !== last) : all); try { localStorage.setItem("v60.hi", g0); } catch (e) {} return g0; })();
-      if (!n && Math.random() < 0.4) { sayNow(hi, null, happy); return typeDots(dotsFor("did you know"), () => sayFact(null)); }
+      if (!n) { sayNow(hi, null, happy); const f0 = () => typeDots(dotsFor("did you know"), () => sayFact(null)); if (typing) typing.after = f0; else f0(); return; }   // nothing new today: the hello, then a did-you-know
       if (!n) return /\?\uE002?$/.test(hi) ? say(hi, null, happy) : say(hi + " " + pick([T("Ask me about coffee.", "Chiedimi del caffè."), T("What are we brewing?", "Cosa prepariamo?"), T("Need a hand with your coffee?", "Ti serve una mano col caffè?")]), null, happy);
       // after 2pm (and through the night) the pick is a decaf, today's if there is one, else the newest on the list, and it says why
       const hNow = new Date().getHours(), late = (hNow >= 14 || hNow < 5) && Math.random() < 0.4, rank = (x) => suits(x) * 3 + (notesOf(x).length ? 1.5 : 0) + Math.random() * 2;
@@ -11581,8 +11581,9 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
           ...(n <= 5 ? [T(`Only ${n} new coffees ${on}, but one's a gem: ${what}.`, `Solo ${n} caffè nuovi ${on}, ma uno è una chicca: ${what}.`)] : [])]));
       // three messages, typed one after the other: the hello, the coffee, then "Want to see it?"
       // about one hello in three (never first thing in the morning, nor when it's steering you to a decaf or to tomorrow) opens with a did-you-know
-      const factFirst = !(hNow >= 5 && hNow < 10) && !nightLine && !decafLine && Math.random() < 0.35;
-      sayNow(hi, null, happy); const nextOne = factFirst ? () => typeDots(dotsFor("did you know, coffee"), () => { sayFact(best); ctx = { t: "pick", at: Date.now() }; }) : () => typeDots(dotsFor(line), () => { sayNow(line, [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(best); } }], happy); ctx = { t: "pick", at: Date.now() }; });
+      // every hello (27/11/2026: "I do not see the fun coffee facts"): the greeting, a did-you-know, then the coffee
+      const coffeeLine = () => typeDots(dotsFor(line), () => { sayNow(line, [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(best); } }], happy); ctx = { t: "pick", at: Date.now() }; });
+      sayNow(hi, null, happy); const nextOne = () => typeDots(dotsFor("did you know, coffee"), () => { sayNow(T("Did you know? ", "Lo sapevi? ") + factPick(), null, happy); if (typing) typing.after = coffeeLine; else coffeeLine(); });
       // now and then, after the hi, it asks how you are and waits: your answer gets a word back (and an answer if you ask it), then the coffee
       const howQ = !/\?/.test(hi) && !(hNow >= 5 && hNow < 10) && Math.random() < 0.3 ? pick([T("How are you?", "Come stai?"), T("How's your day going?", "Come va la giornata?"), T("How are you doing today?", "Come va oggi?")]) : null;
       const first = howQ ? () => typeDots(dotsFor(howQ), () => { sayNow(howQ, null, null); ctx = { t: "howru", at: Date.now(), next: nextOne, q: howQ }; }) : nextOne;
