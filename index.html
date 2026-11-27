@@ -7715,7 +7715,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
     Object.entries(lands).forEach(([name, ts]) => { if (want.lands.includes(name)) return; if (ts.some((t) => !used.has(t) && q.includes(" " + t + " ") || q.includes(" " + t + ","))) { want.lands.push(name); ts.forEach((t) => used.add(t)); } });
     // tastes: a family (fruity) or a note word that some coffee's notes really have (peach, jasmine)
     const words = q.replace(/[^\p{L}\p{N}\s'-]/gu, " ").split(/\s+/).filter(Boolean).map((w) => w === "geisha" ? "gesha" : w);
-    const STOP = /^(as|good|nice|great|lovely|tasty|morning|afternoon|evening|night|tonight|weekend|sunday|breakfast|after|dinner|lunch|i|i'?d|id|im|a|an|the|and|or|with|some|something|anything|that|which|is|are|be|for|my|me|today|please|want|like|looking|love|would|could|can|get|give|find|cup|coffee|coffees|bag|bean|beans|brew|brewer|of|to|in|on|not|too|very|really|bit|little|more|less|but|e|o|un|una|uno|il|la|lo|per|mio|mia|con|di|da|del|della|qualcosa|vorrei|voglio|caffè|caffe|oggi|che|sia|ma|non|molto|poco|più|meno|tasting|taste|tastes|notes?|roast|roasted|roaster|roasters|roastery|roasteries|based|dal|dalla|dall|torrefatto|torrefazione|process|processed|machine|maker|pour|over|under|below|than|max|up|no|from|origin|country|one|ones|it)$/;
+    const STOP = /^(recommend|recommendation|suggest|suggestion|show|pick|choose|need|try|any|got|have|you|your|right|now|currently|one|ones|consiglia|consigliami|suggerisci|mostrami|as|good|nice|great|lovely|tasty|morning|afternoon|evening|night|tonight|weekend|sunday|breakfast|after|dinner|lunch|i|i'?d|id|im|a|an|the|and|or|with|some|something|anything|that|which|is|are|be|for|my|me|today|please|want|like|looking|love|would|could|can|get|give|find|cup|coffee|coffees|bag|bean|beans|brew|brewer|of|to|in|on|not|too|very|really|bit|little|more|less|but|e|o|un|una|uno|il|la|lo|per|mio|mia|con|di|da|del|della|qualcosa|vorrei|voglio|caffè|caffe|oggi|che|sia|ma|non|molto|poco|più|meno|tasting|taste|tastes|notes?|roast|roasted|roaster|roasters|roastery|roasteries|based|dal|dalla|dall|torrefatto|torrefazione|process|processed|machine|maker|pour|over|under|below|than|max|up|no|from|origin|country|one|ones|it)$/;
     const allNotes = askNoteWords();
     words.forEach((w) => { if (STOP.test(w) || used.has(w) || /^\d/.test(w)) return;
       const fam = tasteWords(w); if (fam) { want.tastes.push({ w, list: fam }); return; }
@@ -11943,11 +11943,12 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
         `Allora eccone uno per te: ${shownName(r)} della ${roasteryName(r.roaster)}${how ? ", " + how : ""}${ns.length ? ", che sa di " + andList(ns) : ""}.${today.length ? "" : " Non è di oggi, ma è recente."}`),
         [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(r); } }], happy); ctx = { t: "pick", at: Date.now() }; return true; };
     // now and then, after an answer, it asks you something back: first what it doesn't know about you yet
+    let askedBrew = false, askedLikes = false;   // each asked once a visit: three "what's your brewer?" in one chat was too many (27/11/2026)
     const askBack = () => { if (++sinceAsk < 2 || Math.random() > 0.55) return; sinceAsk = 0; const t0 = Date.now();
       const go = () => { if (Date.now() - t0 > 20000 || !talking) return; if (typing || sayEl.querySelector(".gd-typing")) return setTimeout(go, 300);
         setTimeout(() => { if (!talking || typing) return;
-          if (!mem.brewer) { sayNow(pick([T("By the way, what do you brew with at home?", "A proposito, con cosa prepari il caffè a casa?"), T("Out of curiosity: what's your brewer?", "Curiosità: che metodo usi?")]), null, curious); ctx = { t: "brewing", at: Date.now() }; }
-          else if (!(mem.likes || []).length) { sayNow(pick([T("Tell me, what flavours do you like in a coffee? Fruity, chocolatey, floral…?", "Dimmi, che sapori ti piacciono nel caffè? Fruttati, al cioccolato, floreali…?"), T("What kind of coffee makes you happy: bright and fruity, or rich and chocolatey?", "Che caffè ti rende felice: vivace e fruttato, o ricco e al cioccolato?")]), null, curious); ctx = { t: "flavours", at: Date.now() }; }
+          if (!mem.brewer && !askedBrew) { askedBrew = true; sayNow(pick([T("By the way, what do you brew with at home?", "A proposito, con cosa prepari il caffè a casa?"), T("Out of curiosity: what's your brewer?", "Curiosità: che metodo usi?")]), null, curious); ctx = { t: "brewing", at: Date.now() }; }
+          else if (!(mem.likes || []).length && !askedLikes) { askedLikes = true; sayNow(pick([T("Tell me, what flavours do you like in a coffee? Fruity, chocolatey, floral…?", "Dimmi, che sapori ti piacciono nel caffè? Fruttati, al cioccolato, floreali…?"), T("What kind of coffee makes you happy: bright and fruity, or rich and chocolatey?", "Che caffè ti rende felice: vivace e fruttato, o ricco e al cioccolato?")]), null, curious); ctx = { t: "flavours", at: Date.now() }; }
           else if (Math.random() < 0.5) { sayNow(T("Shall I find you one of today's new coffees?", "Vuoi che ti trovi uno dei caffè nuovi di oggi?"), null, curious); pendingYes = () => pickNew(false); }
           else { sayNow(T(`What's in your ${brewName(mem.brewer)} today?`, `Cosa c'è nel tuo ${brewName(mem.brewer)} oggi?`), null, curious); ctx = { t: "which", at: Date.now() }; }
         }, 1100); };
@@ -12103,14 +12104,17 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
         const bag = (r) => r._p100 != null ? r._p100 * (r.bag_g || 250) / 100 : null, fmt = (x) => "£" + x.toFixed(2);
         const yours = cur === "GBP" ? fmt(amt) : `${cur === "EUR" ? "€" : "$"}${said0 % 1 ? said0.toFixed(2) : said0} (about ${fmt(amt)})`;   // your money as you said it
         const ok = (r) => r._p100 != null && r._p100 >= 2.5 && (r.bag_g || 250) >= 150 && (r.bag_g || 250) <= 500 && notesOf(r).length && !picked.has(r.url) && !/drip ?bag|capsule|pod|sample/i.test(r.name);
-        const all = coffees().filter(ok), fits = all.filter((r) => bag(r) <= amt);
+        // the rest of the ask counts too: "an anaerobic from a UK roaster under £20" (27/11/2026: any coffee came back)
+        let sc = null; try { const w0 = readAsk(q); if ([w0.tastes.length, w0.proc, w0.places.length, w0.lands.length, w0.decaf, w0.roast, w0.roasters.length].some(Boolean)) { delete w0.max; delete w0.min; const f0 = askScore(w0); sc = (r) => f0(r); } } catch (e) {}
+        const all = coffees().filter((r) => ok(r) && (!sc || sc(r) > 0)), fits = all.filter((r) => bag(r) <= amt);
         if (!fits.length) { const c = all.sort((a, b) => bag(a) - bag(b))[0]; if (!c) return false; lastCo = { r: c, at: Date.now() };
           return say(T(`${yours} is a bit tight for a bag. The cheapest good one I know is ${shownName(c)} from ${roasteryName(c.roaster)}, about ${fmt(bag(c))} for ${c.bag_g || 250} g.`, `Con ${yours} è difficile trovare un sacchetto. Il più economico che conosco è ${shownName(c)} di ${roasteryName(c.roaster)}, circa ${fmt(bag(c))} per ${c.bag_g || 250} g.`), [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(c); } }], happy); }
         // the best use of the money: close to it, the kind you like, and new
-        const score = (r) => (suits(r) ? 3 : 0) + (bag(r) / amt) * 2 + (String(shelfDate(r) || "") >= new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10) ? 1 : 0) + Math.random();
+        const score = (r) => (sc ? sc(r) * 3 : 0) + (suits(r) ? 3 : 0) + (bag(r) / amt) * 2 + (String(shelfDate(r) || "") >= new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10) ? 1 : 0) + Math.random();
         const r = fits.map((x) => [score(x), x]).sort((a, b) => b[0] - a[0])[0][1], left = amt - bag(r); lastCo = { r, at: Date.now() }; picked.add(r.url);
         const big = amt >= 35 && bag(r) >= 25;
-        say(T(`${big ? "With that you can treat yourself" : `With ${yours}`}: ${shownName(r)} from ${roasteryName(r.roaster)}, about ${fmt(bag(r))} for ${r.bag_g || 250} g${left >= 1 ? `, ${fmt(left)} left over` : ""}. ${tastesOf(notesOf(r))}`.trim(),
+        const under = /\b(under|below|less than|up to|max(?:imum)?|no more than|sotto|meno di)\b/i.test(q);
+        say(T(`${big ? "With that you can treat yourself" : under ? `Under ${yours}` : `With ${yours}`}: ${shownName(r)} from ${roasteryName(r.roaster)}, about ${fmt(bag(r))} for ${r.bag_g || 250} g${left >= 1 ? `, ${fmt(left)} left over` : ""}. ${tastesOf(notesOf(r))}`.trim(),
           `${big ? "Con questi ti puoi concedere un caffè speciale" : `Con ${yours}`}: ${shownName(r)} di ${roasteryName(r.roaster)}, circa ${fmt(bag(r))} per ${r.bag_g || 250} g${left >= 1 ? `, e avanzano ${fmt(left)}` : ""}.`),
           [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(r); } }, { t: T("Another", "Un altro"), q: q }], happy); }],
       [/\b(cheaper|cheapest|cheap|less expensive|inexpensive|budget|affordable|good value|value for money|bargain|economico|meno car[oa])\b/i, () => { const o = ORIGINS.find(([re]) => re.test(lastQ));
@@ -12241,10 +12245,18 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
         const cc = new Set(all.map((o) => o.cc).filter(Boolean)).size;
         say(lead + T(`Competitions crown baristas, not roasteries. Goccio follows ${all.length} specialty roasters in ${cc} countries: tell me what you like and I'll find yours.`, `Le gare premiano i baristi, non le torrefazioni. Goccio segue ${all.length} torrefazioni specialty in ${cc} paesi: dimmi cosa ti piace e trovo la tua.`), chips, smile); }],
       K0,
+      // you ask him "Ever tried a natural Ethiopian?" / "Have you had a Gesha?": a drop has tried them all; here's one (27/11/2026)
+      [/\b(?:have you |did you |you )?ever (?:tried|had|drunk|tasted)\b|^have you (?:tried|had)\b|\bhai mai (?:provato|bevuto|assaggiato)\b/i, () => { const s0 = lastQ.toLowerCase(), want = {};
+        const pw = /natural|naturale/.test(s0) ? "natural" : /washed|lavat/.test(s0) ? "washed" : /anaerob/.test(s0) ? "anaerobic" : /\bhoney\b/.test(s0) ? "honey" : null; if (pw) want.process = pw;
+        const og = ORIGINS.find(([re]) => re.test(lastQ)); if (og) want.origin = og[1]; if (/gei?sha/.test(s0)) want.variety = /gei?sha/i; if (/decaf|deca\b/.test(s0)) want.decaf = true;
+        if (!Object.keys(want).length) return false; const r = prefPick(want, true); if (!r) return false; const ns = notesOf(r);
+        say(T(`I'm a drop of coffee, so I've tasted plenty! One I'd pour right now: ${shownName(r)} from ${roasteryName(r.roaster)}${ns.length ? ", tasting of " + andList(ns) : ""}.`, `Sono una goccia di caffè, ne ho assaggiati tanti! Uno che verserei adesso: ${shownName(r)} di ${roasteryName(r.roaster)}${ns.length ? ", che sa di " + andList(ns) : ""}.`),
+          [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(r); } }, T("Another one", "Un altro")], happy); return true; }],
     ];
     // brewers: what each is, the grind it wants, and when to pick it, for comparisons ("V60 or Chemex?") and grind questions
     const BREWERS = [
       ["V60", /\bv ?60\b|hario v/i, "a cone pour-over with one big hole and spiral ribs: fast flow, so you control the cup with your pour", "un pour-over conico con un grande foro e nervature a spirale: scende veloce, quindi la tazza la controlli con la versata", "medium-fine to medium, like table salt to sand (about 500 to 800 µm)", "medio-fine o media, come sale da tavola o sabbia (circa 500-800 µm)", "clarity and control", "chiarezza e controllo"],
+      ["Orea", /\borea\b/i, "a flat-bottomed dripper with one wide opening: it drains fast, so the cup is light, sweet and very clean", "un dripper a fondo piatto con un'unica apertura larga: scende veloce, quindi la tazza è leggera, dolce e pulitissima", "medium, a touch coarser than for a V60 (about 600 to 900 µm)", "media, un filo più grossa che per la V60 (circa 600-900 µm)", "speed and sweetness", "velocità e dolcezza"],
       ["Kalita Wave", /kalita|\bwave\b/i, "a flat-bottomed pour-over with three small holes and wavy papers: slower, more even, very forgiving", "un pour-over a fondo piatto con tre forellini e filtri ondulati: più lento, uniforme, molto clemente", "medium, like sand (about 600 to 800 µm)", "media, come sabbia (circa 600-800 µm)", "even, sweet cups with less fuss", "tazze uniformi e dolci con meno fatica"],
       ["Chemex", /chemex/i, "a glass carafe pour-over with extra-thick paper: very clean, light-bodied, great for sharing", "una caraffa di vetro con filtro di carta extra spesso: pulitissimo, leggero di corpo, ottimo da condividere", "medium-coarse, like coarse sand (about 750 to 950 µm)", "medio-grossa, come sabbia grossa (circa 750-950 µm)", "the cleanest cup and bigger batches", "la tazza più pulita e dosi più grandi"],
       ["Origami", /origami/i, "a ceramic dripper with deep folds that takes cone or flat papers: fast and versatile", "un filtro in ceramica a pieghe profonde che prende filtri conici o piatti: veloce e versatile", "medium-fine, a touch finer than a Kalita (about 500 to 750 µm)", "medio-fine, un filo più fine che per la Kalita (circa 500-750 µm)", "playing with both styles", "giocare con tutti e due gli stili"],
@@ -12371,15 +12383,22 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
           [/floral|flower|floreal/i, "jasmine rose floral lavender bergamot hibiscus elderflower orange blossom violet chamomile"], [/chocolat|cocoa|cioccolat/i, "chocolate cocoa cacao brownie fudge"],
           [/nut|nocciol/i, "hazelnut almond nut walnut pecan peanut marzipan praline"], [/citrus|agrum/i, "lemon lime orange grapefruit mandarin citrus tangerine yuzu bergamot"],
           [/tropical/i, "mango pineapple passion papaya guava coconut lychee banana"], [/boozy|winey|funky/i, "wine rum whisky boozy liqueur fermented funky winey brandy"], [/caramel/i, "caramel toffee butterscotch brown sugar honey maple molasses"]];
-        if (/^(why|how|what (is|are|makes)|what's|perch|come mai|cosa rende)\b/i.test(lastQ)) return false;   // "why is it fruity?" wants an answer, not a coffee
+        const soft = /\b(?:don'?t|do not|doesn'?t|not a fan of|hate|no)\s+(?:like\s+|love\s+|want\s+|enjoy\s+)?(?:sour|acid\w*|tart|sharp|bright)|\bnot (?:too )?(?:sour|acidic|sharp|tart)|\blow[- ]acid|non (?:mi piace )?(?:l'?)?acid|non aspr/i.test(lastQ);
+        if (/^(why|how|what (is|are|makes)|what's|perch|come mai|cosa rende)\b/i.test(lastQ) && !soft) return false;   // "why is it fruity?" wants an answer, not a coffee
         const f = FAM.find(([re]) => re.test(lastQ)); if (!f) return false; moreQ = lastQ; const keys = f[1].split(" ");
-        const cs = coffees().filter((x) => { const n = notesOf(x).join(" ").toLowerCase(); return keys.some((k) => n.includes(k)); });
+        // fruity without the sour (27/11/2026: "I don't like sour" got a Kenyan): naturals and honeys are sweet, jammy fruit
+        const cs = coffees().filter((x) => { const n = notesOf(x).join(" ").toLowerCase(); return keys.some((k) => n.includes(k)) && (!soft || (/natural|honey|anaerob/i.test(String(x.process || "")) && !/kenya|rwanda|burundi/i.test(String(x.origin || "")) && !/lemon|lime|grapefruit|sour|tart/.test(n))); });
+        if (soft && cs.length) { const r = pick(cs.slice(0, 300)), ns = notesOf(r);
+          return say(T(`Fruity doesn't have to mean sour. A natural coffee, dried inside its cherry, tastes of sweet, jammy fruit like berries and stone fruit, not lemon. Try ${shownName(r)} from ${roasteryName(r.roaster)}${r.origin ? ", " + r.origin : ""}. ${tastesOf(ns)}`, `Fruttato non vuol dire aspro. Un caffè naturale, essiccato dentro la sua ciliegia, sa di frutta dolce e marmellata, come frutti di bosco e pesca, non di limone. Prova ${shownName(r)} della ${roasteryName(r.roaster)}${r.origin ? ", " + r.origin : ""}. Sa di ${andList(ns)}.`),
+            [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(r); } }, T("Another one", "Un altro")], happy); }
         if (!cs.length) return say(T("Give me a second, the coffees are still on their way.", "Un attimo, i caffè stanno arrivando."));
         const r = pick(cs.slice(0, 300)), ns = notesOf(r);
         say(T(`Try ${shownName(r)} from ${roasteryName(r.roaster)}${r.origin ? ", " + r.origin : ""}. ${tastesOf(ns)}`, `Prova ${shownName(r)} della ${roasteryName(r.roaster)}${r.origin ? ", " + r.origin : ""}. Sa di ${andList(ns)}.`),
           [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(r); } }, T("Another one", "Un altro")], happy); }],
       [/surprise|recommend|suggest|pick|choose|delicious|tasty|something good|what should i (try|buy|drink|get)|which coffee|consigli|sorprend|scegli|buono|quale caff/i, () => { const fresh = /new|recent|latest|release|this week|today|nuov|ultim|recent/i.test(lastQ), pool = fresh ? newest().list : coffees(); if (!/^(another|one more|un altro|altro)\b/i.test(lastQ)) moreQ = "";
-        const cs = pool.filter((x) => notesOf(x).length >= 2); if (!cs.length) return say(T("Give me a second, the coffees are still on their way.", "Un attimo, i caffè stanno arrivando."));
+        let f0 = null; try { const w0 = readAsk(lastQ); if ([w0.tastes.length, w0.proc, w0.places.length, w0.lands.length, w0.decaf, w0.roast, w0.roasters.length, w0.max != null, w0.min != null].some(Boolean)) f0 = askScore(w0); } catch (e) {}   // "an anaerobic from a UK roaster under £20" (27/11/2026)
+        const cs0 = pool.filter((x) => notesOf(x).length >= 2), cs = f0 ? cs0.map((x) => [f0(x), x]).filter(([v]) => v > 0).sort((a, b) => b[0] - a[0]).map(([, x]) => x).slice(0, 20) : cs0;
+        if (!cs.length) return say(f0 ? T("I can't find one that fits all of that right now. Try loosening one thing, like the price or the process.", "Adesso non ne trovo uno che vada bene per tutto. Prova ad allentare qualcosa, come il prezzo o il processo.") : T("Give me a second, the coffees are still on their way.", "Un attimo, i caffè stanno arrivando."));
         const r = pick(cs.slice(0, 300)), ns = notesOf(r);
         say(T(`Try ${shownName(r)} from ${roasteryName(r.roaster)}${r.origin ? ", " + r.origin : ""}. ${tastesOf(ns)}`, `Prova ${shownName(r)} della ${roasteryName(r.roaster)}${r.origin ? ", " + r.origin : ""}. Sa di ${andList(ns)}.`),
           [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(r); } }, T("Another one", "Un altro")], happy); }],
@@ -12408,7 +12427,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
         say(T(`${a[0]} is ${a[2]}. ${b[0]} is ${b[2]}. Pick the ${a[0]} for ${a[6]}, the ${b[0]} for ${b[6]}.`, `${a[0]}: ${a[3]}. ${b[0]}: ${b[3]}. Scegli ${a[0]} per ${a[7]}, ${b[0]} per ${b[7]}.`),
           [{ t: T(`Grind for ${a[0]}?`, `Macinatura per ${a[0]}?`), q: T(`What grind size for ${a[0]}?`, `Che macinatura per ${a[0]}?`) }, { t: T(`Grind for ${b[0]}?`, `Macinatura per ${b[0]}?`), q: T(`What grind size for ${b[0]}?`, `Che macinatura per ${b[0]}?`) }], smile); }],
       // the grind for one brewer
-      [/\bgrind|macina|\bmicron|\bµm\b/i, () => { const bs = brewersIn(lastQ); if (bs.length !== 1 || !/what|which|how|size|setting|for|per|che|quale|come/i.test(lastQ)) return false; const b = bs[0];
+      [/\bgrind|macina|\bmicron|\bµm\b/i, () => { const bs = brewersIn(lastQ); if (/comandante|c40/i.test(lastQ)) return false; if (bs.length !== 1 || !/what|which|how|size|setting|for|per|che|quale|come/i.test(lastQ)) return false; const b = bs[0];
         say(T(`For ${b[0]}: ${b[4]}. That's a starting point: on Goccio, pick your coffee and your grinder and you get the exact setting. Then taste: sour means go finer, bitter means go coarser.`, `Per ${b[0]}: ${b[5]}. È un punto di partenza: su Goccio scegli il caffè e il tuo macinino e hai la regolazione esatta. Poi assaggia: aspro vuol dire più fine, amaro più grossa.`), null, smile); }],
       K0,
       K0,
@@ -12838,7 +12857,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
         .filter((x) => x.rare > 0 || (x.n >= 2 && x.n === words.length));
       const top = Math.max(0, ...scored.map((x) => x.n * 2 + x.rare)); return scored.filter((x) => x.n * 2 + x.rare === top).map((x) => x.r); };
     const where = (o) => o.city ? o.city + (o.cc ? ` (${o.cc === "GB" ? "UK" : o.cc})` : "") : o.cc ? (o.cc === "GB" ? "the UK" : o.cc) : "";
-    const describe = (r) => { lastCo = { r, at: Date.now() }; const ns = notesOf(r), bits = [r.origin, r.process, r.variety].filter(Boolean).map((x) => String(x).toLowerCase().replace(/^./, (c) => c.toUpperCase()));
+    const describe = (r) => { lastCo = { r, at: Date.now() }; const ns = notesOf(r), bits = [r.origin, r.process ? String(r.process).toLowerCase().replace(/^./, (c) => c.toUpperCase()) : "", r.variety].filter(Boolean).map(String);   /* varieties keep their capitals: SL28, not Sl28 (27/11/2026) */
       return T(`${shownName(r)} from ${roasteryName(r.roaster)}${bits.length ? ": " + andList(bits) : ""}. ${ns.length ? tastesOf(ns) : "The roaster doesn't list tasting notes."}${r.price ? " About " + r.price + " a bag." : ""}`,
         `${shownName(r)} della ${roasteryName(r.roaster)}${bits.length ? ": " + andList(bits) : ""}. ${ns.length ? "Sa di " + andList(ns) + "." : "La torrefazione non indica le note."}${r.price ? " Circa " + r.price + " la busta." : ""}`); };
     const openRoaster = (name) => { closeTalk(); if (window.openRoaster) setTimeout(() => window.openRoaster(name), 60); else location.hash = "#roaster=" + encodeURIComponent(name); };   // the roaster's page from its top, not wherever the page was
@@ -12847,6 +12866,10 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
       const cs = findCoffees(qn, ro);
       const mine = ro ? cs.filter((r) => r.roaster === ro.name) : cs;
       const asksWhere = /\b(where|based|located|from where|which city|dove|sede|si trova)\b/i.test(q) && !mine.length;
+      { const og = ro && !asksWhere ? ORIGINS.find(([re]) => re.test(q)) : null;   // a roaster and an origin: "Any Kenyans from La Cabra?" (27/11/2026)
+        if (og) { const hit = ro.list.filter((r) => og[0].test(String(r.origin || ""))).sort((a, b) => notesOf(b).length - notesOf(a).length), n = ro.list.length;
+          if (hit.length) { const r = hit[0]; return say(T(`Yes: ${hit.length} from ${og[1]} at ${roasteryName(ro.name)} right now. ${describe(r)}`, `Sì: ${hit.length} da ${og[2]} da ${roasteryName(ro.name)} adesso. ${describe(r)}`), [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(r); } }, { t: T("All their coffees", "Tutti i loro caffè"), f: () => openRoaster(ro.name) }], happy), true; }
+          say(T(`Not right now: ${roasteryName(ro.name)} has nothing from ${og[1]} on Goccio today. They do have ${n} other coffee${n === 1 ? "" : "s"}.`, `Non adesso: ${roasteryName(ro.name)} oggi non ha niente da ${og[2]} su Goccio. Ha però altri ${n} caffè.`), [{ t: T("See their coffees", "Vedi i loro caffè"), f: () => openRoaster(ro.name) }], curious); return true; } }
       if (ro && (asksWhere || (!cs.length && !/\b(taste|flavou?r|notes|sapore|gusto)\b/i.test(q)))) {
         const n = ro.list.length, w = where(ro);
         say(T(`${roasteryName(ro.name)} is ${w ? "based in " + w : "on Goccio, though it doesn't say where it's based"}. ${n} coffee${n === 1 ? "" : "s"} from them on Goccio right now.`, `${roasteryName(ro.name)} ${w ? "ha sede a " + w : "è su Goccio, ma non dice dove ha sede"}. Adesso ha ${n} caffè su Goccio.`),
@@ -12973,11 +12996,11 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
           nick = n; try { localStorage.setItem("v60.gdNick", n); } catch (e) {} react("❤️", 200);
           return say(pick([T(`${n}? I love it. ${n} it is, from now on.`, `${n}? Mi piace un sacco. Da ora sono ${n}.`), T(`Sure! Call me ${n}. I'll remember.`, `Certo! Chiamami ${n}. Me lo ricordo.`), T(`${n}. Has a nice ring to it. Deal!`, `${n}. Suona bene. Affare fatto!`)]), null, happy); } }
       // a name: "call me Fed", "my name is Fed", or the answer to "What should I call you?"
-      const mn = q.match(/^(?:call me|my name is|you can call me|mi chiamo|chiamami)\s+(.+)$/i) || (askingName && q.match(/^(?:i'?m|i am|it'?s|sono)\s+(.+)$/i));
+      const mn = q.match(/^(?:call me|my name is|you can call me|mi chiamo|chiamami)\s+(.+)$/i) || (askingName && ((m) => m && m[1].split(/\s+/).length <= 3 && !/[?,]/.test(m[1]) && !/^(new|just|a|an|the|not|looking|here|so|very|really|from|in|into|trying|getting|starting|curious|interested|nuov[oa]|qui|appena)\b/i.test(m[1]) ? m : null)(q.match(/^(?:i'?m|i am|it'?s|sono)\s+(.+)$/i)));   /* "I'm new to coffee, where do I start?" is a question, not a name (27/11/2026) */
       if (mn && setName(mn[1])) { askingName = false; return nice(); }
       if (askingName) { askingName = false;
         if (/^(skip|no thanks|later|not now|salta|dopo|no grazie)\b/i.test(q)) return say(T("No problem. Ask me anything about coffee.", "Nessun problema. Chiedimi qualcosa sul caffè."), null, smile);
-        if (q.split(/\s+/).length <= 3 && !/[?0-9]/.test(q) && !ANSWERS.some(([re]) => re.test(q)) && setName(q)) return nice(); }
+        if (q.split(/\s+/).length <= 3 && !/[?0-9]/.test(q) && !/^(i'?m|i am|hi|hello|hey|ciao)\b/i.test(q) && !ANSWERS.some(([re]) => re.test(q)) && setName(q)) return nice(); }
       // a roaster or a coffee by name, from the list itself
       if (/^(again|do it again|do that again|one more( time)?|once more|encore|more|repeat|ancora( una volta)?|rifallo|rifai|di nuovo|un'?altra volta|bis)\b[ !.]*(please|per favore)?[ !.]*$/i.test(q)) { if (prevTrick) { const f = prevTrick; lastTrick = f; D.free(); f(); return; }
         return say(T("Again what? Ask me to dance, backflip, spin or jump, then say 'again'!", "Ancora cosa? Chiedimi di ballare, fare una capriola, girare o saltare, poi di' 'ancora'!"), null, curious); }
