@@ -48,7 +48,10 @@ html body #shelf > .grp.day-g{height:31px;box-sizing:border-box}   /* a whole nu
 /* its line, like the day's bar under it: the column's width, then the whole window's once it pins (27/11/2026) */
 .co-tabs::after{content:"";position:absolute;left:0;width:100%;bottom:0;height:1px;background:var(--line);pointer-events:none;transition:left .32s cubic-bezier(.2,.8,.2,1),width .32s cubic-bezier(.2,.8,.2,1)}
 .co-tabs button[aria-busy="true"]{animation:co-wait 1s ease-in-out infinite alternate}@keyframes co-wait{to{opacity:.35}}
-.co-tabs.stuck::after{left:calc(50% - 50vw);width:100vw}
+.co-tabs::after,.co-tabs::before{left:calc(50% - 50vw)!important;width:100vw!important;transition:none}   /* fillets, 27/11/2026: the bars' lines (top bar, kinds row) run edge to edge; the list's lines (day bar, between coffees) keep the margins */
+.co-tabs::before{content:"";position:absolute;top:-1px;height:1px;background:var(--line);pointer-events:none}
+.co-tabs.stuck::before{display:none}   /* stuck, the top bar's own line is right above */
+html:not(.ro-page) body #shelves > .sec-head:has(+ .co-tabs){border-top-color:transparent!important}
 @media (prefers-reduced-motion:reduce){ .co-tabs::after{transition:none} }
 .co-tabs button{flex:none;background:none;border:0;border-radius:0;padding:0;height:43px;display:flex;align-items:center;font:500 var(--fs-s)/1.2 var(--sans);color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;min-height:0}
 .co-tabs button:hover{color:var(--ink)}
