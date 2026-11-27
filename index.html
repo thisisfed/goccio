@@ -39,20 +39,25 @@ html body #shelf .item .l > .c-top > .day.today{color:var(--hl)}
 html body #shelf .item .l > .c-where{margin:6px 0 0!important}
 html body #shelf .item .l > .c-notes:not(.nb-line){margin-top:2px!important}
 /* a row of kinds, words only, the one you're on underlined (27/11/2026) */
-.co-tabs{display:flex;gap:28px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--line);margin:0;padding:0;position:sticky;top:var(--top-h,49px);z-index:5;height:43px;margin-top:-14px!important;background:var(--bg);box-shadow:-50vw 0 0 var(--bg),50vw 0 0 var(--bg)}
+.co-tabs{display:block;margin:0;padding:0;position:sticky;top:var(--top-h,49px);z-index:5;height:43px;margin-top:-14px!important;background:var(--bg);box-shadow:-50vw 0 0 var(--bg),50vw 0 0 var(--bg)}
 html body .shelf .grp.day-g{top:calc(var(--top-h,49px) + 43px + 12px)!important}   /* pinned under the kinds row, the same height as it */
 html.ro-page body .shelf .grp.day-g{top:calc(var(--top-h,49px) + 12px)!important}
-.co-tabs::-webkit-scrollbar{display:none}
+.co-tabs .co-in{display:flex;gap:28px;overflow-x:auto;scrollbar-width:none;height:100%;align-items:stretch}
+.co-tabs .co-in::-webkit-scrollbar{display:none}
+/* its line, like the day's bar under it: the column's width, then the whole window's once it pins (27/11/2026) */
+.co-tabs::after{content:"";position:absolute;left:0;width:100%;bottom:0;height:1px;background:var(--line);pointer-events:none;transition:left .32s cubic-bezier(.2,.8,.2,1),width .32s cubic-bezier(.2,.8,.2,1)}
+.co-tabs.stuck::after{left:calc(50% - 50vw);width:100vw}
+@media (prefers-reduced-motion:reduce){ .co-tabs::after{transition:none} }
 .co-tabs button{flex:none;background:none;border:0;border-radius:0;padding:0;height:43px;display:flex;align-items:center;font:500 var(--fs-s)/1.2 var(--sans);color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;min-height:0}
 .co-tabs button:hover{color:var(--ink)}
 .co-tabs button:focus{outline:none}
 .co-tabs button:focus-visible{color:var(--ink)}
 /* a search's line under the kinds row, as much space over it as under it (27/11/2026) */
 html body #shelves .co-tabs ~ .fy-note.fy-top:not([hidden]){margin:0!important}
-@media (min-width:900px){ .co-tabs{justify-content:space-between;gap:16px} }
+@media (min-width:900px){ .co-tabs .co-in{justify-content:space-between;gap:16px} }
 .co-tabs button[aria-pressed="true"]{color:var(--ink);border-bottom-color:var(--ink)}
 html.ro-page .co-tabs{display:none}
-@media (max-width:899px){ .co-tabs{gap:22px;margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);padding:0 12px;scroll-padding:0 12px} .co-tabs::after{content:"";flex:0 0 1px} }   /* on a phone the row runs the screen's whole width, edge to edge (27/11/2026) */
+@media (max-width:899px){ .co-tabs{margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw)} .co-tabs .co-in{gap:22px;padding:0 12px;scroll-padding:0 12px} .co-tabs .co-in::after{content:"";flex:0 0 1px} }   /* on a phone the row runs the screen's whole width, edge to edge (27/11/2026) */
 /* the sentence: name in ink, roaster in mid grey, the taste in light grey (27/11/2026) */
 html body #shelf .item .name.sent{display:block;margin:0;text-wrap:pretty}
 html body #shelf .item .name.sent .s-f, html body #shelf .item .name.sent .s-f a{color:var(--muted)}
@@ -3601,7 +3606,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
 
   <section class="sec" id="shelves" aria-labelledby="sh">
     <div class="sec-head"><span class="cap" id="sh" role="heading" aria-level="2"><span class="sh-t">Coffees</span><span class="ro-title" id="roName" translate="no"></span></span><span class="ro-tools"><a class="chip ro-shop-top" id="roShopTop" target="_blank" rel="noopener" hidden>Visit shop</a><button type="button" class="chip ro-follow" id="roFollow" aria-pressed="false">Follow</button></span><button type="button" class="chip fy-pill" id="fyPill" aria-pressed="false">For you</button></div>
-    <nav class="co-tabs" id="coTabs" aria-label="Kinds of coffee"><button type="button" data-q="" data-en="New today" data-it="Nuovi oggi" aria-pressed="true">New today</button><button type="button" data-q="fruity" data-en="Fruity" data-it="Fruttati" aria-pressed="false">Fruity</button><button type="button" data-q="chocolatey" data-en="Chocolatey" data-it="Cioccolato" aria-pressed="false">Chocolatey</button><button type="button" data-q="floral" data-en="Floral" data-it="Floreali" aria-pressed="false">Floral</button><button type="button" data-q="decaf" data-en="Decaf" data-it="Deca" aria-pressed="false">Decaf</button><button type="button" data-q="espresso" data-en="Espresso" data-it="Espresso" aria-pressed="false">Espresso</button><button type="button" data-q="filter" data-en="Filter" data-it="Filtro" aria-pressed="false">Filter</button><button type="button" data-q="natural" data-en="Natural" data-it="Naturali" aria-pressed="false">Natural</button><button type="button" data-q="washed" data-en="Washed" data-it="Lavati" aria-pressed="false">Washed</button><button type="button" data-q="under £15" data-en="Under £15" data-it="Sotto 15 £" aria-pressed="false">Under £15</button><button type="button" data-q="over £30" data-en="Treats" data-it="Speciali" aria-pressed="false">Treats</button><button type="button" data-q="__near" data-en="Near you" data-it="Vicino a te" aria-pressed="false">Near you</button></nav>
+    <nav class="co-tabs" id="coTabs" aria-label="Kinds of coffee"><div class="co-in"><button type="button" data-q="" data-en="New today" data-it="Nuovi oggi" aria-pressed="true">New today</button><button type="button" data-q="fruity" data-en="Fruity" data-it="Fruttati" aria-pressed="false">Fruity</button><button type="button" data-q="chocolatey" data-en="Chocolatey" data-it="Cioccolato" aria-pressed="false">Chocolatey</button><button type="button" data-q="floral" data-en="Floral" data-it="Floreali" aria-pressed="false">Floral</button><button type="button" data-q="decaf" data-en="Decaf" data-it="Deca" aria-pressed="false">Decaf</button><button type="button" data-q="espresso" data-en="Espresso" data-it="Espresso" aria-pressed="false">Espresso</button><button type="button" data-q="filter" data-en="Filter" data-it="Filtro" aria-pressed="false">Filter</button><button type="button" data-q="natural" data-en="Natural" data-it="Naturali" aria-pressed="false">Natural</button><button type="button" data-q="washed" data-en="Washed" data-it="Lavati" aria-pressed="false">Washed</button><button type="button" data-q="under £15" data-en="Under £15" data-it="Sotto 15 £" aria-pressed="false">Under £15</button><button type="button" data-q="over £30" data-en="Treats" data-it="Speciali" aria-pressed="false">Treats</button><button type="button" data-q="__near" data-en="Near you" data-it="Vicino a te" aria-pressed="false">Near you</button></div></nav>
     <p class="fy-note fy-top" id="followNote" hidden></p>
     <p class="fy-note fy-top" id="fyNote" role="status" hidden></p>
     <p class="shelf-meta" id="shelfMeta" hidden></p>
@@ -9714,7 +9719,9 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
           segs.querySelectorAll("select").forEach((x) => { x.value = ""; show(x); }); a.value = ""; segQ = q;
           if (sq.value !== q) { sq.value = q; $("shelfQx").hidden = !q; shelfAll = false; renderShelf(); } if (q) askBrewer(q); jumpTo($("shelves")); light(); sync();
           b.scrollIntoView({ block: "nearest", inline: "nearest" }); });
-        $("shelfQ").addEventListener("input", () => setTimeout(light, 0)); setInterval(light, 1200); }
+        $("shelfQ").addEventListener("input", () => setTimeout(light, 0)); setInterval(light, 1200);
+        const pin = () => { const top = document.querySelector(".top"), h = top ? top.getBoundingClientRect().bottom : 49; tabs.classList.toggle("stuck", tabs.getBoundingClientRect().top <= h + 0.5 && scrollY > 10); };
+        addEventListener("scroll", pin, { passive: true }); addEventListener("resize", pin); pin(); }
       ["focus", "blur", "input", "search"].forEach((ev) => a.addEventListener(ev, () => setTimeout(ev === "input" || ev === "search" ? reset : sync, 0)));
       $("shelfQ").addEventListener("input", () => setTimeout(reset, 0)); setInterval(sync, 1500); sync(); } }
 
