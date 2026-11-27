@@ -72,7 +72,7 @@ html body #shelf .item .name.sent{display:block;margin:0;text-wrap:pretty}
 html body #shelf .item .name.sent .s-f, html body #shelf .item .name.sent .s-f a{color:var(--muted)}
 html body #shelf .item .name.sent .s-f a{text-decoration:underline;text-decoration-thickness:.05em;text-underline-offset:.1em}
 html body #shelf .item .name.sent .s-n{color:var(--ink)}   /* "Name: taste." in white, "Roasted by: roaster, place." in grey (27/11/2026) */
-html body #shelf .item .name.sent .s-t{color:var(--ink)}
+html body #shelf .item .name.sent .s-t{color:color-mix(in srgb,var(--ink) 58%,var(--muted))}   /* three tones: the name in white, the taste a softer white, the roaster in grey (27/11/2026) */
 html.ro-page body #shelf .item .name.sent .s-f{display:none}
 html body #shelf .item .name.sent .s-dot{display:none}
 html body #shelf .item .name.sent + .c-notes{margin-top:6px!important}
@@ -11458,6 +11458,13 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     let lkX = 0, lkY = 0, lkRaf = 0;
     const look = (x, y) => { lkX = x; lkY = y; if (lkRaf) return; const tick = () => { lookX += (lkX - lookX) * 0.14; lookY += (lkY - lookY) * 0.14; draw();
       if (Math.abs(lkX - lookX) + Math.abs(lkY - lookY) > 0.02) lkRaf = requestAnimationFrame(tick); else { lookX = lkX; lookY = lkY; draw(); lkRaf = 0; } }; lkRaf = requestAnimationFrame(tick); };
+    // left alone, he looks around (27/11/2026): now and then his eyes wander to one, two or three spots (a side, up, down, a quick
+    // dart), rest a moment on each, and come back to you; never while he's busy, talking, on his phone, or off the screen
+    (function around() { setTimeout(async () => { around(); if (document.hidden || still() || acting || texting || lkRaf) return; const r = el.getBoundingClientRect(); if (!r.width || r.bottom < 0 || r.top > innerHeight) return;
+      const spots = [[-3, 0], [3, 0], [-2.4, -1.2], [2.4, -1.2], [0, -1.4], [-2.2, 1.1], [2.2, 1.1], [0, 1.5]], n = 1 + Math.floor(Math.random() * 3); let last = -1;
+      for (let i = 0; i < n; i++) { let k; do k = Math.floor(Math.random() * spots.length); while (k === last); last = k; const f = 0.6 + Math.random() * 0.4;
+        look(spots[k][0] * f, spots[k][1] * f); await new Promise((r) => setTimeout(r, 450 + Math.random() * 1200)); if (acting || texting) return; }
+      look(0, 0); }, 3000 + Math.random() * 6000); })();
     const hop = (v, dx, ms) => { ms *= 1.45; jv = -v; tween("jx", dx, ms); go(); return wait(ms + 60); };   // matches the slower hop clock
     // typing its answer: on its phone, eyes down at the screen, the screen flickering as it taps
     const text = (on) => { if (still()) return; wantText = !!on; if (on) { if (texting || acting) return; texting = true; tween("fone", 1, 260); look(0, 2.4); clearInterval(texT); texT = setInterval(() => tween("scroll", S.scroll + 0.35, 110), 260); }
