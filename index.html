@@ -71,13 +71,6 @@ html body #shelf .item .name.sent + .c-notes{margin-top:6px!important}
 /* every link, on hover: the underline goes, whatever draws it (27/11/2026) */
 @media (hover:hover){ html body a:hover, html body a:hover *{text-decoration-color:transparent!important;border-bottom-color:transparent!important}
   html body a:hover:not(.pill):not(.btn):not(.chip):not(.ro-pill):not(.buy-p){text-decoration:none!important} }
-/* the notes, as big as the name, in the palette's grey (27/11/2026) */
-html body #shelf .item .name.s-notes{display:block;margin:0;color:var(--muted);text-wrap:pretty}
-html body #shelf .item .l > .c-where{margin:8px 0 0!important;color:var(--ink)}
-html body #shelf .item .l > .c-where .rcity{color:var(--ink)}
-html.ro-page body #shelf .item .l > .c-where{display:none!important}   /* on a roaster's page, the roaster is the title */
-html.ro-page body #shelf .item .l > .s-notes, html.ro-page body #shelf .item .l > .name + .c-notes{margin-bottom:8px!important}
-html body #shelf .item .l > .name + .c-notes{margin-top:4px!important}
 /* a wrapped name sits tighter (27/11/2026) */
 html body #shelf .item .name:not(.nb){line-height:.98!important}
 /* the name stays the big line; the roaster's own notes come right under it, in ink, a size up from the small lines (27/11/2026) */
@@ -8065,12 +8058,11 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
       return `${head}${dayHead}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}" data-day="${isSp ? "" : String(shelfDate(r) || "").slice(0, 10)}">
         <div class="l">
           ${/* the order of the typographic mockup (27/11/2026): what it is and when it came, the name, how it tastes, who roasted it */ ""}<div class="c-top"><p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p></div>
-          ${/* the name, then how it tastes, then who roasted it (27/11/2026): name in ink, notes as big in the palette's grey, the roaster small */ ""}${(() => { const ns = noteList(r), real = ns.length && !(ns.length === 1 && !/\s/.test(ns[0].trim()));
-            const low = (n) => n.split(" ").map((x) => /^[A-ZÀ-Ý][a-zà-ÿ'’-]*$/.test(x) ? x.toLowerCase() : x).join(" ");
-            const tastes = real ? ns.slice(0, 4).map((n, k) => { const t = esc(low(n)); return k ? t : t.charAt(0).toUpperCase() + t.slice(1); }) : [];
-            const place = r.roaster_city || r.roaster_country ? `<span class="rcity">${r.roaster_city ? ", " + esc(cityL(r.roaster_city)) : ""}${r.roaster_country ? ` (${esc(r.roaster_country === "GB" ? "UK" : r.roaster_country)})` : ""}</span>` : "";
-            return `<span class="name">${esc(capName(calm(shown)))}.</span>${tastes.length ? `<p class="name s-notes">${tastes.join(", ")}.</p>` : cardNotes(r)}
-          <p class="c-where">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : ""}<a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a>${place}.</p>`; })()}
+          ${/* one sentence in three greys (27/11/2026): the name; who roasted it and where; how it tastes. Guessed notes stay a small line under it */ ""}${(() => { const ns = noteList(r), real = ns.length && !(ns.length === 1 && !/\s/.test(ns[0].trim())), it = LANG === "it";
+            const low = (n) => n.split(" ").map((x) => /^[A-ZÀ-Ý][a-zà-ÿ'’-]*$/.test(x) ? x.toLowerCase() : x).join(" "), and = it ? " e " : " and ";
+            const place = r.roaster_city || r.roaster_country ? `${r.roaster_city ? ", " + esc(cityL(r.roaster_city)) : ""}${r.roaster_country ? ` (${esc(r.roaster_country === "GB" ? "UK" : r.roaster_country)})` : ""}` : "";
+            const tastes = real ? ns.slice(0, 3).map((n) => esc(low(n))) : [];
+            return `<p class="name sent"><span class="s-n">${esc(capName(calm(shown)))}</span><span class="s-dot">.</span> <span class="s-f">${it ? "di" : "from"} <a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a>${place}.</span>${tastes.length ? ` <span class="s-t">${it ? "Sa di" : "Tastes like"} ${tastes.length > 1 ? tastes.slice(0, -1).join(", ") + and + tastes[tastes.length - 1] : tastes[0]}.</span>` : ""}</p>${real ? "" : cardNotes(r)}`; })()}
           ${cardPrice(r)}
         </div>
         <div class="r${rowOpen.has(rowKey(r)) ? " more-open" : ""}">
