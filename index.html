@@ -13190,7 +13190,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
         let gone = false;
         const set = (g) => { if (g === gone) return; gone = g;
           // while the page is still settling (hidden, or just shown) it simply is where it should be: no gulp, no spit, nothing sliding
-          if (true) {   /* kept simple: never a gulp or a spit, he is just there or not */
+          if (document.documentElement.classList.contains("wait") || !window.__shownAt || performance.now() - window.__shownAt < 900) {   /* 27/11/2026: the liquid gulp and spit are back; only while the page settles is he simply there or not */
             const qs = [tb, tb.parentElement && tb.parentElement.querySelector(".ask-box")].filter(Boolean); qs.forEach((x) => x.style.setProperty("transition", "none", "important"));
             tb.classList.toggle("ag-gone", g); tb.classList.remove("ag-out"); plus.classList.remove("gulp", "spit"); tb.setAttribute("aria-hidden", g ? "true" : "false"); tb.tabIndex = g ? -1 : 0;
             void tb.offsetWidth; requestAnimationFrame(() => requestAnimationFrame(() => qs.forEach((x) => x.style.removeProperty("transition")))); return; }
