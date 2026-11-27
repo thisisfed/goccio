@@ -11936,7 +11936,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
           { const bar = document.querySelector(".top"), bb = bar ? bar.getBoundingClientRect().bottom : tr.bottom + 9; pk.style.top = Math.round(bb + Math.max(6, bb - 1 - tr.bottom)) + "px"; }   /* under the bar's line by as much as the pills sit above it */ pk.style.right = Math.max(8, Math.round(innerWidth - tr.right)) + "px";   /* its right edge on the pill's */ pk.style.setProperty("--tail", Math.round(tr.width / 2 + 6) + "px");
           pk.textContent = T("Need a hand? I can brew this with you.", "Ti serve una mano? Lo prepariamo insieme.");
           pk.setAttribute("aria-label", T("Brew this with Goccio", "Preparalo con Goccio"));
-          pk.onclick = () => { hide(); openTalk(true); setTimeout(() => gbStart(r), 350); };
+          pk.onclick = () => { hide(); openTalk(true, true); setTimeout(() => gbStart(r), 350); };
           document.body.appendChild(pk); if (tb.hop) tb.hop(); requestAnimationFrame(() => requestAnimationFrame(() => pk && pk.classList.add("in")));
           const p1 = pk, y0 = scrollY, off = () => { if (Math.abs(scrollY - y0) > 40) { removeEventListener("scroll", off); if (pk === p1) hide(); } };
           addEventListener("scroll", off, { passive: true }); setTimeout(() => { removeEventListener("scroll", off); if (pk === p1) hide(); }, 7000); return; }
@@ -11944,7 +11944,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
         const sv = tb && tb.querySelector("svg"); if (sv) { const c = sv.cloneNode(true); c.style.opacity = ""; pk.appendChild(c); }
         pk.insertAdjacentHTML("beforeend", `<span class="go-t">${T("Need a hand? I can brew this with you.", "Ti serve una mano? Lo prepariamo insieme.")}</span><span class="go-a" aria-hidden="true">→</span>`);
         pk.setAttribute("aria-label", T("Brew this with Goccio", "Preparalo con Goccio"));
-        pk.onclick = () => { hide(); openTalk(true); setTimeout(() => gbStart(r), 350); };
+        pk.onclick = () => { hide(); openTalk(true, true); setTimeout(() => gbStart(r), 350); };
         head.before(pk); requestAnimationFrame(() => requestAnimationFrame(() => pk && pk.classList.add("in"))); };
       // a coffee's Brew tapped by you (not by the chat): a moment to take in the recipe, then the offer
       document.addEventListener("click", (e) => { if (!e.isTrusted) return; if (e.target.closest && e.target.closest("#shelf .item .btn[data-i], #bags .btn")) setTimeout(peek, 1500); }, true);
@@ -13477,9 +13477,10 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       // a fresh start: the messages go, and Goccio says hello again (a pill with words, so it never reads as a second close)
       h.querySelector(".gh-new").addEventListener("click", () => { sayGen++; finishTyping(); msgs = []; saveChat(); sayEl.textContent = ""; chipsEl.textContent = ""; pendingYes = null; ctx = null; replyTo = null; lastMine = null; gbs = null; whichCo = null; hello(); });   // nothing carried over: a brew half set up is forgotten too
       let y0 = null; h.addEventListener("touchstart", (e) => { y0 = e.touches[0].clientY; }, { passive: true }); h.addEventListener("touchmove", (e) => { if (y0 != null && e.touches[0].clientY - y0 > 70) { y0 = null; closeTalk(); } }, { passive: true }); };
-    openTalk = (top) => { if (talking) { place(top || isFull()); return; } if (isFull()) { top = true; fullHead(); pin(true); document.documentElement.classList.add("gd-full"); } openY = null; setTimeout(() => { openY = scrollY; }, 800); place(top); gdWords(); talking = true; dim(true, top); talkEl.hidden = false; el.setAttribute("aria-expanded", "true"); fullFit(); if (window.gdFitWatch) window.gdFitWatch(1000); toBottom();
+    openTalk = (top, brewOnly) => { if (talking) { place(top || isFull()); return; } if (isFull()) { top = true; fullHead(); pin(true); document.documentElement.classList.add("gd-full"); } openY = null; setTimeout(() => { openY = scrollY; }, 800); place(top); gdWords(); talking = true; dim(true, top); talkEl.hidden = false; el.setAttribute("aria-expanded", "true"); fullFit(); if (window.gdFitWatch) window.gdFitWatch(1000); toBottom();
       const lastAt = msgs.length ? msgs[msgs.length - 1].at || 0 : 0; if (name && msgs.length && Date.now() - lastAt < 20 * 60000) { showChips(); return; }   // still mid-chat: carry on
       replyTo = null;   // a new hello answers nobody: it anchors to itself
+      if (brewOnly) return;   /* opened from the bubble over a coffee you're brewing (27/11/2026): no hello, no name, no fun fact, just the brew */
       let asked = false; try { asked = !!localStorage.getItem("v60.nameAsked"); } catch (e) {}
       if (!name && msgs.length && msgs[msgs.length - 1].w !== "me" && /call you\?|Come ti chiamo\?/.test(msgs[msgs.length - 1].t || "")) { askingName = true; showChips(); return; }   /* still waiting for your answer: not asked again */
       if (!name && !asked) { askingName = true; try { localStorage.setItem("v60.nameAsked", "1"); } catch (e) {} return say(T("Hi! I'm Goccio, the drop that knows coffee. What should I call you?", "Ciao! Sono Goccio, la goccia che sa tutto del caffè. Come ti chiamo?"), [T("Skip", "Salta")], happy); }
