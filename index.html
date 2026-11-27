@@ -3463,6 +3463,13 @@ html body footer #tip, html body footer #tip *, html body footer #tip a, html bo
    roaster's name sits under the line that opens it; the day's count sits in the exact middle of its two lines (cap height to baseline) */
 html body #shelf .item{padding-bottom:16px!important}
 html body #shelf > .grp.day-g .day-t{position:relative;top:-1.5px}
+
+/* 27/11/2026, a roaster's page: its top line as far under "Read the bag" as the list's line on the homepage, and Visit shop and Follow
+   in a row under the place line, as Brew and Buy sit under a coffee, the same 16 px over the closing line */
+html.ro-page body #shelves > .sec-head{margin-top:7px!important}
+html.ro-page body #shelves > .sec-head #sh{padding-top:3.5px}   /* the name as far under its line as a roaster's name under a coffee's line */
+html.ro-page body #roHead .ro-tools{display:flex!important;gap:var(--ro-gap,6px);margin:12px 0 0!important;flex-wrap:wrap}
+html.ro-page body #roHead{padding-bottom:16px!important}
 </style>
 </head>
 <body>
@@ -7214,6 +7221,7 @@ html body #shelf > .grp.day-g .day-t{position:relative;top:-1.5px}
   }
   window.addEventListener("popstate", () => { const n = roParam(); if (n !== shelfRo) { shelfRo = n; shelfAll = false; renderShelf(); if (!n && window.checkShelfWrap) checkShelfWrap(); } });
   function renderRoHead() {
+    { const tl = document.querySelector("#shelves > .sec-head .ro-tools"), rh = $("roHead"); if (tl && rh) rh.appendChild(tl); }   // Visit shop and Follow under the place line, as Brew and Buy sit under a coffee (27/11/2026)
     const on = !!shelfRo && shelf.some((r) => r.roaster === shelfRo);
     $("roHead").hidden = !on; $("shelves").classList.toggle("ro-on", on); document.documentElement.classList.toggle("ro-page", on);   /* on a roaster's page the bottom bar is its two ways out */
     if (!on) return;
