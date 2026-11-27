@@ -2777,6 +2777,15 @@ html body .top .ask-line .lv-home{display:inline-flex;align-items:center;justify
 html:is(.ro-page,.lv-page) body .top .ask-line .lv-home{width:var(--hm-w,64px);padding:0 12px;margin-left:-12px;opacity:1;transform:none;pointer-events:auto;
   transition:width .941s linear(0,0.065,0.213,0.39,0.564,0.715,0.836,0.924,0.984,1.021,1.039,1.045,1.043,1.037,1.029,1.021,1.014,1.008,1.004,1.001,0.999,0.998,0.998,0.998,0.998),padding .941s linear(0,0.065,0.213,0.39,0.564,0.715,0.836,0.924,0.984,1.021,1.039,1.045,1.043,1.037,1.029,1.021,1.014,1.008,1.004,1.001,0.999,0.998,0.998,0.998,0.998),margin .941s linear(0,0.065,0.213,0.39,0.564,0.715,0.836,0.924,0.984,1.021,1.039,1.045,1.043,1.037,1.029,1.021,1.014,1.008,1.004,1.001,0.999,0.998,0.998,0.998,0.998),transform .6s cubic-bezier(.34,1.56,.64,1),opacity .2s ease,background-color .15s ease}
 @media (prefers-reduced-motion:reduce){html body .top .ask-line .lv-home{transition:none!important}}
+/* the kinds row ends where its line ends: Treats 12 px from the edge, no extra room after it (27/11/2026) */
+@media (max-width:899px){ html body .co-tabs .co-in{padding-right:0} html body .co-tabs .co-in::after{flex:0 0 12px;margin-left:-22px} }
+/* a row that runs off the screen shows it (27/11/2026): its words fade out at the side where there's more to see, and fade back in
+   once you've scrolled there; nothing fades when it all fits */
+html body .co-tabs .co-in, html body #askNote .nb-in{-webkit-mask-image:linear-gradient(to right,transparent 0,#000 var(--fl,0px),#000 calc(100% - var(--fr,0px)),transparent 100%);mask-image:linear-gradient(to right,transparent 0,#000 var(--fl,0px),#000 calc(100% - var(--fr,0px)),transparent 100%)}
+html body .sx-l{--fl:36px} html body .sx-r{--fr:36px}
+html body #shelves .co-tabs ~ #askNote.nb-band.fy-note:not([hidden]){overflow:hidden!important;padding-left:0!important;padding-right:0!important}
+html body #askNote .nb-in{display:block;overflow-x:auto;overflow-y:hidden;white-space:nowrap;scrollbar-width:none;padding:0 12px;-webkit-overflow-scrolling:touch}
+html body #askNote .nb-in::-webkit-scrollbar{display:none}
 @media (hover:hover){html[data-theme="light"]:is(.film-off,.hero-done) body .wm-more .wm-bag:hover{background:color-mix(in srgb,var(--pill) 66%,var(--ink))!important}}
 /* Brew and Buy 4 px apart, as Find a coffee and I have a bag are (27/11/2026) */
 html body #shelves .shelf > .item > .r{column-gap:4px!important}
@@ -10237,6 +10246,13 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
 
 
   // ---------- For roasters: Get your roastery listed and Ask to be removed, a page in the page (27/11/2026) ----------
+  // rows that scroll sideways say so: a fade at the side with more to see (27/11/2026)
+  { const fade = (el) => { if (!el || el.__sx) return; el.__sx = true; const f = () => { const m = el.scrollWidth - el.clientWidth; el.classList.toggle("sx-l", m > 2 && el.scrollLeft > 2); el.classList.toggle("sx-r", m > 2 && m - el.scrollLeft > 2); };
+      el.addEventListener("scroll", f, { passive: true }); addEventListener("resize", f); if ("ResizeObserver" in window) new ResizeObserver(f).observe(el); f(); el.__sxf = f; };
+    fade(document.querySelector(".co-tabs .co-in"));
+    const n = $("askNote"); if (n) { const wrap = () => { if (n.firstChild && n.firstChild.nodeType === 1 && n.firstChild.classList.contains("nb-in") && n.childNodes.length === 1) { n.firstChild.__sxf && n.firstChild.__sxf(); return; }
+        if (!n.textContent.trim()) return; const sp = document.createElement("span"); sp.className = "nb-in"; while (n.firstChild) sp.appendChild(n.firstChild); n.appendChild(sp); fade(sp); };
+      new MutationObserver(wrap).observe(n, { childList: true }); wrap(); } }
   { const v = $("listView"), H = document.documentElement;
     if (v) {
       // the pages in the page (27/11/2026): roasters (#list, #remove), Privacy (#privacy) and Roasters A–Z (#roasters)
@@ -10250,7 +10266,12 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
         for (const nm of names) { const o = by.get(nm), l0 = (nm.normalize("NFD").replace(/[^A-Za-z0-9]/g, "")[0] || "#").toUpperCase(), l = /[0-9]/.test(l0) ? "#" : l0;
           if (l !== L) html += `<li class="L" aria-hidden="true">${l}</li>`;   /* a new letter: its own rule and big letter, as the page's section titles */
           html += `<li><a href="#roaster=${encodeURIComponent(nm)}" data-ro="${esc(nm)}"><span class="n">${esc(nm)}</span><span class="w">${o.c ? ", " + esc(o.c) : ""} (${o.n})</span></a></li>`; L = l; }   /* one roaster a line, big: the name in black, its town and how many coffees in grey */
-        ul.innerHTML = html; const tt = $("roH"); if (tt) tt.textContent = `${names.length.toLocaleString("en-GB")} roasters A–Z`;   /* the count in the pinned title, no lead under it */ return true; };
+        ul.innerHTML = html; ul.dataset.n = names.length; roLetter();   /* the count in the pinned title, no lead under it */ return true; };
+      // "826 roasters #–Z", then "826 roasters A–Z", "B–Z"… as each letter's section goes up past the pinned title (27/11/2026)
+      const roLetter = () => { const ul = $("roAz"), tt = $("roH"); if (!ul || !tt || !ul.dataset.n) return; const lim = tt.getBoundingClientRect().bottom + 1;
+        let L = "#"; for (const li of ul.querySelectorAll("li.L")) { if (li.getBoundingClientRect().top <= lim) L = li.textContent; else break; }
+        const t = `${(+ul.dataset.n).toLocaleString("en-GB")} roasters ${L}–Z`; if (tt.textContent !== t) tt.textContent = t; };
+      addEventListener("scroll", () => { if (H.classList.contains("lv-page") && !$("roView").hidden) roLetter(); }, { passive: true });
       const open = (id, at) => { if (!H.classList.contains("lv-page")) yBack = scrollY;
         VIEWS.forEach((x) => { const on = x.id === id; x.hidden = !on; x.classList.toggle("lv-on", on); }); H.classList.add("lv-page");
         if (id === "roView") { let k = 0, n0 = -1; fillRo(); const t = setInterval(() => {   /* the list may still be coming in: fill again as it grows */
