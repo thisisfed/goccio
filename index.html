@@ -8159,11 +8159,8 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     // always pounds and pence, the pence small and level with the top of the pounds: "£15.00", "£13.50"
     const p = p1.replace(/(\d+)(?:([.,])(\d{1,2}))?(?!\d|[.,]\d)/, (m, a, sep, d) => `${a}<span class="pd">${sep || "."}${(d || "").padEnd(2, "0")}</span>`);
     if (priceOnly) return p.replace(/<[^>]+>/g, "");
-    // the bag and the price per kilo, so a 150 g Gesha and a 1 kg bag compare fairly (27/11/2026, UK unit pricing): "250 g, £56/kg"
-    const pGBP = gbp != null ? gbp : /£/.test(own) ? n0 : null, g = +r.bag_g || 0;
-    const kg = pGBP && g >= 50 && g <= 5000 ? pGBP * 1000 / g : null, kgT = kg ? `£${kg >= 10 ? Math.round(kg) : kg.toFixed(2)}/kg` : "";
-    const unit = g >= 50 && g <= 5000 ? `${g >= 1000 && g % 1000 === 0 ? g / 1000 + " kg" : g + " g"}${kgT ? ", " + kgT : ""}` : "";
-    return `<a class="pill buy-p" href="${esc(r.url)}" target="_blank" rel="noopener" aria-label="${it ? "Compra" : "Buy"} ${esc(r.name)} ${it ? "da" : "from"} ${esc(r.roaster)}${unit ? ", " + unit : ""}">${it ? "Compra" : "Buy"}${p ? ` <span class="buy-pr">${p}</span>` : ""}${unit ? ` <span class="buy-u">${unit}</span>` : ""}</a>`; };   // the price is said once, on the pill that spends it
+    // no bag size or price per kilo (27/11/2026): Goccio isn't a shop, it finds every coffee and its recipe; the shop's own price is enough
+    return `<a class="pill buy-p" href="${esc(r.url)}" target="_blank" rel="noopener" aria-label="${it ? "Compra" : "Buy"} ${esc(r.name)} ${it ? "da" : "from"} ${esc(r.roaster)}">${it ? "Compra" : "Buy"}${p ? ` <span class="buy-pr">${p}</span>` : ""}</a>`; };   // the price is said once, on the pill that spends it
   /* ways on from a search that found nothing: one of each kind, picked afresh for every new search, each tested to find coffees (Nov 2026) */
   const TRY_POOLS = [
     ["blueberry", "strawberry", "peach", "jasmine", "chocolate", "caramel", "mango", "raspberry", "bergamot", "lychee", "hazelnut", "cherry", "pineapple", "hibiscus", "floral", "juicy", "tea-like"],
