@@ -72,7 +72,9 @@ html body #shelf .item .name.sent{display:block;margin:0;text-wrap:pretty}
 html body #shelf .item .name.sent .s-f, html body #shelf .item .name.sent .s-f a{color:var(--muted)}
 html body #shelf .item .name.sent .s-f a{text-decoration:underline;text-decoration-thickness:.05em;text-underline-offset:.1em}
 html body #shelf .item .name.sent .s-n{color:var(--ink)}   /* "Name: taste." in white, "Roasted by: roaster, place." in grey (27/11/2026) */
-html body #shelf .item .name.sent .s-t{color:color-mix(in srgb,var(--ink) 58%,var(--muted))}   /* three tones: the name in white, the taste a softer white, the roaster in grey (27/11/2026) */
+html body #shelf .item .name.sent .s-t{color:color-mix(in srgb,var(--ink) 58%,var(--muted))}
+html body #shelf .item .name.sent .s-d{color:var(--muted)}
+html body #shelf .item .l > .c-top.c-gone{display:none!important}   /* three tones: the name in white, the taste a softer white, the roaster in grey (27/11/2026) */
 html.ro-page body #shelf .item .name.sent .s-f{display:none}
 html body #shelf .item .name.sent .s-dot{display:none}
 html body #shelf .item .name.sent + .c-notes{margin-top:6px!important}
@@ -8318,7 +8320,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       tagBits.push(...coffeeLabels(r, shown).map((l) => `<span class="tg lbl" style="--vc:${LABEL_DOT[l] || "#8e8e93"}">${l}</span>`));
       return `${head}${dayHead}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}" data-day="${isSp ? "" : String(shelfDate(r) || "").slice(0, 10)}">
         <div class="l">
-          ${/* the order of the typographic mockup (27/11/2026): what it is and when it came, the name, how it tastes, who roasted it */ ""}<div class="c-top"><p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p></div>
+          ${/* the tags are in the sentence now (27/11/2026) */ ""}<div class="c-top c-gone" aria-hidden="true"><p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p></div>
           ${/* one sentence in three greys (27/11/2026): the name; who roasted it and where; how it tastes. Guessed notes stay a small line under it */ ""}${(() => { const ns = noteList(r), real = ns.length && !(ns.length === 1 && !/\s/.test(ns[0].trim())), it = LANG === "it";
             const low = (n) => n.split(" ").map((x) => /^[A-ZÀ-Ý][a-zà-ÿ'’-]*$/.test(x) ? x.toLowerCase() : x).join(" "), and = it ? " e " : " and ";
             const place = "";   /* just the roaster, no town or country: the lightest line (27/11/2026) */
@@ -8330,7 +8332,18 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
             const nm = esc(capName(calm(shown))).replace(/[.!?…]+$/, "");
             // "Volcán Azul: coffee blossom, grapefruit and apricot. Roasted by: Poma, Copenhagen (DK)." (27/11/2026): the name, then how it
             // tastes, then who roasted it. No notes: "Volcán Azul. Roasted by: …". Read aloud in the order it's seen
-            return `<p class="name sent"><span class="s-n">${nm}${tl ? ":" : "."}</span>${tl ? ` <span class="s-t">${tl}.</span>` : ""} ${ro(it ? "Tostato da:" : "Roasted by:")}</p>${real ? "" : cardNotes(r)}`; })()}
+            // one sentence, no tags (27/11/2026): "Volcán Azul, a honey Gesha from Tarrazú, Costa Rica by Poma: coffee blossom, grapefruit and apricot."
+            const strip = (h) => String(h || "").replace(/<[^>]*>/g, "").replace(/&amp;/g, "&").trim();
+            const LBL = { "Limited edition": "limited-edition", "Special edition": "special-edition", "Rare": "rare", "Auction lot": "auction-lot", "Competition lot": "competition-lot" };
+            const labs = coffeeLabels(r, shown).map((l) => LBL[l] || l);
+            const proc = r.process ? String(r.process).replace(/^[A-Z][a-z]/, (m) => m.toLowerCase()).replace(/\b(Natural|Washed|Honey|Anaerobic|Semi|Wet|Dry|Hulled|Pulped|Carbonic|Maceration|Fermented|Fermentation|Experimental|Yeast|Thermal|Shock|Double)\b/g, (m) => m.toLowerCase()) : "";
+            const vRaw = r.variety && !/^\s*\d+\s?(?:g|gr|kg|oz|lb)\b/i.test(r.variety) ? strip(varietyTag(r.variety)) : "", vs = vRaw.split(/\s*(?:,|\/|&|\band\b|\+)\s*/).filter(Boolean);
+            const vTxt = vs.length > 1 ? vs.slice(0, 3).slice(0, -1).join(", ") + and + vs.slice(0, 3).slice(-1)[0] : vs[0] || "";
+            const os = String(r.origin || "").split(" / ").filter(Boolean).filter((o) => !new RegExp("\\b" + o.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "i").test(strip(nm))), oTxt = os.length ? (os.length === 1 && r.region ? `${esc(r.region)}, ${esc(os[0])}` : os.length > 1 ? os.slice(0, -1).map(esc).join(", ") + and + esc(os[os.length - 1]) : esc(os[0])) : "";
+            const what = [...labs, proc, vTxt || (labs.length || proc ? (it ? "caffè" : "coffee") : "")].filter(Boolean).join(" ");
+            const art = (w) => /^[aeiou]/i.test(w) || /^(?:[FHLMNRSX][A-Z0-9]|[FHLMNRSX]\d)/.test(w) ? "an" : "a";
+            const desc = it ? [what ? `un ${what}` : "", oTxt ? `${what ? "" : ""}da ${oTxt}` : ""].filter(Boolean).join(" ") : [what ? `${art(what)} ${esc(what)}` : "", oTxt ? `from ${oTxt}` : ""].filter(Boolean).join(" ");
+            return `<p class="name sent"><span class="s-n">${nm}</span><span class="s-d">${desc ? ", " + desc : ""}</span>${ro(it ? "di" : "by").replace('<span class="s-f">', '<span class="s-f"> ').replace(/\.<\/span>$/, "</span>")}<span class="s-d">${tl ? ":" : "."}</span>${tl ? ` <span class="s-t">${tl}.</span>` : ""}</p>${real ? "" : cardNotes(r)}`; })()}
           ${cardPrice(r)}
         </div>
         <div class="r${rowOpen.has(rowKey(r)) ? " more-open" : ""}">
