@@ -78,6 +78,10 @@ html body #shelf .item .name.sent + .c-notes{margin-top:6px!important}
   html body a:hover:not(.pill):not(.btn):not(.chip):not(.ro-pill):not(.buy-p){text-decoration:none!important} }
 /* a wrapped name sits tighter (27/11/2026) */
 html body #shelf .item .name:not(.nb){line-height:.98!important}
+/* the same room above the big text (from the tags) as below it (to the buttons), on every card: the buttons follow the words, no longer
+   pushed down to line up with the card beside them (27/11/2026) */
+html body #shelves .shelf > .item:not(.brewing) > .r{margin-top:var(--below-name, 13px)!important}
+@media (min-width:900px){ html body #shelves .shelf > .item:not(.brewing) > .r{--below-name:10.5px} }
 /* the name stays the big line; the roaster's own notes come right under it, in ink, a size up from the small lines (27/11/2026) */
 #shelf .item .c-notes.nb-line{font:500 24px/1.2 var(--sans);letter-spacing:-.02em;color:var(--ink);margin:4px 0 8px;text-wrap:pretty}
 @media (min-width:1000px){ #shelf .item .c-notes.nb-line{font-size:24px} }
@@ -2836,6 +2840,11 @@ html[data-theme="light"]:is(.film-off,.hero-done) body .wm-screen::after{opacity
 html[data-theme="light"]:is(.film-off,.hero-done) body .wm-video{opacity:0!important;transition:opacity .9s ease}
 html[data-theme="light"]:is(.film-off,.hero-done) body .wm-screen .wordmark, html[data-theme="light"]:is(.film-off,.hero-done) body .wm-screen .wordmark *, html[data-theme="light"]:is(.film-off,.hero-done) body .wm-more .wm-live, html[data-theme="light"]:is(.film-off,.hero-done) body .wm-more .wm-lead, html[data-theme="light"]:is(.film-off,.hero-done) body .wm-more .wm-tagline, html[data-theme="light"]:is(.film-off,.hero-done) body .wm-more .wm-tot{color:var(--ink)!important}
 html[data-theme="light"]:is(.film-off,.hero-done) body .wm-more .wm-bag{background:var(--pill)!important;color:var(--ink)!important}
+/* the still behind the header once the film has played (seen today): a coffee crown in dark, a milk crown in light, the two splashes
+   in the same place (27/11/2026) */
+html.film-off:not([data-theme="light"]) body .wm-screen{background:#000 url("/img/goccio-hero-coffee.jpg?v=1") center var(--hero-y, 62%) / cover no-repeat!important}
+html[data-theme="light"]:is(.film-off,.hero-done) body .wm-screen{background:var(--bg) url("/img/goccio-hero-milk.jpg?v=1") center var(--hero-y, 62%) / cover no-repeat!important}
+html[data-theme="light"]:is(.film-off,.hero-done) body .wm-screen::after{opacity:1!important;background:linear-gradient(180deg, transparent 55%, var(--bg) 100%)!important}   /* the milk melts into the page */
 /* the film starts at the very top of the screen, under a see-through top bar, and ends on the rule over Coffees */
 html body .wm-video{transform:none!important}
 /* Methods: each brewer's name on its own line in white, what it's based on under it in grey, a gap between brewers */
