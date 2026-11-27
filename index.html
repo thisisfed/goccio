@@ -47,6 +47,7 @@ html body #shelf > .grp.day-g{height:31px;box-sizing:border-box}   /* a whole nu
 .co-tabs .co-in::-webkit-scrollbar{display:none}
 /* its line, like the day's bar under it: the column's width, then the whole window's once it pins (27/11/2026) */
 .co-tabs::after{content:"";position:absolute;left:0;width:100%;bottom:0;height:1px;background:var(--line);pointer-events:none;transition:left .32s cubic-bezier(.2,.8,.2,1),width .32s cubic-bezier(.2,.8,.2,1)}
+.co-tabs button[aria-busy="true"]{animation:co-wait 1s ease-in-out infinite alternate}@keyframes co-wait{to{opacity:.35}}
 .co-tabs.stuck::after{left:calc(50% - 50vw);width:100vw}
 @media (prefers-reduced-motion:reduce){ .co-tabs::after{transition:none} }
 .co-tabs button{flex:none;background:none;border:0;border-radius:0;padding:0;height:43px;display:flex;align-items:center;font:500 var(--fs-s)/1.2 var(--sans);color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;min-height:0}
@@ -3609,7 +3610,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
 
   <section class="sec" id="shelves" aria-labelledby="sh">
     <div class="sec-head"><span class="cap" id="sh" role="heading" aria-level="2"><span class="sh-t">Coffees</span><span class="ro-title" id="roName" translate="no"></span></span><span class="ro-tools"><a class="chip ro-shop-top" id="roShopTop" target="_blank" rel="noopener" hidden>Visit shop</a><button type="button" class="chip ro-follow" id="roFollow" aria-pressed="false">Follow</button></span><button type="button" class="chip fy-pill" id="fyPill" aria-pressed="false">For you</button></div>
-    <nav class="co-tabs" id="coTabs" aria-label="Kinds of coffee"><div class="co-in"><button type="button" data-q="" data-en="New today" data-it="Nuovi oggi" aria-pressed="true">New today</button><button type="button" data-q="fruity" data-en="Fruity" data-it="Fruttati" aria-pressed="false">Fruity</button><button type="button" data-q="chocolatey" data-en="Chocolatey" data-it="Cioccolato" aria-pressed="false">Chocolatey</button><button type="button" data-q="floral" data-en="Floral" data-it="Floreali" aria-pressed="false">Floral</button><button type="button" data-q="decaf" data-en="Decaf" data-it="Deca" aria-pressed="false">Decaf</button><button type="button" data-q="espresso" data-en="Espresso" data-it="Espresso" aria-pressed="false">Espresso</button><button type="button" data-q="filter" data-en="Filter" data-it="Filtro" aria-pressed="false">Filter</button><button type="button" data-q="natural" data-en="Natural" data-it="Naturali" aria-pressed="false">Natural</button><button type="button" data-q="washed" data-en="Washed" data-it="Lavati" aria-pressed="false">Washed</button><button type="button" data-q="under £15" data-en="Under £15" data-it="Sotto 15 £" aria-pressed="false">Under £15</button><button type="button" data-q="over £30" data-en="Treats" data-it="Speciali" aria-pressed="false">Treats</button><button type="button" data-q="__near" data-en="Near you" data-it="Vicino a te" aria-pressed="false">Near you</button></div></nav>
+    <nav class="co-tabs" id="coTabs" aria-label="Kinds of coffee"><div class="co-in"><button type="button" data-q="" data-en="New today" data-it="Nuovi oggi" aria-pressed="true">New today</button><button type="button" data-q="__near" data-en="Near you" data-it="Vicino a te" aria-pressed="false">Near you</button><button type="button" data-q="fruity" data-en="Fruity" data-it="Fruttati" aria-pressed="false">Fruity</button><button type="button" data-q="chocolatey" data-en="Chocolatey" data-it="Cioccolato" aria-pressed="false">Chocolatey</button><button type="button" data-q="floral" data-en="Floral" data-it="Floreali" aria-pressed="false">Floral</button><button type="button" data-q="nutty" data-en="Nutty" data-it="Frutta secca" aria-pressed="false">Nutty</button><button type="button" data-q="something funky" data-en="Funky" data-it="Funky" aria-pressed="false">Funky</button><button type="button" data-q="natural" data-en="Natural" data-it="Naturali" aria-pressed="false">Natural</button><button type="button" data-q="decaf" data-en="Decaf" data-it="Deca" aria-pressed="false">Decaf</button><button type="button" data-q="espresso" data-en="Espresso" data-it="Espresso" aria-pressed="false">Espresso</button><button type="button" data-q="under £15" data-en="Under £15" data-it="Sotto 15 £" aria-pressed="false">Under £15</button><button type="button" data-q="over £30" data-en="Treats" data-it="Speciali" aria-pressed="false">Treats</button></div></nav>
     <p class="fy-note fy-top" id="followNote" hidden></p>
     <p class="fy-note fy-top" id="fyNote" role="status" hidden></p>
     <p class="shelf-meta" id="shelfMeta" hidden></p>
@@ -7642,7 +7643,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
   // ---------- How do you want your coffee today? A sentence read for what it asks: tastes, process, roast, origin, price, decaf,
   // new, a treat or a bargain, and a brewer. Nothing is sent anywhere: it's word matching in the page. The coffees are ranked,
   // best match first, not cut down to an exact match, so a loose ask never ends on an empty list. Decaf and a price cap are firm
-  const ASK_INTENT = /\b(from|roasted|roasters?|roastery|based in|dal|dalla|dall'|torrefatto|torrefazione|something|anything|want|like|looking|fancy|i'?d|for my|for an?|under|below|less than|max|cheap|cheaper|budget|value|affordable|expensive|pricey|premium|luxury|posh|over|above|more than|treat|special|rare|fancy|splurge|light|lighter|bright|dark|darker|strong|stronger|bold|intense|medium|decaf|decaffeinated|caffeine|evening|night|new|fresh|just in|today|qualcosa|vorrei|voglio|per la mia|per il mio|sotto|meno di|economico|chiaro|leggero|scuro|forte|deca|decaffeinato|nuovo)\b/i;
+  const ASK_INTENT = /\b(near|nearby|vicino|from|roasted|roasters?|roastery|based in|dal|dalla|dall'|torrefatto|torrefazione|something|anything|want|like|looking|fancy|i'?d|for my|for an?|under|below|less than|max|cheap|cheaper|budget|value|affordable|expensive|pricey|premium|luxury|posh|over|above|more than|treat|special|rare|fancy|splurge|light|lighter|bright|dark|darker|strong|stronger|bold|intense|medium|decaf|decaffeinated|caffeine|evening|night|new|fresh|just in|today|qualcosa|vorrei|voglio|per la mia|per il mio|sotto|meno di|economico|chiaro|leggero|scuro|forte|deca|decaffeinato|nuovo)\b/i;
   const ASK_BREWER = [[/\bv60 ?neo\b|\bneo\b/, "neo"], [/\bv-?60\b|hario/, "v60"], [/kalita|wave\b/, "kalita"], [/\bapril\b/, "april"], [/\borea\b/, "orea"], [/melitta/, "melitta"],
     [/chemex/, "chemex"], [/origami/, "origami"], [/aero ?press/, "aero"], [/french ?press|cafeti[eè]re|plunger|pressa francese/, "press"], [/cold ?brew/, "cold"],
     [/mocca ?master|technivorm/, "mocca"], [/\bmoka\b|stove ?-?top|bialetti|caffettiera|macchinetta/, "moka"], [/clever/, "clever"], [/switch/, "switch"], [/espresso machine|\bespresso\b/, "espresso"], [/cupping/, "cupping"]];
@@ -7654,7 +7655,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
   const askCityList = () => { if (askCities && askCitiesN === shelf.length) return askCities; const m = new Map();
     shelf.forEach((r) => { const c = String(r.roaster_city || "").trim(); if (c.length >= 4) m.set(c.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""), c); });
     askCitiesN = shelf.length; return (askCities = [...m].sort((a, b) => b[0].length - a[0].length)); };
-  const askPlaceFit = (pl) => (r) => pl.cc ? pl.cc.includes(r.roaster_country || "GB") : pl.reg ? pl.reg.includes(shelfRegion(r))
+  const askPlaceFit = (pl) => (r) => pl.near ? pl.near.has(String(r.roaster_city || "").trim() + "|" + (r.roaster_country || "GB")) : pl.cc ? pl.cc.includes(r.roaster_country || "GB") : pl.reg ? pl.reg.includes(shelfRegion(r))
     : String(r.roaster_city || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === pl.city;
   function readAsk(raw) {
     const it = LANG === "it", q = " " + raw.toLowerCase().replace(/[“”"]/g, " ").replace(/\b(dall|dell|nell|sull|all|l|d|un)['’]/g, "$1 ").replace(/\s+/g, " ") + " ";
@@ -7696,6 +7697,8 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
         want.places.push({ ...pl, label }); name.split(" ").forEach((w) => used.add(w)); return true; };
       ASK_PLACES.forEach(([re, pl, label]) => { const m = plain.match(re); if (m) take(m[0].trim(), pl, label); });
       askCityList().forEach(([k, c]) => { if (want.places.some((x) => x.city === k)) return; if (plain.includes(" " + k + " ")) take(k, { city: k }, c); }); }
+    // near you / near me: the roasters within reach of where the phone says you are (Near you, 27/11/2026). Asked for once, kept in the page only
+    if (window.NEAR && use(/\b(near (?:you|me)|nearby|close to me|vicino a (?:te|me)|qui vicino)\b/)) want.places.push({ near: window.NEAR.set, dist: window.NEAR.dist, label: "" });
     // a roaster by name (from Square Mile, La Cabra): only theirs
     want.roasters = [];
     { const plain = " " + q.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\p{L}\p{N}\s&'-]/gu, " ").replace(/\s+/g, " ").trim() + " ";
@@ -7789,7 +7792,9 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
     want.words.forEach((w) => bits.push(`“${w}”`));
     want.roasters.forEach((x) => bits.push((it ? "di " : "by ") + x.name));
     if (want.filter) bits.push(want.filter === "espresso" ? (it ? "per espresso" : "for espresso") : (it ? "per filtro" : "for filter"));
-    if (want.places.length) bits.push((it ? "torrefatto in " : "roasted in ") + want.places.map((pl) => pl.label).join(it ? " o " : " or "));
+    { const nr = want.places.find((pl) => pl.near), op = want.places.filter((pl) => !pl.near);
+      if (op.length) bits.push((it ? "torrefatto in " : "roasted in ") + op.map((pl) => pl.label).join(it ? " o " : " or "));
+      if (nr) bits.push(it ? `torrefatto entro ${nr.dist} da te` : `roasted within ${nr.dist} of you`); }
     if (want.decaf) bits.push("decaf"); if (want.nodecaf) bits.push(it ? "con caffeina" : "with caffeine");
     if (want.fresh) bits.push(it ? "nuovi" : "new in");
     if (want.treat) bits.push(it ? "un lotto speciale" : "a special lot");
@@ -7991,7 +7996,8 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
       const found = LANG === "it" ? `${n0.toLocaleString("it-IT")} caffè§ in ${secs.toFixed(2).replace(".", ",")} secondi` : `${n0.toLocaleString("en-GB")} coffee${n0 === 1 ? "" : "s"}§ in ${secs.toFixed(2)} seconds`;
       var askFound = (q || askWant) ? found : ""; }
     { const n = $("askNote"), t = !q ? "" : (() => { const qq = $("shelfQ").value.trim(), it = LANG === "it", f0 = typeof askFound === "string" && askFound ? askFound : "";   /* said as done: "200 coffees for “blueberry” in 0.12 seconds" */
-          return f0 ? f0.replace("§", it ? ` per “${qq}”` : ` for “${qq}”`) : (it ? `Ricerca “${qq}”` : `Searching for “${qq}”`); })()
+          const nr = /^(near (you|me)|vicino a (te|me))$/i.test(qq) && window.NEAR;   /* Near you says how near (27/11/2026) */
+          return f0 && nr ? f0.replace("§", it ? ` torrefatti entro ${window.NEAR.dist} da te` : ` roasted within ${window.NEAR.dist} of you`) : f0 ? f0.replace("§", it ? ` per “${qq}”` : ` for “${qq}”`) : (it ? `Ricerca “${qq}”` : `Searching for “${qq}”`); })()
         + (askWant && list.length ? (LANG === "it" ? ". I più vicini per primi." : ". Best match first.") : ""); const f = $("fyNote");   // what the list is showing, in grey under Coffees (and read out to screen readers)   // with For you's line showing, the two read as one paragraph
       if (t && !f.hidden) { f.textContent = f.textContent.trim() + " " + t; n.hidden = true; n.textContent = ""; } else { n.hidden = !t; n.textContent = t; } }   // the search's lens in front, as in the box
     list = shelfRo ? [...list].sort((a, b) => shelfDate(b).localeCompare(shelfDate(a))) : fy ? list : startFirst && !askRank ? [...list].sort((a, b) => ((startFirst.get(b) || 0) - (startFirst.get(a) || 0)) || shelfDate(b).localeCompare(shelfDate(a))) : askRank ? [...list].sort((a, b) => (askRank.get(b) - askRank.get(a))
@@ -9695,7 +9701,8 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
   { const box = document.querySelector(".ask-line .ask-box"), segs = $("askSegs"), a = $("askIn"), f = $("askForm");
     if (box && segs && a && f) {
       const it = LANG === "it"; segs.querySelectorAll("[data-en]").forEach((e) => e.textContent = it ? e.dataset.it : e.dataset.en); if (it) segs.querySelectorAll('option[value="__own"]').forEach((o) => o.textContent = "Scrivi tu…");
-      let segQ = ""; const sync = () => { const sq = $("shelfQ").value.trim(), on = !a.value.trim() && document.activeElement !== a && (!sq || sq === segQ); box.classList.toggle("segs-on", on); if (on) segs.style.background = getComputedStyle(a).backgroundColor; };
+      let segQ = ""; const SEGS = false;   /* 27/11/2026: the kinds row does the picking now; the field is plain again */
+      const sync = () => { const sq = $("shelfQ").value.trim(), on = SEGS && !a.value.trim() && document.activeElement !== a && (!sq || sq === segQ); box.classList.toggle("segs-on", on); if (on) segs.style.background = getComputedStyle(a).backgroundColor; };
       const show = (sel) => { const l = sel.closest(".seg"), v = sel.value; l.classList.toggle("on", !!v); l.querySelector(".seg-v").textContent = v ? sel.options[sel.selectedIndex].text : (it ? "Qualsiasi" : "Any"); };
       segs.querySelectorAll("select").forEach((sel) => { show(sel); sel.addEventListener("change", () => {
         // "Type your own…": the field opens with the other picks already in it, and the cursor after them (27/11/2026)
@@ -9721,7 +9728,21 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
         const nearQ = () => { let tz = ""; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) {}
           const c = NEAR[tz] || (/^Australia\//.test(tz) ? "Australia" : /^America\/(?!Toronto|Vancouver|Montreal|Edmonton|Halifax|Winnipeg|Sao_Paulo|Bogota|Mexico|Lima|Santiago|Buenos)/.test(tz) ? "the United States" : "");
           if (c) return "from " + c; const rg = (navigator.language || "").split("-")[1]; let nm = ""; try { nm = rg ? new Intl.DisplayNames(["en"], { type: "region" }).of(rg.toUpperCase()) : ""; } catch (e) {} return nm ? "from " + nm : "from the UK"; };
-        tabs.addEventListener("click", (e) => { const b = e.target.closest("button[data-q]"); if (!b) return; const q = b.dataset.q === "__near" ? nearQ() : b.dataset.q, sq = $("shelfQ"); if (b.dataset.q === "__near") b.dataset.q2 = q;
+        // Near you (27/11/2026): the browser asks for the location; from it, the closest ring of roasters that has a dozen coffees.
+        // Said no, or no fix: the country the clock is set to. Nothing leaves the page
+        const nearAt = (la, lo, done) => fetch("/data/near.json").then((x) => x.json()).then((m) => {
+          const rad = Math.PI / 180, km = (p) => { const dl = (p[0] - la) * rad, dn = (p[1] - lo) * rad, h = Math.sin(dl / 2) ** 2 + Math.cos(la * rad) * Math.cos(p[0] * rad) * Math.sin(dn / 2) ** 2; return 12742 * Math.asin(Math.sqrt(h)); };
+          const d = new Map(Object.entries(m).map(([k, p]) => [k, km(p)])), key = (r) => String(r.roaster_city || "").trim() + "|" + (r.roaster_country || "GB");
+          const steps = it ? [25, 50, 100, 200, 400].map((n) => [n, n + " km"]) : [15, 30, 60, 120, 250].map((n) => [n * 1.609, n + " miles"]);
+          for (const [lim, dist] of steps) { const set = new Set([...d].filter(([, v]) => v <= lim).map(([k]) => k));
+            if (shelf.filter((r) => set.has(key(r))).length >= 12) { window.NEAR = { set, dist }; return done("near you"); } }
+          done(null); }).catch(() => done(null));
+        const goNear = (b, run) => { const fall = () => { b.removeAttribute("aria-busy"); run(nearQ()); };
+          if (!navigator.geolocation) return fall(); b.setAttribute("aria-busy", "true");
+          navigator.geolocation.getCurrentPosition((p) => nearAt(p.coords.latitude, p.coords.longitude, (q) => { b.removeAttribute("aria-busy"); q ? run(q) : fall(); }), fall, { timeout: 12000, maximumAge: 600000 }); };
+        tabs.addEventListener("click", (e) => { const b = e.target.closest("button[data-q]"); if (!b) return;
+          if (b.dataset.q === "__near" && !b.dataset.q2) return goNear(b, (q) => { b.dataset.q2 = q; b.click(); });
+          const q = b.dataset.q === "__near" ? b.dataset.q2 : b.dataset.q, sq = $("shelfQ");
           segs.querySelectorAll("select").forEach((x) => { x.value = ""; show(x); }); a.value = ""; segQ = q;
           if (sq.value !== q) { sq.value = q; $("shelfQx").hidden = !q; shelfAll = false; renderShelf(); } if (q) askBrewer(q); jumpTo($("shelves")); light(); sync();
           b.scrollIntoView({ block: "nearest", inline: "nearest" }); });
