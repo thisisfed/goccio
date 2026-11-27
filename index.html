@@ -45,9 +45,19 @@ html.ro-page body .shelf .grp.day-g{top:calc(var(--top-h,49px) + 12px)!important
 .co-tabs::-webkit-scrollbar{display:none}
 .co-tabs button{flex:none;background:none;border:0;border-radius:0;padding:0;height:44px;display:flex;align-items:center;font:500 var(--fs-s)/1.2 var(--sans);color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;min-height:0}
 .co-tabs button:hover{color:var(--ink)}
+@media (min-width:900px){ .co-tabs{justify-content:space-between;gap:16px} }
 .co-tabs button[aria-pressed="true"]{color:var(--ink);border-bottom-color:var(--ink)}
 html.ro-page .co-tabs{display:none}
 @media (max-width:640px){ .co-tabs{gap:22px} }
+/* the sentence: name in ink, roaster in mid grey, the taste in light grey (27/11/2026) */
+html body #shelf .item .name.sent{display:block;margin:0;text-wrap:pretty}
+html body #shelf .item .name.sent .s-f, html body #shelf .item .name.sent .s-f a{color:var(--muted)}
+html body #shelf .item .name.sent .s-f a{text-decoration:underline;text-decoration-thickness:.05em;text-underline-offset:.1em}
+html body #shelf .item .name.sent .s-t{color:color-mix(in srgb,var(--muted) 55%,var(--bg))}
+html.ro-page body #shelf .item .name.sent .s-f{display:none}
+html body #shelf .item .name.sent .s-dot{display:none}
+html.ro-page body #shelf .item .name.sent .s-dot{display:inline}   /* on a roaster's page the roaster goes, so the name ends its own sentence */
+html body #shelf .item .name.sent + .c-notes{margin-top:6px!important}
 /* a wrapped name sits tighter (27/11/2026) */
 html body #shelf .item .name:not(.nb){line-height:.98!important}
 /* the name stays the big line; the roaster's own notes come right under it, in ink, a size up from the small lines (27/11/2026) */
@@ -8021,8 +8031,11 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
       return `${head}${dayHead}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}" data-day="${isSp ? "" : String(shelfDate(r) || "").slice(0, 10)}">
         <div class="l">
           ${/* the order of the typographic mockup (27/11/2026): what it is and when it came, the name, how it tastes, who roasted it */ ""}<div class="c-top"><p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p></div>
-          <span class="name">${esc(capName(calm(shown)))}</span>${(() => { const bn = bigNotes(r); return bn ? bn.line : cardNotes(r); })()}
-          <p class="c-where">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : ""}<a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a>${r.roaster_city || r.roaster_country ? `<span class="rcity">${r.roaster_city ? ", " : " "}${esc(cityL(r.roaster_city))}${r.roaster_country ? `${r.roaster_city ? " " : ""}(${esc(r.roaster_country === "GB" ? "UK" : r.roaster_country)})` : ""}</span>` : ""}</p>
+          ${/* one sentence in three greys (27/11/2026): the name; who roasted it and where; how it tastes. Guessed notes stay a small line under it */ ""}${(() => { const ns = noteList(r), real = ns.length && !(ns.length === 1 && !/\s/.test(ns[0].trim())), it = LANG === "it";
+            const low = (n) => n.split(" ").map((x) => /^[A-ZÀ-Ý][a-zà-ÿ'’-]*$/.test(x) ? x.toLowerCase() : x).join(" "), and = it ? " e " : " and ";
+            const place = r.roaster_city || r.roaster_country ? `${r.roaster_city ? ", " + esc(cityL(r.roaster_city)) : ""}${r.roaster_country ? ` (${esc(r.roaster_country === "GB" ? "UK" : r.roaster_country)})` : ""}` : "";
+            const tastes = real ? ns.slice(0, 3).map((n) => esc(low(n))) : [];
+            return `<p class="name sent"><span class="s-n">${esc(capName(calm(shown)))}</span><span class="s-dot">.</span> <span class="s-f">${it ? "di" : "from"} <a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a>${place}.</span>${tastes.length ? ` <span class="s-t">${it ? "Sa di" : "Tastes like"} ${tastes.length > 1 ? tastes.slice(0, -1).join(", ") + and + tastes[tastes.length - 1] : tastes[0]}.</span>` : ""}</p>${real ? "" : cardNotes(r)}`; })()}
           ${cardPrice(r)}
         </div>
         <div class="r${rowOpen.has(rowKey(r)) ? " more-open" : ""}">
