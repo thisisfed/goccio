@@ -9832,13 +9832,15 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
         return LANG === "it" ? `Caffè di ${shelfRo}` : `Coffees from ${shelfRo}`; }   /* on a roaster's page the box says whose coffees it holds (no "Search": asked 25/11/2026) */
       if (false) { const k = shelf.filter((r) => r.roaster === shelfRo).length; return LANG === "it" ? `Cerca tra ${k} caffè` : `Search ${k} coffee${k === 1 ? "" : "s"}`; }   // on a roaster's page: that roaster's coffees
       // the day's count is pinned under the bar ("208 coffees added today"): two numbers at once is one too many, so the box just says Search
-      return LANG === "it" ? "Cerca" : "Search";   /* the counts live in the band under the kinds row: the box just says Search, and never swaps (27/11/2026) */
+      // first the size of the list ("10,108 coffees from 826 roasters"); once the day's band is pinned under the bar it says Search,
+      // and stays Search from then on: one change, never back and forth (27/11/2026)
+      if (window.__phSearch || document.querySelector(".shelf .grp.day-g.stuck:not([hidden])")) { window.__phSearch = true; return LANG === "it" ? "Cerca" : "Search"; }
       const wkH = null;   // This week's numbers are in the band under the kinds row, not in the box (27/11/2026)
       const n = wkH ? wkH.n : window.__coN || (typeof shelfPart !== "undefined" && shelfPart) || (typeof shelf !== "undefined" && shelf.length) || 0;   // the whole list, also while only its first part is in
       const box = document.getElementById("askIn"), nr = box && box.clientWidth && box.clientWidth < 290 ? 0 : (window.__roN || 0);   // and the roasters: "Search 8,757 coffees, 732 roasters" (a very narrow phone keeps just the coffees)
       // the size of the list: "Search 9,033 coffees from 754 roasters" (the roasters are left out until their count is in)
       const r0 = wkH ? wkH.ro : window.__roN || 0, g = { useGrouping: "always" };
-      if (!n) return T(HINT);
+      if (!n) return "";   // nothing until the count is in: a hint flashing first was one change too many
       const it = LANG === "it", N = n.toLocaleString(it ? "it-IT" : "en-GB", g), R = r0.toLocaleString(it ? "it-IT" : "en-GB", g);
       // the whole line where it fits; a phone too narrow for it drops the roasters, rather than ending in "…"
       const forms = !r0 ? [it ? `${N} caffè` : `${N} coffees`]   /* the numbers alone, no "Search" in front */
