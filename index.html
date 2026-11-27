@@ -10424,9 +10424,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
       L.setAttribute("rx", (2.4 * S.eyeSL * big).toFixed(2)); L.setAttribute("ry", Math.max(0, 3.4 * blink * S.eyeL * S.eyeSL * op * big).toFixed(2));
       R.setAttribute("rx", (2.4 * S.eyeSR * big).toFixed(2)); R.setAttribute("ry", Math.max(0, 3.4 * blink * S.eyeR * S.eyeSR * op * big).toFixed(2));
 
-      // a small smile under the eyes, only while he smiles at rest (27/11/2026): one curved line, the eyes' own colour
-      { let mo = eyes.querySelector(".gd-grin"); if (!mo && S.grin > 0.01) { mo = document.createElementNS("http://www.w3.org/2000/svg", "path"); mo.setAttribute("class", "gd-grin"); mo.setAttribute("fill", "none"); mo.setAttribute("stroke-linecap", "round"); mo.setAttribute("stroke-width", "1.25"); mo.setAttribute("stroke", getComputedStyle(L).fill || "#000"); eyes.appendChild(mo); }
-        if (mo) { const g = Math.max(0, Math.min(1, S.grin)); mo.setAttribute("d", `M -3 -5.9 Q 0 ${(-5.9 + 2.9 * g).toFixed(2)} 3 -5.9`); mo.style.opacity = g.toFixed(2); } }
+      // no mouth, ever (27/11/2026): a smile is in the eyes alone, the lower lids lifting into happy arcs
       // no mouth: a smile lifts the lower lids (smiling eyes); a frown tips the eyes down at the outer corners (sad); a yawn squeezes them
       const c = Math.max(-1, Math.min(1, S.smile)), lift = c > 0 ? c : 0, sad = c < 0 ? -c : 0;
       L.setAttribute("ry", (parseFloat(L.getAttribute("ry")) * (1 - 0.38 * lift)).toFixed(2)); R.setAttribute("ry", (parseFloat(R.getAttribute("ry")) * (1 - 0.38 * lift)).toFixed(2));
@@ -11018,8 +11016,8 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
     // kept simple (26/11/2026): at rest he only blinks, now and then. No moves of his own, no shows, no reacting to the scroll;
     // what he does in the chat, he does because you asked
     // blinks come at random: mostly one, sometimes two together, now and then three, then a pause of 1.5 to 9 s
-    const grin = () => act(async () => { await face({ grin: 1, smile: 0.45 }, 320); await wait(1500 + Math.random() * 900); await face({ grin: 0, smile: 0 }, 320); });
-    const stretch = () => act(async () => { await tween("aRest", 0.2, 900); await face({ eyeL: 0.55, eyeR: 0.55 }, 300); await wait(700); await tween("aRest", -0.05, 260); await tween("aRest", 0, 420); await face({ eyeL: 1, eyeR: 1, grin: 1, smile: 0.45 }, 300); await wait(900); await face({ grin: 0, smile: 0 }, 300); });
+    const grin = () => act(async () => { await face({ grin: 1, smile: 1, happy: 0.6 }, 320); await wait(1500 + Math.random() * 900); await face({ grin: 0, smile: 0, happy: 0 }, 320); });
+    const stretch = () => act(async () => { await tween("aRest", 0.2, 900); await face({ eyeL: 0.55, eyeR: 0.55 }, 300); await wait(700); await tween("aRest", -0.05, 260); await tween("aRest", 0, 420); await face({ eyeL: 1, eyeR: 1, grin: 1, smile: 1, happy: 0.6 }, 300); await wait(900); await face({ grin: 0, smile: 0, happy: 0 }, 300); });
     const blinks = () => { const r = Math.random(); return r < 0.55 ? 1 : r < 0.85 ? 2 : 3; };
     const idle = () => { const n = blinks(); setTimeout(idle, 1500 + Math.random() * 7500 + n * 450); if (document.hidden || still() || phase !== "rest" || acting || (opt.paused && opt.paused())) return;
       const rr = el.getBoundingClientRect(); if (rr.bottom < 0 || rr.top > innerHeight) return;
@@ -11636,7 +11634,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
       sayNow((mood + me).trim() || pick([T("All good here, thanks!", "Tutto bene, grazie!")]), null, null);
       // more often than not a little more chat first: one question from a big set, then (after your answer) the coffee
       const more = !late && Math.random() < 0.6 ? pick(SMALL_TALK) : null;   // a big night or bedtime: no more questions
-      const nx = more ? () => typeDots(0, () => { sayNow(T(more[0], more[1]), null, null); ctx = { t: "chat2", at: Date.now(), next: c.next }; }) : () => c.next(late);
+      const nx = more ? () => typeDots(0, () => { sayNow(T(more[0], more[1]), null, null); ctx = { t: "chat2", at: Date.now(), next: c.next, q: more[0] }; }) : () => c.next(late);
       if (typing) typing.after = nx; else nx(); return true; };
     // the answer to that question: a word back (a few things it listens for), then the coffee it had in mind
     // a message that asks or tells Goccio something ("who made you?", "tell me a joke", "can you order for me?") is never taken as the
@@ -11671,15 +11669,26 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
       if (/\b(decaf|decaffeinat)/.test(s0)) want.decaf = true;
       if (/\b(fruit|fruity|berr|citrus|floral|juicy|bright)\w*/.test(s0) && !want.roast) want.style = "fruit"; else if (/\b(chocolat|nutty|caramel|cioccolat|rich|comforting)\w*/.test(s0) && !want.roast) want.style = "choc";
       if (/\b(espresso)\b/.test(s0)) want.esp = true;
+      // a question about one kind of coffee ("Ever tried a natural Ethiopian?", "Ever tried a Gesha?", "Do you drink decaf ever?"): yes or no,
+      // the next coffee is one of those (27/11/2026: "Yes, I love them" got a robusta fact)
+      const cq = String(c.q || ""), yes0 = /\b(yes|yeah|yep|yup|love|always|of course|sure|sometimes|s[iì]|certo|adoro|sempre)\b/.test(s0), no0 = /\b(no|nope|nah|never|not yet|not really|non|mai)\b/.test(s0);
+      let about = null;
+      if (/natural Ethiopian/i.test(cq)) { want.process = "natural"; want.origin = "Ethiopia"; about = "natural Ethiopian"; }
+      else if (/Gesha/i.test(cq)) { want.variety = /gei?sha/i; about = "Gesha"; }
+      else if (/decaf/i.test(cq) && yes0) { want.decaf = true; about = "decaf"; }
+      if (about && (yes0 || no0)) { const r = prefPick(want, true); if (r) { const ns = notesOf(r), what = `${shownName(r)} ${T("from", "di")} ${roasteryName(r.roaster)}${ns.length ? T(", tasting of ", ", che sa di ") + andList(ns) : ""}`;
+          sayNow(no0 ? pick([T(`Then you're in for a treat. Start with ${what}.`, `Allora ti aspetta una sorpresa. Parti da ${what}.`), T(`You should! I'd try ${what}.`, `Dovresti! Io proverei ${what}.`)])
+            : pick([T(`Me too. Here's one for you: ${what}.`, `Anch'io. Eccone uno per te: ${what}.`), T(`Then you'll like this one: ${what}.`, `Allora questo ti piacerà: ${what}.`), T(`Same! Try ${what}.`, `Anch'io! Prova ${what}.`)]),
+            [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(r); } }], happy); return true; } }
       const steer = Object.keys(want).length ? () => prefPick(want) || c.next() : () => c.next();
       sayNow(pick(say0), null, null); const nx = steer; if (typing) typing.after = nx; else nx(); return true; };
     // a coffee that fits what you just said: today's first, else the newest that fit; nothing that doesn't say it fits
-    const prefPick = (w) => { const FRUIT = /berr|cherr|citrus|lemon|lime|orange|mandarin|grapefruit|peach|apricot|plum|mango|pineapple|passion|tropical|floral|jasmine|rose|grape|apple|pear|raspberr|strawberr|blackcurrant|lychee|melon|kiwi|fruit/i, CHOC = /chocolate|cocoa|cacao|caramel|toffee|nut|hazelnut|almond|praline|fudge|brown sugar|molasses|biscuit/i;
+    const prefPick = (w, quiet) => { const FRUIT = /berr|cherr|citrus|lemon|lime|orange|mandarin|grapefruit|peach|apricot|plum|mango|pineapple|passion|tropical|floral|jasmine|rose|grape|apple|pear|raspberr|strawberr|blackcurrant|lychee|melon|kiwi|fruit/i, CHOC = /chocolate|cocoa|cacao|caramel|toffee|nut|hazelnut|almond|praline|fudge|brown sugar|molasses|biscuit/i;
       const ok = (r) => (!w.roast || (r.roast && w.roast.includes(r.roast))) && (!w.process || (r.process && String(r.process).toLowerCase().includes(w.process))) && (!w.decaf || isDecaf(r))
-        && (!w.esp || r.roast_for === "espresso") && (!w.style || ((ns0) => ns0.length && ns0.filter((n) => (w.style === "fruit" ? FRUIT : CHOC).test(n)).length >= Math.min(2, ns0.length))(notesOf(r)));   /* a fruity cup is mostly fruit, not one fruit among cacao and liqueur */
+        && (!w.esp || r.roast_for === "espresso") && (!w.origin || String(r.origin || "").includes(w.origin)) && (!w.variety || w.variety.test(String(r.variety || "") + " " + String(r.name || ""))) && (!w.style || ((ns0) => ns0.length && ns0.filter((n) => (w.style === "fruit" ? FRUIT : CHOC).test(n)).length >= Math.min(2, ns0.length))(notesOf(r)));   /* a fruity cup is mostly fruit, not one fruit among cacao and liqueur */
       const all0 = coffees(), today = all0.filter((r) => r.just_in && ok(r)), pool = today.length ? today : all0.filter(ok).sort((a, b) => String(shelfDate(b) || "").localeCompare(String(shelfDate(a) || ""))).slice(0, 40);
       const noted = pool.filter((r) => notesOf(r).length), pool1 = noted.length ? noted : pool;   /* one that says how it tastes, when there is one */
-      const fresh = pool1.filter((r) => !picked.has(r.url)); if (!pool.length) return false; const r = pick(fresh.length ? fresh : pool1), ns = notesOf(r); picked.add(r.url); lastCo = { r, at: Date.now() };
+      const fresh = pool1.filter((r) => !picked.has(r.url)); if (!pool.length) return false; const r = pick(fresh.length ? fresh : pool1), ns = notesOf(r); picked.add(r.url); lastCo = { r, at: Date.now() }; if (quiet) return r;
       const how = [w.roast ? (ROAST[r.roast] ? ROAST[r.roast].label.toLowerCase() + " roast" : "") : "", w.process ? String(r.process).toLowerCase() : "", w.decaf ? T("decaf", "decaffeinato") : ""].filter(Boolean).join(", ");
       say(T(`Then here's one for you: ${shownName(r)} from ${roasteryName(r.roaster)}${how ? ", " + how : ""}${ns.length ? ", tasting of " + andList(ns) : ""}.${today.length ? "" : " Not from today, but recent."}`,
         `Allora eccone uno per te: ${shownName(r)} della ${roasteryName(r.roaster)}${how ? ", " + how : ""}${ns.length ? ", che sa di " + andList(ns) : ""}.${today.length ? "" : " Non è di oggi, ma è recente."}`),
@@ -12861,8 +12870,8 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
           // the little one at the top of the chat is the same Goccio: it looks about, blinks and hops with him
           { const hd = document.querySelector(".gd-head svg"); if (hd) { const hb = hd.querySelector(".ag-b"), he = hd.querySelector(".ag-e"), hs = hd.querySelector(".ag-shy");
               if (hb) hb.setAttribute("transform", bo.getAttribute("transform")); if (he) { he.setAttribute("transform", ey.getAttribute("transform")); he.style.visibility = ey.style.visibility; } if (hs && shy) hs.setAttribute("transform", shy.getAttribute("transform")); } }
-          wide += (wideTo - wide) * .2; lid += (lidTo - lid) * .08; ey.setAttribute("transform", `translate(${(x * 1.1).toFixed(2)} ${(y * 1.1).toFixed(2)}) translate(0 -1) scale(${wide.toFixed(3)} ${Math.max(blink < 1 ? 0.07 : 0.26, blink * wide * lid).toFixed(3)}) translate(0 1)`); ey.style.visibility = "";   /* shut eyes leave a thin black line */
-          if (!mo && gr > .01) { mo = document.createElementNS("http://www.w3.org/2000/svg", "path"); mo.setAttribute("fill", "none"); mo.setAttribute("stroke", getComputedStyle(ey).fill || "#000"); mo.setAttribute("stroke-width", "1.25"); mo.setAttribute("stroke-linecap", "round"); ey.parentNode.insertBefore(mo, ey.nextSibling); }
+          wide += (wideTo - wide) * .2; lid += (lidTo - lid) * .08; ey.setAttribute("transform", `translate(${(x * 1.1).toFixed(2)} ${(y * 1.1 - .7 * gr).toFixed(2)}) translate(0 -1) scale(${(wide * (1 + .1 * gr)).toFixed(3)} ${Math.max(blink < 1 ? 0.07 : 0.26, blink * wide * lid * (1 - .3 * gr)).toFixed(3)}) translate(0 1)`);   /* a smile, in the eyes alone: they lift and narrow into happy slits */ ey.style.visibility = "";   /* shut eyes leave a thin black line */
+          if (false && !mo && gr > .01) { mo = document.createElementNS("http://www.w3.org/2000/svg", "path"); mo.setAttribute("fill", "none"); mo.setAttribute("stroke", getComputedStyle(ey).fill || "#000"); mo.setAttribute("stroke-width", "1.25"); mo.setAttribute("stroke-linecap", "round"); ey.parentNode.insertBefore(mo, ey.nextSibling); }
           if (mo) { mo.setAttribute("d", `M -2.9 5.1 Q 0 ${(5.1 + 2.8 * gr).toFixed(2)} 2.9 5.1`); mo.setAttribute("transform", `translate(${(x * 1.1).toFixed(2)} ${(y * 1.1).toFixed(2)})`); mo.style.opacity = Math.min(1, gr).toFixed(2); }
           if (Math.abs(tx - x) + Math.abs(ty - y) > .02 || Math.abs(wideTo - wide) > .01 || Math.abs(lidTo - lid) > .01 || Math.abs(stTo - st) > .003 || Math.abs(grTo - gr) > .01 || hopT) run = requestAnimationFrame(loop); else { run = 0; lt = 0; } };
         const go = () => { if (!run) run = requestAnimationFrame(loop); };
