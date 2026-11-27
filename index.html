@@ -2804,9 +2804,11 @@ html.lv-page body footer{margin-top:-66px!important}   /* the roasters view ends
 :is(#listView,#pvView,#roView) .lv-form textarea{width:100%;box-sizing:border-box;min-height:120px;padding:10px 12px;border:0;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1.35 var(--sans);resize:vertical}
 @supports (-webkit-touch-callout:none){:is(#listView,#pvView,#roView) .lv-form textarea{font-size:16px}}
 #pvView ul.lv-steps{list-style:disc}
-#roView .ro-az{margin:16px 0 -10px;padding:15px 0 0;border-top:1px solid var(--line);list-style:none;font-size:var(--fs-xl);line-height:.98;letter-spacing:-.01em}
+#roView .ro-az{margin:0;padding:0;list-style:none;font-size:var(--fs-xl);line-height:.98;letter-spacing:-.01em}
 @media (min-width:900px){#roView .ro-az{font-size:var(--fs-l)}}
-#roView .ro-az li{padding:0 0 10px}   /* one roaster a line; a name that wraps keeps its lines together, a gap before the next */
+#roView .ro-az li{padding:0}   /* one roaster a line, on the coffee names' own line spacing */
+#roView .ro-az li.L{margin:14px 0 12px;padding-top:15px;border-top:1px solid var(--line);color:var(--ink)}   /* each letter as a section title: 16 px from the last name's letters to its rule */
+#roView .ro-az li.L:first-child{margin-top:0;padding-top:0;border-top:0}
 #roView .ro-az a{color:var(--ink);text-decoration:none}
 @media (hover:hover){#roView .ro-az a:hover .n{color:var(--muted)}}
 #roView .ro-az .n{transition:color .15s ease}
@@ -3817,8 +3819,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   <!-- Roasters A–Z: a page in the page at /#roasters (27/11/2026); /coffee/ stays for search engines -->
   <section class="sec lv" id="roView" aria-labelledby="roH" hidden>
     <h2 class="lv-title" id="roH">Roasters A–Z</h2>
-    <p class="lv-lead" id="roLead">Every roaster from A to Z</p>
-    <ul class="ro-az" id="roAz"></ul>
+        <ul class="ro-az" id="roAz"></ul>
   </section>
   <section class="sec" id="bags" aria-labelledby="bh" hidden>
     <div class="sec-head"><span class="cap" id="bh" role="heading" aria-level="2">My bags</span></div>
@@ -10226,11 +10227,14 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
         for (const r of shelf) { if (r.sponsored) continue; const o = by.get(r.roaster) || { n: 0, c: r.roaster_city || "" }; o.n++; by.set(r.roaster, o); }
         const names = [...by.keys()].sort((a, b) => a.localeCompare(b, "en", { sensitivity: "base" })); let L = "", html = "";
         for (const nm of names) { const o = by.get(nm), l0 = (nm.normalize("NFD").replace(/[^A-Za-z0-9]/g, "")[0] || "#").toUpperCase(), l = /[0-9]/.test(l0) ? "#" : l0;
+          if (l !== L) html += `<li class="L" aria-hidden="true">${l}</li>`;   /* a new letter: its own rule and big letter, as the page's section titles */
           html += `<li><a href="#roaster=${encodeURIComponent(nm)}" data-ro="${esc(nm)}"><span class="n">${esc(nm)}</span><span class="w">${o.c ? ", " + esc(o.c) : ""} (${o.n})</span></a></li>`; L = l; }   /* one roaster a line, big: the name in black, its town and how many coffees in grey */
-        ul.innerHTML = html; const lead = $("roLead"); if (lead) lead.textContent = `${names.length.toLocaleString("en-GB")} roasters from A to Z`; return true; };
+        ul.innerHTML = html; const tt = $("roH"); if (tt) tt.textContent = `${names.length.toLocaleString("en-GB")} roasters A–Z`;   /* the count in the pinned title, no lead under it */ return true; };
       const open = (id, at) => { if (!H.classList.contains("lv-page")) yBack = scrollY;
         VIEWS.forEach((x) => { const on = x.id === id; x.hidden = !on; x.classList.toggle("lv-on", on); }); H.classList.add("lv-page");
-        if (id === "roView" && !fillRo()) { let k = 0; const t = setInterval(() => { if (fillRo() || ++k > 60) clearInterval(t); }, 250); }
+        if (id === "roView") { let k = 0, n0 = -1; fillRo(); const t = setInterval(() => {   /* the list may still be coming in: fill again as it grows */
+            const n = typeof shelf !== "undefined" ? shelf.length : 0; if (n !== n0) { n0 = n; fillRo(); }
+            if (++k > 120 || !H.classList.contains("lv-page") || (typeof shelfPart !== "undefined" && !shelfPart && n && k > 4)) clearInterval(t); }, 500); }
         requestAnimationFrame(() => { const h = at && $(at); if (h) h.scrollIntoView({ block: "start" }); else scrollTo(0, 0); }); };
       const close = () => { if (!H.classList.contains("lv-page")) return; H.classList.remove("lv-page"); VIEWS.forEach((x) => { x.hidden = true; x.classList.remove("lv-on"); });
         if (ROUTES[location.hash]) history.replaceState(null, "", location.pathname + location.search); requestAnimationFrame(() => scrollTo(0, yBack)); };
