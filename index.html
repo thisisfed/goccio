@@ -7162,7 +7162,7 @@ html.ro-page body #roHead{padding-bottom:16px!important}
     .sort((a, b) => pk(a.roaster) - pk(b.roaster)); };
   // ---------- shelves ----------
   let knownRoasters = [];   // every roaster we follow, for reading their names off a bag
-  let shelfDayN = null, shelfSibs = [];   // set while only the first part of the list is in
+  let shelfDayN = null, shelfDayRo = null, shelfSibs = [];   // set while only the first part of the list is in
   let shelfPart = 0;   // while only today's coffees are in: how many the full list holds
   let shelf = [], shelfF = "all", shelfR = "all", shelfAll = false, shelfV = "all", shelfO = "all", shelfRo = "", shelfN = 10;   // one list: every coffee
   // Made for, picked by you (Everything until you do). Filter: roasted for filter or omni, single origins, and blends
@@ -7908,7 +7908,10 @@ html.ro-page body #roHead{padding-bottom:16px!important}
       seen.set(k, new Set((shelf._byRo.get(r.roaster) || []).filter((o) => inList.has(o) && String(nm(o)).toLowerCase() === String(nm(r)).toLowerCase() && tagKey(o) === tagKey(r)).map((o) => String(o.name).toLowerCase()))); });
     const fullName = (r) => String(r.name || "").replace(/^\s*(?:espresso|filter|filtro|omni)\s*[-–—:|]\s*/i, "").replace(/["“”]/g, "").replace(/\s{2,}/g, " ").trim();
     // how many coffees each day holds in the list as it stands (filters and all), for the day's heading: "Added yesterday, 345 coffees"
-    const dayN = new Map(); list.forEach((r) => { const k = String(shelfDate(r) || "").slice(0, 10); if (k) dayN.set(k, (dayN.get(k) || 0) + 1); }); if (whole && shelfDayN) Object.entries(shelfDayN).forEach(([k, v]) => { if (dayN.has(k)) dayN.set(k, v); });   // the day's whole count, not the part that is in yet
+    const dayN = new Map(); list.forEach((r) => { const k = String(shelfDate(r) || "").slice(0, 10); if (k) dayN.set(k, (dayN.get(k) || 0) + 1); }); if (whole && shelfDayN) Object.entries(shelfDayN).forEach(([k, v]) => { if (dayN.has(k)) dayN.set(k, v); });
+    // roasters new to Goccio that day: their first coffee was found then ("108 coffees added today, 14 new roasters", 27/11/2026)
+    const roN = new Map(); if (list.length === shelf.length || whole) { if (shelfPart && shelfDayRo) Object.entries(shelfDayRo).forEach(([k, v]) => roN.set(k, v));
+      else { const first = new Map(); shelf.forEach((r) => { const f = String(r.found || "").slice(0, 10); if (f && (!first.has(r.roaster) || f < first.get(r.roaster))) first.set(r.roaster, f); }); first.forEach((f) => roN.set(f, (roN.get(f) || 0) + 1)); } }   // the day's whole count, not the part that is in yet
     let lastGroup = null, lastDay = null; const byDay = !q; window.__dayT = {};   // in date order (no search), the day is said once, as a heading over that day's coffees, not on every card
     brewHome();   // the recipe sits inside a row while a listed coffee is being brewed: out before the rows are redrawn, back in after
     $("shelf").innerHTML = shown.length ? shown.map((r) => {
@@ -7934,7 +7937,8 @@ html.ro-page body #roHead{padding-bottom:16px!important}
       // the count first: "230 added today", "15 added yesterday", "42 added on 23/11" ("230 aggiunti oggi")
       const dN = dayN.get(String(shelfDate(r) || "").slice(0, 10)) || 0, it1 = LANG === "it", rest = day.replace(/^(Added|Aggiunto)\s+/, "");
       // pinned under the bar, the Coffees title is gone from view: the heading then says what it counts ("230 coffees added today")
-      const dayT = !dN ? day : it1 ? `${dN.toLocaleString("it-IT")}<span class="day-what"> caffè</span> ${dN === 1 ? "aggiunto" : "aggiunti"} ${rest}` : `${dN.toLocaleString("en-GB")}<span class="day-what"> ${dN === 1 ? "coffee" : "coffees"}</span> added ${/^\d/.test(rest) ? "on " : ""}${rest}`;
+      const rN = !shelfRo && !q ? roN.get(String(shelfDate(r) || "").slice(0, 10)) || 0 : 0, roT = !rN ? "" : it1 ? `, ${rN} ${rN === 1 ? "nuova torrefazione" : "nuove torrefazioni"}` : `, ${rN} new ${rN === 1 ? "roaster" : "roasters"}`;
+      const dayT0 = !dN ? day : it1 ? `${dN.toLocaleString("it-IT")}<span class="day-what"> caffè</span> ${dN === 1 ? "aggiunto" : "aggiunti"} ${rest}` : `${dN.toLocaleString("en-GB")}<span class="day-what"> ${dN === 1 ? "coffee" : "coffees"}</span> added ${/^\d/.test(rest) ? "on " : ""}${rest}`, dayT = dN ? dayT0 + roT : dayT0;
       // each day's count where its coffees start ("25 added today", then "230 added yesterday"…), pinned under the bar while its coffees go by; the next day's pushes it away
       if (byDay && !isSp && day) (window.__dayT = window.__dayT || {})[String(shelfDate(r) || "").slice(0, 10)] = dayT;   // every day's words, for the one pinned line to switch to as its coffees go by
       const dayHead = byDay && !isSp && day && lastDay === null ? `<h3 class="grp day-g" data-day="${String(shelfDate(r) || "").slice(0, 10)}"><span class="day-t">${dayT}</span></h3>` : ""; if (byDay && !isSp && day) lastDay = day;   // one span: the heading lays out its children in a row
@@ -9743,7 +9747,7 @@ html.ro-page body #roHead{padding-bottom:16px!important}
       let full = null;
       const apply = (d, part) => {
       shelfPart = part ? (d.total || 0) : 0;
-      shelfDayN = part && d.day_n ? d.day_n : null; shelfSibs = part && Array.isArray(d.sibs) ? d.sibs.filter((r) => r && r.name && r.roaster) : [];   // the small first file says how many each day holds in the whole list, and brings the coffees that share a name with one on it, so nothing on screen changes when the full list takes over
+      shelfDayN = part && d.day_n ? d.day_n : null; shelfDayRo = part && d.day_ro ? d.day_ro : null; shelfSibs = part && Array.isArray(d.sibs) ? d.sibs.filter((r) => r && r.name && r.roaster) : [];   // the small first file says how many each day holds in the whole list, and brings the coffees that share a name with one on it, so nothing on screen changes when the full list takes over
       shelf = (d.releases || []).filter((r) => r.name && r.roaster);
       knownRoasters = (d.roasters || []).map((r) => r && r.name).filter(Boolean);
       roShops = new Map((d.roasters || []).filter((r) => r && r.name && r.shop).map((r) => [r.name, r.shop]));
