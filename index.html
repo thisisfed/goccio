@@ -30,11 +30,11 @@ new MutationObserver(function (m, o) { var h = document.documentElement; if (h.c
 /* a wrapped name sits tighter (27/11/2026) */
 html body #shelf .item .name:not(.nb){line-height:.98!important}
 /* the name stays the big line; the roaster's own notes come right under it, in ink, a size up from the small lines (27/11/2026) */
-#shelf .item .c-notes.nb-line{font:500 21px/1.2 var(--sans);letter-spacing:-.02em;color:var(--ink);margin:4px 0 8px;text-wrap:pretty}
+#shelf .item .c-notes.nb-line{font:500 24px/1.2 var(--sans);letter-spacing:-.02em;color:var(--ink);margin:4px 0 8px;text-wrap:pretty}
 @media (min-width:1000px){ #shelf .item .c-notes.nb-line{font-size:24px} }
 #shelf .item .c-notes.nb-line .nb-more{color:var(--muted)}
 html body #shelf .item .l > .c-notes.nb-line, html body #shelf .item .l > .c-notes.nb-line *{line-height:1.17!important}
-html body #shelf .item .l > .c-notes.nb-line{margin:-2px 0 7px!important}   /* tucked up under the name (27/11/2026) */
+html body #shelf .item .l > .c-notes.nb-line{margin:-2px 0 3px!important}   /* tucked up under the name (27/11/2026) */
 @media (min-width:1000px){ html body #shelf .item .l > .c-notes.nb-line{margin-top:1px!important} }
 #shelf .item .name.nb .nb2{color:var(--muted)}
 #shelf .item .name.nb .nb3{color:color-mix(in srgb,var(--muted) 55%,var(--bg))}
@@ -7998,7 +7998,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
       tagBits.push(...coffeeLabels(r, shown).map((l) => `<span class="tg lbl" style="--vc:${LABEL_DOT[l] || "#8e8e93"}">${l}</span>`));
       return `${head}${dayHead}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}" data-day="${isSp ? "" : String(shelfDate(r) || "").slice(0, 10)}">
         <div class="l">
-          <p class="c-where">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : ""}<a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a>${r.roaster_city || r.roaster_country ? `<span class="rcity">${r.roaster_city ? ", " : " "}${esc(cityL(r.roaster_city))}${r.roaster_country ? `${r.roaster_city ? " " : ""}(${esc(r.roaster_country === "GB" ? "UK" : r.roaster_country)})` : ""}</span>` : ""}${byDay && !isSp ? "" : `<br class="rn-br"><span class="day">${day}</span>`}</p>
+          <p class="c-where">${byDay && !isSp ? "" : `<span class="day">${day}</span><br class="rn-br">`}${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : ""}<a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a>${r.roaster_city || r.roaster_country ? `<span class="rcity">${r.roaster_city ? ", " : " "}${esc(cityL(r.roaster_city))}${r.roaster_country ? `${r.roaster_city ? " " : ""}(${esc(r.roaster_country === "GB" ? "UK" : r.roaster_country)})` : ""}</span>` : ""}</p>
           ${(() => { const bn = bigNotes(r); return bn ? `<span class="name">${esc(capName(calm(shown)))}</span>${bn.line}
           <p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p>
           ${cardPrice(r)}` : `<span class="name">${esc(capName(calm(shown)))}</span>
