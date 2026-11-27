@@ -6331,7 +6331,7 @@ html.ro-page body #roHead{padding-bottom:16px!important}
         let base = h; const tl = document.querySelector(".shelf-tools"); if (tl && tl.offsetHeight && getComputedStyle(tl).position === "sticky") base = Math.max(base, (parseFloat(getComputedStyle(tl).top) || h) + tl.offsetHeight);
         if (g && g.offsetHeight && getComputedStyle(g).position === "sticky") base = (parseFloat(getComputedStyle(g).top) || base) + g.offsetHeight; else g = null;
         // a search's results: the list's top line lands on the top bar's own line, so the two read as one and the note sits under it
-        if (!g) { const sh = document.querySelector("#shelves > .sec-head"); if (sh && sh.getBoundingClientRect().height) return Math.max(0, Math.min(html.scrollHeight - innerHeight, Math.round(sh.getBoundingClientRect().top + scrollY - (h - 1)))); }
+        if (!g || html.classList.contains("ro-page")) { g = null; const sh = document.querySelector("#shelves > .sec-head"); if (sh && sh.getBoundingClientRect().height) return Math.max(0, Math.min(html.scrollHeight - innerHeight, Math.round(sh.getBoundingClientRect().top + scrollY - (h - 1)))); }
         if (g) return Math.max(0, Math.min(html.scrollHeight - innerHeight, Math.round(it.getBoundingClientRect().top + scrollY - base))); } }
       return Math.max(0, Math.min(html.scrollHeight - innerHeight, Math.round(center ? r.top + scrollY - (innerHeight - r.height) / 2 : r.top + scrollY - (h - 3) - gap))); };
     const put = (y) => { const sb = html.style.scrollBehavior; html.style.scrollBehavior = "auto"; window.scrollTo(0, y); html.style.scrollBehavior = sb; };
@@ -7211,7 +7211,7 @@ html.ro-page body #roHead{padding-bottom:16px!important}
   function openRoaster(name) {
     shelfRo = name; shelfAll = false;
     history.pushState(null, "", "#roaster=" + encodeURIComponent(name));
-    renderShelf(); $("shelves").scrollIntoView({ behavior: "smooth" });
+    renderShelf(); jumpTo($("shelves"));   // its line lands on the top bar's line, as every jump to the list does (27/11/2026)
   }
   window.openRoaster = openRoaster;   // Goccio's "See their coffees" uses it too
   function closeRoaster() {
