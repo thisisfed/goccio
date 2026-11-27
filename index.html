@@ -52,7 +52,7 @@ html body #shelf > .grp.day-g .day-t.day-wait.day-wait.day-wait{visibility:hidde
 /* its line, like the day's bar under it: the column's width, then the whole window's once it pins (27/11/2026) */
 .co-tabs::after{content:"";position:absolute;left:0;width:100%;bottom:0;height:1px;background:var(--line);pointer-events:none;transition:left .32s cubic-bezier(.2,.8,.2,1),width .32s cubic-bezier(.2,.8,.2,1)}
 .co-tabs button[aria-busy="true"]{animation:co-wait 1s ease-in-out infinite alternate}@keyframes co-wait{to{opacity:.35}}
-.co-tabs::after,.co-tabs::before{left:calc(50% - 50vw)!important;width:100vw!important;transition:none}   /* fillets, 27/11/2026: the bars' lines (top bar, kinds row) run edge to edge; the list's lines (day bar, between coffees) keep the margins */
+.co-tabs::after,.co-tabs::before{left:calc(50% - 50vw + 12px)!important;width:calc(100vw - 24px)!important;transition:none}   /* fillets, 27/11/2026: the bars' lines (top bar, kinds row) run edge to edge; the list's lines (day bar, between coffees) keep the margins */
 .co-tabs::before{content:"";position:absolute;top:-1px;height:1px;background:var(--line);pointer-events:none}
 .co-tabs.stuck::before{display:none}   /* stuck, the top bar's own line is right above */
 html:not(.ro-page) body #shelves > .sec-head:has(+ .co-tabs){border-top-color:transparent!important}
@@ -71,8 +71,8 @@ html.ro-page .co-tabs{display:none}
 html body #shelf .item .name.sent{display:block;margin:0;text-wrap:pretty}
 html body #shelf .item .name.sent .s-f, html body #shelf .item .name.sent .s-f a{color:var(--muted)}
 html body #shelf .item .name.sent .s-f a{text-decoration:underline;text-decoration-thickness:.05em;text-underline-offset:.1em}
-html body #shelf .item .name.sent .s-t, html body #shelf .item .name.sent .s-f.s-lead, html body #shelf .item .name.sent .s-f.s-lead a{color:var(--ink)}   /* the taste in the brightest place; with no notes, the roaster */
-html body #shelf .item .name.sent .s-n{color:color-mix(in srgb,var(--muted) 55%,var(--bg))}   /* the name last and dimmest (27/11/2026) */
+html body #shelf .item .name.sent .s-n{color:var(--ink)}   /* "Name: taste." in white, "Roasted by: roaster, place." in grey (27/11/2026) */
+html body #shelf .item .name.sent .s-t{color:var(--ink)}
 html.ro-page body #shelf .item .name.sent .s-f{display:none}
 html body #shelf .item .name.sent .s-dot{display:none}
 html body #shelf .item .name.sent + .c-notes{margin-top:6px!important}
@@ -2118,7 +2118,7 @@ html body .shelf .grp.day-g.stuck::before{display:block}
 html.ro-page body .shelf .item .name{margin-top:-10px}   /* a roaster's own page has no roaster line over each coffee: its name sits as far under the rule as the roaster line does on the main page */
 html body .shelf .grp.day-g .day-what{display:none} html body .shelf .grp.day-g.say-what .day-what{display:inline}   /* "230 added today" under Coffees; "230 coffees added today" once pinned with the title gone */   /* "230 added today" under Coffees; "230 coffees added today" once pinned */
 html body .shelf .grp.day-g::after{content:"";position:absolute;left:0;width:100%;bottom:0;height:1px;background:var(--line);pointer-events:none;transition:left .32s cubic-bezier(.2,.8,.2,1),width .32s cubic-bezier(.2,.8,.2,1)}   /* in the list its line is as long as the one over "Coffees." */
-html body .shelf .grp.day-g.stuck::after{left:calc(50% - 50vw);width:100vw}   /* pinned under the top bar, it stretches out from edge to edge, like the bar's own line */
+html body .shelf .grp.day-g.stuck::after{left:calc(50% - 50vw + 12px);width:calc(100vw - 24px)}   /* pinned under the top bar, it stretches out from edge to edge, like the bar's own line */
 @media (prefers-reduced-motion:reduce){html body .shelf .grp.day-g::after{transition:none}}
 html body .shelf .grp.day-g::before{left:calc(50% - 50vw)!important;right:auto!important;width:100vw}
 html.brew-in body .shelf .grp.day-g{display:none!important}   /* brewing a coffee: no day heading pinned over it */
@@ -2313,7 +2313,9 @@ details.clk[open] > summary::after, .foot-x[open] > summary::after, :is(#adjOpts
   padding:0 12px 8px;transition:transform .32s cubic-bezier(.2,.7,.2,1)}
 /* it sits in the bar's own row, where Goccio will be, while the big wordmark is on screen; when Goccio shows in the bar it
    slides up and away (the bar stays one row) */
-.top{border-bottom:1px solid var(--line)!important}
+.top{border-bottom:0!important}
+/* every line keeps the page's margins, 12 px in from each side; what's in the bars can still run edge to edge (27/11/2026) */
+html body header.top::after{content:"";position:absolute;left:12px;right:12px;bottom:0;height:1px;background:var(--line);pointer-events:none}
 .ask-line{position:absolute!important;top:0;left:0;right:var(--nav-w,90px);height:var(--row-h,48px);padding:0 0 0 12px!important;border:0!important;background:none!important;
   transition:opacity .25s ease, transform .25s ease, visibility 0s linear 0s}
 /* the bar is always the ask box, with the language and the theme on the right: no Goccio, no section menu */
@@ -2784,7 +2786,7 @@ html.lv-page body .top .lv-mark{display:flex;align-items:center;flex:1 1 auto;mi
 :is(#listView,#pvView,#roView) .lv-p, :is(#listView,#pvView,#roView) .lv-steps{max-width:760px} :is(#listView,#pvView,#roView) .lv-lead{max-width:1100px}
 /* its title in a bar like the day's count: small type, 44 px line to line, pinned under the top bar (27/11/2026) */
 :is(#listView,#pvView,#roView) .lv-title{position:sticky;top:var(--top-h,44px);z-index:4;display:flex;align-items:center;box-sizing:border-box;height:44px;margin:0 0 15px;padding:1px 0 0;background:var(--bg);font:500 var(--fs-s)/1.2 var(--sans);color:var(--ink);letter-spacing:0;max-width:none!important}
-:is(#listView,#pvView,#roView) .lv-title::after{content:"";position:absolute;left:calc(50% - 50vw);width:100vw;bottom:0;height:1px;background:var(--line)}
+:is(#listView,#pvView,#roView) .lv-title::after{content:"";position:absolute;left:calc(50% - 50vw + 12px);width:calc(100vw - 24px);bottom:0;height:1px;background:var(--line)}
 :is(#listView,#pvView,#roView) .lv-title::before{content:"";position:absolute;inset:0 calc(50% - 50vw);background:var(--bg);z-index:-1}
 /* the lead as big as a coffee's name */
 :is(#listView,#pvView,#roView) .lv-lead{margin:0 0 12px;font-size:var(--fs-xl);line-height:.98;letter-spacing:-.01em;color:var(--ink);text-wrap:pretty}
@@ -2835,7 +2837,7 @@ html body .gd-chips > button{height:43px!important}
 :where(.chip, .btn, .ro-pill, .hero-pill, .gear-dd, .gear-btn, .pill.bag-add, .shelf .item > .r > *, .botnav .chip, #toolsBtn, #langBtn, #themeBtn, .ask-go, .step button, .mill-btn, .bv-go, .bv-reset, .bv-x, .ask-goccio, .lv-home, .lv-pill, .lv-go, .lv-out, .gd-chips > button, #recipe .share > *, .fy-pill, .gd-offer, .gh-new, .bag-ro .ro-dd){transition:scale .35s cubic-bezier(.34,1.7,.5,1),opacity .2s ease,background-color .15s ease}
 /* the search's result line in a band like the day's count: 44 px line to line, small type, pinned under the kinds row; a long line slides sideways */
 html body #shelves .co-tabs ~ #askNote.nb-band.fy-note:not([hidden]){position:sticky!important;top:calc(var(--top-h,44px) + 44px)!important;z-index:4;display:block!important;box-sizing:border-box!important;height:44px!important;margin:-14px calc(50% - 50vw) -2px!important;padding:1px calc(50vw - 50%) 0!important;
-  transform:none!important;border-radius:0!important;background:var(--bg)!important;box-shadow:none!important;border-bottom:1px solid var(--line)!important;
+  transform:none!important;border-radius:0!important;background:linear-gradient(var(--line),var(--line)) center bottom / calc(100% - 24px) 1px no-repeat,var(--bg)!important;background-attachment:local!important;box-shadow:none!important;border-bottom:0!important;
   font:500 var(--fs-s)/42px var(--sans)!important;color:var(--ink)!important;white-space:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:none;text-box:none!important;-webkit-overflow-scrolling:touch}
 html body #shelves .co-tabs ~ #askNote.nb-band::-webkit-scrollbar{display:none}
 @media (min-width:900px){ html body #shelves .co-tabs ~ #askNote.nb-band.fy-note:not([hidden]){margin-bottom:-12px!important} }   /* desktop: the first coffee 12 px under the band, as under the day's count */
@@ -8312,12 +8314,14 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
             const low = (n) => n.split(" ").map((x) => /^[A-ZÀ-Ý][a-zà-ÿ'’-]*$/.test(x) ? x.toLowerCase() : x).join(" "), and = it ? " e " : " and ";
             const place = r.roaster_city || r.roaster_country ? `${r.roaster_city ? ", " + esc(cityL(r.roaster_city)) : ""}${r.roaster_country ? ` (${esc(r.roaster_country === "GB" ? "UK" : r.roaster_country)})` : ""}` : "";
             const tastes = real ? ns.filter((n) => !/^(coarse|medium|fine|extra fine|whole ?beans?|ground|percolator|cafeti[eè]re|plunger|french press|moka( pot)?|stovetop|aeropress|chemex|espresso|filter)$/i.test(n.trim())).slice(0, 3).map((n) => esc(low(n))) : [];   /* a grind or a brewer isn't a taste */
-            const ro = (w) => `<span class="s-f">${w} <a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a>${place}.</span>`;
+            const ro = (w) => `<span class="s-f">${w} <a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(String(r.roaster).replace(/[.!]+$/, ""))}</a>${place}.</span>`;   /* the roaster's own name, no "Roastery" added (27/11/2026) */
             // what a buyer asks first, brightest first (27/11/2026): how it tastes; who roasted it (the link); then its name, dimmest.
             // No notes: the roaster leads. Three statements, one size; the order read aloud is the order seen
             const tl = tastes.length > 1 ? tastes.slice(0, -1).join(", ") + and + tastes[tastes.length - 1] : tastes[0] || "";
             const nm = esc(capName(calm(shown))).replace(/[.!?…]+$/, "");
-            return `<p class="name sent">${tl ? `<span class="s-t">${tl.charAt(0).toUpperCase() + tl.slice(1)}.</span> ` : ""}${ro(it ? "Tostato da" : "Roasted by").replace('class="s-f"', `class="s-f${tl ? "" : " s-lead"}"`)} <span class="s-n">${nm}.</span></p>${real ? "" : cardNotes(r)}`; })()}
+            // "Volcán Azul: coffee blossom, grapefruit and apricot. Roasted by: Poma, Copenhagen (DK)." (27/11/2026): the name, then how it
+            // tastes, then who roasted it. No notes: "Volcán Azul. Roasted by: …". Read aloud in the order it's seen
+            return `<p class="name sent"><span class="s-n">${nm}${tl ? ":" : "."}</span>${tl ? ` <span class="s-t">${tl}.</span>` : ""} ${ro(it ? "Tostato da:" : "Roasted by:")}</p>${real ? "" : cardNotes(r)}`; })()}
           ${cardPrice(r)}
         </div>
         <div class="r${rowOpen.has(rowKey(r)) ? " more-open" : ""}">
