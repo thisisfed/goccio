@@ -9632,13 +9632,16 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
   { const box = document.querySelector(".ask-line .ask-box"), segs = $("askSegs"), a = $("askIn"), f = $("askForm");
     if (box && segs && a && f) {
       const it = LANG === "it"; segs.querySelectorAll("[data-en]").forEach((e) => e.textContent = it ? e.dataset.it : e.dataset.en); if (it) segs.querySelectorAll('option[value="__own"]').forEach((o) => o.textContent = "Scrivi tu…");
-      const sync = () => { const on = !a.value.trim() && document.activeElement !== a && !$("shelfQ").value.trim(); box.classList.toggle("segs-on", on); if (on) segs.style.background = getComputedStyle(a).backgroundColor; };
+      let segQ = ""; const sync = () => { const sq = $("shelfQ").value.trim(), on = !a.value.trim() && document.activeElement !== a && (!sq || sq === segQ); box.classList.toggle("segs-on", on); if (on) segs.style.background = getComputedStyle(a).backgroundColor; };
       const show = (sel) => { const l = sel.closest(".seg"), v = sel.value; l.classList.toggle("on", !!v); l.querySelector(".seg-v").textContent = v ? sel.options[sel.selectedIndex].text : (it ? "Qualsiasi" : "Any"); };
       segs.querySelectorAll("select").forEach((sel) => { show(sel); sel.addEventListener("change", () => {
         // "Type your own…": the field opens with the other picks already in it, and the cursor after them (27/11/2026)
         if (sel.value === "__own") { sel.value = ""; show(sel); const rest = [...segs.querySelectorAll("select")].map((x) => x.value).filter(Boolean).join(", ");
           box.classList.remove("segs-on"); a.value = rest ? rest + ", " : ""; a.focus(); try { a.setSelectionRange(a.value.length, a.value.length); } catch (e) {} return; }
-        show(sel); }); });
+        show(sel);
+        // a pick runs at once (27/11/2026): the list filters to it and comes into view, the pickers stay so you can add the next
+        const q = [...segs.querySelectorAll("select")].map((x) => x.value).filter(Boolean).join(", "), sq = $("shelfQ");
+        segQ = q; if (sq.value !== q) { sq.value = q; $("shelfQx").hidden = !q; shelfAll = false; renderShelf(); } if (q) { askBrewer(q.toLowerCase()); jumpTo($("shelves")); } sync(); }); });
       segs.querySelector(".seg-type").addEventListener("click", () => { box.classList.remove("segs-on"); a.focus(); });
       // the lens with picks made: the picks become the search ("Fruity, V60, under £15") before the search itself runs
       document.addEventListener("submit", (e) => { if (e.target !== f || a.value.trim() || !box.classList.contains("segs-on")) return;
