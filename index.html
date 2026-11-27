@@ -10267,10 +10267,10 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
           if (l !== L) html += `<li class="L" aria-hidden="true">${l}</li>`;   /* a new letter: its own rule and big letter, as the page's section titles */
           html += `<li><a href="#roaster=${encodeURIComponent(nm)}" data-ro="${esc(nm)}"><span class="n">${esc(nm)}</span><span class="w">${o.c ? ", " + esc(o.c) : ""} (${o.n})</span></a></li>`; L = l; }   /* one roaster a line, big: the name in black, its town and how many coffees in grey */
         ul.innerHTML = html; ul.dataset.n = names.length; roLetter();   /* the count in the pinned title, no lead under it */ return true; };
-      // "826 roasters #–Z", then "826 roasters A–Z", "B–Z"… as each letter's section goes up past the pinned title (27/11/2026)
+      // "#–Z, 826 roasters", then "A–Z, 826 roasters", "B–Z"… as each letter's section goes up past the pinned title (27/11/2026)
       const roLetter = () => { const ul = $("roAz"), tt = $("roH"); if (!ul || !tt || !ul.dataset.n) return; const lim = tt.getBoundingClientRect().bottom + 1;
         let L = "#"; for (const li of ul.querySelectorAll("li.L")) { if (li.getBoundingClientRect().top <= lim) L = li.textContent; else break; }
-        const t = `${(+ul.dataset.n).toLocaleString("en-GB")} roasters ${L}–Z`; if (tt.textContent !== t) tt.textContent = t; };
+        const t = `${L}–Z, ${(+ul.dataset.n).toLocaleString("en-GB")} roasters`; if (tt.textContent !== t) tt.textContent = t; };
       addEventListener("scroll", () => { if (H.classList.contains("lv-page") && !$("roView").hidden) roLetter(); }, { passive: true });
       const open = (id, at) => { if (!H.classList.contains("lv-page")) yBack = scrollY;
         VIEWS.forEach((x) => { const on = x.id === id; x.hidden = !on; x.classList.toggle("lv-on", on); }); H.classList.add("lv-page");
