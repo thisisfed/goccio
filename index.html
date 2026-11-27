@@ -10421,13 +10421,13 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
       // the face: two eyes (each can open wider or close on its own), happy eyes (^ ^), cheeks that blush. No mouth: the eyes say it all
       // happy: no more ^ ^ arches. The eyes stay round, grow a touch, lift a little and light up with two sparkles each
       const L = el.querySelector(".gd-l"), R = el.querySelector(".gd-r"), op = 1 - 0.12 * S.happy, big = 1 + 0.14 * S.happy;
-      L.setAttribute("rx", (2.4 * S.eyeSL * big).toFixed(2)); L.setAttribute("ry", Math.max(0, 3.4 * blink * S.eyeL * S.eyeSL * op * big).toFixed(2));
-      R.setAttribute("rx", (2.4 * S.eyeSR * big).toFixed(2)); R.setAttribute("ry", Math.max(0, 3.4 * blink * S.eyeR * S.eyeSR * op * big).toFixed(2));
+      L.setAttribute("rx", (2.4 * S.eyeSL * big).toFixed(2)); L.setAttribute("ry", Math.max(0, 3.4 * blink * Math.max(1, S.eyeL) * S.eyeSL * big).toFixed(2));   /* only a blink closes his eyes: no squints, no sleepy lids (27/11/2026) */
+      R.setAttribute("rx", (2.4 * S.eyeSR * big).toFixed(2)); R.setAttribute("ry", Math.max(0, 3.4 * blink * Math.max(1, S.eyeR) * S.eyeSR * big).toFixed(2));
 
       // no mouth, ever (27/11/2026): a smile is in the eyes alone, the lower lids lifting into happy arcs
       // no mouth: a smile lifts the lower lids (smiling eyes); a frown tips the eyes down at the outer corners (sad); a yawn squeezes them
       const c = Math.max(-1, Math.min(1, S.smile)), lift = c > 0 ? c : 0, sad = c < 0 ? -c : 0;
-      L.setAttribute("ry", (parseFloat(L.getAttribute("ry")) * (1 - 0.38 * lift)).toFixed(2)); R.setAttribute("ry", (parseFloat(R.getAttribute("ry")) * (1 - 0.38 * lift)).toFixed(2));
+      /* (a smile no longer lifts the lower lids: his eyes stay open, a smile is a little lift and a brightening) */
       // shut eyes leave a short black line, never nothing: an eye nearly closed stays a thin slit (Nov 2026: was hidden)
       [L, R].forEach((e0) => { if (parseFloat(e0.getAttribute("ry")) < 0.32) e0.setAttribute("ry", "0.32"); e0.style.visibility = ""; });   // a blink closes them to a hairline (27/11/2026: was a third open)
       // perfectly round eyes (hypnosis): each eye's height matches its width as it shows on screen, whatever stretch the face has; a blink still shuts them
@@ -10552,11 +10552,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
       await REACT[first]();
       if (Math.random() < 0.5) { const nx = keys.filter((k) => k !== first)[Math.floor(Math.random() * (keys.length - 1))]; await wait(400); await tween("scroll", S.scroll + 1, 260); await wait(500); await REACT[nx](); }
       await tween("scroll", S.scroll + 1, 260); await wait(500); lookY = 0; draw(); await face({ fone: 0, eyeL: 1, eyeR: 1, smile: 0, happy: 0 }, 320); S.scroll = 0; };
-    const yawn = () => act(async () => { tween("aRest", 0.18, 650); await face({ eyeL: 0.08, eyeR: 0.08, eyeSL: 1.15, eyeSR: 1.15 }, 650); leanTo = -1.5;
-      // at the top of the stretch: a small twitch (nothing slips out any more)
-      poke(-0.6); await wait(650);
-      tween("aRest", 0, 420); leanTo = 0; await face({ eyeL: 1, eyeR: 1, eyeSL: 1, eyeSR: 1 }, 420); poke(-1.4); });
-    // a smile, eyes softening
+    const yawn = () => grin();   // no yawning any more (27/11/2026): a happy look instead
     const smile = () => act(async () => { await face({ smile: 1, eyeL: 0.8, eyeR: 0.8 }, 260); await wait(1400 + Math.random() * 800); });
     // happy: eyes curve up (^ ^), a big smile, a little bounce
     const happy = () => act(async () => { await face({ happy: 1, smile: 1 }, 200); poke(-1.8); await wait(1300); });
@@ -11016,15 +11012,15 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
     // kept simple (26/11/2026): at rest he only blinks, now and then. No moves of his own, no shows, no reacting to the scroll;
     // what he does in the chat, he does because you asked
     // blinks come at random: mostly one, sometimes two together, now and then three, then a pause of 1.5 to 9 s
-    const grin = () => act(async () => { await face({ grin: 1, smile: 1, happy: 0.6 }, 320); await wait(1500 + Math.random() * 900); await face({ grin: 0, smile: 0, happy: 0 }, 320); });
-    const stretch = () => act(async () => { await tween("aRest", 0.2, 900); await face({ eyeL: 0.55, eyeR: 0.55 }, 300); await wait(700); await tween("aRest", -0.05, 260); await tween("aRest", 0, 420); await face({ eyeL: 1, eyeR: 1, grin: 1, smile: 1, happy: 0.6 }, 300); await wait(900); await face({ grin: 0, smile: 0, happy: 0 }, 300); });
+    // looking happy (27/11/2026): eyes a touch bigger and a little higher, a small lift of the body; never narrowed
+    const grin = () => act(async () => { await face({ happy: 1, eyeSL: 1.12, eyeSR: 1.12 }, 260); jv = -40; go(); await wait(1500 + Math.random() * 900); await face({ happy: 0, eyeSL: 1, eyeSR: 1 }, 320); });
+    const stretch = () => grin();   // no stretching any more (27/11/2026)
     const blinks = () => { const r = Math.random(); return r < 0.55 ? 1 : r < 0.85 ? 2 : 3; };
     const idle = () => { const n = blinks(); setTimeout(idle, 1500 + Math.random() * 7500 + n * 450); if (document.hidden || still() || phase !== "rest" || acting || (opt.paused && opt.paused())) return;
       const rr = el.getBoundingClientRect(); if (rr.bottom < 0 || rr.top > innerHeight) return;
       // now and then, instead of a blink, a small smile or a slow stretch (27/11/2026): tall and thin, a held breath, then back with a soft settle
       const r1 = Math.random();
       if (r1 < 0.16) return void grin();
-      if (r1 < 0.26) return void stretch();
       (async () => { for (let i = 0; i < n; i++) { await blinkSoft(); if (i < n - 1) await wait(90 + Math.random() * 140); } })().catch(() => {}); };
     setTimeout(idle, 6000);
     const pfft = (vol = 1, dur0 = 0.42) => { return;   /* Goccio makes no sounds at all */ try { const A = window.__gdA || (window.__gdA = new (window.AudioContext || window.webkitAudioContext)()); if (A.state === "suspended") A.resume();
@@ -12871,7 +12867,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
           // the little one at the top of the chat is the same Goccio: it looks about, blinks and hops with him
           { const hd = document.querySelector(".gd-head svg"); if (hd) { const hb = hd.querySelector(".ag-b"), he = hd.querySelector(".ag-e"), hs = hd.querySelector(".ag-shy");
               if (hb) hb.setAttribute("transform", bo.getAttribute("transform")); if (he) { he.setAttribute("transform", ey.getAttribute("transform")); he.style.visibility = ey.style.visibility; } if (hs && shy) hs.setAttribute("transform", shy.getAttribute("transform")); } }
-          wide += (wideTo - wide) * .2; lid += (lidTo - lid) * .08; ey.setAttribute("transform", `translate(${(x * 1.1).toFixed(2)} ${(y * 1.1 - .7 * gr).toFixed(2)}) translate(0 -1) scale(${(wide * (1 + .1 * gr)).toFixed(3)} ${Math.max(blink < 1 ? 0.07 : 0.26, blink * wide * lid * (1 - .3 * gr)).toFixed(3)}) translate(0 1)`);   /* a smile, in the eyes alone: they lift and narrow into happy slits */ ey.style.visibility = "";   /* shut eyes leave a thin black line */
+          wide += (wideTo - wide) * .2; lid += (lidTo - lid) * .08; ey.setAttribute("transform", `translate(${(x * 1.1).toFixed(2)} ${(y * 1.1 - .8 * gr).toFixed(2)}) translate(0 -1) scale(${(wide * (1 + .12 * gr)).toFixed(3)} ${Math.max(blink < 1 ? 0.07 : 0.26, blink * wide * Math.max(1, lid) * (1 + .12 * gr)).toFixed(3)}) translate(0 1)`);   /* a smile, in the eyes alone: they lift and narrow into happy slits */ ey.style.visibility = "";   /* shut eyes leave a thin black line */
           if (false && !mo && gr > .01) { mo = document.createElementNS("http://www.w3.org/2000/svg", "path"); mo.setAttribute("fill", "none"); mo.setAttribute("stroke", getComputedStyle(ey).fill || "#000"); mo.setAttribute("stroke-width", "1.25"); mo.setAttribute("stroke-linecap", "round"); ey.parentNode.insertBefore(mo, ey.nextSibling); }
           if (mo) { mo.setAttribute("d", `M -2.9 5.1 Q 0 ${(5.1 + 2.8 * gr).toFixed(2)} 2.9 5.1`); mo.setAttribute("transform", `translate(${(x * 1.1).toFixed(2)} ${(y * 1.1).toFixed(2)})`); mo.style.opacity = Math.min(1, gr).toFixed(2); }
           if (Math.abs(tx - x) + Math.abs(ty - y) > .02 || Math.abs(wideTo - wide) > .01 || Math.abs(lidTo - lid) > .01 || Math.abs(stTo - st) > .003 || Math.abs(grTo - gr) > .01 || hopT) run = requestAnimationFrame(loop); else { run = 0; lt = 0; } };
@@ -12884,9 +12880,9 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
         (function nextBlink() { const r = Math.random(), n = r < 0.55 ? 1 : r < 0.85 ? 2 : 3;   /* at random: one, two or three in a row, then a pause */
           setTimeout(() => { nextBlink(); if (document.hidden) return; const r1 = Math.random();
             // like the big one: now and then a smile, or a slow stretch that ends in one, instead of a blink
-            if (r1 < 0.16) return tb.grin(); if (r1 < 0.26) return tb.stretch();
+            if (r1 < 0.16) return tb.grin();
             for (let i = 0; i < n; i++) setTimeout(blinkOnce, i * (300 + Math.random() * 120)); }, 1500 + Math.random() * 7500 + n * 400); })();
-        tb.grin = () => { grTo = 1; go(); setTimeout(() => { grTo = 0; go(); }, 2000); }; tb.stretch = () => { stTo = .16; lidTo = .6; go(); setTimeout(() => { stTo = 0; lidTo = 1; grTo = 1; go(); }, 1700); setTimeout(() => { grTo = 0; go(); }, 3000); };
+        tb.grin = () => { grTo = 1; go(); setTimeout(() => { grTo = 0; go(); }, 2000); }; tb.stretch = () => tb.grin();
         // nobody about: look this way and that, then back to you
         let filmOn = () => false;
         setInterval(() => { if (document.hidden || performance.now() - idle < 4000 || filmOn()) return; const a = Math.random() * Math.PI * 2; tx = Math.cos(a) * 2.6; ty = Math.sin(a) * 1.8; go(); setTimeout(() => { if (performance.now() - idle >= 4000) { tx = 0; ty = 0; go(); } }, 1400); }, 3500);
@@ -13000,7 +12996,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
     // then again every 9 seconds, for as long as the page is open with it
     { const mv = (new URLSearchParams(location.search).get("move") || (location.hash.match(/move=(\w+)/) || [])[1] || "").trim();
       if (mv && typeof D[mv] === "function") { const run = () => { const r0 = el.getBoundingClientRect(); if (r0.bottom < 60 || r0.top > innerHeight - 60) el.scrollIntoView({ block: "center" });
-          setTimeout(() => { D.free(); D[mv](); const tb0 = $("askGoccio"); if (tb0 && typeof tb0[mv] === "function") tb0[mv](); }, 600); setTimeout(run, mv === "grin" || mv === "stretch" ? 5000 : 9000); }; setTimeout(run, 3500); } } } }
+          setTimeout(() => { D.free(); D[mv](); const tb0 = $("askGoccio"); if (tb0 && typeof tb0[mv] === "function") tb0[mv](); }, 600); setTimeout(run, mv === "grin" ? 5000 : 9000); }; setTimeout(run, 3500); } } } }
   // the hero film: silent, looping, and still (its first frame) for anyone who asks for less motion
   { const v = $("wmVideo"); if (v) { v.muted = true; v.defaultMuted = true; v.playsInline = true;
       const saveData = !!(navigator.connection && navigator.connection.saveData) || matchMedia("(prefers-reduced-data: reduce)").matches;   // Low Data mode: the still, not the film (half a megabyte saved)
