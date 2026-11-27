@@ -2780,7 +2780,7 @@ html.lv-page body .top .lv-home{display:inline-flex;align-items:center;flex:none
 @media (min-width:900px){#listView .lv-lead{font-size:var(--fs-l)}}
 #listView .lv-p{margin:12px 0 0;font-size:var(--fs-s);line-height:1.35;color:var(--muted)}
 #listView .lv-p a, #listView .lv-lead a{color:var(--ink);text-decoration:underline;text-underline-offset:2px}
-#listView .lv-h{margin:40px 0 0;padding-top:12px;border-top:1px solid var(--line);font-size:var(--fs-m);line-height:1.2;font-weight:500;color:var(--ink);scroll-margin-top:calc(var(--top-h,44px) + 12px)}
+#listView .lv-h{margin:16px 0 0;padding-top:12px;border-top:1px solid var(--line);font-size:var(--fs-m);line-height:1.2;font-weight:500;color:var(--ink);scroll-margin-top:calc(var(--top-h,44px) + 12px)}
 #listView .lv-steps{margin:12px 0 0;padding-left:20px;display:grid;gap:6px;font-size:var(--fs-s);line-height:1.35;color:var(--muted)}
 #listView .lv-form{display:grid;gap:12px;margin:16px 0 0;max-width:560px}
 #listView .lv-form label{display:grid;gap:6px;font-size:var(--fs-s);color:var(--muted)}
@@ -2795,7 +2795,7 @@ html.lv-page body .top .lv-home{display:inline-flex;align-items:center;flex:none
 #listView .lv-pill{display:inline-flex;align-items:center;height:var(--pill-h,43px);padding:0 16px;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);text-decoration:none}
 @media (hover:hover){#listView .lv-pill:hover, #listView .lv-out:hover{opacity:.88}}
 #listView .lv-msg.ok{color:var(--ink)} #listView .lv-msg.no{color:var(--hl)}
-#listView .lv-back{margin:40px 0 0;padding-top:12px;border-top:1px solid var(--line)}
+#listView .lv-back{margin:16px 0 0;padding-top:12px;border-top:1px solid var(--line)}
 #listView .lv-out{height:43px;padding:0 16px;border:0;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);cursor:pointer}
 /* the footer's folds (Example, Disclaimer, Methods, Sources, Credits): 44 px line to line, as the top bar, the kinds row and the day band (27/11/2026) */
 html body details.foot-x > summary{height:43px!important;min-height:0!important;padding-top:1px!important;padding-bottom:0!important;box-sizing:border-box!important;display:flex!important;align-items:center!important}
@@ -9760,7 +9760,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
         return LANG === "it" ? `Caffè di ${shelfRo}` : `Coffees from ${shelfRo}`; }   /* on a roaster's page the box says whose coffees it holds (no "Search": asked 25/11/2026) */
       if (false) { const k = shelf.filter((r) => r.roaster === shelfRo).length; return LANG === "it" ? `Cerca tra ${k} caffè` : `Search ${k} coffee${k === 1 ? "" : "s"}`; }   // on a roaster's page: that roaster's coffees
       // the day's count is pinned under the bar ("208 coffees added today"): two numbers at once is one too many, so the box just says Search
-      if (document.querySelector(".shelf .grp.day-g.stuck:not([hidden])")) return LANG === "it" ? "Cerca" : "Search";
+      if (!window.__wkHint && document.querySelector(".shelf .grp.day-g.stuck:not([hidden])")) return LANG === "it" ? "Cerca" : "Search";
       const wkH = window.__wkHint;   // This week: the box counts the week's coffees and roasters (27/11/2026)
       const n = wkH ? wkH.n : window.__coN || (typeof shelfPart !== "undefined" && shelfPart) || (typeof shelf !== "undefined" && shelf.length) || 0;   // the whole list, also while only its first part is in
       const box = document.getElementById("askIn"), nr = box && box.clientWidth && box.clientWidth < 290 ? 0 : (window.__roN || 0);   // and the roasters: "Search 8,757 coffees, 732 roasters" (a very narrow phone keeps just the coffees)
@@ -9770,7 +9770,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
       const it = LANG === "it", N = n.toLocaleString(it ? "it-IT" : "en-GB", g), R = r0.toLocaleString(it ? "it-IT" : "en-GB", g);
       // the whole line where it fits; a phone too narrow for it drops the roasters, rather than ending in "…"
       const forms = !r0 ? [it ? `${N} caffè` : `${N} coffees`]   /* the numbers alone, no "Search" in front */
-        : wkH ? (it ? [`${N} caffè di ${R} torrefazioni questa settimana`, `${N} caffè questa settimana`, `${N} caffè di ${R} torrefazioni`, `${N} caffè`] : [`${N} coffees from ${R} roasters this week`, `${N} coffees this week`, `${N} coffees from ${R} roasters`, `${N} coffees`])
+        : wkH ? (it ? [`${N} caffè di ${R} torrefazioni questa settimana`, `${N} caffè, ${R} torrefazioni`, `${N} caffè questa settimana`, `${N} caffè`] : [`${N} coffees from ${R} roasters this week`, `${N} coffees, ${R} roasters this week`, `${N} coffees, ${R} roasters`, `${N} coffees this week`, `${N} coffees`])
         : it ? [`${N} caffè di ${R} torrefazioni`, `${N} caffè`] : [`${N} coffees from ${R} roasters`, `${N} coffees`];
       const room = ph.clientWidth; if (!room) return forms[0];
       const m = document.createElement("span"); m.className = "ph-t ph-q"; m.style.cssText = "position:absolute;visibility:hidden;white-space:nowrap;width:auto"; ph.appendChild(m);
