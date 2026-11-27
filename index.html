@@ -2760,6 +2760,29 @@ html body #recipe table.pours.steps{margin-bottom:-14px!important}   /* the last
 #consTop > #detected{margin:0!important}
 #consTop .cons-top{margin:0;padding:0;background:none;color:var(--ink);font-size:var(--fs-s);line-height:1.35}
 /* Why these numbers: each setting and why, in view over How to pour (27/11/2026) */
+/* For roasters, a page in the page (27/11/2026): the homepage's top bar, its sizes, colours and pills; everything else steps aside */
+html.lv-page body main > .sec:not(#listView), html.lv-page body .wm-video, html.lv-page body .botnav{display:none!important}
+html.lv-page body #listView{display:block!important}
+#listView{padding:24px 0 8px}
+#listView .lv-title, #listView .lv-lead, #listView .lv-p, #listView .lv-steps{max-width:760px}
+#listView .lv-title{margin:0 0 20px;font-size:var(--fs-xl);line-height:1.05;letter-spacing:-.01em;font-weight:500;text-wrap:balance}
+@media (min-width:900px){#listView .lv-title{font-size:var(--fs-l)}}
+#listView .lv-lead{margin:0 0 12px;font-size:var(--fs-m);line-height:1.2;color:var(--ink)}
+#listView .lv-p{margin:12px 0 0;font-size:var(--fs-s);line-height:1.35;color:var(--muted)}
+#listView .lv-p a, #listView .lv-lead a{color:var(--ink);text-decoration:underline;text-underline-offset:2px}
+#listView .lv-h{margin:40px 0 0;padding-top:12px;border-top:1px solid var(--line);font-size:var(--fs-m);line-height:1.2;font-weight:500;color:var(--ink);scroll-margin-top:calc(var(--top-h,44px) + 12px)}
+#listView .lv-steps{margin:12px 0 0;padding-left:20px;display:grid;gap:6px;font-size:var(--fs-s);line-height:1.35;color:var(--muted)}
+#listView .lv-form{display:grid;gap:12px;margin:16px 0 0;max-width:560px}
+#listView .lv-form label{display:grid;gap:6px;font-size:var(--fs-s);color:var(--muted)}
+#listView .lv-form input{width:100%;box-sizing:border-box;height:44px;padding:0 12px;border:0;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1.2 var(--sans);-webkit-appearance:none;appearance:none}
+@supports (-webkit-touch-callout:none){#listView .lv-form input{font-size:16px}}
+#listView .lv-hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+#listView .lv-go{justify-self:start;height:44px;padding:0 20px;border:0;border-radius:var(--r,4px);background:var(--hl);color:var(--on-hl,#000);font:500 var(--fs-s)/1 var(--sans);cursor:pointer}
+#listView .lv-go[disabled]{opacity:.5;cursor:default}
+#listView .lv-msg{margin:0;min-height:20px;font-size:var(--fs-s)}
+#listView .lv-msg.ok{color:var(--ink)} #listView .lv-msg.no{color:var(--hl)}
+#listView .lv-back{margin:40px 0 0;padding-top:12px;border-top:1px solid var(--line)}
+#listView .lv-out{height:44px;padding:0 16px;border:0;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);cursor:pointer}
 #whyNums{margin:0 0 20px}
 #whyNums .wn-h{margin:0 0 8px;font-size:var(--fs-s);font-weight:500;color:var(--ink)}
 #whyNums .wn{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:var(--fs-s);line-height:1.35;color:var(--muted)}
@@ -3663,6 +3686,41 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
     <button class="btn ghost more-btn" id="shelfMore" type="button" hidden aria-hidden="true">Show all</button>
   </section>
 
+  <!-- For roasters (27/11/2026): Get your roastery listed and Ask to be removed, a page in the page at /#list and /#remove -->
+  <section class="sec lv" id="listView" aria-labelledby="lvH" hidden>
+    <h2 class="lv-title" id="lvH">Get your roastery listed.</h2>
+    <p class="lv-lead">Listing is free. Every new coffee you put in your shop appears in the daily list, with a recipe for each drinker’s own brewer and grinder and a link straight to your shop to buy it.</p>
+    <p class="lv-p">Want your coffees first? A paid promotion pins your newest coffees to the top of the list for the weeks you choose, under a Paid promotion heading so drinkers know. <a class="mail" href="#" data-m="ku.oc.oiccog@nu" data-s="Paid promotion">Email us</a> for dates and prices.</p>
+    <h3 class="lv-h">What you get.</h3>
+    <ol class="lv-steps">
+      <li>Your new coffees in the daily list within a day of going on sale, in front of people who brew at home.</li>
+      <li>A recipe for every coffee: grind for their grinder, temperature, ratio and every pour, for V60, Chemex, AeroPress, French press and more.</li>
+      <li>A page per coffee and one for your roastery, so search engines send people looking for your coffee to you.</li>
+    </ol>
+    <h3 class="lv-h">How it works.</h3>
+    <p class="lv-p">Once a day we read your shop’s public product list, as a search engine would, under our own name. We never log in, buy or copy your photos and descriptions: only each coffee’s name, origin, process, variety, roast, tasting notes, price and a link to your page. Ask and we stop reading it.</p>
+    <h3 class="lv-h">Ask to be listed.</h3>
+    <form class="lv-form" id="lvList" novalidate>
+      <label>Your shop’s address<input type="url" name="shop" required placeholder="https://" inputmode="url"></label>
+      <label>Email<input type="email" name="email" required autocomplete="email"></label>
+      <label class="lv-hp" aria-hidden="true">Leave this empty<input type="text" name="website2" tabindex="-1" autocomplete="off"></label>
+      <p class="lv-p">Sending this lets us read your shop’s public product list once a day to list your coffees.</p>
+      <button type="submit" class="lv-go">Send</button>
+      <p class="lv-msg" role="status"></p>
+    </form>
+    <h3 class="lv-h" id="lvRemove">Ask to be removed.</h3>
+    <p class="lv-p">Roasters can ask to be removed at any time. Your coffees come off the site within a day, and we don’t add them back unless you ask.</p>
+    <form class="lv-form" id="lvRm" novalidate>
+      <input type="hidden" name="want" value="remove">
+      <label>Your shop’s address<input type="url" name="shop" required placeholder="https://" inputmode="url"></label>
+      <label>Email<input type="email" name="email" required autocomplete="email"></label>
+      <label class="lv-hp" aria-hidden="true">Leave this empty<input type="text" name="website2" tabindex="-1" autocomplete="off"></label>
+      <button type="submit" class="lv-go">Send</button>
+      <p class="lv-msg" role="status"></p>
+    </form>
+    <p class="lv-p">The email shows the request comes from the roastery, and we use it only to reply. Nothing else on this site collects or keeps personal data. <a href="/privacy/">Privacy</a>.</p>
+    <p class="lv-back"><button type="button" class="lv-out" id="lvBack">Back to the coffees</button></p>
+  </section>
   <section class="sec" id="bags" aria-labelledby="bh" hidden>
     <div class="sec-head"><span class="cap" id="bh" role="heading" aria-level="2">My bags</span></div>
     <div class="bag-empty" id="bagEmpty" hidden><p>Save a coffee here to track how fresh it is and how much is left.</p><button type="button" class="chip" id="bagEmptyGo">Find a coffee</button></div>
@@ -3878,7 +3936,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
     <p class="foot-note" id="rights">Set in ALT Riviera, with thanks to <a href="https://alt-tf.com/" target="_blank" rel="noopener">Alt Type Foundry</a>.<br>Hosted on <a href="https://pages.cloudflare.com/" target="_blank" rel="noopener">Cloudflare</a>, domain by <a href="https://www.spaceship.com/" target="_blank" rel="noopener">Spaceship</a>.</p>
     <p class="foot-note foot-copy">© <span id="cYear">2026</span> Federico R. T. Ferrari. All rights reserved.</p>
     </details>
-    <p class="foot-note foot-all foot-links"><a href="/#new">New this week</a><a href="/coffee/">Every coffee, by roaster</a><a href="/list/">Get your roastery listed</a><a href="/list/#remove">Remove your roastery</a><a href="/privacy/">Privacy</a><a class="mail" href="#" data-m="ku.oc.oiccog@nu">Email us</a></p>
+    <p class="foot-note foot-all foot-links"><a href="/#new">New this week</a><a href="/coffee/">Every coffee, by roaster</a><a href="/#list">Get your roastery listed</a><a href="/#remove">Remove your roastery</a><a href="/privacy/">Privacy</a><a class="mail" href="#" data-m="ku.oc.oiccog@nu">Email us</a></p>
     <script>try { document.getElementById("cYear").textContent = new Date().getFullYear(); } catch (e) {}</script>
     </div>
   </footer>
@@ -10048,6 +10106,23 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
     finally { $("shelf").classList.remove("loading"); $("shelf").removeAttribute("aria-busy"); }
   }
 
+
+  // ---------- For roasters: Get your roastery listed and Ask to be removed, a page in the page (27/11/2026) ----------
+  { const v = $("listView"), H = document.documentElement;
+    if (v) {
+      let yBack = 0;
+      const open = (rm) => { if (!H.classList.contains("lv-page")) yBack = scrollY; v.hidden = false; H.classList.add("lv-page");
+        requestAnimationFrame(() => { if (rm) { const h = $("lvRemove"); if (h) h.scrollIntoView({ block: "start" }); } else scrollTo(0, 0); }); };
+      const close = () => { if (!H.classList.contains("lv-page")) return; H.classList.remove("lv-page"); v.hidden = true; if (/^#(list|remove)$/.test(location.hash)) history.replaceState(null, "", location.pathname + location.search); requestAnimationFrame(() => scrollTo(0, yBack)); };
+      const route = () => { if (location.hash === "#list") open(false); else if (location.hash === "#remove") open(true); else close(); };
+      addEventListener("hashchange", route); route();
+      $("lvBack").onclick = () => { if (history.length > 1 && document.referrer && new URL(document.referrer).origin === location.origin) history.back(); else close(); };
+      v.querySelectorAll("form").forEach((f) => { const go = f.querySelector("button"), msg = f.querySelector(".lv-msg");
+        f.addEventListener("submit", async (e) => { e.preventDefault(); go.disabled = true; msg.className = "lv-msg"; msg.textContent = f.id === "lvList" ? "Checking your shop…" : "Sending…";
+          try { const r = await fetch("/api/list", { method: "POST", body: new FormData(f) }), d = await r.json(); msg.className = "lv-msg " + (d.ok ? "ok" : "no"); msg.textContent = d.msg; if (d.ok) f.reset(); }
+          catch (err) { msg.className = "lv-msg no"; msg.textContent = "That didn't go through. Check your connection and try again."; }
+          go.disabled = false; }); });
+      v.querySelectorAll("a.mail").forEach((a) => { const go = () => { a.href = "mailto:" + a.dataset.m.split("").reverse().join("") + (a.dataset.s ? "?subject=" + encodeURIComponent(a.dataset.s) : ""); }; a.addEventListener("pointerdown", go); a.addEventListener("focus", go); a.addEventListener("click", go); }); } }
   // ---------- appearance: Dark (the default), Light (a pale crema) or Auto (light by day, dark from sunset, where you are) ----------
   const THEMES = ["dark", "light", "auto"], THEME_LBL = { light: "Light", dark: "Dark", auto: "Auto" };
   // one icon each: half-filled circle for Auto (follows the sun), a sun for Light, a moon for Dark
