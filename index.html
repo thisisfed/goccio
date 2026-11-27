@@ -42,7 +42,8 @@ html body #shelf .item .l > .c-notes:not(.nb-line){margin-top:2px!important}
 .co-tabs{display:block;margin:0;padding:0;position:sticky;top:var(--top-h,49px);z-index:5;height:43px;margin-top:-14px!important;background:var(--bg);box-shadow:-50vw 0 0 var(--bg),50vw 0 0 var(--bg)}
 html body .shelf .grp.day-g{top:calc(var(--top-h,49px) + 43px + 12px)!important}   /* pinned under the kinds row, the same height as it */
 html.ro-page body .shelf .grp.day-g{top:calc(var(--top-h,49px) + 12px)!important}
-html body #shelf > .grp.day-g{height:31px;box-sizing:border-box}   /* a whole number of pixels: its line on a pixel row, the same 43 px band as the kinds row (27/11/2026) */
+html body #shelf > .grp.day-g{height:31px;box-sizing:border-box}
+html body #shelf > .grp.day-g .day-t.day-wait.day-wait.day-wait{visibility:hidden!important}   /* the count waits for the whole list: no "42" before "88" (27/11/2026) */   /* a whole number of pixels: its line on a pixel row, the same 43 px band as the kinds row (27/11/2026) */
 .co-tabs .co-in{display:flex;gap:28px;overflow-x:auto;scrollbar-width:none;height:100%;align-items:stretch}
 .co-tabs .co-in::-webkit-scrollbar{display:none}
 /* its line, like the day's bar under it: the column's width, then the whole window's once it pins (27/11/2026) */
@@ -8055,14 +8056,16 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
         return iso && iso === ymd(now) ? `${w} ${LANG === "it" ? "oggi" : "today"}` : iso && iso === ymd(y) ? `${w} ${LANG === "it" ? "ieri" : "yesterday"}` : d0 ? `${w} ${LANG === "it" ? "il " : ""}${d0}` : ""; })();   // today's and yesterday's coffees say so; older ones keep their date
       const shown = (seen.get(r.roaster + "|" + String(nm(r)).toLowerCase() + tagKey(r)) || new Set()).size > 1 ? fullName(r) : nm(r);
       // the count first: "230 added today", "15 added yesterday", "42 added on 23/11" ("230 aggiunti oggi")
-      const dN = dayN.get(String(shelfDate(r) || "").slice(0, 10)) || 0, it1 = LANG === "it", rest = day.replace(/^(Added|Aggiunto)\s+/, "");
+      // only the first part of the list in, with a filter on: that part's count is not the day's ("42", then "88" a second later, 27/11/2026),
+      // so the heading waits for the whole list before it says a number
+      const dWait = shelfPart && !whole, dN = dWait ? 0 : dayN.get(String(shelfDate(r) || "").slice(0, 10)) || 0, it1 = LANG === "it", rest = day.replace(/^(Added|Aggiunto)\s+/, "");
       // pinned under the bar, the Coffees title is gone from view: the heading then says what it counts ("230 coffees added today")
       const rN = !shelfRo && !q ? roN.get(String(shelfDate(r) || "").slice(0, 10)) || 0 : 0;   // "108 coffees and 14 roasters added today"
       const roW = !rN ? "" : it1 ? ` e ${rN} ${rN === 1 ? "torrefazione" : "torrefazioni"}` : ` and ${rN} ${rN === 1 ? "roaster" : "roasters"}`;
       const dayT = !dN ? day : it1 ? `${dN.toLocaleString("it-IT")}<span class="day-what"> caffè</span>${roW} ${dN === 1 && !rN ? "aggiunto" : "aggiunti"} ${rest}` : `${dN.toLocaleString("en-GB")}<span class="day-what"> ${dN === 1 ? "coffee" : "coffees"}</span>${roW} added ${/^\d/.test(rest) ? "on " : ""}${rest}`;
       // each day's count where its coffees start ("25 added today", then "230 added yesterday"…), pinned under the bar while its coffees go by; the next day's pushes it away
       if (byDay && !isSp && day) (window.__dayT = window.__dayT || {})[String(shelfDate(r) || "").slice(0, 10)] = dayT;   // every day's words, for the one pinned line to switch to as its coffees go by
-      const dayHead = byDay && !isSp && day && lastDay === null ? `<h3 class="grp day-g" data-day="${String(shelfDate(r) || "").slice(0, 10)}"><span class="day-t">${dayT}</span></h3>` : ""; if (byDay && !isSp && day) lastDay = day;   // one span: the heading lays out its children in a row
+      const dayHead = byDay && !isSp && day && lastDay === null ? `<h3 class="grp day-g" data-day="${String(shelfDate(r) || "").slice(0, 10)}"><span class="day-t${dWait ? " day-wait" : ""}">${dayT}</span></h3>` : ""; if (byDay && !isSp && day) lastDay = day;   // one span: the heading lays out its children in a row
       tagBits.push(...coffeeLabels(r, shown).map((l) => `<span class="tg lbl" style="--vc:${LABEL_DOT[l] || "#8e8e93"}">${l}</span>`));
       return `${head}${dayHead}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}" data-day="${isSp ? "" : String(shelfDate(r) || "").slice(0, 10)}">
         <div class="l">
