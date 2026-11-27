@@ -2652,8 +2652,8 @@ html.brew-in .shelf > .item.brewing{padding-bottom:14px!important}
 /* a timed schedule reads like the step list: the weight in the text's own size, not as a headline */
 .pours.steps.timed tr:not(.act) td.to{font:500 var(--fs-s)/1.35 var(--sans)!important;letter-spacing:0!important;white-space:nowrap}
 /* first screen: the two buttons come straight after the slogan, "Read the bag. Goccio does the rest.", and the text closes it */
-.wm-more .wm-ctas{margin:0 0 20px!important}
-.wm-more .wm-tagline{margin-bottom:20px!important}   /* the tagline as far over the two buttons as they are over the text under them; Goccio comes down with it */
+.wm-more .wm-ctas{margin:0 0 16.42px!important}   /* the hero in 43 px bands like the bars (27/11/2026): each line of text 16 px from what's above and below its letters */
+.wm-more .wm-tagline{margin-bottom:16px!important}   /* the tagline as far over the two buttons as they are over the text under them; Goccio comes down with it */
 /* the first screen's two buttons are the bottom bar's two pills exactly: same height, corners, gap and width */
 .wm-more .wm-ctas{gap:4px!important;max-width:none!important}
 .wm-more .wm-ctas .btn{height:43px!important;min-height:43px!important;border-radius:var(--r)!important}
@@ -3180,7 +3180,7 @@ html.gd-full body .gd-head{display:flex;align-items:center;gap:10px;flex:none;bo
 html.gd-full body .gd-head svg{width:30px;height:30px;flex:none;overflow:visible}
 html.gd-full body .gd-head .gh-n{font:600 var(--fs-s)/1.2 var(--sans);color:var(--ink)}
 html.gd-full body .gd-head .gh-b{padding:2px 6px;border:1px solid var(--line);border-radius:var(--r,4px);font:500 12px/1.2 var(--sans);color:var(--muted)}
-@media (max-width:899px){ html body .wm-screen{min-height:524px!important;height:524px!important;margin-bottom:-24px} html body .wm-screen > .wordmark{translate:0 20px} html body .wm-screen > .wm-more{translate:0 8px} }   /* the hero sits 32 px lower (26/11/2026): its last line as far over the rule as the rule is over Coffees (about 13 px); the film reaches down to the rule, so nothing is cut, and the list below doesn't move */
+@media (max-width:899px){ html body .wm-screen{min-height:524px!important;height:524px!important;margin-bottom:-24px} html body .wm-screen > .wordmark{translate:0 20px} html body .wm-screen > .wm-more{translate:0 4.5px} }   /* the hero sits 32 px lower (26/11/2026): its last line as far over the rule as the rule is over Coffees (about 13 px); the film reaches down to the rule, so nothing is cut, and the list below doesn't move */
 html body footer .foot-ex .g-ex{border-top:0!important;padding-top:0!important;margin-top:0!important;margin-bottom:-7px!important}   /* in the footer: no rule under its title, and the gap under the title the same as Disclaimer's */
 html.gd-full body .gd-head .gh-new{margin-left:auto;margin-right:-8px;height:32px;padding:0 12px;border:0;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);cursor:pointer;white-space:nowrap;transition:background .15s}   /* New chat: a worded pill 4 px left of the X, as the top bar's pills sit */
 @media (hover:hover){ html.gd-full body .gd-head .gh-new:hover{opacity:.88} }   /* the same hover as the top bar's + */
@@ -10246,6 +10246,13 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
 
 
   // ---------- For roasters: Get your roastery listed and Ask to be removed, a page in the page (27/11/2026) ----------
+  // the hero's first band (27/11/2026): Goccio's foot 16 px over the tagline's capitals, as every band is 16 + its words + 16
+  { const wmFit = () => { const w = document.querySelector(".wm-screen > .wordmark"), sp = $("wm"), tg = document.querySelector(".wm-more .wm-tagline"); if (!w || !sp || !tg || !w.offsetHeight) return;
+      const met = (e) => { const cs = getComputedStyle(e), c = document.createElement("canvas").getContext("2d"); c.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+        const m = c.measureText("Hxgy"), h = c.measureText("H"), r = document.createRange(); r.selectNodeContents(e); const q = r.getClientRects(); return q.length ? { top: q[0].top + m.fontBoundingBoxAscent - h.actualBoundingBoxAscent, base: q[q.length - 1].top + m.fontBoundingBoxAscent } : null; };
+      w.style.removeProperty("translate"); const a = met(sp), t = met(tg); if (!a || !t) return; const base0 = getComputedStyle(w).translate; const y0 = base0 && base0 !== "none" ? parseFloat(base0.split(" ")[1] || "0") : 0;
+      w.style.translate = `0 ${(y0 + (t.top - 16 - a.base)).toFixed(2)}px`; };
+    if (document.fonts) document.fonts.ready.then(wmFit); addEventListener("resize", wmFit); setTimeout(wmFit, 600); }
   // rows that scroll sideways say so: a fade at the side with more to see (27/11/2026)
   { const fade = (el) => { if (!el || el.__sx) return; el.__sx = true; const f = () => { const m = el.scrollWidth - el.clientWidth; el.classList.toggle("sx-l", m > 2 && el.scrollLeft > 2); el.classList.toggle("sx-r", m > 2 && m - el.scrollLeft > 2); };
       el.addEventListener("scroll", f, { passive: true }); addEventListener("resize", f); if ("ResizeObserver" in window) new ResizeObserver(f).observe(el); f(); el.__sxf = f; };
