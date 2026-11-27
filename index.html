@@ -42,6 +42,7 @@ html body #shelf .item .l > .c-notes:not(.nb-line){margin-top:2px!important}
 .co-tabs{display:block;margin:0;padding:0;position:sticky;top:var(--top-h,49px);z-index:5;height:43px;margin-top:-14px!important;background:var(--bg);box-shadow:-50vw 0 0 var(--bg),50vw 0 0 var(--bg)}
 html body .shelf .grp.day-g{top:calc(var(--top-h,49px) + 43px + 12px)!important}   /* pinned under the kinds row, the same height as it */
 html.ro-page body .shelf .grp.day-g{top:calc(var(--top-h,49px) + 12px)!important}
+html body #shelf > .grp.day-g{height:31px;box-sizing:border-box}   /* a whole number of pixels: its line on a pixel row, the same 43 px band as the kinds row (27/11/2026) */
 .co-tabs .co-in{display:flex;gap:28px;overflow-x:auto;scrollbar-width:none;height:100%;align-items:stretch}
 .co-tabs .co-in::-webkit-scrollbar{display:none}
 /* its line, like the day's bar under it: the column's width, then the whole window's once it pins (27/11/2026) */
@@ -70,6 +71,13 @@ html body #shelf .item .name.sent + .c-notes{margin-top:6px!important}
 /* every link, on hover: the underline goes, whatever draws it (27/11/2026) */
 @media (hover:hover){ html body a:hover, html body a:hover *{text-decoration-color:transparent!important;border-bottom-color:transparent!important}
   html body a:hover:not(.pill):not(.btn):not(.chip):not(.ro-pill):not(.buy-p){text-decoration:none!important} }
+/* the notes, as big as the name, in the palette's grey (27/11/2026) */
+html body #shelf .item .name.s-notes{display:block;margin:0;color:var(--muted);text-wrap:pretty}
+html body #shelf .item .l > .c-where{margin:8px 0 0!important;color:var(--ink)}
+html body #shelf .item .l > .c-where .rcity{color:var(--ink)}
+html.ro-page body #shelf .item .l > .c-where{display:none!important}   /* on a roaster's page, the roaster is the title */
+html.ro-page body #shelf .item .l > .s-notes, html.ro-page body #shelf .item .l > .name + .c-notes{margin-bottom:8px!important}
+html body #shelf .item .l > .name + .c-notes{margin-top:4px!important}
 /* a wrapped name sits tighter (27/11/2026) */
 html body #shelf .item .name:not(.nb){line-height:.98!important}
 /* the name stays the big line; the roaster's own notes come right under it, in ink, a size up from the small lines (27/11/2026) */
@@ -3530,7 +3538,7 @@ html body #askLbl{position:absolute!important;width:1px!important;height:1px!imp
 /* 27/11/2026, the same air either side of every line in the list: a coffee's Brew and Buy sit as far above its closing line (16 px) as its
    roaster's name sits under the line that opens it; the day's count sits in the exact middle of its two lines (cap height to baseline) */
 html body #shelf .item{padding-bottom:16px!important}
-html body #shelf > .grp.day-g .day-t{position:relative;top:-1.5px}
+html body #shelf > .grp.day-g .day-t{position:relative;top:-1.75px}
 
 /* 27/11/2026, a roaster's page: its top line as far under "Read the bag" as the list's line on the homepage, and Visit shop and Follow
    in a row under the place line, as Brew and Buy sit under a coffee, the same 16 px over the closing line */
@@ -8057,11 +8065,12 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
       return `${head}${dayHead}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}" data-day="${isSp ? "" : String(shelfDate(r) || "").slice(0, 10)}">
         <div class="l">
           ${/* the order of the typographic mockup (27/11/2026): what it is and when it came, the name, how it tastes, who roasted it */ ""}<div class="c-top"><p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p></div>
-          ${/* one sentence in three greys (27/11/2026): the name; who roasted it and where; how it tastes. Guessed notes stay a small line under it */ ""}${(() => { const ns = noteList(r), real = ns.length && !(ns.length === 1 && !/\s/.test(ns[0].trim())), it = LANG === "it";
-            const low = (n) => n.split(" ").map((x) => /^[A-ZÀ-Ý][a-zà-ÿ'’-]*$/.test(x) ? x.toLowerCase() : x).join(" "), and = it ? " e " : " and ";
-            const place = r.roaster_city || r.roaster_country ? `${r.roaster_city ? ", " + esc(cityL(r.roaster_city)) : ""}${r.roaster_country ? ` (${esc(r.roaster_country === "GB" ? "UK" : r.roaster_country)})` : ""}` : "";
-            const tastes = real ? ns.slice(0, 3).map((n) => esc(low(n))) : [];
-            return `<p class="name sent"><span class="s-n">${esc(capName(calm(shown)))}</span><span class="s-dot">.</span> <span class="s-f">${it ? "di" : "from"} <a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a>${place}.</span>${tastes.length ? ` <span class="s-t">${it ? "Sa di" : "Tastes like"} ${tastes.length > 1 ? tastes.slice(0, -1).join(", ") + and + tastes[tastes.length - 1] : tastes[0]}.</span>` : ""}</p>${real ? "" : cardNotes(r)}`; })()}
+          ${/* the name, then how it tastes, then who roasted it (27/11/2026): name in ink, notes as big in the palette's grey, the roaster small */ ""}${(() => { const ns = noteList(r), real = ns.length && !(ns.length === 1 && !/\s/.test(ns[0].trim()));
+            const low = (n) => n.split(" ").map((x) => /^[A-ZÀ-Ý][a-zà-ÿ'’-]*$/.test(x) ? x.toLowerCase() : x).join(" ");
+            const tastes = real ? ns.slice(0, 4).map((n, k) => { const t = esc(low(n)); return k ? t : t.charAt(0).toUpperCase() + t.slice(1); }) : [];
+            const place = r.roaster_city || r.roaster_country ? `<span class="rcity">${r.roaster_city ? ", " + esc(cityL(r.roaster_city)) : ""}${r.roaster_country ? ` (${esc(r.roaster_country === "GB" ? "UK" : r.roaster_country)})` : ""}</span>` : "";
+            return `<span class="name">${esc(capName(calm(shown)))}.</span>${tastes.length ? `<p class="name s-notes">${tastes.join(", ")}.</p>` : cardNotes(r)}
+          <p class="c-where">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : ""}<a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a>${place}.</p>`; })()}
           ${cardPrice(r)}
         </div>
         <div class="r${rowOpen.has(rowKey(r)) ? " more-open" : ""}">
