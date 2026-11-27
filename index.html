@@ -14,7 +14,27 @@ setTimeout(() => document.documentElement.classList.remove("wait"), 6000);
 document.documentElement.classList.add("boot");
 new MutationObserver(function (m, o) { var h = document.documentElement; if (h.classList.contains("wait")) return; o.disconnect(); window.__shownAt = performance.now(); requestAnimationFrame(function () { requestAnimationFrame(function () { h.classList.remove("boot"); }); }); }).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
 </script>
-<style>html.boot :is(#_#_#_, *), html.boot :is(#_#_#_, *)::before, html.boot :is(#_#_#_, *)::after { transition: none !important; }   /* the id trick outranks every other transition rule */</style>
+<style>html.boot :is(#_#_#_, *), html.boot :is(#_#_#_, *)::before, html.boot :is(#_#_#_, *)::after { transition: none !important; }   /* the id trick outranks every other transition rule */
+/* 27/11/2026: Taste / Brewer / Price in the search bar, over the empty field. Each part is a native picker; the orange-free lens finds it */
+.ask-line .ask-segs{position:absolute;left:0;top:0;bottom:0;right:calc(var(--pill-h,32px) + var(--nav-gap,4px));display:none;align-items:stretch;z-index:3;font:500 var(--fs-s)/1 var(--sans);border-radius:var(--r);overflow:hidden}
+.ask-line .ask-box.segs-on .ask-segs{display:flex}
+.ask-line .ask-box.segs-on #askIn::placeholder{opacity:0}
+.ask-line:has(.ask-box.segs-on) .ask-ph{visibility:hidden!important}
+.ask-segs .seg{position:relative;display:flex;align-items:center;gap:.4em;padding:0 14px 0 12px;white-space:nowrap;cursor:pointer;color:var(--ink)}
+.ask-segs .seg + .seg::before{content:"";position:absolute;left:0;top:25%;bottom:25%;width:1px;background:var(--line)}
+.ask-segs .seg::after{content:"";width:.42em;height:.42em;border-right:1.5px solid var(--muted);border-bottom:1.5px solid var(--muted);transform:translateY(-.18em) rotate(45deg);margin-left:.15em}
+.ask-segs .seg-k{color:var(--muted)}.ask-segs .seg.on .seg-k{display:none}
+.ask-segs .seg select{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:16px;width:100%;-webkit-appearance:none;appearance:none}
+.ask-segs .seg:hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}
+.ask-segs .seg-type{flex:1;display:flex;align-items:center;padding:0 12px;color:var(--muted);cursor:text;min-width:0;overflow:hidden;white-space:nowrap}
+.ask-segs .seg-type::before{content:"";position:relative;margin-right:12px;width:1px;align-self:stretch;margin-top:8px;margin-bottom:8px;background:var(--line)}
+@media (max-width:640px){ .ask-segs .seg{flex:1;justify-content:center;padding:0 6px;gap:.3em} .ask-segs .seg-type{display:none} .ask-segs .seg-v{max-width:5.2em;overflow:hidden;text-overflow:ellipsis} .ask-segs .seg:not(.on) .seg-v{display:none} }
+/* notes first on the cards: the notes in the name's place, fading after the first; the name under them */
+#shelf .item .name.nb .nb2{color:var(--muted)}
+#shelf .item .name.nb .nb3{color:color-mix(in srgb,var(--muted) 55%,var(--bg))}
+#shelf .item .co-nm{display:block;font:600 21px/1.2 var(--sans);letter-spacing:-.02em;color:var(--ink);margin:6px 0 4px}
+@media (min-width:1000px){ #shelf .item .co-nm{font-size:24px} }
+</style>
 <script>
 /* The site used to live at two older addresses (below) and now lives at www.goccio.co.uk. Browser storage belongs to one
    address, so an old address packs this device's journal, preferences and recipe into the link and the new one unpacks them. */
@@ -3494,7 +3514,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
   </div>
   <form class="ask-line" id="askForm" role="search" autocomplete="off">
     <label for="askIn" class="ask-q">How do you want your coffee today?</label>
-    <div class="ask-box"><div class="ask-sug" id="askSug" hidden></div><input type="search" id="askIn" placeholder="Fruity, under £15" enterkeyhint="search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"><button type="submit" class="ask-go" aria-label="Find my coffee"><svg class="ask-lens" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10.4 10.4l3.6 3.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><svg class="ask-xi" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div>
+    <div class="ask-box"><div class="ask-sug" id="askSug" hidden></div><input type="search" id="askIn" placeholder="Fruity, under £15" enterkeyhint="search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"><div class="ask-segs" id="askSegs" aria-label="Find a coffee by taste, brewer and price"><label class="seg"><span class="seg-k" data-en="Taste" data-it="Gusto">Taste</span><span class="seg-v"></span><select data-seg="t" aria-label="Taste"><option value="">Any taste</option><option>Fruity</option><option>Chocolatey</option><option>Floral</option><option>Nutty</option><option>Caramel</option><option>Citrus</option><option>Berry</option><option>Decaf</option></select></label><label class="seg"><span class="seg-k" data-en="Brewer" data-it="Metodo">Brewer</span><span class="seg-v"></span><select data-seg="b" aria-label="Brewer"><option value="">Any brewer</option><option>V60</option><option>Chemex</option><option>AeroPress</option><option>Espresso</option><option>French press</option><option>Moka pot</option></select></label><label class="seg"><span class="seg-k" data-en="Price" data-it="Prezzo">Price</span><span class="seg-v"></span><select data-seg="p" aria-label="Price"><option value="">Any price</option><option value="under £10">Under £10</option><option value="under £15">Under £15</option><option value="under £20">Under £20</option><option value="under £30">Under £30</option></select></label><span class="seg-type" data-en="or type anything" data-it="o scrivi quello che vuoi">or type anything</span></div><button type="submit" class="ask-go" aria-label="Find my coffee"><svg class="ask-lens" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10.4 10.4l3.6 3.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><svg class="ask-xi" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div>
     <button type="button" class="ask-goccio" id="askGoccio" aria-label="Ask Goccio"><svg viewBox="-20 -20 40 40" aria-hidden="true"><defs><radialGradient id="agFill" gradientUnits="userSpaceOnUse" cx="1.74" cy="6" r="21.6" fx="2.42" fy="8.42"><stop offset="0" stop-color="#7d4524"/><stop offset=".45" stop-color="#4c2311"/><stop offset=".85" stop-color="#261107"/><stop offset="1" stop-color="#120702"/></radialGradient><radialGradient id="agShine"><stop offset="0" stop-color="#f4dfcd" stop-opacity=".56"/><stop offset=".22" stop-color="#e9c8ae" stop-opacity=".42"/><stop offset=".5" stop-color="#cc9c7b" stop-opacity=".19"/><stop offset=".78" stop-color="#a06a48" stop-opacity=".06"/><stop offset="1" stop-color="#7d4524" stop-opacity="0"/></radialGradient><clipPath id="agClip"><path d="M -15 0 C -15 -11.61 -2.13 -15.98 0 -17.52 C 2.13 -15.98 15 -11.61 15 0 C 15 8.28 8.28 15 0 15 C -8.28 15 -15 8.28 -15 0 Z"/></clipPath></defs><g class="ag-b"><path d="M -15 0 C -15 -11.61 -2.13 -15.98 0 -17.52 C 2.13 -15.98 15 -11.61 15 0 C 15 8.28 8.28 15 0 15 C -8.28 15 -15 8.28 -15 0 Z" fill="url(#agFill)"/><g class="ag-e"><ellipse cx="-5.81" cy="-0.97" rx="2.32" ry="3.29"/><ellipse cx="5.81" cy="-0.97" rx="2.32" ry="3.29"/></g></g><g class="ag-shw"><g class="ag-shy" clip-path="url(#agClip)"><ellipse class="ag-shine" cx="-6.76" cy="-8.7" rx="8.23" ry="5.42" transform="rotate(-35 -6.76 -8.7)" fill="url(#agShine)"/></g></g></svg></button>
   </form>
   <div class="sec-list" id="secList" inert aria-hidden="true"><div class="sec-list-in"><button type="button" class="sec-p" data-jump="shelves" data-sec="shelves">Coffees</button><button type="button" class="sec-p" data-jump="bags" data-sec="bags">My bags</button><button type="button" class="sec-p" data-jump="coffee" data-sec="coffee">What’s brewing?</button><button type="button" class="sec-p" data-jump="recipe" data-sec="recipe">Recipe</button><button type="button" class="sec-p" data-jump="journal" data-sec="journal">Journal</button></div></div>
@@ -7732,6 +7752,17 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
   const noteClean = (n) => String(n).replace(/^[\s\[\](){}*•·|:;,.\-–—"'“”]+|[\s\[\](){}*•·|:;,.\-–—"'“”]+$/g, "").replace(/\s{2,}/g, " ");
   // never shown as a taste: page markup the scanner once kept (an image's address, a tag) and a brew guide's headings (Ratios, dose, bloom)
   const NOTE_SENT = /(?:^(?:group|profile)_|vc_column|^order$|^journal$|^(?:corp|aciditate)\s)|(?:^|[^\p{L}])(?:instagram|facebook|blog|twitter|tiktok|newsletter|jetzt|erleben|convinced|apparent|imagine|create|für|ihren?|ihre|lieben|liebt|perfekt|unsere?[rsn]?|dieser?|dieses|wird|werden|sind|kaffee|viel|wenig|klassisch|blend|perfect for|for those|who loves?|if you like)(?![\p{L}])/iu, NOTE_BADGE = /^(?:new|new in|new arrival|just landed|sold out|out of stock|sale|on sale|best ?seller|limited(?: edition)?|pre-?order|back in stock)!?$/i, NOTE_JUNK = /[<>]|=\s*["'“”]|https?:|\/\/|\.(?:png|jpe?g|gif|svg|webp|avif)\b|\b\d{2,4}w\b|\bsizes=|\bsrcset\b/i, NOTE_BREW = /^(?:ratios?|brew(?:ing)? ratios?|dos(?:e|es|age)|bloom(?:ing)?|grind(?: size)?|water(?: temp(?:erature)?)?|temp(?:erature)?|yield|recipe|pours?|time|timings?|method|agitation|siebtr[äa]ger(?:maschine)?|vollautomat|herdkocher|herdkanne|handfilter|filter(?:kaffee)?maschine|french ?press|pour[- ]?over|aero ?press|kaffeekapseln|kapseln|lungo|direkt vom ursprung|deutschland|germany)$/i;
+  // the roaster's own notes, cleaned, as the card shows them (shared by the big line and the small one)
+  const noteList = (r) => (Array.isArray(r.notes) ? r.notes : []).filter((n) => !NOTE_JUNK.test(n) && !NOTE_BREW.test(String(n).trim()) && !NOTE_BADGE.test(String(n).trim()) && !NOTE_SENT.test(String(n))).map(noteClean).filter((n) => /\p{L}/u.test(n));
+  // notes first (27/11/2026): a coffee that lists how it tastes says so in big type, where its name was, the first note in ink and the
+  // next two fading; the name comes under it, in the roaster line's weight. Guessed "typical" notes never go big: they stay a small line
+  const bigNotes = (r) => { const ns = noteList(r); if (!ns.length || (ns.length === 1 && !/\s/.test(ns[0].trim()))) return null;
+    const hits = cardHits(), reE = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), lit = (n) => { let h = esc(n); hits.forEach((w) => { const own = w[0] === "\u0001", t = own ? w.slice(1) : w;
+      const rx = own ? new RegExp(`(?<![a-z])(${reE(t)}${t.length >= 4 ? "[a-z]*" : ""})(?![a-z])`, "gi") : new RegExp(`(${reE(t)}[a-z]*)`, "gi"); h = h.replace(rx, "<mark>$1</mark>"); }); return h; };
+    const low = (n, k) => { const t = n.split(" ").map((x) => /^[A-ZÀ-Ý][a-zà-ÿ'’-]*$/.test(x) ? x.toLowerCase() : x).join(" "); return k ? t : t.charAt(0).toUpperCase() + t.slice(1); };
+    const top = ns.slice(0, 3), rest = ns.slice(3), and = LANG === "it" ? " e " : " and ";
+    return { big: top.map((n, k) => `<span class="nb${k + 1}">${lit(low(n, k))}${k < top.length - 1 ? "," : ""}</span>`).join(" "),
+      rest: rest.length ? `<p class="c-notes">${LANG === "it" ? "Anche " : "Also "}${rest.map((n) => lit(low(n, 1))).reduce((a, b, i, A) => a + (i ? (i === A.length - 1 ? and : ", ") : "") + b, "")}</p>` : "" }; };
   const cardNotes = (r) => { const ns = (Array.isArray(r.notes) ? r.notes : []).filter((n) => !NOTE_JUNK.test(n) && !NOTE_BREW.test(String(n).trim()) && !NOTE_BADGE.test(String(n).trim()) && !NOTE_SENT.test(String(n))).map(noteClean).filter((n) => /\p{L}/u.test(n)); if (!ns.length) return cardTypical(r);   // every note the roaster lists, not the first three
     if (ns.length === 1 && !/\s/.test(ns[0].trim())) { const t = cardTypical(r); if (t) return t; }   // a single word ("Nuts") says less than what the origin usually gives; a phrase ("Frosted Cinnamon Bun") is the roaster's own and stays
     const reE = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -7953,9 +7984,11 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
       return `${head}${dayHead}<article class="item${r.just_in ? " ji" : ""}${isSp ? " sponsored" : ""}" data-day="${isSp ? "" : String(shelfDate(r) || "").slice(0, 10)}">
         <div class="l">
           <p class="c-where">${!isSp && fyOn ? `<span class="ji fy">${LANG === "it" ? "Per te" : "For you"}</span><span class="rn-from"> ${LANG === "it" ? "da" : "from"} </span>` : ""}<a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a>${r.roaster_city || r.roaster_country ? `<span class="rcity">${r.roaster_city ? ", " : " "}${esc(cityL(r.roaster_city))}${r.roaster_country ? `${r.roaster_city ? " " : ""}(${esc(r.roaster_country === "GB" ? "UK" : r.roaster_country)})` : ""}</span>` : ""}${byDay && !isSp ? "" : `<br class="rn-br"><span class="day">${day}</span>`}</p>
-          <span class="name">${esc(capName(calm(shown)))}</span>
+          ${(() => { const bn = bigNotes(r); return bn ? `<span class="name nb">${bn.big}</span><span class="co-nm">${esc(capName(calm(shown)))}</span>
           <p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p>
-          ${cardNotes(r)}${cardPrice(r)}
+          ${bn.rest}${cardPrice(r)}` : `<span class="name">${esc(capName(calm(shown)))}</span>
+          <p class="tags">${[place, ...tagBits].filter(Boolean).join("")}</p>
+          ${cardNotes(r)}${cardPrice(r)}`; })()}
         </div>
         <div class="r${rowOpen.has(rowKey(r)) ? " more-open" : ""}">
           <button class="btn" type="button" data-i="${i}">Brew</button><button type="button" class="row-more" data-more="${esc(rowKey(r))}" aria-expanded="${rowOpen.has(rowKey(r))}" aria-label="${LANG === "it" ? "Compra o salva" : "Buy or save"}"><svg viewBox="0 0 12 12" aria-hidden="true"><path class="tb-v" d="M6 2v8"/><path d="M2 6h8"/></svg></button>${cardBuy(r)}<a class="pill buy-p ro-all" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${LANG === "it" ? "Torrefattore" : "Roaster"}</a>
@@ -9578,6 +9611,21 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
     const wait = () => { clearTimeout(tt); tt = setTimeout(go, 120); };
     vv.addEventListener("resize", wait); setTimeout(go, 700); });
   $("shelfQ").addEventListener("change", () => askBrewer($("shelfQ").value.trim().toLowerCase()));
+  // Taste / Brewer / Price in the search bar (27/11/2026): shown over the empty field; a pick updates its part, the lens runs it
+  { const box = document.querySelector(".ask-line .ask-box"), segs = $("askSegs"), a = $("askIn"), f = $("askForm");
+    if (box && segs && a && f) {
+      const it = LANG === "it"; segs.querySelectorAll("[data-en]").forEach((e) => e.textContent = it ? e.dataset.it : e.dataset.en);
+      const sync = () => { const on = !a.value.trim() && document.activeElement !== a && !$("shelfQ").value.trim(); box.classList.toggle("segs-on", on); if (on) segs.style.background = getComputedStyle(a).backgroundColor; };
+      const show = (sel) => { const l = sel.closest(".seg"), v = sel.value; l.classList.toggle("on", !!v); l.querySelector(".seg-v").textContent = v ? sel.options[sel.selectedIndex].text : (it ? "Qualsiasi" : "Any"); };
+      segs.querySelectorAll("select").forEach((sel) => { show(sel); sel.addEventListener("change", () => show(sel)); });
+      segs.querySelector(".seg-type").addEventListener("click", () => { box.classList.remove("segs-on"); a.focus(); });
+      // the lens with picks made: the picks become the search ("Fruity, V60, under £15") before the search itself runs
+      document.addEventListener("submit", (e) => { if (e.target !== f || a.value.trim() || !box.classList.contains("segs-on")) return;
+        const q = [...segs.querySelectorAll("select")].map((x) => x.value).filter(Boolean).join(", "); if (!q) { box.classList.remove("segs-on"); return; } a.value = q; }, true);
+      const reset = () => { if (!a.value.trim()) segs.querySelectorAll("select").forEach((x) => { x.value = ""; show(x); }); sync(); };
+      ["focus", "blur", "input", "search"].forEach((ev) => a.addEventListener(ev, () => setTimeout(ev === "input" || ev === "search" ? reset : sync, 0)));
+      $("shelfQ").addEventListener("input", () => setTimeout(reset, 0)); setInterval(sync, 1500); sync(); } }
+
   // "Or try: fruity": a search that does find something, one tap
   document.addEventListener("click", (e) => { const a = e.target.closest("a.try-q"); if (!a) return; e.preventDefault();
     $("askIn").value = a.dataset.q; $("askIn").dispatchEvent(new Event("input", { bubbles: true })); $("askForm").requestSubmit(); if (window.syncAskGo) setTimeout(window.syncAskGo, 0); });
