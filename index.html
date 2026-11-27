@@ -7941,8 +7941,9 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
       // the count first: "230 added today", "15 added yesterday", "42 added on 23/11" ("230 aggiunti oggi")
       const dN = dayN.get(String(shelfDate(r) || "").slice(0, 10)) || 0, it1 = LANG === "it", rest = day.replace(/^(Added|Aggiunto)\s+/, "");
       // pinned under the bar, the Coffees title is gone from view: the heading then says what it counts ("230 coffees added today")
-      const rN = !shelfRo && !q ? roN.get(String(shelfDate(r) || "").slice(0, 10)) || 0 : 0, roT = !rN ? "" : it1 ? `, ${rN} ${rN === 1 ? "nuova torrefazione" : "nuove torrefazioni"}` : `, ${rN} new ${rN === 1 ? "roaster" : "roasters"}`;
-      const dayT0 = !dN ? day : it1 ? `${dN.toLocaleString("it-IT")}<span class="day-what"> caffè</span> ${dN === 1 ? "aggiunto" : "aggiunti"} ${rest}` : `${dN.toLocaleString("en-GB")}<span class="day-what"> ${dN === 1 ? "coffee" : "coffees"}</span> added ${/^\d/.test(rest) ? "on " : ""}${rest}`, dayT = dN ? dayT0 + roT : dayT0;
+      const rN = !shelfRo && !q ? roN.get(String(shelfDate(r) || "").slice(0, 10)) || 0 : 0;   // "108 coffees and 14 roasters added today"
+      const roW = !rN ? "" : it1 ? ` e ${rN} ${rN === 1 ? "torrefazione" : "torrefazioni"}` : ` and ${rN} ${rN === 1 ? "roaster" : "roasters"}`;
+      const dayT = !dN ? day : it1 ? `${dN.toLocaleString("it-IT")}<span class="day-what"> caffè</span>${roW} ${dN === 1 && !rN ? "aggiunto" : "aggiunti"} ${rest}` : `${dN.toLocaleString("en-GB")}<span class="day-what"> ${dN === 1 ? "coffee" : "coffees"}</span>${roW} added ${/^\d/.test(rest) ? "on " : ""}${rest}`;
       // each day's count where its coffees start ("25 added today", then "230 added yesterday"…), pinned under the bar while its coffees go by; the next day's pushes it away
       if (byDay && !isSp && day) (window.__dayT = window.__dayT || {})[String(shelfDate(r) || "").slice(0, 10)] = dayT;   // every day's words, for the one pinned line to switch to as its coffees go by
       const dayHead = byDay && !isSp && day && lastDay === null ? `<h3 class="grp day-g" data-day="${String(shelfDate(r) || "").slice(0, 10)}"><span class="day-t">${dayT}</span></h3>` : ""; if (byDay && !isSp && day) lastDay = day;   // one span: the heading lays out its children in a row
