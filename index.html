@@ -2892,7 +2892,8 @@ html body .wb-sign .gd-ask input::placeholder{color:color-mix(in srgb,var(--bg) 
 html body .wb-sign .gd-ask button{width:32px;min-width:32px!important;max-width:32px;margin:0!important;padding:0;display:inline-flex;align-items:center;justify-content:center;flex:none}
 html body .wb-sign .gd-ask button svg{width:16px;height:16px}
 html body .wb-sign .gd-ask button[hidden]{display:none}
-html body .gd-m.gd-me .gd-photo{display:block;max-width:140px;max-height:140px;border-radius:var(--r,4px);object-fit:cover}   /* a photo sent to Goccio shows as a small picture in your bubble */
+html body .gd-m.gd-me:has(> .gd-photo){padding:0!important;background:none!important;border:0!important;box-shadow:none!important;overflow:hidden}
+html body .gd-m.gd-me .gd-photo{display:block;width:140px;height:auto;max-height:186px;border-radius:var(--r,4px);object-fit:cover}   /* a photo sent to Goccio shows as a small picture in your bubble */
 html body .wb-sign #gdGo{background:var(--pill);color:var(--ink);transition:background-color .2s ease,color .2s ease}
 html body .wb-sign #gdGo.ready{background:var(--hl);color:#000}   /* orange only once there's something to send (26/11/2026), like iMessage's arrow */
 html body .wb-sign #gdMic.on{background:var(--hl);color:#000;animation:gdMic 1s ease-in-out infinite}
@@ -3457,6 +3458,11 @@ html body footer #tip, html body footer #tip *, html body footer #tip a, html bo
 
 /* 26/11/2026: on a phone the first visit's film stops short enough that the first coffee shows at the foot of the first screen, whatever the phone's height (a taller one keeps the full 524 px) */
 @media (max-width:899px){ html body .wm-screen{height:clamp(400px, calc(100svh - var(--top-h, 49px) - 170px), 524px)!important;min-height:0!important} }
+
+/* 27/11/2026, the same air either side of every line in the list: a coffee's Brew and Buy sit as far above its closing line (16 px) as its
+   roaster's name sits under the line that opens it; the day's count sits in the exact middle of its two lines (cap height to baseline) */
+html body #shelf .item{padding-bottom:16px!important}
+html body #shelf > .grp.day-g .day-t{position:relative;top:-1.5px}
 </style>
 </head>
 <body>
@@ -6311,6 +6317,15 @@ html body footer #tip, html body footer #tip *, html body footer #tip a, html bo
       // a target can ask for room under the bar (scroll-margin-top). Not a section: its margin is the top bar itself (for the
       // browser's own anchor jumps), which the line below already allows for, so counting it twice landed a bar's height short
       const gap = el.matches("section.sec") ? 0 : parseFloat(getComputedStyle(el).scrollMarginTop) || 0;
+      // the coffee list (27/11/2026): it lands exactly as it looks when you scroll there yourself. The day's heading sits stuck under
+      // the top bar, its line where it always is, and the first coffee starts right on that line, nothing half hidden, not a pixel off
+      if (el.id === "shelves" && !center) { const it = document.querySelector("#shelf .item"); if (it) {
+        let g = [...document.querySelectorAll("#shelf .day-g")].filter((x) => x.compareDocumentPosition(it) & Node.DOCUMENT_POSITION_FOLLOWING).pop();   // a search's results have no day heading: their note at the top shows, as before
+        let base = h; const tl = document.querySelector(".shelf-tools"); if (tl && tl.offsetHeight && getComputedStyle(tl).position === "sticky") base = Math.max(base, (parseFloat(getComputedStyle(tl).top) || h) + tl.offsetHeight);
+        if (g && g.offsetHeight && getComputedStyle(g).position === "sticky") base = (parseFloat(getComputedStyle(g).top) || base) + g.offsetHeight; else g = null;
+        // a search's results: the list's top line lands on the top bar's own line, so the two read as one and the note sits under it
+        if (!g) { const sh = document.querySelector("#shelves > .sec-head"); if (sh && sh.getBoundingClientRect().height) return Math.max(0, Math.min(html.scrollHeight - innerHeight, Math.round(sh.getBoundingClientRect().top + scrollY - (h - 1)))); }
+        if (g) return Math.max(0, Math.min(html.scrollHeight - innerHeight, Math.round(it.getBoundingClientRect().top + scrollY - base))); } }
       return Math.max(0, Math.min(html.scrollHeight - innerHeight, Math.round(center ? r.top + scrollY - (innerHeight - r.height) / 2 : r.top + scrollY - (h - 3) - gap))); };
     const put = (y) => { const sb = html.style.scrollBehavior; html.style.scrollBehavior = "auto"; window.scrollTo(0, y); html.style.scrollBehavior = sb; };
     const land = () => { if (gen !== jumpGen) return; endJump(); if (Math.abs(aim() - scrollY) > 1) put(aim());
@@ -9391,9 +9406,18 @@ html body footer #tip, html body footer #tip *, html body footer #tip a, html bo
       const ocr = await readPhoto(file, onStep); const f = readFields(ocr, scanMem());
       const other = notCoffee(ocr, f); if (other) return { kind: "other", what: other };
       if (!Object.values(f).some((x) => x && x.v)) return { kind: "none", beans: b && b.err };
-      const sm = shelfMatch(f), pick = sm && sm.sure ? sm.pick : null, v = (k) => f[k] && f[k].v ? String(f[k].v) : "";
-      return { kind: "bag", pick, roaster: v("roaster"), name: v("name"), origin: v("origin"), process: v("process"),
-        brew: () => { if (pick) return brewThis(pick); $("wmBag").click(); setTimeout(() => showReview(f, ocr), 350); } };
+      const sm = shelfMatch(f), v = (k) => f[k] && f[k].v ? String(f[k].v) : ""; let pick = sm && sm.sure ? sm.pick : null, guess = null;
+      // the roaster's logo unread (big, sideways, stylised) but the coffee's name read: the list says whose it is. One coffee of that name
+      // (and origin) on the list is it, sure when any word read on the bag is part of that roaster's name ("IMPSON" in Climpson & Sons)
+      if (!pick && v("name") && !v("roaster")) { const nn = norm(v("name")), on = norm(v("origin"));
+        const cs = shelf.filter((r) => { const rn = norm(coffeeName(r) || r.name || ""); return nn.length >= 4 && (rn === nn || rn.split(" ").includes(nn) || rn.startsWith(nn + " ")) && (!on || norm([r.origin, r.country, r.name].filter(Boolean).join(" ")).includes(on)); });
+        const own = new Set([...nn.split(" "), ...on.split(" "), "coffee", "roasters", "roastery", "single", "origin", "washed", "natural", "honey", "filter", "espresso"]);
+        const seen = [...ocr.lines, ...(ocr.rot || [])].filter((l) => (l.conf == null || l.conf >= 40)).flatMap((l) => norm(l.text || "").split(" ")).filter((w) => w.length >= 5 && !own.has(w));
+        const shows = (r) => { const rk = norm(r.roaster).replace(/ /g, ""); return seen.some((w) => rk.includes(w) || rk.includes([...w].reverse().join(""))); };
+        const ros = [...new Set(cs.map((r) => r.roaster))], hit = [...new Set(cs.filter(shows).map((r) => r.roaster))];
+        if (hit.length === 1) pick = cs.find((r) => r.roaster === hit[0]); else if (ros.length === 1) guess = cs[0]; }
+      return { kind: "bag", pick, guess, roaster: v("roaster"), name: v("name"), origin: v("origin"), process: v("process"),
+        brew: (r) => { if (r || pick) return brewThis(r || pick); $("wmBag").click(); setTimeout(() => showReview(f, ocr), 350); } };
     } catch (e) { return { kind: "error", load: !!(e && e.message === "load") }; } };
   // test hook (only with ?scantest): run the whole photo pipeline on a file and return the fields
   if (/[?&]scantest\b/.test(location.search)) window.__read = async (blob) => { const T = await loadOcr(), img = await loadImg(blob), w = await newWorker(T, () => {}), r = await w.recognize(toCanvas(img)); await w.terminate(); return r.data.lines.map((l) => [l.text.trim(), Math.round(l.confidence)]); };
@@ -11601,7 +11625,7 @@ html body footer #tip, html body footer #tip *, html body footer #tip a, html bo
       const askingBack = /\?\s*$/.test(s0) && /^(what|how|why|which|who|where|when|is|are|can|could|do|does|should|cosa|come|perch|quale|chi|dove)\b/.test(s0);   // "What is an AeroPress?" is a question, not "my brewer is an AeroPress"
       if (ctx.t === "brewing" && !askingBack && s0.split(/\s+/).length <= 8) {
         const br = s0.match(/\b(v60|chemex|aeropress|french press|cafetiere|kalita|origami|clever|switch|moka|espresso|filter|pour.?over|cold brew|orea|melitta|napoletana)\b/i);
-        if (br) { mem.brewer = br[1].toLowerCase(); saveMem(); say(pick([T(`Nice, a ${br[1].replace(/^v60$/i, "V60")}! Which coffee is in it? Tell me its name and I'll find the recipe.`, `Bello, un ${br[1].replace(/^v60$/i, "V60")}! Che caffè c'è dentro? Dimmi il nome e ti trovo la ricetta.`), T(`Good choice. What are you putting through the ${br[1].replace(/^v60$/i, "V60")} today?`, `Ottima scelta. Che caffè ci metti oggi?`)]), null, happy); ctx = { t: "which", at: Date.now() }; return true; }
+        if (br) { mem.brewer = br[1].toLowerCase(); saveMem(); say(pick([T(`Nice, a ${br[1].replace(/^v60$/i, "V60")}! Which coffee is in it? Tell me its name, or send me a photo of the bag, and I'll find the recipe.`, `Bello, un ${br[1].replace(/^v60$/i, "V60")}! Che caffè c'è dentro? Dimmi il nome, o mandami una foto del sacchetto, e ti trovo la ricetta.`), T(`Good choice. What are you putting through the ${br[1].replace(/^v60$/i, "V60")} today?`, `Ottima scelta. Che caffè ci metti oggi?`)]), null, happy); ctx = { t: "which", at: Date.now() }; return true; }
       }
       if (ctx.t === "flavours" && !askingBack && s0.split(/\s+/).length <= 12) { const fl = flavsIn(s0);
         if (fl.length) { mem.likes = [...new Set([...(mem.likes || []), ...fl])].slice(-4); saveMem(); say(T(`Lovely: ${andList(fl.map(likeName))}. I'll remember that.`, `Che bello: ${andList(fl.map(likeName))}. Me lo ricordo.`), [{ t: T("Pick one", "Scegline uno"), ask: T("Want me to find you one of today's coffees like that?", "Vuoi che ti trovi un caffè di oggi così?"), f: () => pickNew(false) }], happy); return true; } }
@@ -11626,7 +11650,8 @@ html body footer #tip, html body footer #tip *, html body footer #tip a, html bo
       return /\?\s*$/.test(text) ? text.replace(/\?\s*$/, ": " + list + "?") : text + " " + T("For example: ", "Per esempio: ") + list + "."; };
     let nextPills = null;
     const showPills = (opts) => { chipsEl.textContent = ""; opts.forEach(([t, v]) => { const b = document.createElement("button"); b.type = "button"; b.textContent = t;
-        b.onclick = () => { if (v === "__type") { const i = $("gdIn"); if (i) { i.placeholder = T("Type it here", "Scrivilo qui"); i.focus(); } return; }   // type your own: the field, nothing sent
+        b.onclick = () => { if (v === "__photo") { const pin = $("gdPhotoIn"); if (pin) { pin.value = ""; pin.click(); } return; }   // the camera, straight from the pill
+          if (v === "__type") { const i = $("gdIn"); if (i) { i.placeholder = T("Type it here", "Scrivilo qui"); i.focus(); } return; }   // type your own: the field, nothing sent
           chipsEl.textContent = ""; addMsg("me", t); ask(v, true); }; chipsEl.appendChild(b); });   // your tap shows as your answer; what's sent is the plain value
       // the pills take room from the messages: the question they answer moves up so it stays whole above them
       requestAnimationFrame(() => requestAnimationFrame(() => { const last = [...sayEl.querySelectorAll(".gd-m")].pop(); if (!last) return;
@@ -11712,6 +11737,10 @@ html body footer #tip, html body footer #tip *, html body footer #tip a, html bo
     const WBC_LAST = Math.max(...Object.keys(WBC).map(Number));
     let wbcAt = 0;   // when the barista champions last came up, so a bare year that follows is read as "who won then?"
     const EARLY = [
+      // "I have a bag": a photo of it is the quickest way in (27/11/2026: he said he didn't know)
+      [/^\s*(i(?:'ve| have)(?: got)? (?:a |some |this )?(?:bag|coffee|beans)|i got (?:a |some )?(?:bag|beans)|ho (?:un |dei |questo )?(?:sacchetto|caffè|caffe|chicchi))\b[.!]*\s*$/i, () => {
+        nextPills = [[T("Send a photo", "Manda una foto"), "__photo"], [T("Type its name", "Scrivi il nome"), "__type"]];
+        say(T("Send me a photo of the bag, with the camera by the arrow, and I'll read it. Or tell me the roaster and the coffee's name.", "Mandami una foto del sacchetto, con la fotocamera accanto alla freccia, e lo leggo io. Oppure dimmi la torrefazione e il nome del caffè."), null, null); return true; }],
       // "something like a Kenyan but cheaper", "a cheap Ethiopian": a well-priced coffee from that country (26/11/2026: it listed roasters)
       [/\b(cheaper|cheapest|cheap|less expensive|inexpensive|budget|affordable|good value|value for money|bargain|economico|meno car[oa])\b/i, () => { const o = ORIGINS.find(([re]) => re.test(lastQ));
         // after a coffee ("Something cheaper"), one like it for less: a note in common, a lower price per 100 g; never a sample or drip bag
@@ -12689,14 +12718,16 @@ html body footer #tip, html body footer #tip *, html body footer #tip a, html bo
     { const cam = $("gdCam"), pin = $("gdPhotoIn");
       if (cam && pin && window.__chatPhoto) { cam.onclick = () => { pin.value = ""; pin.click(); };
         pin.addEventListener("change", async () => { const file = pin.files && pin.files[0]; if (!file) return;
-          if (!talking) openTalk(true); chipsEl.textContent = "";
+          if (!talking) openTalk(true); chipsEl.textContent = ""; ctx = null; pendingYes = null; pendingOpts = []; nextPills = null; wantCity = false;   // a photo starts its own thread: Yes now means the photo's question
           const m = addMsg("me", T("Photo", "Foto")); try { const u = URL.createObjectURL(file), im = document.createElement("img"); im.src = u; im.alt = ""; im.className = "gd-photo"; im.onload = () => URL.revokeObjectURL(u); m.textContent = ""; m.appendChild(im); } catch (e) {}
           sayGen++; finishTyping(); sayNow(T("Let me have a look…", "Fammi dare un'occhiata…"), null, null); const g = sayGen;
           const r = await window.__chatPhoto(file); if (g !== sayGen) return;   // something else was asked meanwhile
-          const yn = () => { nextPills = [[T("Yes", "Sì"), T("Yes", "Sì")], [T("No", "No"), T("No thanks", "No grazie")]]; };
+          const poss = (n) => /s$/i.test(n) ? n + "’" : n + "’s";   // Climpson & Sons’, not Sons’s
+          ctx = null; wantCity = false; const yn = () => { nextPills = [[T("Yes", "Sì"), T("Yes", "Sì")], [T("No", "No"), T("No thanks", "No grazie")]]; };
           if (r.kind === "beans") { yn(); sayNow(T(`Those look like a ${r.label} roast. ${r.why} Going by colour, so daylight on white paper reads best. Want a recipe with this roast?`, `Mi sembra una tostatura ${r.label}. ${r.why} Vado dal colore, quindi la luce del giorno su carta bianca funziona meglio. Vuoi una ricetta con questa tostatura?`).replace(/\s+/g, " "), null, null); pendingYes = () => { closeTalk(); r.use(); }; return; }
           if (r.kind === "bag") { const what = [r.roaster, r.name].filter(Boolean).join(", "), more = [r.origin, r.process].filter(Boolean).join(", ");
-            yn(); if (r.pick) sayNow(T(`That's ${r.pick.roaster}'s ${r.pick.name}, and it's on today's list. Want its recipe?`, `È ${r.pick.name} di ${r.pick.roaster}, ed è nell'elenco di oggi. Vuoi la sua ricetta?`), null, null);
+            yn(); if (!r.pick && r.guess) { sayNow(T(`Is it ${poss(r.guess.roaster)} ${r.guess.name}? It's on the list. Want its recipe?`, `È ${r.guess.name} di ${r.guess.roaster}? È nell'elenco. Vuoi la sua ricetta?`), null, null); pendingYes = () => { closeTalk(); r.brew(r.guess); }; return; }
+            if (r.pick) sayNow(T(`That's ${poss(r.pick.roaster)} ${r.pick.name}. It's on the list: want its recipe?`, `È ${r.pick.name} di ${r.pick.roaster}. È nell'elenco: vuoi la sua ricetta?`), null, null);
             else sayNow(T(`I can read ${what || "the label"}${more ? " (" + more + ")" : ""}. Want the recipe for it? You can check what I read first.`, `Leggo ${what || "l'etichetta"}${more ? " (" + more + ")" : ""}. Vuoi la ricetta? Prima puoi controllare cosa ho letto.`), null, null);
             pendingYes = () => { closeTalk(); r.brew(); }; return; }
           if (r.kind === "other") return sayNow(T(`That looks like ${r.what}, not coffee. Send me a bag of coffee, or some beans on white paper.`, `Sembra ${r.what}, non caffè. Mandami un sacchetto di caffè, o dei chicchi su carta bianca.`), null, null);
