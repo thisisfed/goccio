@@ -10295,7 +10295,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
         ul.innerHTML = html; ul.dataset.n = names.length; roLetter();   /* the count in the pinned title, no lead under it */ return true; };
       // "#–Z, 826 roasters", then "A–Z, 826 roasters", "B–Z"… as each letter's section goes up past the pinned title (27/11/2026)
       const roLetter = () => { const ul = $("roAz"), tt = $("roH"); if (!ul || !tt || !ul.dataset.n) return; const lim = tt.getBoundingClientRect().bottom + 1;
-        let L = "#"; for (const li of ul.querySelectorAll("li.L")) { if (li.getBoundingClientRect().top <= lim) L = li.textContent; else break; }
+        let L = "#"; for (const li of ul.querySelectorAll("li.L")) { if (li.getBoundingClientRect().bottom <= lim) L = li.textContent; else break; }   /* once the big letter has gone up under the title, not as it reaches it */
         const t = `${L} / Z, ${(+ul.dataset.n).toLocaleString("en-GB")} roasters`; if (tt.textContent !== t) tt.textContent = t; };
       addEventListener("scroll", () => { if (H.classList.contains("lv-page") && !$("roView").hidden) roLetter(); }, { passive: true });
       const open = (id, at) => { if (!H.classList.contains("lv-page")) yBack = scrollY;
