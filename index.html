@@ -11469,7 +11469,10 @@ html.ro-page body #roHead{padding-bottom:16px!important}
           : h0 >= 12 && h0 < 14 ? [T(`Good afternoon${nmc}!`, `Buon pomeriggio${nmc}!`), T(`Hi${nm}! Lunchtime coffee?`, `Ciao${nm}! Caffè dopo pranzo?`)]
           : h0 >= 14 && h0 < 18 ? [T(`Good afternoon${nmc}!`, `Buon pomeriggio${nmc}!`), T(`Afternoon${nmc}!`, `Buon pomeriggio${nmc}!`)]
           : h0 >= 18 && h0 < 23 ? [T(`Good evening${nmc}!`, `Buonasera${nmc}!`), T(`Evening${nmc}!`, `Sera${nmc}!`)] : [T(`Still up${nmc}?`, `Ancora sveglio${nmc}?`), T(`Hello, night owl${nmc}!`, `Ciao, nottambulo${nmc}!`)]).filter((x) => x !== last);
-        const g0 = timed.length && Math.random() < 0.6 ? pick(timed) : pick(all.filter((x) => x !== last).length ? all.filter((x) => x !== last) : all); try { localStorage.setItem("v60.hi", g0); } catch (e) {} return g0; })();
+        // early (5 to 10am) it takes you as just up and coffee-ready, this cup the first of the day (27/11/2026)
+        const dawn = h0 >= 5 && h0 < 10 ? [T(`Morning${nmc}! First coffee of the day, let's make it a good one.`, `Buongiorno${nmc}! Il primo caffè della giornata: facciamolo bene.`),
+          T(`Good morning${nmc}! Kettle on? Your first cup is on me.`, `Buongiorno${nmc}! Bollitore acceso? Il primo caffè lo scelgo io.`), T(`Morning${nmc}! Nothing before the first coffee. Here's yours.`, `Buongiorno${nmc}! Prima di tutto, il primo caffè. Eccolo.`)].filter((x) => x !== last) : [];
+        const g0 = dawn.length ? pick(dawn) : timed.length && Math.random() < 0.6 ? pick(timed) : pick(all.filter((x) => x !== last).length ? all.filter((x) => x !== last) : all); try { localStorage.setItem("v60.hi", g0); } catch (e) {} return g0; })();
       if (!n) return /\?\uE002?$/.test(hi) ? say(hi, null, happy) : say(hi + " " + pick([T("Ask me about coffee.", "Chiedimi del caffè."), T("What are we brewing?", "Cosa prepariamo?"), T("Need a hand with your coffee?", "Ti serve una mano col caffè?")]), null, happy);
       // after 2pm (and through the night) the pick is a decaf, today's if there is one, else the newest on the list, and it says why
       const hNow = new Date().getHours(), late = (hNow >= 14 || hNow < 5) && Math.random() < 0.4, rank = (x) => suits(x) * 3 + (notesOf(x).length ? 1.5 : 0) + Math.random() * 2;
@@ -11484,7 +11487,10 @@ html.ro-page body #roHead{padding-bottom:16px!important}
           T(`It's past 2pm, so I'd go decaf: ${what}. Caffeine takes about five hours to halve, so an afternoon cup is still with you at bedtime.`, `Sono passate le 14, quindi andrei sul decaffeinato: ${what}. La caffeina ci mette circa cinque ore a dimezzarsi: un caffè del pomeriggio è ancora lì all'ora di dormire.`),
           T(`An afternoon pick without the caffeine: ${what}. Coffee after 2pm can cost you sleep; this one keeps the flavour.`, `Una scelta da pomeriggio, senza caffeina: ${what}. Il caffè dopo le 14 può rubarti il sonno; questo tiene il sapore.`)]);
       // mornings, now and then, it's about the first cup
-      const morningLine = dec || !(hNow >= 5 && hNow < 12) || Math.random() < 0.5 ? null : pick([
+      const morningLine = dec || !(hNow >= 5 && hNow < 12) || (hNow >= 10 && Math.random() < 0.5) ? null : pick(hNow < 10 ? [
+          T(`To start the day I'd brew ${what}.`, `Per iniziare la giornata preparerei ${what}.`),
+          T(`For your first cup: ${what}. One of ${n} new ${on}.`, `Per il tuo primo caffè: ${what}. Uno dei ${n} arrivati ${on}.`),
+          T(`Wake up to ${what}, new ${on}.`, `Svegliati con ${what}, arrivato ${on}.`)] : [
           T(`For your first cup today: ${what}. One of ${n} new ${on}.`, `Per il primo caffè di oggi: ${what}. Uno dei ${n} arrivati ${on}.`),
           T(`A good one to start the day: ${what}.`, `Uno buono per iniziare la giornata: ${what}.`),
           T(`Morning coffee sorted: ${what}, new ${on}.`, `Il caffè del mattino è servito: ${what}, arrivato ${on}.`)]);
@@ -11520,7 +11526,7 @@ html.ro-page body #roHead{padding-bottom:16px!important}
       // three messages, typed one after the other: the hello, the coffee, then "Want to see it?"
       sayNow(hi, null, happy); const nextOne = () => typeDots(dotsFor(line), () => { sayNow(line, [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(best); } }], happy); ctx = { t: "pick", at: Date.now() }; });
       // now and then, after the hi, it asks how you are and waits: your answer gets a word back (and an answer if you ask it), then the coffee
-      const howQ = !/\?/.test(hi) && Math.random() < 0.3 ? pick([T("How are you?", "Come stai?"), T("How's your day going?", "Come va la giornata?"), T("How are you doing today?", "Come va oggi?")]) : null;
+      const howQ = !/\?/.test(hi) && !(hNow >= 5 && hNow < 10) && Math.random() < 0.3 ? pick([T("How are you?", "Come stai?"), T("How's your day going?", "Come va la giornata?"), T("How are you doing today?", "Come va oggi?")]) : null;
       const first = howQ ? () => typeDots(dotsFor(howQ), () => { sayNow(howQ, null, null); ctx = { t: "howru", at: Date.now(), next: nextOne, q: howQ }; }) : nextOne;
       if (typing) typing.after = first; else first(); ctx = howQ ? null : { t: "pick", at: Date.now() }; };
     // the answer to "How are you?": a word back for how you are, an answer about itself if you ask, then the coffee it had in mind.
