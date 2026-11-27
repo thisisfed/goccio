@@ -2750,7 +2750,12 @@ html body #recipe table.pours.steps{margin-bottom:-14px!important}   /* the last
 #consTop{display:grid;gap:8px;margin:0;border-top:1px solid var(--line);padding-top:14px}
 #consTop[hidden]{display:none}
 #consTop > #detected{margin:0!important}
-#consTop .cons-top{margin:0;padding:0;background:none;color:var(--ink);font-size:var(--fs-s);line-height:1.35}   /* plain words, as How to pour is: no pill round them */
+#consTop .cons-top{margin:0;padding:0;background:none;color:var(--ink);font-size:var(--fs-s);line-height:1.35}
+/* Why these numbers: each setting and why, in view over How to pour (27/11/2026) */
+#whyNums{margin:0 0 20px}
+#whyNums .wn-h{margin:0 0 8px;font-size:var(--fs-s);font-weight:500;color:var(--ink)}
+#whyNums .wn{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:var(--fs-s);line-height:1.35;color:var(--muted)}
+#whyNums .wn b{color:var(--ink);font-weight:500;margin-right:4px}   /* plain words, as How to pour is: no pill round them */
 #consTop .why-ask{color:inherit;text-decoration:underline;text-underline-offset:2px}
 #detected .miss.miss-ro > .mr-l{color:var(--muted)}
 #detected .miss.miss-ro > .roast-ask{margin:0!important}
@@ -2842,8 +2847,8 @@ html[data-theme="light"]:is(.film-off,.hero-done) body .wm-screen .wordmark, htm
 html[data-theme="light"]:is(.film-off,.hero-done) body .wm-more .wm-bag{background:var(--pill)!important;color:var(--ink)!important}
 /* the still behind the header once the film has played (seen today): a coffee crown in dark, a milk crown in light, the two splashes
    in the same place (27/11/2026) */
-html.film-off:not([data-theme="light"]) body .wm-screen{background:#000 url("/img/goccio-hero-coffee.jpg?v=1") center var(--hero-y, 62%) / cover no-repeat!important}
-html[data-theme="light"]:is(.film-off,.hero-done) body .wm-screen{background:var(--bg) url("/img/goccio-hero-milk.jpg?v=1") center var(--hero-y, 62%) / cover no-repeat!important}
+html.film-off:not([data-theme="light"]) body .wm-screen{background:#000 url("/img/goccio-hero-coffee.jpg?v=2") center var(--hero-y, 62%) / cover no-repeat!important}
+html[data-theme="light"]:is(.film-off,.hero-done) body .wm-screen{background:var(--bg) url("/img/goccio-hero-milk.jpg?v=2") center var(--hero-y, 62%) / cover no-repeat!important}
 html[data-theme="light"]:is(.film-off,.hero-done) body .wm-screen::after{opacity:1!important;background:linear-gradient(180deg, transparent 55%, var(--bg) 100%)!important}   /* the milk melts into the page */
 /* the film starts at the very top of the screen, under a see-through top bar, and ends on the rule over Coffees */
 html body .wm-video{transform:none!important}
@@ -3103,6 +3108,7 @@ html body .gd-tip::before{display:none}
 html body .gd-tip{padding:8px 12px!important;border-radius:16px!important;border-top-right-radius:4px!important;
   background:var(--pill) linear-gradient(180deg,color-mix(in srgb,#fff 7%,transparent),transparent 70%)!important;
   box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 10%,transparent),0 2px 6px rgba(0,0,0,.45),0 10px 26px rgba(0,0,0,.55),0 0 48px 18px rgba(0,0,0,.6)!important}   /* the chat's bubble exactly; a soft dark shadow fading out round it, no edge, lifts it off the page */
+html body .gd-tip.gd-tip{background:var(--hl)!important;color:var(--on-hl,#000)!important;box-shadow:none!important}   /* Need a hand?: no shadow, the accent instead, like Find a coffee (27/11/2026) */
 html body .gd-tip.in{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){html body .gd-tip{transition:opacity .2s}}
 html body .gd-offer svg{width:28px;height:28px;flex:none;transform:translateX(-40px) rotate(-30deg);transition:transform .7s cubic-bezier(.3,1.5,.5,1) .2s}
@@ -3545,7 +3551,7 @@ html body #askLbl{position:absolute!important;width:1px!important;height:1px!imp
 /* 27/11/2026, the same air either side of every line in the list: a coffee's Brew and Buy sit as far above its closing line (16 px) as its
    roaster's name sits under the line that opens it; the day's count sits in the exact middle of its two lines (cap height to baseline) */
 html body #shelf .item{padding-bottom:16px!important}
-html body #shelf > .grp.day-g .day-t{position:relative;top:-1.75px}
+html body #shelf > .grp.day-g .day-t{position:relative;top:.25px}   /* the words midway between the line above and the line below (27/11/2026) */
 
 /* 27/11/2026, a roaster's page: its top line as far under "Read the bag" as the list's line on the homepage, and Visit shop and Follow
    in a row under the place line, as Brew and Buy sit under a coffee, the same 16 px over the closing line */
@@ -6200,6 +6206,39 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
       /* and the water, first of the notes, under the same triangle: every recipe's warnings sit together, here at the top, not one of them down in the pour */
       { const w = document.createElement("p"); w.className = "cons-top cons-w"; w.textContent = LANG === "it" ? "Usa acqua filtrata o un’acqua in bottiglia poco dura." : "Use filtered or soft bottled water."; ct.prepend(w); }
       ct.hidden = !ct.childElementCount; }
+    // Why these numbers (27/11/2026): one line for each setting, in view over How to pour, saying why it was picked for this coffee.
+    // The long reasoning, with its studies, stays in the Why this recipe fold
+    { let wn = $("whyNums"); if (!wn) { wn = document.createElement("div"); wn.id = "whyNums"; const ct0 = $("consTop"); (ct0 || $("techLbl")).before(wn); }
+      const it = LANG === "it", rl = c.roast !== "unsure" ? ROAST[c.roast].label : "", pr = c.process !== "unsure" ? PROCESS[c.process].label : "";
+      const what = [rl && (it ? `tostatura ${rl}` : `${rl} roast`), pr].filter(Boolean).join(", ") + (pr ? (it ? "" : " coffee") : "");
+      const sg = (n, u) => n > 0 ? `+${n}${u}` : `${n}${u}`.replace("-", "−");
+      const L = [];
+      // method
+      const mName = typeof r.method === "string" ? r.method : (METHOD[r.m] || "");
+      if (mName) L.push([it ? "Metodo" : "Method", it ? `${mName}, il più adatto a ${what ? "un " + what : "questo caffè"} con ${r.dose} g.` : `${mName}, the best fit for ${what ? (/^[aeiou]/i.test(what) ? "an " : "a ") + what : "this coffee"} at ${r.dose} g.`]);
+      // grind: where it starts and what moved it
+      if (r.clicks != null) { const cp = r.clickParts || {}, g0 = gw(r.clicks), m0 = onMill(r.clicks), G = mill();
+        const said = isC40() ? (it ? `${r.clicks} scatti sul C40` : `${r.clicks} clicks on a C40`) : G.words ? `${it ? "circa" : "about"} ${microns(r.clicks)} µm` : `${m0.txt} ${it ? "sul" : "on the"} ${G.short || G.name}`;
+        const mv = [cp.roast ? `${it ? "tostatura" : "roast"} ${sg(cp.roast, "")}` : "", cp.process ? `${pr || (it ? "processo" : "process")} ${sg(cp.process, "")}` : "", cp.dose ? `${it ? "dose" : "dose"} ${sg(cp.dose, "")}` : "", cp.tea ? `${it ? "stile tè" : "tea-like"} ${sg(cp.tea, "")}` : "", cp.learn ? `${it ? "i tuoi caffè" : "your past brews"} ${sg(cp.learn, "")}` : "", cp.zero ? `${it ? "il tuo zero" : "your zero"} ${sg(cp.zero, "")}` : ""].filter(Boolean);
+        L.push([it ? "Macinatura" : "Grind", it ? `${said} (${g0[1].toLowerCase()}, ${g0[2]}). Il metodo parte da ${cp.base ?? r.baseClicks} scatti C40${mv.length ? `; poi ${mv.join(", ")} (scatti, + più grossa)` : ""}: più grossa scende più veloce ed estrae meno.` : `${said} (${g0[1].toLowerCase()}, ${g0[2]}). The method starts at ${cp.base ?? r.baseClicks} C40 clicks${mv.length ? `, then ${mv.join(", ")} (clicks, + is coarser)` : ""}: coarser drains faster and pulls out less.`]); }
+      // water temperature
+      if (r.temp != null) { const RT = c.roast !== "unsure" ? ROAST[c.roast].T : null, why0 = c.roast === "vlight" || c.roast === "light" ? (it ? "le tostature chiare sono dense e vogliono calore per venire dolci, non acide" : "light roasts are dense and need the heat to come out sweet, not sour")
+            : c.roast === "mdark" || c.roast === "dark" ? (it ? "le tostature scure si sciolgono facilmente e con acqua più calda diventano amare" : "darker roasts dissolve easily and turn bitter with hotter water")
+            : c.roast === "unsure" ? (it ? "la tostatura non è indicata, quindi resta nel mezzo, un filo più fresca, per non rischiare l'amaro" : "the roast isn't stated, so it stays in the middle, a touch cooler, to keep away from bitterness")
+            : (it ? "una tostatura media sta nel mezzo: calda abbastanza per la dolcezza, non tanto da diventare amara" : "a medium roast sits in the middle: hot enough for sweetness, not so hot it turns bitter");
+        const ferm = ["anaerobic", "cofer", "natural", "decaf"].includes(c.process) ? (it ? `; ${pr} va un filo più fresco, perché spinto diventa aspro` : `; ${pr} runs a little cooler, because pushed it turns harsh`) : "";
+        L.push([it ? "Acqua" : "Water", `${r.temp}°C: ${why0}${ferm}${RT && K !== "shot" && RT !== r.temp ? (it ? ` (base ${RT}°C)` : ` (from a ${RT}°C start)`) : ""}.`]); }
+      // dose and ratio
+      if (r.dose && r.water) { const rt = r.ratio, feel = rt >= 16.8 ? (it ? "leggero e dolce" : "light and sweet") : rt >= 15.8 ? (it ? "equilibrato" : "balanced") : (it ? "pieno e corposo" : "full and heavy");
+        L.push([it ? "Dose" : "Dose", K === "shot" ? (it ? `${r.dose} g dentro, ${r.water} g fuori (1:${rt}): il peso in tazza decide il gusto, più lungo è più limpido e dolce.` : `${r.dose} g in, ${r.water} g out (1:${rt}): the weight out sets the taste, longer is clearer and sweeter.`)
+          : (it ? `${r.dose} g di caffè per ${r.water} g d'acqua, 1:${rt}: ${feel}. Più acqua per grammo è più dolce e leggero, meno è più forte.` : `${r.dose} g coffee to ${r.water} g water, 1:${rt}: ${feel}. More water per gram is sweeter and lighter, less is stronger.`)]); }
+      // pours, or the shot's time
+      if (K === "pour" && r.pours) { const np = r.pours.filter((x) => !x.act).length, ag = r.agit <= 1 ? (it ? "delicate" : "gentle") : r.agit === 2 ? (it ? "medie" : "medium") : (it ? "vivaci" : "lively");
+        const why1 = r.agit <= 1 ? (it ? `${pr || "questo caffè"} diventa aspro se lo agiti troppo` : `${pr ? (/^[aeiou]/i.test(pr) ? "an " : "a ") + pr + " coffee" : "this coffee"} goes harsh when stirred up`) : (it ? "un caffè denso vuole movimento per estrarre in modo uniforme" : "a dense coffee needs movement to extract evenly");
+        L.push([it ? "Versate" : "Pours", it ? `${np}, ${ag}: ${why1}. Tempo totale ${Math.floor(r.lo / 60)}:${String(r.lo % 60).padStart(2, "0")}–${Math.floor(r.hi / 60)}:${String(r.hi % 60).padStart(2, "0")}.` : `${np}, ${ag}: ${why1}. Done in ${Math.floor(r.lo / 60)}:${String(r.lo % 60).padStart(2, "0")}–${Math.floor(r.hi / 60)}:${String(r.hi % 60).padStart(2, "0")}.`]); }
+      else if (K === "shot" && r.lo) L.push([it ? "Tempo" : "Time", it ? `${r.lo}–${r.hi} s: la macinatura decide il tempo. Più veloce e acido, più fine; più lento e amaro, più grosso.` : `${r.lo}–${r.hi} s: the grind sets the time. Fast and sour, go finer; slow and bitter, go coarser.`]);
+      wn.innerHTML = L.length ? `<p class="wn-h">${it ? "Perché questi numeri" : "Why these numbers"}</p><ul class="wn">${L.map(([k, v]) => `<li><b>${esc(k)}</b> ${esc(v)}</li>`).join("")}</ul>` : "";
+      wn.hidden = !L.length; }
     // "Label: text" lines bold the label; a line with no label (the roast note) is shown as it is
     // the roaster's notes (or the typical ones) lead, then the rest, all in view
     const xli = (w) => { const i = w.indexOf(": "); if (i < 1 || i > 60) return `<li>${esc(w)}</li>`;
