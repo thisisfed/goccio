@@ -3968,7 +3968,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
     <p class="foot-note" id="rights">Set in ALT Riviera, with thanks to <a href="https://alt-tf.com/" target="_blank" rel="noopener">Alt Type Foundry</a>.<br>Hosted on <a href="https://pages.cloudflare.com/" target="_blank" rel="noopener">Cloudflare</a>, domain by <a href="https://www.spaceship.com/" target="_blank" rel="noopener">Spaceship</a>.</p>
     <p class="foot-note foot-copy">© <span id="cYear">2026</span> Federico R. T. Ferrari. All rights reserved.</p>
     </details>
-    <p class="foot-note foot-all foot-links"><a href="/#new">New this week</a><a href="/coffee/">Every coffee, by roaster</a><a href="/#list">Get your roastery listed or removed</a><a href="/privacy/">Privacy</a><a class="mail" href="#" data-m="ku.oc.oiccog@nu">Email us</a></p>
+    <p class="foot-note foot-all foot-links"><a href="/coffee/">Every coffee, by roaster</a><a href="/#list">Get your roastery listed or removed</a><a href="/privacy/">Privacy</a><a class="mail" href="#" data-m="ku.oc.oiccog@nu">Email us</a></p>
     <script>try { document.getElementById("cYear").textContent = new Date().getFullYear(); } catch (e) {}</script>
     </div>
   </footer>
@@ -8220,7 +8220,8 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
       // pinned under the bar, the Coffees title is gone from view: the heading then says what it counts ("230 coffees added today")
       const rN = !shelfRo && !q ? roN.get(String(shelfDate(r) || "").slice(0, 10)) || 0 : 0;   // "108 coffees and 14 roasters added today"
       const roW = !rN ? "" : it1 ? ` e ${rN} ${rN === 1 ? "torrefazione" : "torrefazioni"}` : ` and ${rN} ${rN === 1 ? "roaster" : "roasters"}`;
-      const dayT = !dN ? day : it1 ? `${dN.toLocaleString("it-IT")}<span class="day-what"> caffè</span>${roW} ${dN === 1 && !rN ? "aggiunto" : "aggiunti"} ${rest}` : `${dN.toLocaleString("en-GB")}<span class="day-what"> ${dN === 1 ? "coffee" : "coffees"}</span>${roW} added ${/^\d/.test(rest) ? "on " : ""}${rest}`;
+      const wkB = !shelfRo && window.__wkHint;   /* This week: the band under the kinds row counts the whole week, whichever day is going by (27/11/2026) */
+      const dayT = wkB ? (it1 ? `${wkB.n.toLocaleString("it-IT")}<span class="day-what"> caffè</span> e ${wkB.ro} torrefazioni aggiunti questa settimana` : `${wkB.n.toLocaleString("en-GB")}<span class="day-what"> coffees</span> and ${wkB.ro} roasters added this week`) : !dN ? day : it1 ? `${dN.toLocaleString("it-IT")}<span class="day-what"> caffè</span>${roW} ${dN === 1 && !rN ? "aggiunto" : "aggiunti"} ${rest}` : `${dN.toLocaleString("en-GB")}<span class="day-what"> ${dN === 1 ? "coffee" : "coffees"}</span>${roW} added ${/^\d/.test(rest) ? "on " : ""}${rest}`;
       // each day's count where its coffees start ("25 added today", then "230 added yesterday"…), pinned under the bar while its coffees go by; the next day's pushes it away
       if (byDay && !isSp && day) (window.__dayT = window.__dayT || {})[String(shelfDate(r) || "").slice(0, 10)] = dayT;   // every day's words, for the one pinned line to switch to as its coffees go by
       const dayHead = byDay && !isSp && day && lastDay === null ? `<h3 class="grp day-g" data-day="${String(shelfDate(r) || "").slice(0, 10)}"><span class="day-t${dWait ? " day-wait" : ""}">${dayT}</span></h3>` : ""; if (byDay && !isSp && day) lastDay = day;   // one span: the heading lays out its children in a row
@@ -9760,8 +9761,8 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
         return LANG === "it" ? `Caffè di ${shelfRo}` : `Coffees from ${shelfRo}`; }   /* on a roaster's page the box says whose coffees it holds (no "Search": asked 25/11/2026) */
       if (false) { const k = shelf.filter((r) => r.roaster === shelfRo).length; return LANG === "it" ? `Cerca tra ${k} caffè` : `Search ${k} coffee${k === 1 ? "" : "s"}`; }   // on a roaster's page: that roaster's coffees
       // the day's count is pinned under the bar ("208 coffees added today"): two numbers at once is one too many, so the box just says Search
-      if (!window.__wkHint && document.querySelector(".shelf .grp.day-g.stuck:not([hidden])")) return LANG === "it" ? "Cerca" : "Search";
-      const wkH = window.__wkHint;   // This week: the box counts the week's coffees and roasters (27/11/2026)
+      if (document.querySelector(".shelf .grp.day-g.stuck:not([hidden])")) return LANG === "it" ? "Cerca" : "Search";
+      const wkH = null;   // This week's numbers are in the band under the kinds row, not in the box (27/11/2026)
       const n = wkH ? wkH.n : window.__coN || (typeof shelfPart !== "undefined" && shelfPart) || (typeof shelf !== "undefined" && shelf.length) || 0;   // the whole list, also while only its first part is in
       const box = document.getElementById("askIn"), nr = box && box.clientWidth && box.clientWidth < 290 ? 0 : (window.__roN || 0);   // and the roasters: "Search 8,757 coffees, 732 roasters" (a very narrow phone keeps just the coffees)
       // the size of the list: "Search 9,033 coffees from 754 roasters" (the roasters are left out until their count is in)
@@ -10859,8 +10860,20 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
     addEventListener("scroll", lift, { passive: true });
     // touched: a squeeze, then it rings (6 to 9% of its size, as a real drop pushed gently)
     // kept simple: no squeeze when touched or hovered
-    // a blink that closes over 110 ms, holds a moment and opens over 170 ms (a snap shut and open looked mechanical)
-    const blinkSoft = (k = 0.1) => new Promise((done) => { const t0 = performance.now(), C = 110, H = 70, O = 170;
+    // blink patterns (27/11/2026): never the same twice running. How many, how fast, how deep and how long shut all change:
+    // one, a slow sleepy one, a flutter of three or four quick ones, a pair, slow-then-quick, a half blink, one held shut, a quick one…
+    // each step: C ms to close, H shut, O to open, k how far (0.1 shut, 0.5 half), gap before the next
+    window.__gdBlinks = window.__gdBlinks || (() => { let last = ""; const R = Math.random;
+      const b = (sp, o = {}) => { const j = sp * (0.85 + R() * 0.3); return { C: 110 * j, H: 70 * j, O: 170 * j, k: 0.1, gap: 90 + R() * 140, ...o }; };
+      const P = [["one", 18, () => [b(1)]], ["quick", 10, () => [b(0.6)]], ["slow", 9, () => [b(1.9, { H: 190 })]],
+        ["pair", 14, () => [b(1, { gap: 110 + R() * 90 }), b(1)]], ["flutter", 8, () => Array.from({ length: 3 + (R() < 0.5 ? 1 : 0) }, () => b(0.55, { gap: 45 + R() * 45 }))],
+        ["slow-quick", 7, () => [b(1.7, { gap: 170 + R() * 80 }), b(0.6)]], ["quick-slow", 6, () => [b(0.6, { gap: 120 }), b(1.6, { H: 150 })]],
+        ["half", 8, () => [b(1, { k: 0.5 })]], ["half-full", 6, () => [b(0.8, { k: 0.55, gap: 80 + R() * 60 }), b(1)]],
+        ["hold", 7, () => [b(1.2, { H: 380 + R() * 300 })]], ["three", 7, () => [b(0.9, { gap: 140 + R() * 60 }), b(0.9, { gap: 140 + R() * 60 }), b(0.9)]]];
+      return () => { const pool = P.filter((x) => x[0] !== last); let r = R() * pool.reduce((t, x) => t + x[1], 0); const pk = pool.find((x) => (r -= x[1]) < 0) || pool[0]; last = pk[0];
+        const st = pk[2](); st.ms = st.reduce((t, x, i) => t + x.C + x.H + x.O + (i < st.length - 1 ? x.gap : 0), 0); return st; }; })();
+    // a blink that closes over 110 ms, holds a moment and opens over 170 ms (a snap shut and open looked mechanical); a pattern's step sets its own speeds
+    const blinkSoft = (k = 0.1, sp = null) => new Promise((done) => { const t0 = performance.now(), C = sp ? sp.C : 110, H = sp ? sp.H : 70, O = sp ? sp.O : 170; if (sp) k = sp.k;
       const step = (now) => { const t = now - t0, e = (x) => x * x * (3 - 2 * x); blink = t < C ? 1 - (1 - k) * e(t / C) : t < C + H ? k : t < C + H + O ? k + (1 - k) * e((t - C - H) / O) : 1; draw();
         if (t < C + H + O) requestAnimationFrame(step); else done(); }; requestAnimationFrame(step); });
     // its life at rest: a blink now and then, a look round, a small breath. Never on a beat
@@ -11375,12 +11388,12 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
     const grin = () => act(async () => { await face({ happy: 1, eyeSL: 1.12, eyeSR: 1.12 }, 260); jv = -40; go(); await wait(1500 + Math.random() * 900); await face({ happy: 0, eyeSL: 1, eyeSR: 1 }, 320); });
     const stretch = () => grin();   // no stretching any more (27/11/2026)
     const blinks = () => { const r = Math.random(); return r < 0.55 ? 1 : r < 0.85 ? 2 : 3; };
-    const idle = () => { const n = blinks(); setTimeout(idle, 1500 + Math.random() * 7500 + n * 450); if (document.hidden || still() || phase !== "rest" || acting || (opt.paused && opt.paused())) return;
+    const idle = () => { const pat = window.__gdBlinks(); setTimeout(idle, 1500 + Math.random() * 7500 + pat.ms); if (document.hidden || still() || phase !== "rest" || acting || (opt.paused && opt.paused())) return;
       const rr = el.getBoundingClientRect(); if (rr.bottom < 0 || rr.top > innerHeight) return;
       // now and then, instead of a blink, a small smile or a slow stretch (27/11/2026): tall and thin, a held breath, then back with a soft settle
       const r1 = Math.random();
       if (r1 < 0.16) return void grin();
-      (async () => { for (let i = 0; i < n; i++) { await blinkSoft(); if (i < n - 1) await wait(90 + Math.random() * 140); } })().catch(() => {}); };
+      (async () => { for (let i = 0; i < pat.length; i++) { await blinkSoft(0.1, pat[i]); if (i < pat.length - 1) await wait(pat[i].gap); } })().catch(() => {}); };
     setTimeout(idle, 6000);
     const pfft = (vol = 1, dur0 = 0.42) => { return;   /* Goccio makes no sounds at all */ try { const A = window.__gdA || (window.__gdA = new (window.AudioContext || window.webkitAudioContext)()); if (A.state === "suspended") A.resume();
         const t0 = A.currentTime, dur = dur0, n = A.createBuffer(1, Math.ceil(A.sampleRate * dur), A.sampleRate), ch = n.getChannelData(0); for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1;
@@ -13340,12 +13353,13 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
           tx = dx / d * m; ty = dy / d * m; idle = performance.now(); go(); };
         addEventListener("pointermove", (e) => aim(e.clientX, e.clientY), { passive: true });
         addEventListener("pointerdown", (e) => aim(e.clientX, e.clientY), { passive: true });
-        const blinkOnce = () => { blink = .05; go(); setTimeout(() => { blink = 1; go(); }, 190); };   // a touch slower, like the big one
-        (function nextBlink() { const r = Math.random(), n = r < 0.55 ? 1 : r < 0.85 ? 2 : 3;   /* at random: one, two or three in a row, then a pause */
+        const blinkOnce = (sp) => { blink = sp ? Math.max(.05, sp.k * .5) : .05; go(); setTimeout(() => { blink = 1; go(); }, sp ? sp.C + sp.H + sp.O * .4 : 190); };   // a touch slower, like the big one; a pattern's step sets how long and how deep
+        const pats = window.__gdBlinks || (() => [{ C: 110, H: 70, O: 170, k: .1, gap: 150 }]);
+        (function nextBlink() { const pat = pats(); pat.ms = pat.ms || 400;   /* the same varied patterns as the big one: how many, how fast, how deep (27/11/2026) */
           setTimeout(() => { nextBlink(); if (document.hidden) return; const r1 = Math.random();
             // like the big one: now and then a smile, or a slow stretch that ends in one, instead of a blink
             if (r1 < 0.16) return tb.grin();
-            for (let i = 0; i < n; i++) setTimeout(blinkOnce, i * (300 + Math.random() * 120)); }, 1500 + Math.random() * 7500 + n * 400); })();
+            let t = 0; pat.forEach((sp) => { setTimeout(() => blinkOnce(sp), t); t += sp.C + sp.H + sp.O + sp.gap; }); }, 1500 + Math.random() * 7500 + pat.ms); })();
         tb.grin = () => { grTo = 1; go(); setTimeout(() => { grTo = 0; go(); }, 2000); }; tb.stretch = () => tb.grin();
         // nobody about: look this way and that, then back to you
         let filmOn = () => false;
