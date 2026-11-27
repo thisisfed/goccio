@@ -3647,6 +3647,14 @@ html.ro-page body #roHead{padding-bottom:16px!important}
 /* 27/11/2026: the roaster title is the coffee names' size (39, 63 on big screens), the golden step the site already uses */
 html.ro-page body #shelves > .sec-head #sh .ro-title{font-size:39px!important;line-height:1.05!important;letter-spacing:-.01em!important;text-wrap:balance}
 @media (min-width: 1000px){html.ro-page body #shelves > .sec-head #sh .ro-title{font-size:63px!important}}
+/* the place as big as the name, in grey: "Special Guests Roastery. London (UK), 21 coffees" reads like a coffee's sentence (27/11/2026) */
+html.ro-page body #roHead #roWhere{font-size:39px!important;line-height:1.05!important;letter-spacing:-.01em!important;color:var(--muted)!important;text-wrap:balance}
+@media (min-width: 1000px){html.ro-page body #roHead #roWhere{font-size:63px!important}}
+html.ro-page body #roHead{margin-top:-14px!important}
+/* no bottom bar on a roaster's page: Home in the top bar, between the search and the little Goccio (27/11/2026) */
+html.ro-page:not(.brew-in) body .botnav{display:none!important}
+html.ro-page:not(.lv-page) body .top .lv-home{display:inline-flex;align-items:center;flex:none;height:var(--pill-h);padding:0 12px;margin:0 0 0 6px;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);text-decoration:none}
+@media (hover:hover){html.ro-page body .top .lv-home:hover{background-color:color-mix(in srgb,var(--pill) 76%,var(--ink))}}
 html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a little under the bigger name, as a coffee's tags sit under its name */
 </style>
 </head>
@@ -10233,7 +10241,9 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
       addEventListener("hashchange", route); route();
       $("roAz") && $("roAz").addEventListener("click", (e) => { const a = e.target.closest("a[data-ro]"); if (!a || !window.openRoaster) return; e.preventDefault();
         H.classList.remove("lv-page"); VIEWS.forEach((x) => { x.hidden = true; x.classList.remove("lv-on"); }); window.openRoaster(a.dataset.ro); });
-      { const hm = $("lvHome"), mk = document.querySelector(".top .lv-mark"), home = (e) => { if (!H.classList.contains("lv-page")) return; e.preventDefault(); close(); requestAnimationFrame(() => requestAnimationFrame(() => scrollTo(0, 0))); };
+      { const hm = $("lvHome"), mk = document.querySelector(".top .lv-mark"), home = (e) => {
+          if (!H.classList.contains("lv-page")) { if (H.classList.contains("ro-page") && $("roBack")) { e.preventDefault(); $("roBack").click(); requestAnimationFrame(() => requestAnimationFrame(() => scrollTo(0, 0))); } return; }   /* on a roaster's page, Home is the way back to every coffee */
+          e.preventDefault(); close(); requestAnimationFrame(() => requestAnimationFrame(() => scrollTo(0, 0))); };
         if (hm) hm.addEventListener("click", home); if (mk) mk.addEventListener("click", home); }
       if ($("lvBack")) $("lvBack").onclick = () => { if (history.length > 1 && document.referrer && new URL(document.referrer).origin === location.origin) history.back(); else close(); };
       VIEWS.forEach((vv) => vv.querySelectorAll("form").forEach((f) => { const go = f.querySelector("button"), msg = f.querySelector(".lv-msg");
@@ -10443,7 +10453,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
   if (/^#(?:coffee|r=|recipe)/.test(location.hash)) mineOn();
   
   /* the bottom bar is a way between sections: with one section to show there is nowhere to go, and no bar */
-  const navSync = () => { const n = document.querySelector(".botnav"); if (!n) return; const on = [...n.querySelectorAll(".chip")].filter((c) => !c.hidden && getComputedStyle(c).display !== "none").length >= 2 || document.documentElement.classList.contains("brew-in") || (document.documentElement.classList.contains("ro-page") && !document.documentElement.classList.contains("brew-in"));
+  const navSync = () => { const n = document.querySelector(".botnav"); if (!n) return; const on = [...n.querySelectorAll(".chip")].filter((c) => !c.hidden && getComputedStyle(c).display !== "none").length >= 2 || document.documentElement.classList.contains("brew-in") ;
     if (document.documentElement.classList.contains("nav-off") === on) document.documentElement.classList.toggle("nav-off", !on); };
   document.addEventListener("click", () => { setTimeout(navSync, 0); setTimeout(navSync, 400); });   /* and after any tap, should a change slip past the observers */
   navSync(); new MutationObserver(navSync).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
