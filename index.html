@@ -8156,7 +8156,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
         + (askWant && list.length ? (LANG === "it" ? ". I più vicini per primi." : ". Best match first.") : ""); const f = $("fyNote");   // what the list is showing, in grey under Coffees (and read out to screen readers)   // with For you's line showing, the two read as one paragraph
       if (t && !f.hidden) { f.textContent = f.textContent.trim() + " " + t; n.hidden = true; n.textContent = ""; } else { n.hidden = !t; n.textContent = t; }
       if (wk && !shelfRo) { const it = LANG === "it", k = list.length, ro = new Set(list.map((r) => r.roaster)).size;   /* This week says what it holds */
-        n.hidden = false; n.textContent = it ? `${k.toLocaleString("it-IT")} caffè di ${ro} torrefazioni aggiunti negli ultimi sette giorni.` : `${k.toLocaleString("en-GB")} coffees from ${ro} roasters added in the last seven days.`; }
+        n.hidden = true; n.textContent = ""; void it; void k; void ro; }   /* This week's count is in the band under the kinds row: no grey line over it, which pushed the list down for a moment (27/11/2026) */
       // a search's line sits in the day's band: the same 44 px bar, pinned, sliding sideways when it's longer than the screen (27/11/2026).
       // This week keeps its plain line: its days have their own bands
       n.classList.toggle("nb-band", !n.hidden && !wk && !shelfRo); if (n.classList.contains("nb-band")) n.scrollLeft = 0;
@@ -9763,7 +9763,7 @@ html.ro-page body #roHead{margin-top:-6px!important}   /* the place line a littl
         return LANG === "it" ? `Caffè di ${shelfRo}` : `Coffees from ${shelfRo}`; }   /* on a roaster's page the box says whose coffees it holds (no "Search": asked 25/11/2026) */
       if (false) { const k = shelf.filter((r) => r.roaster === shelfRo).length; return LANG === "it" ? `Cerca tra ${k} caffè` : `Search ${k} coffee${k === 1 ? "" : "s"}`; }   // on a roaster's page: that roaster's coffees
       // the day's count is pinned under the bar ("208 coffees added today"): two numbers at once is one too many, so the box just says Search
-      if (document.querySelector(".shelf .grp.day-g.stuck:not([hidden])")) return LANG === "it" ? "Cerca" : "Search";
+      return LANG === "it" ? "Cerca" : "Search";   /* the counts live in the band under the kinds row: the box just says Search, and never swaps (27/11/2026) */
       const wkH = null;   // This week's numbers are in the band under the kinds row, not in the box (27/11/2026)
       const n = wkH ? wkH.n : window.__coN || (typeof shelfPart !== "undefined" && shelfPart) || (typeof shelf !== "undefined" && shelf.length) || 0;   // the whole list, also while only its first part is in
       const box = document.getElementById("askIn"), nr = box && box.clientWidth && box.clientWidth < 290 ? 0 : (window.__roN || 0);   // and the roasters: "Search 8,757 coffees, 732 roasters" (a very narrow phone keeps just the coffees)
