@@ -71,10 +71,10 @@ html.ro-page .co-tabs{display:none}
 html body #shelf .item .name.sent{display:block;margin:0;text-wrap:pretty}
 html body #shelf .item .name.sent .s-f, html body #shelf .item .name.sent .s-f a{color:var(--muted)}
 html body #shelf .item .name.sent .s-f a{text-decoration:underline;text-decoration-thickness:.05em;text-underline-offset:.1em}
-html body #shelf .item .name.sent .s-t{color:color-mix(in srgb,var(--muted) 55%,var(--bg))}
+html body #shelf .item .name.sent .s-t, html body #shelf .item .name.sent .s-f.s-lead, html body #shelf .item .name.sent .s-f.s-lead a{color:var(--ink)}   /* the taste in the brightest place; with no notes, the roaster */
+html body #shelf .item .name.sent .s-n{color:color-mix(in srgb,var(--muted) 55%,var(--bg))}   /* the name last and dimmest (27/11/2026) */
 html.ro-page body #shelf .item .name.sent .s-f{display:none}
 html body #shelf .item .name.sent .s-dot{display:none}
-html.ro-page body #shelf .item .name.sent .s-dot{display:inline}   /* on a roaster's page the roaster goes, so the name ends its own sentence */
 html body #shelf .item .name.sent + .c-notes{margin-top:6px!important}
 /* every link, on hover: the underline goes, whatever draws it (27/11/2026) */
 @media (hover:hover){ html body a:hover, html body a:hover *{text-decoration-color:transparent!important;border-bottom-color:transparent!important}
@@ -2936,7 +2936,7 @@ html[data-theme="light"]:is(.film-off,.hero-done) body .wm-more .wm-bag{backgrou
    in the same place (27/11/2026) */
 /* the splash a little higher (27/11/2026): the picture at least 720 px wide, so on a phone it's taller than the 360 px hero and its foot
    sits on the hero's foot; and the hero meets the line under it (no 7 px of page between them: the .sec-head rule below) */
-html.film-off:not([data-theme="light"]) body .wm-screen{background:#000 url("/img/goccio-hero-coffee.jpg?v=3") center var(--hero-y, 100%) / max(100%, 720px) auto no-repeat!important}
+html.film-off:not([data-theme="light"]) body .wm-screen{background:#000 url("/img/goccio-hero-coffee.jpg?v=4") center var(--hero-y, 100%) / max(100%, 720px) auto no-repeat!important}
 html[data-theme="light"]:is(.film-off,.hero-done) body .wm-screen{background:var(--bg) url("/img/goccio-hero-milk.jpg?v=3") center var(--hero-y, 100%) / max(100%, 720px) auto no-repeat!important}
 html[data-theme="light"]:is(.film-off,.hero-done) body .wm-screen::after{opacity:1!important;background:linear-gradient(180deg, transparent 55%, var(--bg) 100%)!important}   /* the milk melts into the page */
 /* the film starts at the very top of the screen, under a see-through top bar, and ends on the rule over Coffees */
@@ -8311,9 +8311,13 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
           ${/* one sentence in three greys (27/11/2026): the name; who roasted it and where; how it tastes. Guessed notes stay a small line under it */ ""}${(() => { const ns = noteList(r), real = ns.length && !(ns.length === 1 && !/\s/.test(ns[0].trim())), it = LANG === "it";
             const low = (n) => n.split(" ").map((x) => /^[A-ZÀ-Ý][a-zà-ÿ'’-]*$/.test(x) ? x.toLowerCase() : x).join(" "), and = it ? " e " : " and ";
             const place = r.roaster_city || r.roaster_country ? `${r.roaster_city ? ", " + esc(cityL(r.roaster_city)) : ""}${r.roaster_country ? ` (${esc(r.roaster_country === "GB" ? "UK" : r.roaster_country)})` : ""}` : "";
-            const tastes = real ? ns.slice(0, 3).map((n) => esc(low(n))) : [];
+            const tastes = real ? ns.filter((n) => !/^(coarse|medium|fine|extra fine|whole ?beans?|ground|percolator|cafeti[eè]re|plunger|french press|moka( pot)?|stovetop|aeropress|chemex|espresso|filter)$/i.test(n.trim())).slice(0, 3).map((n) => esc(low(n))) : [];   /* a grind or a brewer isn't a taste */
             const ro = (w) => `<span class="s-f">${w} <a class="rn" href="#roaster=${encodeURIComponent(r.roaster)}" data-ro="${esc(r.roaster)}">${esc(roasteryName(r.roaster))}</a>${place}.</span>`;
-            return `<p class="name sent"><span class="s-n">${esc(capName(calm(shown)))}</span><span class="s-dot">.</span> ${ro(it ? "di" : "from")}${tastes.length ? ` <span class="s-t">${it ? "Sa di" : "Tastes like"} ${tastes.length > 1 ? tastes.slice(0, -1).join(", ") + and + tastes[tastes.length - 1] : tastes[0]}.</span>` : ""}</p>${real ? "" : cardNotes(r)}`; })()}
+            // what a buyer asks first, brightest first (27/11/2026): how it tastes; who roasted it (the link); then its name, dimmest.
+            // No notes: the roaster leads. Three statements, one size; the order read aloud is the order seen
+            const tl = tastes.length > 1 ? tastes.slice(0, -1).join(", ") + and + tastes[tastes.length - 1] : tastes[0] || "";
+            const nm = esc(capName(calm(shown))).replace(/[.!?…]+$/, "");
+            return `<p class="name sent">${tl ? `<span class="s-t">${tl.charAt(0).toUpperCase() + tl.slice(1)}.</span> ` : ""}${ro(it ? "Tostato da" : "Roasted by").replace('class="s-f"', `class="s-f${tl ? "" : " s-lead"}"`)} <span class="s-n">${nm}.</span></p>${real ? "" : cardNotes(r)}`; })()}
           ${cardPrice(r)}
         </div>
         <div class="r${rowOpen.has(rowKey(r)) ? " more-open" : ""}">
