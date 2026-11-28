@@ -3205,7 +3205,7 @@ html.gd-full body .gd-head .gh-b{padding:2px 6px;border:1px solid var(--line);bo
 html body footer .foot-ex .g-ex{border-top:0!important;padding-top:0!important;margin-top:0!important;margin-bottom:-7px!important}   /* in the footer: no rule under its title, and the gap under the title the same as Disclaimer's */
 html.gd-full body .gd-head .gh-new{margin-left:auto;margin-right:-8px;height:32px;padding:0 12px;border:0;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);cursor:pointer;white-space:nowrap;transition:background .15s}   /* New chat: a worded pill 4 px left of the X, as the top bar's pills sit */
 @media (hover:hover){ html.gd-full body .gd-head .gh-new:hover{opacity:.88} }   /* the same hover as the top bar's + */
-html.gd-full body .gd-dock.gd-dock.gd-dock .gd-x{z-index:6!important;top:calc(env(safe-area-inset-top,0px) + 8px)!important;right:12px!important;width:32px!important;height:32px!important;background:var(--pill)!important;border-radius:var(--r,4px)!important;color:var(--ink)!important}   /* exactly where the top bar's + and brew mode's X are, and the same grey square */
+html.gd-full body .gd-dock.gd-dock.gd-dock .gd-x{z-index:6!important;top:calc(env(safe-area-inset-top,0px) + 4px)!important;right:12px!important;width:32px!important;height:32px!important;background:var(--pill)!important;border-radius:var(--r,4px)!important;color:var(--ink)!important}   /* exactly where the top bar's + and brew mode's X are, and the same grey square */
 html.gd-full body .gd-dock.gd-dock.gd-dock .gd-x svg{width:12px!important;height:12px!important}
 html.gd-full body .gd-dock .gd-say{flex:1 1 auto;max-height:none!important;min-height:0!important;margin:0!important;padding:4px 0 0!important;overflow-y:auto}
 html.gd-full body .gd-dock .gd-ask, html.gd-full body .gd-dock .gd-chips{flex:none}
@@ -12355,7 +12355,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     // the cameras, from the chat: only on a phone (a computer has none to scan with)
     const CAM_OK = () => !!(window.__scanBeans && window.__scanBag) && !matchMedia("(hover: hover) and (pointer: fine)").matches;   // the choices as pills under the question: tap one, or type
     // the amounts a brewer takes, in words people know: the grams and about how much it makes (or the pot, or the shot)
-    const gbDoses = (B) => B.doses.map(([d]) => [`${d} g`, `${d} g`]);   // just the grams on the pills (26/11/2026: "12 g, about 190 ml" was too much)
+    const gbDoses = (B) => B.doses.map(([d]) => [`${d}`, `${d}`]);   /* the number alone: the question says grams (28/11/2026) */   // just the grams on the pills (26/11/2026: "12 g, about 190 ml" was too much)
     const TYPE_IT = () => [T("Something else", "Altro"), "__type"];   // the last pill: type your own
     const gbAsk = (g) => {
       g.opts = null; g.yn = false;
@@ -12497,7 +12497,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
         if (!k && /\b(none|no grinder|don'?t have|pre.?ground|ground|nessuno|non ce l'?ho|gi[aà] macinato|macinato)\b/i.test(ql)) { g.mill = "words"; g.millNote = T("pre-ground", "già macinato"); g.tries = 0; gbGo(g, T(`No grinder, no problem: ask the roaster to grind it for ${RECIPE_BREWERS[g.brewer].name}.`, `Senza macinino va bene: chiedi alla torrefazione di macinarlo per ${RECIPE_BREWERS[g.brewer].name}.`)); return true; }
         if (!k) { if (isQ) return miss(); g.mill = "words"; g.millNote = T("grind in words", "macinatura a parole"); g.tries = 0; gbGo(g, T("I don't have a chart for that one, so I'll give the grind in Comandante clicks and in words.", "Non ho la tabella per quello, quindi ti do la macinatura in scatti Comandante e a parole.")); return true; }
         g.mill = k; g.tries = 0; gbGo(g, T(`The ${GRINDERS[k].short || GRINDERS[k].name}, great.`, `Il ${GRINDERS[k].short || GRINDERS[k].name}, ottimo.`)); return true; }
-      if (g.step === "dose") { const B = RECIPE_BREWERS[g.brewer], gm = ql.match(/(\d+(?:[.,]\d+)?)\s*(g|gr|grams?|grammi)\b/), cm = ql.match(/\b(\d|one|a|single|two|double|three|four|six|una|un|due|tre|quattro|sei|singolo|doppio)\b/);
+      if (g.step === "dose") { const B = RECIPE_BREWERS[g.brewer], gm = ql.match(/(\d+(?:[.,]\d+)?)\s*(g|gr|grams?|grammi)\b/) || ql.match(/^\s*(\d{2,3}(?:[.,]\d+)?)\s*$/), cm = ql.match(/\b(\d|one|a|single|two|double|three|four|six|una|un|due|tre|quattro|sei|singolo|doppio)\b/);
         const near = (x) => B.doses.map(([d]) => d).sort((a, b) => Math.abs(a - x) - Math.abs(b - x))[0];
         let d = null;
         if (gm) { const x = parseFloat(gm[1].replace(",", ".")), ds = B.doses.map(([v]) => v);
