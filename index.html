@@ -3641,6 +3641,11 @@ html body #coffee:not(.empty) .kit > .scan-opt .scan-msg{text-align:left}
 html body .spec b.dstep-b{display:inline-flex!important;justify-content:space-between;gap:10px;max-width:100%}   /* ‹ 18 g ›, as wide as Back under it when there's room (28/11/2026) */
 html body .spec b.dstep-b > .dstep-n{flex:0 1 auto;text-align:center;white-space:nowrap}
 html body .spec b.dstep-b > .dstep-n small{margin-left:.12em}
+html body #specs .spec:is(.brewer, .key){position:relative}
+html body #specs .spec select.wheel{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:1;font-size:16px;-webkit-appearance:none;appearance:none;border:0;background:none}   /* the whole cell is the picker's button; 16 px so iOS doesn't zoom */
+html body #specs .spec .dstep-b .chip.gear-more, html body #specs .spec .add-mill{position:relative;z-index:2}
+html body #specs .spec.key .add-mill{pointer-events:none}   /* "Add your grinder": a tap on it opens the wheel under it */
+html body .pick-pan{display:none!important}
 .bag-ro .ro-chips{display:contents!important}.bag-ro .ro-chips[hidden]{display:none!important}
 .bag-fzp[aria-pressed="true"]{background:var(--ink)!important;color:var(--bg)!important}
 /* the live dot's rings leave at random moments, set by script: no loop to spot */
@@ -6237,14 +6242,33 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     if (k === "brew") { const o = $("opts-kit"); if (o) p.appendChild(o); }
     else { const o = $("millOpt"); if (o) p.appendChild(o); }
     return (PICKS[k] = p); }
-  function placePicks() { const rb = $("rbody"), sp = $("specs"); if (!rb || !sp) return; const b = pickPan("brew"), m = pickPan("mill");
+  // the brewer and the grinder are picked on a wheel (28/11/2026: "no pills"): a native select over the whole cell, so a tap opens
+  // the phone's own picker (the iPhone's wheel), a list on a computer. The clicks get ‹ › like the coffee's grams: they move the zero
+  function wheels() { const sp = $("specs"); if (!sp) return;
+    const bc = sp.querySelector(".spec.brewer"), kc = sp.querySelector(".spec.key");
+    if (bc) { let w = bc.querySelector("select.wheel"); if (!w) { w = document.createElement("select"); w.className = "wheel"; w.setAttribute("aria-label", LANG === "it" ? "Metodo" : "Brewer");
+        w.onchange = () => { const v = w.value; if (!BREWERS[v] || v === brewerOf(state)) return; setBrewer(v); renderAllOpts(); render(); }; bc.appendChild(w); }
+      const cur = brewerOf(state) === "cold" ? "press" : brewerOf(state), all = Object.entries(BREWERS).filter(([k]) => k !== "cold").sort((a, b) => (a[1].cup ? 1 : 0) - (b[1].cup ? 1 : 0));
+      const html = all.map(([k, x]) => `<option value="${k}">${esc(x.name)}</option>`).join(""); if (w.dataset.h !== html) { w.innerHTML = html; w.dataset.h = html; } w.value = cur; }
+    const ms = $("millSel") || pickPan("mill").querySelector("#millSel");   // it lives in the (hidden) grinder panel, which may be out of the page
+    if (kc && ms) { let w = kc.querySelector("select.wheel"); if (!w) { w = document.createElement("select"); w.className = "wheel"; w.setAttribute("aria-label", LANG === "it" ? "Macinino" : "Grinder");
+        w.onchange = () => { const m = $("millSel") || pickPan("mill").querySelector("#millSel"); if (!m || w.value === m.value) return; m.value = w.value; m.dispatchEvent(new Event("change")); }; kc.appendChild(w); }
+      const html = ms.innerHTML; if (w.dataset.h !== html) { w.innerHTML = html; w.dataset.h = html; } w.value = ms.value;
+      // ‹ 22 clicks ›: a click either way sets the C40 zero (it follows every recipe, as − / + under the grinder did)
+      const fig = kc.querySelector(":scope > b"); if (fig && isC40() && !fig.classList.contains("zstep-b")) { fig.classList.add("zstep-b", "dstep-b"); kc.classList.add("wide", "z-wide");   // the row to itself: ‹ 20 clicks › needs it
+        const n = document.createElement("span"); n.className = "dstep-n"; while (fig.firstChild) n.appendChild(fig.firstChild); fig.appendChild(n);
+        const mk = (d) => { const x = document.createElement("button"); x.type = "button"; x.className = "chip gear-more"; x.dataset.zstep = d; x.setAttribute("aria-label", d < 0 ? (LANG === "it" ? "Uno scatto più fine" : "One click finer") : (LANG === "it" ? "Uno scatto più grosso" : "One click coarser"));
+          x.innerHTML = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="${d < 0 ? "M7.5 2.5 4 6l3.5 3.5" : "M4.5 2.5 8 6 4.5 9.5"}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`; return x; };
+        fig.prepend(mk(-1)); fig.appendChild(mk(1)); } } }
+  document.addEventListener("click", (e) => { const z = e.target.closest && e.target.closest("[data-zstep]"); if (!z) return; e.preventDefault(); e.stopPropagation(); try { setZero(+z.dataset.zstep); } catch (er) {} }, true);
+  function placePicks() { try { wheels(); } catch (e) {} const rb = $("rbody"), sp = $("specs"); if (!rb || !sp) return; const b = pickPan("brew"), m = pickPan("mill");
     const bc = sp.querySelector(".spec.brewer"); if (bc) { bc.after(b); b.style.order = "0"; } else if (b.parentNode !== rb) rb.insertBefore(b, rb.firstElementChild);
     // under the grinder's row: right after it when it runs the full width, after the kettle beside it otherwise (the specs are ordered by CSS)
     const key = sp.querySelector(".spec.key"), temp = sp.querySelector(".spec.temp"), wide = key && key.classList.contains("wide");
     if (key) { (wide || !temp ? key : temp).after(m); m.style.order = wide || !temp ? "1" : "2"; } else sp.appendChild(m); }
   function openPick(k, on) { const p = pickPan(k); p.hidden = !on; document.querySelectorAll(`[data-pick="${k}"]`).forEach((x) => x.setAttribute("aria-expanded", String(on)));
     if (on) { const o = k === "brew" ? "mill" : "brew"; if (PICKS[o] && !PICKS[o].hidden) openPick(o, false); } }
-  document.addEventListener("click", (e) => { const t = e.target.closest("[data-pick]"); if (t) { e.preventDefault(); openPick(t.dataset.pick, pickPan(t.dataset.pick).hidden); return; } });
+  document.addEventListener("click", (e) => { const t = e.target.closest("[data-pick]"); if (t) { e.preventDefault(); const w = t.closest(".spec") && t.closest(".spec").querySelector("select.wheel"); if (w) { try { w.showPicker ? w.showPicker() : w.focus(); } catch (er) { w.focus(); } } return; } });   // the wheel, not the pill panels (28/11/2026)
   // a brewer picked: its panel folds away (the recipe has changed above it). Caught on the way down, before the chip is redrawn
   document.addEventListener("click", (e) => { const ch = e.target.closest("#brewPick button.chip"); if (ch && !/^\+\s*\d/.test(ch.textContent.trim()) && !ch.classList.contains("gear-more")) setTimeout(() => openPick("brew", false), 0); }, true);
   function render() {
