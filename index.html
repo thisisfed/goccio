@@ -6455,6 +6455,12 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
         const why1 = r.agit <= 1 ? (it ? `${pr || "questo caffè"} diventa aspro se lo agiti troppo` : `${pr ? (/^[aeiou]/i.test(pr) ? "an " : "a ") + pr + " coffee" : "this coffee"} goes harsh when stirred up`) : (it ? "un caffè denso vuole movimento per estrarre in modo uniforme" : "a dense coffee needs movement to extract evenly");
         L.push([it ? "Versate" : "Pours", it ? `${np}, ${ag}: ${why1}. Tempo totale ${Math.floor(r.lo / 60)}:${String(r.lo % 60).padStart(2, "0")}–${Math.floor(r.hi / 60)}:${String(r.hi % 60).padStart(2, "0")}.` : `${np}, ${ag}: ${why1}. Done in ${Math.floor(r.lo / 60)}:${String(r.lo % 60).padStart(2, "0")}–${Math.floor(r.hi / 60)}:${String(r.hi % 60).padStart(2, "0")}.`]); }
       else if (K === "shot" && r.lo) L.push([it ? "Tempo" : "Time", it ? `${r.lo}–${r.hi} s: la macinatura decide il tempo. Più veloce e acido, più fine; più lento e amaro, più grosso.` : `${r.lo}–${r.hi} s: the grind sets the time. Fast and sour, go finer; slow and bitter, go coarser.`]);
+      // how long to rest it, when the roaster says (28/11/2026)
+      { const bg = state.bag || {}, rs = Array.isArray(bg.rest) ? bg.rest : null;
+        if (rs && rs[0]) { const wk = (d) => d % 7 === 0 && d >= 7 ? (it ? `${d / 7} settiman${d === 7 ? "a" : "e"}` : `${d / 7} week${d === 7 ? "" : "s"}`) : (it ? `${d} giorni` : `${d} days`);
+          const span = rs[1] == null ? (it ? `${wk(rs[0])} o più` : `${wk(rs[0])} or more`) : rs[1] === rs[0] ? wk(rs[0]) : (rs[0] % 7 === 0 && rs[1] % 7 === 0 ? (it ? `${rs[0] / 7}–${rs[1] / 7} settimane` : `${rs[0] / 7}–${rs[1] / 7} weeks`) : (it ? `${rs[0]}–${rs[1]} giorni` : `${rs[0]}–${rs[1]} days`));
+          const who = bg.roaster || (it ? "La torrefazione" : "The roaster");
+          L.push([it ? "Riposo" : "Rest", it ? `${who} lo consiglia ${span} dopo la tostatura: guarda la data sulla busta. Troppo fresco, la CO₂ ostacola l'estrazione e il gusto viene aspro e vuoto.` : `${who} says it's best ${span} after roasting: check the date on the bag. Too fresh and the gas still in the beans gets in the water's way, so it tastes sharp and hollow.`]); } }
       wn.innerHTML = L.length ? `<p class="wn-h">${it ? "Perché questi numeri" : "Why these numbers"}</p><ul class="wn">${L.map(([k, v]) => `<li><b>${esc(k)}</b> ${esc(v)}</li>`).join("")}</ul>` : "";
       wn.hidden = !L.length; }
     // "Label: text" lines bold the label; a line with no label (the roast note) is shown as it is
@@ -7051,13 +7057,17 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   // how this coffee's brews came out for everyone who logged one (functions/api/taste.js): said once there are CROWD_MIN answers
   const CROWD_MIN = 5, crowdSeen = new Map();
   // the roaster's own recipe, when its shop page gives one: their numbers, next to Goccio's, read by the scanner (roaster_recipe)
-  function roRecFor(bag) { const el = $("roRec"); if (!el) return; const row = bag && bag.url ? shelf.find((x) => x.url === bag.url) : null, rr = row && row.roaster_recipe;
+  function roRecFor(bag) { const el = $("roRec"); if (!el) return; const row = bag && bag.url ? shelf.find((x) => x.url === bag.url) : null, rr0 = row && row.roaster_recipe;
+    // a filter recipe and an espresso one (Scenery, 28/11/2026): the one for what you're brewing
+    const esp = (() => { try { return brewerOf(state) === "espresso"; } catch (e) { return false; } })();
+    const rr = !rr0 ? null : esp && rr0.espresso ? rr0.espresso : !esp && rr0.brewer === "espresso" && rr0.espresso === undefined ? rr0 : rr0;
     if (!rr) { el.hidden = true; el.innerHTML = ""; return; }
     const it = LANG === "it", n = (x) => String(x).replace(".", it ? "," : "."), bits = [];
     const BN = { flat: it ? "dripper a fondo piatto" : "flat-bottom drippers", v60: "V60", kalita: "Kalita Wave", chemex: "Chemex", aeropress: "AeroPress", origami: "Origami", orea: "Orea", april: "April", clever: "Clever", "french press": it ? "French press" : "French press", moka: "moka", espresso: "espresso", "batch brew": it ? "macchina a filtro" : "batch brew" };
     if (rr.dose && rr.water) bits.push(rr.brewer === "espresso" ? (it ? `${n(rr.dose)} g dentro, ${n(rr.water)} g fuori` : `${n(rr.dose)} g in, ${n(rr.water)} g out`) : (it ? `${n(rr.dose)} g di caffè per ${n(rr.water)} g d'acqua` : `${n(rr.dose)} g coffee to ${n(rr.water)} g water`) + (rr.ratio ? ` (1:${n(rr.ratio)})` : ""));
+    else if (rr.per_l) bits.push(it ? `${n(rr.per_l)} g per litro (1:${n(rr.ratio)})` : `${n(rr.per_l)} g a litre (1:${n(rr.ratio)})`);
     else if (rr.ratio) bits.push(it ? `rapporto 1:${n(rr.ratio)}` : `a 1:${n(rr.ratio)} ratio`);
-    if (rr.temp) bits.push(`${n(rr.temp)} °C`);
+    if (rr.temp) bits.push(`${n(rr.temp)} °C` + (rr.temp_rested ? (it ? ` (${n(rr.temp_rested)} °C quando ha riposato)` : ` (${n(rr.temp_rested)} °C once rested)`) : ""));
     const GW = { "extra-fine": it ? "extra fine" : "extra fine", fine: it ? "fine" : "fine", "medium-fine": it ? "medio-fine" : "medium-fine", medium: it ? "media" : "medium", "medium-coarse": it ? "medio-grossa" : "medium-coarse", coarse: it ? "grossa" : "coarse" };
     if (rr.grind || rr.grind_um) { const um = rr.grind_um ? (it ? `circa ${rr.grind_um} µm` : `about ${rr.grind_um} µm`) : "";
       bits.push(rr.grind ? (it ? `macinatura ${GW[rr.grind] || rr.grind}` : `${GW[rr.grind] || rr.grind} grind`) + (um ? ` (${um})` : "") : (it ? `macinatura a ${um}` : `${um} grind`)); }
@@ -8796,7 +8806,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     const process = r.process ? procKey(r.process) : "auto";
     return { text: [r.roaster, r.name, r.origin, r.region, r.variety, r.process, roastWords].filter(Boolean).join(", ") + (notes.length ? ". Notes: " + notes.join(", ") : ""),
       // the roaster's own tasting notes for this exact coffee: shown in What to expect only, never used to set the recipe
-      bag: { roaster: r.roaster, name: r.name, origin: r.origin, variety: r.variety, notes, url: r.url, place: r.roaster_city || r.city || "", alt: Array.isArray(r.altitude) ? r.altitude : null,
+      bag: { roaster: r.roaster, name: r.name, origin: r.origin, variety: r.variety, notes, url: r.url, place: r.roaster_city || r.city || "", alt: Array.isArray(r.altitude) ? r.altitude : null, rest: Array.isArray(r.rest) ? r.rest : null,
         listNotes: Array.isArray(r.notes) ? r.notes.filter((n) => typeof n === "string" && n.trim() && n.length < 40).map(tidyNote).filter(Boolean).slice(0, 5) : [] },
       process, listProc: process,   // came from the roaster's listing, not from you
       roast: r.roast_level === "dark" ? "dark" : r.roast_level === "medium-dark" ? "mdark" : "auto" };
