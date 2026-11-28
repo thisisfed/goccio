@@ -3650,7 +3650,9 @@ footer .foot-links a{padding:4px 0}
 /* the bottom bar: taller pills, Start brewing the widest */
 .botnav .chip{height:44px!important}
 .botnav .chip.bn-go, .botnav .chip.bn-ask{flex:2 1 auto!important}
-.botnav .chip.bn-ask{background:var(--pill)!important;color:var(--ink)!important}
+html.brew-in body .botnav:has(.bn-go:not([hidden]), .bn-ask:not([hidden])) [data-bn="cancel"]{flex:1 1 0!important;min-width:0!important;width:auto!important;max-width:none!important}
+html.brew-in body .botnav .chip.bn-go:not([hidden]), html.brew-in body .botnav .chip.bn-ask:not([hidden]){flex:2 1 0!important;min-width:0!important;max-width:none!important}   /* Back a third, Start brewing two (28/11/2026) */
+.botnav .chip.bn-ask{background:var(--hl)!important;color:#000!important}   /* the next thing to do is always the orange one (28/11/2026) */
 #detected .roast-ask #roastSkip[aria-pressed="true"]{background:var(--ink)!important;color:var(--bg)!important}
 :root{--bot-h:calc(44px + 17px + env(safe-area-inset-bottom))}
 /* 3. Italian: the fold's label takes the room its words need */
@@ -6624,6 +6626,8 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     state.brewer = v;
     const B = BREWERS[v], d = state.doses[v];
     state.dose = B.doses.some(([x]) => x === d) ? d : B.dose;
+    // a coffee open in the list: the list waits until it's closed, or its re-sort for the new brewer takes the open coffee away (28/11/2026)
+    if (brewIn && document.querySelector(".item.brewing")) { window.__shelfStale = true; return; }
     renderShelfV(); renderShelf();
   }
   // Cup is the choice people have a view on, so it sits in the open; the dose is set on the recipe itself, with − and +
@@ -8503,8 +8507,9 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
           /* nothing found: one sentence with ways on, searches that work in it; then, on its own line, the way to ask for a roaster */
           const tries = tryPicks(LANG === "it").map((x) => `<a href="#" class="try-q" data-q="${x}">${x}</a>`).join(", ");
           const mail = `<a href="#" class="mail-me" data-s="Missing coffee">${shelfV !== "all" ? "email me" : "Email me"}</a> and I’ll add it.`;
-          void mail; const msg = shelfV !== "all" ? `Try Everything under Made for.` : `Try: ${tries} or <a href="#" class="mail-me scan-me">scan the bag in front of you</a>.`;   // no "Missing a roaster? Email me" (28/11/2026)
+          void mail; void tries; const msg = "";   // no Try line and no "Missing a roaster? Email me" (28/11/2026): the count and Clear search say it
           const tryQ = "";
+          if (!msg) return "";
           const an = $("askNote"); if (!an.hidden && an.textContent && !an.classList.contains("nb-band")) { an.innerHTML = esc(an.textContent).replace(/([^.])$/, "$1.") + "<br>" + msg + tryQ; return ""; }   /* the one-line band keeps its one line (its hidden second line made it scroll past "you."; 28/11/2026): the ways on go under it */
           return `<p class="muted no-res" style="padding:12px 0 16px;margin:0">${msg}</p>`; })();
     const left = list.length - Math.min(shelfN, list.length);
@@ -8917,7 +8922,8 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     html.classList.remove("brew-in"); try { $("shelves").style.removeProperty("margin-top"); } catch (e) {} document.querySelectorAll(".brew-above").forEach((x) => x.classList.remove("brew-above")); document.querySelectorAll(".item.brewing").forEach((x) => { x.classList.remove("brewing"); const h = x.querySelector(".brew-host"); if (h) h.remove();
       const bb = x.querySelector("button[data-i]"); if (bb) { bb.removeAttribute("aria-pressed"); bb.textContent = "Brew"; } }); }
   // closing the open coffee puts it away for good: no "What's brewing?" with its name left further down the page. That section is for a scanned or typed bag
-  function brewShut() { brewIn = false; brewHome(); brewKeep = null; state.text = ""; state.bag = null; state.roastPhoto = null; try { $("coffeeIn").value = ""; wbOpen = false; } catch (e) {} saveState(); renderAllOpts(); render(); }
+  function brewShut() { brewIn = false; brewHome(); brewKeep = null; state.text = ""; state.bag = null; state.roastPhoto = null; try { $("coffeeIn").value = ""; wbOpen = false; } catch (e) {} saveState(); renderAllOpts(); render();
+    if (window.__shelfStale) { window.__shelfStale = false; try { renderShelfV(); renderShelf(); } catch (e) {} } }   // the brewer changed while it was open
   let brewFresh = false, brewKeep = null;   // brewKeep: where the page stood when an open coffee was last put away, for when it is only being re-drawn
   function placeBrew() { const row = $("recipe").hidden ? null : brewRow();
     if (!row) return brewHome();
@@ -11109,7 +11115,9 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   { const fitBuy = () => { const c = document.querySelector('.botnav [data-bn="cancel"]'), bb = $("buyBtn"); if (!c || !bb || bb.hidden || !c.offsetWidth) return;
       const os = [$("copyBtn"), $("linkBtn")].filter((x) => x && x.offsetWidth), g = parseFloat(getComputedStyle(bb.parentNode).columnGap) || 4, ic = os.reduce((t, x) => t + x.getBoundingClientRect().width, 0) + g * os.length;
       // one width for both: Back's own, or the row's with Buy a little roomy, whichever is wider
-      c.style.minWidth = ""; bb.style.minWidth = ""; const W = Math.round(Math.max(c.getBoundingClientRect().width, bb.getBoundingClientRect().width + 32 + ic));
+      c.style.minWidth = ""; bb.style.minWidth = ""; c.style.flex = ""; bb.style.justifyContent = "";
+      if (c.parentNode.querySelector(".bn-go:not([hidden]), .bn-ask:not([hidden])")) { bb.style.minWidth = Math.round(bb.getBoundingClientRect().width + 32) + "px"; bb.style.justifyContent = "center"; return; }   // Start brewing on the bar: it takes two thirds, Back one (28/11/2026); Buy keeps its roomy width
+      const W = Math.round(Math.max(c.getBoundingClientRect().width, bb.getBoundingClientRect().width + 32 + ic));
       c.style.minWidth = W + "px"; c.style.flex = "0 0 auto"; bb.style.minWidth = Math.max(0, W - Math.round(ic)) + "px"; bb.style.justifyContent = "center"; };
     addEventListener("resize", fitBuy); new MutationObserver(() => requestAnimationFrame(fitBuy)).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
     if ("ResizeObserver" in window) { const c = document.querySelector('.botnav [data-bn="cancel"]'); if (c) new ResizeObserver(fitBuy).observe(c); } setInterval(fitBuy, 2000); window.__fitBuy = fitBuy; }
@@ -11371,7 +11379,10 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     sync(); addEventListener("scroll", sync, { passive: true }); addEventListener("resize", sync); }
   // the bottom bar: always four. My bags with nothing saved shows the list, where Save is; Journal before any brew shows What's brewing
   // the Brew pill turns into Start brewing while there's a timed recipe (the brew bar would show); a tap opens brew mode
-  const syncBrewPill = () => { const b = document.querySelector('.botnav [data-bn="coffee"]'); if (!b) return; const go = !$("dock").hidden && !$("dockGo").disabled;
+  const syncBrewPill = () => { const b = document.querySelector('.botnav [data-bn="coffee"]'); if (!b) return; const go0 = !$("dock").hidden && !$("dockGo").disabled;
+    // a recipe of steps (moka, cold brew) has no timer, but the next thing to do is still the orange pill: it goes to the steps (28/11/2026)
+    let steps = false; try { steps = !go0 && document.documentElement.classList.contains("brew-in") && !$("recipe").hidden && !!$("pourRows") && $("pourRows").offsetHeight > 0; } catch (e) {}
+    const go = go0 || steps; b.classList.toggle("bn-steps", steps);
     b.classList.toggle("bn-go", go); b.textContent = go ? (LANG === "it" ? "Inizia" : "Start brewing") : (LANG === "it" ? "Cosa prepari?" : "What’s brewing?");   // named as the section it opens (was "My coffee", Nov 2026); not "Brew": that is what each coffee's own button says
     let wait = false; try { wait = roastWait && !$("recipe").hidden; } catch (e) {}
     b.classList.toggle("bn-ask", wait); if (wait) { b.textContent = LANG === "it" ? "Che tostatura è?" : "What roast is it?"; return; }
@@ -11382,6 +11393,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   document.querySelectorAll(".botnav [data-bn]").forEach((b) => b.onclick = () => { const id = b.dataset.bn, el = $(id);
     if (id === "cancel") { const it = document.querySelector(".item.brewing"); brewShut(); if (it && it.isConnected) it.scrollIntoView({ block: "center" }); return; }   // a coffee open in the list: Cancel folds it
     if (id === "coffee" && b.classList.contains("bn-ask")) return jumpTo($("detected"));   // the roast first
+    if (id === "coffee" && b.classList.contains("bn-steps")) return jumpTo($("pourRows").closest("table") || $("pourRows"));
     if (id === "coffee" && b.classList.contains("bn-go")) return openBrew();
     if (id === "coffee" && window.__useScan && window.__useScan()) return;   // a scan waiting to be checked: Brew is Use these
     if (id === "coffee" && document.querySelector(".item.brewing")) return jumpTo(document.querySelector(".item.brewing"));
