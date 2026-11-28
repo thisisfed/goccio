@@ -3775,7 +3775,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   <section class="sec hero-sec" aria-labelledby="h1">
     <div class="hero">
       <div class="wm-screen">
-        <p class="wordmark" aria-hidden="true" translate="no"><span id="wm">Goccio</span></p>
+        <p class="wordmark" aria-hidden="true" translate="no"><span id="wm">Goccio</span></p><script>try{var q=JSON.parse(localStorage.getItem("v60.wmY")||"null");if(q&&q.w===innerWidth&&typeof q.y==="number")document.currentScript.previousElementSibling.style.translate="0 "+q.y+"px";}catch(e){}</script>
         <div class="wm-more">
           <h1 class="wm-tagline">Every new coffee, with a recipe for your brewer.</h1>
           <p class="wm-live wm-tot" id="wmTot" hidden></p>
@@ -10797,8 +10797,12 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   { const wmFit = () => { const w = document.querySelector(".wm-screen > .wordmark"), sp = $("wm"), tg = document.querySelector(".wm-more .wm-tagline"); if (!w || !sp || !tg || !w.offsetHeight) return;
       const met = (e) => { const cs = getComputedStyle(e), c = document.createElement("canvas").getContext("2d"); c.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
         const m = c.measureText("Hxgy"), h = c.measureText("H"), r = document.createRange(); r.selectNodeContents(e); const q = r.getClientRects(); return q.length ? { top: q[0].top + m.fontBoundingBoxAscent - h.actualBoundingBoxAscent, base: q[q.length - 1].top + m.fontBoundingBoxAscent } : null; };
-      w.style.removeProperty("translate"); const a = met(sp), t = met(tg); if (!a || !t) return; const base0 = getComputedStyle(w).translate; const y0 = base0 && base0 !== "none" ? parseFloat(base0.split(" ")[1] || "0") : 0;
-      w.style.translate = `0 ${(y0 + (t.top - 16 - a.base)).toFixed(2)}px`; };
+      // measured with no transition running: mid-slide, the computed place was the old one, so each fit added its own 3 px (the refresh jump)
+      const tr0 = w.style.transition; w.style.transition = "none"; w.style.removeProperty("translate"); void w.offsetHeight;
+      const a = met(sp), t = met(tg); if (!a || !t) { w.style.transition = tr0; return; } const base0 = getComputedStyle(w).translate; const y0 = base0 && base0 !== "none" ? parseFloat(base0.split(" ")[1] || "0") : 0;
+      const yy = +(y0 + (t.top - 16 - a.base)).toFixed(2); w.style.translate = `0 ${yy}px`; void w.offsetHeight; w.style.transition = tr0;
+      // kept for the next visit, so the wordmark starts where it ends up and never jumps on a refresh (28/11/2026)
+      try { if (document.fonts && document.fonts.status === "loaded") localStorage.setItem("v60.wmY", JSON.stringify({ w: innerWidth, h: innerHeight, y: yy })); } catch (e) {} };
     if (document.fonts) document.fonts.ready.then(wmFit); addEventListener("resize", wmFit); setTimeout(wmFit, 600); }
   // the coffees' rag (28/11/2026): each card's two lines of type broken by hand, the way a typesetter would, not word by word as they
   // fill: no word left alone on a line, no line ending on "and", the last line never a stub, the lines' ends free to vary. Every gap
@@ -11138,6 +11142,11 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     const w = $("wm"), p = w && w.parentElement, scr = p && p.parentElement; if (!scr) return;
     const cv = document.createElement("canvas").getContext("2d");
     const fit = () => {
+      // measured without the wordmark's own nudge onto the tagline (wmFit's translate, put back at the end): the two used to feed each other,
+      // so each one moved Goccio a little more on every load and resize (28/11/2026: the refresh jump)
+      const pt0 = p.style.translate; p.style.translate = "";
+      try { fit0(); } finally { p.style.translate = pt0; } };
+    const fit0 = () => {
       w.style.transform = ""; const cs = getComputedStyle(w), ss = getComputedStyle(scr);
       cv.font = `${cs.fontWeight} 100px ${cs.fontFamily}`; const m = cv.measureText(w.textContent);
       const room = scr.clientWidth - parseFloat(ss.paddingLeft) - parseFloat(ss.paddingRight);
