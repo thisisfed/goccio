@@ -10978,7 +10978,9 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       if (!full) full = startFull();
       apply(await full, false);
       // a coffee's own page links here with #brew=<its shop link>: open its recipe straight away
-      { const m = location.hash.match(/^#brew=(.+)$/); if (m) { let u = ""; try { u = decodeURIComponent(m[1]); } catch (e) {}
+      { const m = location.hash.match(/^#brew=([^&]+)(?:&b=([a-z]+))?$/); if (m) { let u = ""; try { u = decodeURIComponent(m[1]); } catch (e) {}
+          // a link can name the brewer too: #brew=<coffee link>&b=april opens that coffee's recipe for the April Brewer (28/11/2026)
+          if (m[2] && BREWERS[m[2]] && m[2] !== brewerOf(state)) try { setBrewer(m[2]); renderAllOpts(); } catch (e) {}
           history.replaceState(null, "", location.pathname + location.search); const r = u && shelf.find((x) => x.url === u);
           // open in the list, where it was, when it's there (a refresh on a coffee's recipe); otherwise as its own recipe
           if (r) { const i = shelf.indexOf(r), btn = $("shelf").querySelector(`button[data-i="${i}"]`); if (btn) brewThis(r, true, true); else brewThis(r); } } }
