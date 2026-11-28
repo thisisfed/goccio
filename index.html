@@ -43,7 +43,7 @@ html body #shelf .item .l > .c-notes:not(.nb-line){margin-top:2px!important}
 html body .shelf .grp.day-g{top:calc(var(--top-h,44px) + 44px + 12px)!important}
 /* the three bands the same height as the Brew and Buy pills, 44 px each, line to line: the top bar, the kinds row, the day's count (27/11/2026) */
 html body .top .top-in{min-height:0!important;padding-top:4px!important;padding-bottom:5px!important}   /* 4 px over the pills and 4 px under them to the line, as the pills are 4 px apart (27/11/2026) */
-html body .top .ask-line{height:40px!important;bottom:auto!important}   /* the search box at 6 px from the top, level with the + (centred in 43 it sat half a pixel up) */   /* pinned under the kinds row, the same height as it */
+html body .top .ask-line{height:51px!important;bottom:auto!important}   /* the search box at 6 px from the top, level with the + (centred in 43 it sat half a pixel up) */   /* pinned under the kinds row, the same height as it */
 html.ro-page body .shelf .grp.day-g{top:calc(var(--top-h,49px) + 12px)!important}
 html body #shelf > .grp.day-g{height:32px;box-sizing:border-box}
 html body #shelf > .grp.day-g .day-t.day-wait.day-wait.day-wait{visibility:hidden!important}   /* the count waits for the whole list: no "42" before "88" (27/11/2026) */   /* a whole number of pixels: its line on a pixel row, the same 43 px band as the kinds row (27/11/2026) */
@@ -1105,7 +1105,7 @@ details.clk > summary .muted { margin-left: auto; overflow: hidden; text-overflo
 /* ================= MODULE SKIN, PART 3 ================= */
 /* one pill: every chip, select, stepper and small button the same height, padding and type */
 :root { --pill-h: 43px; --btn-h: 43px; --fs-xl: 39px; }   /* every pill 43 px, the top bar's height without its line (27/11/2026) */
-header.top{--pill-h:32px;--btn-h:32px}   /* the top bar keeps its pills at 32 so the bar stays 44 */   /* 15 × 1.618 = 24, 24 × 1.618 = 39 */
+header.top{--pill-h:43px;--btn-h:43px}   /* 28/11/2026: the top bar's search, Goccio and + as big as the page's pills (43 px, a full-size tap) */   /* the top bar keeps its pills at 32 so the bar stays 44 */   /* 15 × 1.618 = 24, 24 × 1.618 = 39 */
 .chip, .need .chip, .w-body .chip, .taste .chip, .nav button, .nav .theme-btn, .entry button, .rp-go, .notes-list span, .pill, .oc, .ji-tag {
   display: inline-flex; align-items: center; height: var(--pill-h); padding: 0 10px; font: 500 var(--fs-s)/1 var(--sans); border-radius: var(--r); white-space: nowrap; box-sizing: border-box; }
 .pill, .oc, .ji-tag, .notes-list span { height: 24px; padding: 0 8px; }
@@ -3173,7 +3173,7 @@ html body #shelfMore{margin-bottom:28px!important}
 html body .wb-sign .gdrop{pointer-events:none!important} html body .wb-sign .gdrop .gd-b{pointer-events:visiblePainted}   /* only the drop itself is tappable, not the empty box around it (it used to catch taps meant for Load more) */
 /* Ask Goccio: a little Goccio beside the search box */
 html body .ask-line .ask-goccio{flex:none;width:var(--pill-h,32px);height:var(--pill-h,32px);padding:0;margin:0 0 0 -12px;border:0;border-radius:var(--r,4px);background:var(--pill);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;align-self:center}
-html body .ask-line .ask-goccio svg{width:22px;height:22px;fill:#000}
+html body .ask-line .ask-goccio svg{width:26px;height:26px;fill:#000}   /* a little bigger in the 43 px button (28/11/2026) */
 @media (hover:hover){html body .ask-line .ask-goccio:hover{opacity:.88}}
 @media (hover:hover){html:is(.lv-page,.ro-page) body .top .lv-home:hover{background-color:color-mix(in srgb,var(--pill) 76%,var(--ink))}}   /* Homepage darkens on hover like the little Goccio and the + */
 html body .ask-line{display:flex;align-items:center} html body .ask-line > .ask-box{flex:1;min-width:0}
@@ -4184,7 +4184,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     if (!/[\p{L}]{3,}/u.test(n) || n.split(/\s+/).length > 4 || NOTE_NOT.test(n)) return "";
     return n.charAt(0).toUpperCase() + n.slice(1); };
   const nameRx = (a) => new RegExp("(^|[^A-Za-z0-9])(" + a.sort((x, y) => y.length - x.length).map(reEsc).join("|") + ")(?![A-Za-z0-9+])", "g");
-  const GRX = nameRx(["Sage / Breville Smart Grinder Pro", "Ditting KR / KFA 1203 / 1403", "Hario Skerton / Plus / Pro", "Timemore C3 / C3S / C3 Pro", "1Zpresso J-Max / J-Max S", "Mahlkönig EK43 / EK43 S", "1Zpresso ZP6 Special", "Turin DF64 (Gen 1)", "Baratza Encore ESP", "Turin DF64 (Gen 2)", "Smart Grinder Pro", "Baratza Virtuoso+", "1Zpresso K-Ultra", "Fellow Ode Gen 2", "Comandante C40", "Baratza Encore", "Wilfa Uniform", "KINGrinder K6", "Wilfa Svart", "Fellow Opus", "1Zpresso Q2", "Timemore C3", "Timemore C2", "DF64 Gen 1", "Niche Zero", "DF64 Gen 2", "Encore ESP", "Ode Gen 2", "Virtuoso+", "Uniform", "Ditting", "K-Ultra", "Skerton", "Encore", "J-Max", "Niche", "Svart", "DF64", "Opus", "EK43", "C40", "ZP6", "SGP", "C2", "K6", "Q2", "C3"]), BRX = nameRx(["Bialetti Moka Express", "Clever Dripper", "Hario Switch", "French Press", "Kalita Wave", "April Brewer", "Moccamaster", "AeroPress", "Orea", "Cold brew", "Espresso", "Melitta", "Origami", "Chemex", "V60"]);
+  const GRX = nameRx(["Sage / Breville Smart Grinder Pro", "Hario Skerton / Plus / Pro", "Timemore C3 / C3S / C3 Pro", "1Zpresso J-Max / J-Max S", "Mahlkönig EK43 / EK43 S", "1Zpresso ZP6 Special", "Turin DF64 (Gen 1)", "Baratza Encore ESP", "Turin DF64 (Gen 2)", "Smart Grinder Pro", "Baratza Virtuoso+", "1Zpresso K-Ultra", "Fellow Ode Gen 2", "Comandante C40", "Baratza Encore", "Wilfa Uniform", "KINGrinder K6", "Wilfa Svart", "Fellow Opus", "1Zpresso Q2", "Timemore C3", "Timemore C2", "DF64 Gen 1", "Niche Zero", "DF64 Gen 2", "Encore ESP", "Ode Gen 2", "Virtuoso+", "Uniform", "Ditting", "K-Ultra", "Skerton", "Encore", "J-Max", "Niche", "Svart", "DF64", "Opus", "EK43", "C40", "ZP6", "SGP", "C2", "K6", "Q2", "C3"]), BRX = nameRx(["Bialetti Moka Express", "Clever Dripper", "Hario Switch", "French Press", "Kalita Wave", "April Brewer", "Moccamaster", "AeroPress", "Orea", "Cold brew", "Espresso", "Melitta", "Origami", "Chemex", "V60"]);
   const NUMS = /\d+(?:[.,:]\d+)*/g, URX = /# (clicks|click|notches|notch|numbers|number|settings|setting|steps|step|ticks|tick|dots|dot)\b/g;
   const UIT = { clicks: "scatti", click: "scatto", notches: "tacche", notch: "tacca", numbers: "numeri", number: "numero", settings: "posizioni",
     setting: "posizione", steps: "passi", step: "passo", ticks: "tacchette", tick: "tacchetta", dots: "puntini", dot: "puntino" };
@@ -4542,6 +4542,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   if (state.goal === "tea") state.goal = "light";   // tea-like is gone (28/11/2026): a phone that kept it brews light & sweet
   // zero: permanent C40 zero offset in clicks (default 0). The old "grinder" key is ignored on purpose.
   let prefs = { coffees: {}, zero: 0, mill: "words", sound: true, buzz: true, keepAwake: true, water: null, ...store.get("v60.prefs", {}) };
+  if (prefs.mill === "ditting") prefs.mill = "words";   // the Ditting left the list (28/11/2026)
   delete prefs.grinder;
   let journal = store.get("v60.log", []);
   const saveState = () => store.set("v60.state", state);
@@ -4655,9 +4656,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
               show: (v) => v.toFixed(1), unit: "numbers", dec: true, src: HCG + "mahlkonig-ek43-0-16-grind-settings" },
     // shop grinder (Climpson's is a KFA 1403). No published V60 chart, so it's converted by burr gap:
     // ~30 µm per C40 click and ~100 µm per number on the dial (Prima Coffee: setting 8 ≈ 800 µm)
-    ditting: { name: "Ditting KR / KFA 1203 / 1403", short: "Ditting", lbl: "Ditting dial (1–9)", a: 4.5, b: 7.5, fp: 9.5, min: 1, max: 10, q: 0.1,
-              show: (v) => v.toFixed(1), unit: "numbers", dec: true, src: "https://prima-coffee.com/learn/video/overviews/video-Ditting-KR1403",
-              how: "Converted by burr gap (about 30 µm per C40 click, about 100 µm per number on the Ditting dial, where 8 is about 800 µm)" },
+    /* the Ditting is gone (28/11/2026): a café grinder almost nobody has at home; anyone who had picked it gets the grind in words */
     ode2:   { noEsp: true, name: "Fellow Ode Gen 2", short: "Ode Gen 2", lbl: "Ode Gen 2, number.step (3 steps per number)", a: 2 + 2 / 3, b: 5 + 2 / 3, fp: 11, min: 1, max: 11, q: 1 / 3,
               show: thirds, unit: "step", src: HCG + "fellow-ode-brew-grinder-gen-2-grind-settings/" },
     kultra: { name: "1Zpresso K-Ultra", short: "K-Ultra", lbl: "K-Ultra, rotation.number.tick", a: 5.3, b: 9.2, fp: 10, min: 0, max: 15, q: 0.1,
@@ -4707,8 +4706,9 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   const microns = (clicks) => Math.round(clicks * 30 / 50) * 50;
   GRINDERS.words = { name: "Other grinder", short: "", lbl: "Grind", a: 15, b: 25, fp: 40, min: 4, max: 60, q: 1, words: true,
     show: (v) => gw(v)[1], unit: "", how: "No setting for your grinder, so the grind is said in words and microns: about 30 µm per C40 click. Start there, then let the drawdown time tell you which way to go." };
-  const mill = () => GRINDERS[prefs.mill] || GRINDERS.c40;
-  const isC40 = () => !GRINDERS[prefs.mill] || prefs.mill === "c40";
+  const pm = () => prefs.mill === "ditting" ? "words" : prefs.mill;
+  const mill = () => GRINDERS[pm()] || GRINDERS.c40;
+  const isC40 = () => !GRINDERS[pm()] || pm() === "c40";
   // C40 clicks → this grinder: { txt, v, atMax, atMin }
   function onMill(clicks) {
     const G = mill(); if (isC40()) return { txt: String(clicks), v: clicks, atMax: false, atMin: false };
@@ -13211,6 +13211,15 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
         if (!Object.keys(want).length) return false; const r = prefPick(want, true); if (!r) return false; const ns = notesOf(r);
         say(T(`I'm a drop of coffee, so I've tasted plenty! One I'd pour right now: ${shownName(r)} from ${roasteryName(r.roaster)}${ns.length ? ", tasting of " + andList(ns) : ""}.`, `Sono una goccia di caffè, ne ho assaggiati tanti! Uno che verserei adesso: ${shownName(r)} di ${roasteryName(r.roaster)}${ns.length ? ", che sa di " + andList(ns) : ""}.`),
           [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(r); } }, T("Another one", "Un altro")], happy); return true; }],
+      // altitude, MASL (28/11/2026): what it means, what it does in the cup and to Goccio's kettle, and the open coffee's own height when known
+      [/\bm\.?\s?a\.?\s?s\.?\s?l\.?(?![a-z])|\bmasl\b|\baltitude\b|\belevation\b|how high (?:was |is )?(?:it|this|my coffee)? ?grown|grown (?:at what|how) high|above sea level|\baltitudine\b|metri (?:sul livello|s\.?\s?l\.?\s?m)|\bs\.l\.m\b|a che (?:quota|altezza)/i, () => {
+        const b = state && state.bag, a = b && Array.isArray(b.alt) ? b.alt : null, it = LANG === "it", nf = (v) => v.toLocaleString(it ? "it-IT" : "en-GB");
+        const mid = a ? Math.round((a[0] + (a[1] || a[0])) / 2) : 0, at = a ? (a[1] && a[1] !== a[0] ? `${nf(a[0])}–${nf(a[1])} m` : `${nf(a[0])} m`) : "", ft = nf(Math.round(mid * 3.281 / 100) * 100);
+        const mine = !a ? "" : mid >= 1900 ? T(` ${b.name} grew at ${at} (about ${ft} ft): high and dense, so its recipe has the kettle a degree hotter.`, ` ${b.name} è cresciuto a ${at}: in alto e denso, quindi la sua ricetta ha il bollitore un grado più caldo.`)
+          : mid < 1200 ? T(` ${b.name} grew at ${at} (about ${ft} ft): low and softer, so its recipe has the kettle a degree cooler.`, ` ${b.name} è cresciuto a ${at}: in basso e più tenero, quindi la sua ricetta ha il bollitore un grado più fresco.`)
+          : T(` ${b.name} grew at ${at} (about ${ft} ft), right in the usual range: nothing to correct for.`, ` ${b.name} è cresciuto a ${at}, nella fascia solita: niente da correggere.`);
+        say(T("MASL means metres above sea level: how high the coffee grew. Higher up it's cooler, so the cherries ripen slowly and the beans grow denser, sweeter and often brighter. Most specialty coffee grows between about 1,200 and 2,200 m. Dense beans give up their flavour more slowly, so Goccio sets the kettle a degree hotter for coffee grown at 1,900 m or more, and a degree cooler below 1,200 m.",
+          "MSLM, o masl in inglese, vuol dire metri sul livello del mare: quanto in alto è cresciuto il caffè. Più in alto fa più fresco, le ciliegie maturano piano e i chicchi vengono più densi, dolci e spesso più vivaci. Quasi tutto il caffè specialty cresce tra circa 1.200 e 2.200 m. I chicchi densi cedono il sapore più lentamente, quindi Goccio mette il bollitore un grado più caldo per il caffè cresciuto a 1.900 m o più, e un grado più fresco sotto i 1.200 m.") + mine); }]
     ];
     // brewers: what each is, the grind it wants, and when to pick it, for comparisons ("V60 or Chemex?") and grind questions
     const BREWERS = [
