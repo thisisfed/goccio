@@ -1642,6 +1642,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 .item .tags .tg{white-space:nowrap}
 .item .tags .tg{white-space:normal;min-width:0;overflow-wrap:anywhere}   /* a long variety list wraps inside the column instead of pushing the page sideways */
 .item .l > *{min-width:0;overflow-wrap:anywhere}
+html body #shelf .item .name.sent, html body #shelf .item .name.sent *{overflow-wrap:break-word;word-break:normal;hyphens:none}   /* a word is broken only if it alone is wider than the column (28/11/2026) */
 html,body{overflow-x:clip}   /* nothing may ever scroll the page sideways on a phone */
 .item .tags .tg.p-nat::before,.item .tags .tg.p-wash::before,.item .tags .tg.p-honey::before,.item .tags .tg.p-exp::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:.12em}
 .item .tags .tg.p-nat::before{background:#af52de}.item .tags .tg.p-wash::before{background:#30b0c7}.item .tags .tg.p-honey::before{background:#ff9f0a}.item .tags .tg.p-exp::before{background:#ff2d55}
@@ -10989,7 +10990,11 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
         if (one && !(last && n === 1) && !/:$/.test(words[i])) c += W * W * (last ? 1.2 : 0.8);   // a word on its own (the roaster and its colon may stand alone: "September: / Finca Arashi")
         if (best[i] + c < best[j]) { best[j] = best[i] + c; from[j] = i; } }
       if (best[n] >= BIG) return; const brk = new Set(); for (let j = n; j > 0; j = from[j]) if (from[j] > 0) brk.add(from[j] - 1);   // a break after word k
-      gaps.forEach((g, k) => { const ch = brk.has(k) ? " " : "\u00a0"; g.t.nodeValue = g.t.nodeValue.slice(0, g.i) + ch + g.t.nodeValue.slice(g.i + 1); }); };
+      gaps.forEach((g, k) => { const ch = brk.has(k) ? " " : "\u00a0"; g.t.nodeValue = g.t.nodeValue.slice(0, g.i) + ch + g.t.nodeValue.slice(g.i + 1); });
+      // checked as drawn (28/11/2026: "cand / y."): a line the phone's own type made wider than measured got a word broken in two. More lines
+      // than planned means a word was split: then every gap goes back to a plain space and the browser wraps between words, as it always can
+      { const tops = new Set(), r2 = document.createRange(); ts.forEach((t) => { if (!t.nodeValue.trim()) return; r2.selectNodeContents(t); [...r2.getClientRects()].forEach((q) => { if (q.width > 0.5) tops.add(Math.round(q.top / 4)); }); });
+        if (tops.size > brk.size + 1) ts.forEach((t) => { t.nodeValue = t.nodeValue.replace(/\u00a0/g, " "); }); } };
     // the first line (roaster and name) and the notes, a block of their own under it, each set on its own
     const card = (it) => { const p = it.querySelector(".name.sent"); if (!p) return; const t = p.querySelector(".s-t.s-line"); rag(p, t); if (t) rag(t); };
     const all = () => document.querySelectorAll("#shelf .item").forEach(card);
