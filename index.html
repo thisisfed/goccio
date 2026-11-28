@@ -2656,7 +2656,7 @@ html.brew-in .botnav [data-bn="cancel"]{display:inline-flex!important}
 html.brew-in .botnav [data-bn]:not([data-bn="cancel"]):not([data-bn="coffee"]){display:none!important}
 /* a coffee open in the list: its own Brew and plus step aside and the Brewer row slides up into their place; Cancel in the bar at the bottom closes it, so no Close here or at the foot */
 .shelf .item.brewing > .r, .brew-host .brew-shut{display:none!important}
-@keyframes brew-up{0%{transform:translateY(44px)}100%{transform:none}}
+@keyframes brew-up{0%{opacity:0}100%{opacity:1}}   /* fades in where it lands: Recipe for … never moves once it's there (28/11/2026; was a 44 px slide up) */
 .item.brewing > .brew-host.fresh{animation:brew-up .45s cubic-bezier(.2,.8,.2,1) both}
 @media (prefers-reduced-motion: reduce){ .item.brewing > .brew-host{animation:none} }
 .tech .tech-w::before{content:"⚠︎ ";color:var(--hl);font-weight:700}   /* the water line carries the same small warning sign as the notes in Why this recipe */
@@ -6332,7 +6332,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     renderMine(r);
     const showRet = r.tds != null;
     { const bn = BREWERS[r.brewer].name, open = !!(pickPan("brew").parentNode && !pickPan("brew").hidden);   // the brewer, in the title: tap it to change it (28/11/2026)
-      void open; $("recTitle").textContent = LANG === "it" ? `Ricetta per ${bn}` : `Recipe for ${bn}`; } [0, 350, 900].forEach((ms) => setTimeout(() => requestAnimationFrame(() => { try { window.recGrid && recGrid(); } catch (e) {} }), ms));   // and again once the coffee has opened   // the brewer is picked in its own cell, under the title
+      void open; $("recTitle").textContent = LANG === "it" ? `Ricetta per ${bn}` : `Recipe for ${bn}`; } try { window.recGrid && recGrid(); } catch (e) {} [0, 350, 900].forEach((ms) => setTimeout(() => requestAnimationFrame(() => { try { window.recGrid && recGrid(); } catch (e) {} }), ms));   // at once, before it's drawn, and again once the coffee has opened   // the brewer is picked in its own cell, under the title
     try { roRecFor(state.bag); } catch (e) {}
     crowdFor(state.bag);   // how everyone's brews of this coffee came out, once there are enough
     const noMillYet = !!mill().words;
@@ -8940,7 +8940,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     const shut = document.createElement("button"); shut.type = "button"; shut.className = "chip brew-shut"; shut.textContent = LANG === "it" ? "Chiudi" : "Close"; shut.onclick = () => { brewShut(); jumpTo(row); }; host.appendChild(shut);
     row.classList.add("brewing"); const bb = row.querySelector("button[data-i]"); if (bb) { bb.setAttribute("aria-pressed", "true"); bb.textContent = LANG === "it" ? "Chiudi" : "Close"; }   // the open coffee's Brew is its Close
     const y0 = row.getBoundingClientRect().top;
-    document.documentElement.classList.add("brew-in");
+    document.documentElement.classList.add("brew-in"); try { window.recGrid && recGrid(); } catch (e) {}   // Recipe for … on its line before the first frame, not after (28/11/2026: it sat on the notes, then dropped)
     // nothing above the open coffee either: the page starts at it, so there is no scrolling up past it
     for (let el = row; el && el !== document.body; el = el.parentElement) for (let p = el.previousElementSibling; p; p = p.previousElementSibling) {
       if (/^(SCRIPT|STYLE|LINK)$/.test(p.tagName) || /fixed|sticky/.test(getComputedStyle(p).position)) continue; p.classList.add("brew-above"); }
@@ -11108,7 +11108,10 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     const probe = (el, atEnd) => { const p = document.createElement("span"); p.style.cssText = "display:inline-block;width:0;height:0;vertical-align:baseline"; atEnd ? el.append(p) : el.prepend(p); const y = p.getBoundingClientRect().bottom; p.remove(); return y; };
     const lh = parseFloat(getComputedStyle(n).lineHeight) || n.getBoundingClientRect().height, nb = probe(n, true);
     head.style.paddingTop = "0px"; const mt = parseFloat(head.style.marginTop) || 0;   // a margin, so it can also pull the title up
-    head.style.marginTop = (mt + nb + 2 * lh - probe(t, false)) + "px";
+    // the recipe may still be sliding up as it opens (brew-up): measured where it will land, so it never jumps once it's there (28/11/2026)
+    const host = t.closest(".brew-host"), tf = host ? getComputedStyle(host).transform : "none", ty = tf && tf !== "none" ? new DOMMatrixReadOnly(tf).m42 : 0;
+    // a few rounds: a margin that collapses with its parents' doesn't move the title one for one (28/11/2026: it settled 6 px later)
+    for (let k = 0, m = mt; k < 4; k++) { const d = probe(n, true) + 2 * lh - (probe(t, false) - ty); if (Math.abs(d) < 0.5) break; m += d; head.style.marginTop = m + "px"; }
     // under it: from the title's last baseline to the rule, the room there is between the notes' baseline and the title's capitals
     const cs = getComputedStyle(t), cv = recGrid.cv || (recGrid.cv = document.createElement("canvas").getContext("2d")); cv.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
     const cap = cv.measureText("H").actualBoundingBoxAscent || parseFloat(cs.fontSize) * 0.7, gap = 2 * lh - cap;
