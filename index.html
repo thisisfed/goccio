@@ -66,21 +66,6 @@ html body #shelves .co-tabs ~ .fy-note.fy-top:not([hidden]){margin:0!important}
 @media (min-width:900px){ .co-tabs .co-in{justify-content:space-between;gap:16px} }
 .co-tabs button[aria-pressed="true"]{color:var(--ink);border-bottom-color:var(--ink)}
 html.ro-page .co-tabs{display:none}
-/* the kinds row, all at once (28/11/2026): a chevron pinned at the row's end opens every kind in four short rows, in the row's order (when, taste, kind, price) */
-.co-tabs .co-all{position:absolute;right:0;top:0;width:44px;height:43px;display:none;align-items:center;justify-content:center;background:var(--bg);border:0;padding:0;margin:0;color:var(--muted);cursor:pointer;z-index:4}
-.co-tabs.has-all .co-all{display:flex}
-html body .co-tabs.has-all .co-in{--fr:56px}
-html body .co-tabs.has-all .co-in::after{flex:0 0 44px!important}
-.co-tabs .co-all svg{width:14px;height:14px;transition:transform .2s ease}
-.co-tabs .co-all[aria-expanded="true"]{color:var(--ink)}
-.co-tabs .co-all[aria-expanded="true"] svg{transform:rotate(180deg)}
-.co-tabs .co-pan{position:absolute;left:0;right:0;top:0;background:var(--bg);box-shadow:-50vw 0 0 var(--bg),50vw 0 0 var(--bg);border-bottom:1px solid var(--line);padding:0 12px;z-index:3}
-.co-tabs .co-pan[hidden]{display:none}
-.co-tabs .co-pan .co-row{display:flex;flex-wrap:wrap;column-gap:18px}
-.co-tabs .co-pan .co-row + .co-row{border-top:1px solid var(--line)}
-.co-tabs .co-pan .co-row:first-child{padding-right:44px;column-gap:22px}
-html body .co-tabs .co-pan button{height:44px;margin-bottom:0}
-@media (prefers-reduced-motion:reduce){ .co-tabs .co-all svg{transition:none} }
 @media (max-width:899px){ .co-tabs{margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw)} .co-tabs .co-in{gap:22px;padding:0 12px;scroll-padding:0 12px} .co-tabs .co-in::after{content:"";flex:0 0 1px} }   /* on a phone the row runs the screen's whole width, edge to edge (27/11/2026) */
 /* the sentence: name in ink, roaster in mid grey, the taste in light grey (27/11/2026) */
 html body #shelf .item .name.sent{display:block;margin:0;text-wrap:pretty}
@@ -10450,7 +10435,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       const reset = () => { if (!a.value.trim()) segs.querySelectorAll("select").forEach((x) => { x.value = ""; show(x); }); sync(); };
       // the kinds row: a tap shows that kind at once; "New today" is the whole list again. It lights the kind the list is on
       const tabs = $("coTabs"); if (tabs) { tabs.querySelectorAll("[data-en]").forEach((b) => b.textContent = it ? b.dataset.it : b.dataset.en);
-        const light = () => { const sq = $("shelfQ").value.trim().toLowerCase(); tabs.querySelectorAll(".co-in button[data-q]").forEach((b) => b.setAttribute("aria-pressed", String((b.dataset.q2 || b.dataset.q).toLowerCase() === sq))); };
+        const light = () => { const sq = $("shelfQ").value.trim().toLowerCase(); tabs.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String((b.dataset.q2 || b.dataset.q).toLowerCase() === sq))); };
         // Near you (27/11/2026): the browser asks for the location; from it, the closest ring of roasters that has a dozen coffees.
         // Said no, or no fix: the country the clock is set to. Nothing leaves the page
         const nearAt = (la, lo, done) => fetch("/data/near.json").then((x) => x.json()).then((m) => {
@@ -10720,22 +10705,6 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   { const fade = (el) => { if (!el || el.__sx) return; el.__sx = true; const f = () => { const m = el.scrollWidth - el.clientWidth; el.classList.toggle("sx-l", m > 2 && el.scrollLeft > 2); el.classList.toggle("sx-r", m > 2 && m - el.scrollLeft > 2); };
       el.addEventListener("scroll", f, { passive: true }); addEventListener("resize", f); if ("ResizeObserver" in window) new ResizeObserver(f).observe(el); f(); el.__sxf = f; };
     fade(document.querySelector(".co-tabs .co-in"));
-    // the kinds row, all at once (28/11/2026): too many to fit a phone, so a chevron at its end opens them all in four rows, same order; a tap picks and closes
-    { const nav = $("coTabs"), row = nav && nav.querySelector(".co-in");
-      if (row) { const it = () => LANG === "it", src = [...row.querySelectorAll("button[data-q]")], GROUPS = [4, 5, 4, 2];
-        const btn = document.createElement("button"); btn.type = "button"; btn.className = "co-all"; btn.setAttribute("aria-expanded", "false"); btn.setAttribute("aria-controls", "coPan");
-        btn.innerHTML = '<svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2.5 5l4.5 4.5L11.5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-        const pan = document.createElement("div"); pan.className = "co-pan"; pan.id = "coPan"; pan.hidden = true;
-        const label = () => btn.setAttribute("aria-label", btn.getAttribute("aria-expanded") === "true" ? (it() ? "Chiudi" : "Close") : (it() ? "Tutti i tipi" : "All kinds"));
-        const build = () => { let i = 0; pan.innerHTML = GROUPS.map((n) => `<div class="co-row">${src.slice(i, i += n).map((b) => `<button type="button" data-i="${src.indexOf(b)}" aria-pressed="${b.getAttribute("aria-pressed")}">${esc(b.textContent)}</button>`).join("")}</div>`).join(""); };
-        const open = (on) => { btn.setAttribute("aria-expanded", String(on)); pan.hidden = !on; if (on) build(); label(); };
-        nav.appendChild(btn); nav.appendChild(pan); label();
-        btn.addEventListener("click", (e) => { e.stopPropagation(); open(pan.hidden); });
-        pan.addEventListener("click", (e) => { const b = e.target.closest("button[data-i]"); if (!b) return; e.stopPropagation(); open(false); src[+b.dataset.i].click(); });
-        document.addEventListener("click", (e) => { if (!pan.hidden && !nav.contains(e.target)) open(false); });
-        document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !pan.hidden) { open(false); btn.focus(); } });
-        const fit = () => { const was = nav.classList.contains("has-all"); nav.classList.remove("has-all"); const over = row.scrollWidth - row.clientWidth > 2; nav.classList.toggle("has-all", over); if (!over && !pan.hidden) open(false); if (was !== over && row.__sxf) row.__sxf(); };
-        addEventListener("resize", fit); if (document.fonts) document.fonts.ready.then(fit); setTimeout(fit, 600); fit(); } }
     const n = $("askNote"); if (n) { const wrap = () => { if (n.firstChild && n.firstChild.nodeType === 1 && n.firstChild.classList.contains("nb-in") && n.childNodes.length === 1) { n.firstChild.__sxf && n.firstChild.__sxf(); return; }
         if (!n.textContent.trim()) return; const sp = document.createElement("span"); sp.className = "nb-in"; while (n.firstChild) sp.appendChild(n.firstChild); n.appendChild(sp); fade(sp); };
       new MutationObserver(wrap).observe(n, { childList: true }); wrap(); } }
