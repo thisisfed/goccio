@@ -4653,6 +4653,9 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     if (/\bdecaf|swiss water|mountain water|\bea process|sugar ?cane (?:decaf|process)|ethyl acetate/.test(t)) process = "decaf";
     else if (/co-?ferment|infused|infusion|thermal shock|yeast|koji|inoculat|fruit ferment|barrel[- ]aged|whisk(?:e)?y barrel|rum barrel|wine barrel/.test(t)) process = "cofer";
     else if (/anaerob|carbonic|anoxic|double ferment|extended ferment|\d+\s?-?h(?:ou)?r|mosto|lactic/.test(t)) process = "anaerobic";
+    else if (/wet[- ]hulled|giling basah/.test(t)) process = "hulled";
+    else if (/monsoon/.test(t)) process = "monsooned";
+    else if (/\baerobic/.test(t)) process = "aerobic";
     else if (/\bnatural\b|dry[- ]process|sun[- ]dried/.test(t)) process = "natural";
     else if (/\bhoney\b|pulped natural|semi[- ]washed/.test(t)) process = "honey";
     else if (/\bwashed\b|wet[- ]process/.test(t)) process = "washed";
@@ -4679,13 +4682,22 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     anaerobic: { label: "anaerobic",           agit: 1, dT: -2, dC: 1 },
     cofer:     { label: "co-ferment / infused", agit: 0, dT: -3, dC: 2 },
     decaf:     { label: "decaf",               agit: 1, dT: -2, dC: 2 },
+    // 28/11/2026: three ways of processing the list names that used to fall to "not stated"
+    hulled:    { label: "wet-hulled",          agit: 1, dT: -1, dC: 1 },   // giling basah: soft, low-acid beans that give up their flavour easily
+    monsooned: { label: "monsooned",           agit: 1, dT: -2, dC: 1 },   // swollen, porous and very low in acid: quick to turn woody when pushed
+    aerobic:   { label: "aerobic fermentation", agit: 1, dT: -2, dC: 1 },  // a long open ferment: fruit-forward, brewed as gently as an anaerobic
     // not stated: assume it could be fermented. Gentle pours, a little cooler and coarser.
     unsure:    { label: "process not stated (gentle)", agit: 1, dT: -1, dC: 1 },
   };
   // hard temperature ceilings: above these, ferment and dark-roast flavours turn harsh
-  const T_CAP = { anaerobic: 93, cofer: 92, decaf: 92, unsure: 94 };
+  const T_CAP = { anaerobic: 93, cofer: 92, decaf: 92, unsure: 94, monsooned: 93, aerobic: 93 };
   const T_CAP_HARD = new Set(["anaerobic", "cofer", "decaf"]);   // these caps hold whatever the roast
   const T_CAP_ROAST = { medium: 93, mdark: 90, dark: 87 };
+  // roast not stated (28/11/2026): what the roaster sells it for says which way to lean. "For filter": towards a light roast (a degree hotter,
+  // a click finer than the cautious middle); "for espresso": towards medium to medium-dark (2°C cooler, a click coarser). Your own pick still wins
+  const leanOf = (c) => c && c.roast === "unsure" ? (c.lean === "filter" ? { T: 1, C: -1 } : c.lean === "espresso" ? { T: -2, C: 1 } : { T: 0, C: 0 }) : { T: 0, C: 0 };
+  // the roast's ceiling; an unknown roast stops at 95°C (93 when it is sold for espresso, none when sold for filter)
+  const capRoast = (c) => c.roast === "unsure" ? (c.lean === "espresso" ? 93 : c.lean === "filter" ? 0 : 95) : T_CAP_ROAST[c.roast];
   const ROAST = {
     vlight: { label: "very light",  T: 96, dC: -1 },
     light:  { label: "light",       T: 94, dC: 0 },
@@ -4711,7 +4723,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     const process = st.process !== "auto" ? st.process : p.process;
     const roast = st.roast !== "auto" ? st.roast : p.roast;
     return { ...p, process, roast, processFrom: st.process !== "auto" ? "you" : "bag", roastFrom: st.roast !== "auto" ? "you" : "bag",
-      origin: p.origin || bag.origin || null, variety: p.variety || bag.variety || null, alt: altOf(bag.alt, st.text),
+      origin: p.origin || bag.origin || null, variety: p.variety || bag.variety || null, alt: altOf(bag.alt, st.text), lean: bag.for || null,
       bagNotes: (bag.notes && bag.notes.length ? bag.notes : p.bagNotes) || [] };
   }
 
@@ -4858,7 +4870,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     cafec:     "CAFEC Osmotic Flow",
   };
   const GOAL = { light: "Light & sweet", balanced: "Balanced", syrupy: "Rich & syrupy" };
-  if (/[?&]scantest\b/.test(location.search)) window.__eng = { engine: (st) => engine(st), brewers: () => Object.keys(BREWERS), state: () => state };   // tests only
+  if (/[?&]scantest\b/.test(location.search)) window.__eng = { engine: (st, o) => engine(st, o), brewers: () => Object.keys(BREWERS), state: () => state, listState: (r) => listState(r), defaults: () => ({ ...DEFAULTS }) };   // tests only
   // water is weighed in round numbers: every total and every pour target to the nearest 5 g (50 g, not 51; 500 g, not 501).
   // Espresso shots keep the gram (the callers leave them out), and so does anything under 20 g.
   const g5 = (v) => v < 20 ? Math.round(v) : Math.round(v / 5) * 5;
@@ -4916,7 +4928,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     cold:   { name: "Cold brew", kind: "steps", doses: [[50, "50 g"], [100, "100 g"]], dose: 100, base: 36, dA: {}, range: [28, 45], fixed: 8 },
     // espresso: dose in, weight out, shot time. "ratio" here is out ÷ in (1:2 = 36 g from 18 g)
     espresso: { name: "Espresso", kind: "shot", shot: true, doses: [[14, "14 g"], [16, "16 g"], [18, "18 g"], [20, "20 g"]], dose: 18,
-              base: 11, dA: { 14: -1, 16: 0, 18: 0, 20: 1 }, range: [6, 16], ratio: { light: 2.5, balanced: 2, syrupy: 1.6 } },
+              base: 11, dA: { 14: -1, 16: 0, 18: 0, 20: 1 }, range: [6, 16], ratio: { light: 2.2, balanced: 2, syrupy: 1.7 } },   // 28/11/2026: was 2.5 / 2 / 1.6. The roast now does most of the stretching: a dark roast lands on the classic 1:2, a light one on 1:2.5
     mocca:  { name: "Moccamaster", kind: "steps", doses: [[30, "30 g"], [45, "45 g"], [60, "60 g"], [75, "75 g"]], dose: 60,
               base: 26, dA: { 30: -1, 45: 0, 60: 0, 75: 1 }, range: [18, 38], ratio: { light: 18, balanced: 16.7, syrupy: 15.4 }, cap: 1250, ey: [19, 21] },   // the tank holds 1.25 l
     moka:   { name: "Bialetti Moka Express", kind: "steps", doses: [[7, "1-cup"], [16, "3-cup"], [30, "6-cup"]], dose: 16, base: 15, dA: {}, range: [10, 22], water: { 7: 60, 16: 150, 30: 300 } },
@@ -5031,7 +5043,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     // grind = method base at 15 g + dose + roast + process, then your log and your C40 zero (see BASE)
     const B = BASE[m];
     const doseAdj = (m === "ten" ? { 12: -1, 15: 0, 18: 1, 20: 1 } : { 12: -1, 15: 0, 18: 1, 20: 2, 25: 3, 30: 4 })[dose] ?? 0;   // a deeper bed drains slower: coarser as the batch grows
-    const roastAdj = ROAST[c.roast].dC, procAdj = PROCESS[c.process].dC;
+    const roastAdj = ROAST[c.roast].dC + leanOf(c).C, procAdj = PROCESS[c.process].dC;
     const neoAdj = neo && m !== "ten" ? -2 : 0;   // the NEO drains about 30 s faster: 2 clicks finer keeps the contact time. Kasuya wrote the 10-Pour for the NEO: it keeps his grind
     const raw = B.c + doseAdj + roastAdj + procAdj + neoAdj;
     const baseClicks = clamp(raw, 16, 45);
@@ -5043,12 +5055,12 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     const KASUYA_T = { vlight: 94, light: 93, medium: 88, mdark: 85, dark: 83, unsure: 90 };
     // CAFEC: 92°C light, 90 medium, 83 dark (Sanyo Sangyo). Onyx: 204°F, about 96
     const CAFEC_T = { vlight: 93, light: 92, medium: 90, mdark: 87, dark: 83, unsure: 89 };
-    let temp = (m === "fourSix" || m === "ten" ? KASUYA_T[c.roast] + (m === "ten" ? 2 : 0) : m === "cafec" ? CAFEC_T[c.roast] : ROAST[c.roast].T + ({ hoffmann: 5, hoffmannU: 5, rao: 3, onyx: 2, winton: -1, hedrick: 5 }[m])) + PROCESS[c.process].dT;
+    let temp = (m === "fourSix" || m === "ten" ? KASUYA_T[c.roast] + (m === "ten" ? 2 : 0) : m === "cafec" ? CAFEC_T[c.roast] : ROAST[c.roast].T + ({ hoffmann: 5, hoffmannU: 5, rao: 3, onyx: 2, winton: -1, hedrick: 5 }[m])) + PROCESS[c.process].dT + leanOf(c).T;
     if (c.delicate) temp += 1;
     temp += altT(c);   // where it grew
     if (agit <= 1) temp = Math.min(temp, 95);                      // ferment-forward lots go boozy when pushed
     if (T_CAP[c.process]) temp = Math.min(temp, T_CAP[c.process]);
-    if (T_CAP_ROAST[c.roast]) temp = Math.min(temp, T_CAP_ROAST[c.roast]);
+    if (capRoast(c)) temp = Math.min(temp, capRoast(c));
     if (c.roast === "vlight" && agit >= 2 && m !== "cafec" && !T_CAP_HARD.has(c.process)) temp = Math.max(temp, 96); // dense Nordic roasts under-extract below this (never over a ferment's cap)
     const baseTemp = clamp(temp, 82, 100);
     temp = clamp(temp + (pc.temp || 0), 82, 100);
@@ -5137,11 +5149,11 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   const vlFloor = (c, t) => t != null && c.roast === "vlight" && !["anaerobic", "cofer", "decaf"].includes(c.process) ? Math.max(t, 96) : t;
   // the same roast × process temperature rules as the V60, from each brewer's own starting point
   function tempFor(c, agit, add) {
-    let temp = ROAST[c.roast].T + PROCESS[c.process].dT + add + altT(c);
+    let temp = ROAST[c.roast].T + PROCESS[c.process].dT + add + altT(c) + leanOf(c).T;
     if (c.delicate) temp += 1;
     if (agit <= 1) temp = Math.min(temp, 95);
     if (T_CAP[c.process]) temp = Math.min(temp, T_CAP[c.process]);
-    if (T_CAP_ROAST[c.roast]) temp = Math.min(temp, T_CAP_ROAST[c.roast]);
+    if (capRoast(c)) temp = Math.min(temp, capRoast(c));
     return clamp(vlFloor(c, temp), 82, 100);
   }
   // steps: a pour has a scale target (x, to); an action (act) is something to do at a time: swirl, press, skim
@@ -5154,7 +5166,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     if (B.water) { water = B.water[dose]; ratio = Math.round((water / dose) * 10) / 10; ratioPre = ratio; }
     else if (B.fixed) { ratio = B.fixed; ratioPre = ratio; water = B.kind === "shot" ? Math.round(dose * ratio) : g5(dose * ratio); }
     else if (B.shot) {   // lighter roasts want a longer shot, darker a shorter one; a journal step moves it 0.5
-      ratioPre = B.ratio[goal] + ({ vlight: 0.5, light: 0.2, mdark: -0.2, dark: -0.2 }[c.roast] || 0) + (pc.ratio || 0) * 0.5;
+      ratioPre = B.ratio[goal] + ({ vlight: 0.5, light: 0.3, mdark: -0.1, dark: -0.2, unsure: c.lean === "filter" ? 0.3 : 0 }[c.roast] || 0) + (pc.ratio || 0) * 0.5;
       ratio = clamp(Math.round(ratioPre * 10) / 10, 1.3, 3.5); water = Math.round(dose * ratio);
     }
     else {
@@ -5169,7 +5181,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
 
     // espresso: one click is a big step this fine, so roast moves it by one or two and process not at all
     // cupping: one grind for every coffee, so the cups can be compared; espresso: one click is a big step this fine, so roast moves it by one or two and process not at all
-    const doseAdj = B.dA[dose] ?? 0, roastAdj = B.cup ? 0 : B.shot ? { vlight: -2, light: -1, medium: 0, mdark: 1, dark: 1, unsure: 0 }[c.roast] : ROAST[c.roast].dC, procAdj = B.shot || B.cup ? 0 : PROCESS[c.process].dC;
+    const doseAdj = B.dA[dose] ?? 0, roastAdj = B.cup ? 0 : B.shot ? { vlight: -2, light: -1, medium: 0, mdark: 1, dark: 1, unsure: c.lean === "filter" ? -1 : 0 }[c.roast] : ROAST[c.roast].dC + leanOf(c).C, procAdj = B.shot || B.cup ? 0 : PROCESS[c.process].dC;
     const base0 = wendel ? BASE.wendelboe.c : B.base;
     const raw = base0 + doseAdj + roastAdj + procAdj;
     const baseClicks = clamp(raw, B.range[0], B.range[1]);
@@ -5178,10 +5190,10 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     const clickParts = { base: base0, dose: doseAdj, roast: roastAdj, process: procAdj, learn: pc.clicks || 0, zero, clamped: raw !== baseClicks, range: B.range };
 
     let temp = null, baseTemp = null;
-    if (B.dT != null) { baseTemp = wendel ? clamp(Math.min(ROAST[c.roast].T + 2 + PROCESS[c.process].dT, T_CAP[c.process] || 99, T_CAP_ROAST[c.roast] || 99), 82, 98) : clamp(tempFor(c, agit, B.dT), 82, 100); temp = clamp(baseTemp + (pc.temp || 0), 82, 100); if (!wendel) temp = vlFloor(c, temp); }
+    if (B.dT != null) { baseTemp = wendel ? clamp(Math.min(ROAST[c.roast].T + 2 + PROCESS[c.process].dT, T_CAP[c.process] || 99, capRoast(c) || 99), 82, 98) : clamp(tempFor(c, agit, B.dT), 82, 100); temp = clamp(baseTemp + (pc.temp || 0), 82, 100); if (!wendel) temp = vlFloor(c, temp); }
     if (B.cup) { baseTemp = 93; temp = 93; }   // the protocol's 93°C, whatever the coffee
     if (B.shot) {   // the machine's brew temperature: hotter for light roasts, cooler for dark; ferments and decaf a touch cooler
-      baseTemp = { vlight: 96, light: 94, medium: 93, mdark: 91, dark: 90, unsure: 93 }[c.roast] - (["anaerobic", "cofer", "decaf"].includes(c.process) ? 1 : 0);
+      baseTemp = { vlight: 96, light: 94, medium: 93, mdark: 91, dark: 90, unsure: c.lean === "filter" ? 94 : 93 }[c.roast] - (["anaerobic", "cofer", "decaf"].includes(c.process) ? 1 : 0);
       temp = clamp(baseTemp + (pc.temp || 0), 85, 98);
     }
 
@@ -5279,6 +5291,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       lo = 12 * 3600; hi = 18 * 3600;
     } else if (b === "espresso") {   // one pull: start the shot and the timer together, stop at the weight
       lo = goal === "light" ? 28 : goal === "syrupy" ? 22 : 25; hi = goal === "light" ? 35 : goal === "syrupy" ? 28 : 32;
+      if (c.roast === "mdark" || c.roast === "dark") { lo = Math.max(20, lo - 3); hi -= 3; }   // darker roasts give up their flavour fast: a shorter pull, before it turns bitter
       add(0, water, "Start the shot and the timer together. Stop it the moment the scale reads the target", hi);
     } else {                          // moka
       act(0, "Heat", "Boil the kettle. Fill the base with the hot water to just under the valve", 0);
@@ -6539,7 +6552,9 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     const hasT = r.temp != null;
     const cons = [];
     if (c.process === "unsure") cons.push(`Process not stated, so it’s treated as possibly fermented: ${K === "pour" ? "gentle pours, " : ""}${hasT ? `${r.temp}°C${r.temp <= 94 ? " (94 at most)" : " (a very light roast still needs the heat)"}, ` : ""}${cl(1)} coarser.`);
-    if (c.roast === "unsure") cons.push(`Roast not sure, so it plays safe: ${hasT ? "a cooler base temperature and " : ""}${cl(1)} coarser. Less bitterness risk, maybe a little less sweetness.`);
+    if (c.roast === "unsure") cons.push(c.lean === "filter" ? `Roast not stated. The roaster sells it for filter, so it is brewed towards a light roast${hasT ? `: ${r.temp}°C` : ""}.`
+      : c.lean === "espresso" ? `Roast not stated. The roaster sells it for espresso, so it is brewed towards a medium to medium-dark roast${K === "shot" ? "" : `: ${hasT ? "cooler water and " : ""}${cl(2)} coarser`}.`
+      : `Roast not sure, so it plays safe: ${hasT ? "a cooler base temperature and " : ""}${cl(1)} coarser. Less bitterness risk, maybe a little less sweetness.`);
     if (cons.length) cons.push("Say what the bag says for a sharper recipe.");
     { const MN = { hoffmann: "James Hoffmann’s Better 1-Cup", hoffmannU: "James Hoffmann’s Ultimate V60", fourSix: "Tetsu Kasuya’s 4:6", ten: "Tetsu Kasuya’s 10-Pour", rao: "Scott Rao’s bloom and spin" }[r.m];
       const BN = { kalita: "George Howell’s 155 guide", april: "April Coffee’s base recipe", orea: "Martin Woelfl’s 2024 World Brewers Cup recipe", melitta: "Revelator Coffee’s Melitta technique", origami: "Carlos Medina’s 2023 World Brewers Cup recipe", chemex: "Blue Bottle’s brew guide", switch: "Tetsu Kasuya’s Hybrid Method", clever: "James Hoffmann’s Ultimate Clever technique", aero: "James Hoffmann’s Ultimate AeroPress technique", press: "James Hoffmann’s Ultimate French Press technique", moka: "James Hoffmann’s Ultimate Moka Pot technique", cupping: "the SCA cupping protocol" }[r.brewer];
@@ -6550,6 +6565,9 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       if (c.process === "anaerobic") why.push(`Anaerobic: long, sealed fermentation gives tropical and boozy notes that turn harsh with heat and agitation. Few gentle pours, ${r.temp}°C (93 at most), a click coarser.`);
       else if (c.process === "cofer") why.push(`Co-fermented or infused: the added fruit, yeast or spice extracts fast and dominates when pushed. No stirring, ${r.temp}°C (92 at most), 2 clicks coarser.`);
       else if (c.process === "decaf") why.push(`Decaf: roasters brew it cooler, coarser and gently. Cooler (${r.temp}°C, 92 at most), 2 clicks coarser, gentle pours.`);
+      else if (c.process === "hulled") why.push(`Wet-hulled: hulled while still damp, so the beans are soft, low in acid and earthy. Gentle pours, ${r.temp}°C and a click coarser keep it sweet, not muddy.`);
+      else if (c.process === "monsooned") why.push(`Monsooned: months in the monsoon winds leave the beans swollen, porous and very low in acid. Gentle pours, ${r.temp}°C (93 at most) and a click coarser keep it from turning woody.`);
+      else if (c.process === "aerobic") why.push(`Aerobic fermentation: a long, open ferment builds fruit that turns sharp when pushed. Few gentle pours, ${r.temp}°C (93 at most), a click coarser.`);
       else if (c.process === "natural" && r.agit <= 1) why.push(`Natural: dried in the fruit, so heavy and fruity. Low agitation and ${r.temp}°C keep it clean, not winey.`);
       if (c.roast === "dark") why.push(`Dark roast: soluble and quick to go bitter. No stirring, ${r.temp}°C (87 at most), ${cl(4)} coarser than a light roast.`);
       else if (c.roast === "mdark") why.push(`Medium-dark: extracts easily. Low agitation, ${r.temp}°C (90 at most), ${cl(3)} coarser.`);
@@ -6629,7 +6647,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
         // where it grew, when the roaster says (28/11/2026): the height the cherries ripened at, and what it does to the kettle
         const A = c.alt, ft = A ? Math.round(A.m * 3.281 / 100) * 100 : 0, nf = (v) => v.toLocaleString(it ? "it-IT" : "en-GB");
         const at = !A ? "" : (A.lo !== A.hi ? `${nf(A.lo)}–${nf(A.hi)} m` : `${nf(A.lo)} m`);
-        const capped = altT(c) > 0 && ((T_CAP[c.process] && r.temp >= T_CAP[c.process]) || (T_CAP_ROAST[c.roast] && r.temp >= T_CAP_ROAST[c.roast]));
+        const capped = altT(c) > 0 && ((T_CAP[c.process] && r.temp >= T_CAP[c.process]) || (capRoast(c) && r.temp >= capRoast(c)));
         const alt = !A || K === "shot" && altT(c) === 0 ? "" : capped
             ? (it ? ` Questi chicchi sono cresciuti a ${at}: densi e lenti a cedere il sapore, ma l'acqua è già al massimo che questo caffè sopporta.` : ` These beans grew at ${at}, about ${nf(ft)} ft up: dense and slow to give up their flavour, but the water is already as hot as this coffee takes.`)
             : altT(c) > 0
@@ -8077,7 +8095,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   }
   const SHELF_F = [["all", "All"], ["natural", "Natural"], ["washed", "Washed"], ["honey", "Honey"], ["exp", "Anaerobic & co-ferment"]];
   const bucket = (p) => { p = (p || "").toLowerCase(); if (/anaerob|co-?ferment|carbonic|thermal|infus|double|yeast/.test(p)) return "exp"; if (/natural/.test(p)) return "natural"; if (/honey/.test(p)) return "honey"; if (/washed/.test(p)) return "washed"; return "other"; };
-  const procKey = (p) => { const b = bucket(p); if (b === "exp") return /co-?ferment|infus|thermal|yeast/i.test(p || "") ? "cofer" : "anaerobic"; return ["natural", "washed", "honey"].includes(b) ? b : (/decaf/i.test(p || "") ? "decaf" : "auto"); };
+  const procKey = (p) => { if (/wet[- ]?hulled|giling/i.test(p || "")) return "hulled"; if (/monsoon/i.test(p || "")) return "monsooned"; if (/^\s*aerobic/i.test(p || "")) return "aerobic"; if (/semi[- ]washed|pulped natural/i.test(p || "")) return "honey"; const b = bucket(p); if (b === "exp") return /co-?ferment|infus|thermal|yeast/i.test(p || "") ? "cofer" : "anaerobic"; return ["natural", "washed", "honey"].includes(b) ? b : (/decaf/i.test(p || "") ? "decaf" : "auto"); };
   function renderShelfF() {
     $("shelfF").innerHTML = SHELF_F.map(([v, t]) => `<button type="button" class="chip" data-v="${v}" aria-pressed="${shelfF === v}">${t}</button>`).join("");
     $("shelfF").querySelectorAll("button").forEach((b) => b.onclick = () => { shelfF = b.dataset.v; shelfAll = false; renderShelfF(); renderShelf(); });
@@ -9005,10 +9023,13 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   function listState(r) {
     const notes = [];   // tasting notes are never picked from the listing
     const roastWords = r.roast && ROAST[r.roast] ? ROAST[r.roast].label + " roast" : null;   // the scan read it from the roaster: it counts as "from the bag"
-    const process = r.process ? procKey(r.process) : "auto";
+    let process = r.process ? procKey(r.process) : "auto";
+    // Decaf in the name beats the process the beans had before (Washed, Natural): it is the decaffeination that changes how it brews. Not a half-caff, and a co-ferment stays one
+    if (/\bde-?caf|decaffeinated/i.test(r.name || "") && !/half|½|1\/2|not so/i.test(r.name || "") && process !== "cofer") process = "decaf";
+    const sold = r.roast_for === "espresso" || /\bespresso\b/i.test(r.name || "") ? "espresso" : r.roast_for === "filter" || /\bfilter\b/i.test(r.name || "") ? "filter" : null;
     return { text: [r.roaster, r.name, r.origin, r.region, r.variety, r.process, roastWords].filter(Boolean).join(", ") + (notes.length ? ". Notes: " + notes.join(", ") : ""),
       // the roaster's own tasting notes for this exact coffee: shown in What to expect only, never used to set the recipe
-      bag: { roaster: r.roaster, name: r.name, origin: r.origin, variety: r.variety, notes, url: r.url, place: r.roaster_city || r.city || "", alt: Array.isArray(r.altitude) ? r.altitude : null, rest: Array.isArray(r.rest) ? r.rest : null,
+      bag: { roaster: r.roaster, name: r.name, origin: r.origin, variety: r.variety, notes, url: r.url, place: r.roaster_city || r.city || "", alt: Array.isArray(r.altitude) ? r.altitude : null, for: sold, rest: Array.isArray(r.rest) ? r.rest : null,
         listNotes: Array.isArray(r.notes) ? r.notes.filter((n) => typeof n === "string" && n.trim() && n.length < 40).map(tidyNote).filter(Boolean).slice(0, 5) : [] },
       process, listProc: process,   // came from the roaster's listing, not from you
       roast: r.roast_level === "dark" ? "dark" : r.roast_level === "medium-dark" ? "mdark" : "auto" };
