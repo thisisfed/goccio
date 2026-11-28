@@ -2871,7 +2871,7 @@ html:is(.ro-page, .lv-page) body footer details.foot-x{display:none!important}
 #roView .ro-az a{color:var(--ink);text-decoration:none}
 @media (hover:hover){#roView .ro-az a:hover .n{color:var(--muted)}}
 #roView .ro-az .n{transition:color .15s ease}
-#roView .ro-az .w{color:var(--muted)}
+#roView .ro-az .w{color:var(--muted)} html[data-theme="light"] #roView .ro-az .w{color:#8f857b}   /* the place a step lighter than the name's grey, as it was (28/11/2026) */
 #listView .lv-back{margin:16px 0 0;padding-top:12px;border-top:1px solid var(--line)}
 #listView .lv-out{height:43px;padding:0 16px;border:0;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);cursor:pointer}
 /* the footer's folds (Example, Disclaimer, Methods, Sources, Credits): 44 px line to line, as the top bar, the kinds row and the day band (27/11/2026) */
@@ -2881,7 +2881,8 @@ html body .gd-chips > button{height:43px!important}
 /* every clickable pill: a squash when pressed (the rule above); on hover the grey ones lift to a clearly lighter grey (a deeper beige
    in light), and the accent ones (Find a coffee, Send, Start brewing) fade a touch, as Find a coffee always has (27/11/2026) */
 @media (hover:hover){ html body :is(.chip, .btn, .ro-pill, .hero-pill, .gear-dd, .gear-btn, .pill.bag-add, .shelf .item > .r > *, .botnav .chip, #toolsBtn, #langBtn, #themeBtn, .ask-go, .step button, .mill-btn, .bv-go, .bv-reset, .bv-x, .ask-goccio, .lv-home, .lv-pill, .lv-go, .lv-out, .gd-chips > button, #recipe .share > *, .fy-pill, .gd-offer, .gh-new, .bag-ro .ro-dd):hover:not(:disabled):not([aria-pressed="true"]):not(.wm-go):not(.lv-go):not(.bn-go):not(.armed):not(.in):not(.on){background-color:color-mix(in srgb,var(--pill) 76%,var(--ink))!important;opacity:1!important;filter:none!important}
-  html body :is(.wm-go, .lv-go, .bn-go):hover:not(:disabled){opacity:.88!important} }
+  html body :is(.wm-go, .lv-go, .bn-go):hover:not(:disabled){opacity:.88!important}
+  html body :is(#dockGo, #startBrew, .go-big):hover:not(:disabled){background-color:var(--hl)!important;color:#000!important;opacity:.88!important;filter:none!important} }   /* Start brewing stays orange with black words under the pointer (28/11/2026: it went grey, the words lost in it) */
 :where(.chip, .btn, .ro-pill, .hero-pill, .gear-dd, .gear-btn, .pill.bag-add, .shelf .item > .r > *, .botnav .chip, #toolsBtn, #langBtn, #themeBtn, .ask-go, .step button, .mill-btn, .bv-go, .bv-reset, .bv-x, .ask-goccio, .lv-home, .lv-pill, .lv-go, .lv-out, .gd-chips > button, #recipe .share > *, .fy-pill, .gd-offer, .gh-new, .bag-ro .ro-dd){transition:scale .35s cubic-bezier(.34,1.7,.5,1),opacity .2s ease,background-color .15s ease}
 /* the search's result line in a band like the day's count: 44 px line to line, small type, pinned under the kinds row; a long line slides sideways */
 html body #shelves .co-tabs ~ #askNote.nb-band.fy-note:not([hidden]){position:sticky!important;top:calc(var(--top-h,44px) + 44px)!important;z-index:4;display:block!important;box-sizing:border-box!important;height:44px!important;margin:-14px calc(50% - 50vw) -2px!important;padding:1px 0 0!important;
@@ -2897,11 +2898,18 @@ html body .rt-pick[aria-expanded="true"] .pk-chev, html body .sp-pick[aria-expan
 html body .rt-pick:focus-visible, html body .sp-pick:focus-visible{outline:2px solid var(--hl);outline-offset:3px;border-radius:4px}
 html body .pick-pan{grid-column:1/-1;margin:0;padding:12px 0 14px;border-top:1px solid var(--line)}
 html body .pick-pan[hidden]{display:none!important}
+html body #whyBox{display:none!important}   /* Why these numbers says it, in view: the fold that said it again is gone (28/11/2026) */
+html body #recipe .share #buyBtn:not([hidden]){flex:0 0 auto}
 html body #consTop:not([hidden]) ~ #specs .spec.pick{border-top:1px solid var(--line)!important}   /* the warnings' lower rule, when the coffee's name comes next */
 html body .pick-pan .opt > span:first-child{display:none}   /* the panel says what it is: no "Brewer" or "Grinder" in front */
 html body .pick-pan .opt, html body .pick-pan .opts{margin:0!important;padding:0!important;border:0!important;display:block}
+/* the grinder's pills as wide as one column, the short rule over the grinder (28/11/2026) */
+html body #millPick .mill-cell{width:calc((100% - 16px) / 2)!important;max-width:none!important;display:grid!important;gap:8px}
+html body #millPick .kit-mill, html body #millPick #millBtn, html body #millPick #millSel{width:100%!important;min-width:0!important;max-width:none!important;box-sizing:border-box}
+html body #millPick .zr-ctl{width:100%!important;margin:0!important;display:grid!important;grid-template-columns:1fr;gap:6px;justify-content:stretch!important}
+html body #millPick .zr-ctl .step{width:100%!important;display:flex!important;justify-content:space-between!important;box-sizing:border-box}
 @media (prefers-reduced-motion:reduce){ html body .rt-pick .pk-chev, html body .sp-pick .pk-chev{transition:none} }
-#whyNums{margin:0 0 4px}   /* the rule under it as close to its last line as under How to pour (28/11/2026) */
+#whyNums{margin:0 0 4px;border-top:1px solid var(--line);padding-top:12px}   /* a rule on top with How to pour's room under it (28/11/2026) */   /* the rule under it as close to its last line as under How to pour (28/11/2026) */
 #whyNums .wn-h{margin:0 0 8px;font-size:var(--fs-s);font-weight:500;color:var(--ink)}
 #whyNums .wn{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:var(--fs-s);line-height:1.35;color:var(--muted)}
 #whyNums .wn b{color:var(--ink);font-weight:500;margin-right:4px}   /* plain words, as How to pour is: no pill round them */
@@ -2993,7 +3001,8 @@ html[data-theme="light"]:is(.film-off,.hero-done) body .wm-screen{background:var
 html[data-theme="light"]:is(.film-off,.hero-done) body .wm-screen::after{opacity:0}
 html[data-theme="light"]:is(.film-off,.hero-done) body .wm-video{opacity:0!important;transition:opacity .9s ease}
 html[data-theme="light"]:is(.film-off,.hero-done) body .wm-screen .wordmark, html[data-theme="light"]:is(.film-off,.hero-done) body .wm-screen .wordmark *, html[data-theme="light"]:is(.film-off,.hero-done) body .wm-more .wm-live, html[data-theme="light"]:is(.film-off,.hero-done) body .wm-more .wm-lead, html[data-theme="light"]:is(.film-off,.hero-done) body .wm-more .wm-tagline, html[data-theme="light"]:is(.film-off,.hero-done) body .wm-more .wm-tot{color:var(--ink)!important}
-html[data-theme="light"]:is(.film-off,.hero-done) body .wm-more .wm-bag{background:color-mix(in srgb,var(--pill) 82%,var(--ink))!important;color:var(--ink)!important}   /* over the milk splash, a deeper beige so it reads as a pill (27/11/2026) */
+html body .wm-more .wm-bag .beta{display:inline!important;position:static!important;margin:0 0 0 8px!important;font:inherit!important;color:var(--muted)!important}
+html[data-theme="light"]:is(.film-off,.hero-done) body .wm-more .wm-bag{background:var(--pill)!important;color:var(--ink)!important}   /* the bottom bar's own grey (28/11/2026) */   /* over the milk splash, a deeper beige so it reads as a pill (27/11/2026) */
 /* the still behind the header once the film has played (seen today): a coffee crown in dark, a milk crown in light, the two splashes
    in the same place (27/11/2026) */
 /* the splash a little higher (27/11/2026): the picture at least 720 px wide, so on a phone it's taller than the 360 px hero and its foot
@@ -3770,7 +3779,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
         <div class="wm-more">
           <h1 class="wm-tagline">Every new coffee, with a recipe for your brewer.</h1>
           <p class="wm-live wm-tot" id="wmTot" hidden></p>
-          <p class="wm-ctas"><button type="button" class="btn wm-go" id="wmFind">Find a coffee</button><button type="button" class="btn wm-bag" id="wmBag">Scan a bag</button></p>
+          <p class="wm-ctas"><button type="button" class="btn wm-go" id="wmFind">Find a coffee</button><button type="button" class="btn wm-bag" id="wmBag">Scan a bag <span class="beta">Beta</span></button></p>
           <p class="wm-lead">New coffees from 800+ roasters, daily and free.</p>
           <p class="wm-live" id="wmLive" hidden><i class="live-dot" aria-hidden="true"></i><span id="wmLiveT"></span></p>
         </div>
@@ -4135,7 +4144,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   <div class="cam-top"><p class="cam-status" id="camStatus"></p><div class="cam-found" id="camFound"></div></div>
   <div class="cam-ctrls"><button type="button" class="chip" id="camClose">Cancel</button><button type="button" class="chip" id="camPhoto">Take a photo instead</button><button type="button" class="chip on" id="camDone">Use what it read</button></div>
 </div>
-<nav class="botnav" aria-label="Sections"><button type="button" class="chip" data-bn="cancel">Cancel</button><button type="button" class="chip" data-bn="shelves">Coffees</button><button type="button" class="chip" data-bn="bags" hidden>Bags</button><button type="button" class="chip" data-bn="coffee">Brew</button><button type="button" class="chip" data-bn="journal" hidden>Journal</button><button type="button" class="chip" data-bn="ro-shop">Visit shop</button><button type="button" class="chip" data-bn="ro-back">Back to all coffees</button></nav><script>document.documentElement.classList.add("nav-off");</script>
+<nav class="botnav" aria-label="Sections"><button type="button" class="chip" data-bn="cancel">Back</button><button type="button" class="chip" data-bn="shelves">Coffees</button><button type="button" class="chip" data-bn="bags" hidden>Bags</button><button type="button" class="chip" data-bn="coffee">Brew</button><button type="button" class="chip" data-bn="journal" hidden>Journal</button><button type="button" class="chip" data-bn="ro-shop">Visit shop</button><button type="button" class="chip" data-bn="ro-back">Back to all coffees</button></nav><script>document.documentElement.classList.add("nav-off");</script>
 <div class="dock" id="dock"><button class="btn" id="dockGo" type="button"><span>Start brewing</span><span class="num" id="dockSum"></span></button></div>
 
 <!-- Brew mode -->
@@ -6197,7 +6206,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     else { const o = $("millOpt"); if (o) p.appendChild(o); }
     return (PICKS[k] = p); }
   function placePicks() { const rb = $("rbody"), sp = $("specs"); if (!rb || !sp) return; const b = pickPan("brew"), m = pickPan("mill");
-    if (b.parentNode !== rb || rb.firstElementChild !== b) rb.insertBefore(b, rb.firstElementChild);
+    const bc = sp.querySelector(".spec.brewer"); if (bc) { bc.after(b); b.style.order = "0"; } else if (b.parentNode !== rb) rb.insertBefore(b, rb.firstElementChild);
     // under the grinder's row: right after it when it runs the full width, after the kettle beside it otherwise (the specs are ordered by CSS)
     const key = sp.querySelector(".spec.key"), temp = sp.querySelector(".spec.temp"), wide = key && key.classList.contains("wide");
     if (key) { (wide || !temp ? key : temp).after(m); m.style.order = wide || !temp ? "1" : "2"; } else sp.appendChild(m); }
@@ -6291,7 +6300,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
         : rc && rc.roaster ? [["roastery", esc(rc.roaster + (rc.place ? ", " + rc.place : "")), "", "roaster", ""]]
         : rc && rc.name ? [["pick", esc(calm(rc.name)), "", "coffee", ""]] : []),
       // the brewer's line only when no coffee heads the recipe: it's picked just above, in What's brewing
-      ...(rc && rc.name ? [] : [["brewer", esc(BREWERS[r.brewer].name), "", "brewer", ""]]),
+      ["brewer", esc(BREWERS[r.brewer].name), "", LANG === "it" ? "metodo" : "brewer", ""],   // always: picked here, with the grinder and the kettle (28/11/2026)
       // the grinder's name on top, the setting with its unit beside the number: Comandante C40 / 29 clicks
       ["key", onMill(r.clicks).txt, keyUnit(onMill(r.clicks).txt), isC40() ? mill().name : mill().words ? `${gw(r.clicks)[2]}, about ${microns(r.clicks)} µm` : millShort(), cBadges.join(", ")],   // just the grinder's name, like Kettle and Coffee
       ["dose", r.dose, "g", r.brewer === "moka" ? `full basket, ${doseName(r)}` : K === "shot" ? "coffee in" : "coffee", ""],
@@ -6304,11 +6313,11 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     renderMine(r);
     const showRet = r.tds != null;
     { const bn = BREWERS[r.brewer].name, open = !!(pickPan("brew").parentNode && !pickPan("brew").hidden);   // the brewer, in the title: tap it to change it (28/11/2026)
-      $("recTitle").innerHTML = `${LANG === "it" ? "Ricetta per" : "Recipe for"} <button type="button" class="rt-pick" data-pick="brew" aria-expanded="${open}" aria-controls="brewPick" aria-label="${esc((LANG === "it" ? "Cambia metodo: " : "Change brewer: ") + bn)}">${esc(bn)}${PICK_CHEV}</button>`; }
+      void open; $("recTitle").textContent = LANG === "it" ? `Ricetta per ${bn}` : `Recipe for ${bn}`; }   // the brewer is picked in its own cell, under the title
     try { roRecFor(state.bag); } catch (e) {}
     crowdFor(state.bag);   // how everyone's brews of this coffee came out, once there are enough
     const noMillYet = !!mill().words;
-    $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}${k === "key" && mill().words ? " wide" : ""}"><b>${v}${u ? `<small>${u === "-cup" ? u : " " + u}</small>` : ""}</b>${k === "key" ? `<button type="button" class="sub2 sp-pick" data-pick="mill" aria-expanded="${!!(pickPan("mill").parentNode && !pickPan("mill").hidden)}" aria-controls="millPick" aria-label="${esc((LANG === "it" ? "Cambia macinino: " : "Change grinder: ") + mill().name)}">${esc(l.charAt(0).toUpperCase() + l.slice(1))}${PICK_CHEV}${badge ? ` <span class="yr">${esc(badge)}</span>` : ""}</button>` : `<span class="sub2">${l.charAt(0).toUpperCase() + l.slice(1)}${badge ? ` <span class="yr">${esc(badge)}</span>` : ""}</span>`}${k === "key" && isC40() && prefs.zero ? `<span class="zo">${sign(prefs.zero).replace(/^(.)/, "$1 ")} zero offset</span>` : ""}${k === "key" && K === "shot" && mill().noEsp ? `<span class="sub2">Not an espresso grinder</span>` : k === "key" && !isC40() && (onMill(r.clicks).atMax || onMill(r.clicks).atMin) ? `<span class="sub2">${onMill(r.clicks).atMax ? "Coarsest setting, may still run fast" : "Finest setting"}</span>` : ""}${k === "dose" ? (() => { const ds = BREWERS[r.brewer].doses, i = ds.findIndex(([v]) => v === r.dose); if (ds.length < 2 || i < 0) return "";
+    $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}${k === "key" && mill().words ? " wide" : ""}"><b>${v}${u ? `<small>${u === "-cup" ? u : " " + u}</small>` : ""}</b>${k === "brewer" ? `<button type="button" class="sub2 sp-pick" data-pick="brew" aria-expanded="${!!(pickPan("brew").parentNode && !pickPan("brew").hidden)}" aria-controls="brewPick" aria-label="${esc((LANG === "it" ? "Cambia metodo: " : "Change brewer: ") + BREWERS[r.brewer].name)}">${esc(l.charAt(0).toUpperCase() + l.slice(1))}${PICK_CHEV}</button>` : k === "key" ? `<button type="button" class="sub2 sp-pick" data-pick="mill" aria-expanded="${!!(pickPan("mill").parentNode && !pickPan("mill").hidden)}" aria-controls="millPick" aria-label="${esc((LANG === "it" ? "Cambia macinino: " : "Change grinder: ") + mill().name)}">${esc(l.charAt(0).toUpperCase() + l.slice(1))}${PICK_CHEV}${badge ? ` <span class="yr">${esc(badge)}</span>` : ""}</button>` : `<span class="sub2">${l.charAt(0).toUpperCase() + l.slice(1)}${badge ? ` <span class="yr">${esc(badge)}</span>` : ""}</span>`}${k === "key" && isC40() && prefs.zero ? `<span class="zo">${sign(prefs.zero).replace(/^(.)/, "$1 ")} zero offset</span>` : ""}${k === "key" && K === "shot" && mill().noEsp ? `<span class="sub2">Not an espresso grinder</span>` : k === "key" && !isC40() && (onMill(r.clicks).atMax || onMill(r.clicks).atMin) ? `<span class="sub2">${onMill(r.clicks).atMax ? "Coarsest setting, may still run fast" : "Finest setting"}</span>` : ""}${k === "dose" ? (() => { const ds = BREWERS[r.brewer].doses, i = ds.findIndex(([v]) => v === r.dose); if (ds.length < 2 || i < 0) return "";
         const ic = (p) => `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="${p}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`, moka = r.brewer === "moka";
         return `<span class="dstep" role="group" aria-label="${esc(tr(moka ? "Pot size" : "Coffee dose"))}"><button type="button" class="chip gear-more" data-dstep="-1"${i === 0 ? " disabled" : ""} aria-label="${esc(tr(moka ? "Smaller pot" : "Less coffee"))}">${ic("M7.5 2.5 4 6l3.5 3.5")}</button><button type="button" class="chip gear-more" data-dstep="1"${i === ds.length - 1 ? " disabled" : ""} aria-label="${esc(tr(moka ? "Bigger pot" : "More coffee"))}">${ic("M4.5 2.5 8 6 4.5 9.5")}</button></span>`; })() : ""}${k === "ratio" && showRet && false ? `<span class="ret">(${r.water} g water − 2.1 × ${r.dose} g retained). Estimate only.</span>` : ""}</div>`).join("");
     placePicks();
@@ -6476,7 +6485,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
             ? (it ? ` Questi chicchi sono cresciuti a ${at}, dove l'aria è fresca e la ciliegia matura piano: più densi, cedono il sapore più lentamente, quindi un grado in più.` : ` These beans grew at ${at}, about ${nf(ft)} ft up, where cool air ripens the cherries slowly: they're denser and give up their flavour slower, so one degree hotter.`)
             : altT(c) < 0
             ? (it ? ` Cresciuti a ${at}, più in basso del solito: chicchi più teneri, che estraggono in fretta, quindi un grado in meno per restare dolci.` : ` Grown at ${at}, lower than most specialty coffee: softer beans that extract quickly, so one degree cooler keeps them sweet.`)
-            : (it ? ` Cresciuti a ${at}, l'altitudine tipica del caffè specialty: niente da correggere.` : ` Grown at ${at}, a typical height for specialty coffee: nothing to correct for.`);
+            : "";   /* a usual height changes nothing, so it isn't said (28/11/2026) */
         L.push([it ? "Acqua" : "Water", `${r.temp}°C: ${why0}${ferm}${RT && K !== "shot" && RT !== r.temp ? (it ? ` (base ${RT}°C)` : ` (from a ${RT}°C start)`) : ""}.${alt}`]); }
       // dose and ratio
       if (r.dose && r.water) { const rt = r.ratio, feel = rt >= 16.8 ? (it ? "leggero e dolce" : "light and sweet") : rt >= 15.8 ? (it ? "equilibrato" : "balanced") : (it ? "pieno e corposo" : "full and heavy");
@@ -11052,6 +11061,15 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   } catch (e) {} }
   document.addEventListener("click", (e) => { if (e.target.closest && e.target.closest('[data-roast], [data-proc], [id^="o-roast-"], [id^="o-process-"], #roastSkip')) window.__specFlash = performance.now() + 1500; }, true);
   /* the brew is finished: Start brewing has done its work and leaves the bottom bar; what was Cancel reads Done. A new coffee, a reset or a saved entry brings it back */
+  { const c0 = document.querySelector('.botnav [data-bn="cancel"]'); if (c0 && LANG === "it") c0.textContent = "Indietro"; }   // Back, not Cancel: nothing is undone (28/11/2026)
+  // the Buy row ends where Back does below it (28/11/2026): Buy takes the width the two icons leave
+  { const fitBuy = () => { const c = document.querySelector('.botnav [data-bn="cancel"]'), bb = $("buyBtn"); if (!c || !bb || bb.hidden || !c.offsetWidth) return;
+      const os = [$("copyBtn"), $("linkBtn")].filter((x) => x && x.offsetWidth), g = parseFloat(getComputedStyle(bb.parentNode).columnGap) || 4, ic = os.reduce((t, x) => t + x.getBoundingClientRect().width, 0) + g * os.length;
+      // one width for both: Back's own, or the row's with Buy a little roomy, whichever is wider
+      c.style.minWidth = ""; bb.style.minWidth = ""; const W = Math.round(Math.max(c.getBoundingClientRect().width, bb.getBoundingClientRect().width + 32 + ic));
+      c.style.minWidth = W + "px"; c.style.flex = "0 0 auto"; bb.style.minWidth = Math.max(0, W - Math.round(ic)) + "px"; bb.style.justifyContent = "center"; };
+    addEventListener("resize", fitBuy); new MutationObserver(() => requestAnimationFrame(fitBuy)).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    if ("ResizeObserver" in window) { const c = document.querySelector('.botnav [data-bn="cancel"]'); if (c) new ResizeObserver(fitBuy).observe(c); } setInterval(fitBuy, 2000); window.__fitBuy = fitBuy; }
   window.brewDoneUI = (on) => { document.documentElement.classList.toggle("brew-done", !!on); const c = document.querySelector('.botnav [data-bn="cancel"]'); if (c) { if (!c.dataset.t) c.dataset.t = c.textContent; c.textContent = on ? (LANG === "it" ? "Fatto" : "Done") : c.dataset.t; } };
   document.addEventListener("click", (e) => { if (document.documentElement.classList.contains("brew-done") && e.target.closest && e.target.closest('.shelf .item .btn[data-i], #bags .btn, #bvReset, #wmBag, .botnav [data-bn="cancel"], #coffeeGo')) brewDoneUI(false); }, true);
   /* a roaster's page and an open coffee are not the search's results: the box does not go on showing the search there. It is put back,
@@ -11093,7 +11111,8 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   // "Scan a bag" does what it says: on a phone, a tap opens the camera on the bag (27/11/2026: it used to drop you at a text box with
   // the scan button further down). On a computer there's no camera to point, so it goes to the box, where you can type what the
   // bag says (its Scan pill shows the QR code for your phone). The page's own jumps to the box (.click() from code) never open the camera
-  const openBag = (scan) => { mineOn(); if (!$("coffeeIn").value.trim()) $("coffeeIn").placeholder = LANG === "it" ? "Cosa dice il sacchetto: XYZ Roastery, Etiopia, lavato, tostatura chiara" : "What the bag says: XYZ Roastery, Ethiopia, washed, light roast"; jumpTo($("coffee"));
+  // on a computer too (28/11/2026): the bag's scan itself, the QR that opens it on your phone, never a scroll down to a text box
+  const openBag = (scan) => { mineOn(); if (scan && DESK && $("scanBtn")) { $("scanBtn").click(); return; } if (!$("coffeeIn").value.trim()) $("coffeeIn").placeholder = LANG === "it" ? "Cosa dice il sacchetto: XYZ Roastery, Etiopia, lavato, tostatura chiara" : "What the bag says: XYZ Roastery, Ethiopia, washed, light roast"; jumpTo($("coffee"));
     if (scan && !DESK && window.__scanBag) { setTimeout(() => { try { window.__scanBag(); } catch (e) {} }, 60); return; }
     setTimeout(() => { try { $("coffeeIn").focus({ preventScroll: true }); } catch (e) {} }, 500); };
   if ($("wmBag")) $("wmBag").onclick = (e) => openBag(!!(e && e.isTrusted));
@@ -14036,6 +14055,13 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       const hit = w.length ? coffees().filter((r) => { const t = (r.name + " " + r.roaster + " " + (r.origin || "") + " " + (r.process || "") + " " + (r.variety || "") + " " + notesOf(r).join(" ")).toLowerCase(); return w.every((x) => t.includes(x)); }) : [];
       if (hit.length && isQ && !w.every((x) => ORIGIN_WORDS().has(x))) return dunno();
       if (hit.length) return say(T(`I found ${hit.length} coffee${hit.length === 1 ? "" : "s"} for “${q}”.`, `Ho trovato ${hit.length} caffè per “${q}”.`), [{ t: T("Show me", "Fammeli vedere"), f: () => { closeTalk(); search(w.join(" ")); } }], happy);
+      // a remark, not a question (28/11/2026: "Those italians ahahah I am one of them :)" got "I don't know"): a reply in kind
+      if (!isQ) { const qq = q.toLowerCase();
+        if (/\b(?:i'?m|i am|sono|me too|anch'?io)\b.{0,30}\b(?:italian[oa]?|from italy|one of them|italiano|italiana)\b|\bitalian[oa]? (?:here|too)\b/.test(qq))
+          return say(T("Then you already know your way round a moka better than I do. Which part of Italy?", "Allora la moka la conosci meglio di me. Di che parte d'Italia?"), null, happy);
+        if (/(?:^|\s)a?h[ae](?:h[ae])+h?\b|\blo+l\b|\blmao\b|😂|🤣|😆|:\)|:d\b|\bxd\b/i.test(qq)) {
+          const L0 = [["Ha! Glad that one landed.", "Ah! Contento che ti sia piaciuta."], ["Ha! I've got plenty more where that came from.", "Ah! Ne ho tante altre così."], ["Ha! Coffee people are the best people.", "Ah! Chi ama il caffè è gente speciale."]], k = L0[Math.floor(Math.random() * L0.length)];
+          return say(T(k[0], k[1]), null, happy); } }
       dunno(); }); };
     // not one it knows: it says so, never guesses
     // when it doesn't know, it says so plainly first, then a word in its own voice
