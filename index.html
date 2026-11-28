@@ -7554,7 +7554,9 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   // the visitor's local time wherever they are, with no location asked or sent. Late means 2 pm until 5 am; "Show all
   // coffees" lasts until the next morning, "Never do this" for good
   const DECAF_RX = /decaf|descafeinado|entkoffeiniert|d[ée]ca\b|d[ée]caf[ée]in|decaffeinat|sugar ?cane process|swiss water|mountain water|ethyl acetate|koffeinfri/i;
-  const isDecaf = (r) => DECAF_RX.test([r.name, r.process, r.text].filter(Boolean).join(" "));
+  // a half-caf or low-caf is not a decaf: asked for a decaf, or picked for the evening, it still has caffeine in it (28/11/2026: "Half Caff" came back for "decaf from London")
+  const HALFCAF_RX = /\b(half|low)[- ]?caff?(eine|einated)?\b|\bmezz[ao][- ]?caff/i;
+  const isDecaf = (r) => DECAF_RX.test([r.name, r.process, r.text].filter(Boolean).join(" ")) && !HALFCAF_RX.test(String(r.name || ""));
   // ?decaf in the address shows it at any hour (Show all coffees still lifts it for that visit)
   const CF_FORCE = /[?&]decaf\b/.test(location.search); let cfLift = false;
   const CF_KEY = "v60.curfew2", lateNow = (d = new Date()) => CF_FORCE || d.getHours() >= 14 || d.getHours() < 5;
@@ -7944,6 +7946,11 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     askCitiesN = shelf.length; return (askCities = [...m].sort((a, b) => b[0].length - a[0].length)); };
   const askPlaceFit = (pl) => (r) => pl.near ? pl.near.has(String(r.roaster_city || "").trim() + "|" + (r.roaster_country || "GB")) : pl.cc ? pl.cc.includes(r.roaster_country || "GB") : pl.reg ? pl.reg.includes(shelfRegion(r))
     : String(r.roaster_city || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === pl.city;
+  const ASK_DEMONYM = { Ethiopia: ["etiope", "etiopi"], Kenya: ["keniano", "keniota", "keniani"], Colombia: ["colombiano", "colombiani"], Brazil: ["brasile", "brasiliano", "brasiliani"], Peru: ["peruvian", "perù", "peruviano", "peruviani"],
+    Guatemala: ["guatemalan", "guatemalteco"], Honduras: ["honduran", "honduregno"], "El Salvador": ["salvadoran", "salvadorian", "salvadoregno"], "Costa Rica": ["costa rican", "costaricano"], Panama: ["panamanian", "panamense"],
+    Nicaragua: ["nicaraguan", "nicaraguense"], Mexico: ["mexican", "messico", "messicano"], Rwanda: ["rwandese", "ruandese"], Burundi: ["burundian", "burundese"], Uganda: ["ugandese"], Tanzania: ["tanzaniano"], Yemen: ["yemeni", "yemenita"],
+    Indonesia: ["indonesian", "indonesiano", "sumatran"], Ecuador: ["ecuadorian", "ecuadoriano"], Bolivia: ["boliviano"], "DR Congo": ["congolese"], China: ["chinese", "cina", "cinese"], India: ["indian", "indiano"],
+    Myanmar: ["burmese", "birmania", "birmano"], Thailand: ["thai", "tailandia", "thailandese"], Vietnam: ["vietnamese", "vietnamita"], Jamaica: ["jamaican", "giamaica", "giamaicano"], Hawaii: ["hawaiian"] };
   function readAsk(raw) {
     const it = LANG === "it", q = " " + raw.toLowerCase().replace(/[“”"]/g, " ").replace(/\b(dall|dell|nell|sull|all|l|d|un)['’]/g, "$1 ").replace(/\s+/g, " ") + " ";
     const want = { tastes: [], proc: null, roast: null, lands: [], max: null, decaf: false, nodecaf: false, fresh: false, treat: false, cheap: false, brewer: null, filter: null, words: [] };
@@ -7974,11 +7981,13 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     if (use(/\b(for espresso|espresso roast)\b/)) want.filter = "espresso"; else if (use(/\b(for filter|filter roast|pour ?over|filtro)\b/)) want.filter = "filter";
     for (const [re, k] of ASK_BREWER) { if (use(new RegExp(re.source))) { want.brewer = askBrewerKey(k); if (k === "espresso" && !want.filter) want.filter = "espresso"; break; } }
     want.places = [];
-    { const plain = " " + q.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\p{L}\p{N}\s'.-]/gu, " ").replace(/\s+/g, " ").trim() + " ";
+    // a city by its Italian name (Londra, Parigi, Copenaghen) is the same city (28/11/2026)
+    const IT_CITY = { londra: "london", parigi: "paris", berlino: "berlin", copenaghen: "copenhagen", lisbona: "lisbon", barcellona: "barcelona", edimburgo: "edinburgh", stoccolma: "stockholm", praga: "prague", amburgo: "hamburg", varsavia: "warsaw", atene: "athens", dublino: "dublin", zurigo: "zurich", ginevra: "geneva", anversa: "antwerp" };
+    { const plain = " " + q.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\p{L}\p{N}\s'.-]/gu, " ").replace(/\s+/g, " ").trim().replace(/\b(londra|parigi|berlino|copenaghen|lisbona|barcellona|edimburgo|stoccolma|praga|amburgo|varsavia|atene|dublino|zurigo|ginevra|anversa)\b/g, (m) => { used.add(m); return IT_CITY[m]; }) + " ";
       let grows = {}; try { grows = V.country; } catch (e) {}
       const growing = (t) => Object.values(grows).flat().includes(t);
-      const take = (name, pl, label) => { const said = new RegExp(`(?:roasted|roaster|roasters|roastery|roasteries|based|torrefatto|torrefazione|torrefazioni) (?:in |a |from )?(?:the )?${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?= )| ${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} (?:roasters?|roastery|roasteries)(?= )`).test(plain);
-        const from = new RegExp(`(?:from|in|out of|da|dal|dalla|dall|in) (?:the )?${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?= )`).test(plain);
+      const take = (name, pl, label) => { const said = new RegExp(`(?:roasted|roaster|roasters|roastery|roasteries|based|torrefatto|torrefazione|torrefazioni) (?:in |a |di |from )?(?:the )?${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?= )| ${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} (?:roasters?|roastery|roasteries)(?= )`).test(plain);
+        const from = new RegExp(`(?:from|in|out of|da|dal|dalla|dall|di|a) (?:the )?${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?= )`).test(plain);
         if (growing(name) && !said) return false;   // from Kenya: the coffee's origin
         if (!said && !from && !pl.cc && !pl.reg) return false;   // a city on its own could be a coffee's name: needs from / in
         want.places.push({ ...pl, label }); name.split(" ").forEach((w) => used.add(w)); return true; };
@@ -7999,6 +8008,9 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     // the people's word too: Rwandan, Bolivian (Rwanda + n)
     Object.entries(lands).forEach(([name, ts]) => { if (/a$/.test(ts[0]) && ts.some((t) => q.includes(" " + t + "n ") || q.includes(" " + t + "n,"))) { want.lands.push(name); ts.forEach((t) => { used.add(t); used.add(t + "n"); }); } });
     Object.entries(lands).forEach(([name, ts]) => { if (want.lands.includes(name)) return; if (ts.some((t) => !used.has(t) && q.includes(" " + t + " ") || q.includes(" " + t + ","))) { want.lands.push(name); ts.forEach((t) => used.add(t)); } });
+    // the people's word where it isn't the country plus n (Peruvian, Honduran), the Italian ones (etiope, brasiliano) and Italy's own
+    // names for the countries (Brasile, Messico): "un naturale etiope" found a coffee from Peru (28/11/2026)
+    Object.entries(ASK_DEMONYM).forEach(([name, ts]) => { if (want.lands.includes(name)) return; if (ts.some((t) => q.includes(" " + t + " ") || q.includes(" " + t + ","))) { want.lands.push(name); ts.forEach((t) => t.split(" ").forEach((w) => used.add(w))); } });
     // tastes: a family (fruity) or a note word that some coffee's notes really have (peach, jasmine)
     const words = q.replace(/[^\p{L}\p{N}\s'-]/gu, " ").split(/\s+/).filter(Boolean).map((w) => w === "geisha" ? "gesha" : w);
     const STOP = /^(recommend|recommendation|suggest|suggestion|show|pick|choose|need|try|any|got|have|you|your|right|now|currently|one|ones|consiglia|consigliami|suggerisci|mostrami|as|good|nice|great|lovely|tasty|morning|afternoon|evening|night|tonight|weekend|sunday|breakfast|after|dinner|lunch|i|i'?d|id|im|a|an|the|and|or|with|some|something|anything|that|which|is|are|be|for|my|me|today|please|want|like|looking|love|would|could|can|get|give|find|cup|coffee|coffees|bag|bean|beans|brew|brewer|of|to|in|on|not|too|very|really|bit|little|more|less|but|e|o|un|una|uno|il|la|lo|per|mio|mia|con|di|da|del|della|qualcosa|vorrei|voglio|caffè|caffe|oggi|che|sia|ma|non|molto|poco|più|meno|tasting|taste|tastes|notes?|roast|roasted|roaster|roasters|roastery|roasteries|based|dal|dalla|dall|torrefatto|torrefazione|process|processed|machine|maker|pour|over|under|below|than|max|up|no|from|origin|country|one|ones|it)$/;
@@ -8069,6 +8081,9 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       return s + bonus;   // the bonus only orders what already fits
     };
   }
+  // for the tests only (?scantest): how an ask is read, and how many coffees fit it
+  if (/[?&]scantest\b/.test(location.search)) window.__ask = (q) => { const w = readAsk(q), sc = askScore(w), pool = shelf.filter((r) => sc(r) > 0);
+    return { lands: w.lands, proc: w.proc, places: (w.places || []).map((p) => p.label || p.city || "near"), decaf: w.decaf, roasters: (w.roasters || []).map((x) => x.name), words: w.words, tastes: w.tastes.map((t) => t.w), n: pool.length, half: pool.filter((r) => HALFCAF_RX.test(r.name || "")).length, decafs: shelf.filter(isDecaf).length }; };
   // what the ask was read as, in a line under the menu
   function askLine(want, found = "") {
     const it = LANG === "it", bits = [];
@@ -12937,7 +12952,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
         say(T(`${o ? `A ${o[1]} that's kind on the wallet` : base ? "Similar, for less" : "Good value"}: ${shownName(r)} from ${roasteryName(r.roaster)}${r.price ? `, ${r.price} a bag` : ""}. ${notesOf(r).length ? tastesOf(notesOf(r)) : ""}`.trim(),
           `${o ? `Un ${o[2]} che non svuota il portafoglio` : "Buon rapporto qualità-prezzo"}: ${shownName(r)} della ${roasteryName(r.roaster)}${r.price ? `, ${r.price} il sacchetto` : ""}.`), [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(r); } }], happy); }],
       // "anything else?", "what else?": after a coffee it named, another one; otherwise an offer of what it can do
-      [/^(more|other|different|some other|any other|any more|got any (?:other|more)) (options?|choices?|ones?|coffees?|picks?|suggestions?|ideas?)\b|^(show|give) me (more|other) (options?|coffees?|ones?)\b|^(more|others?) please\b|^(anything|something|what) else\b|^(any )?others?\b|^(anything |any )?more\b[ ?!.]*$|^(show|give|find) me (another|more|others|something else|anything else|a different one|one more)\b|^(another|a different) one\b|^(altro|qualcos'?altro|altri|che altro|fammi vedere altro)\b/i, () => { if (moreQ && lastCo && Date.now() - lastCo.at < 600000 && (findAsk(moreQ) !== false || tasteFind(moreQ) !== false)) return; if (lastCo && Date.now() - lastCo.at < 600000) return pickNew(true, mem.brewer);   /* after a taste ("I feel blackcurrant"), another with that taste */
+      [/^(more|other|different|some other|any other|any more|got any (?:other|more)) (options?|choices?|ones?|coffees?|picks?|suggestions?|ideas?)\b|^(show|give) me (more|other) (options?|coffees?|ones?)\b|^(more|others?) please\b|^(anything|something|what) else\b|^(any )?others?\b|^(anything |any )?more\b[ ?!.]*$|^(show|give|find) me (another|more|others|something else|anything else|a different one|one more)\b|^(another|a different) one\b|^(altro|un altro|un'?altra|ancora uno|qualcos'?altro|altri|che altro|fammi vedere altro)\b/i, () => { if (moreQ && lastCo && Date.now() - lastCo.at < 600000 && (findAsk(moreQ) !== false || tasteFind(moreQ) !== false)) return; if (lastCo && Date.now() - lastCo.at < 600000) return pickNew(true, mem.brewer);   /* after a taste ("I feel blackcurrant"), another with that taste */
         say(pick([T("Plenty! Ask me for a coffee pick, help with a sour or bitter cup, or say 'let's brew' and we'll make one together.", "Tanto! Chiedimi un caffè da provare, aiuto con una tazza acida o amara, o di' 'prepariamo' e lo facciamo insieme."), T("Want another coffee to try, a recipe, or shall we brew one together?", "Vuoi un altro caffè da provare, una ricetta, o ne prepariamo uno insieme?")]), null, happy); }],
       // everyday coffee questions answered straight (26/11/2026: "Is coffee a fruit?" got a fruity coffee picked instead)
       // a joke, when asked (26/11/2026: "Tell me a joke" got "Got it.")
@@ -13138,7 +13153,8 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       const topV = pool[0][0], best = pool.filter(([v]) => v >= topV - 0.6).map(([, x]) => x), fresh = best.filter((x) => !picked.has(x.url) && !(lastCo && lastCo.r === x) && notesOf(x).length), rest = best.filter((x) => !(lastCo && lastCo.r === x));
       const r = pick((fresh.length ? fresh : rest.length ? rest : best).slice(0, 40)), ns = notesOf(r), n = pool.length; lastCo = { r, at: Date.now() }; picked.add(r.url);
       const city = (want.places || []).length && r.roaster_city ? ` (${r.roaster_city})` : "", nm = norm(shownName(r));
-      const what = [r.origin && !nm.includes(norm(r.origin)) ? r.origin : "", r.process && want.proc && !/decaf/i.test(r.process) ? String(r.process).toLowerCase() : "", want.decaf && !/decaf/.test(nm) ? T("decaf", "decaffeinato") : ""].filter(Boolean).join(", ");
+      const pw = r.process && want.proc && !/decaf/i.test(r.process) ? String(r.process).toLowerCase() : "", pwIt = { natural: "naturale", washed: "lavato" }[pw] || pw;
+      const what = [r.origin && !nm.includes(norm(r.origin)) ? r.origin : "", T(pw, pwIt), want.decaf && !/decaf/.test(nm) ? T("decaf", "decaffeinato") : ""].filter(Boolean).join(", ");
       say(T([`Try ${shownName(r)} from ${roasteryName(r.roaster)}${city}${what ? ", " + what : ""}.`, ns.length ? tastesOf(ns) : "", n > 1 ? `(${n} on Goccio fit that.)` : ""].filter(Boolean).join(" "), [`Prova ${shownName(r)} della ${roasteryName(r.roaster)}${city}${what ? ", " + what : ""}.`, ns.length ? "Sa di " + andList(ns) + "." : "", n > 1 ? `(${n} su Goccio fanno al caso.)` : ""].filter(Boolean).join(" ")),
         [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(r); } }, T("Another one", "Un altro")], happy); };
     const tasteFind = (q0) => {
