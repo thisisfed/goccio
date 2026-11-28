@@ -9052,6 +9052,15 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       missing: c.missing || [], processLabel: PROCESS[c.process] ? PROCESS[c.process].label : "", roastLabel: roastLabel(c.roast),
       pours: (r.pours || []).map((p) => ({ t: p.t, to: p.to, note: p.note || "" })) };
   };
+  // for the build (scripts/pages.py): a coffee's recipe as the app writes it, word for word, so its own page reads the same (28/11/2026):
+  // the warnings, Why these numbers, How to pour and every pour line, for a V60 at the coffee's usual dose with a Comandante C40
+  window.bagPage = (x) => {
+    try { Object.assign(state, listState(x)); state.brewer = "v60"; state.goal = "light"; state.dose = 15; state.serve = "hot"; prefs.mill = "c40"; render(); } catch (err) { return null; }
+    const tx = (el) => el ? el.textContent.replace(/\s+/g, " ").trim() : "";
+    return { warn: [...document.querySelectorAll("#consTop .cons-top")].map((p) => tx(p).replace(/\s*Pick it below\.?$/, "").trim()).filter(Boolean),
+      why: [...document.querySelectorAll("#whyNums .wn > li")].map((li) => { const k = li.querySelector(":scope > b"); return [tx(k), tx(li).slice(tx(k).length).trim()]; }),
+      how: tx($("tech")), pours: [...document.querySelectorAll("#pourRows tr")].map((tr) => [...tr.children].map(tx)).filter((r) => r.length >= 3) };
+  };
   // ---- brewing inside the list: Brew on a coffee opens its choices and its recipe right there, under it ----
   // The page has one set of choices and one recipe. For a coffee from the list they move into its row; a scanned or typed coffee
   // (no row to open) keeps them in their own sections, as before
