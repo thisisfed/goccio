@@ -6565,7 +6565,8 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
         p.appendChild(document.createTextNode(head + " "));
         /* every line has its own way to fix it, as when it stands alone: Process not stated. Say what the bag says. */
         const ask = a || (() => { const x = document.createElement("a"); x.href = "#"; x.className = "why-ask"; x.onclick = (ev) => { ev.preventDefault(); bagAskShow = true; render(); }; return x; })();
-        ask.textContent = LANG === "it" ? "Sceglila qui sotto." : "Pick it below."; ask.onclick = (ev) => { ev.preventDefault(); const d0 = $("detected"); if (d0 && !d0.hidden) jumpTo(d0); }; p.appendChild(ask);
+        ask.textContent = LANG === "it" ? "Sceglila qui sotto." : "Pick it below."; ask.onclick = (ev) => { ev.preventDefault(); const d0 = $("detected"); if (!d0 || d0.hidden) return;   // its top rule lands on the top bar's own line, exactly (28/11/2026)
+          const tp = document.querySelector(".top"), bb = tp ? tp.getBoundingClientRect().bottom : 0; try { scrollTo({ top: Math.round(d0.getBoundingClientRect().top + scrollY - bb + 1), behavior: "smooth" }); } catch (e) { scrollTo(0, d0.getBoundingClientRect().top + scrollY - bb + 1); } }; p.appendChild(ask);
         ct.appendChild(p); });
       /* asked for: the words give way to the question itself, right here: Roast, Scan the beans, + 5 */
       // (28/11/2026) the warnings stay; the answers come under them as a bar like the menu at the top, between them and the brewer
