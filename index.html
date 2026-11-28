@@ -9194,6 +9194,9 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   let ppLib = null, ppDead = false;   // ppDead: it downloaded but can't start here (an old browser): the old reader for the rest of this visit
   function loadPP(onStep) {
     if (ppDead) return Promise.reject(new Error("load"));
+    // a phone with little memory keeps the old, lighter reader: this one takes about 350 MB while it reads (measured 28/11/2026), and a
+    // page that runs out is closed by the phone. Android says how much it has (2 GB or less); iPhones don't say, and have more
+    if (!ppLib && navigator.deviceMemory && navigator.deviceMemory <= 2 && !window.__ppForce) { ppDead = true; return Promise.reject(new Error("load")); }
     if (ppLib) return ppLib;
     const all = PPO.files.reduce((a, f) => a + f[1], 0), got = {}; let lastPc = -1;
     const say = () => { const pc = Math.min(99, Math.floor(Object.values(got).reduce((a, b) => a + b, 0) / all * 100)); if (pc !== lastPc) { lastPc = pc; onStep && onStep(`Getting the reader… ${pc}%`); } };
