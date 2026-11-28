@@ -8178,23 +8178,30 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   let dropCache = null;
   const goccioDrop = () => { const t = new Date(), day = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`;
     if (dropCache && dropCache.day === day && dropCache.n === shelf.length) return dropCache;
-    const it = LANG === "it", RARE_V = /\b(gesha|geisha|sidra|sl-?28|sl-?34|pink bourbon|wush ?wush|laurina|eugenioides|pacamara|java|maragogype|typica mejorado|mejorado|chiroso|ombligon|caturra rosado|bourbon aji)\b/i,
-      RARE_P = /anaerob|carbonic|co-?ferment|thermal|yeast|koji|mosto|lactic|double|wine|barrel|black honey|purple honey/i, conc = (r) => noteList(r).filter((n) => !/^(sweet|juicy|clean|bright|balanced|complex|smooth|rich|delicate|tart|floral|fruity)$/i.test(String(n).trim()));
+    // always something out there (28/11/2026): the wildest of the last days, a rare variety, a strange process or a far-off origin, before a merely good one
+    const it = LANG === "it", RARE_V = /\b(gesha|geisha|sidra|pink bourbon|wush ?wush|laurina|eugenioides|pacamara|java|maragogyp?e|typica mejorado|mejorado|chiroso|ombligon|caturra rosado|bourbon aji|tabi|mokka|moka|bourbon pointu|laurina|rume sudan|sudan rume|batian|ethiosar|liberica|excelsa|stenophylla)\b/i,
+      RARE_P = /anaerob|anoxic|carbonic|maceration|co-?ferment|infused|thermal|yeast|koji|mosto|lactic|double|wine|barrel|black honey|purple honey|cold ferment|frozen|nitro|fruit ferment|cinnamon|cascara ferment/i,
+      RARE_O = /\b(yemen|bolivia|hawaii|galapagos|galápagos|st\.? helena|saint helena|jamaica|myanmar|taiwan|thailand|china|nepal|vietnam|laos|philippines|zambia|malawi|congo|drc|haiti|cuba|réunion|reunion|timor)\b/i, conc = (r) => noteList(r).filter((n) => !/^(sweet|juicy|clean|bright|balanced|complex|smooth|rich|delicate|tart|floral|fruity)$/i.test(String(n).trim()));
     const recent = (k) => { const c = new Date(); c.setDate(c.getDate() - k); return `${c.getFullYear()}-${String(c.getMonth() + 1).padStart(2, "0")}-${String(c.getDate()).padStart(2, "0")}`; };
     const ok = (r, k) => String(r.found || "") >= recent(k) && r.origin && !/[\/,&+]| and /.test(String(r.origin)) && r.process && !isDecaf(r) && !/\bblend\b/i.test(r.name || "") && conc(r).length >= 2 && r.url;
-    let pool = shelf.filter((r) => ok(r, 2)); if (pool.length < 8) pool = shelf.filter((r) => ok(r, 7)); if (!pool.length) return null;
+    const wild = (r) => (RARE_V.test(r.variety || "") ? 2 : 0) + (RARE_P.test(r.process || "") ? 2 : 0) + (RARE_O.test(r.origin || "") ? 1.5 : 0);
+    let pool = shelf.filter((r) => ok(r, 2)); if (pool.filter((r) => wild(r) >= 2).length < 3) pool = shelf.filter((r) => ok(r, 7)); if (pool.filter((r) => wild(r) >= 2).length < 3) pool = shelf.filter((r) => ok(r, 21)); if (!pool.length) return null;
+    { const w2 = pool.filter((r) => wild(r) >= 3.5), w1 = pool.filter((r) => wild(r) >= 2); pool = w2.length >= 2 ? w2 : w1.length ? w1 : pool; }   // the wildest there is: two oddities beat one, one beats none
     const hash = (str) => { let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0) / 4294967296; };
     const p250 = (r) => r._p100 != null ? r._p100 * 2.5 : null;
-    const score = (r) => (RARE_V.test(r.variety || "") ? 2 : 0) + (RARE_P.test(r.process || "") ? 1.5 : 0) + (r.roaster_recipe ? 1.5 : 0) + (r.variety ? 0.5 : 0) + Math.min(conc(r).length, 4) * 0.4
-      + (p250(r) != null && p250(r) <= 16 ? 1 : p250(r) != null && p250(r) > 35 ? -1 : 0) + hash(day + r.url) * 2.2;   // the date's share keeps it changing day to day
+    const score = (r) => wild(r) * 1.5 + (r.roaster_recipe ? 0.6 : 0) + Math.min(conc(r).length, 4) * 0.3
+      + (p250(r) != null && p250(r) > 30 ? 0.6 : 0) + hash(day + r.url) * 2.2;   // a dear lot is usually the strange one (an auction Gesha); the date's share keeps it changing   // the date's share keeps it changing day to day
     const r = pool.map((x) => [score(x), x]).sort((a, b) => b[0] - a[0])[0][1];
     // why, in Goccio's words: what it is, then what made it stand out
     const ns = conc(r).slice(0, 3).map((n) => String(n).toLowerCase()), and = it ? " e " : " and ", nl = ns.length > 1 ? ns.slice(0, -1).join(", ") + and + ns[ns.length - 1] : ns[0];
     const why = [], pr = p250(r);
-    if (RARE_V.test(r.variety || "")) why.push(it ? `una varietà rara (${r.variety})` : `a rare variety (${r.variety})`);
-    if (RARE_P.test(r.process || "")) why.push(it ? `un processo fuori dal comune (${String(r.process).toLowerCase()})` : `an unusual process (${String(r.process).toLowerCase()})`);
-    if (r.roaster_recipe) why.push(it ? "la torrefazione dà la sua ricetta" : "its roaster shares their own recipe");
-    if (pr != null && pr <= 16) why.push(it ? "un prezzo onesto" : "a fair price");
+    // said plainly, no brackets: "picked for a rare Pacamara and a co-fermented process" (28/11/2026)
+    const vName = String(r.variety || "").split(/,|\s+(?:and|&|e)\s+/)[0].trim(), pName = String(r.process || "").toLowerCase();
+    if (RARE_V.test(r.variety || "")) why.push(it ? `un raro ${vName}` : `a rare ${vName}`);
+    if (RARE_P.test(r.process || "")) why.push(it ? `un processo ${pName}` : `${/^[aeiou]/.test(pName) ? "an" : "a"} ${pName} process`);
+    if (RARE_O.test(r.origin || "")) why.push(it ? `un'origine rara, ${r.origin}` : `a rare origin, ${r.origin}`);
+    if (!why.length && r.roaster_recipe) why.push(it ? "la torrefazione dà la sua ricetta" : "its roaster shares their own recipe");
+    if (!why.length && pr != null && pr <= 16) why.push(it ? "un prezzo onesto" : "a fair price");
     if (!why.length) why.push(it ? "note chiare e un'origine ben raccontata" : "clear notes and a well-told origin");
     const wl = why.length > 1 ? why.slice(0, -1).join(", ") + and + why[why.length - 1] : why[0];
     const text = it ? `La Goccia di oggi: ${shownNameOf(r)} di ${r.roaster}, sa di ${nl}. Scelto per ${wl}.` : `Today's drop: ${shownNameOf(r)} from ${r.roaster}, tasting of ${nl}. Picked for ${wl}.`;
