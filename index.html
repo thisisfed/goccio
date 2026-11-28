@@ -10807,10 +10807,10 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   // the coffees' rag (28/11/2026): each card's two lines of type broken by hand, the way a typesetter would, not word by word as they
   // fill: no word left alone on a line, no line ending on "and", the last line never a stub, the lines' ends free to vary. Every gap
   // inside a line becomes a non-breaking space and the chosen breaks stay spaces, worked out again when the column changes width
-  { const cv = document.createElement("canvas").getContext("2d"), WEAK = /^(?:and|or|&|with|of|the|a|an|to|in|by|e|ed|o|con|di|da|del|della|il|la|lo|le|i|gli|un|una)$/i;
+  { const cv = document.createElement("canvas").getContext("2d"), WEAK = /^(?:and|or|&|with|of|the|a|an|to|in|by|e|ed|o|con|di|da|del|della|il|la|lo|le|i|gli|un|una|-|–|—|\/|\|)$/i;
     const nodes = (el, skip) => { const out = [], w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); let t; while ((t = w.nextNode())) if (!skip || !skip.contains(t)) out.push(t); return out; };
     const rag = (el, skip) => { if (!el || !el.isConnected) return; const ts = nodes(el, skip); if (!ts.length) return;
-      ts.forEach((t) => { if (t.__rag) t.nodeValue = t.nodeValue.replace(/\u00a0/g, " "); t.__rag = true; });
+      ts.forEach((t) => { if (t.__rag) t.nodeValue = t.nodeValue.replace(/\u00a0/g, " "); t.nodeValue = t.nodeValue.replace(/ {2,}/g, " "); t.__rag = true; });   // two spaces left one at a line's start ("Mexiko - / ␣Mörkrost")
       const cs = getComputedStyle(el), W = el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - 2; if (W < 80) return;
       cv.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`; const ls = parseFloat(cs.letterSpacing) || 0;
       const mw = (s) => cv.measureText(s).width + ls * s.length;
