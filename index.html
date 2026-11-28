@@ -784,7 +784,7 @@ table.pours { padding: 10px 24px; }
 #moreBox{border-bottom:1px solid var(--line)!important}
 #moreBox .more-in > details.clk{margin-top:0!important}
 /* Start brewing sits as far from the text above it as from the rule below: the text's line box ends at its baseline */
-#tech{margin-bottom:-.35em}
+#tech{margin-bottom:calc(-.35em + 9px)}   /* How to pour ends 18 px over its rule, as every other block does (28/11/2026) */
 /* the For you note: as far from the rule under it as from the pills above it */
 .shelf-tools .fy-note{text-box:trim-both cap alphabetic}
 #fyNote{margin-bottom:-2px!important}
@@ -2889,7 +2889,19 @@ html body #shelves .co-tabs ~ #askNote.nb-band.fy-note:not([hidden]){position:st
   font:500 var(--fs-s)/42px var(--sans)!important;color:var(--ink)!important;white-space:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:none;text-box:none!important;-webkit-overflow-scrolling:touch}
 html body #shelves .co-tabs ~ #askNote.nb-band::-webkit-scrollbar{display:none}
 @media (min-width:900px){ html body #shelves .co-tabs ~ #askNote.nb-band.fy-note:not([hidden]){margin-bottom:-12px!important} }   /* desktop: the first coffee 12 px under the band, as under the day's count */
-#whyNums{margin:0 0 -5px}   /* the rule under it as close to its last line as under How to pour (28/11/2026) */
+/* the pickers in place (28/11/2026): the brewer's name in the title and the grinder's over its clicks, each with a small chevron */
+html body .rt-pick, html body .sp-pick{all:unset;cursor:pointer;display:inline-flex;align-items:baseline;gap:.18em;color:inherit;font:inherit;letter-spacing:inherit;-webkit-tap-highlight-color:transparent}
+html body .rt-pick .pk-chev{width:.42em;height:.42em;align-self:center;opacity:.55;transition:transform .2s ease}
+html body .sp-pick .pk-chev{width:11px;height:11px;align-self:center;opacity:.7;transition:transform .2s ease}
+html body .rt-pick[aria-expanded="true"] .pk-chev, html body .sp-pick[aria-expanded="true"] .pk-chev{transform:rotate(180deg)}
+html body .rt-pick:focus-visible, html body .sp-pick:focus-visible{outline:2px solid var(--hl);outline-offset:3px;border-radius:4px}
+html body .pick-pan{grid-column:1/-1;margin:0;padding:12px 0 14px;border-top:1px solid var(--line)}
+html body .pick-pan[hidden]{display:none!important}
+html body #consTop:not([hidden]) ~ #specs .spec.pick{border-top:1px solid var(--line)!important}   /* the warnings' lower rule, when the coffee's name comes next */
+html body .pick-pan .opt > span:first-child{display:none}   /* the panel says what it is: no "Brewer" or "Grinder" in front */
+html body .pick-pan .opt, html body .pick-pan .opts{margin:0!important;padding:0!important;border:0!important;display:block}
+@media (prefers-reduced-motion:reduce){ html body .rt-pick .pk-chev, html body .sp-pick .pk-chev{transition:none} }
+#whyNums{margin:0 0 4px}   /* the rule under it as close to its last line as under How to pour (28/11/2026) */
 #whyNums .wn-h{margin:0 0 8px;font-size:var(--fs-s);font-weight:500;color:var(--ink)}
 #whyNums .wn{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:var(--fs-s);line-height:1.35;color:var(--muted)}
 #whyNums .wn b{color:var(--ink);font-weight:500;margin-right:4px}   /* plain words, as How to pour is: no pill round them */
@@ -6176,6 +6188,24 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     espresso: "The modern espresso: 18 g in, about 36 g out in 25–30 s. Stop on weight, fix the time with the grind, and taste: sour means finer or longer, bitter means coarser or shorter.",
     moka: "Hoffmann’s moka pot technique: boiled water in the base, a full level basket, lid open so you can stop it the moment it turns pale.",
   };
+  // the brewer and the grinder are picked where they show (28/11/2026): "Recipe for V60 ⌄" and "Comandante C40 ⌄" open their own
+  // panels in place (the brewer's under the title, the grinder's under its row) holding the same controls the kit row had
+  const PICK_CHEV = `<svg class="pk-chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const PICKS = {};
+  function pickPan(k) { if (PICKS[k]) return PICKS[k]; const p = document.createElement("div"); p.className = "pick-pan"; p.id = k === "brew" ? "brewPick" : "millPick"; p.hidden = true;
+    if (k === "brew") { const o = $("opts-kit"); if (o) p.appendChild(o); }
+    else { const o = $("millOpt"); if (o) p.appendChild(o); }
+    return (PICKS[k] = p); }
+  function placePicks() { const rb = $("rbody"), sp = $("specs"); if (!rb || !sp) return; const b = pickPan("brew"), m = pickPan("mill");
+    if (b.parentNode !== rb || rb.firstElementChild !== b) rb.insertBefore(b, rb.firstElementChild);
+    // under the grinder's row: right after it when it runs the full width, after the kettle beside it otherwise (the specs are ordered by CSS)
+    const key = sp.querySelector(".spec.key"), temp = sp.querySelector(".spec.temp"), wide = key && key.classList.contains("wide");
+    if (key) { (wide || !temp ? key : temp).after(m); m.style.order = wide || !temp ? "1" : "2"; } else sp.appendChild(m); }
+  function openPick(k, on) { const p = pickPan(k); p.hidden = !on; document.querySelectorAll(`[data-pick="${k}"]`).forEach((x) => x.setAttribute("aria-expanded", String(on)));
+    if (on) { const o = k === "brew" ? "mill" : "brew"; if (PICKS[o] && !PICKS[o].hidden) openPick(o, false); } }
+  document.addEventListener("click", (e) => { const t = e.target.closest("[data-pick]"); if (t) { e.preventDefault(); openPick(t.dataset.pick, pickPan(t.dataset.pick).hidden); return; } });
+  // a brewer picked: its panel folds away (the recipe has changed above it). Caught on the way down, before the chip is redrawn
+  document.addEventListener("click", (e) => { const ch = e.target.closest("#brewPick button.chip"); if (ch && !/^\+\s*\d/.test(ch.textContent.trim()) && !ch.classList.contains("gear-more")) setTimeout(() => openPick("brew", false), 0); }, true);
   function render() {
     if (typeof syncBagBtn === "function") try { syncBagBtn(); } catch (e) {}
     // Surprise me's question (roast or process, marked in What's brewing) goes once it has an answer
@@ -6273,13 +6303,15 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     $("zeroRow").hidden = !!r.mine; $("clkHow").hidden = !!r.mine || !!mill().words;   // no grinder saved: the grind is in words, the click maths would be noise
     renderMine(r);
     const showRet = r.tds != null;
-    { const bn = BREWERS[r.brewer].name; $("recTitle").textContent = LANG === "it" ? `Ricetta per ${bn}` : `Recipe for ${bn}`; }   // the brewer, in the title
+    { const bn = BREWERS[r.brewer].name, open = !!(pickPan("brew").parentNode && !pickPan("brew").hidden);   // the brewer, in the title: tap it to change it (28/11/2026)
+      $("recTitle").innerHTML = `${LANG === "it" ? "Ricetta per" : "Recipe for"} <button type="button" class="rt-pick" data-pick="brew" aria-expanded="${open}" aria-controls="brewPick" aria-label="${esc((LANG === "it" ? "Cambia metodo: " : "Change brewer: ") + bn)}">${esc(bn)}${PICK_CHEV}</button>`; }
     try { roRecFor(state.bag); } catch (e) {}
     crowdFor(state.bag);   // how everyone's brews of this coffee came out, once there are enough
     const noMillYet = !!mill().words;
-    $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}${k === "key" && mill().words ? " wide" : ""}"><b>${v}${u ? `<small>${u === "-cup" ? u : " " + u}</small>` : ""}</b><span class="sub2">${l.charAt(0).toUpperCase() + l.slice(1)}${badge ? ` <span class="yr">${esc(badge)}</span>` : ""}</span>${k === "key" && isC40() && prefs.zero ? `<span class="zo">${sign(prefs.zero).replace(/^(.)/, "$1 ")} zero offset</span>` : ""}${k === "key" && K === "shot" && mill().noEsp ? `<span class="sub2">Not an espresso grinder</span>` : k === "key" && !isC40() && (onMill(r.clicks).atMax || onMill(r.clicks).atMin) ? `<span class="sub2">${onMill(r.clicks).atMax ? "Coarsest setting, may still run fast" : "Finest setting"}</span>` : ""}${k === "dose" ? (() => { const ds = BREWERS[r.brewer].doses, i = ds.findIndex(([v]) => v === r.dose); if (ds.length < 2 || i < 0) return "";
+    $("specs").innerHTML = S.map(([k, v, u, l, badge]) => `<div class="spec ${k}${badge ? " tuned" : ""}${k === "key" && mill().words ? " wide" : ""}"><b>${v}${u ? `<small>${u === "-cup" ? u : " " + u}</small>` : ""}</b>${k === "key" ? `<button type="button" class="sub2 sp-pick" data-pick="mill" aria-expanded="${!!(pickPan("mill").parentNode && !pickPan("mill").hidden)}" aria-controls="millPick" aria-label="${esc((LANG === "it" ? "Cambia macinino: " : "Change grinder: ") + mill().name)}">${esc(l.charAt(0).toUpperCase() + l.slice(1))}${PICK_CHEV}${badge ? ` <span class="yr">${esc(badge)}</span>` : ""}</button>` : `<span class="sub2">${l.charAt(0).toUpperCase() + l.slice(1)}${badge ? ` <span class="yr">${esc(badge)}</span>` : ""}</span>`}${k === "key" && isC40() && prefs.zero ? `<span class="zo">${sign(prefs.zero).replace(/^(.)/, "$1 ")} zero offset</span>` : ""}${k === "key" && K === "shot" && mill().noEsp ? `<span class="sub2">Not an espresso grinder</span>` : k === "key" && !isC40() && (onMill(r.clicks).atMax || onMill(r.clicks).atMin) ? `<span class="sub2">${onMill(r.clicks).atMax ? "Coarsest setting, may still run fast" : "Finest setting"}</span>` : ""}${k === "dose" ? (() => { const ds = BREWERS[r.brewer].doses, i = ds.findIndex(([v]) => v === r.dose); if (ds.length < 2 || i < 0) return "";
         const ic = (p) => `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="${p}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`, moka = r.brewer === "moka";
         return `<span class="dstep" role="group" aria-label="${esc(tr(moka ? "Pot size" : "Coffee dose"))}"><button type="button" class="chip gear-more" data-dstep="-1"${i === 0 ? " disabled" : ""} aria-label="${esc(tr(moka ? "Smaller pot" : "Less coffee"))}">${ic("M7.5 2.5 4 6l3.5 3.5")}</button><button type="button" class="chip gear-more" data-dstep="1"${i === ds.length - 1 ? " disabled" : ""} aria-label="${esc(tr(moka ? "Bigger pot" : "More coffee"))}">${ic("M4.5 2.5 8 6 4.5 9.5")}</button></span>`; })() : ""}${k === "ratio" && showRet && false ? `<span class="ret">(${r.water} g water − 2.1 × ${r.dose} g retained). Estimate only.</span>` : ""}</div>`).join("");
+    placePicks();
     /* a roast or a process just picked: whatever it changed in the recipe (grind, kettle, time) shows orange for a moment, so the change is seen */
     { const now = {}; $("specs").querySelectorAll(".spec").forEach((sp) => { const k = (sp.className.match(/\b(key|dose|water|temp|time|ratio)\b/) || [])[1]; if (!k) return;
         now[k] = [...sp.querySelectorAll("b")].map((x) => x.textContent.replace(/\s+/g, " ").trim()).join("|");
