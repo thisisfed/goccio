@@ -3497,6 +3497,11 @@ html body .beta, html body .chip .beta, html:root[data-theme] body .beta{color:v
 html.su-asking #coffee, html.su-asking #recipe{display:none!important}
 .carry{margin:12px 0 0} .carry .chip{gap:.3em}
 html body .scan-opt > span:first-child{display:none!important} .scan-opt{display:block!important}   /* the scan button needs no label */
+/* with a recipe on screen it lines up with the pills under it, in their column (28/11/2026); the empty screen keeps it in the middle */
+html body #coffee:not(.empty) .kit > .scan-opt:not([hidden]){display:grid!important}
+html body #coffee:not(.empty) .kit > .scan-opt > span:first-child{display:block!important;visibility:hidden}
+html body #coffee:not(.empty) .kit > .scan-opt .scan-row{align-items:flex-start!important}
+html body #coffee:not(.empty) .kit > .scan-opt .scan-msg{text-align:left}
 @media (min-width:900px){ .botnav{justify-content:center} .botnav .chip{flex:0 0 auto!important;min-width:150px} }   /* wide screens: pills their own size, centred */
 .shelf-tools:has(#askNote:not([hidden]), #fyNote:not([hidden])) .quick{margin-bottom:0}   /* a line of text under the pills keeps its own space */
 /* droplets, second take (22 Nov 2026): one drop parting into three at about a fifth of real speed. Each body keeps its own
@@ -6210,7 +6215,8 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     try { const miss = (engine(state, { noPrefs: true }).c || {}).missing || [];
       ["roast", "process"].forEach((k) => { const row = ($("lab-" + k) || {}).parentNode; if (row && row.classList && !miss.includes(k)) row.classList.remove("ask"); }); } catch (e) {}
     try { markPicked(); } catch (e) {}
-    { const so = document.querySelector(".scan-opt"); if (so) so.hidden = !!(state.bag && state.bag.name); }
+    // no Scan the bag under a coffee you've just scanned and used (28/11/2026): it comes back once you change what the coffee box says
+    { const so = document.querySelector(".scan-opt"); if (so) so.hidden = !!(state.bag && state.bag.name) || (!!window.__scanUsed && ($("coffeeIn").value || "").trim() === window.__scanUsed); }
     const r = recipe = withMine(engine(state));
     if ($("calBtn")) $("calBtn").hidden = !(r && r.brewer === "cold");
     const c = r.c, K = r.kind;
@@ -10086,6 +10092,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   window.__useScan = () => !!(review && !$("scanReview").hidden && applyReview());
   function closeReview() { const b = $("scanReview"); b.hidden = true; b.innerHTML = ""; b.classList.remove("only-match"); review = null; }
   function applyReview(land = true) {
+    setTimeout(() => { window.__scanUsed = ($("coffeeIn").value || "").trim() || null; try { const so = document.querySelector(".scan-opt"); if (so && window.__scanUsed) so.hidden = true; } catch (e) {} }, 0);
     const f = review.fields, v = (k) => (f[k] && f[k].v) || null, PL = { washed: "washed", natural: "natural", honey: "honey", anaerobic: "anaerobic", cofer: "co-fermented", decaf: "decaf" };
     // the roast isn't on the review sheet: only today's list (or a bag you confirmed before) can say it; otherwise you pick it or scan the beans
     const roastKnown = f.roast && f.roast.v && (f.roast.src === "list" || /last scan/.test(f.roast.why || "")) ? f.roast.v : null;
