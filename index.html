@@ -6324,7 +6324,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     renderMine(r);
     const showRet = r.tds != null;
     { const bn = BREWERS[r.brewer].name, open = !!(pickPan("brew").parentNode && !pickPan("brew").hidden);   // the brewer, in the title: tap it to change it (28/11/2026)
-      void open; $("recTitle").textContent = LANG === "it" ? `Ricetta per ${bn}` : `Recipe for ${bn}`; }   // the brewer is picked in its own cell, under the title
+      void open; $("recTitle").textContent = LANG === "it" ? `Ricetta per ${bn}` : `Recipe for ${bn}`; } [0, 350, 900].forEach((ms) => setTimeout(() => requestAnimationFrame(() => { try { window.recGrid && recGrid(); } catch (e) {} }), ms));   // and again once the coffee has opened   // the brewer is picked in its own cell, under the title
     try { roRecFor(state.bag); } catch (e) {}
     crowdFor(state.bag);   // how everyone's brews of this coffee came out, once there are enough
     const noMillYet = !!mill().words;
@@ -11084,6 +11084,23 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   document.addEventListener("click", (e) => { if (e.target.closest && e.target.closest('[data-roast], [data-proc], [id^="o-roast-"], [id^="o-process-"], #roastSkip')) window.__specFlash = performance.now() + 1500; }, true);
   /* the brew is finished: Start brewing has done its work and leaves the bottom bar; what was Cancel reads Done. A new coffee, a reset or a saved entry brings it back */
   { const c0 = document.querySelector('.botnav [data-bn="cancel"]'); if (c0 && LANG === "it") c0.textContent = "Indietro"; }   // Back, not Cancel: nothing is undone (28/11/2026)
+  // "Recipe for …" two lines of the coffee's notes under them, baseline to baseline, and as much room again under it to the rule (28/11/2026)
+  window.recGrid = () => { const t = $("recTitle"), head = t && t.closest(".sec-head"); if (!head || !t.offsetWidth) return;
+    const it = document.querySelector(".item.brewing"), ns = it ? [...it.querySelectorAll(".s-line")].filter((e) => e.offsetHeight) : [], n = ns[ns.length - 1]; if (!n) return;   // the coffee's last line
+    const probe = (el, atEnd) => { const p = document.createElement("span"); p.style.cssText = "display:inline-block;width:0;height:0;vertical-align:baseline"; atEnd ? el.append(p) : el.prepend(p); const y = p.getBoundingClientRect().bottom; p.remove(); return y; };
+    const lh = parseFloat(getComputedStyle(n).lineHeight) || n.getBoundingClientRect().height, nb = probe(n, true);
+    head.style.paddingTop = "0px"; const mt = parseFloat(head.style.marginTop) || 0;   // a margin, so it can also pull the title up
+    head.style.marginTop = (mt + nb + 2 * lh - probe(t, false)) + "px";
+    // under it: from the title's last baseline to the rule, the room there is between the notes' baseline and the title's capitals
+    const cs = getComputedStyle(t), cv = recGrid.cv || (recGrid.cv = document.createElement("canvas").getContext("2d")); cv.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    const cap = cv.measureText("H").actualBoundingBoxAscent || parseFloat(cs.fontSize) * 0.7, gap = 2 * lh - cap;
+    const tb = t.getBoundingClientRect().bottom; let r = null;   // the first rule under the title, wherever it lives (now #consTop's)
+    for (const e of [$("consTop"), $("specs"), ...head.parentElement.children]) { if (e && e.offsetHeight && parseFloat(getComputedStyle(e).borderTopWidth) > 0 && e.getBoundingClientRect().top >= tb - 1) { r = e; break; } } if (!r) return;
+    const pb = parseFloat(head.style.paddingBottom) || parseFloat(getComputedStyle(head).paddingBottom) || 0;
+    head.style.paddingBottom = Math.max(0, pb + gap - (r.getBoundingClientRect().top - probe(t, true))) + "px"; };
+  { let q = 0; const rg = () => { if (q) return; q = requestAnimationFrame(() => { q = 0; try { recGrid(); } catch (e) {} }); };
+    addEventListener("resize", rg); document.addEventListener("transitionend", rg); document.addEventListener("animationend", rg); }
+  try { document.fonts && document.fonts.ready.then(() => { try { recGrid(); } catch (e) {} }); } catch (e) {}
   // the Buy row ends where Back does below it (28/11/2026): Buy takes the width the two icons leave
   { const fitBuy = () => { const c = document.querySelector('.botnav [data-bn="cancel"]'), bb = $("buyBtn"); if (!c || !bb || bb.hidden || !c.offsetWidth) return;
       const os = [$("copyBtn"), $("linkBtn")].filter((x) => x && x.offsetWidth), g = parseFloat(getComputedStyle(bb.parentNode).columnGap) || 4, ic = os.reduce((t, x) => t + x.getBoundingClientRect().width, 0) + g * os.length;
