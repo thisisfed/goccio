@@ -20,6 +20,7 @@ ul{list-style:none;margin:0;padding:0}li{padding:8px 0;border-bottom:1px solid #
 <h2>Last scan</h2><div class="g" id="scan"></div><p class="m" id="limits"></p>
 <h2>Brew answers</h2><div class="g" id="taste"></div><ul id="top"></ul>
 <h2>Recipes opened, by brewer</h2><p class="m" id="useN"></p><div class="g" id="use"></div><ul id="usel"></ul>
+<h2>Short links opened</h2><ul id="golinks"></ul>
 <h2>Roasters added</h2><div class="g" id="added"></div><ul id="addl"></ul>
 <h2>New roasters, first scanned in the last 7 days</h2><ul id="newro"></ul>
 <h2>Shops the scan couldn't read</h2><p class="m" id="badn"></p><ul id="bad"></ul>
@@ -49,6 +50,7 @@ const sum = (o) => o ? (o.sour || 0) + (o.balanced || 0) + (o.bitter || 0) : 0;
     if (!u || !u.db) { $("use").innerHTML = card("—", "no database"); return; }
     const NAME = { v60: "V60", neo: "V60 NEO", kalita: "Kalita Wave", april: "April Brewer", orea: "Orea V4", melitta: "Melitta", chemex: "Chemex", origami: "Origami", switch: "Hario Switch", clever: "Clever Dripper", aero: "AeroPress", press: "French Press", cold: "Cold brew", espresso: "Espresso", mocca: "Moccamaster", moka: "Bialetti Moka Express", cupping: "Cupping" };
     const tot = (rows, k) => (rows || []).filter((r) => r.kind === k).reduce((t, r) => t + r.n, 0), of = (rows, b, k) => ((rows || []).find((r) => r.brewer === b && r.kind === k) || {}).n || 0;
+    const L = u.links || []; $("golinks").innerHTML = L.length ? L.map((x) => `<li><b>goccio.co.uk/go/${esc(x.name)}</b><span class="m">opened ${x.n.toLocaleString("en-GB")} time${x.n === 1 ? "" : "s"}, first ${esc(d(x.first))}, last ${esc(d(x.last))}</span></li>`).join("") : '<li class="m">Not opened yet. Link previews in Mail or messages aren’t counted, only a real tap.</li>';
     $("useN").textContent = u.since ? `Counted since ${d(u.since)}. One number a day per brewer: no coffee, no person.` : "Nothing counted yet.";
     $("use").innerHTML = card(tot(u.today, "open"), "opened today") + card(tot(u.week, "open"), "opened, last 7 days") + card(tot(u.month, "open"), "opened, last 30 days") + card(tot(u.all, "open"), "opened, all time") + card(tot(u.month, "brew"), "brews started, last 30 days") + card(tot(u.all, "brew"), "brews started, all time");
     const bs = [...new Set((u.all || []).map((r) => r.brewer))].sort((a, z) => of(u.month, z, "open") - of(u.month, a, "open") || of(u.all, z, "open") - of(u.all, a, "open"));
