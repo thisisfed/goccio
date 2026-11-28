@@ -2792,7 +2792,7 @@ html body #recipe table.pours.steps{margin-bottom:-14px!important}   /* the last
 /* the roast, when the bag didn't say: just its name, Scan the beans and the + 5, set out as the other rows are */
 #detected .miss.miss-ro{display:grid!important;grid-template-columns:70px minmax(0,1fr);gap:12px;align-items:start}
 #detected .miss.miss-ro > .mr-l{display:flex!important;align-items:center;height:var(--pill-h);line-height:1!important}   /* the label keeps to the first line of pills when they open onto more */
-#consTop{display:grid;gap:8px;margin:0;border-top:1px solid var(--line);padding-top:14px}
+#consTop{display:grid;gap:8px;margin:0;border-top:1px solid var(--line);padding-top:14px;padding-bottom:0}
 #consTop[hidden]{display:none}
 #consTop > #detected{margin:0!important}
 #consTop .cons-top{margin:0;padding:0;background:none;color:var(--ink);font-size:var(--fs-s);line-height:1.35}
@@ -2889,7 +2889,7 @@ html body #shelves .co-tabs ~ #askNote.nb-band.fy-note:not([hidden]){position:st
   font:500 var(--fs-s)/42px var(--sans)!important;color:var(--ink)!important;white-space:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:none;text-box:none!important;-webkit-overflow-scrolling:touch}
 html body #shelves .co-tabs ~ #askNote.nb-band::-webkit-scrollbar{display:none}
 @media (min-width:900px){ html body #shelves .co-tabs ~ #askNote.nb-band.fy-note:not([hidden]){margin-bottom:-12px!important} }   /* desktop: the first coffee 12 px under the band, as under the day's count */
-#whyNums{margin:0 0 20px}
+#whyNums{margin:0 0 -5px}   /* the rule under it as close to its last line as under How to pour (28/11/2026) */
 #whyNums .wn-h{margin:0 0 8px;font-size:var(--fs-s);font-weight:500;color:var(--ink)}
 #whyNums .wn{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:var(--fs-s);line-height:1.35;color:var(--muted)}
 #whyNums .wn b{color:var(--ink);font-weight:500;margin-right:4px}   /* plain words, as How to pour is: no pill round them */
@@ -4597,6 +4597,13 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   };
   const AGIT = ["very low", "low", "medium", "high"];
 
+  // where the coffee grew (28/11/2026): the scan's [low, high] metres, or "1,900 masl" typed or read off a bag; the middle of the range
+  const altOf = (a, text) => { if (Array.isArray(a) && a[0]) return { lo: a[0], hi: a[1] || a[0], m: Math.round((a[0] + (a[1] || a[0])) / 2) };
+    const m = /(\d{1,2}[,.]?\d{3}|\d{3,4})(?:\s*[-–]\s*(\d{1,2}[,.]?\d{3}|\d{3,4}))?\s*(?:m\.?a\.?s\.?l\.?|masl|metres|meters|m\b)/i.exec(String(text || "").replace(/\.\s*Notes:.*$/i, ""));
+    if (!m) return null; const lo = Number(m[1].replace(/[,.]/g, "")), hi = m[2] ? Number(m[2].replace(/[,.]/g, "")) : lo;
+    return lo >= 400 && lo <= 2800 && hi >= lo && hi <= 2800 ? { lo, hi, m: Math.round((lo + hi) / 2) } : null; };
+  // high-grown beans are denser and give up their flavour slower: a degree hotter; low-grown ones are softer: a degree cooler
+  const altT = (c) => !c || !c.alt ? 0 : c.alt.m >= 1900 ? 1 : c.alt.m < 1200 ? -1 : 0;
   function resolved(st) {
     const p = parseCoffee(st.text);
     const bag = st.bag || {};
@@ -4604,7 +4611,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     const process = st.process !== "auto" ? st.process : p.process;
     const roast = st.roast !== "auto" ? st.roast : p.roast;
     return { ...p, process, roast, processFrom: st.process !== "auto" ? "you" : "bag", roastFrom: st.roast !== "auto" ? "you" : "bag",
-      origin: p.origin || bag.origin || null, variety: p.variety || bag.variety || null,
+      origin: p.origin || bag.origin || null, variety: p.variety || bag.variety || null, alt: altOf(bag.alt, st.text),
       bagNotes: (bag.notes && bag.notes.length ? bag.notes : p.bagNotes) || [] };
   }
 
@@ -4939,6 +4946,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     const CAFEC_T = { vlight: 93, light: 92, medium: 90, mdark: 87, dark: 83, unsure: 89 };
     let temp = (m === "fourSix" || m === "ten" ? KASUYA_T[c.roast] + (m === "ten" ? 2 : 0) : m === "cafec" ? CAFEC_T[c.roast] : ROAST[c.roast].T + ({ hoffmann: 5, hoffmannU: 5, rao: 3, onyx: 2, winton: -1, hedrick: 5 }[m])) + PROCESS[c.process].dT;
     if (c.delicate) temp += 1;
+    temp += altT(c);   // where it grew
     if (agit <= 1) temp = Math.min(temp, 95);                      // ferment-forward lots go boozy when pushed
     if (T_CAP[c.process]) temp = Math.min(temp, T_CAP[c.process]);
     if (T_CAP_ROAST[c.roast]) temp = Math.min(temp, T_CAP_ROAST[c.roast]);
@@ -5030,7 +5038,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   const vlFloor = (c, t) => t != null && c.roast === "vlight" && !["anaerobic", "cofer", "decaf"].includes(c.process) ? Math.max(t, 96) : t;
   // the same roast × process temperature rules as the V60, from each brewer's own starting point
   function tempFor(c, agit, add) {
-    let temp = ROAST[c.roast].T + PROCESS[c.process].dT + add;
+    let temp = ROAST[c.roast].T + PROCESS[c.process].dT + add + altT(c);
     if (c.delicate) temp += 1;
     if (agit <= 1) temp = Math.min(temp, 95);
     if (T_CAP[c.process]) temp = Math.min(temp, T_CAP[c.process]);
@@ -6388,7 +6396,8 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
         { const pv = li.previousElementSibling; if (pv && pv.classList.contains("cons")) { pv.appendChild(document.createElement("br")); pv.appendChild(a); li.remove(); } }
         a.onclick = (ev) => { ev.preventDefault(); bagAskShow = true; render(); }; } }   /* the pills take the words' place: nothing to scroll to */
     /* those notes (Roast not sure, so it plays safe…) are read before the pour, not folded away under it: they sit over How to pour */
-    { let ct = $("consTop"); if (!ct) { ct = document.createElement("div"); ct.id = "consTop"; $("techLbl").before(ct); }
+    { let ct = $("consTop"); if (!ct) { ct = document.createElement("div"); ct.id = "consTop"; }
+      if (ct.nextElementSibling !== $("specs")) $("specs").before(ct);   // the warnings right under Recipe for, their lower rule the grinder's own (28/11/2026)
       const D = $("detected"); if (D && !D._home) D._home = { p: D.parentNode, n: D.nextSibling }; if (D && D.parentNode === ct) D._home.p.insertBefore(D, D._home.n && D._home.n.parentNode === D._home.p ? D._home.n : null);   /* the question goes home before this is re-drawn */
       ct.textContent = "";
       $("why").querySelectorAll("li.cons").forEach((li) => { const p = document.createElement("p"); p.className = "cons-top"; const a = li.querySelector(".why-ask");
@@ -6406,7 +6415,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       ct.hidden = !ct.childElementCount; }
     // Why these numbers (27/11/2026): one line for each setting, in view over How to pour, saying why it was picked for this coffee.
     // The long reasoning, with its studies, stays in the Why this recipe fold
-    { let wn = $("whyNums"); if (!wn) { wn = document.createElement("div"); wn.id = "whyNums"; const ct0 = $("consTop"); (ct0 || $("techLbl")).before(wn); }
+    { let wn = $("whyNums"); if (!wn) { wn = document.createElement("div"); wn.id = "whyNums"; $("techLbl").before(wn); }
       const it = LANG === "it", rl = c.roast !== "unsure" ? ROAST[c.roast].label : "", pr = c.process !== "unsure" ? PROCESS[c.process].label : "";
       const what = [rl && (it ? `tostatura ${rl}` : `${rl} roast`), pr].filter(Boolean).join(", ") + (pr ? (it ? "" : " coffee") : "");
       const sg = (n, u) => n > 0 ? `+${n}${u}` : `${n}${u}`.replace("-", "−");
@@ -6425,7 +6434,18 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
             : c.roast === "unsure" ? (it ? "la tostatura non è indicata, quindi resta nel mezzo, un filo più fresca, per non rischiare l'amaro" : "the roast isn't stated, so it stays in the middle, a touch cooler, to keep away from bitterness")
             : (it ? "una tostatura media sta nel mezzo: calda abbastanza per la dolcezza, non tanto da diventare amara" : "a medium roast sits in the middle: hot enough for sweetness, not so hot it turns bitter");
         const ferm = ["anaerobic", "cofer", "natural", "decaf"].includes(c.process) ? (it ? `; ${pr} va un filo più fresco, perché spinto diventa aspro` : `; ${pr} runs a little cooler, because pushed it turns harsh`) : "";
-        L.push([it ? "Acqua" : "Water", `${r.temp}°C: ${why0}${ferm}${RT && K !== "shot" && RT !== r.temp ? (it ? ` (base ${RT}°C)` : ` (from a ${RT}°C start)`) : ""}.`]); }
+        // where it grew, when the roaster says (28/11/2026): the height the cherries ripened at, and what it does to the kettle
+        const A = c.alt, ft = A ? Math.round(A.m * 3.281 / 100) * 100 : 0, nf = (v) => v.toLocaleString(it ? "it-IT" : "en-GB");
+        const at = !A ? "" : (A.lo !== A.hi ? `${nf(A.lo)}–${nf(A.hi)} m` : `${nf(A.lo)} m`);
+        const capped = altT(c) > 0 && ((T_CAP[c.process] && r.temp >= T_CAP[c.process]) || (T_CAP_ROAST[c.roast] && r.temp >= T_CAP_ROAST[c.roast]));
+        const alt = !A || K === "shot" && altT(c) === 0 ? "" : capped
+            ? (it ? ` Questi chicchi sono cresciuti a ${at}: densi e lenti a cedere il sapore, ma l'acqua è già al massimo che questo caffè sopporta.` : ` These beans grew at ${at}, about ${nf(ft)} ft up: dense and slow to give up their flavour, but the water is already as hot as this coffee takes.`)
+            : altT(c) > 0
+            ? (it ? ` Questi chicchi sono cresciuti a ${at}, dove l'aria è fresca e la ciliegia matura piano: più densi, cedono il sapore più lentamente, quindi un grado in più.` : ` These beans grew at ${at}, about ${nf(ft)} ft up, where cool air ripens the cherries slowly: they're denser and give up their flavour slower, so one degree hotter.`)
+            : altT(c) < 0
+            ? (it ? ` Cresciuti a ${at}, più in basso del solito: chicchi più teneri, che estraggono in fretta, quindi un grado in meno per restare dolci.` : ` Grown at ${at}, lower than most specialty coffee: softer beans that extract quickly, so one degree cooler keeps them sweet.`)
+            : (it ? ` Cresciuti a ${at}, l'altitudine tipica del caffè specialty: niente da correggere.` : ` Grown at ${at}, a typical height for specialty coffee: nothing to correct for.`);
+        L.push([it ? "Acqua" : "Water", `${r.temp}°C: ${why0}${ferm}${RT && K !== "shot" && RT !== r.temp ? (it ? ` (base ${RT}°C)` : ` (from a ${RT}°C start)`) : ""}.${alt}`]); }
       // dose and ratio
       if (r.dose && r.water) { const rt = r.ratio, feel = rt >= 16.8 ? (it ? "leggero e dolce" : "light and sweet") : rt >= 15.8 ? (it ? "equilibrato" : "balanced") : (it ? "pieno e corposo" : "full and heavy");
         L.push([it ? "Dose" : "Dose", K === "shot" ? (it ? `${r.dose} g dentro, ${r.water} g fuori (1:${rt}): il peso in tazza decide il gusto, più lungo è più limpido e dolce.` : `${r.dose} g in, ${r.water} g out (1:${rt}): the weight out sets the taste, longer is clearer and sweeter.`)
@@ -8776,7 +8796,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     const process = r.process ? procKey(r.process) : "auto";
     return { text: [r.roaster, r.name, r.origin, r.region, r.variety, r.process, roastWords].filter(Boolean).join(", ") + (notes.length ? ". Notes: " + notes.join(", ") : ""),
       // the roaster's own tasting notes for this exact coffee: shown in What to expect only, never used to set the recipe
-      bag: { roaster: r.roaster, name: r.name, origin: r.origin, variety: r.variety, notes, url: r.url, place: r.roaster_city || r.city || "",
+      bag: { roaster: r.roaster, name: r.name, origin: r.origin, variety: r.variety, notes, url: r.url, place: r.roaster_city || r.city || "", alt: Array.isArray(r.altitude) ? r.altitude : null,
         listNotes: Array.isArray(r.notes) ? r.notes.filter((n) => typeof n === "string" && n.trim() && n.length < 40).map(tidyNote).filter(Boolean).slice(0, 5) : [] },
       process, listProc: process,   // came from the roaster's listing, not from you
       roast: r.roast_level === "dark" ? "dark" : r.roast_level === "medium-dark" ? "mdark" : "auto" };
