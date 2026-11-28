@@ -6306,7 +6306,8 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       const settle = () => { if (!byHand) return; byHand = false; const pad = parseFloat(getComputedStyle(row).paddingLeft) || 0, x0 = row.scrollLeft + pad + row.offsetLeft;
         let best = null, bd = 1e9; row.querySelectorAll("button[data-v]").forEach((b) => { const d = Math.abs(b.offsetLeft - x0); if (d < bd) { bd = d; best = b; } });
         if (best && best.getAttribute("aria-selected") !== "true") { bigX[k] = row.scrollLeft; pick(best.dataset.v); } };
-      row.addEventListener("scroll", () => { clearTimeout(endT); endT = setTimeout(settle, 220); }, { passive: true });
+      row.addEventListener("scroll", () => { clearTimeout(endT); endT = setTimeout(settle, 90); }, { passive: true });
+      if ("onscrollend" in window) row.addEventListener("scrollend", () => { clearTimeout(endT); settle(); });   /* (28/11/2026) picked the moment it comes to rest, not a beat later */
       // by keyboard, as a listbox works: left and right pick the name before or after, round the loop (28/11/2026)
       row.addEventListener("keydown", (e) => { if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return; const all = [...row.querySelectorAll('button[data-c="1"]')], i = all.findIndex((b) => b.getAttribute("aria-selected") === "true"); if (i < 0) return;
         e.preventDefault(); const v = all[(i + (e.key === "ArrowRight" ? 1 : -1) + all.length) % all.length].dataset.v; bigX[k] = row.scrollLeft; pick(v);
@@ -6492,8 +6493,10 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
         row.addEventListener("keydown", (e) => { if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return; const i = ds.findIndex(([v]) => v === r.dose), n = ds[i + (e.key === "ArrowRight" ? 1 : -1)]; e.preventDefault(); if (!n) return;
           pickD(n[0]); setTimeout(() => { const on = $("specs").querySelector('.dose-row [aria-selected="true"]'); if (on) on.focus({ preventScroll: true }); }, 60); });
         let byHand = false, endT = 0; ["pointerdown", "touchstart", "wheel"].forEach((t) => row.addEventListener(t, () => { byHand = true; }, { passive: true }));
-        row.addEventListener("scroll", () => { clearTimeout(endT); endT = setTimeout(() => { if (!byHand) return; byHand = false; const x0 = row.scrollLeft + row.offsetLeft;
-          let best = null, bd = 1e9; row.querySelectorAll("button[data-v]").forEach((bt) => { const d = Math.abs(bt.offsetLeft - x0); if (d < bd) { bd = d; best = bt; } }); if (best) pickD(best.dataset.v); }, 220); }, { passive: true });
+        const settleD = () => { if (!byHand) return; byHand = false; const x0 = row.scrollLeft + row.offsetLeft;
+          let best = null, bd = 1e9; row.querySelectorAll("button[data-v]").forEach((bt) => { const d = Math.abs(bt.offsetLeft - x0); if (d < bd) { bd = d; best = bt; } }); if (best) pickD(best.dataset.v); };
+        row.addEventListener("scroll", () => { clearTimeout(endT); endT = setTimeout(settleD, 90); }, { passive: true });
+        if ("onscrollend" in window) row.addEventListener("scrollend", () => { clearTimeout(endT); settleD(); });
         // where it was, then a glide to the one in use, at the start of the line
         const on = row.querySelector('[aria-selected="true"]'); if (window.__doseX != null) row.scrollLeft = window.__doseX;
         requestAnimationFrame(() => { if (!on) return; const x = Math.max(0, on.offsetLeft - row.offsetLeft); if (window.__doseX == null) row.scrollLeft = x; else try { row.scrollTo({ left: x, behavior: "smooth" }); } catch (e) { row.scrollLeft = x; } window.__doseX = x; }); } }
