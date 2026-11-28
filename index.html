@@ -35,7 +35,7 @@ html body #shelf .item .l > .c-top{display:flex;justify-content:space-between;al
 html body #shelf .item .l > .c-top > .tags{margin:0!important;min-width:0;flex-wrap:wrap!important;white-space:normal!important;overflow:visible!important;row-gap:2px}
 html body #shelf .item .l > .c-top > .tags .tg{max-width:none!important;overflow:visible!important;text-overflow:clip!important}
 html body #shelf .item .l > .c-top > .day{flex:none;font-size:var(--fs-s);color:var(--muted);white-space:nowrap;line-height:19px}
-html body #shelf .item .l > .c-top > .day.today{color:var(--hl)}
+html body #shelf .item .l > .c-top > .day.today{color:var(--hl-t)}
 html body #shelf .item .l > .c-where{margin:6px 0 0!important}
 html body #shelf .item .l > .c-notes:not(.nb-line){margin-top:2px!important}
 /* a row of kinds, words only, the one you're on underlined (27/11/2026) */
@@ -61,7 +61,7 @@ html:not(.ro-page) body #shelves > .sec-head:has(+ .co-tabs){border-top-color:tr
 .co-tabs button:hover{color:var(--ink)!important}
 html body .co-tabs button:not([aria-pressed="true"]){color:color-mix(in srgb,var(--muted) 62%,var(--bg))}   /* the grey of the brewers and grinders not in use (28/11/2026) */
 .co-tabs button:focus{outline:none}
-.co-tabs button:focus-visible{color:var(--ink)}
+.co-tabs button:focus-visible{color:var(--ink);outline:2px solid var(--ink);outline-offset:-2px}   /* by keyboard: a ring, since the tab in use is already ink (28/11/2026) */
 /* a search's line under the kinds row, as much space over it as under it (27/11/2026) */
 html body #shelves .co-tabs ~ .fy-note.fy-top:not([hidden]){margin:0!important}
 @media (min-width:900px){ .co-tabs .co-in{justify-content:space-between;gap:16px} }
@@ -416,7 +416,7 @@ details.more .opts { padding-top: 10px; }
 .lrn-h { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 17px; }
 .lrn-tag { background: var(--accent); color: #fff; font-size: var(--fs-s); font-weight: 700; padding: 3px 9px; border-radius: 980px; text-transform: uppercase; letter-spacing: .03em; }
 .lrn-list { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: var(--fs-s); }
-.spec .yr { color: var(--hl); }   /* yours: the accent, right after the label */
+.spec .yr { color: var(--hl-t); }   /* yours: the accent, right after the label */
 .spec .badge { font-size: var(--fs-s); font-weight: 700; color: var(--accent); background: color-mix(in srgb, var(--accent) 13%, transparent); padding: 3px 8px; border-radius: 980px; }
 .spec.tuned { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent); }
 
@@ -469,7 +469,7 @@ details.clk > summary .muted { font-weight: 400; font-size: var(--fs-s); flex: 1
 .zero-pill { font-size: var(--fs-s); font-weight: 700; color: var(--accent); background: color-mix(in srgb, var(--accent) 13%, transparent); padding: 3px 10px; border-radius: 980px; }
 /* warnings */
 #why li.warn { list-style: none; margin-left: -18px; padding: 8px 12px; border-radius: 12px; background: color-mix(in srgb, var(--hl) 13%, transparent); color: var(--ink); font-weight: 500; }
-#why li.warn::before { content: "⚠︎ "; color: var(--hl); font-weight: 700; }
+#why li.warn::before { content: "⚠︎ "; color: var(--hl-t); font-weight: 700; }
 #why li.cons { list-style: none; margin-left: -18px; padding: 8px 12px; border-radius: 12px; background: color-mix(in srgb, var(--blue) 10%, transparent); }
 /* water card */
 details.water { background: var(--card); border-radius: 20px; padding: 0 20px; }
@@ -670,7 +670,7 @@ footer { border-top: 1px solid var(--line); padding: 18px 0 0; font-size: var(--
 .bv-opts button[aria-pressed="true"] { color: #f7f0e8; }
 .bv-opts button::before { content: "● "; color: #4d433c; }
 .bv-opts button[aria-pressed="true"]::before { color: #30d158; }
-.bv-opts button.warn::before { color: var(--hl); }
+.bv-opts button.warn::before { color: var(--hl-t); }
 @media (orientation: landscape) and (max-height: 560px) {
   .bv { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto auto auto; column-gap: 16px; }
   .bv-top { grid-column: 1 / -1; }
@@ -778,7 +778,7 @@ table.pours { padding: 10px 24px; }
 .rp-go.off { display: none !important; }
 /* paid promotion: a heading that says so, in the accent, over the pinned coffees; the coffees look like every other */
 .shelf .item.sponsored { background: none !important; box-shadow: none !important; border-radius: 0 !important; padding-left: 0 !important; padding-right: 0 !important; }
-.shelf .grp.promo { color: var(--hl) !important; }
+.shelf .grp.promo { color: var(--hl-t) !important; }
 .shelf .item.sponsored { border-bottom-color: var(--line) !important; }
 .shelf .item.sponsored + .item, .shelf .item.sponsored + .grp { border-top-color: var(--line) !important; }
 /* the last fold (Dial it in) closes with a rule of its own, like the folds above it open with one */
@@ -1069,7 +1069,7 @@ details.clk > summary .muted { margin-left: auto; overflow: hidden; text-overflo
 .bv-now { background: var(--wash); border-radius: var(--r); box-shadow: none; }
 .bv-now.pour { background: var(--ink); color: var(--bg); box-shadow: none; }
 .bv-now.drain { background: var(--wash); }
-.bv-now.over { background: var(--wash); box-shadow: inset 0 0 0 2px var(--hl); }
+.bv-now.over { background: var(--wash); box-shadow: inset 0 0 0 2px var(--hl-t); }
 .bv-pill { background: var(--bg); color: var(--ink); border-radius: var(--r); font-size: var(--fs-s); font-weight: 500; letter-spacing: 0; padding: 6px 9px; }
 .pour .bv-pill { background: var(--bg); color: var(--ink); }
 .drain .bv-pill { background: #30d158; color: #000; }
@@ -1474,7 +1474,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
   .bv-now.act .bv-big { font-size: min(102px, 42cqw, 37cqh) !important; }
 }
 /* bean scan */
-.cam-status.warn { color: var(--hl); }
+.cam-status.warn { color: var(--hl-t); }
 .cam .bean-dot { width: 12px; height: 12px; }
 .cam-tick:has(.bean-dot)::before { display: none; }
 .cam-ctrls .chip:disabled { opacity: .45; }
@@ -1510,7 +1510,7 @@ footer .refs:not(.meth) li::before { content: counter(src) "."; position: absolu
 .wm-more { max-width: none !important; }
 .wm-more > :not(.wm-tagline) { max-width: 640px; }
 .wm-more .wm-tagline { text-box: trim-both cap alphabetic; margin: 0 0 calc(2.6em - 1cap);   /* a double line break: one empty line between */ text-align: center; color: #fff; font: 500 var(--fs-s)/1.3 var(--sans); }
-.wm-more .wm-live { margin: 0; color: var(--hl); font-size: var(--fs-s); line-height: 1.3; display: flex; align-items: center; gap: 8px; }
+.wm-more .wm-live { margin: 0; color: var(--hl-t); font-size: var(--fs-s); line-height: 1.3; display: flex; align-items: center; gap: 8px; }
 /* the buttons exactly 16 px from the letters over and under them: the count's line box trimmed to its baseline, the text
    under the photo trimmed to its capitals (iPhone and desktop browsers alike) */
 .wm-more .wm-live { text-box: trim-end cap alphabetic; }
@@ -1802,7 +1802,7 @@ html body .shelf .item .r .bag-add.bag-add, html body .bag-add.bag-add.bag-add.b
 .shelf .item > .r{width:84px;min-width:84px!important;flex:none}
 /* My bags running low: red grams, Buy again pill beside them */
 .bag-gw{display:inline-flex;align-items:center;gap:5px}
-.bag-f .bag-g.low{color:var(--hl)}
+.bag-f .bag-g.low{color:var(--hl-t)}
 .bag-buy,.bag-buy:hover,.bag-buy:active,.bag-buy:focus,.bag-buy:visited,.buy-pill,.buy-pill:hover,.buy-pill:active,.buy-pill:visited{text-decoration:none!important}
 .bag-buy{display:inline-flex;align-items:center;height:var(--pill-h);padding:0 12px;border-radius:var(--r);background:var(--pill);color:var(--ink);text-decoration:none;font:500 var(--fs-s)/1 var(--sans)}
 /* grinder pill: room for descenders (g, y) */
@@ -1828,7 +1828,7 @@ html body .shelf .item .r .bag-add.bag-add, html body .bag-add.bag-add.bag-add.b
 .scan-review .pill.on{background:var(--ink)!important;color:var(--bg)!important}
 @media (max-width: 640px){ .scan-review .sc-row{grid-template-columns:72px minmax(0,1fr);column-gap:10px} }
 /* camera: the tip turns amber when the frame has glare, too little light or blur */
-.cam-status.warn{color:var(--hl)}
+.cam-status.warn{color:var(--hl-t)}
 /* bean result card */
 .bc{display:grid;gap:8px;color:var(--ink);font-size:var(--fs-s);line-height:1.35}
 .bc p{margin:0}
@@ -1860,8 +1860,8 @@ html body .shelf .item .r .bag-add.bag-add, html body .bag-add.bag-add.bag-add.b
 #waterNow{justify-self:stretch;width:100%;max-width:100%}
 #waterNow .w-adv{width:auto;min-width:0;box-sizing:border-box}
 /* Surprise me landed on a coffee that doesn't say its roast or process: that row asks, in the accent */
-.opt.ask > span{color:var(--hl)}
-.opt.ask .chip:not([aria-pressed="true"]):not(.rp-go){box-shadow:inset 0 0 0 1px var(--hl)!important}
+.opt.ask > span{color:var(--hl-t)}
+.opt.ask .chip:not([aria-pressed="true"]):not(.rp-go){box-shadow:inset 0 0 0 1px var(--hl-t)!important}
 /* My bags: Roast, a dropdown in the same column as the other pills, Scan the beans beside it */
 .bag-rorow{display:grid;grid-template-columns:86px auto;justify-content:start;align-items:start;gap:12px;font-size:var(--fs-s);color:var(--muted);min-height:var(--pill-h)}
 html[lang="it"] .bag-rorow{grid-template-columns:118px auto}
@@ -2036,6 +2036,8 @@ footer .fcol > p + .foot-x{margin-top:14px}
 .qr-box p{margin:0;font:500 var(--fs-s)/1.3 var(--sans);color:var(--muted)}   /* same gap as Scan the bag and Scan the beans */
 /* one accent, used only where something is happening or new: signal orange, black text on it */
 :root{--hl:#8fae7e;--on-hl:#000;--go:#00a646}   /* sage (28/11/2026; was terracotta, before that #ff4f00): health and slow pleasures, a leaf by the cup; black on it 8.5:1 */
+:root{--hl-t:#4a6d3d}   /* the accent as words, icons and rings (28/11/2026): sage on the pale page is 2.2:1, too faint to read; this deeper leaf is 5.4:1. On dark the sage itself reads (9.9:1) */
+:root[data-theme="dark"], .cam{--hl-t:#9cbb8b}
 :root[data-theme="dark"]{--hl:#9cbb8b;--go:#12b052}
 .go-big, .dock .btn{background:var(--hl)!important;color:var(--on-hl)!important}          /* Start brewing: the one main action */
 .bv-go:not(.running){background:var(--go)!important;color:var(--on-hl)!important}        /* brew screen: Start, green for go */
@@ -2043,9 +2045,9 @@ footer .fcol > p + .foot-x{margin-top:14px}
 .bv #bvClose{background:var(--pill)!important;color:var(--ink)!important}   /* Close: a square ×, same grey as the pills beside it */
 .bv-bar .seg.on{background:var(--hl)!important}                                          /* the pour you're on */
 .item .who .ji{color:var(--go)!important}                                                           /* New: the go green */
-.item .who .ji.fy{color:var(--hl)!important}                                                        /* For you: the accent */
-.beta, :root[data-theme="dark"] .beta{color:var(--hl)!important}                         /* Beta tags, the accent */
-.litext .outro-end.on{color:var(--hl)!important}                                         /* Brew something good. */
+.item .who .ji.fy{color:var(--hl-t)!important}                                                        /* For you: the accent */
+.beta, :root[data-theme="dark"] .beta{color:var(--hl-t)!important}                         /* Beta tags, the accent */
+.litext .outro-end.on{color:var(--hl-t)!important}                                         /* Brew something good. */
 /* no accent ring on focus: a field you type in shows its cursor, nothing round it; keys still get the plain ring on buttons */
 input:focus, input:focus-visible, textarea:focus, textarea:focus-visible, select:focus, select:focus-visible{outline:none!important}
 /* grinder: a pill like the old dropdown; a tap unfolds every grinder as pills in its place */
@@ -2085,7 +2087,7 @@ input:focus, input:focus-visible, textarea:focus, textarea:focus-visible, select
 .bv .bv-now{display:flex!important;flex-direction:column;row-gap:0!important;padding:20px!important}
 .bv .bv-nowhead{height:auto!important;align-items:baseline!important}
 .bv .bv-pill{background:none!important;padding:0!important;height:auto!important;font:500 24px/1.2 var(--sans)!important;color:inherit!important;border-radius:0!important}
-.bv .bv-now.over .bv-pill{color:var(--hl)!important}
+.bv .bv-now.over .bv-pill{color:var(--hl-t)!important}
 .bv .bv-clock{font:500 24px/1.2 var(--sans)!important;color:inherit!important;font-variant-numeric:tabular-nums}
 .bv .bv-now{color:var(--ink)} .bv .bv-now.pour{color:var(--bg)}
 .bv .bv-lbl{margin-top:auto!important;padding-bottom:4px;font:500 24px/1.2 var(--sans)!important;height:auto!important}
@@ -2114,7 +2116,7 @@ html[lang="it"] .bag-d.empty::before{content:"Aggiungi"}
 /* the list's size on the line under "Updated every day": same type, same grey, a dot the size of the tag dots that breathes */
 .hero-live{display:flex;align-items:center;gap:8px}
 .hero-live[hidden]{display:none!important}
-.hero-live{color:var(--hl)}
+.hero-live{color:var(--hl-t)}
 .live-dot{position:relative;flex:none;width:12px;height:12px;border-radius:50%;background:var(--hl)}
 .live-dot::after{content:"";position:absolute;inset:0;border-radius:50%;background:var(--hl);animation:livePing 2.4s cubic-bezier(0,0,.2,1) infinite}
 @keyframes livePing{0%{transform:scale(1);opacity:.6}80%,100%{transform:scale(2.6);opacity:0}}
@@ -2231,7 +2233,7 @@ html[lang="it"] .shelf-tools .opt{grid-template-columns:118px minmax(0,1fr)!impo
 .shelf-tools .curfew .cf-h{text-box:trim-start cap alphabetic}
    /* 12 px under Light roast, the same as between the menu rows */
 .fy-note{margin:-15px 0 0;padding:0 0 13px;font-size:var(--fs-s);color:var(--muted)}   /* For you: how it picked, or what it needs, small and grey under the menu rows */
-.curfew .cf-h{font:500 var(--fs-s)/1.35 var(--sans);color:var(--hl);margin:0}   /* small and all in the accent, the reason on the very next line */
+.curfew .cf-h{font:500 var(--fs-s)/1.35 var(--sans);color:var(--hl-t);margin:0}   /* small and all in the accent, the reason on the very next line */
 .curfew .cf-t{font:500 var(--fs-s)/1.35 var(--sans);color:var(--muted);margin:0}
 /* the For you note and the decaf alert, both showing: one paragraph, each line the next line of it */
 .shelf-tools #fyNote:has(+ .curfew:not([hidden])){margin-bottom:0!important;line-height:1.35!important;text-box:trim-start cap alphabetic}
@@ -2416,7 +2418,7 @@ html.bn-off .botnav{transform:translateY(100%)}
 html.bn-off .dock{bottom:0 !important}
 .ask-line .ask-box.nudge #askIn{animation:askNudge 1.25s linear 1 both;transform-origin:50% 50%}   /* Find a coffee: the search box wobbles like a drop that has just been touched, and settles */
 @keyframes askNudge{0%{scale:1 1}8%{scale:1.035 .86}18%{scale:.972 1.12}30%{scale:1.022 .92}42%{scale:.986 1.06}55%{scale:1.011 .965}68%{scale:.994 1.025}80%{scale:1.004 .99}91%{scale:.998 1.005}100%{scale:1 1}}
-@media (prefers-reduced-motion: reduce){ .ask-line .ask-box.nudge #askIn{animation:none;box-shadow:0 0 0 2px var(--hl)} }
+@media (prefers-reduced-motion: reduce){ .ask-line .ask-box.nudge #askIn{animation:none;box-shadow:0 0 0 2px var(--hl-t)} }
 /* the hint over the empty box: each line rolls up and out as the next rolls in from below */
 .ask-line .ask-ph{position:absolute;left:12px;right:calc(var(--pill-h) + 8px);top:0;height:var(--pill-h);overflow:hidden;pointer-events:none;z-index:1;
   font:500 var(--fs-s)/var(--pill-h) var(--sans);color:var(--muted)}   /* the grey of every other hint (What's brewing's box too) */
@@ -2439,7 +2441,7 @@ html.bn-off .dock{bottom:0 !important}
 .ask-sug .sug-xs{display:flex;flex-wrap:wrap;gap:4px}
 @media (max-width:640px){ .ask-sug .sug-row{grid-template-columns:72px minmax(0,1fr);gap:10px} }
 .ask-line #askIn{width:100%;box-sizing:border-box;height:var(--pill-h);border:0;border-radius:calc(var(--pill-h) / 2);background:var(--pill);color:var(--ink);
-  font:500 var(--fs-s)/1 var(--sans);padding:0 calc(var(--pill-h) + 4px) 0 12px;outline:none;text-overflow:clip;box-shadow:none;-webkit-appearance:none;appearance:none;caret-color:var(--hl)}
+  font:500 var(--fs-s)/1 var(--sans);padding:0 calc(var(--pill-h) + 4px) 0 12px;outline:none;text-overflow:clip;box-shadow:none;-webkit-appearance:none;appearance:none;caret-color:var(--hl-t)}
 .ask-line #askIn::placeholder{color:var(--muted);opacity:1;transition:opacity .25s ease}
 /* tapped: the hint fades away, and the accent ring the Coffees search has */
 .ask-line #askIn:focus::placeholder{opacity:0}
@@ -2623,7 +2625,7 @@ footer #tip a:hover, footer .foot-links a:hover{text-decoration-color:transparen
 /* the price after the date, set off by a small drop */
 .item .c-where .c-drop{display:inline-block;width:6px;height:6px;margin:0 .6em 0 .7em;background:currentColor;border-radius:0 50% 50% 50%;transform:translateY(-1px) rotate(45deg)}
 .item .c-where .ji::after{content:none}   /* "New! Paris, 23 Nov": a space, no slash */
-.item .c-where .ji{margin-right:.2em;font-weight:500;color:var(--go)}.item .c-where .ji.fy{color:var(--hl)}
+.item .c-where .ji{margin-right:.2em;font-weight:500;color:var(--go)}.item .c-where .ji.fy{color:var(--hl-t)}
 #shelves.ro-on .item .who,#shelves.ro-on .item .c-where .rcity,#shelves.ro-on .item .r > .ro-all{display:none!important}
 /* a coffee's row: Brew, then a plus in a circle that lets Buy and Save out, the same plus as the top bar's */
 .shelf .item > .r > .row-more{border:0!important;border-radius:50%!important;width:var(--pill-h);height:var(--pill-h);padding:0;display:inline-flex;align-items:center;justify-content:center;flex:none;background:var(--pill)!important;color:var(--ink)!important;cursor:pointer;align-self:center}
@@ -2660,7 +2662,7 @@ html.brew-in .botnav [data-bn]:not([data-bn="cancel"]):not([data-bn="coffee"]){d
 @keyframes brew-up{0%{opacity:0}100%{opacity:1}}   /* fades in where it lands: Recipe for … never moves once it's there (28/11/2026; was a 44 px slide up) */
 .item.brewing > .brew-host.fresh{animation:brew-up .45s cubic-bezier(.2,.8,.2,1) both}
 @media (prefers-reduced-motion: reduce){ .item.brewing > .brew-host{animation:none} }
-.tech .tech-w::before{content:"⚠︎ ";color:var(--hl);font-weight:700}   /* the water line carries the same small warning sign as the notes in Why this recipe */
+.tech .tech-w::before{content:"⚠︎ ";color:var(--hl-t);font-weight:700}   /* the water line carries the same small warning sign as the notes in Why this recipe */
 /* the recipe's own actions: Use my own recipe, then a plus that lets Copy, Share and Save out, with the same fluid motion as a coffee's row */
 #recipe .share > .share-more{border:0;border-radius:50%;width:var(--pill-h);height:var(--pill-h);padding:0;display:inline-flex;align-items:center;justify-content:center;flex:none;background:var(--pill);color:var(--ink);cursor:pointer;position:relative;z-index:2;align-self:center}
 @media (hover:hover){ #recipe .share > .share-more:hover{opacity:.88} }
@@ -2859,7 +2861,7 @@ html:is(.ro-page, .lv-page) body footer details.foot-x{display:none!important}
 :is(#listView,#pvView,#roView) :is(.lv-p, .lv-steps) + :is(.lv-h, .lv-back){margin-top:14px}   /* a section ending in text: its letters, not its line's leading, 16 px over the rule, as Brew and Buy (27/11/2026) */   /* a pill to the next rule: 16 px, as Brew and Buy sit over a card's rule */
 :is(#listView,#pvView,#roView) .lv-pill{display:inline-flex;align-items:center;height:var(--pill-h,43px);padding:0 16px;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);text-decoration:none}
 @media (hover:hover){:is(#listView,#pvView,#roView) .lv-pill:hover, :is(#listView,#pvView,#roView) .lv-out:hover{opacity:.88}}
-:is(#listView,#pvView,#roView) .lv-msg.ok{color:var(--ink)} :is(#listView,#pvView,#roView) .lv-msg.no{color:var(--hl)}
+:is(#listView,#pvView,#roView) .lv-msg.ok{color:var(--ink)} :is(#listView,#pvView,#roView) .lv-msg.no{color:var(--hl-t)}
 /* Privacy and Roasters A–Z: pages in the page too, in the same type (27/11/2026) */
 :is(#listView,#pvView,#roView) .lv-form textarea{width:100%;box-sizing:border-box;min-height:120px;padding:10px 12px;border:0;border-radius:var(--r,4px);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1.35 var(--sans);resize:vertical}
 @supports (-webkit-touch-callout:none){:is(#listView,#pvView,#roView) .lv-form textarea{font-size:16px}}
@@ -2896,7 +2898,7 @@ html body .rt-pick, html body .sp-pick{all:unset;cursor:pointer;display:inline-f
 html body .rt-pick .pk-chev{width:.42em;height:.42em;align-self:center;opacity:.55;transition:transform .2s ease}
 html body .sp-pick .pk-chev{width:11px;height:11px;align-self:center;opacity:.7;transition:transform .2s ease}
 html body .rt-pick[aria-expanded="true"] .pk-chev, html body .sp-pick[aria-expanded="true"] .pk-chev{transform:rotate(180deg)}
-html body .rt-pick:focus-visible, html body .sp-pick:focus-visible{outline:2px solid var(--hl);outline-offset:3px;border-radius:4px}
+html body .rt-pick:focus-visible, html body .sp-pick:focus-visible{outline:2px solid var(--hl-t);outline-offset:3px;border-radius:4px}
 html body .pick-pan{grid-column:1/-1;margin:0;padding:12px 0 14px;border-top:1px solid var(--line)}
 html body .pick-pan[hidden]{display:none!important}
 html body #whyBox{display:none!important}
@@ -2947,7 +2949,7 @@ html body .bv{padding-left:max(12px, env(safe-area-inset-left))!important;paddin
 html body .shelf .item > .r > .btn{order:1!important}
 html body .shelf .item > .r > .buy-p:not(.ro-all){order:2!important}
 /* Roast not sure carries the warning sign; the water line carries a drop */
-#consTop .cons-top::before{content:"";display:inline-block;width:16px;height:16px;margin-right:6px;vertical-align:-2.5px;background:var(--hl);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4 21.5 20h-19Z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4 21.5 20h-19Z'/%3E%3C/svg%3E") center/contain no-repeat}
+#consTop .cons-top::before{content:"";display:inline-block;width:16px;height:16px;margin-right:6px;vertical-align:-2.5px;background:var(--hl-t);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4 21.5 20h-19Z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4 21.5 20h-19Z'/%3E%3C/svg%3E") center/contain no-repeat}
 html body .tech .tech-w::before{-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3.5c3.4 4.2 6.2 7.4 6.2 10.9a6.2 6.2 0 0 1-12.4 0c0-3.5 2.8-6.7 6.2-10.9Z'/%3E%3C/svg%3E") center/contain no-repeat!important;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3.5c3.4 4.2 6.2 7.4 6.2 10.9a6.2 6.2 0 0 1-12.4 0c0-3.5 2.8-6.7 6.2-10.9Z'/%3E%3C/svg%3E") center/contain no-repeat!important}
 /* links inside the pills and notes all look the same: white, under one thin white line */
 html body :is(#askNote, #fyNote, #consTop) a{color:var(--ink)!important;text-decoration:underline!important;text-decoration-color:currentColor!important;text-decoration-thickness:1px!important;text-underline-offset:2px!important}
@@ -2976,7 +2978,7 @@ html body #recipe .share > #copyBtn{order:2!important}
 html body #recipe .share > #linkBtn{order:3!important}
 html body .shelf .item .c-where a.rn{color:var(--ink)!important}   /* the roaster's name in white; "from", the city and the date stay grey */
 #specs .spec.chg b{animation:specChg 1.8s ease-out both}   /* the figure only: never its label or the grinder's name */
-@keyframes specChg{0%,45%{color:var(--hl)}100%{color:inherit}}
+@keyframes specChg{0%,45%{color:var(--hl-t)}100%{color:inherit}}
 
 html body .fy-pill[hidden]{display:none!important}
 /* orange is for the thing to press: "New" is white. Icon buttons are square, as every other pill is */
@@ -3097,7 +3099,7 @@ html body .wb-sign .gdrop .gd-e{fill:#000}
 html body .wb-sign .gdrop .gu-shaft,html body .wb-sign .gdrop .gu-tip{fill:none;stroke:#3a3a3e;stroke-width:.9;stroke-linecap:round} html body .wb-sign .gdrop .gu-hook{fill:none;stroke:#1d1d20;stroke-width:1.3;stroke-linecap:round}
 html body .wb-sign .gdrop .gd-h{fill:url(#gdShine);opacity:1}   /* the window light on its top left: a soft, warm glare that fades into him like the glow at his bottom right */
 
-html body .wb-sign .gdrop .gd-s{fill:var(--hl)}
+html body .wb-sign .gdrop .gd-s{fill:var(--hl-t)}
 html body .wb-sign .gdrop .gd-a,html body .wb-sign .gdrop .gd-sm{fill:none;stroke:#000;stroke-width:1.6;stroke-linecap:round;opacity:0}
 html body .wb-sign .gdrop .gd-butt{display:none;fill:none;stroke:#3f1c08;stroke-width:1.5;stroke-linecap:round;opacity:0}
 /* the coffee bean beside the drop: the same body, brown, with its crease; no bubble of its own */
@@ -3182,7 +3184,7 @@ html body .wb-sign #gdVoice .x{display:none} html body .wb-sign #gdVoice.off .x{
 html body .wb-sign .gd-x{position:absolute!important;top:6px!important;right:6px!important;width:32px!important;height:32px!important;padding:0!important;border:0!important;background:none!important;color:var(--bg)!important;opacity:1!important;display:inline-flex!important;align-items:center;justify-content:center;cursor:pointer}   /* the search bar's own X: 13 px, no fill */
 html body .wb-sign .gd-x svg{width:13px!important;height:13px!important}
 @media (hover:hover){html body .wb-sign .gd-x:hover{opacity:.55!important}}
-html body .wb-sign .gdrop:focus-visible{outline:2px solid var(--hl);outline-offset:4px;border-radius:50%}
+html body .wb-sign .gdrop:focus-visible{outline:2px solid var(--hl-t);outline-offset:4px;border-radius:50%}
 html body .wb-sign .gd-hint{white-space:normal!important;width:max-content;max-width:calc(100vw - 24px);box-sizing:border-box;text-wrap:balance;text-align:center}   /* a longer greeting (Italian) wraps onto two even lines instead of running off a phone screen */   /* soft blush, like make-up: rosy in the middle, fading into the body, tucked under the eyes */
 html body .wb-sign .gdrop .gd-puff{fill:var(--muted);opacity:0;transform-box:fill-box;transform-origin:center;animation:gdpuff 1.2s ease-out forwards}
 @keyframes gdpuff{from{opacity:.75;transform:scale(.4)}to{opacity:0;transform:scale(1.8) translate(0,-6px)}}
@@ -3305,7 +3307,7 @@ html body .gd-tip.in{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){html body .gd-tip{transition:opacity .2s}}
 html body .gd-offer svg{width:28px;height:28px;flex:none;transform:translateX(-40px) rotate(-30deg);transition:transform .7s cubic-bezier(.3,1.5,.5,1) .2s}
 html body .gd-offer.in svg{transform:none}
-html body .gd-offer .go-t{flex:1;min-width:0} html body .gd-offer .go-a{flex:none;color:var(--hl)}
+html body .gd-offer .go-t{flex:1;min-width:0} html body .gd-offer .go-a{flex:none;color:var(--hl-t)}
 @media (hover:hover){html body .gd-offer:hover{opacity:.88}}
 @media (prefers-reduced-motion:reduce){html body .gd-offer,html body .gd-offer svg,html body .gd-peek-dim{transition:none}}
 @keyframes agSpinFast{0%{transform:rotate(-720deg) scale(.5)}60%{transform:rotate(-40deg) scale(1.08)}100%{transform:none}}
@@ -3500,7 +3502,7 @@ footer .foot-copy { margin-top: 16px !important; }   /* the copyright line last,
 .more-num[hidden]{display:none}
 .spec .add-mill{display:block;margin-top:4px;padding:0;border:0;background:none;font:500 var(--fs-s)/1.3 var(--sans);color:var(--ink);text-decoration:underline;text-underline-offset:3px;cursor:pointer;text-align:left}
 #specs ~ #mineBar, #specs ~ #mineEd{margin-top:14px}
-#cfNudge .cf-h{font:500 var(--fs-s)/1.35 var(--sans);color:var(--hl);margin:0 0 10px}
+#cfNudge .cf-h{font:500 var(--fs-s)/1.35 var(--sans);color:var(--hl-t);margin:0 0 10px}
 #cfNudge[hidden]{display:none}
 #cfNudge .ro-acts{display:flex;flex-wrap:wrap;gap:4px;margin:0}
 #cfNudge .ro-pill{display:inline-flex;align-items:center;height:var(--pill-h);padding:0 12px;border:0;border-radius:var(--r);background:var(--pill);color:var(--ink);font:500 var(--fs-s)/1 var(--sans);cursor:pointer}
@@ -3638,7 +3640,7 @@ html body #coffee:not(.empty) .kit > .scan-opt .scan-msg{text-align:left}
 .spec .dstep{display:inline-flex;gap:6px;margin:0 0 0 12px;vertical-align:middle;position:relative;top:-.12em}
 .spec .dstep .chip[disabled]{opacity:.35;cursor:default}
 /* the live dot sends rings out like an antenna: two close together, a pause, then one alone, so it never ticks like a clock */
-.live-dot::before,.live-dot::after{content:"";position:absolute;inset:0;border-radius:50%;background:none!important;box-shadow:0 0 0 1px var(--hl);opacity:0}
+.live-dot::before,.live-dot::after{content:"";position:absolute;inset:0;border-radius:50%;background:none!important;box-shadow:0 0 0 1px var(--hl-t);opacity:0}
 .live-dot::after{animation:liveRingA 4.6s cubic-bezier(.2,.6,.3,1) infinite!important}
 .live-dot::before{animation:liveRingB 4.6s cubic-bezier(.2,.6,.3,1) infinite}
 @keyframes liveRingA{0%{transform:scale(1);opacity:.85}26%{transform:scale(3.2);opacity:0}54%{transform:scale(1);opacity:0}55%{transform:scale(1);opacity:.85}84%,100%{transform:scale(3.2);opacity:0}}
@@ -3691,7 +3693,7 @@ html body .pick-pan{display:none!important}
 .bag-fzp[aria-pressed="true"]{background:var(--ink)!important;color:var(--bg)!important}
 /* the live dot's rings leave at random moments, set by script: no loop to spot */
 .live-dot::before,.live-dot::after{animation:none!important;opacity:0!important}
-.live-dot .lr{position:absolute;inset:0;border-radius:50%;box-shadow:0 0 0 1px var(--hl);opacity:0;pointer-events:none;animation:liveRing var(--d,1.3s) cubic-bezier(.2,.6,.3,1) forwards}
+.live-dot .lr{position:absolute;inset:0;border-radius:50%;box-shadow:0 0 0 1px var(--hl-t);opacity:0;pointer-events:none;animation:liveRing var(--d,1.3s) cubic-bezier(.2,.6,.3,1) forwards}
 @keyframes liveRing{from{transform:scale(1);opacity:var(--o,.85)}to{transform:scale(var(--s,3.2));opacity:0}}
 /* the sign-off: centred, the same room above it and below its pill, rule to rule */
 .outro{justify-items:center!important;text-align:center!important;padding:72px 0 0!important;margin:0!important;gap:18px!important}
@@ -6312,6 +6314,10 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
         let best = null, bd = 1e9; row.querySelectorAll("button[data-v]").forEach((b) => { const d = Math.abs(b.offsetLeft - x0); if (d < bd) { bd = d; best = b; } });
         if (best && best.getAttribute("aria-selected") !== "true") { bigX[k] = row.scrollLeft; pick(best.dataset.v); } };
       row.addEventListener("scroll", () => { clearTimeout(endT); endT = setTimeout(settle, 220); }, { passive: true });
+      // by keyboard, as a listbox works: left and right pick the name before or after, round the loop (28/11/2026)
+      row.addEventListener("keydown", (e) => { if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return; const all = [...row.querySelectorAll('button[data-c="1"]')], i = all.findIndex((b) => b.getAttribute("aria-selected") === "true"); if (i < 0) return;
+        e.preventDefault(); const v = all[(i + (e.key === "ArrowRight" ? 1 : -1) + all.length) % all.length].dataset.v; bigX[k] = row.scrollLeft; pick(v);
+        setTimeout(() => { const cellNow = document.querySelector(k === "brew" ? "#specs .spec.brewer" : "#specs .spec.grinder"), on = cellNow && cellNow.querySelector('.big-row [data-c="1"][aria-selected="true"]'); if (on) on.focus({ preventScroll: true }); }, 60); });
       const v0 = cell.querySelector(":scope > b"); if (v0) v0.replaceWith(row); else cell.appendChild(row); }
     const one = (c) => items.map(([v, n]) => `<button type="button" role="option" data-v="${v}" data-c="${c}" aria-selected="${v === cur}"${c !== 1 ? ' aria-hidden="true" tabindex="-1"' : ""}>${esc(n)}</button>`).join("");
     const html = one(0) + one(1) + one(2);
