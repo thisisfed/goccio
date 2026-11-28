@@ -3325,7 +3325,8 @@ html body .gd-m.gd-it.gd-typing:not(:has(> :not(.gd-dots))) .gd-dots i{width:7px
 @keyframes gdDotFade{0%,60%,100%{opacity:.3;scale:.85}30%{opacity:1;scale:1}}
 @keyframes gdMsgIn{from{scale:.85;opacity:0}to{scale:1;opacity:1}}
 @keyframes gdTb{from{scale:0}to{scale:1}}
-html body .gd-it .gd-tb{left:auto;right:-10px}   /* your tapback on its message sits on its other corner */
+html body .gd-it .gd-tb{left:auto;right:-10px}
+html body #gdSay.gd-say{margin-left:-12px!important;margin-right:-12px!important;padding-left:12px!important;padding-right:12px!important}   /* room at the sides, so a reaction on a full-width message isn't cut off (28/11/2026) */   /* your tapback on its message sits on its other corner */
 html body .gd-m.gd-it{max-width:calc(100% - 12px)!important}   /* room on the right for a tapback on its corner: a full-width answer cut it off (26/11/2026) */
 html body .gd-m{flex-shrink:0}   /* a bubble never squeezes when the chat is full (the typing dots came out flattened at the bottom) */
 html body .gd-it{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}   /* hold for tapbacks, as in Messages */
@@ -3357,6 +3358,12 @@ html body .gd-scrim{z-index:17}
 html body .gd-dock .gd-talk{z-index:1}
 /* docked on a phone the chat spans the pills, so its right edge is the +'s right edge: a 32px X at right -1px (inside the 1px border) shares the +'s centre line */
 html body .gd-dock.wide .gd-x{right:-1px!important}
+/* the chat's bar matches the page's (28/11/2026): New chat and × are 43 px like the top bar's pills, both 4 px from the top, the × where the + is */
+html body .gd-head .gh-new{height:43px!important;align-self:flex-start;margin-top:4px!important;margin-right:0!important}
+html body .gd-head{align-items:flex-start!important;padding-right:59px!important}
+html body .gd-head > svg, html body .gd-head .gh-n, html body .gd-head .gh-b{align-self:center}
+html body #gdTalk #gdX.gd-x, html body #gdX.gd-x{width:43px!important;height:43px!important;top:calc(env(safe-area-inset-top,0px) + 4px)!important}
+html body #gdX.gd-x svg{width:14px!important;height:14px!important}
 /* the chat's column ends where the microphone ends: bubbles (yours too) and reply chips line up with it, leaving the send button's column clear */
 html body .wb-sign .gd-talk .gd-say{padding-right:38px!important} html body .wb-sign .gd-talk .gd-chips{padding-right:38px;box-sizing:border-box}
 html body .gd-m{max-width:100%}
@@ -12735,10 +12742,13 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     const factPick = () => { let seen = []; try { seen = JSON.parse(localStorage.getItem("v60.facts") || "[]"); } catch (e) {}
       let pool = FACTS.map((f, i) => i).filter((i) => !seen.includes(i)); if (!pool.length) { seen = []; pool = FACTS.map((f, i) => i); }
       const i = pick(pool); seen.push(i); try { localStorage.setItem("v60.facts", JSON.stringify(seen.slice(-(FACTS.length - 4)))); } catch (e) {} const ft = T(FACTS[i][0], FACTS[i][1]); (window.__facts = window.__facts || new Set()).add(ft); return ft; };
-    const sayFact = (best) => sayNow(factPick(), [{ t: T("Another one", "Un'altra"), ask: pick([T("Another one?", "Un'altra?"), T("Want another?", "Ne vuoi un'altra?")]), f: () => sayFact(best),
+    // as many as asked for ("give me 5 more fun facts"; 28/11/2026), up to eight, numbered in one bubble; and a word on it before "another?"
+    const FACT_SAY = [["Crazy, right?", "Pazzesco, no?"], ["Who knew?", "Chi l'avrebbe detto?"], ["Wild, isn't it?", "Incredibile, vero?"], ["Not bad for a bean.", "Niente male per un chicco."], ["Coffee never stops surprising me.", "Il caffè non smette mai di sorprendermi."], ["Fun, right?", "Curioso, no?"]];
+    const sayFact = (best, n = 1) => { n = Math.max(1, Math.min(8, n | 0)); const fs = Array.from({ length: n }, factPick), c = pick(FACT_SAY), more = n > 1;
+      return sayNow(more ? fs.map((f, i) => `${i + 1}. ${f}`).join("\n\n") : fs[0], [{ t: T(more ? "More" : "Another one", more ? "Altre" : "Un'altra"), ask: T(c[0], c[1]) + " " + (more ? pick([T("Want more?", "Ne vuoi altre?"), T(`Another ${n}?`, `Altre ${n}?`)]) : pick([T("Another one?", "Un'altra?"), T("Want another?", "Ne vuoi un'altra?")])), f: () => sayFact(best, n),
       no: () => best ? sayNow(pick([T(`Back to coffee, then. Today I'd brew ${shownName(best)} from ${roasteryName(best.roaster)}.`, `Torniamo al caffè, allora. Oggi preparerei ${shownName(best)} di ${roasteryName(best.roaster)}.`), T(`Enough trivia. Here's what I'd drink today: ${shownName(best)} from ${roasteryName(best.roaster)}.`, `Basta curiosità. Ecco cosa berrei oggi: ${shownName(best)} di ${roasteryName(best.roaster)}.`)]), [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(best); } }], happy)
         : say(pick([T("Fair enough. Ask me anything about coffee.", "Va bene. Chiedimi qualsiasi cosa sul caffè."), T("Okay! What are we brewing?", "Ok! Cosa prepariamo?")]), null, smile) },
-      { t: T("Find me a coffee", "Trovami un caffè"), q: T("Find me a coffee", "Trovami un caffè") }], happy);
+      { t: T("Find me a coffee", "Trovami un caffè"), q: T("Find me a coffee", "Trovami un caffè") }], happy); };
     // the hello: a fresh one each time, with something from what landed today (one that suits you, if it knows your taste)
     // the day the newest coffees landed, in the list's own words: today, yesterday, or the date
     const landedOn = (r) => { const d0 = (r && r.found) || ""; const ymd = (k) => { const t = new Date(); t.setDate(t.getDate() - k); return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`; };
@@ -13064,7 +13074,8 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     let wbcAt = 0;   // when the barista champions last came up, so a bare year that follows is read as "who won then?"
     const EARLY = [
       // "tell me a fact", "did you know?", "una curiosità": a coffee did-you-know (27/11/2026)
-      [/\b(?:(?:fun |random |coffee )?facts?|did you know|tell me something (?:interesting|cool|new)|trivia|curiosit[àa]|lo sapevi|qualcosa di interessante)\b/i, () => { sayFact(null); return true; }],
+      [/\b(?:(?:fun |random |coffee )?facts?|did you know|tell me something (?:interesting|cool|new)|trivia|curiosit[àa]|lo sapevi|qualcosa di interessante)\b/i, () => { const m = /\b(\d{1,2}|two|three|four|five|six|seven|eight|due|tre|quattro|cinque|sei|sette|otto)\b(?=[^.?!]{0,25}\b(?:facts?|curiosit|cose))/i.exec(lastQ || ""), W = { two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, due: 2, tre: 3, quattro: 4, cinque: 5, sei: 6, sette: 7, otto: 8 };
+        sayFact(null, m ? (W[m[1].toLowerCase()] || Number(m[1])) : 1); return true; }],
       // "I have a bag": a photo of it is the quickest way in (27/11/2026: he said he didn't know)
       [/^\s*(i(?:'ve| have)(?: got)? (?:a |some |this )?(?:bag|coffee|beans)|i got (?:a |some )?(?:bag|beans)|ho (?:un |dei |questo )?(?:sacchetto|caffè|caffe|chicchi))\b[.!]*\s*$/i, () => {
         nextPills = [[T("Send a photo", "Manda una foto"), "__photo"], [T("Type its name", "Scrivi il nome"), "__type"]];
