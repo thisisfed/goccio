@@ -3640,16 +3640,18 @@ html body #coffee:not(.empty) .kit > .scan-opt .scan-msg{text-align:left}
 .spec b.dstep-b small{margin-left:-4px}
 html body .spec b.dstep-b{display:inline-flex!important;justify-content:space-between;gap:10px;max-width:100%}   /* ‹ 18 g ›, as wide as Back under it when there's room (28/11/2026) */
 html body .spec b.dstep-b > .dstep-n{flex:0 1 auto;text-align:center;white-space:nowrap}
-html body .spec b.dstep-b > .dstep-n small{margin-left:.12em}
+html body .spec b.dstep-b > .dstep-n small{margin-left:0}   /* "60 g" as "1080 g": the same space before the unit */
 html body #specs .spec:is(.brewer, .key){position:relative}
 html.brew-in body .botnav.back-fit.back-fit.back-fit [data-bn="cancel"]{flex:0 0 var(--back-w)!important;width:var(--back-w)!important;min-width:0!important;max-width:none!important}   /* Back ends where the steppers above end */
-html body #specs .spec .h-row{order:1;align-self:stretch;width:100%;display:flex;gap:24px;overflow-x:auto;scrollbar-width:none;margin:4px 0 6px;padding:0;-webkit-overflow-scrolling:touch;mask-image:linear-gradient(90deg,#000 calc(100% - 24px),transparent)}
-html body #specs .spec .h-row[hidden]{display:none}
-html body #specs .spec .h-row::-webkit-scrollbar{display:none}
-html body #specs .spec .h-row button{flex:none;background:none!important;border:0;border-radius:0;padding:0;height:36px;display:flex;align-items:center;font:500 var(--fs-s)/1.2 var(--sans);color:var(--muted);border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap}
-html body #specs .spec .h-row button:hover{color:var(--ink)}
-html body #specs .spec .h-row button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}   /* like the menu at the top: the one in use underlined */
-html body #specs .spec.h-open{grid-column:1 / -1}   /* open, the line has the full width */
+html body #specs .spec .big-row{order:2;align-self:stretch;width:100%;display:flex;gap:.42em;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;mask-image:linear-gradient(90deg,#000 calc(100% - 32px),transparent);-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 32px),transparent)}
+html body #specs .spec .big-row::-webkit-scrollbar{display:none}
+html body #specs .spec .big-row button{flex:none;scroll-snap-align:start;background:none!important;border:0;border-radius:0;padding:0 0 .04em;margin:0;font:inherit;font-size:39px;font-weight:500;letter-spacing:-.045em;line-height:1.15;color:var(--muted);opacity:.55;cursor:pointer;white-space:nowrap}
+@media (min-width:1000px){ html body #specs .spec .big-row button{font-size:63px} }
+html body #specs .spec .big-row button[aria-selected="true"]{color:var(--ink);opacity:1;cursor:default}
+html body #specs .spec .big-row button:hover{opacity:.85}
+html body #specs .spec.grinder{grid-column:1 / -1!important;order:0!important;min-width:0}
+html body #specs .spec [data-pick]{cursor:default}
+html body #specs .spec [data-pick] .pk-chev{display:none}
 html body .pick-pan{display:none!important}
 .bag-ro .ro-chips{display:contents!important}.bag-ro .ro-chips[hidden]{display:none!important}
 .bag-fzp[aria-pressed="true"]{background:var(--ink)!important;color:var(--bg)!important}
@@ -6247,28 +6249,35 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     if (k === "brew") { const o = $("opts-kit"); if (o) p.appendChild(o); }
     else { const o = $("millOpt"); if (o) p.appendChild(o); }
     return (PICKS[k] = p); }
-  // the brewer and the grinder are picked from a line of names under their label, like the menu at the top (28/11/2026: no pills, no
-  // dropdowns): the one in use in ink and underlined, the others grey, the line scrolls sideways. The clicks get ‹ › like the grams
-  const hOpen = { brew: false, mill: false };
-  function hRow(cell, k, items, cur, pick) { let row = cell.querySelector(".h-row"); const lbl = cell.querySelector("[data-pick]");
-    if (!row) { row = document.createElement("div"); row.className = "h-row"; row.setAttribute("role", "listbox"); row.setAttribute("aria-label", k === "brew" ? (LANG === "it" ? "Metodo" : "Brewer") : (LANG === "it" ? "Macinino" : "Grinder"));
-      row.onclick = (e) => { const b = e.target.closest("button[data-v]"); if (!b) return; e.stopPropagation(); hOpen[k] = false; pick(b.dataset.v); };
-      (lbl || cell.firstChild).after(row); }
+  // the brewer and the grinder are their own big line (28/11/2026): every name in the line at the size of the figures, the one in use in
+  // ink, the others grey, sideways like the menu at the top. A tap on a grey one picks it. The grinder's setting has a cell of its own
+  const bigX = {};
+  function bigRow(cell, k, items, cur, pick) { let row = cell.querySelector(".big-row");
+    if (!row) { row = document.createElement("div"); row.className = "big-row"; row.setAttribute("role", "listbox"); row.setAttribute("aria-label", k === "brew" ? (LANG === "it" ? "Metodo" : "Brewer") : (LANG === "it" ? "Macinino" : "Grinder"));
+      row.onclick = (e) => { const b = e.target.closest("button[data-v]"); if (!b) return; e.stopPropagation(); bigX[k] = row.scrollLeft; pick(b.dataset.v); };
+      row.addEventListener("scroll", () => { bigX[k] = row.scrollLeft; }, { passive: true });
+      const v0 = cell.querySelector(":scope > b"); if (v0) v0.replaceWith(row); else cell.appendChild(row); }
     const html = items.map(([v, n]) => `<button type="button" role="option" data-v="${v}" aria-selected="${v === cur}">${esc(n)}</button>`).join("");
     if (row.dataset.h !== html) { row.innerHTML = html; row.dataset.h = html; }
-    row.hidden = !hOpen[k]; cell.classList.toggle("h-open", !!hOpen[k]); if (lbl) lbl.setAttribute("aria-expanded", String(!!hOpen[k]));
-    if (hOpen[k]) requestAnimationFrame(() => { const on = row.querySelector('[aria-selected="true"]'); if (on) row.scrollLeft = Math.max(0, on.offsetLeft - 12); }); }
+    // where it was, then a glide to the one picked: it lands at the start of the line
+    const on = row.querySelector('[aria-selected="true"]'); if (bigX[k] != null) row.scrollLeft = bigX[k];
+    if (on) requestAnimationFrame(() => { const x = Math.max(0, on.offsetLeft - row.offsetLeft); if (Math.abs(row.scrollLeft - x) > 1) row.scrollTo({ left: x, behavior: bigX[k] != null ? "smooth" : "auto" }); bigX[k] = x; }); }
   function wheels() { const sp = $("specs"); if (!sp) return;
     const bc = sp.querySelector(".spec.brewer"), kc = sp.querySelector(".spec.key");
     if (bc) { const cur = brewerOf(state) === "cold" ? "press" : brewerOf(state), all = Object.entries(BREWERS).filter(([k]) => k !== "cold").sort((a, b) => (a[1].cup ? 1 : 0) - (b[1].cup ? 1 : 0));
-      hRow(bc, "brew", all.map(([k, x]) => [k, x.name]), cur, (v) => { if (!BREWERS[v] || v === brewerOf(state)) return render(); setBrewer(v); renderAllOpts(); render(); }); }
+      bigRow(bc, "brew", all.map(([k, x]) => [k, x.name]), cur, (v) => { if (!BREWERS[v] || v === brewerOf(state)) return; setBrewer(v); renderAllOpts(); render(); }); }
     const ms = $("millSel") || pickPan("mill").querySelector("#millSel");   // it lives in the (hidden) grinder panel, which may be out of the page
-    if (kc && ms) { hRow(kc, "mill", [...ms.options].map((o) => [o.value, o.textContent]), ms.value, (v) => { const m = $("millSel") || pickPan("mill").querySelector("#millSel"); if (!m || v === m.value) return render(); m.value = v; m.dispatchEvent(new Event("change")); });
-      // ‹ 22 clicks ›: a click either way sets the C40 zero (it follows every recipe, as − / + under the grinder did)
+    if (kc && ms) {
+      let gc = sp.querySelector(".spec.grinder"); if (!gc) { gc = document.createElement("div"); gc.className = "spec grinder"; gc.innerHTML = `<span class="sub2">${LANG === "it" ? "Macinino" : "Grinder"}</span><b></b>`; (bc || kc).after(gc); }
+      bigRow(gc, "mill", [...ms.options].map((o) => { const G = GRINDERS[o.value]; return [o.value, G && G.short ? (o.value === "words" ? (LANG === "it" ? "Altro" : "Other") : o.textContent.replace(/\s*\/.*$/, "")) : (o.value === "words" ? (LANG === "it" ? "Altro" : "Other") : o.textContent.replace(/\s*\/.*$/, ""))]; }), ms.value,
+        (v) => { const m = $("millSel") || pickPan("mill").querySelector("#millSel"); if (!m || v === m.value) return; m.value = v; m.dispatchEvent(new Event("change")); });
+      // the setting's own cell: "Clicks" for the C40 (with ‹ ›), "Setting" for a grinder with numbers, the words for any other
+      const lb = kc.querySelector("[data-pick]"), G = GRINDERS[ms.value];
+      if (lb && lb.firstChild && lb.firstChild.nodeType === 3 && G && !G.words) lb.firstChild.nodeValue = isC40() ? (LANG === "it" ? "Scatti" : "Clicks") : (LANG === "it" ? "Regolazione" : "Setting");
+      kc.querySelectorAll(".add-mill").forEach((x) => { x.hidden = true; });   // the grinders are all there in the line above
+      // ‹ 22 ›: a click either way sets the C40 zero (it follows every recipe, as − / + under the grinder did)
       const fig = kc.querySelector(":scope > b"); if (fig && isC40() && !fig.classList.contains("zstep-b")) { fig.classList.add("zstep-b", "dstep-b");
-        // "clicks" goes up into the label ("Comandante C40 clicks"), so ‹ 20 › is as wide as ‹ 18 g › and the two line up
         fig.querySelectorAll("small").forEach((x) => { if (/click|scatt/i.test(x.textContent)) x.remove(); });
-        const lb = kc.querySelector("[data-pick]"); if (lb && lb.firstChild && lb.firstChild.nodeType === 3 && !/clicks|scatti/.test(lb.firstChild.nodeValue)) lb.firstChild.nodeValue += LANG === "it" ? ", scatti" : " clicks";
         const n = document.createElement("span"); n.className = "dstep-n"; while (fig.firstChild) n.appendChild(fig.firstChild); fig.appendChild(n);
         const mk = (d) => { const x = document.createElement("button"); x.type = "button"; x.className = "chip gear-more"; x.dataset.zstep = d; x.setAttribute("aria-label", d < 0 ? (LANG === "it" ? "Uno scatto più fine" : "One click finer") : (LANG === "it" ? "Uno scatto più grosso" : "One click coarser"));
           x.innerHTML = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="${d < 0 ? "M7.5 2.5 4 6l3.5 3.5" : "M4.5 2.5 8 6 4.5 9.5"}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`; return x; };
@@ -6282,9 +6291,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     if (key) { (wide || !temp ? key : temp).after(m); m.style.order = wide || !temp ? "1" : "2"; } else sp.appendChild(m); }
   function openPick(k, on) { const p = pickPan(k); p.hidden = !on; document.querySelectorAll(`[data-pick="${k}"]`).forEach((x) => x.setAttribute("aria-expanded", String(on)));
     if (on) { const o = k === "brew" ? "mill" : "brew"; if (PICKS[o] && !PICKS[o].hidden) openPick(o, false); } }
-  document.addEventListener("click", (e) => { const t = e.target.closest("[data-pick]") || (e.target.closest("#specs .spec.add-open .add-mill")); if (t) { e.preventDefault(); const k = t.dataset.pick || "mill"; hOpen[k] = !hOpen[k]; if (hOpen[k]) hOpen[k === "brew" ? "mill" : "brew"] = false; try { wheels(); } catch (er) {} return; }
-    const am = e.target.closest && e.target.closest("#specs .spec.key .add-mill"); if (am) { e.preventDefault(); e.stopPropagation(); hOpen.mill = true; hOpen.brew = false; try { wheels(); } catch (er) {} return; }
-    if ((hOpen.brew || hOpen.mill) && !e.target.closest(".h-row")) { hOpen.brew = hOpen.mill = false; try { wheels(); } catch (er) {} } }, true);   // a tap on the label opens its line of names; anywhere else closes it
+  document.addEventListener("click", (e) => { const t = e.target.closest && e.target.closest("#specs [data-pick]"); if (t) e.preventDefault(); }, true);   // the labels only name the line now
   // a brewer picked: its panel folds away (the recipe has changed above it). Caught on the way down, before the chip is redrawn
   document.addEventListener("click", (e) => { const ch = e.target.closest("#brewPick button.chip"); if (ch && !/^\+\s*\d/.test(ch.textContent.trim()) && !ch.classList.contains("gear-more")) setTimeout(() => openPick("brew", false), 0); }, true);
   function render() {
