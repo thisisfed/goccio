@@ -10983,7 +10983,10 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
           if (m[2] && BREWERS[m[2]] && m[2] !== brewerOf(state)) try { setBrewer(m[2]); renderAllOpts(); } catch (e) {}
           history.replaceState(null, "", location.pathname + location.search); const r = u && shelf.find((x) => x.url === u);
           // open in the list, where it was, when it's there (a refresh on a coffee's recipe); otherwise as its own recipe
-          if (r) { const i = shelf.indexOf(r), btn = $("shelf").querySelector(`button[data-i="${i}"]`); if (btn) brewThis(r, true, true); else brewThis(r); } } }
+          // not among the rows shown: brought to the top of the list first, so a shared link opens it in its row like any coffee (28/11/2026)
+          if (r) { const i = shelf.indexOf(r); let btn = $("shelf").querySelector(`button[data-i="${i}"]`);
+            if (!btn) { window.__pinCo = { url: r.url, q: "" }; try { renderShelf(); } catch (e) {} btn = $("shelf").querySelector(`button[data-i="${i}"]`); }
+            if (btn) brewThis(r, true, true); else brewThis(r); } } }
     } catch (e) { if (early) return; $("shelfMeta").textContent = "Couldn’t load the coffee list. Refresh to try again."; $("shelfMeta").hidden = false; document.documentElement.classList.remove("wait"); }
     finally { $("shelf").classList.remove("loading"); $("shelf").removeAttribute("aria-busy"); }
   }
