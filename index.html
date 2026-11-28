@@ -58,7 +58,8 @@ html body #shelf > .grp.day-g .day-t.day-wait.day-wait.day-wait{visibility:hidde
 html:not(.ro-page) body #shelves > .sec-head:has(+ .co-tabs){border-top-color:transparent!important}
 @media (prefers-reduced-motion:reduce){ .co-tabs::after{transition:none} }
 .co-tabs button{flex:none;background:none;border:0;border-radius:0;padding:0;height:44px;display:flex;align-items:center;font:500 var(--fs-s)/1.2 var(--sans);color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;min-height:0}
-.co-tabs button:hover{color:var(--ink)}
+.co-tabs button:hover{color:var(--ink)!important}
+html body .co-tabs button:not([aria-pressed="true"]){color:color-mix(in srgb,var(--muted) 62%,var(--bg))}   /* the grey of the brewers and grinders not in use (28/11/2026) */
 .co-tabs button:focus{outline:none}
 .co-tabs button:focus-visible{color:var(--ink)}
 /* a search's line under the kinds row, as much space over it as under it (27/11/2026) */
@@ -9044,13 +9045,14 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
        measure taken from the screen pushed the coffee a third of a screen down. Checked again once the page has settled */
     const top0 = () => { try { scrollTo({ top: 0, left: 0, behavior: "instant" }); } catch (e) { scrollTo(0, 0); } };
     const fit = (first) => { try { if (!row.isConnected || !row.classList.contains("brewing")) return;
-      if (!first && row.getAnimations && row.getAnimations().some((a) => a.playState === "running")) return;   /* never measured mid-travel: the travel moves the coffee, and a measure taken then set the wrong margin three times over */ const sh = $("shelves"), cw = row.querySelector(".c-where") || row, tp = document.querySelector(".top"); if (first) sh.style.removeProperty("margin-top");
-      const side = Math.max(8, row.getBoundingClientRect().left), gap = cw.getBoundingClientRect().top + scrollY + 4 - tp.getBoundingClientRect().bottom;   // + 4: the line box's top to the capitals
+      if (!first && row.getAnimations && row.getAnimations().some((a) => a.playState === "running")) return;   /* never measured mid-travel: the travel moves the coffee, and a measure taken then set the wrong margin three times over */ const sh = $("shelves"), cw = row.querySelector(".tags") || row.querySelector(".c-where") || row, tp = document.querySelector(".top"); if (first) sh.style.removeProperty("margin-top");
+      // the tags as far under the top bar's line as they sit under a coffee's line in the list (28/11/2026): the coffee's own top padding
+      const side = cw.getBoundingClientRect().top - row.getBoundingClientRect().top, gap = cw.getBoundingClientRect().top + scrollY - tp.getBoundingClientRect().bottom;
       if (Math.abs(gap - side) > .5) sh.style.setProperty("margin-top", (parseFloat(getComputedStyle(sh).marginTop) + side - gap) + "px", "important"); if (first || scrollY < 0) top0(); } catch (e) {} };
     fit(true); requestAnimationFrame(() => fit(false)); setTimeout(() => fit(false), 350); setTimeout(() => fit(false), 1000);
     // measured again when the chat sets a coffee up out of sight and then shows it (the list may have drawn the coffee anew by then)
-    window.__brewFit = () => { try { const rw = document.querySelector(".item.brewing"), sh = $("shelves"), tp = document.querySelector(".top"); if (!rw || !sh || !tp) return; const cw = rw.querySelector(".c-where") || rw;
-      top0(); const side = Math.max(8, rw.getBoundingClientRect().left), gap = cw.getBoundingClientRect().top + scrollY + 4 - tp.getBoundingClientRect().bottom;
+    window.__brewFit = () => { try { const rw = document.querySelector(".item.brewing"), sh = $("shelves"), tp = document.querySelector(".top"); if (!rw || !sh || !tp) return; const cw = rw.querySelector(".tags") || rw.querySelector(".c-where") || rw;
+      top0(); const side = cw.getBoundingClientRect().top - rw.getBoundingClientRect().top, gap = cw.getBoundingClientRect().top + scrollY - tp.getBoundingClientRect().bottom;
       if (Math.abs(gap - side) > .5) sh.style.setProperty("margin-top", (parseFloat(getComputedStyle(sh).marginTop) + side - gap) + "px", "important"); top0(); } catch (e) {} };
     // the coffee travels from where it was tapped to the top of the page, unhurried: no jump cut
     try { const dy = y0 - row.getBoundingClientRect().top; if (Math.abs(dy) > 2 && !matchMedia("(prefers-reduced-motion: reduce)").matches) { const dur = Math.min(900, 420 + Math.abs(dy) * .6), an = row.animate([{ transform: `translateY(${dy}px)` }, { transform: "none" }], { duration: dur, easing: "cubic-bezier(.3,.7,.2,1)" });
@@ -9497,6 +9499,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     return { w: base.width, h: base.height, boxes, ms: Math.round(performance.now() - t0) };
   }
   async function readPhoto(file, onStep) {
+    try { loadPast(); } catch (e) {}   // the past coffees, read while the photo is
     if (window.__ocrOld) return readPhotoOld(file, onStep);
     let P; try { P = await loadPP(onStep); } catch (e) { return readPhotoOld(file, onStep); }   // the new reader can't load here: the old one still can
     try { onStep && onStep("Cleaning up the photo…");
@@ -10148,7 +10151,17 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     if (ros.length <= 4) return { choices: ros.map((n) => peers.find((c) => c.r.roaster === n).r) };
     return null;
   }
+  // coffees gone from the shops this past year (data/past.json, fetched only when a bag is scanned): a bag bought before its coffee
+  // sold out still finds the roaster's own details (28/11/2026)
+  let PAST_ROWS = [], pastP = null;
+  const loadPast = () => pastP || (pastP = fetch("/data/past.json").then((x) => x.ok ? x.json() : {}).then((d) => { PAST_ROWS = Object.values(d || {}).map((x) => ({ ...x, past: true })); return PAST_ROWS; }).catch(() => []));
+  window.__loadPast = loadPast;
   function shelfMatch(f) {
+    const now = shelfMatchNow(f); if (now && (now.pick || now.choices) || !PAST_ROWS.length) return now;
+    const keep = shelf, idx = findIdx; let got = null;
+    try { shelf = PAST_ROWS; findIdx = null; got = shelfMatchNow(f); } catch (e) { got = null; } finally { shelf = keep; findIdx = idx; }
+    return got && (got.pick || got.choices) ? got : now; }
+  function shelfMatchNow(f) {
     const b = listFind(f); if (b && b.pick && b.sure) return b;
     const a = shelfMatch0(f);
     // the title match is sure only when nothing about the kind of coffee disagrees (their "… Filter" is not the espresso in your hand)
