@@ -6382,8 +6382,10 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       { const sk = $("roastSkip"); if (sk) sk.onclick = () => { roastSkipFor = roastSkipFor === state.text ? null : state.text; render(); };
         roastWait = false;   // Start brewing never waits: with the roast unknown the recipe is the safe middle, and you can brew it
         if (!$("recipe").hidden) { $("startBrew").disabled = roastWait; $("dockGo").disabled = roastWait; } try { syncBrewPill(); } catch (e) {} }
-      D.querySelectorAll("[data-proc]").forEach((x) => x.onclick = () => { state.process = x.dataset.proc; saveState(); renderAllOpts(); render(); });
-      D.querySelectorAll("[data-roast]").forEach((x) => x.onclick = () => { roastAskOpen = false; state.roast = x.dataset.roast; state.roastPhoto = null; saveState(); renderAllOpts(); render(); }); }
+      const keepPick = (k, v) => { try { const u = state.bag && state.bag.url; if (!u) return; const all = JSON.parse(localStorage.getItem("v60.picks") || "{}") || {}; all[u] = { ...(all[u] || {}), [k]: v };
+          const ks = Object.keys(all); if (ks.length > 300) ks.slice(0, ks.length - 300).forEach((x) => delete all[x]); localStorage.setItem("v60.picks", JSON.stringify(all)); } catch (e) {} };
+      D.querySelectorAll("[data-proc]").forEach((x) => x.onclick = () => { state.process = x.dataset.proc; keepPick("process", state.process); saveState(); renderAllOpts(); render(); });
+      D.querySelectorAll("[data-roast]").forEach((x) => x.onclick = () => { roastAskOpen = false; state.roast = x.dataset.roast; state.roastPhoto = null; keepPick("roast", state.roast); saveState(); renderAllOpts(); render(); }); }
     { const bs = $("bagSum"); if (bs) bs.innerHTML = sumBits([miss.includes("process") ? "Process unknown" : PROCESS[c.process].label, miss.includes("roast") ? "Roast unknown" : roastLabel(c.roast)]); }
 
     renderLearn(r);
@@ -9066,6 +9068,8 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     brewIn = !!inRow; bagAskShow = false; brewFresh = !!inRow;
     if (jump) surprisePick = null;
     Object.assign(state, listState(r)); state.roastPhoto = null;
+    // a roast or process you said for this coffee is kept for it (28/11/2026): a refresh, or opening it again, doesn't ask twice
+    try { const pk = r && r.url && (JSON.parse(localStorage.getItem("v60.picks") || "{}") || {})[r.url]; if (pk) { if (pk.roast && !r.roast) state.roast = pk.roast; if (pk.process && !r.process) state.process = pk.process;   /* the roaster's own word wins, when there is one */ } } catch (e) {}
     $("coffeeIn").value = state.text; saveState(); renderAllOpts(); render();
     if (jump && r && r.url) store.set("v60.last", { url: r.url, roaster: r.roaster || "", name: r.name || "" });
     placeBrew();
