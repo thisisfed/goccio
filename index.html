@@ -3643,7 +3643,7 @@ html body .spec b.dstep-b > .dstep-n{flex:0 1 auto;text-align:center;white-space
 html body .spec b.dstep-b > .dstep-n small{margin-left:0}   /* "60 g" as "1080 g": the same space before the unit */
 html body #specs .spec:is(.brewer, .key){position:relative}
 html.brew-in body .botnav.back-fit.back-fit.back-fit [data-bn="cancel"]{flex:0 0 var(--back-w)!important;width:var(--back-w)!important;min-width:0!important;max-width:none!important}   /* Back ends where the steppers above end */
-html body #specs .spec .big-row{order:2;align-self:stretch;width:100%;display:flex;gap:.42em;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;mask-image:linear-gradient(90deg,#000 calc(100% - 32px),transparent);-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 32px),transparent)}
+html body #specs .spec .big-row{order:2;align-self:stretch;width:100%;display:flex;gap:1.1em;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;mask-image:linear-gradient(90deg,#000 calc(100% - 32px),transparent);-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 32px),transparent)}
 html body #specs .spec .big-row::-webkit-scrollbar{display:none}
 html body #specs .spec .big-row button{flex:none;scroll-snap-align:start;background:none!important;border:0;border-radius:0;padding:0 0 .04em;margin:0;font:inherit;font-size:39px;font-weight:500;letter-spacing:-.045em;line-height:1.15;color:var(--muted);opacity:.55;cursor:pointer;white-space:nowrap}
 @media (min-width:1000px){ html body #specs .spec .big-row button{font-size:63px} }
@@ -6252,16 +6252,26 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   // the brewer and the grinder are their own big line (28/11/2026): every name in the line at the size of the figures, the one in use in
   // ink, the others grey, sideways like the menu at the top. A tap on a grey one picks it. The grinder's setting has a cell of its own
   const bigX = {};
+  // the names three times over and the middle set in view: past either end it carries on round, so the line never stops (28/11/2026)
   function bigRow(cell, k, items, cur, pick) { let row = cell.querySelector(".big-row");
     if (!row) { row = document.createElement("div"); row.className = "big-row"; row.setAttribute("role", "listbox"); row.setAttribute("aria-label", k === "brew" ? (LANG === "it" ? "Metodo" : "Brewer") : (LANG === "it" ? "Macinino" : "Grinder"));
       row.onclick = (e) => { const b = e.target.closest("button[data-v]"); if (!b) return; e.stopPropagation(); bigX[k] = row.scrollLeft; pick(b.dataset.v); };
-      row.addEventListener("scroll", () => { bigX[k] = row.scrollLeft; }, { passive: true });
+      const loop = () => { const set = row.__set || 0; if (!set) return; if (row.scrollLeft < set * 0.5) row.scrollLeft += set; else if (row.scrollLeft > set * 1.5) row.scrollLeft -= set; bigX[k] = row.scrollLeft; };
+      row.addEventListener("scroll", loop, { passive: true });
       const v0 = cell.querySelector(":scope > b"); if (v0) v0.replaceWith(row); else cell.appendChild(row); }
-    const html = items.map(([v, n]) => `<button type="button" role="option" data-v="${v}" aria-selected="${v === cur}">${esc(n)}</button>`).join("");
+    const one = (c) => items.map(([v, n]) => `<button type="button" role="option" data-v="${v}" data-c="${c}" aria-selected="${v === cur}"${c !== 1 ? ' aria-hidden="true" tabindex="-1"' : ""}>${esc(n)}</button>`).join("");
+    const html = one(0) + one(1) + one(2);
     if (row.dataset.h !== html) { row.innerHTML = html; row.dataset.h = html; }
-    // where it was, then a glide to the one picked: it lands at the start of the line
-    const on = row.querySelector('[aria-selected="true"]'); if (bigX[k] != null) row.scrollLeft = bigX[k];
-    if (on) requestAnimationFrame(() => { const x = Math.max(0, on.offsetLeft - row.offsetLeft); if (Math.abs(row.scrollLeft - x) > 1) row.scrollTo({ left: x, behavior: bigX[k] != null ? "smooth" : "auto" }); bigX[k] = x; }); }
+    const measure = () => { const a = row.querySelector('[data-c="0"]'), b = row.querySelector('[data-c="1"]'); row.__set = a && b ? b.offsetLeft - a.offsetLeft : 0; };
+    measure(); if (bigX[k] != null) row.scrollLeft = bigX[k];
+    // a glide to the one picked, in the middle set, so it lands at the start of the line
+    const on = row.querySelector('[data-c="1"][aria-selected="true"]');
+    requestAnimationFrame(() => { measure(); if (!on) return; let x = Math.max(0, on.offsetLeft - row.offsetLeft); const st = row.__set || 0;
+      if (st) { while (x > st * 1.5) x -= st; while (x < st * 0.5) x += st; }   // the copy inside the stretch the line keeps to
+      if (bigX[k] == null) { row.scrollLeft = x; bigX[k] = x; return; }
+      // from wherever the line was (any set), the shortest way round
+      const set = row.__set || 0; let from = row.scrollLeft; if (set) { while (from - x > set / 2) from -= set; while (x - from > set / 2) from += set; row.scrollLeft = from; }
+      if (Math.abs(row.scrollLeft - x) > 1) row.scrollTo({ left: x, behavior: "smooth" }); bigX[k] = x; }); }
   function wheels() { const sp = $("specs"); if (!sp) return;
     const bc = sp.querySelector(".spec.brewer"), kc = sp.querySelector(".spec.key");
     if (bc) { const cur = brewerOf(state) === "cold" ? "press" : brewerOf(state), all = Object.entries(BREWERS).filter(([k]) => k !== "cold").sort((a, b) => (a[1].cup ? 1 : 0) - (b[1].cup ? 1 : 0));
@@ -11200,15 +11210,19 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     addEventListener("resize", fitBuy); new MutationObserver(() => requestAnimationFrame(fitBuy)).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
     if ("ResizeObserver" in window) { const c = document.querySelector('.botnav [data-bn="cancel"]'); if (c) new ResizeObserver(fitBuy).observe(c); } setInterval(fitBuy, 2000); window.__fitBuy = fitBuy; }
   // the dose stepper ends where Back ends below it, or at its cell's edge when Back is wider; never narrower than its own (28/11/2026)
-  // the steppers (‹ 18 g ›, ‹ 20 ›) one width, and Back below ending where they end (28/11/2026: "they align always")
-  { const fitStep = () => { const nav = document.querySelector(".botnav"), c = nav && nav.querySelector('[data-bn="cancel"]'), ds = [...document.querySelectorAll("#specs b.dstep-b")].filter((d) => d.offsetWidth);
-      ds.forEach((d) => { d.style.width = ""; }); if (!ds.length) { if (nav) nav.classList.remove("back-fit"); return; }
+  // the steppers (‹ 18 g ›, ‹ 20 ›) one width (28/11/2026)
+  { const fitStep = () => { const ds = [...document.querySelectorAll("#specs b.dstep-b")].filter((d) => d.offsetWidth); ds.forEach((d) => { d.style.width = ""; }); if (!ds.length) return;
       const own = Math.max(...ds.map((d) => d.getBoundingClientRect().width)), room = Math.min(...ds.map((d) => { const cell = d.closest(".spec") || d.parentNode; return cell.getBoundingClientRect().right - d.getBoundingClientRect().left - 8; }));
-      const W = Math.round(Math.min(own, room)); ds.forEach((d) => { d.style.width = W + "px"; });
-      if (!c || !c.offsetWidth || !document.documentElement.classList.contains("brew-in")) return;
-      const left = ds[0].getBoundingClientRect().left - c.getBoundingClientRect().left + parseFloat(c.style.marginLeft || 0);
-      nav.style.setProperty("--back-w", Math.round(W + Math.max(0, ds[0].getBoundingClientRect().left - nav.querySelector('[data-bn="cancel"]').getBoundingClientRect().left)) + "px"); void left; nav.classList.add("back-fit"); };
+      const W = Math.round(Math.min(own, room)); ds.forEach((d) => { d.style.width = W + "px"; }); };
     addEventListener("resize", () => requestAnimationFrame(fitStep)); setInterval(fitStep, 1500); window.__fitStep = fitStep; }
+  // Back as long as the coffee's Brew and Buy together, set the moment Brew is tapped, so it never stretches on the way in (28/11/2026)
+  { const rowW = (r) => { const k = r ? [...r.children].filter((c) => c.offsetWidth) : []; if (!k.length) return 0; return Math.round(k[k.length - 1].getBoundingClientRect().right - k[0].getBoundingClientRect().left); };
+    const setBack = (w) => { const nav = document.querySelector(".botnav"); if (!nav || !w) return; nav.style.setProperty("--back-w", w + "px"); nav.classList.add("back-fit"); };
+    document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("#shelf .item > .r button[data-i]"); if (b) setBack(rowW(b.closest(".r"))); }, true);
+    // reached another way (a scan, a link, Goccio): the open coffee's row if it shows, otherwise the first coffee's in the list
+    const keep = () => { if (!document.documentElement.classList.contains("brew-in")) return; const nav = document.querySelector(".botnav"); if (!nav || nav.classList.contains("back-fit")) return;
+      setBack(rowW(document.querySelector(".item.brewing > .r")) || rowW([...document.querySelectorAll("#shelf .item > .r")].find((r) => r.offsetWidth))); };
+    new MutationObserver(keep).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] }); }
   window.brewDoneUI = (on) => { document.documentElement.classList.toggle("brew-done", !!on); const c = document.querySelector('.botnav [data-bn="cancel"]'); if (c) { if (!c.dataset.t) c.dataset.t = c.textContent; c.textContent = on ? (LANG === "it" ? "Fatto" : "Done") : c.dataset.t; } };
   document.addEventListener("click", (e) => { if (document.documentElement.classList.contains("brew-done") && e.target.closest && e.target.closest('.shelf .item .btn[data-i], #bags .btn, #bvReset, #wmBag, .botnav [data-bn="cancel"], #coffeeGo')) brewDoneUI(false); }, true);
   /* a roaster's page and an open coffee are not the search's results: the box does not go on showing the search there. It is put back,
@@ -12683,7 +12697,8 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
         if (tr && tr.width > 20 && tr.bottom > 0 && tr.bottom < 120) {
           pk = document.createElement("button"); pk.type = "button"; pk.className = "gd-tip";
           { const bar = document.querySelector(".top"), bb = bar ? bar.getBoundingClientRect().bottom : tr.bottom + 9; pk.style.top = Math.round(bb + Math.max(6, bb - 1 - tr.bottom)) + "px"; }   /* under the bar's line by as much as the pills sit above it */ pk.style.right = Math.max(8, Math.round(innerWidth - tr.right)) + "px";   /* its right edge on the pill's */ pk.style.setProperty("--tail", Math.round(tr.width / 2 + 6) + "px");
-          pk.textContent = T("Need a hand? I can brew this with you.", "Ti serve una mano? Lo prepariamo insieme.");
+          { let nm0 = ""; try { nm0 = (localStorage.getItem("v60.dropName") || "").trim(); } catch (e) {}   // your name at the end, when Goccio knows it (28/11/2026)
+            pk.textContent = nm0 ? T(`Need a hand? I can brew this with you, ${nm0}.`, `Ti serve una mano? Lo prepariamo insieme, ${nm0}.`) : T("Need a hand? I can brew this with you.", "Ti serve una mano? Lo prepariamo insieme."); }
           pk.setAttribute("aria-label", T("Brew this with Goccio", "Preparalo con Goccio"));
           pk.onclick = () => { hide(); openTalk(true, true); setTimeout(() => gbStart(r), 350); };
           document.body.appendChild(pk); if (tb.hop) tb.hop(); requestAnimationFrame(() => requestAnimationFrame(() => pk && pk.classList.add("in")));
@@ -12691,7 +12706,8 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
           addEventListener("scroll", off, { passive: true }); setTimeout(() => { removeEventListener("scroll", off); if (pk === p1) hide(); }, 7000); return; }
         pk = document.createElement("button"); pk.type = "button"; pk.className = "gd-offer";
         const sv = tb && tb.querySelector("svg"); if (sv) { const c = sv.cloneNode(true); c.style.opacity = ""; pk.appendChild(c); }
-        pk.insertAdjacentHTML("beforeend", `<span class="go-t">${T("Need a hand? I can brew this with you.", "Ti serve una mano? Lo prepariamo insieme.")}</span><span class="go-a" aria-hidden="true">→</span>`);
+        { let nm0 = ""; try { nm0 = (localStorage.getItem("v60.dropName") || "").trim(); } catch (e) {}
+          pk.insertAdjacentHTML("beforeend", `<span class="go-t">${esc(nm0 ? T(`Need a hand? I can brew this with you, ${nm0}.`, `Ti serve una mano? Lo prepariamo insieme, ${nm0}.`) : T("Need a hand? I can brew this with you.", "Ti serve una mano? Lo prepariamo insieme."))}</span><span class="go-a" aria-hidden="true">→</span>`); }
         pk.setAttribute("aria-label", T("Brew this with Goccio", "Preparalo con Goccio"));
         pk.onclick = () => { hide(); openTalk(true, true); setTimeout(() => gbStart(r), 350); };
         head.before(pk); requestAnimationFrame(() => requestAnimationFrame(() => pk && pk.classList.add("in"))); };
@@ -14441,7 +14457,8 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       const q = t.replace(/^(hey |hi |ciao )?goccio[,:!\s]*/i, "").trim() || t; openTalk(true); setTimeout(() => ask(q), 350); }, true);
     // Goccio's own labels follow the site's language (the markup is English): set them now and whenever they're about to show
     const gdWords = () => { const set = (id, attr, en, it) => { const x = $(id); if (x) attr ? x.setAttribute(attr, T(en, it)) : (x.textContent = T(en, it)); };
-      set("gdHint", null, "Hi, I’m Goccio. Ask me about coffee!", "Ciao, sono Goccio. Chiedimi del caffè!");
+      { let nm0 = ""; try { nm0 = (localStorage.getItem("v60.dropName") || "").trim(); } catch (e) {}
+        set("gdHint", null, nm0 ? `Hi, ${nm0}! Ask me about coffee.` : "Hi, I’m Goccio. Ask me about coffee!", nm0 ? `Ciao, ${nm0}! Chiedimi del caffè.` : "Ciao, sono Goccio. Chiedimi del caffè!"); }
       set("gdrop", "aria-label", "Ask Goccio about coffee", "Chiedi a Goccio del caffè"); set("askGoccio", "aria-label", "Ask Goccio", "Chiedi a Goccio");
       set("gdX", "aria-label", "Close", "Chiudi"); set("gdMic", "aria-label", "Ask out loud", "Chiedi a voce"); set("gdGo", "aria-label", "Ask", "Chiedi");
       if (!inEl.value) set("gdIn", "placeholder", "Ask Goccio about coffee", "Chiedi a Goccio del caffè"); };
