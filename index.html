@@ -2916,6 +2916,16 @@ html body #millPick .zr-ctl .step{width:100%!important;display:flex!important;ju
 #whyNums .wn-h{margin:0 0 8px;font-size:var(--fs-s);font-weight:500;color:var(--ink)}
 #whyNums .wn{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:var(--fs-s);line-height:1.35;color:var(--muted)}
 #whyNums .wn b{color:var(--ink);font-weight:500;margin-right:4px}   /* plain words, as How to pour is: no pill round them */
+/* two columns, one paragraph (28/11/2026): the word on the left, its line on the right, each a line down from the last, no gaps between */
+html body #rbody :is(#whyNums .wn, #expect, #dial){display:grid!important;grid-template-columns:7.4em minmax(0,1fr)!important;column-gap:14px!important;row-gap:0!important;line-height:1.4!important;font-size:var(--fs-s)!important;padding:0!important;list-style:none!important}
+html body #rbody :is(#whyNums .wn, #expect, #dial) > li{display:contents!important}
+html body #rbody :is(#whyNums .wn, #expect, #dial) > li > b:first-child{grid-column:1;color:var(--ink)!important;font-weight:500!important;margin:0!important}
+html body #rbody :is(#whyNums .wn, #expect, #dial) > li > .lg-t{grid-column:2;color:var(--muted)}
+html body #rbody :is(#whyNums .wn, #expect, #dial) > li.lg-wide > .lg-t{grid-column:1 / -1}
+html body #rbody :is(#whyNums .wn, #expect) .lg-k{color:var(--ink);font-weight:500}
+html body #rbody #dial > li > .lg-t{color:var(--ink)}
+html body #rbody #dial > li.lg-wide > .lg-t{color:var(--muted)}
+@media (min-width:600px){ html body #rbody :is(#whyNums .wn, #expect, #dial){grid-template-columns:9.6em minmax(0,1fr)!important;column-gap:18px!important} }
 /* What to expect, Dial it in and the clicks: read like Why these numbers (28/11/2026). Always open, a plain heading, a rule on top,
    each line a word in ink then the rest in grey */
 html body #rbody :is(#expBox, #dialBox, #clkHow){display:block;margin:0 0 4px!important;padding:12px 0 var(--xp-pb,0px)!important;border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;background:none!important;box-shadow:none!important}
@@ -3643,13 +3653,21 @@ html body #coffee:not(.empty) .kit > .scan-opt .scan-msg{text-align:left}
 .spec b.dstep-b .chip[disabled]{opacity:.35;cursor:default}
 .spec b.dstep-b small{margin-left:-4px}
 html body .spec b.dstep-b{display:inline-flex!important;justify-content:space-between;gap:6px;max-width:none}
-html.brew-in body #specs .spec b.dstep-b{width:var(--step-w,auto)}   /* as long as Brew + Buy, as Back is */   /* ‹ 18 g ›, as wide as Back under it when there's room (28/11/2026) */
+html.brew-in body #specs .spec b.dstep-b{width:var(--step-w,auto)}   /* as long as Brew + Buy, as Back is */
+html.brew-in body #recipe .share{display:flex!important;width:var(--step-w,auto)!important;max-width:100%}   /* Buy and its two icons, together as long as Back (28/11/2026) */
+html.brew-in body #recipe .share #buyBtn{flex:1 1 auto!important;min-width:0!important;justify-content:center}   /* ‹ 18 g ›, as wide as Back under it when there's room (28/11/2026) */
 html body .spec b.dstep-b > .dstep-n{flex:none;min-width:1.6em;text-align:center;white-space:nowrap;font-variant-numeric:tabular-nums}   /* one width for 18 g, 25 g and 38: nothing moves as the number changes (28/11/2026) */
 html body .spec b.dstep-b > .dstep-n small{margin-left:0}   /* "60 g" as "1080 g": the same space before the unit */
 html body #specs .spec:is(.brewer, .key){position:relative}
 html.brew-in body .botnav.back-fit.back-fit.back-fit [data-bn="cancel"]{flex:0 0 var(--back-w)!important;width:var(--back-w)!important;min-width:0!important;max-width:none!important}   /* Back ends where the steppers above end */
 html body #specs .spec .big-row{order:2;align-self:stretch;width:100%;display:flex;gap:1.6em;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;mask-image:linear-gradient(90deg,#000 calc(100% - 32px),transparent);-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 32px),transparent)}
 html body #specs .spec .big-row::-webkit-scrollbar{display:none}
+/* every sideways line runs into the page's side margins, its fades in that margin (28/11/2026), as the menu at the top does */
+html body #specs .spec .big-row, html body #rbody #detected .roast-ask.w-row.w-row{margin-left:-12px!important;margin-right:-12px!important;width:calc(100% + 24px)!important;max-width:none!important;padding:0 12px!important;scroll-padding:0 12px;box-sizing:border-box;
+  -webkit-mask-image:linear-gradient(to right,transparent 0,#000 var(--fl,0px),#000 calc(100% - var(--fr,0px)),transparent 100%)!important;mask-image:linear-gradient(to right,transparent 0,#000 var(--fl,0px),#000 calc(100% - var(--fr,0px)),transparent 100%)!important}
+html body #specs .spec .big-row::after, html body #rbody #detected .roast-ask.w-row.w-row::after{content:"";flex:0 0 1px}
+html body #specs .spec.brewer, html body #specs .spec.grinder{overflow:visible!important}
+html body #rbody #detected:has(.w-row), html body #detected .miss.miss.miss{overflow:visible!important}
 html body #specs .add-mill{display:none!important}   /* every grinder is in the line above */
 /* the roast's and process's answers: a bar like the menu at the top (rules over and under, the words in its grey, the one hovered in ink) */
 html body #rbody #detected:has(.w-row){display:block!important;padding:0!important;margin:0 0 -14px!important;max-width:100%!important;min-width:0!important;width:100%!important;overflow:hidden;border-top:1px solid var(--line);background:none!important;box-shadow:none!important;border-radius:0!important}
@@ -6285,7 +6303,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     measure(); if (bigX[k] != null) row.scrollLeft = bigX[k];
     // a glide to the one picked, in the middle set, so it lands at the start of the line
     const on = row.querySelector('[data-c="1"][aria-selected="true"]');
-    requestAnimationFrame(() => { measure(); if (!on) return; let x = Math.max(0, on.offsetLeft - row.offsetLeft); const st = row.__set || 0;
+    requestAnimationFrame(() => { measure(); if (!on) return; let x = Math.max(0, on.offsetLeft - row.offsetLeft - (parseFloat(getComputedStyle(row).paddingLeft) || 0)); const st = row.__set || 0;
       if (st) { while (x > st * 1.5) x -= st; while (x < st * 0.5) x += st; }   // the copy inside the stretch the line keeps to
       if (bigX[k] == null) { row.scrollLeft = x; bigX[k] = x; return; }
       // from wherever the line was (any set), the shortest way round
@@ -6427,7 +6445,15 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     if (!window.__xpPolish) { window.__xpPolish = true;
       const pol = () => { try { $("expect").querySelectorAll("li > b:first-child").forEach((b0) => { const nx = b0.nextSibling; if (nx && nx.nodeType === 3 && /^\s*:/.test(nx.nodeValue)) nx.nodeValue = nx.nodeValue.replace(/^\s*:\s*/, " "); });
           $("dial").querySelectorAll("li").forEach((li) => { if (li.querySelector("b")) return; const h = li.innerHTML, k = h.indexOf("→"); if (k > 0) li.innerHTML = `<b>${h.slice(0, k).trim()}</b> ${h.slice(k + 1).trim()}`; }); } catch (e) {} };
-      ["expect", "dial"].forEach((id) => { const el = $(id); if (el) new MutationObserver(pol).observe(el, { childList: true, subtree: true }); }); pol(); }
+      // two columns (28/11/2026): the word on the left, its line on the right, the setting itself first and in ink, the reason after in grey
+      const cut = (t) => { const ix = [": ", ". ", " (", ", the ", ", "].map((k) => t.indexOf(k)).filter((i) => i > 0), i = ix.length ? Math.min(...ix) : -1; return i > 0 && i < 60 ? [t.slice(0, i), t.slice(i)] : t.length <= 40 ? [t, ""] : ["", t]; };
+      const cols = () => { document.querySelectorAll("#whyNums .wn > li, #expect > li, #dial > li").forEach((li) => { if (li.querySelector(":scope > .lg-t")) return; const b = li.querySelector(":scope > b"), sp = document.createElement("span"); sp.className = "lg-t";
+          if (!b) { while (li.firstChild) sp.appendChild(li.firstChild); li.appendChild(sp); li.classList.add("lg-wide"); return; }
+          let n = b.nextSibling; while (n) { const nx = n.nextSibling; sp.appendChild(n); n = nx; }
+          if (li.closest("#dial")) { li.appendChild(sp); return; }   // Dial it in: the case on the left, the fix on the right, as it is
+          const [k, r] = cut(sp.textContent.replace(/^\s*:?\s*/, "")); sp.textContent = ""; if (k) { const ks = document.createElement("span"); ks.className = "lg-k"; ks.textContent = k; sp.appendChild(ks); } sp.appendChild(document.createTextNode(r)); li.appendChild(sp); }); };
+      const both = () => { pol(); cols(); };
+      ["expect", "dial", "whyNums"].forEach((id) => { const el = $(id); if (el) new MutationObserver(() => requestAnimationFrame(both)).observe(el, { childList: true, subtree: false }); }); both(); window.__xpCols = both; }
     renderMine(r);
     const showRet = r.tds != null;
     { const bn = BREWERS[r.brewer].name, open = !!(pickPan("brew").parentNode && !pickPan("brew").hidden);   // the brewer, in the title: tap it to change it (28/11/2026)
@@ -11000,6 +11026,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   { const fade = (el) => { if (!el || el.__sx) return; el.__sx = true; const f = () => { const m = el.scrollWidth - el.clientWidth; el.classList.toggle("sx-l", m > 2 && el.scrollLeft > 2); el.classList.toggle("sx-r", m > 2 && m - el.scrollLeft > 2); };
       el.addEventListener("scroll", f, { passive: true }); addEventListener("resize", f); if ("ResizeObserver" in window) new ResizeObserver(f).observe(el); f(); el.__sxf = f; };
     fade(document.querySelector(".co-tabs .co-in"));
+    { const rb = $("rbody"), all = () => document.querySelectorAll("#specs .big-row, #detected .w-row").forEach(fade); if (rb) new MutationObserver(all).observe(rb, { childList: true, subtree: true }); all(); }
     const n = $("askNote"); if (n) { const wrap = () => { if (n.firstChild && n.firstChild.nodeType === 1 && n.firstChild.classList.contains("nb-in") && n.childNodes.length === 1) { n.firstChild.__sxf && n.firstChild.__sxf(); return; }
         if (!n.textContent.trim()) return; const sp = document.createElement("span"); sp.className = "nb-in"; while (n.firstChild) sp.appendChild(n.firstChild); n.appendChild(sp); fade(sp); };
       new MutationObserver(wrap).observe(n, { childList: true }); wrap(); } }
