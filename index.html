@@ -3053,6 +3053,7 @@ html.nav-off body #toast{bottom:calc(env(safe-area-inset-bottom) + 12px)}
 /* Process not stated. / Roast not stated.: two lines set like the text under them (How to pour), no gap between them */
 html body #consTop{gap:0!important;row-gap:0!important}
 html body #consTop .cons-top{line-height:1.35!important;margin:0!important;padding:0!important}
+html body #consTop .cons-top{padding-left:22px!important;text-indent:-22px}   /* a warning that runs on wraps under its words, not under the triangle (28/11/2026) */
 /* What's brewing?: an arrow in the box, bottom right, once there's something new to build: Enter isn't the only way */
 html body #coffee .field{position:relative}
 html body #go{display:none!important}
@@ -5216,7 +5217,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     } else {                          // moka
       act(0, "Heat", "Boil the kettle. Fill the base with the hot water to just under the valve", 0);
       act(1, "Fill", "Fill the basket full and level. Don’t tamp. Wipe the rim", 0);
-      act(2, "Brew", "Screw it together with a tea towel (it’s hot). Medium heat, lid open", 0);
+      act(2, "Brew", "Screw it together with a tea towel. Medium heat, lid open", 0);
       act(3, "Lower", "Turn the heat right down once coffee starts to flow", 0);
       act(4, "Stop", "When the flow turns pale and starts to sputter, take it off the heat", 0);
       act(5, "Cool", "Run the base under cold water to stop it. Stir the coffee and pour", 0);
@@ -6463,7 +6464,9 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       /* asked for: the words give way to the question itself, right here: Roast, Scan the beans, + 5 */
       if (D && bagAskShow && !D.hidden && D.textContent.trim() && ct.childElementCount) { ct.textContent = ""; ct.appendChild(D); }
       /* and the water, first of the notes, under the same triangle: every recipe's warnings sit together, here at the top, not one of them down in the pour */
-      { const w = document.createElement("p"); w.className = "cons-top cons-w"; w.textContent = LANG === "it" ? "Usa acqua filtrata o un’acqua in bottiglia poco dura." : "Use filtered or soft bottled water."; ct.prepend(w); }
+      { const w = document.createElement("p"); w.className = "cons-top cons-w"; w.textContent = LANG === "it" ? "Usa acqua filtrata o un’acqua in bottiglia poco dura." : "Use filtered or soft bottled water."; ct.prepend(w);
+        // a moka is a small pressure boiler: the one warning that keeps fingers safe (28/11/2026)
+        if (r && r.m === "moka") { const h = document.createElement("p"); h.className = "cons-top cons-w"; h.textContent = LANG === "it" ? "Scotta e va sotto pressione: tienila con un canovaccio, acqua sotto la valvola, mai aprirla sul fuoco." : "It gets hot and under pressure: hold it with a tea towel, keep the water under the valve, never open it on the heat."; w.after(h); } }
       ct.hidden = !ct.childElementCount; }
     // Why these numbers (27/11/2026): one line for each setting, in view over How to pour, saying why it was picked for this coffee.
     // The long reasoning, with its studies, stays in the Why this recipe fold
@@ -8500,10 +8503,10 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
           /* nothing found: one sentence with ways on, searches that work in it; then, on its own line, the way to ask for a roaster */
           const tries = tryPicks(LANG === "it").map((x) => `<a href="#" class="try-q" data-q="${x}">${x}</a>`).join(", ");
           const mail = `<a href="#" class="mail-me" data-s="Missing coffee">${shelfV !== "all" ? "email me" : "Email me"}</a> and I’ll add it.`;
-          const msg = shelfV !== "all" ? `Try Everything under Made for, or ${mail}` : `Try: ${tries} or <a href="#" class="mail-me scan-me">scan the bag in front of you</a>.<br>Missing a roaster? ${mail}`;
+          void mail; const msg = shelfV !== "all" ? `Try Everything under Made for.` : `Try: ${tries} or <a href="#" class="mail-me scan-me">scan the bag in front of you</a>.`;   // no "Missing a roaster? Email me" (28/11/2026)
           const tryQ = "";
           const an = $("askNote"); if (!an.hidden && an.textContent && !an.classList.contains("nb-band")) { an.innerHTML = esc(an.textContent).replace(/([^.])$/, "$1.") + "<br>" + msg + tryQ; return ""; }   /* the one-line band keeps its one line (its hidden second line made it scroll past "you."; 28/11/2026): the ways on go under it */
-          return `<p class="muted" style="padding:16px 0;margin:0">${msg}</p>`; })();
+          return `<p class="muted no-res" style="padding:12px 0 16px;margin:0">${msg}</p>`; })();
     const left = list.length - Math.min(shelfN, list.length);
     $("shelfMore").hidden = false; $("shelfMore").removeAttribute("aria-hidden");
     $("shelfMore").textContent = left > 0 ? (() => { const whole = !q && !qActive() && !shelfRo;   /* a roaster's page counts its own coffees, not the whole list (27/11/2026) */ const more = Math.max(left, (shelfPart && whole ? shelfPart : list.length) - Math.min(shelfN, list.length)); const total = whole ? (window.__coN || shelfPart || list.length) : list.length; return `Load ${Math.min(20, more)} more (${total.toLocaleString("en-GB")})`; /* in brackets: the same total as everywhere else */ })() : !list.length && q ? "Clear search" : !list.length && qActive() && !shelfRo ? "Clear the filters" : "Back to top";   // the end of the list: a way back up
@@ -11086,7 +11089,8 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   { const c0 = document.querySelector('.botnav [data-bn="cancel"]'); if (c0 && LANG === "it") c0.textContent = "Indietro"; }   // Back, not Cancel: nothing is undone (28/11/2026)
   // "Recipe for …" two lines of the coffee's notes under them, baseline to baseline, and as much room again under it to the rule (28/11/2026)
   window.recGrid = () => { const t = $("recTitle"), head = t && t.closest(".sec-head"); if (!head || !t.offsetWidth) return;
-    const it = document.querySelector(".item.brewing"), ns = it ? [...it.querySelectorAll(".s-line")].filter((e) => e.offsetHeight) : [], n = ns[ns.length - 1]; if (!n) return;   // the coffee's last line
+    const it = document.querySelector(".item.brewing"), ns = it ? [...it.querySelectorAll(".s-line")].filter((e) => e.offsetHeight) : [], n = ns[ns.length - 1];   // the coffee's last line
+    if (!n || !(n.compareDocumentPosition(head) & Node.DOCUMENT_POSITION_FOLLOWING)) { head.style.marginTop = head.style.paddingTop = head.style.paddingBottom = ""; return; }   // no coffee over it: as it was
     const probe = (el, atEnd) => { const p = document.createElement("span"); p.style.cssText = "display:inline-block;width:0;height:0;vertical-align:baseline"; atEnd ? el.append(p) : el.prepend(p); const y = p.getBoundingClientRect().bottom; p.remove(); return y; };
     const lh = parseFloat(getComputedStyle(n).lineHeight) || n.getBoundingClientRect().height, nb = probe(n, true);
     head.style.paddingTop = "0px"; const mt = parseFloat(head.style.marginTop) || 0;   // a margin, so it can also pull the title up
@@ -12877,6 +12881,10 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       ["Do you like trying new roasters, or stick to one?", "Ti piace provare torrefazioni nuove o resti fedele a una?"], ["Single origin or blends?", "Monorigine o miscele?"],
       ["What got you into coffee?", "Come ti sei appassionato al caffè?"], ["Mug or cup?", "Tazzone o tazzina?"], ["Ever tried a Gesha?", "Hai mai provato un Gesha?"]];
     const howReply = (q, c) => { const s0 = q.toLowerCase().trim(), back = /\b(and you|how about you|what about you|how are you|how're you|how r u|yourself|and u|yours|you too|e tu|e a te|tu come stai|come stai|e la tua|la tua)\b|\b(you|u)\s*\?|how('?s| is| was) (your|it going|things)/i.test(s0);   /* "how's yours?" too (26/11/2026) */
+      // an answer that doesn't answer: he asks again instead of "Got it." (28/11/2026: "Yo what's up" to his "And you?" got "Got it.")
+      if (!back && !c.asked && /^(yo|hey|hi|hiya|hello|oi|ciao|ehi|ehy|we+)\b.{0,20}$|what'?s up|wassup|\bsup\b|how are (you|u)|how r u|come (va|stai)|che si dice/i.test(s0)) {
+        sayNow(pick([T("Ha, you asked me that already! I'm good. Your turn: how are you?", "Ah, me l'hai già chiesto! Io bene. Tocca a te: come stai?"), T("I asked you first! How's your day going?", "Te l'ho chiesto prima io! Com'è la tua giornata?")]), null, null);
+        ctx = Object.assign({}, c, { at: Date.now(), asked: 1 }); return true; }
       if (!back && ASKS.test(s0) && !/^how('?s| is) (it|life|things|your)\b/.test(s0)) return false;
       if (!back && /\b(something|anything|coffees?|bags?|beans?|roast|brew|espresso|v60|cheaper|cheap|show|find|pick|recommend|kenya\w*|ethiop\w*|colombia\w*|brazil\w*|decaf|latte|cappuccino)\b/.test(s0) && !/\b(good|great|fine|bad|tired|ok|okay)\b/.test(s0)) return false;   // "Something like a Kenyan but cheaper" asks for a coffee, it isn't how they are   // "Tell me a joke" after "How are you?" is a request, not how they are
       const neg = /\b(bad|tired|exhausted|meh|not (great|good|well|so good|too good)|stressed|sad|awful|terrible|rough|sleepy|knackered|shattered|ill|sick|unwell|male|stanc[oa]|cos[iì] cos[iì]|non (tanto )?bene|insomma)\b/i.test(s0);
@@ -12896,6 +12904,9 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       const hits = STATES.filter(([re]) => re.test(s0)).slice(0, 2), late = hits.some((h) => h[2]);
       const smile = /(:\)|:-\)|:d\b|;\)|😊|🙂|😄|😁|😂|🥳|🍻|🍷)/i.test(s0), frown = /(:\(|:-\(|😩|😴|😞|☹️|😫|🥲)/.test(s0);
       if (!hits.length && !back && !neg && !pos && !smile && !frown && (s0.split(/\s+/).length > 12 || /\?/.test(s0))) return false;
+      if (!hits.length && !back && !neg && !pos && !smile && !frown && !c.asked && s0.split(/\s+/).length <= 3 && !/^(yes|yeah|yep|no|nope|nah|s[iì]|no grazie)\b/.test(s0)) {   // a word that says nothing about the day: he asks, he doesn't nod
+        sayNow(pick([T("Hmm, is that a good day or a rough one?", "Mmh, giornata buona o pesante?"), T("I'm not sure what that means for your day. Good or bad?", "Non ho capito com'è la tua giornata. Bene o male?")]), null, null);
+        ctx = Object.assign({}, c, { at: Date.now(), asked: 1 }); return true; }
       const mood = hits.length ? hits.map((h) => pick(h[1])).join(" ") : back && !neg && !pos && !smile && !frown ? "" : neg || frown ? pick([T("Sorry to hear that. Coffee won't fix everything, but it helps.", "Mi dispiace. Il caffè non risolve tutto, ma aiuta."), T("Oh no. Let's find you something comforting.", "Oh no. Troviamo qualcosa che ti tiri su.")])
         : pos || smile ? pick([T("Glad to hear it!", "Che bello!"), T("Love that.", "Mi fa piacere."), T("Nice!", "Bene!")]) : pick([T("Fair enough.", "Ci sta."), T("Got it.", "Capito.")]);
       const dayQ = /\byours\b|your day|la tua (giornata)?|e la tua/i.test(s0) || /day|giornata/i.test(c.q || "");
