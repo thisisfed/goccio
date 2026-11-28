@@ -3642,9 +3642,14 @@ html body .spec b.dstep-b{display:inline-flex!important;justify-content:space-be
 html body .spec b.dstep-b > .dstep-n{flex:0 1 auto;text-align:center;white-space:nowrap}
 html body .spec b.dstep-b > .dstep-n small{margin-left:.12em}
 html body #specs .spec:is(.brewer, .key){position:relative}
-html body #specs .spec select.wheel{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:1;font-size:16px;-webkit-appearance:none;appearance:none;border:0;background:none}   /* the whole cell is the picker's button; 16 px so iOS doesn't zoom */
-html body #specs .spec .dstep-b .chip.gear-more, html body #specs .spec .add-mill{position:relative;z-index:2}
-html body #specs .spec.key .add-mill{pointer-events:none}   /* "Add your grinder": a tap on it opens the wheel under it */
+html.brew-in body .botnav.back-fit.back-fit.back-fit [data-bn="cancel"]{flex:0 0 var(--back-w)!important;width:var(--back-w)!important;min-width:0!important;max-width:none!important}   /* Back ends where the steppers above end */
+html body #specs .spec .h-row{order:1;align-self:stretch;width:100%;display:flex;gap:24px;overflow-x:auto;scrollbar-width:none;margin:4px 0 6px;padding:0;-webkit-overflow-scrolling:touch;mask-image:linear-gradient(90deg,#000 calc(100% - 24px),transparent)}
+html body #specs .spec .h-row[hidden]{display:none}
+html body #specs .spec .h-row::-webkit-scrollbar{display:none}
+html body #specs .spec .h-row button{flex:none;background:none!important;border:0;border-radius:0;padding:0;height:36px;display:flex;align-items:center;font:500 var(--fs-s)/1.2 var(--sans);color:var(--muted);border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap}
+html body #specs .spec .h-row button:hover{color:var(--ink)}
+html body #specs .spec .h-row button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}   /* like the menu at the top: the one in use underlined */
+html body #specs .spec.h-open{grid-column:1 / -1}   /* open, the line has the full width */
 html body .pick-pan{display:none!important}
 .bag-ro .ro-chips{display:contents!important}.bag-ro .ro-chips[hidden]{display:none!important}
 .bag-fzp[aria-pressed="true"]{background:var(--ink)!important;color:var(--bg)!important}
@@ -6242,24 +6247,33 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     if (k === "brew") { const o = $("opts-kit"); if (o) p.appendChild(o); }
     else { const o = $("millOpt"); if (o) p.appendChild(o); }
     return (PICKS[k] = p); }
-  // the brewer and the grinder are picked on a wheel (28/11/2026: "no pills"): a native select over the whole cell, so a tap opens
-  // the phone's own picker (the iPhone's wheel), a list on a computer. The clicks get ‹ › like the coffee's grams: they move the zero
+  // the brewer and the grinder are picked from a line of names under their label, like the menu at the top (28/11/2026: no pills, no
+  // dropdowns): the one in use in ink and underlined, the others grey, the line scrolls sideways. The clicks get ‹ › like the grams
+  const hOpen = { brew: false, mill: false };
+  function hRow(cell, k, items, cur, pick) { let row = cell.querySelector(".h-row"); const lbl = cell.querySelector("[data-pick]");
+    if (!row) { row = document.createElement("div"); row.className = "h-row"; row.setAttribute("role", "listbox"); row.setAttribute("aria-label", k === "brew" ? (LANG === "it" ? "Metodo" : "Brewer") : (LANG === "it" ? "Macinino" : "Grinder"));
+      row.onclick = (e) => { const b = e.target.closest("button[data-v]"); if (!b) return; e.stopPropagation(); hOpen[k] = false; pick(b.dataset.v); };
+      (lbl || cell.firstChild).after(row); }
+    const html = items.map(([v, n]) => `<button type="button" role="option" data-v="${v}" aria-selected="${v === cur}">${esc(n)}</button>`).join("");
+    if (row.dataset.h !== html) { row.innerHTML = html; row.dataset.h = html; }
+    row.hidden = !hOpen[k]; cell.classList.toggle("h-open", !!hOpen[k]); if (lbl) lbl.setAttribute("aria-expanded", String(!!hOpen[k]));
+    if (hOpen[k]) requestAnimationFrame(() => { const on = row.querySelector('[aria-selected="true"]'); if (on) row.scrollLeft = Math.max(0, on.offsetLeft - 12); }); }
   function wheels() { const sp = $("specs"); if (!sp) return;
     const bc = sp.querySelector(".spec.brewer"), kc = sp.querySelector(".spec.key");
-    if (bc) { let w = bc.querySelector("select.wheel"); if (!w) { w = document.createElement("select"); w.className = "wheel"; w.setAttribute("aria-label", LANG === "it" ? "Metodo" : "Brewer");
-        w.onchange = () => { const v = w.value; if (!BREWERS[v] || v === brewerOf(state)) return; setBrewer(v); renderAllOpts(); render(); }; bc.appendChild(w); }
-      const cur = brewerOf(state) === "cold" ? "press" : brewerOf(state), all = Object.entries(BREWERS).filter(([k]) => k !== "cold").sort((a, b) => (a[1].cup ? 1 : 0) - (b[1].cup ? 1 : 0));
-      const html = all.map(([k, x]) => `<option value="${k}">${esc(x.name)}</option>`).join(""); if (w.dataset.h !== html) { w.innerHTML = html; w.dataset.h = html; } w.value = cur; }
+    if (bc) { const cur = brewerOf(state) === "cold" ? "press" : brewerOf(state), all = Object.entries(BREWERS).filter(([k]) => k !== "cold").sort((a, b) => (a[1].cup ? 1 : 0) - (b[1].cup ? 1 : 0));
+      hRow(bc, "brew", all.map(([k, x]) => [k, x.name]), cur, (v) => { if (!BREWERS[v] || v === brewerOf(state)) return render(); setBrewer(v); renderAllOpts(); render(); }); }
     const ms = $("millSel") || pickPan("mill").querySelector("#millSel");   // it lives in the (hidden) grinder panel, which may be out of the page
-    if (kc && ms) { let w = kc.querySelector("select.wheel"); if (!w) { w = document.createElement("select"); w.className = "wheel"; w.setAttribute("aria-label", LANG === "it" ? "Macinino" : "Grinder");
-        w.onchange = () => { const m = $("millSel") || pickPan("mill").querySelector("#millSel"); if (!m || w.value === m.value) return; m.value = w.value; m.dispatchEvent(new Event("change")); }; kc.appendChild(w); }
-      const html = ms.innerHTML; if (w.dataset.h !== html) { w.innerHTML = html; w.dataset.h = html; } w.value = ms.value;
+    if (kc && ms) { hRow(kc, "mill", [...ms.options].map((o) => [o.value, o.textContent]), ms.value, (v) => { const m = $("millSel") || pickPan("mill").querySelector("#millSel"); if (!m || v === m.value) return render(); m.value = v; m.dispatchEvent(new Event("change")); });
       // ‹ 22 clicks ›: a click either way sets the C40 zero (it follows every recipe, as − / + under the grinder did)
-      const fig = kc.querySelector(":scope > b"); if (fig && isC40() && !fig.classList.contains("zstep-b")) { fig.classList.add("zstep-b", "dstep-b"); kc.classList.add("wide", "z-wide");   // the row to itself: ‹ 20 clicks › needs it
+      const fig = kc.querySelector(":scope > b"); if (fig && isC40() && !fig.classList.contains("zstep-b")) { fig.classList.add("zstep-b", "dstep-b");
+        // "clicks" goes up into the label ("Comandante C40 clicks"), so ‹ 20 › is as wide as ‹ 18 g › and the two line up
+        fig.querySelectorAll("small").forEach((x) => { if (/click|scatt/i.test(x.textContent)) x.remove(); });
+        const lb = kc.querySelector("[data-pick]"); if (lb && lb.firstChild && lb.firstChild.nodeType === 3 && !/clicks|scatti/.test(lb.firstChild.nodeValue)) lb.firstChild.nodeValue += LANG === "it" ? ", scatti" : " clicks";
         const n = document.createElement("span"); n.className = "dstep-n"; while (fig.firstChild) n.appendChild(fig.firstChild); fig.appendChild(n);
         const mk = (d) => { const x = document.createElement("button"); x.type = "button"; x.className = "chip gear-more"; x.dataset.zstep = d; x.setAttribute("aria-label", d < 0 ? (LANG === "it" ? "Uno scatto più fine" : "One click finer") : (LANG === "it" ? "Uno scatto più grosso" : "One click coarser"));
           x.innerHTML = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="${d < 0 ? "M7.5 2.5 4 6l3.5 3.5" : "M4.5 2.5 8 6 4.5 9.5"}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`; return x; };
-        fig.prepend(mk(-1)); fig.appendChild(mk(1)); } } }
+        fig.prepend(mk(-1)); fig.appendChild(mk(1)); } }
+    try { window.__fitStep && __fitStep(); } catch (e) {} }
   document.addEventListener("click", (e) => { const z = e.target.closest && e.target.closest("[data-zstep]"); if (!z) return; e.preventDefault(); e.stopPropagation(); try { setZero(+z.dataset.zstep); } catch (er) {} }, true);
   function placePicks() { try { wheels(); } catch (e) {} const rb = $("rbody"), sp = $("specs"); if (!rb || !sp) return; const b = pickPan("brew"), m = pickPan("mill");
     const bc = sp.querySelector(".spec.brewer"); if (bc) { bc.after(b); b.style.order = "0"; } else if (b.parentNode !== rb) rb.insertBefore(b, rb.firstElementChild);
@@ -6268,7 +6282,9 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     if (key) { (wide || !temp ? key : temp).after(m); m.style.order = wide || !temp ? "1" : "2"; } else sp.appendChild(m); }
   function openPick(k, on) { const p = pickPan(k); p.hidden = !on; document.querySelectorAll(`[data-pick="${k}"]`).forEach((x) => x.setAttribute("aria-expanded", String(on)));
     if (on) { const o = k === "brew" ? "mill" : "brew"; if (PICKS[o] && !PICKS[o].hidden) openPick(o, false); } }
-  document.addEventListener("click", (e) => { const t = e.target.closest("[data-pick]"); if (t) { e.preventDefault(); const w = t.closest(".spec") && t.closest(".spec").querySelector("select.wheel"); if (w) { try { w.showPicker ? w.showPicker() : w.focus(); } catch (er) { w.focus(); } } return; } });   // the wheel, not the pill panels (28/11/2026)
+  document.addEventListener("click", (e) => { const t = e.target.closest("[data-pick]") || (e.target.closest("#specs .spec.add-open .add-mill")); if (t) { e.preventDefault(); const k = t.dataset.pick || "mill"; hOpen[k] = !hOpen[k]; if (hOpen[k]) hOpen[k === "brew" ? "mill" : "brew"] = false; try { wheels(); } catch (er) {} return; }
+    const am = e.target.closest && e.target.closest("#specs .spec.key .add-mill"); if (am) { e.preventDefault(); e.stopPropagation(); hOpen.mill = true; hOpen.brew = false; try { wheels(); } catch (er) {} return; }
+    if ((hOpen.brew || hOpen.mill) && !e.target.closest(".h-row")) { hOpen.brew = hOpen.mill = false; try { wheels(); } catch (er) {} } }, true);   // a tap on the label opens its line of names; anywhere else closes it
   // a brewer picked: its panel folds away (the recipe has changed above it). Caught on the way down, before the chip is redrawn
   document.addEventListener("click", (e) => { const ch = e.target.closest("#brewPick button.chip"); if (ch && !/^\+\s*\d/.test(ch.textContent.trim()) && !ch.classList.contains("gear-more")) setTimeout(() => openPick("brew", false), 0); }, true);
   function render() {
@@ -11177,9 +11193,14 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     addEventListener("resize", fitBuy); new MutationObserver(() => requestAnimationFrame(fitBuy)).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
     if ("ResizeObserver" in window) { const c = document.querySelector('.botnav [data-bn="cancel"]'); if (c) new ResizeObserver(fitBuy).observe(c); } setInterval(fitBuy, 2000); window.__fitBuy = fitBuy; }
   // the dose stepper ends where Back ends below it, or at its cell's edge when Back is wider; never narrower than its own (28/11/2026)
-  { const fitStep = () => { const c = document.querySelector('.botnav [data-bn="cancel"]'), d = document.querySelector("#specs b.dstep-b"); if (!d) return; d.style.width = "";
-      if (!c || !c.offsetWidth || !d.offsetWidth) return; const cell = d.closest(".spec") || d.parentNode, room = cell.getBoundingClientRect().right - d.getBoundingClientRect().left - 24;   // clear of the next column's figure
-      const want = c.getBoundingClientRect().right - d.getBoundingClientRect().left, own = d.getBoundingClientRect().width; const w = Math.min(want, room); if (w > own) d.style.width = Math.round(w) + "px"; };   // to Back's end, or the cell's when Back runs past it
+  // the steppers (‹ 18 g ›, ‹ 20 ›) one width, and Back below ending where they end (28/11/2026: "they align always")
+  { const fitStep = () => { const nav = document.querySelector(".botnav"), c = nav && nav.querySelector('[data-bn="cancel"]'), ds = [...document.querySelectorAll("#specs b.dstep-b")].filter((d) => d.offsetWidth);
+      ds.forEach((d) => { d.style.width = ""; }); if (!ds.length) { if (nav) nav.classList.remove("back-fit"); return; }
+      const own = Math.max(...ds.map((d) => d.getBoundingClientRect().width)), room = Math.min(...ds.map((d) => { const cell = d.closest(".spec") || d.parentNode; return cell.getBoundingClientRect().right - d.getBoundingClientRect().left - 8; }));
+      const W = Math.round(Math.min(own, room)); ds.forEach((d) => { d.style.width = W + "px"; });
+      if (!c || !c.offsetWidth || !document.documentElement.classList.contains("brew-in")) return;
+      const left = ds[0].getBoundingClientRect().left - c.getBoundingClientRect().left + parseFloat(c.style.marginLeft || 0);
+      nav.style.setProperty("--back-w", Math.round(W + Math.max(0, ds[0].getBoundingClientRect().left - nav.querySelector('[data-bn="cancel"]').getBoundingClientRect().left)) + "px"); void left; nav.classList.add("back-fit"); };
     addEventListener("resize", () => requestAnimationFrame(fitStep)); setInterval(fitStep, 1500); window.__fitStep = fitStep; }
   window.brewDoneUI = (on) => { document.documentElement.classList.toggle("brew-done", !!on); const c = document.querySelector('.botnav [data-bn="cancel"]'); if (c) { if (!c.dataset.t) c.dataset.t = c.textContent; c.textContent = on ? (LANG === "it" ? "Fatto" : "Done") : c.dataset.t; } };
   document.addEventListener("click", (e) => { if (document.documentElement.classList.contains("brew-done") && e.target.closest && e.target.closest('.shelf .item .btn[data-i], #bags .btn, #bvReset, #wmBag, .botnav [data-bn="cancel"], #coffeeGo')) brewDoneUI(false); }, true);
