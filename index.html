@@ -2025,7 +2025,7 @@ footer .fcol > p + .foot-x{margin-top:14px}
 .bv-bar .seg.on{background:var(--hl)!important}                                          /* the pour you're on */
 .item .who .ji{color:var(--go)!important}                                                           /* New: the go green */
 .item .who .ji.fy{color:var(--hl)!important}                                                        /* For you: the accent */
-.beta, :root[data-theme="dark"] .beta{color:var(--hl)!important}                         /* Beta tags, the accent */
+.beta, :root[data-theme="dark"] .beta{color:var(--hl)!important}                         /* Alpha tags (once Beta), the accent */
 .litext .outro-end.on{color:var(--hl)!important}                                         /* Brew something good. */
 /* no accent ring on focus: a field you type in shows its cursor, nothing round it; keys still get the plain ring on buttons */
 input:focus, input:focus-visible, textarea:focus, textarea:focus-visible, select:focus, select:focus-visible{outline:none!important}
@@ -3033,7 +3033,7 @@ html body .wb-sign .gdrop .gd-butt{display:none;fill:none;stroke:#3f1c08;stroke-
 /* the bubble's tail points at the drop, which now sits left of centre */
 
 /* the first time it's seen: a small note over it saying what it's for */
-html body .wb-sign .gd-beta{position:absolute;left:calc(50% + 50.4px * var(--gs, 1.45) * 0.5 + 6px);bottom:calc(100% - var(--cup-at, 21px) + 57.5px * var(--gs, 1.45) * 0.78);z-index:18;display:inline-flex;align-items:center;box-sizing:border-box;height:var(--pill-h,32px);padding:0 10px;border:1px solid var(--line);border-radius:var(--r,4px);color:var(--muted);font:500 15px/1 var(--sans);letter-spacing:0;pointer-events:none;white-space:nowrap}   /* Goccio is in beta: a small tag by its shoulder */
+html body .wb-sign .gd-beta{position:absolute;left:max(min(calc(50% + 50.4px * var(--gs, 1.45) * 0.5 + 6px), calc(100% - var(--tw, 139px))), calc(50% + 36px));bottom:calc(100% - var(--cup-at, 21px) + 57.5px * var(--gs, 1.45) * 0.78);z-index:18;display:inline-flex;align-items:center;box-sizing:border-box;height:var(--pill-h,32px);padding:0 10px;border:1px solid var(--line);border-radius:var(--r,4px);color:var(--muted);font:500 15px/1 var(--sans);letter-spacing:0;pointer-events:none;white-space:nowrap}   /* a small tag by Goccio's shoulder. It stops at the page's right margin, where the fillets end ("Alpha" is a letter longer than "Beta" was and passed it on a phone, 28/11/2026): its own width, --tw, is measured when the font is in; and it never comes closer to the drop than 36 px from the middle */
 html.gd-open body .wb-sign .gd-beta{opacity:0}
 /* the big Goccio and his Beta tag go under the pinned bars as the page scrolls, like everything else (27/11/2026) */
 html:not(.gd-open) body .wb-sign #gdrop, html:not(.gd-open) body .wb-sign .gd-beta{z-index:3}
@@ -3888,7 +3888,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       <div class="detected" id="detected" aria-live="polite"></div>
       <div class="need" id="need" hidden></div>
       <div class="kit" id="kit">
-  <div class="opt scan-opt"><span>Coffee</span><div class="scan-row"><button type="button" class="chip" id="scanBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>Scan the bag<span class="beta">Beta</span></button><span class="scan-msg" id="scanMsg" aria-live="polite"></span>
+  <div class="opt scan-opt"><span>Coffee</span><div class="scan-row"><button type="button" class="chip" id="scanBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>Scan the bag<span class="beta">Alpha</span></button><span class="scan-msg" id="scanMsg" aria-live="polite"></span>
         <input type="file" accept="image/*" capture="environment" id="scanIn" hidden></div></div>
         <div class="scan-review" id="scanReview" hidden></div>
         <details class="adj" id="moreOpts"><summary><span class="adj-l">Bag details</span><span class="adj-s" id="bagSum"></span></summary>
@@ -3907,7 +3907,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       <input type="file" accept="image/*" capture="environment" id="roastPhotoIn" hidden>
       <input type="file" accept="image/*" id="gdPhotoIn" hidden>
     </div>
-    <p class="wb-sign"><span class="gdrop" id="gdrop" role="button" tabindex="0" aria-label="Ask Goccio about coffee" aria-expanded="false"><svg viewBox="-32 -56 64 60" aria-hidden="true"><defs><radialGradient id="gdFill" gradientUnits="userSpaceOnUse" cx="1.8" cy="-9.3" r="22.3" fx="2.5" fy="-6.8"><stop offset="0" stop-color="#7d4524"/><stop offset=".38" stop-color="#4c2311"/><stop offset=".78" stop-color="#261107"/><stop offset="1" stop-color="#120702"/></radialGradient><linearGradient id="gdStripes" x1="0" y1="0" x2="0" y2="1"><stop offset="0.0000" stop-color="#8ebd3c"/><stop offset="0.1667" stop-color="#8ebd3c"/><stop offset="0.1667" stop-color="#eec43e"/><stop offset="0.3333" stop-color="#eec43e"/><stop offset="0.3333" stop-color="#df6527"/><stop offset="0.5000" stop-color="#df6527"/><stop offset="0.5000" stop-color="#b1132f"/><stop offset="0.6667" stop-color="#b1132f"/><stop offset="0.6667" stop-color="#9421a7"/><stop offset="0.8333" stop-color="#9421a7"/><stop offset="0.8333" stop-color="#5a9fd9"/><stop offset="1.0000" stop-color="#5a9fd9"/></linearGradient><radialGradient id="gdShine"><stop offset="0" stop-color="#f4dfcd" stop-opacity=".56"/><stop offset=".22" stop-color="#e9c8ae" stop-opacity=".42"/><stop offset=".5" stop-color="#cc9c7b" stop-opacity=".19"/><stop offset=".78" stop-color="#a06a48" stop-opacity=".06"/><stop offset="1" stop-color="#7d4524" stop-opacity="0"/></radialGradient><radialGradient id="gdGlow"><stop offset="0" stop-color="#bfe3ff" stop-opacity=".55"/><stop offset="1" stop-color="#bfe3ff" stop-opacity="0"/></radialGradient></defs><g class="gd-all"><path class="gd-arm" d=""/><path class="gd-arm" d=""/><path class="gd-b" d=""/><path class="gd-butt" d=""/><g class="gd-e"><ellipse class="gd-l" cx="-6" cy="-12" rx="2.4" ry="3.4"/><ellipse class="gd-r" cx="6" cy="-12" rx="2.4" ry="3.4"/></g><ellipse class="gd-h" cx="0" cy="0" rx="8.5" ry="5.6"/><ellipse class="gd-glow" cx="0" cy="-9" rx="12" ry="9" fill="url(#gdGlow)"/><g class="gd-fone"><rect class="gd-fone-b" x="-4" y="-6" width="8" height="12.5" rx="1.6"/><path class="gd-fone-logo" d="M -2.025 0.419 C -2.025 -1.148 -0.288 -1.736 0.000 -1.945 C 0.288 -1.736 2.025 -1.148 2.025 0.419 C 2.025 1.537 1.117 2.445 0.000 2.445 C -1.117 2.445 -2.025 1.537 -2.025 0.419 Z" fill="url(#gdStripes)"/><rect class="gd-fone-b gd-fone-2" x="4.3" y="-6" width="8" height="12.5" rx="1.6" opacity="0"/></g></g><g class="gd-n"></g></svg></span><span class="gd-beta" aria-hidden="true" translate="no">Beta 0.69.420-λ</span><span class="gd-hint" id="gdHint" hidden>Hi, I’m Goccio and I answer your coffee questions.</span><span class="gd-talk" id="gdTalk" role="dialog" aria-label="Goccio" hidden><button type="button" class="gd-x" id="gdX" aria-label="Close"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 2l8 8M10 2l-8 8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button><span class="gd-say" id="gdSay" aria-live="polite"></span><span class="gd-chips" id="gdChips"></span><span class="gd-ask"><input id="gdIn" type="text" enterkeyhint="send" autocomplete="off" placeholder="Ask Goccio about coffee" aria-label="Ask Goccio"><button type="button" id="gdMic" aria-label="Ask out loud" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6.5v3M5 4v8M8 2v12M11 4.5v7M14 6.5v3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button><button type="button" id="gdCam" aria-label="Send a photo of a bag or of beans"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 5.5a1 1 0 0 1 1-1h2l1.2-1.6h3.6L11 4.5h2a1 1 0 0 1 1 1V12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="8" cy="8.6" r="2.4" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button><button type="button" id="gdGo" aria-label="Ask"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></span></span>Brew something good.<span class="gd-hint" id="gdHint" role="button" tabindex="0" hidden>Hi, I’m Goccio. Ask me about coffee!</span></p>
+    <p class="wb-sign"><span class="gdrop" id="gdrop" role="button" tabindex="0" aria-label="Ask Goccio about coffee" aria-expanded="false"><svg viewBox="-32 -56 64 60" aria-hidden="true"><defs><radialGradient id="gdFill" gradientUnits="userSpaceOnUse" cx="1.8" cy="-9.3" r="22.3" fx="2.5" fy="-6.8"><stop offset="0" stop-color="#7d4524"/><stop offset=".38" stop-color="#4c2311"/><stop offset=".78" stop-color="#261107"/><stop offset="1" stop-color="#120702"/></radialGradient><linearGradient id="gdStripes" x1="0" y1="0" x2="0" y2="1"><stop offset="0.0000" stop-color="#8ebd3c"/><stop offset="0.1667" stop-color="#8ebd3c"/><stop offset="0.1667" stop-color="#eec43e"/><stop offset="0.3333" stop-color="#eec43e"/><stop offset="0.3333" stop-color="#df6527"/><stop offset="0.5000" stop-color="#df6527"/><stop offset="0.5000" stop-color="#b1132f"/><stop offset="0.6667" stop-color="#b1132f"/><stop offset="0.6667" stop-color="#9421a7"/><stop offset="0.8333" stop-color="#9421a7"/><stop offset="0.8333" stop-color="#5a9fd9"/><stop offset="1.0000" stop-color="#5a9fd9"/></linearGradient><radialGradient id="gdShine"><stop offset="0" stop-color="#f4dfcd" stop-opacity=".56"/><stop offset=".22" stop-color="#e9c8ae" stop-opacity=".42"/><stop offset=".5" stop-color="#cc9c7b" stop-opacity=".19"/><stop offset=".78" stop-color="#a06a48" stop-opacity=".06"/><stop offset="1" stop-color="#7d4524" stop-opacity="0"/></radialGradient><radialGradient id="gdGlow"><stop offset="0" stop-color="#bfe3ff" stop-opacity=".55"/><stop offset="1" stop-color="#bfe3ff" stop-opacity="0"/></radialGradient></defs><g class="gd-all"><path class="gd-arm" d=""/><path class="gd-arm" d=""/><path class="gd-b" d=""/><path class="gd-butt" d=""/><g class="gd-e"><ellipse class="gd-l" cx="-6" cy="-12" rx="2.4" ry="3.4"/><ellipse class="gd-r" cx="6" cy="-12" rx="2.4" ry="3.4"/></g><ellipse class="gd-h" cx="0" cy="0" rx="8.5" ry="5.6"/><ellipse class="gd-glow" cx="0" cy="-9" rx="12" ry="9" fill="url(#gdGlow)"/><g class="gd-fone"><rect class="gd-fone-b" x="-4" y="-6" width="8" height="12.5" rx="1.6"/><path class="gd-fone-logo" d="M -2.025 0.419 C -2.025 -1.148 -0.288 -1.736 0.000 -1.945 C 0.288 -1.736 2.025 -1.148 2.025 0.419 C 2.025 1.537 1.117 2.445 0.000 2.445 C -1.117 2.445 -2.025 1.537 -2.025 0.419 Z" fill="url(#gdStripes)"/><rect class="gd-fone-b gd-fone-2" x="4.3" y="-6" width="8" height="12.5" rx="1.6" opacity="0"/></g></g><g class="gd-n"></g></svg></span><span class="gd-beta" aria-hidden="true" translate="no">Alpha 0.69.420-λ</span><span class="gd-hint" id="gdHint" hidden>Hi, I’m Goccio and I answer your coffee questions.</span><span class="gd-talk" id="gdTalk" role="dialog" aria-label="Goccio" hidden><button type="button" class="gd-x" id="gdX" aria-label="Close"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 2l8 8M10 2l-8 8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button><span class="gd-say" id="gdSay" aria-live="polite"></span><span class="gd-chips" id="gdChips"></span><span class="gd-ask"><input id="gdIn" type="text" enterkeyhint="send" autocomplete="off" placeholder="Ask Goccio about coffee" aria-label="Ask Goccio"><button type="button" id="gdMic" aria-label="Ask out loud" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6.5v3M5 4v8M8 2v12M11 4.5v7M14 6.5v3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button><button type="button" id="gdCam" aria-label="Send a photo of a bag or of beans"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 5.5a1 1 0 0 1 1-1h2l1.2-1.6h3.6L11 4.5h2a1 1 0 0 1 1 1V12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="8" cy="8.6" r="2.4" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button><button type="button" id="gdGo" aria-label="Ask"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></span></span>Brew something good.<span class="gd-hint" id="gdHint" role="button" tabindex="0" hidden>Hi, I’m Goccio. Ask me about coffee!</span></p>
   </section>
 
   <section class="sec" id="recipe" aria-labelledby="rtitle">
@@ -5442,14 +5442,40 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   // than it. The lit middle of the bean pixels gives a CIE L* lightness, matched to five steps of bean colour.
   const ROAST_SW = { vlight: "#8e6137", light: "#784d2b", medium: "#643f27", mdark: "#503527", dark: "#3a2b24" };
   const ROAST_L = [["vlight", 38], ["light", 32], ["medium", 27], ["mdark", 22], ["dark", -1]];   // lowest L* for each step
-  const PHOTO_CHIP = `<button type="button" class="chip rp-go"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>Scan the beans<span class="beta">Beta</span></button>`;
+  const PHOTO_CHIP = `<button type="button" class="chip rp-go"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>Scan the beans<span class="beta">Alpha</span></button>`;
   let photoMsgId = "";
   function askPhoto(msgId) { photoMsgId = msgId; const i = $("roastPhotoIn"); i.value = ""; i.click(); }
 
   // ---------- live bean scan: the camera stays on until it sees roasted coffee beans, then reads their colour ----------
   /* No AI model: it looks for several separate bean-sized ovals (roughly 1.2 to 2.3 times as long as wide, filling their
      outline like an ellipse) in roasted-coffee browns. A brown table, a bag or a single brown object doesn't pass. */
-  function analyseBeans(cv) {
+  /* Coloured light first (28/11/2026). In the evening, under warm bulbs, white paper comes out yellow even after the phone's own white
+     balance, and everything below took "paper" to mean neutral grey: it answered "Beans cover the whole view" or "No beans in
+     frame" to a perfectly good handful on a white sheet. So the frame is balanced before it is looked at: the brightest third of the
+     picture, when it is bright and only tinted (not a coloured surface), is the sheet, and each channel is scaled until the sheet
+     is neutral. A bean's lightness is its ratio to the paper channel by channel, so the roast comes out the same; the result
+     says it was read in coloured light, and is never more than "check it". */
+  const BEAN_LIN = (() => { const t = new Float32Array(256); for (let i = 0; i < 256; i++) { const v = i / 255; t[i] = v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); } return t; })();
+  function analyseBeans(cv0) {
+    let cv = cv0, cast = 0;
+    try { const w = cv0.width, h = cv0.height, N = w * h, d = cv0.getContext("2d", { willReadFrequently: true }).getImageData(0, 0, w, h).data, hist = new Uint32Array(256);
+      for (let i = 0; i < d.length; i += 4) hist[(d[i] * 54 + d[i + 1] * 183 + d[i + 2] * 19) >> 8]++;
+      let cut = 255, acc = 0; while (cut > 0 && (acc += hist[cut]) < N * 0.3) cut--;
+      let r = 0, g = 0, b = 0, n = 0, lr = 0, lg = 0, lb = 0;
+      for (let i = 0; i < d.length; i += 4) { if (((d[i] * 54 + d[i + 1] * 183 + d[i + 2] * 19) >> 8) < cut) continue; r += d[i]; g += d[i + 1]; b += d[i + 2]; lr += BEAN_LIN[d[i]]; lg += BEAN_LIN[d[i + 1]]; lb += BEAN_LIN[d[i + 2]]; n++; }
+      if (n) { r /= n; g /= n; b /= n; lr /= n; lg /= n; lb /= n; const mx = Math.max(r, g, b), tint = (mx - Math.min(r, g, b)) / Math.max(1, mx), bright = (r * 54 + g * 183 + b * 19) / 256;
+        if (tint >= 0.05 && tint < 0.38 && bright >= 140 && cut >= 110) { const Y = 0.2126 * lr + 0.7152 * lg + 0.0722 * lb, gain = [Y / lr, Y / lg, Y / lb];
+          const enc = new Uint8ClampedArray(4096); for (let i = 0; i < 4096; i++) { const v = i / 4095; enc[i] = Math.round(255 * (v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055)); }
+          const c2 = document.createElement("canvas"); c2.width = w; c2.height = h; const x2 = c2.getContext("2d", { willReadFrequently: true }), im = x2.createImageData(w, h), q = im.data;
+          for (let i = 0; i < d.length; i += 4) { for (let k = 0; k < 3; k++) q[i + k] = enc[Math.min(4095, Math.round(BEAN_LIN[d[i + k]] * gain[k] * 4095))]; q[i + 3] = 255; }
+          x2.putImageData(im, 0, 0); cv = c2; cast = tint; } }
+    } catch (e) { cv = cv0; cast = 0; }
+    const res = analyseBeans0(cv);
+    if (cast >= 0.2 && res && res.state === "beans" && res.roast && res.roast.key) { res.ref = "tinted"; res.paper = false; res.cast = Math.round(cast * 100) / 100;
+      if (res.roast.c === "high") res.roast.c = "medium"; if (/white paper\.$/.test(res.roast.why || "")) res.roast.why = "Read in coloured light. Daylight gives a sharper read."; }
+    return res;
+  }
+  function analyseBeans0(cv) {
     /* No AI model, so it asks for the two things only roasted beans have together:
        1. many separate ovals, each about 1.2 to 2 times as long as wide, in roasted-coffee browns, and
        2. a dark crease running down the middle of each one.
@@ -5633,7 +5659,10 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     // dim white paper and a grey or dark surface look alike to a camera: name both, from how dark it is
     if (medS < 0.55) return { ok: false, why: "dark", reason: medS > 0.3 ? "Too dim, or the background isn’t white. Use white paper in brighter, even light." : "Needs a plain light background. Put the beans on white paper, in good light." };
     const m = [rS, gS, bS].map((v) => v / Math.max(1, nb)), tint = (Math.max(...m) - Math.min(...m)) / Math.max(1, Math.max(...m));
-    if (tint >= 0.2) return { ok: false, reason: "Background or light too coloured. Use white paper, in daylight." };
+    // warm bulbs in the evening tint white paper up to about 0.3 even after the phone's own white balance; the paper is still the
+    // reference (every channel of a bean is measured against the same channel of the paper beside it), so the roast is read, and
+    // told as read in coloured light. Past 0.38 the surface itself is coloured (a blue plate, an orange worktop)
+    if (tint >= 0.38) return { ok: false, reason: "Background or light too coloured. Use white paper, in daylight." };
     // each patch: its paper level (median of the neutral pixels), how smooth the paper is, and how much grey shadow it holds
     // a patch counts only when it's mostly paper (half its area or more); its paper level is the 70th percentile of the neutral
     // pixels, so the grey gaps between touching beans don't read as a shadow across the sheet
@@ -6596,8 +6625,8 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
         // process and roast: what the bag says is picked for you; nothing stated, Unknown
         b.setAttribute("aria-pressed", String((o.cur ? o.cur() : o.key === "process" || o.key === "roast" ? pickedOf(o.key) : state[o.key]) === v));
         b.onclick = () => { if (o.on) o.on(v); else state[o.key] = v; if (o.key === "roast") state.roastPhoto = null; saveState(); renderAllOpts(); render(); };
-        if (o.key === "goal" && v === "tea") b.insertAdjacentHTML("beforeend", `<span class="beta">Beta</span>`);
-        if (o.key === "method" && v === "g:tea") b.insertAdjacentHTML("beforeend", `<span class="beta">Beta</span>`);
+        if (o.key === "goal" && v === "tea") b.insertAdjacentHTML("beforeend", `<span class="beta">Alpha</span>`);
+        if (o.key === "method" && v === "g:tea") b.insertAdjacentHTML("beforeend", `<span class="beta">Alpha</span>`);
         if (o.key === "method" && v === o.best) b.insertAdjacentHTML("beforeend", `<span class="beta">${LANG === "it" ? "Migliore" : "Best"}</span>`);   // kept because it looks good, not because it's unfinished
         g.appendChild(b);
       });
@@ -6621,7 +6650,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   const brewerHidden = () => Object.keys(BREWERS).filter((k) => k !== "cold").length > brewerItems().length;
   // Adjust: Serve, Cup, Method and Water folded away, the line beside it saying what's set
   function adjSum() { const box = $("adjOpts"), out = $("adjSum"); if (!box || !out) return;
-    const picks = [...box.querySelectorAll(".opts .chip[aria-pressed=true]")].map((b) => b.textContent.replace(/Beta$/, "").trim());
+    const picks = [...box.querySelectorAll(".opts .chip[aria-pressed=true]")].map((b) => b.textContent.replace(/(Alpha|Beta)$/, "").trim());
     const SHORT = { "Best for this coffee": "Best fit", "Il migliore per questo caffè": "Il migliore" };
     out.innerHTML = sumBits(picks.map((t) => SHORT[t] || t)); }
   // what a fold is set to, beside its title: each choice starts with a capital and stands apart from the next by a space, no commas
@@ -7903,8 +7932,8 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   // best match first, not cut down to an exact match, so a loose ask never ends on an empty list. Decaf and a price cap are firm
   const ASK_INTENT = /\b(near|nearby|vicino|from|roasted|roasters?|roastery|based in|dal|dalla|dall'|torrefatto|torrefazione|something|anything|want|like|looking|fancy|i'?d|for my|for an?|under|below|less than|max|cheap|cheaper|budget|value|affordable|expensive|pricey|premium|luxury|posh|over|above|more than|treat|special|rare|fancy|splurge|light|lighter|bright|dark|darker|strong|stronger|bold|intense|medium|decaf|decaffeinated|caffeine|evening|night|new|fresh|just in|today|qualcosa|vorrei|voglio|per la mia|per il mio|sotto|meno di|economico|chiaro|leggero|scuro|forte|deca|decaffeinato|nuovo)\b/i;
   const ASK_BREWER = [[/\bv60 ?neo\b|\bneo\b/, "neo"], [/\bv-?60\b|hario/, "v60"], [/kalita|wave\b/, "kalita"], [/\bapril\b/, "april"], [/\borea\b/, "orea"], [/melitta/, "melitta"],
-    [/chemex/, "chemex"], [/origami/, "origami"], [/aero ?press/, "aero"], [/french ?press|cafeti[eè]re|plunger|pressa francese/, "press"], [/cold ?brew/, "cold"],
-    [/mocca ?master|technivorm/, "mocca"], [/\bmoka\b|stove ?-?top|bialetti|caffettiera|macchinetta/, "moka"], [/clever/, "clever"], [/switch/, "switch"], [/espresso machine|\bespresso\b/, "espresso"], [/cupping/, "cupping"]];
+    [/chemex/, "chemex"], [/origami/, "origami"], [/aero ?pres+\b/, "aero"], [/french ?press|cafeti[eè]re|plunger|pressa francese/, "press"], [/cold ?brew/, "cold"],
+    [/mocca ?master|technivorm/, "mocca"], [/\bmoka\b|stove ?-?top|bialetti|caffettiera|macchinetta/, "moka"], [/clever/, "clever"], [/switch/, "switch"], [/espresso machine|\be[sx]{1,2}pres{1,2}o\b/, "espresso"], [/cupping/, "cupping"]];
   const askBrewerKey = (k) => { if (BREWERS[k]) return k; const hit = Object.keys(BREWERS).find((x) => x.startsWith(k.slice(0, 4))); return hit || null; };
   // where it's roasted: "from the UK", "roasted in Amsterdam", "Dutch roasters", "from Europe". A country that grows coffee
   // (from Kenya) is the origin, unless it's said as roasted in or as roasters. Firm, like decaf: only coffees roasted there
@@ -11548,7 +11577,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       if (near) { const H = "cubic-bezier(.3,.7,.4,1)"; jv = -260; go(); nearTo(2, 0.5, 380, H); await wait(420); jv = -240; go(); nearTo(1.35, 0.18, 380, H); await wait(420); jv = -200; go(); await nearTo(1, 0, 400, H); poke(-1.8); nearDone(); }
       await wait(300); }, true);
     // cross-eyed: both eyes slide in and meet in the middle, a little wobble, then back with a blink
-    // he glances up at his own "Beta 0.69.420-λ" tag (up on his right), holds it a moment, then has a good laugh: happy eyes, a little blush,
+    // he glances up at his own "Alpha 0.69.420-λ" tag (up on his right), holds it a moment, then has a good laugh: happy eyes, a little blush,
     // shaking side to side and bouncing, then he settles
     const betaLaugh = () => act(async () => { lookX = 3.4; lookY = -2.9; leanTo = 1.4; tween("aRest", -0.05, 260); draw(); go(); await face({ eyeL: 1.1, eyeR: 1.1 }, 220); await wait(950);
       await face({ eyeL: 0.85, eyeR: 0.85 }, 140); await wait(260); lookX = 0.8; lookY = 0; draw();
@@ -12001,7 +12030,8 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     const coffees = () => (typeof shelf !== "undefined" && Array.isArray(shelf) ? shelf : []);
     const pick = (xs) => xs[Math.floor(Math.random() * xs.length)];
     const andList = (xs) => xs.length > 1 ? xs.slice(0, -1).join(", ") + T(" and ", " e ") + xs[xs.length - 1] : xs[0] || "";
-    const notesOf = (r) => (Array.isArray(r.notes) ? r.notes : []).slice(0, 3).map((n) => String(n).toLowerCase());
+    const NOT_TASTE = /^(for|from|get|variety|varietal|region|altitude|process|origin|producers?|ideal|decaf\w*)\b|^(light(ly)?|lighter|medium|dark|darker)[- ](espresso|filter|omni|roast(ed)?)\b|(^|\s)(washed|anaerobic)$|^(washed|natural|anaerobic)(\s+\w{1,3})?$|\bon (filter|espresso)$|\broasters$|\broastery$|\bproducers?\b/i;
+    const notesOf = (r) => (Array.isArray(r.notes) ? r.notes : []).filter((n) => !NOT_TASTE.test(String(n).trim())).slice(0, 3).map((n) => String(n).toLowerCase());
     const newest = () => { const cs = coffees(); let day = ""; for (const r of cs) { const d = String(r.found || "").slice(0, 10); if (d > day) day = d; } return { day, list: cs.filter((r) => String(r.found || "").slice(0, 10) === day) }; };
     const dayWord = (iso) => { const t = new Date(), y = new Date(); y.setDate(t.getDate() - 1); const f = (d) => d.toISOString().slice(0, 10);
       return iso === f(t) ? T("today", "oggi") : iso === f(y) ? T("yesterday", "ieri") : T("on ", "il ") + (typeof isoDm === "function" ? isoDm(iso) : iso); };
@@ -12225,7 +12255,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     // ---------- brewing together: Goccio asks what the recipe needs, one question at a time, then opens it set up ----------
     // the coffee, the brewer, the grinder, how much, and the roast and process only when the bag or listing doesn't say
     let gbs = null;
-    const GB_BREW = [[/\bv60 ?neo\b|\bneo\b/i, "neo"], [/\bv60\b|hario v|\bcone\b/i, "v60"], [/kalita|\bwave\b/i, "kalita"], [/april/i, "april"], [/\borea\b/i, "orea"], [/melitta/i, "melitta"], [/chemex/i, "chemex"], [/origami/i, "origami"], [/\bswitch\b/i, "switch"], [/clever/i, "clever"], [/aero ?press|\baero\b/i, "aero"], [/french press|cafeti[eè]re|\bpress\b|plunger/i, "press"], [/cold brew/i, "cold"], [/espresso|\bmachine\b|gaggia|lelit|rancilio|la marzocco|breville|sage/i, "espresso"], [/moccamaster|filter machine|batch/i, "mocca"], [/\bmoka\b|bialetti|caffettiera|macchinetta|stove ?-?top|stove pot|cafetera italiana/i, "moka"], [/cupping/i, "cupping"], [/pour.?over|\bfilter\b|\bfiltro\b/i, "v60"]];
+    const GB_BREW = [[/\bv60 ?neo\b|\bneo\b/i, "neo"], [/\bv60\b|hario v|\bcone\b/i, "v60"], [/kalita|\bwave\b/i, "kalita"], [/april/i, "april"], [/\borea\b/i, "orea"], [/melitta/i, "melitta"], [/chemex/i, "chemex"], [/origami/i, "origami"], [/\bswitch\b/i, "switch"], [/clever/i, "clever"], [/aero ?pres+\b|\baero\b/i, "aero"], [/french press|cafeti[eè]re|\bpress\b|plunger/i, "press"], [/cold brew/i, "cold"], [/e[sx]{1,2}pres{1,2}o|\bmachine\b|gaggia|lelit|rancilio|la marzocco|breville|sage/i, "espresso"], [/moccamaster|filter machine|batch/i, "mocca"], [/\bmoka\b|bialetti|caffettiera|macchinetta|stove ?-?top|stove pot|cafetera italiana/i, "moka"], [/cupping/i, "cupping"], [/pour.?over|\bfilter\b|\bfiltro\b/i, "v60"]];
     const GB_WORD = { v60: "v60", aero: "aeropress", press: "french press", kalita: "kalita", chemex: "chemex", origami: "origami", clever: "clever", switch: "switch", moka: "moka", espresso: "espresso", cold: "cold brew", orea: "orea", melitta: "melitta", mocca: "moccamaster" };
     // a brewer Goccio has no recipe for: say so, and what it can set up instead
     const gbNoBrewer = () => { const seen = new Set(), names = GB_BREW.map(([, k]) => k).filter((k) => k !== "cupping" && RECIPE_BREWERS[k] && !seen.has(k) && seen.add(k)).map((k) => RECIPE_BREWERS[k].name);
@@ -12356,7 +12386,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       if (/^(stop|cancel|never ?mind|forget it|no thanks|not now|later|basta|lascia stare|annulla|niente)\b/i.test(ql)) { gbs = null; say(T("No problem. Say 'let's brew' when you're ready.", "Nessun problema. Di' 'prepariamo' quando sei pronto."), null, smile); return true; }
       const yes = /^(yes|yeah|yep|yup|sure|ok|okay|same|usual|the usual|still|correct|right|s[iì]|certo|esatto|sempre|il solito)\b/i.test(ql);
       const unsure = /\b(not sure|no idea|don'?t know|dunno|unsure|no clue|non (lo )?so|boh)\b/i.test(ql);
-      const isQ = /\?\s*$/.test(ql) || /^(what|why|how|who|when|where|which|is|are|does|do|can|should|cosa|perch|come|chi|quando|dove|quale)\b/i.test(ql);
+      const isQ = /\?\s*$/.test(ql) || /^(what|why|how|who|when|where|which|is|are|does|do|can|should|cosa|perch|come|chi|quando|dove|quale)\b/i.test(ql) || /\b(ratios?|temperature|bloom|caffeine|difference|meaning)\b/i.test(ql);   // "coffee to water ratio" is a question, not a brewer (28/11/2026)
       const miss = () => { g.tries++; if (isQ || g.tries > 2) { gbs = null; return false; } say(pick([T("Sorry, I didn't catch that. ", "Scusa, non ho capito. "), T("Hmm, not sure I follow. ", "Mmm, non ti seguo. ")]) + gbAsk(g), null, hmm); return true; };
       g.at = Date.now();
       if (q === "__scanbag" && g.step === "coffee") { g.tries = 0;   /* the camera opens over the chat: the page never shows */
@@ -12724,7 +12754,8 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
           if (!mem.brewer && !askedBrew) { askedBrew = true; sayNow(pick([T("By the way, what do you brew with at home?", "A proposito, con cosa prepari il caffè a casa?"), T("Out of curiosity: what's your brewer?", "Curiosità: che metodo usi?")]), null, curious); ctx = { t: "brewing", at: Date.now() }; }
           else if (!(mem.likes || []).length && !askedLikes) { askedLikes = true; sayNow(pick([T("Tell me, what flavours do you like in a coffee? Fruity, chocolatey, floral…?", "Dimmi, che sapori ti piacciono nel caffè? Fruttati, al cioccolato, floreali…?"), T("What kind of coffee makes you happy: bright and fruity, or rich and chocolatey?", "Che caffè ti rende felice: vivace e fruttato, o ricco e al cioccolato?")]), null, curious); ctx = { t: "flavours", at: Date.now() }; }
           else if (Math.random() < 0.5) { sayNow(T("Shall I find you one of today's new coffees?", "Vuoi che ti trovi uno dei caffè nuovi di oggi?"), null, curious); pendingYes = () => pickNew(false); }
-          else { sayNow(T(`What's in your ${brewName(mem.brewer)} today?`, `Cosa c'è nel tuo ${brewName(mem.brewer)} oggi?`), null, curious); ctx = { t: "which", at: Date.now() }; }
+          else { const bn = mem.brewer && brewName(mem.brewer);   // no brewer known yet: the question without one (it read "What's in your undefined today?", 28/11/2026)
+            sayNow(bn ? T(`What's in your ${bn} today?`, `Cosa c'è nel tuo ${bn} oggi?`) : T("What are you brewing today?", "Cosa prepari oggi?"), null, curious); ctx = { t: "which", at: Date.now() }; }
         }, 1100); };
       setTimeout(go, 600); };
     // a short follow-up to what was just said
@@ -12736,10 +12767,10 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       if ((ctx.t === "new" || ctx.t === "pick") && !ownTopic && s0.split(/\s+/).length <= 7) {
         if (/\b(another|other|else|next|more|different|altro|altri|un altro|diverso|prossimo)\b/i.test(s0) && ctx.t === "pick") { pickNew(true); return true; }
         if (/\b(best|top|favou?rite|recommend|suggest|pick|any good|what are they|worth (it|trying)|migliore|preferito|consigli|scegli)\b|\bwhich (one|ones|of them|is (the )?best)\b|^which\??$|^quale\??$|\bone\??$/i.test(s0)) { pickNew(ctx.t === "pick"); return true; } }
-      const askingBack = /\?\s*$/.test(s0) && /^(what|how|why|which|who|where|when|is|are|can|could|do|does|should|cosa|come|perch|quale|chi|dove)\b/.test(s0);   // "What is an AeroPress?" is a question, not "my brewer is an AeroPress"
+      const askingBack = /^(what|how|why|which|who|where|when|is|are|can|could|do|does|should|cosa|come|perch|quale|chi|dove)\b/.test(s0);   // "What is an AeroPress?" and "why is my espresso so fast" are questions, not "my brewer is…" (question mark or not, 28/11/2026)
       if (ctx.t === "brewing" && !askingBack && s0.split(/\s+/).length <= 8) {
         const br = s0.match(/\b(v60|chemex|aeropress|french press|cafetiere|kalita|origami|clever|switch|moka|espresso|filter|pour.?over|cold brew|orea|melitta|napoletana)\b/i);
-        if (br) { mem.brewer = br[1].toLowerCase(); saveMem(); say(pick([T(`Nice, a ${br[1].replace(/^v60$/i, "V60")}! Which coffee is in it? Tell me its name, or send me a photo of the bag, and I'll find the recipe.`, `Bello, un ${br[1].replace(/^v60$/i, "V60")}! Che caffè c'è dentro? Dimmi il nome, o mandami una foto del sacchetto, e ti trovo la ricetta.`), T(`Good choice. What are you putting through the ${br[1].replace(/^v60$/i, "V60")} today?`, `Ottima scelta. Che caffè ci metti oggi?`)]), null, happy); ctx = { t: "which", at: Date.now() }; return true; }
+        if (br) { mem.brewer = br[1].toLowerCase(); saveMem(); say(pick([T(`Nice, ${/^[aeiou]/i.test(br[1]) ? "an" : "a"} ${br[1].replace(/^v60$/i, "V60")}! Which coffee is in it? Tell me its name, or send me a photo of the bag, and I'll find the recipe.`, `Bello, un ${br[1].replace(/^v60$/i, "V60")}! Che caffè c'è dentro? Dimmi il nome, o mandami una foto del sacchetto, e ti trovo la ricetta.`), T(`Good choice. What are you putting through the ${br[1].replace(/^v60$/i, "V60")} today?`, `Ottima scelta. Che caffè ci metti oggi?`)]), null, happy); ctx = { t: "which", at: Date.now() }; return true; }
       }
       if (ctx.t === "flavours" && !askingBack && s0.split(/\s+/).length <= 12) { const fl = flavsIn(s0);
         if (fl.length) { mem.likes = [...new Set([...(mem.likes || []), ...fl])].slice(-4); saveMem(); say(T(`Lovely: ${andList(fl.map(likeName))}. I'll remember that.`, `Che bello: ${andList(fl.map(likeName))}. Me lo ricordo.`), [{ t: T("Pick one", "Scegline uno"), ask: T("Want me to find you one of today's coffees like that?", "Vuoi che ti trovi un caffè di oggi così?"), f: () => pickNew(false) }], happy); return true; } }
@@ -12883,7 +12914,8 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
         const ok = (r) => r._p100 != null && r._p100 >= 2.5 && (r.bag_g || 250) >= 150 && (r.bag_g || 250) <= 500 && notesOf(r).length && !picked.has(r.url) && !/drip ?bag|capsule|pod|sample/i.test(r.name);
         // the rest of the ask counts too: "an anaerobic from a UK roaster under £20" (27/11/2026: any coffee came back)
         let sc = null; try { const w0 = readAsk(q); if ([w0.tastes.length, w0.proc, w0.places.length, w0.lands.length, w0.decaf, w0.roast, w0.roasters.length].some(Boolean)) { delete w0.max; delete w0.min; const f0 = askScore(w0); sc = (r) => f0(r); } } catch (e) {}
-        const all = coffees().filter((r) => ok(r) && (!sc || sc(r) > 0)), fits = all.filter((r) => bag(r) <= amt);
+        const strictly = /\b(under|less than|below|meno di|sotto)\b/i.test(q);   // "under £15" is less than £15, not £15.00 itself
+        const all = coffees().filter((r) => ok(r) && (!sc || sc(r) > 0)), fits = all.filter((r) => strictly ? bag(r) < amt - 0.004 : bag(r) <= amt);
         if (!fits.length) { const c = all.sort((a, b) => bag(a) - bag(b))[0]; if (!c) return false; lastCo = { r: c, at: Date.now() };
           return say(T(`${yours} is a bit tight for a bag. The cheapest good one I know is ${shownName(c)} from ${roasteryName(c.roaster)}, about ${fmt(bag(c))} for ${c.bag_g || 250} g.`, `Con ${yours} è difficile trovare un sacchetto. Il più economico che conosco è ${shownName(c)} di ${roasteryName(c.roaster)}, circa ${fmt(bag(c))} per ${c.bag_g || 250} g.`), [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(c); } }], happy); }
         // the best use of the money: close to it, the kind you like, and new
@@ -12896,7 +12928,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
           [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(r); } }, { t: T("Another", "Un altro"), q: q }], happy); }],
       [/\b(cheaper|cheapest|cheap|less expensive|inexpensive|budget|affordable|good value|value for money|bargain|economico|meno car[oa])\b/i, () => { const o = ORIGINS.find(([re]) => re.test(lastQ));
         // after a coffee ("Something cheaper"), one like it for less: a note in common, a lower price per 100 g; never a sample or drip bag
-        const base = !o && lastCo && Date.now() - lastCo.at < 600000 && lastCo.r._p100 != null ? lastCo.r : null, bw = base ? notesOf(base).map((n) => String(n).toLowerCase().split(" ").pop()) : [];
+        const base = !o && lastCo && Date.now() - lastCo.at < 600000 && lastCo.r._p100 != null && !/\b(cheapest|least expensive|lowest[- ]priced?|pi[uù] economic[oi])\b/i.test(lastQ) ? lastCo.r : null, bw = base ? notesOf(base).map((n) => String(n).toLowerCase().split(" ").pop()) : [];
         const real = (r) => r._p100 != null && r._p100 >= 2.5 && (r.bag_g || 250) >= 150 && (r.bag_g || 250) <= 500 && notesOf(r).length && !picked.has(r.url) && !(o && /\/|blend/i.test(String(r.origin || "") + " " + r.name));   // never a sample-priced bag, and a Kenya asked for is a single-origin Kenya
         let pool = coffees().filter((r) => real(r) && (!o || o[0].test(String(r.origin || ""))) && (!base || (r._p100 < base._p100 * 0.9 && notesOf(r).some((n) => bw.includes(String(n).toLowerCase().split(" ").pop())))));
         if (!pool.length && base) pool = coffees().filter((r) => real(r) && r._p100 < base._p100 * 0.9);
@@ -12905,7 +12937,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
         say(T(`${o ? `A ${o[1]} that's kind on the wallet` : base ? "Similar, for less" : "Good value"}: ${shownName(r)} from ${roasteryName(r.roaster)}${r.price ? `, ${r.price} a bag` : ""}. ${notesOf(r).length ? tastesOf(notesOf(r)) : ""}`.trim(),
           `${o ? `Un ${o[2]} che non svuota il portafoglio` : "Buon rapporto qualità-prezzo"}: ${shownName(r)} della ${roasteryName(r.roaster)}${r.price ? `, ${r.price} il sacchetto` : ""}.`), [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(r); } }], happy); }],
       // "anything else?", "what else?": after a coffee it named, another one; otherwise an offer of what it can do
-      [/^(more|other|different|some other|any other|any more|got any (?:other|more)) (options?|choices?|ones?|coffees?|picks?|suggestions?|ideas?)\b|^(show|give) me (more|other) (options?|coffees?|ones?)\b|^(more|others?) please\b|^(anything|something|what) else\b|^(any )?others?\b|^(anything |any )?more\b[ ?!.]*$|^(show|give|find) me (another|more|others|something else|anything else|a different one|one more)\b|^(another|a different) one\b|^(altro|qualcos'?altro|altri|che altro|fammi vedere altro)\b/i, () => { if (moreQ && lastCo && Date.now() - lastCo.at < 600000 && tasteFind(moreQ) !== false) return; if (lastCo && Date.now() - lastCo.at < 600000) return pickNew(true, mem.brewer);   /* after a taste ("I feel blackcurrant"), another with that taste */
+      [/^(more|other|different|some other|any other|any more|got any (?:other|more)) (options?|choices?|ones?|coffees?|picks?|suggestions?|ideas?)\b|^(show|give) me (more|other) (options?|coffees?|ones?)\b|^(more|others?) please\b|^(anything|something|what) else\b|^(any )?others?\b|^(anything |any )?more\b[ ?!.]*$|^(show|give|find) me (another|more|others|something else|anything else|a different one|one more)\b|^(another|a different) one\b|^(altro|qualcos'?altro|altri|che altro|fammi vedere altro)\b/i, () => { if (moreQ && lastCo && Date.now() - lastCo.at < 600000 && (findAsk(moreQ) !== false || tasteFind(moreQ) !== false)) return; if (lastCo && Date.now() - lastCo.at < 600000) return pickNew(true, mem.brewer);   /* after a taste ("I feel blackcurrant"), another with that taste */
         say(pick([T("Plenty! Ask me for a coffee pick, help with a sour or bitter cup, or say 'let's brew' and we'll make one together.", "Tanto! Chiedimi un caffè da provare, aiuto con una tazza acida o amara, o di' 'prepariamo' e lo facciamo insieme."), T("Want another coffee to try, a recipe, or shall we brew one together?", "Vuoi un altro caffè da provare, una ricetta, o ne prepariamo uno insieme?")]), null, happy); }],
       // everyday coffee questions answered straight (26/11/2026: "Is coffee a fruit?" got a fruity coffee picked instead)
       // a joke, when asked (26/11/2026: "Tell me a joke" got "Got it.")
@@ -13079,6 +13111,36 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       [/clever|hario switch|\bswitch\b/i, ["It's a pour-over dripper with a valve: the coffee steeps like a French press, then you open it and it drains through paper. Easy and very consistent.", "È un dripper con una valvola: il caffè resta in infusione come in una French press, poi apri e scende attraverso la carta. Facile e molto costante."]],
       [/origami/i, ["The Origami is a Japanese ceramic dripper with deep pleats; it takes cone or flat filters, so it brews like a V60 or a Kalita.", "L'Origami è un dripper giapponese in ceramica con pieghe profonde; accetta filtri a cono o piatti, quindi prepara come un V60 o una Kalita."]]];
     // a coffee whose notes have the taste named: "a coffee with cherry notes", "I feel blackcurrant", "fancy something with peach"
+    /* A coffee asked for by what it is (28/11/2026): "a natural Ethiopian", "show me a washed Kenyan", "anything from Climpson",
+       "decaf from a London roaster", "something chocolatey for espresso". The chat used to look every word up in the tasting notes,
+       so "washed", "from" and "espresso" became flavours ("It tastes of from decaf"), "a natural Ethiopian" found the roaster with
+       Ethiopian in its name, and with a name still to give it became your name. Now it is read exactly as the Search box reads it
+       (country, process, roaster, place, price, decaf, taste, espresso or filter) and answered with one that fits all of it. */
+    const FIND_SHAPE = /^(?:(?:so|ok|okay|hey|hi|please|and|well)[, ]+)*(?:(?:can|could) (?:you|i) (?:show|find|get|have|suggest|recommend)(?: me)?|(?:show|find|give|get|suggest|recommend)(?: me)?|i(?:'d| would)? (?:want|like|fancy|need|love)|i(?:'m| am) (?:looking for|after)|looking for|do you have|have you got|got|is there|are there|any|anything|something|some|an?|one|mostrami|trovami|dammi|cerco|vorrei|voglio|avete|hai|c'?[eè]|qualcosa|un[oa]?)\b/i;
+    const findAsk = (q0) => {
+      const bestAsk = /\b(best|good|great|nice|lovely|decent|top|miglior\w*|buon\w*)\b.{0,25}\b(coffees?|beans?|ones?|caff[eè])\b/i.test(q0) && !/\b(way|method|recipe|grinder|kettle|scale|machine|brewer|filter papers?|water|temperature|ratio|time)\b/i.test(q0.replace(/\bfor (filter|espresso)\b/i, ""));
+      if ((!bestAsk && /^(why|how|what (is|are|does|do|should|can|about)|what'?s (a|an|the)\b|is (it|a|an|the)\b|are (the|they)\b|does|should|when|who|which is|difference|explain|tell me (about|why|how)|perch|come (si|mai|faccio)|cos'?[eè]|che cos|qual [eè]|quando|chi)\b/i.test(q0)) || BREW_ASK.test(q0) || /\b(recipe|ricetta|brew|prepar\w*)\b/i.test(q0)) return false;   // a question about coffee, or a brew: not an ask for one
+      if (/\b(tips?|advice|help|grind\w*|temperature|temp|ratio|water|pour\w*|bloom|dose|dosage|grams?|settings?|clicks?|caffeine|difference|means?|better|vs|versus|consigli\w*|macin\w*|temperatura|acqua)\b/i.test(q0)) return false;
+      let want; try { want = readAsk(q0.replace(/\b(what'?s|what is|the|best|top|decent|miglior\w*)\b/gi, " ")); } catch (e) { return false; }   // "best" is praise, not a word of the coffee's name ("Bestseller")
+      if (want.max != null || want.min != null || want.cheap || want.dear) return false;   // a budget, or "cheap": those answers give the price
+      const hard = [want.lands.length, want.proc, (want.roasters || []).length, (want.places || []).length, want.decaf].filter(Boolean).length;
+      const soft = want.tastes.length + [want.roast, want.filter, want.cheap, want.dear, want.fresh, want.treat].filter(Boolean).length, shaped = FIND_SHAPE.test(q0) || bestAsk;
+      // enough to go on: something a coffee is (a country, a process, a roaster, a place, decaf, a price) with a second thing or the shape of an
+      // ask ("a…", "any…", "show me…"); or two softer things in an ask; or a roaster's or a coffee's own word after "from" or "by"
+      const fromWord = shaped && want.words.length >= 1 && want.words.length <= 3 && /\b(from|by|di|da|della|dalla)\b/i.test(q0);
+      if (!(hard >= 2 || (hard >= 1 && (soft >= 1 || shaped)) || (shaped && soft >= 2) || ((bestAsk || (shaped && /\b(coffees?|beans?|caff[eè])\b/i.test(q0))) && (want.filter || want.roast)) || fromWord)) return false;
+      // a country asked for is first a coffee from that country alone, not a blend with some of it in ("a natural Ethiopian": Honduras / Guatemala / Ethiopia)
+      const solo = (x) => want.lands.length && !/[\/,&+]| and | e /i.test(String(x.origin || "")) && !/\bblend\b/i.test(String(x.name || "")) ? 0.7 : 0;
+      const sc = askScore(want), pool = coffees().filter((x) => want.decaf || !isDecaf(x)).map((x) => { const v = sc(x); return [v > 0 ? v + solo(x) : 0, x]; }).filter(([v]) => v > 0).sort((a, b) => b[0] - a[0]);   // a decaf only when one was asked for
+      if (!pool.length) { if (!hard || want.words.length) return false;
+        return say(T("Nothing on the list fits all of that right now. Loosen one thing (the price, the process, the place) and I'll look again.", "Adesso in lista non c'è niente che vada bene per tutto. Allenta una cosa (il prezzo, il processo, il posto) e riguardo."), null, curious); }
+      moreQ = q0;
+      const topV = pool[0][0], best = pool.filter(([v]) => v >= topV - 0.6).map(([, x]) => x), fresh = best.filter((x) => !picked.has(x.url) && !(lastCo && lastCo.r === x) && notesOf(x).length), rest = best.filter((x) => !(lastCo && lastCo.r === x));
+      const r = pick((fresh.length ? fresh : rest.length ? rest : best).slice(0, 40)), ns = notesOf(r), n = pool.length; lastCo = { r, at: Date.now() }; picked.add(r.url);
+      const city = (want.places || []).length && r.roaster_city ? ` (${r.roaster_city})` : "", nm = norm(shownName(r));
+      const what = [r.origin && !nm.includes(norm(r.origin)) ? r.origin : "", r.process && want.proc && !/decaf/i.test(r.process) ? String(r.process).toLowerCase() : "", want.decaf && !/decaf/.test(nm) ? T("decaf", "decaffeinato") : ""].filter(Boolean).join(", ");
+      say(T([`Try ${shownName(r)} from ${roasteryName(r.roaster)}${city}${what ? ", " + what : ""}.`, ns.length ? tastesOf(ns) : "", n > 1 ? `(${n} on Goccio fit that.)` : ""].filter(Boolean).join(" "), [`Prova ${shownName(r)} della ${roasteryName(r.roaster)}${city}${what ? ", " + what : ""}.`, ns.length ? "Sa di " + andList(ns) + "." : "", n > 1 ? `(${n} su Goccio fanno al caso.)` : ""].filter(Boolean).join(" ")),
+        [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(r); } }, T("Another one", "Un altro")], happy); };
     const tasteFind = (q0) => {
         if (/^(why|how|what (is|are|does|do)|what's|are the|is it|perch|come mai|cosa)\b/i.test(q0) || /\b(roaster|roastery|roasters|where|based|located|who|torrefazione|dove)\b/i.test(q0)) return false;   // "where is Notes Roastery based?" is about a roaster
         const vocab = new Set(); coffees().forEach((x) => notesOf(x).join(" ").toLowerCase().split(/[^a-zà-ÿ]+/).forEach((w) => { if (w.length >= 3) vocab.add(w); }));
@@ -13110,7 +13172,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       [/\b(are you cold|i'?m (so )?cold|it'?s (so |really )?(cold|freezing)|brr+|freezing|hai freddo|ho freddo|che freddo|si gela|fa freddo)\b/i, () => { say(pick([T("Brrr. Quick, put the kettle on.", "Brrr. Presto, metti su l'acqua."), T("Don't. I'm going blue just hearing it.", "Non dirlo. Divento blu solo a sentirlo.")]), null); }, true],
       [/\b(i'?m (so )?hot|it'?s (so |really )?(hot|boiling)|so hot|heatwave|are you hot|fa caldo|che caldo|ho caldo|si muore di caldo)\b/i, () => { say(pick([T("Phew. I'm brewing myself over here.", "Uff. Qui mi sto preparando da solo."), T("Too hot! Iced coffee, quick.", "Troppo caldo! Caffè freddo, presto.")]), null); }, true],
       [/\b(umbrella|ombrello|is it raining|it'?s raining|sta piovendo|piove)\b/i, () => { say(pick([T("Drip, drip. Good thing I'm waterproof. Well, I am water.", "Plic, plic. Per fortuna sono impermeabile. Anzi, sono acqua.")]), null); }, true],
-      [/\b(what|which) version|version (are|is) (you|goccio)|goccio version|che versione|quale versione/i, () => say(T("Goccio Beta 0.69.420-λ. Still learning, a drop at a time.", "Goccio Beta 0.69.420-λ. Sto ancora imparando, una goccia alla volta."), null, happy), true],
+      [/\b(what|which) version|version (are|is) (you|goccio)|goccio version|che versione|quale versione/i, () => say(T("Goccio Alpha 0.69.420-λ. Still learning, a drop at a time.", "Goccio Alpha 0.69.420-λ. Sto ancora imparando, una goccia alla volta."), null, happy), true],
       [/\b(come (closer|here|nearer)|get closer|look at me|vieni (qui|qua|vicino)|avvicinati|più vicino)\b/i, () => { say(pick([T("Hello there.", "Ciao, eh."), T("Here I come!", "Arrivo!")]), null); setTimeout(() => { D.free(); D.leap(); }, 450); }, true],
       [/\b(boop|kiss|smooch|mwah|bacio|bacino|baciami)\b/i, () => { say(pick([T("Mwah!", "Muah!"), T("Boop!", "Bup!")]), null); setTimeout(() => { D.free(); D.boop(); }, 450); }, true],
       [/\b(cross[- ]?eyed|cross (your|ur|the) eyes|cross eyes|strabico|occhi storti|incrocia gli occhi)\b/i, () => { say(pick([T("Like this?", "Così?"), T("Now I can see my nose. I don't have a nose.", "Adesso vedo il mio naso. Non ho il naso.")]), null); setTimeout(() => { D.free(); D.crossEyes(1800); }, 450); }, true],
@@ -13121,7 +13183,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       [/\b(shake|shaking|tilt|tilting|motion|movement|scuot\w*|inclin\w*|movimento)\b/i, () => { if (window.__gdMotionOn) return say(T("I can already feel it: give your phone a shake.", "Lo sento già: dai una scossa al telefono."), null, happy);
           say(T("I can feel it when you tilt or shake your phone. Your phone will ask you first.", "Posso sentire quando inclini o scuoti il telefono. Il telefono te lo chiederà prima."), [{ t: T("Yes", "Sì"), ask: T("Want me to?", "Vuoi?"), f: () => { window.gdMotion && window.gdMotion(true); say(T("Now tilt your phone. Or shake it!", "Ora inclina il telefono. O scuotilo!"), null, happy); } }], curious); }],
       // his laser: ask for it and he zaps the + (or −) in the top bar or a footer arrow; he doesn't draw on the page
-      [/\blasers?\b|laser eyes|occhi laser|(destroy|burn|zap|kill|blast|delete) (the |your |that )?beta|(distruggi|brucia) (la |il )?beta/i, () => { const q0 = lastQ || "";
+      [/\blasers?\b|laser eyes|occhi laser|(destroy|burn|zap|kill|blast|delete) (the |your |that )?(alpha|beta)|(distruggi|brucia) (la |il |l')?(alpha|beta)/i, () => { const q0 = lastQ || "";
         say(pick([T("Watch this.", "Guarda qui."), T("Pew.", "Pew.")]), null, smile);
         setTimeout(() => { closeTalk(); const g0 = $("gdrop"); if (g0) g0.scrollIntoView({ block: "center", behavior: "smooth" }); setTimeout(() => { D.free(); D.laserPoke(); }, 900); }, 900); }, true],
       [/\b(rol+(y|ie)[ -]?pol+(y|ie)|somersault|forward roll|tumble|capriol\w*|fai una capriola)\b/i, () => { say(pick([T("Weee!", "Uiii!"), T("Head over heels!", "A gambe all'aria!")]), null); setTimeout(() => { D.free(); D.rolypoly(); littleMove("ag-flip"); }, 450); }, true],
@@ -13621,10 +13683,14 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     const tastesOf = (ns) => { const adj = ns.filter((n) => TASTE_ADJ.test(String(n).trim())), noun = ns.filter((n) => !TASTE_ADJ.test(String(n).trim()));
       if (!adj.length) return "It tastes of " + andList(ns) + "."; if (!noun.length) return `It's ${andList(adj.map((x) => String(x).toLowerCase()))}.`;
       return `It tastes of ${andList(noun)}, and it's ${andList(adj.map((x) => String(x).toLowerCase()))}.`; };
+    const LAND_WORD = /^(ethiopian?|kenyan?|colombian?|brazil(ian)?|peru(vian)?|guatemalan?|rwandan?|burundi(an)?|ugandan?|tanzanian?|hondura[sn]|nicaraguan?|salvador(an)?|panama(nian)?|mexic(o|an)|bolivian?|ecuador(ian)?|indian?|indonesian?|sumatran?|java(nese)?|yemeni?|vietnam(ese)?|chin(a|ese)|congo(lese)?|malawi(an)?|zambian?|jamaican?|hawaii(an)?|cuban?|haiti(an)?|dominican|myanmar|thai(land)?|laos|nepal(i|ese)?|philippines?|papua|timor)$/;
     const findRoaster = (qn) => { const qw = new Set(qn.split(" ")), about = /\b(where|based|located|roaster|roastery|roasters|from|by|dove|sede|torrefazione|di|della)\b/.test(qn); let best = null;
       for (const o of roIndex().all) { if (!o.keys.every((k) => qw.has(k))) continue;   // every distinctive word of its name
         if (o.keys.every((k) => COMMON.has(k)) && !(about && (" " + qn + " ").includes(" " + norm(o.name) + " "))) continue;   // "where is the best espresso in the world?" is not Coffee World (26/11/2026)
         if (!about && o.keys.length < 2 && /^(what|whats|how|why|is|are|can|does|do|should|which|when|tell me)\b/.test(qn)) continue;   // "what is a ristretto?" asks about the drink, not Ristretto Coffee
+        // a roaster named after a country ("The Ethiopian Coffee Company") is meant only by its whole name: "a natural Ethiopian" and
+        // "any tips for a natural Ethiopian?" are about coffee from Ethiopia (28/11/2026)
+        if (o.keys.length < 2 && (LAND_WORD.test(o.keys[0]) || ORIGIN_WORDS().has(o.keys[0])) && !(" " + qn + " ").includes(" " + norm(o.name).replace(/^the /, "") + " ")) continue;
         const score = o.keys.length * 10 + o.keys.join("").length; if (!best || score > best.score) best = { ...o, score }; }
       return best; };
     const findCoffees = (qn, ro) => { const qw = qn.split(" ").filter((w) => w.length >= 4 && !GENERIC.has(w)), ow = ORIGIN_WORDS(), roKeys = new Set(ro ? ro.keys : []);
@@ -13692,6 +13758,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       // (a word of it matched a coffee's name: "SaiPan kannatuskahvi, lovely"), and it starts again even mid-way through a brew
       if (/^(so |ok |okay |hey |hi |right,? )?(i )?((want|wanna|would like|'d like|'m going|am going|need|feel like) to |let'?s |can we |can you |could you |help me |time to |shall we )?(brew|make)( me| us)?( (something|anything|a coffee|coffee|some coffee|a cup|a brew|one))?( (together|with me|now|today|please))*[ .!…?]*$/i.test(q)
         || /^(voglio |vorrei |posso )?(preparare|fare)( un| qualcosa| un caff[eè]| del caff[eè])?[ .!?]*$|^prepariamo( qualcosa| un caff[eè])?[ .!?]*$/i.test(q)) { whichCo = null; gbStart(null, null, q); return; }
+      if (!gbs && findAsk(q) !== false) { ctx = null; askingName = false; return; }   // a coffee asked for by what it is: the Search box's own reading of it
       // a taste named with a wish ("Show me something else. I feel blackcurrant.", "I fancy peach", "in the mood for cherry"): that taste
       // wins over "something else" (it used to give any other coffee, 26/11/2026)
       if (/\b(feel|feeling|fancy|fancying|in the mood for|mood for|craving|crave|want|wanna|like|show me|got any|looking for|something|anything|voglio|mi va|ho voglia)\b/i.test(q) && !/^(why|how|what (is|are)|perch|come)\b/i.test(q) && !BREW_ASK.test(q)) {
@@ -13777,7 +13844,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       if (mn && setName(mn[1])) { askingName = false; return nice(); }
       if (askingName) { askingName = false;
         if (/^(skip|no thanks|later|not now|salta|dopo|no grazie)\b/i.test(q)) return say(T("No problem. Ask me anything about coffee.", "Nessun problema. Chiedimi qualcosa sul caffè."), null, smile);
-        if (q.split(/\s+/).length <= 3 && !/[?0-9]/.test(q) && !/^(i'?m|i am|hi|hello|hey|ciao)\b/i.test(q) && !ANSWERS.some(([re]) => re.test(q)) && setName(q)) return nice(); }
+        if (q.split(/\s+/).length <= 3 && !/[?0-9]/.test(q) && !/^(i'?m|i am|hi|hello|hey|ciao|an?|the|some|any|anything|something|un[oa]?|il|la|qualcosa|what|whats|what's|why|how|who|when|where|which|is|are|can|could|does|do|should|tell|show|give|find|explain|define|best|cos|cosa|perch[eé]?|come|chi|quando|dove|quale|dimmi)\b/i.test(q) && !ANSWERS.some(([re]) => re.test(q)) && setName(q)) return nice(); }   /* "what is channeling" is a question, not a name (28/11/2026) */
       // a roaster or a coffee by name, from the list itself
       if (/^(again|do it again|do that again|one more( time)?|once more|encore|more|repeat|ancora( una volta)?|rifallo|rifai|di nuovo|un'?altra volta|bis)\b[ !.]*(please|per favore)?[ !.]*$/i.test(q)) { if (prevTrick) { const f = prevTrick; lastTrick = f; D.free(); f(); return; }
         return say(T("Again what? Ask me to dance, backflip, spin or jump, then say 'again'!", "Ancora cosa? Chiedimi di ballare, fare una capriola, girare o saltare, poi di' 'ancora'!"), null, curious); }
@@ -13871,7 +13938,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     if (window.visualViewport) { visualViewport.addEventListener("resize", fullFit); visualViewport.addEventListener("scroll", fullFit); }
     addEventListener("scroll", () => { if (document.documentElement.classList.contains("gd-full")) { if (window.gdFitWatch) window.gdFitWatch(600); fullFit(); } }, { passive: true });
     const fullHead = () => { if (talkEl.querySelector(".gd-head")) return; const h = document.createElement("span"); h.className = "gd-head"; const sv = $("askGoccio") && $("askGoccio").querySelector("svg"); if (sv) { const c = sv.cloneNode(true); c.style.opacity = ""; h.appendChild(c); }
-      h.insertAdjacentHTML("beforeend", `<span class="gh-n">Goccio</span><span class="gh-b">Beta 0.69.420-λ</span><button type="button" class="gh-new">${T("New chat", "Nuova chat")}</button>`); talkEl.prepend(h);
+      h.insertAdjacentHTML("beforeend", `<span class="gh-n">Goccio</span><span class="gh-b">Alpha 0.69.420-λ</span><button type="button" class="gh-new">${T("New chat", "Nuova chat")}</button>`); talkEl.prepend(h);
       // a fresh start: the messages go, and Goccio says hello again (a pill with words, so it never reads as a second close)
       h.querySelector(".gh-new").addEventListener("click", () => { sayGen++; finishTyping(); msgs = []; saveChat(); sayEl.textContent = ""; chipsEl.textContent = ""; pendingYes = null; ctx = null; replyTo = null; lastMine = null; gbs = null; whichCo = null; hello(); });   // nothing carried over: a brew half set up is forgotten too
       let y0 = null; h.addEventListener("touchstart", (e) => { y0 = e.touches[0].clientY; }, { passive: true }); h.addEventListener("touchmove", (e) => { if (y0 != null && e.touches[0].clientY - y0 > 70) { y0 = null; closeTalk(); } }, { passive: true }); };
@@ -14054,6 +14121,9 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     document.addEventListener("click", (e) => { if (talking && e.isTrusted && e.target.isConnected && !talkEl.contains(e.target) && !el.contains(e.target) && !e.target.closest("#askGoccio, #askForm, #camView, input[type=file]")) closeTalk();   /* a pill gone as it was tapped (the answer replaced it) is not a tap outside */ }, true);
     el.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); talking ? closeTalk() : openTalk(); } });
     window.gdrop = D;
+    // the tag by big Goccio's shoulder stops at the right margin: the CSS needs its width, measured here once the font is in (28/11/2026)
+    { const tg = document.querySelector(".wb-sign .gd-beta"), setTw = () => { if (tg && tg.offsetWidth) tg.style.setProperty("--tw", tg.offsetWidth + "px"); };
+      setTw(); if (document.fonts && document.fonts.ready) document.fonts.ready.then(setTw); addEventListener("resize", setTw, { passive: true }); }
     // to try a move out: ?move=hypno (or any of his moves: laserBeta, betaAsk, rolypoly, boop…) brings him into view and plays it,
     // then again every 9 seconds, for as long as the page is open with it
     { const mv = (new URLSearchParams(location.search).get("move") || (location.hash.match(/move=(\w+)/) || [])[1] || "").trim();
