@@ -3648,6 +3648,18 @@ html body #specs .spec:is(.brewer, .key){position:relative}
 html.brew-in body .botnav.back-fit.back-fit.back-fit [data-bn="cancel"]{flex:0 0 var(--back-w)!important;width:var(--back-w)!important;min-width:0!important;max-width:none!important}   /* Back ends where the steppers above end */
 html body #specs .spec .big-row{order:2;align-self:stretch;width:100%;display:flex;gap:1.6em;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;mask-image:linear-gradient(90deg,#000 calc(100% - 32px),transparent);-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 32px),transparent)}
 html body #specs .spec .big-row::-webkit-scrollbar{display:none}
+html body #specs .add-mill{display:none!important}   /* every grinder is in the line above */
+html body #detected .miss.miss-ro{display:block!important;width:100%;min-width:0;max-width:100%;overflow:hidden;padding:0!important;margin:10px 0 0!important}
+html body #detected:has(.w-row){display:block!important;padding:0!important;margin:0!important;max-width:100%!important;min-width:0!important;width:100%!important;overflow:hidden}
+html body #consTop{min-width:0}
+html body #detected .miss.miss-ro > .mr-l{display:block!important;height:auto!important;line-height:1.35!important;margin:0!important}
+html body #detected .miss .mr-l{display:block;margin:0 0 2px;color:var(--muted)}
+html body #detected .roast-ask.w-row{display:flex!important;flex-wrap:nowrap!important;gap:24px!important;width:100%;max-width:100%;box-sizing:border-box;overflow-x:auto;scrollbar-width:none;margin:0!important;padding:0;mask-image:linear-gradient(90deg,#000 calc(100% - 24px),transparent);-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 24px),transparent)}
+html body #detected .roast-ask.w-row::-webkit-scrollbar{display:none}
+html body #detected .w-opt{flex:none;display:inline-flex;align-items:center;gap:6px;height:40px;padding:0!important;margin:0;background:none!important;border:0;border-radius:0;font:500 var(--fs-s)/1.2 var(--sans);color:var(--ink)!important;white-space:nowrap;cursor:pointer;border-bottom:2px solid transparent}
+html body #detected .w-opt:hover{border-bottom-color:currentColor}
+html body #detected .w-opt svg{width:18px;height:18px}
+html body #detected .w-opt .beta{margin-left:4px;color:var(--muted);font-weight:500}
 html body #specs .spec .big-row button{flex:none;scroll-snap-align:start;background:none!important;border:0;border-radius:0;padding:0 0 .04em;margin:0;font:inherit;font-size:39px;font-weight:500;letter-spacing:-.045em;line-height:1.15;color:color-mix(in srgb,var(--muted) 62%,var(--bg));opacity:1;cursor:pointer;white-space:nowrap}   /* the others in the grey of the labels: lighter than the one in use, still easy to read (28/11/2026) */
 @media (min-width:1000px){ html body #specs .spec .big-row button{font-size:63px} }
 html body #specs .spec .big-row button[aria-selected="true"]{color:var(--ink);opacity:1;cursor:default}
@@ -6349,10 +6361,11 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     // roast missing: asked right here, as pills, because roast moves the grind and the temperature more than anything else the bag says
     { const it = LANG === "it", PLUS = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`, MINUS = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
       // Scan the beans first; the round + opens the five levels, as the + does everywhere else on the site
-      const ask = miss.includes("roast") ? `<span class="roast-ask chips" role="group" aria-label="${it ? "Tostatura" : "Roast"}">${PHOTO_CHIP}${roastAskOpen ? [["vlight", "Very light"], ["light", "Light"], ["medium", "Medium"], ["mdark", "Medium-dark"], ["dark", "Dark"]].map(([v, t]) => `<button type="button" class="chip" data-roast="${v}">${esc(tr(t))}</button>`).join("") : ""}<button type="button" class="chip gear-more" id="roastMore" aria-expanded="${roastAskOpen}" aria-label="${esc(tr(roastAskOpen ? "Hide the roast levels" : "Choose the roast"))}">${roastAskOpen ? MINUS : plusN(5)}</button></span>` : "";
+      // the answers in a line of words that scrolls sideways, like the brewer's and the menu at the top: no pills (28/11/2026)
+      const ask = miss.includes("roast") ? `<span class="roast-ask w-row" role="group" aria-label="${it ? "Tostatura" : "Roast"}">${PHOTO_CHIP.replace('class="chip rp-go"', 'class="w-opt rp-go"')}${[["vlight", "Very light"], ["light", "Light"], ["medium", "Medium"], ["mdark", "Medium-dark"], ["dark", "Dark"]].map(([v, t]) => `<button type="button" class="w-opt" data-roast="${v}">${esc(tr(t))}</button>`).join("")}</span>` : ""; void PLUS; void MINUS;
       // one warning for each thing the recipe needs and doesn't have, each with its answers as pills. Nothing missing: nothing shown
       const where = state.bag ? "on the listing" : "given";
-      const pAsk = miss.includes("process") ? `<span class="roast-ask chips" role="group" aria-label="${it ? "Processo" : "Process"}">${[["washed", "Washed"], ["natural", "Natural"], ["honey", "Honey"], ["anaerobic", "Anaerobic"], ["cofer", "Co-ferment / Infused"], ["decaf", "Decaf"]].map(([v, t]) => `<button type="button" class="chip" data-proc="${v}">${esc(tr(t))}</button>`).join("")}</span>` : "";
+      const pAsk = miss.includes("process") ? `<span class="roast-ask w-row" role="group" aria-label="${it ? "Processo" : "Process"}">${[["washed", "Washed"], ["natural", "Natural"], ["honey", "Honey"], ["anaerobic", "Anaerobic"], ["cofer", "Co-ferment / Infused"], ["decaf", "Decaf"]].map(([v, t]) => `<button type="button" class="w-opt" data-proc="${v}">${esc(tr(t))}</button>`).join("")}</span>` : "";
       $("detected").innerHTML = state.text && miss.length ? [
         miss.includes("roast") ? `<span class="miss miss-ro"><span class="mr-l">${LANG === "it" ? "Tostatura" : "Roast"}</span>${ask}</span>` : "",
         miss.includes("process") ? `<span class="miss">The process isn’t ${where}, so the recipe plays it safe. What does the bag say?${pAsk}</span>` : ""].join("") : "";
