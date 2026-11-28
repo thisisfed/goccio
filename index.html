@@ -6290,6 +6290,13 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       row.onclick = (e) => { const b = e.target.closest("button[data-v]"); if (!b) return; e.stopPropagation(); bigX[k] = row.scrollLeft; pick(b.dataset.v); };
       const loop = () => { const set = row.__set || 0; if (!set) return; if (row.scrollLeft < set * 0.5) row.scrollLeft += set; else if (row.scrollLeft > set * 1.5) row.scrollLeft -= set; bigX[k] = row.scrollLeft; };
       row.addEventListener("scroll", loop, { passive: true });
+      // scrolled by hand: the name that comes to rest at the start of the line is the one picked, no tap needed (28/11/2026)
+      let byHand = false, endT = 0; const hand = () => { byHand = true; };
+      ["pointerdown", "touchstart", "wheel"].forEach((t) => row.addEventListener(t, hand, { passive: true }));
+      const settle = () => { if (!byHand) return; byHand = false; const pad = parseFloat(getComputedStyle(row).paddingLeft) || 0, x0 = row.scrollLeft + pad + row.offsetLeft;
+        let best = null, bd = 1e9; row.querySelectorAll("button[data-v]").forEach((b) => { const d = Math.abs(b.offsetLeft - x0); if (d < bd) { bd = d; best = b; } });
+        if (best && best.getAttribute("aria-selected") !== "true") { bigX[k] = row.scrollLeft; pick(best.dataset.v); } };
+      row.addEventListener("scroll", () => { clearTimeout(endT); endT = setTimeout(settle, 220); }, { passive: true });
       const v0 = cell.querySelector(":scope > b"); if (v0) v0.replaceWith(row); else cell.appendChild(row); }
     const one = (c) => items.map(([v, n]) => `<button type="button" role="option" data-v="${v}" data-c="${c}" aria-selected="${v === cur}"${c !== 1 ? ' aria-hidden="true" tabindex="-1"' : ""}>${esc(n)}</button>`).join("");
     const html = one(0) + one(1) + one(2);
