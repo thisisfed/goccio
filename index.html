@@ -126,12 +126,13 @@ html body #shelf .item .l > .c-notes.nb-line{margin:-2px 0 3px!important}   /* t
     if (OLD.includes(location.hostname)) {
       const carry = {};
       for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith("v60.")) carry[k] = localStorage.getItem(k); }
-      const tail = Object.keys(carry).length ? "#carry=" + encodeURIComponent(JSON.stringify(carry)) : location.hash;
+      // the link's own part after # (a recipe: #brew=…) rides along and is put back after the carry (28/11/2026: it was dropped)
+      const tail = Object.keys(carry).length ? "#carry=" + encodeURIComponent(JSON.stringify(carry)) + (location.hash.length > 1 ? "&then=" + encodeURIComponent(location.hash) : "") : location.hash;
       location.replace("https://" + NEW + location.pathname + location.search + tail);
     } else if (location.hash.startsWith("#carry=")) {
-      const carry = JSON.parse(decodeURIComponent(location.hash.slice(7)));
+      const raw = location.hash.slice(7), at = raw.indexOf("&then="), carry = JSON.parse(decodeURIComponent(at < 0 ? raw : raw.slice(0, at)));
       for (const [k, v] of Object.entries(carry)) if (k.startsWith("v60.") && localStorage.getItem(k) == null) localStorage.setItem(k, v);
-      history.replaceState(null, "", location.pathname + location.search);
+      history.replaceState(null, "", location.pathname + location.search + (at < 0 ? "" : decodeURIComponent(raw.slice(at + 6))));
     }
   } catch (e) {}
 })();
