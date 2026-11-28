@@ -45,6 +45,7 @@ jobs:
           cp data/roasters.json /tmp/roasters_before.json
           if [ "$AUDIT" = "fix" ]; then python scripts/world.py --audit --fix; elif [ -n "$AUDIT" ]; then python scripts/world.py --audit; else python scripts/world.py; fi
         env:
+          PYTHONUNBUFFERED: "1"   # its progress shows in the log as it goes (28/11/2026: five silent hours, then cancelled)
           WORLD_MAX_ADD: ${{ inputs.max_add }}
           WORLD_MAX_TRY: ${{ inputs.max_try }}
           AUDIT: ${{ inputs.audit }}
