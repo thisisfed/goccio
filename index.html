@@ -3656,6 +3656,8 @@ html body #rbody #detected:has(.w-row){display:block!important;padding:0!importa
 html body #consTop{min-width:0}
 html body #detected .miss.miss.miss{display:block!important;width:100%;min-width:0;max-width:100%;overflow:hidden;padding:0!important;margin:0!important;font-size:0}
 html body #detected .miss .mr-l{display:none!important}
+html body #detected .miss .xp-t{display:block;padding:10px 0 0;font:500 var(--fs-s)/1.35 var(--sans);color:var(--muted)}   /* "Roast", as "Brewer" and "Grinder" are titled */
+html body #detected .miss + .miss{border-top:1px solid var(--line)}
 html body #detected .roast-ask.w-row{display:flex!important;flex-wrap:nowrap!important;gap:28px!important;height:44px;align-items:stretch;width:100%;max-width:100%;box-sizing:border-box;overflow-x:auto;scrollbar-width:none;margin:0!important;padding:0}
 html body #detected .roast-ask.w-row + .roast-ask.w-row{border-top:0}
 html body #detected .roast-ask.w-row::-webkit-scrollbar{display:none}
@@ -6372,9 +6374,9 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       const where = state.bag ? "on the listing" : "given";
       const pAsk = miss.includes("process") ? `<span class="roast-ask w-row" role="group" aria-label="${it ? "Processo" : "Process"}">${[["washed", "Washed"], ["natural", "Natural"], ["honey", "Honey"], ["anaerobic", "Anaerobic"], ["cofer", "Co-ferment / Infused"], ["decaf", "Decaf"]].map(([v, t]) => `<button type="button" class="w-opt" data-proc="${v}">${esc(tr(t))}</button>`).join("")}</span>` : "";
       $("detected").innerHTML = state.text && miss.length ? [
-        miss.includes("roast") ? `<span class="miss miss-ro">${ask}</span>` : "",
-        miss.includes("process") ? `<span class="miss">The process isn’t ${where}, so the recipe plays it safe. What does the bag say?${pAsk}</span>` : ""].join("") : "";
-      const D = $("detected"), go = D.querySelector(".rp-go"), mo = $("roastMore"); D.hidden = !bagAskShow || !D.textContent.trim();
+        miss.includes("roast") ? `<span class="miss miss-ro"><span class="xp-t">${LANG === "it" ? "Tostatura" : "Roast"}</span>${ask}</span>` : "",
+        miss.includes("process") ? `<span class="miss"><span class="xp-t">${LANG === "it" ? "Processo" : "Process"}</span>${pAsk}</span>` : ""].join("") : ""; void where;
+      const D = $("detected"), go = D.querySelector(".rp-go"), mo = $("roastMore"); D.hidden = !D.textContent.trim();   // asked straight away, as its own section under the warnings (28/11/2026: "pick it below")
       if (go) { go.classList.remove("off"); go.onclick = () => beanScan("rpMsgOpts"); }
       if (mo) mo.onclick = () => { roastAskOpen = !roastAskOpen; render(); };
       // Start brewing waits for the roast: it moves the grind and the temperature more than anything else. "Not sure" takes the safe middle and lets you through
@@ -6562,7 +6564,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
         p.appendChild(document.createTextNode(head + " "));
         /* every line has its own way to fix it, as when it stands alone: Process not stated. Say what the bag says. */
         const ask = a || (() => { const x = document.createElement("a"); x.href = "#"; x.className = "why-ask"; x.onclick = (ev) => { ev.preventDefault(); bagAskShow = true; render(); }; return x; })();
-        ask.textContent = LANG === "it" ? "Di’ cosa dice la busta." : "Say what the bag says."; p.appendChild(ask);
+        ask.textContent = LANG === "it" ? "Sceglila qui sotto." : "Pick it below."; ask.onclick = (ev) => { ev.preventDefault(); const d0 = $("detected"); if (d0 && !d0.hidden) jumpTo(d0); }; p.appendChild(ask);
         ct.appendChild(p); });
       /* asked for: the words give way to the question itself, right here: Roast, Scan the beans, + 5 */
       // (28/11/2026) the warnings stay; the answers come under them as a bar like the menu at the top, between them and the brewer
