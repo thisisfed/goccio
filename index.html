@@ -11454,7 +11454,10 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       const k = rigid ? 1 : Math.max(0.3, 1 + a), ry = R0 * k, tc = Math.cos(S.turn * Math.PI), rx = R0 / Math.sqrt(k), w = rx * 2, ts = Math.sin(S.turn * Math.PI),   /* turning round: it narrows to its side, then widens showing its back */ cx = rigid ? 0 : lean * 0.6, bot = y, mid = bot - ry, top = bot - 2 * ry, sh = 0.552;
       // a proper drop: a tiny point on top (26/11/2026), the shoulders running up into it; it squashes, stretches and sways with him
       const tip = top - ry * 0.168, t1 = top - ry * 0.065, sh2 = 0.774;
-      const d = `M ${-rx} ${mid} C ${-rx} ${mid - ry * sh2} ${cx - rx * 0.142} ${t1} ${cx} ${tip} C ${cx + rx * 0.142} ${t1} ${rx} ${mid - ry * sh2} ${rx} ${mid} C ${rx} ${mid + ry * sh} ${rx * sh} ${bot} 0 ${bot} C ${-rx * sh} ${bot} ${-rx} ${mid + ry * sh} ${-rx} ${mid} Z`;
+      // his body goes where his eyes go (28/11/2026): the top leans after the gaze, as a head turns with its eyes, and bows a little
+      // when he looks down; the bottom stays put, so he sways from where he sits. It follows the same eased gaze the eyes do
+      const gl = rigid ? 0 : Math.max(-3.5, Math.min(3.5, gX * 1.4)), gv = rigid ? 0 : Math.max(-1.6, Math.min(1.6, gY * 0.5)), cxb = cx + gl;
+      const d = `M ${-rx} ${mid} C ${-rx + gl * 0.45} ${mid - ry * sh2 + gv * 0.5} ${cxb - rx * 0.142} ${t1 + gv} ${cxb} ${tip + gv} C ${cxb + rx * 0.142} ${t1 + gv} ${rx + gl * 0.45} ${mid - ry * sh2 + gv * 0.5} ${rx} ${mid} C ${rx} ${mid + ry * sh} ${rx * sh} ${bot} 0 ${bot} C ${-rx * sh} ${bot} ${-rx} ${mid + ry * sh} ${-rx} ${mid} Z`;
       // arms: liquid pushed out of its sides, wide where they leave the body, rounded at the tip, a little curve as if poured
       const arm = (side, ext, ang) => { ext *= Math.abs(tc); if (ext < 0.03) return ""; const A = ang * Math.PI / 180, dx = side * Math.cos(A), dy = -Math.sin(A), nx = -dy, ny = dx;
         const ox = side * rx * 0.78 + cx * 0.3, oy = mid - ry * 0.05, L = 4 + 15 * ext, wb = 4.4, rt = 2.1 + 0.4 * ext, bend = 2.2 * side * Math.sin(A + 0.6);
@@ -11478,7 +11481,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       const bt = el.querySelector(".gd-butt"); if (bt) { bt.style.opacity = back ? "1" : "0"; bt.setAttribute("d", `M ${cx * 0.2} ${(bot - ry * 0.62).toFixed(2)} Q ${(cx * 0.2 + 1.2).toFixed(2)} ${(bot - ry * 0.3).toFixed(2)} 0 ${(bot - 1.2).toFixed(2)}`); }   /* its back: no face, just a little crease */
 
       if (!inStep && !raf && Math.abs(gX - lookX) + Math.abs(gY - lookY) > 0.01) requestAnimationFrame(() => go());   /* a new place to look: the loop eases the eyes there */
-      const ey = mid - 1, ex = cx * 0.55 + gX + ts * rx * 0.92;   /* turning round, it stays a round drop: the face slides round to its side and out of sight, as on a ball */
+      const ey = mid - 1 + gv * 0.3, ex = cx * 0.55 + gl * 0.35 + gX + ts * rx * 0.92;   /* the face rides on the leaning top */   /* turning round, it stays a round drop: the face slides round to its side and out of sight, as on a ball */
       eSX = Math.min(1.25, w / 31) * Math.max(0.06, Math.abs(tc)); eSY = Math.min(1.3, k) * Math.max(0.06, Math.abs(tv));   // how the face is stretched, so perfectly round eyes can undo it
       eyes.setAttribute("transform", `translate(${ex.toFixed(2)} ${(ey + 12 + gY + tw * ry * 0.92).toFixed(2)}) scale(${(Math.min(1.25, w / 31) * Math.max(0.06, Math.abs(tc))).toFixed(3)} ${Math.min(1.3, k).toFixed(3)}) translate(0 -12) scale(1 ${Math.max(0.06, Math.abs(tv)).toFixed(3)}) translate(0 12)`);
       // the face: two eyes (each can open wider or close on its own), happy eyes (^ ^), cheeks that blush. No mouth: the eyes say it all
