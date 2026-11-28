@@ -2915,6 +2915,19 @@ html body #millPick .zr-ctl .step{width:100%!important;display:flex!important;ju
 #whyNums .wn-h{margin:0 0 8px;font-size:var(--fs-s);font-weight:500;color:var(--ink)}
 #whyNums .wn{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:var(--fs-s);line-height:1.35;color:var(--muted)}
 #whyNums .wn b{color:var(--ink);font-weight:500;margin-right:4px}   /* plain words, as How to pour is: no pill round them */
+/* What to expect, Dial it in and the clicks: read like Why these numbers (28/11/2026). Always open, a plain heading, a rule on top,
+   each line a word in ink then the rest in grey */
+html body #rbody :is(#expBox, #dialBox, #clkHow){display:block;margin:0 0 4px!important;padding:12px 0 var(--xp-pb,0px)!important;border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;background:none!important;box-shadow:none!important}
+html body #rbody :is(#expBox, #dialBox, #clkHow) > summary{display:block!important;margin:0 0 8px!important;padding:0!important;cursor:default!important;pointer-events:none;font-size:var(--fs-s)!important;font-weight:500!important;color:var(--ink);white-space:normal!important}
+html body #rbody :is(#expBox, #dialBox, #clkHow) > summary::after, html body #rbody :is(#expBox, #dialBox, #clkHow) > summary .muted{display:none!important}
+html body #rbody :is(#expBox, #dialBox) ul{list-style:none!important;margin:0!important;padding:0!important;display:grid!important;gap:6px!important;font-size:var(--fs-s)!important;line-height:1.35!important;color:var(--muted)}
+html body #rbody :is(#expBox, #dialBox) ul li::before, html body #rbody :is(#expBox, #dialBox) ul li::marker{content:none!important}
+html body #rbody :is(#expBox, #dialBox, #clkHow) b{color:var(--ink)!important;font-weight:500!important;margin-right:4px}
+html body #rbody #clkHow .clk-body{font-size:var(--fs-s)!important;line-height:1.35!important;color:var(--muted);display:grid;gap:6px;padding:0!important}
+html body #rbody #clkHow .clk-body p{margin:0!important;color:var(--muted)!important}
+html body #rbody #clkHow .clk-sum{margin:2px 0!important}
+html body #rbody #clkHow{--xp-pb:14px}   /* the Buy row under it as far as every section's rule */
+html body #rbody #clkHow + .tech, html body #rbody details.clk + details.clk{margin-top:0!important}
 #consTop .why-ask{color:inherit;text-decoration:underline;text-underline-offset:2px}
 #detected .miss.miss-ro > .mr-l{color:var(--muted)}
 #detected .miss.miss-ro > .roast-ask{margin:0!important}
@@ -6328,7 +6341,13 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       tempSpec, timeSpec,
     ];
     renderClicks(r);
-    $("zeroRow").hidden = !!r.mine; $("clkHow").hidden = !!r.mine || !!mill().words;   // no grinder saved: the grind is in words, the click maths would be noise
+    $("zeroRow").hidden = !!r.mine; $("clkHow").hidden = !!r.mine;   // the clicks, how they were reached, back for every grinder (28/11/2026: "it was very nice")
+    // read like Why these numbers: open, "Acidity bright…" not "Acidity: bright…", Dial it in's cases in ink before the fix
+    ["expBox", "dialBox", "clkHow"].forEach((id) => { const d = $(id); if (d) d.open = true; });
+    if (!window.__xpPolish) { window.__xpPolish = true;
+      const pol = () => { try { $("expect").querySelectorAll("li > b:first-child").forEach((b0) => { const nx = b0.nextSibling; if (nx && nx.nodeType === 3 && /^\s*:/.test(nx.nodeValue)) nx.nodeValue = nx.nodeValue.replace(/^\s*:\s*/, " "); });
+          $("dial").querySelectorAll("li").forEach((li) => { if (li.querySelector("b")) return; const h = li.innerHTML, k = h.indexOf("→"); if (k > 0) li.innerHTML = `<b>${h.slice(0, k).trim()}</b> ${h.slice(k + 1).trim()}`; }); } catch (e) {} };
+      ["expect", "dial"].forEach((id) => { const el = $(id); if (el) new MutationObserver(pol).observe(el, { childList: true, subtree: true }); }); pol(); }
     renderMine(r);
     const showRet = r.tds != null;
     { const bn = BREWERS[r.brewer].name, open = !!(pickPan("brew").parentNode && !pickPan("brew").hidden);   // the brewer, in the title: tap it to change it (28/11/2026)
@@ -6623,6 +6642,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
 
   // ---------- options ----------
   // switching brewer keeps each brewer's own last dose
+  document.addEventListener("click", (e) => { const sm = e.target.closest && e.target.closest("#expBox > summary, #dialBox > summary, #clkHow > summary"); if (sm) e.preventDefault(); }, true);   // they stay open
   function setBrewer(v) {
     const old = brewerOf(state);
     // the brewers you've used come first in the Brewer row next time; the rest sit behind the +
