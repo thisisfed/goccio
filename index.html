@@ -6056,7 +6056,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     z.style.width = ""; };   // in the recipe it takes the room its label and stepper need
   addEventListener("resize", () => zrFit());
   const gearHasAny = () => { try { return gear.grinders.length > 0; } catch (e) { return false; } };
-  const gearHasC40 = () => { try { return gear.grinders.includes("c40"); } catch (e) { return false; } };
+  
   // grinder and zero controls sit above the questions, so they update even before there's a full recipe
   function kitState() {
     $("zrCtl").hidden = !isC40();   // the Comandante's clicks, under the grinder when it's the one in use
@@ -6126,17 +6126,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   };
   const GOAL_SHORT = { light: "Light & sweet", balanced: "Balanced", syrupy: "Rich & syrupy" };
   const step = (d) => `${d > 0 ? "adds" : "takes off"} ${Math.abs(d).toFixed(1).replace(/\.0$/, "")}`;
-  function ratioWhy(r) {
-    const C = CLASSIC[r.m], parts = [C.txt + "."];
-    if (!r.goal) { parts.push(r.brewer === "cold" ? `${r.dose} g × 8 = ${r.water} g water. Strength is set when you dilute, not by the grind.` : "Change the strength in the cup, with a splash of hot water, not with the grind."); return parts.join(" "); }
-    const dGoal = Math.round((r.baseRatio - C.r) * 10) / 10;
-    parts.push(dGoal ? `${GOAL_SHORT[r.goal]} goal ${step(dGoal)}, to 1:${r.baseRatio}.` : `${GOAL_SHORT[r.goal]} goal keeps it there.`);
-    if (r.pc.ratio) parts.push(`${r.learn && r.learn.source === "style" ? "Your nailed brews of this style" : "Your journal for this coffee"} ${step(r.pc.ratio)}.`);
-    if (r.ratioClamped && r.kind !== "shot") parts.push("Held inside 1:14–1:18.5.");
-    if (r.capped) parts.push(`An AeroPress holds about 250 g, so it stops there: 1:${r.ratio}.`);
-    parts.push(r.kind === "shot" ? `${r.dose} g × ${r.ratio} = ${r.water} g in the cup. Stop the shot on weight, and fix the time with the grind.` : `${r.dose} g × ${r.ratio} = ${r.water} g water. Strength is set by ratio, not grind.`);
-    return parts.join(" ");
-  }
+  
 
   // ---------- high-risk combinations (one line each, shown first under Why this recipe) ----------
   function risks(r) {
@@ -6335,13 +6325,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       const lb = kc.querySelector("[data-pick]"), G = GRINDERS[ms.value];
       if (lb && lb.firstChild && lb.firstChild.nodeType === 3 && G && !G.words) lb.firstChild.nodeValue = LANG === "it" ? "Regolazione" : "Setting";   /* "Setting: 22 clicks", not "Clicks: 22 clicks" */
       kc.querySelectorAll(".add-mill").forEach((x) => { x.hidden = true; });   // the grinders are all there in the line above
-      // ‹ 22 ›: a click either way sets the C40 zero (it follows every recipe, as − / + under the grinder did)
-      const fig = kc.querySelector(":scope > b"); if (false && fig && isC40() && !fig.classList.contains("zstep-b")) {   // no ‹ › on the clicks (28/11/2026) fig.classList.add("zstep-b", "dstep-b");
-        fig.querySelectorAll("small").forEach((x) => { if (/click|scatt/i.test(x.textContent)) x.remove(); });
-        const n = document.createElement("span"); n.className = "dstep-n"; while (fig.firstChild) n.appendChild(fig.firstChild); fig.appendChild(n);
-        const mk = (d) => { const x = document.createElement("button"); x.type = "button"; x.className = "chip gear-more"; x.dataset.zstep = d; x.setAttribute("aria-label", d < 0 ? (LANG === "it" ? "Uno scatto più fine" : "One click finer") : (LANG === "it" ? "Uno scatto più grosso" : "One click coarser"));
-          x.innerHTML = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="${d < 0 ? "M7.5 2.5 4 6l3.5 3.5" : "M4.5 2.5 8 6 4.5 9.5"}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`; return x; };
-        fig.prepend(mk(-1)); fig.appendChild(mk(1)); } }
+      }   /* the ‹ › on the clicks went with the C40 zero (28/11/2026) */
     // big type (a wide screen) can need more than Brew + Buy: then Back and both steppers take the steppers' own least width
     try { const ds = [...sp.querySelectorAll("b.dstep-b")].filter((d) => d.offsetWidth); if (ds.length) { const need = Math.ceil(Math.max(...ds.map((d) => [...d.children].reduce((t, c) => t + c.getBoundingClientRect().width, 0) + 6 * (d.children.length - 1))));
         const cur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--step-w")) || 0; if (need > cur) { document.documentElement.style.setProperty("--step-w", need + "px"); const nav = document.querySelector(".botnav"); if (nav) { nav.style.setProperty("--back-w", need + "px"); nav.classList.add("back-fit"); } } } } catch (e) {} }
@@ -6581,9 +6565,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       const moves = [r.clickParts.roast && `${ROAST[c.roast].label} roast ${signed(r.clickParts.roast)}`, r.clickParts.process && `${PROCESS[c.process].label} ${signed(r.clickParts.process)}`].filter(Boolean);
       if (c.process !== "unsure" && c.roast !== "unsure") why.push(`${pl}, ${ROAST[c.roast].label} roast: ${moves.length ? `the grind moves ${moves.join(", ")} (in C40 clicks)` : "the grind stays at the base"}${hasT ? `, and the kettle goes to ${r.temp}°C` : ""}, the same rules as the V60 recipes.`);
     }
-    if (hasT && K !== "shot") why.push(false && r.temp > 93
-      ? `At equal strength and extraction, UC Davis panels found almost no difference between 87, 90 and 93°C (Batali et al. 2020). Hotter water was not tested: we use ${r.temp}°C ${K === "pour" ? "because the coarse grind needs it, " : ""}as brewers of light roasts commonly do.`
-      : `Temperature, grind and agitation are all ways to reach the same extraction. At equal strength and extraction, UC Davis panels found almost no difference between 87, 90 and 93°C (Batali et al. 2020), so ${r.temp}°C is set together with the grind, not on its own.`);
+    if (hasT && K !== "shot") why.push(`Temperature, grind and agitation are all ways to reach the same extraction. At equal strength and extraction, UC Davis panels found almost no difference between 87, 90 and 93°C (Batali et al. 2020), so ${r.temp}°C is set together with the grind, not on its own.`);
     if (["anaerobic", "cofer", "natural", "decaf", "hulled", "monsooned", "aerobic"].includes(c.process) && hasT && K !== "shot") why.push(`For ${pl.toLowerCase()} coffees this recipe runs a little cooler and gentler: that is roasters’ practice, not a measured difference in extraction. If yours tastes thin, sour or sharply vinegary, it is under-extracted: go 2°C hotter, as the dial-in tips say.`);
     if (r.goal && K !== "shot") why.push(`Strength comes from the ratio (1:${r.ratio}). In UC Davis tests, sweetness went down as strength went up (Frost et al. 2020): a lighter ratio tastes sweeter, a stronger one heavier.`);
     if (K !== "shot" && CUP[r.m]) why.splice(Math.min(1, why.length), 0, CUP[r.m].how);   // how this brewer and method shape the cup
@@ -7763,10 +7745,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   const curfewOn = () => CF_FORCE ? !cfLift : lateNow() && cfPref() !== "off" && cfPref() !== "skip:" + nightOf();
   let cfWas = null;
   // the clock in the alert: "It's 16:54: decaf only after 14:00."
-  function cfClock() {
-    const d = new Date(), p = (n) => String(n).padStart(2, "0"), t = `${p(d.getHours())}:${p(d.getMinutes())}`;
-    $("cfNow").textContent = LANG === "it" ? `Sono le ${t}: solo decaffeinato dopo le 14:00.` : `It’s ${t}: decaf only after 14:00.`;
-  }
+  
   function renderCurfew() {
     const on = curfewOn(), box = $("curfew"); if (box) box.hidden = true;
     try { cfNudge(); } catch (e) {}
@@ -7971,16 +7950,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   // For you, with nothing yet to learn from, switches itself off once you've read why. From the first moment its pill
   // morphs into a circle (a springy squeeze, the words blurring out), counts down with each number dropping in,
   // the pill turning grey as it shrinks
-  function fyCount(n, p) {
-    const c = $("shelfX") && $("shelfX").querySelector('[data-v="foryou"]'); if (!c) return;
-    c.style.setProperty("--fy-p", (1 - p).toFixed(3));
-    if (!c.classList.contains("fy-cd")) {
-      c.style.width = c.offsetWidth + "px"; c.innerHTML = `<span class="fy-old">${c.innerHTML}</span>`;
-      void c.offsetWidth; c.classList.add("fy-cd"); c.style.width = "";
-      c._fyN = null; c._fyT = setTimeout(() => { c._fyT = 0; if (c.isConnected) fyNum(c, c._fyWant); }, 260);
-    }
-    c._fyWant = n; if (!c._fyT && c._fyN !== n) fyNum(c, n);
-  }
+  
   function fyNum(c, n) { c._fyN = n; c.innerHTML = `<span class="fy-n" aria-hidden="true">${n}</span>`; c.setAttribute("aria-label", `For you, switching off in ${n}`); }
   function forYou() {
     const pr = fyProfile(); if (!pr) return null;
@@ -8285,31 +8255,8 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   if (/[?&]scantest\b/.test(location.search)) window.__ask = (q) => { const w = readAsk(q), sc = askScore(w), pool = shelf.filter((r) => sc(r) > 0);
     return { lands: w.lands, proc: w.proc, places: (w.places || []).map((p) => p.label || p.city || "near"), decaf: w.decaf, roasters: (w.roasters || []).map((x) => x.name), words: w.words, tastes: w.tastes.map((t) => t.w), n: pool.length, half: pool.filter((r) => HALFCAF_RX.test(r.name || "")).length, decafs: shelf.filter(isDecaf).length }; };
   // what the ask was read as, in a line under the menu
-  function askLine(want, found = "") {
-    const it = LANG === "it", bits = [];
-    want.tastes.forEach((t) => bits.push(t.w));
-    if (want.proc) bits.push(it ? { natural: "naturale", washed: "lavato", honey: "honey", exp: "sperimentale" }[want.proc] : { natural: "natural", washed: "washed", honey: "honey", exp: "experimental process" }[want.proc]);
-    if (want.roast) bits.push(it ? { vlight: "tostatura chiarissima", light: "tostatura chiara", medium: "tostatura media", dark: "tostatura scura" }[want.roast] : { vlight: "very light roast", light: "light roast", medium: "medium roast", dark: "darker roast" }[want.roast]);
-    want.lands.forEach((l) => bits.push(l));
-    want.words.forEach((w) => bits.push(`“${w}”`));
-    want.roasters.forEach((x) => bits.push((it ? "di " : "by ") + x.name));
-    if (want.filter) bits.push(want.filter === "espresso" ? (it ? "per espresso" : "for espresso") : (it ? "per filtro" : "for filter"));
-    { const nr = want.places.find((pl) => pl.near), op = want.places.filter((pl) => !pl.near);
-      if (op.length) bits.push((it ? "torrefatto in " : "roasted in ") + op.map((pl) => pl.label).join(it ? " o " : " or "));
-      if (nr) bits.push(it ? `torrefatto entro ${nr.dist} da te` : `roasted within ${nr.dist} of you`); }
-    if (want.decaf) bits.push("decaf"); if (want.nodecaf) bits.push(it ? "con caffeina" : "with caffeine");
-    if (want.fresh) bits.push(it ? "nuovi" : "new in");
-    if (want.treat) bits.push(it ? "un lotto speciale" : "a special lot");
-    if (want.cheap) bits.push(it ? "buon prezzo" : "good value");
-    if (want.dear) bits.push(it ? "di fascia alta" : "top end");
-    if (want.min != null && want.max != null) bits.push(it ? `tra ${want.min} e ${want.max} £` : `£${want.min} to £${want.max}`);
-    else if (want.min != null) bits.push(it ? `sopra ${want.min}` : `over £${want.min}`);
-    else if (want.max != null) bits.push(it ? `sotto ${want.max}` : `under £${want.max}`);
-    const b = want.brewer && BREWERS[want.brewer] ? BREWERS[want.brewer].name : "";
-    if (!bits.length && !b) return "";
-    return (it ? "Cercato: " : "Looking for ") + (bits.join(", ") || (it ? "tutto" : "anything")) + found + (b ? (it ? `. Ricetta per ${b}` : `. Recipes set for ${b}`) : "") + (it ? ". I più vicini per primi." : ". Best match first.");
-  }
-  const justInLabel = () => scanDay === todayIso() ? "Just in today" : `Just in, ${isoDmy(scanDay)}`;
+  
+  
   // the card: two or three of the roaster's tasting notes (words you searched for lit), and the price with the bag's weight and
   // the price per 100 g, which is a plain link to the shop; Save is an icon beside Brew
   const BAG_ICO = `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2h8v12l-4-3-4 3z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
@@ -8828,7 +8775,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   const buyAgain = (b) => isLow(b) && b.url ? `<a class="pill bag-buy" href="${esc(b.url)}" target="_blank" rel="noopener">Buy again</a>` : "";
   const lowLine = () => "";
   // the roaster didn't say how dark it is (and it isn't a typed coffee): the bag has a Roast dropdown, and your answer stays with it
-  const roastStated = (b) => !b.roastYou && ((b.roast && ROAST[b.roast]) || ["dark", "medium-dark"].includes(b.roast_level));
+  
   const bagNeedsRoast = (b) => !!(b.roaster || b.name) && !bagRoastKey(b);   // once picked (or stated), the dropdown goes: the roast shows under the coffee
   const bagRoastKey = (b) => b.roast && ROAST[b.roast] ? b.roast : b.roast_level === "dark" ? "dark" : b.roast_level === "medium-dark" ? "mdark" : "";
   function renderBags() {
@@ -9049,17 +8996,8 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   var brewIn = false, BREW_MOVE = ["detected", "kit", "adjOpts", "recipe"], BREW_AT = {};
   // the recipe's figures flip like a split-flap board when the coffee amount changes: each character that changed drops away and the new one falls in
   const flapText = (b) => [...b.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join("");
-  function flapRead() { const o = {}; $("specs").querySelectorAll(".spec").forEach((sp) => { const b = sp.querySelector(":scope > b"), k = [...sp.classList].find((c) => c !== "spec" && c !== "wide" && c !== "key") || "key"; if (b) o[k] = flapText(b); }); return o; }
-  function flapSpecs(was) { if (!was || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    $("specs").querySelectorAll(".spec").forEach((sp) => { const b = sp.querySelector(":scope > b"), k = [...sp.classList].find((c) => c !== "spec" && c !== "wide" && c !== "key") || "key"; if (!b || was[k] == null) return;
-      const now = flapText(b), old = was[k]; if (now === old || /[a-z]{3}/i.test(now)) return;   // figures only: a grind in words doesn't flip
-      const tn = [...b.childNodes].find((n) => n.nodeType === 3 && n.textContent.trim()); if (!tn) return;
-      const frag = document.createElement("span"), same = now.length === old.length; let j = 0; frag.className = "flapw";   // one piece, so a row laid out with gaps doesn't pull the digits apart
-      [...tn.textContent].forEach((ch, i) => { const o = same ? old[i] : old[old.length - (now.length - i)] || " ";
-        if (same && o === ch) { frag.appendChild(document.createTextNode(ch)); return; }
-        const w = document.createElement("span"); w.className = "flap"; w.style.setProperty("--d", (j++ * 45) + "ms"); w.setAttribute("aria-hidden", "true");
-        const a = document.createElement("span"); a.className = "flap-o"; a.textContent = o; const n = document.createElement("span"); n.className = "flap-n"; n.textContent = ch; w.append(a, n); frag.appendChild(w); });
-      b.setAttribute("aria-label", b.textContent.trim()); tn.replaceWith(frag); }); }
+  
+  
   // Back to top only when there is a top to go back to: a list that fits on one screen (a short search) has none
   function fitsCheck() { requestAnimationFrame(() => { const m = $("shelfMore"); if (!m) return;
     const end = m.dataset.top === "1" && !m.dataset.clear && !m.dataset.unfilter;
@@ -10097,24 +10035,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
      "ADWAY" for BROADWAY, "LACEBO / DECAF" for THE PLACEBO / THE DECAF. That roaster has only so many coffees on today's list, so
      the scraps are tried against each of their names: one coffee whose every name word is on the label, whole or as a long piece
      of it, and whose origin agrees, is offered as a likely match (never a sure one). */
-  function roasterScraps(f) {
-    if (!f || !f.roaster || !f.roaster.v || !shelf.length) return null;
-    const rk = roasterKey(f.roaster.v); if (!rk) return null;
-    const mine = shelf.filter((r) => sameRo(r.roaster, f.roaster.v));
-    if (!mine.length) return null;
-    const toks = [...new Set([...(f.words || []), ...(f.name && f.name.v ? norm(f.name.v).split(" ") : [])])].filter((t) => t.length >= 4);
-    const piece = (t, w) => w.length >= 5 && t.length >= Math.max(4, w.length - 3) && w.includes(t);
-    const oN = f.origin && f.origin.v ? f.origin.v.split(" / ") : null, seen = new Map();
-    mine.forEach((r) => { const cw = coreWords(r.name); if (!cw.length) return;
-      if (oN && r.origin && !r.origin.split(" / ").some((o) => oN.includes(o))) return;
-      if (!cw.every((w) => toks.some((t) => near1(t, w) || piece(t, w)))) return;
-      if (!cw.some((w) => w.length >= 5 && !Object.values(V.country).flat().includes(w))) return;   // a country alone is not a name ("The Decaf" is)
-      const key = cw.join(" "); if (!seen.has(key) || cw.length > seen.get(key).n) seen.set(key, { r, n: cw.length }); });
-    if (!seen.size) return null;
-    const best = [...seen.values()].sort((a, b) => b.n - a.n);
-    if (best.length > 1 && best[0].n === best[1].n) return null;   // two of their coffees fit: it can't say which
-    return { pick: best[0].r, sure: false };
-  }
+  
   /* ---- the bag on today's list, from everything that was read (28/11/2026) ----
      shelfMatch0 below needs the label's title read right and set apart. This one asks the list directly: each listing is a
      handful of words (its name), and a word that only one or two roasters use (Inhame, Grevillea, Gicherori) says far more
@@ -10589,7 +10510,6 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     // what the box is for, with the size of the list in it: "Search 8,705 coffees" (the plain hint until the list is in)
     const hintText = () => { if (typeof shelfRo !== "undefined" && shelfRo) { const k0 = shelf.filter((r) => r.roaster === shelfRo).length, bx = document.getElementById("askIn"), narrow = bx && bx.clientWidth && bx.clientWidth < 330;
         return LANG === "it" ? `Caffè di ${shelfRo}` : `Coffees from ${shelfRo}`; }   /* on a roaster's page the box says whose coffees it holds (no "Search": asked 25/11/2026) */
-      if (false) { const k = shelf.filter((r) => r.roaster === shelfRo).length; return LANG === "it" ? `Cerca tra ${k} caffè` : `Search ${k} coffee${k === 1 ? "" : "s"}`; }   // on a roaster's page: that roaster's coffees
       // the day's count is pinned under the bar ("208 coffees added today"): two numbers at once is one too many, so the box just says Search
       // first the size of the list ("10,108 coffees from 826 roasters"); once the day's band is pinned under the bar it says Search,
       // and stays Search from then on: one change, never back and forth (27/11/2026)
@@ -10606,8 +10526,10 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
         : wkH ? (it ? [`${N} caffè di ${R} torrefazioni questa settimana`, `${N} caffè, ${R} torrefazioni`, `${N} caffè questa settimana`, `${N} caffè`] : [`${N} coffees from ${R} roasters this week`, `${N} coffees, ${R} roasters this week`, `${N} coffees, ${R} roasters`, `${N} coffees this week`, `${N} coffees`])
         : it ? [`${N} caffè di ${R} torrefazioni`, `${N} caffè`] : [`${N} coffees from ${R} roasters`, `${N} coffees`];
       const room = ph.clientWidth; if (!room) return forms[0];
+      // measured once per wording and width (28/11/2026): it is asked every 250 ms while the list loads, and each measure forced a layout of the whole page
+      const fk = room + "|" + forms.join("|"); if (hintText.k === fk) return hintText.v;
       const m = document.createElement("span"); m.className = "ph-t ph-q"; m.style.cssText = "position:absolute;visibility:hidden;white-space:nowrap;width:auto"; ph.appendChild(m);
-      const pick = forms.find((t) => { m.textContent = t; return m.scrollWidth <= room; }) || forms[forms.length - 1]; m.remove(); return pick; };
+      const pick = forms.find((t) => { m.textContent = t; return m.scrollWidth <= room; }) || forms[forms.length - 1]; m.remove(); hintText.k = fk; hintText.v = pick; return pick; };
     const settle = () => { if (calm) return; calm = true; roll(hintText(), true); };
     addEventListener("scroll", () => { if (scrollY > 80) settle(); }, { passive: true });
     a.addEventListener("focus", settle);
@@ -12423,13 +12345,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       if (r1 < 0.16) return void grin();
       (async () => { for (let i = 0; i < pat.length; i++) { await blinkSoft(0.1, pat[i]); if (i < pat.length - 1) await wait(pat[i].gap); } })().catch(() => {}); };
     setTimeout(idle, 6000);
-    const pfft = (vol = 1, dur0 = 0.42) => { return;   /* Goccio makes no sounds at all */ try { const A = window.__gdA || (window.__gdA = new (window.AudioContext || window.webkitAudioContext)()); if (A.state === "suspended") A.resume();
-        const t0 = A.currentTime, dur = dur0, n = A.createBuffer(1, Math.ceil(A.sampleRate * dur), A.sampleRate), ch = n.getChannelData(0); for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1;
-        const src = A.createBufferSource(); src.buffer = n; const bp = A.createBiquadFilter(); bp.type = "bandpass"; bp.Q.value = 2.2; bp.frequency.setValueAtTime(150, t0); bp.frequency.exponentialRampToValueAtTime(70, t0 + dur);
-        const o = A.createOscillator(); o.type = "sawtooth"; o.frequency.setValueAtTime(95, t0); o.frequency.exponentialRampToValueAtTime(48, t0 + dur); const og = A.createGain(); og.gain.value = 0.12 * vol;
-        const g = A.createGain(); g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(0.22 * vol, t0 + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-        const lfo = A.createOscillator(), lg = A.createGain(); lfo.frequency.value = 26; lg.gain.value = 0.1; lfo.connect(lg).connect(g.gain);   // the flutter
-        src.connect(bp).connect(g); o.connect(og).connect(g); g.connect(A.destination); [src, o, lfo].forEach((x) => { x.start(t0); x.stop(t0 + dur); }); } catch (e) {} };
+    
     el.addEventListener("contextmenu", (e) => e.preventDefault());   // a long press on a phone is the drop's, not the menu's
     // touched: it dances (or, already busy, just looks happy)
     // it glances at where you tap
@@ -13072,7 +12988,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       // three messages, typed one after the other: the hello, the coffee, then "Want to see it?"
       // about one hello in three (never first thing in the morning, nor when it's steering you to a decaf or to tomorrow) opens with a did-you-know
       // every hello (27/11/2026: "I do not see the fun coffee facts"): the greeting, a did-you-know, then the coffee
-      const coffeeLine = () => typeDots(dotsFor(line), () => { sayNow(line, [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(best); } }], happy); ctx = { t: "pick", at: Date.now() }; });
+      
       sayNow(hi, null, happy); const nextOne = () => typeDots(dotsFor("did you know, coffee"), () => { sayNow(T("Did you know? ", "Lo sapevi? ") + factPick(), null, happy); ctx = null; });   // the hello and a did-you-know, then he waits (27/11/2026: "stop after fun fact")
       // now and then, after the hi, it asks how you are and waits: your answer gets a word back (and an answer if you ask it), then the coffee
       const howQ = !/\?/.test(hi) && !(hNow >= 5 && hNow < 10) && Math.random() < 0.3 ? pick([T("How are you?", "Come stai?"), T("How's your day going?", "Come va la giornata?"), T("How are you doing today?", "Come va oggi?")]) : null;
@@ -13292,9 +13208,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       fix: [T("Why is it sour?", "Perché è aspro?"), T("Why is it bitter?", "Perché è amaro?"), T("Why is it weak?", "Perché è acquoso?"), T("It drains too fast", "Scende troppo veloce"), T("How much coffee?", "Quanto caffè?"), T("What water temperature?", "Che temperatura?"), T("How long should it take?", "Quanto deve durare?"), T("What's the bloom?", "Cos’è la pre-infusione?"), T("How should I store beans?", "Come conservo i chicchi?"), T("Which grinder should I buy?", "Che macinino compro?")],
       learn: [T("What is coffee?", "Cos'è il caffè?"), T("Natural or washed?", "Naturale o lavato?"), T("What’s Gesha?", "Cos’è il Gesha?"), T("How is coffee roasted?", "Come si tosta il caffè?"), T("How is coffee made?", "Come nasce il caffè?"), T("Who is James Hoffmann?", "Chi è James Hoffmann?"), T("Who is Tim Wendelboe?", "Chi è Tim Wendelboe?"), T("What’s the 4:6 method?", "Cos’è il metodo 4:6?"), T("What’s the Rao spin?", "Cos’è il Rao spin?"), T("What is third wave?", "Cos’è la terza ondata?"), T("Why does coffee wake you up?", "Perché il caffè sveglia?"), T("How much caffeine?", "Quanta caffeina?"), T("Arabica or Robusta?", "Arabica o Robusta?"), T("What is specialty coffee?", "Cos’è lo specialty?")],
       fun: [T("Scare me", "Spaventami"), T("Dance!", "Balla!"), T("What does Goccio mean?", "Cosa vuol dire Goccio?"), T("Do a backflip", "Fai una capriola"), T("What's the meaning of life?", "Qual è il senso della vita?"), T("Tell me a joke", "Raccontami una barzelletta")] });
-    const SUGGEST = () => { const P = POOL(), one = (k, not) => { const xs = P[k].filter((x) => !not.includes(x)); return xs[Math.floor(Math.random() * xs.length)]; }, out = [];
-      out.push(one("find", out), one("fix", out), one("learn", out)); out.push(Math.random() < .5 ? one("fun", out) : one("learn", out));
-      return out.sort(() => Math.random() - 0.5); };
+    
     const showChips = (list) => { chipsEl.textContent = ""; const xs = [];   // replies offered by an answer only: the sample questions come with the hello
       xs.forEach((x) => { const b = document.createElement("button"); b.type = "button"; if (typeof x === "string") { b.textContent = x; b.onclick = () => ask(x); } else if (x.q || x.a) { b.textContent = x.t; b.onclick = () => { if (x.q) ask(x.q); else { addMsg("me", x.t); x.a(); } }; } else { b.textContent = x.t; b.onclick = x.f; b.className = "on"; } chipsEl.appendChild(b); }); };
     // the empty box under the chips rotates through examples too, every few seconds while Goccio is open
@@ -14457,7 +14371,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
           { const hd = document.querySelector(".gd-head svg"); if (hd) { const hb = hd.querySelector(".ag-b"), he = hd.querySelector(".ag-e"), hs = hd.querySelector(".ag-shy");
               if (hb) hb.setAttribute("transform", bo.getAttribute("transform")); if (he) { he.setAttribute("transform", ey.getAttribute("transform")); he.style.visibility = ey.style.visibility; } if (hs && shy) hs.setAttribute("transform", shy.getAttribute("transform")); } }
           wide += (wideTo - wide) * .2; lid += (lidTo - lid) * .08; ey.setAttribute("transform", `translate(${(x * 1.1).toFixed(2)} ${(y * 1.1 - .8 * gr).toFixed(2)}) translate(0 -1) scale(${(wide * (1 + .12 * gr)).toFixed(3)} ${Math.max(blink < 1 ? 0.07 : 0.26, blink * wide * Math.max(1, lid) * (1 + .12 * gr)).toFixed(3)}) translate(0 1)`);   /* a smile, in the eyes alone: they lift and narrow into happy slits */ ey.style.visibility = "";   /* shut eyes leave a thin black line */
-          if (false && !mo && gr > .01) { mo = document.createElementNS("http://www.w3.org/2000/svg", "path"); mo.setAttribute("fill", "none"); mo.setAttribute("stroke", getComputedStyle(ey).fill || "#000"); mo.setAttribute("stroke-width", "1.25"); mo.setAttribute("stroke-linecap", "round"); ey.parentNode.insertBefore(mo, ey.nextSibling); }
+          
           if (mo) { mo.setAttribute("d", `M -2.9 5.1 Q 0 ${(5.1 + 2.8 * gr).toFixed(2)} 2.9 5.1`); mo.setAttribute("transform", `translate(${(x * 1.1).toFixed(2)} ${(y * 1.1).toFixed(2)})`); mo.style.opacity = Math.min(1, gr).toFixed(2); }
           if (Math.abs(tx - x) + Math.abs(ty - y) > .02 || Math.abs(wideTo - wide) > .01 || Math.abs(lidTo - lid) > .01 || Math.abs(stTo - st) > .003 || Math.abs(grTo - gr) > .01 || hopT) run = requestAnimationFrame(loop); else { run = 0; lt = 0; } };
         const go = () => { if (!run) run = requestAnimationFrame(loop); };
