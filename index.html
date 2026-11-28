@@ -10854,11 +10854,14 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       const sp = mw(" "), BIG = 1e9;
       const len = (i, j) => { let s = 0; for (let k = i; k <= j; k++) s += ww[k]; return s + sp * (j - i); };
       if (len(0, n - 1) <= W) { gaps.forEach((g) => { g.t.nodeValue = g.t.nodeValue.slice(0, g.i) + " " + g.t.nodeValue.slice(g.i + 1); }); return; }   // one line: nothing to choose
+      // the roaster's name ("Viento Coffee Company:") stays on one line whenever it fits on one (28/11/2026)
+      const rk = words.findIndex((w) => /:$/.test(w)), roFits = rk > 0 && rk < n - 1 && len(0, rk) <= W;
       const best = new Array(n + 1).fill(BIG), from = new Array(n + 1).fill(-1); best[0] = 0;
       for (let j = 1; j <= n; j++) for (let i = j - 1; i >= 0; i--) { const L = len(i, j - 1); if (L > W) break; if (best[i] >= BIG) continue;
         const last = j === n, one = j - 1 === i; let c = last ? (L < W * 0.3 ? W * W * 0.6 : L < W * 0.45 ? W * W * 0.15 : 0) : (W - L) * (W - L);
         if (!last && WEAK.test(words[j - 1].replace(/[.,;:!?]+$/, ""))) c += W * W * 0.5;   // "and" opens the next line, never ends this one
         if (!last && /^[^\p{L}\p{N}]+$/u.test(words[j])) c += BIG;   // a stray ":" never opens a line
+        if (!last && roFits && j - 1 < rk) c += W * W * 3;   // not inside the roaster's name
         if (!last && !/[,;:.!?]$/.test(words[j - 1]) && !WEAK.test(words[j])) c += W * W * 0.4;   // a break inside a name or a note ("yellow / peach") only when nothing better fits
         if (one && !(last && n === 1) && !/:$/.test(words[i])) c += W * W * (last ? 1.2 : 0.8);   // a word on its own (the roaster and its colon may stand alone: "September: / Finca Arashi")
         if (best[i] + c < best[j]) { best[j] = best[i] + c; from[j] = i; } }
