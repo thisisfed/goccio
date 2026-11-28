@@ -2137,6 +2137,7 @@ html body .shelf .grp.day-g.stuck::after{left:calc(50% - 50vw + 12px);width:calc
 @media (prefers-reduced-motion:reduce){html body .shelf .grp.day-g::after{transition:none}}
 html body .shelf .grp.day-g::before{left:calc(50% - 50vw)!important;right:auto!important;width:100vw}
 html.brew-in body .shelf .grp.day-g{display:none!important}   /* brewing a coffee: no day heading pinned over it */
+html.brew-in body #shelves .co-tabs, html.brew-in body #shelves #askNote, html.brew-in body #shelves #fyNote, html.brew-in body #shelves .co-tabs ~ #askNote.nb-band.fy-note:not([hidden]), html.brew-in body #shelves .co-tabs ~ #fyNote.nb-band.fy-note:not([hidden]){display:none!important}   /* nor the kinds row or the search's line: pinned, they covered the coffee's tags and name (28/11/2026) */
 html body .shelf .grp.day-g + .item{border-top:0!important}
 html body .shelf > .grp.bare + .grp.day-g{margin-top:12px}
 html body #shelf > .grp.day-g:first-child, html body #shelf > .grp.bare:first-child + .grp.day-g{margin-top:-13px;padding-top:0}   /* the first day reads as the title's second line: "Coffees." then "Added yesterday", one paragraph */
@@ -2797,7 +2798,9 @@ html:is(.ro-page,.lv-page) body .top .ask-line .lv-home{width:var(--hm-w,64px);p
 /* a row that runs off the screen shows it (27/11/2026): its words fade out at the side where there's more to see, and fade back in
    once you've scrolled there; nothing fades when it all fits */
 html body .co-tabs .co-in, html body #askNote .nb-in{-webkit-mask-image:linear-gradient(to right,transparent 0,#000 var(--fl,0px),#000 calc(100% - var(--fr,0px)),transparent 100%);mask-image:linear-gradient(to right,transparent 0,#000 var(--fl,0px),#000 calc(100% - var(--fr,0px)),transparent 100%)}
-html body .sx-l{--fl:36px} html body .sx-r{--fr:36px}
+/* the fade is the page's side margin (28/11/2026): words run to the screen's edge, and the 12 px a margin would leave empty fade them out;
+   the words themselves stay clear */
+html body .sx-l{--fl:12px} html body .sx-r{--fr:12px}
 html body #shelves .co-tabs ~ #askNote.nb-band.fy-note:not([hidden]){overflow:hidden!important;padding-left:0!important;padding-right:0!important}
 html body #askNote .nb-in{display:block;overflow-x:auto;overflow-y:hidden;white-space:nowrap;scrollbar-width:none;padding:0 12px;-webkit-overflow-scrolling:touch}
 html body #askNote .nb-in::-webkit-scrollbar{display:none}
@@ -2863,7 +2866,7 @@ html body .gd-chips > button{height:43px!important}
   html body :is(.wm-go, .lv-go, .bn-go):hover:not(:disabled){opacity:.88!important} }
 :where(.chip, .btn, .ro-pill, .hero-pill, .gear-dd, .gear-btn, .pill.bag-add, .shelf .item > .r > *, .botnav .chip, #toolsBtn, #langBtn, #themeBtn, .ask-go, .step button, .mill-btn, .bv-go, .bv-reset, .bv-x, .ask-goccio, .lv-home, .lv-pill, .lv-go, .lv-out, .gd-chips > button, #recipe .share > *, .fy-pill, .gd-offer, .gh-new, .bag-ro .ro-dd){transition:scale .35s cubic-bezier(.34,1.7,.5,1),opacity .2s ease,background-color .15s ease}
 /* the search's result line in a band like the day's count: 44 px line to line, small type, pinned under the kinds row; a long line slides sideways */
-html body #shelves .co-tabs ~ #askNote.nb-band.fy-note:not([hidden]){position:sticky!important;top:calc(var(--top-h,44px) + 44px)!important;z-index:4;display:block!important;box-sizing:border-box!important;height:44px!important;margin:-14px calc(50% - 50vw) -2px!important;padding:1px calc(50vw - 50%) 0!important;
+html body #shelves .co-tabs ~ #askNote.nb-band.fy-note:not([hidden]){position:sticky!important;top:calc(var(--top-h,44px) + 44px)!important;z-index:4;display:block!important;box-sizing:border-box!important;height:44px!important;margin:-14px calc(50% - 50vw) -2px!important;padding:1px 0 0!important;
   transform:none!important;border-radius:0!important;background:linear-gradient(var(--line),var(--line)) center bottom / calc(100% - 24px) 1px no-repeat,var(--bg)!important;background-attachment:local!important;box-shadow:none!important;border-bottom:0!important;
   font:500 var(--fs-s)/42px var(--sans)!important;color:var(--ink)!important;white-space:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:none;text-box:none!important;-webkit-overflow-scrolling:touch}
 html body #shelves .co-tabs ~ #askNote.nb-band::-webkit-scrollbar{display:none}
@@ -3289,7 +3292,11 @@ html body .gd-m{flex-shrink:0}   /* a bubble never squeezes when the chat is ful
 html body .gd-it{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}   /* hold for tapbacks, as in Messages */
 html body .gd-pick{position:absolute;left:0;bottom:calc(100% + 6px);z-index:3;display:flex;gap:2px;padding:4px;border-radius:22px;background:var(--gd-card);border:1px solid color-mix(in srgb,var(--ink) 16%,var(--bg));box-shadow:0 6px 20px rgba(0,0,0,.3);animation:gdTb .3s cubic-bezier(.3,1.6,.5,1);transform-origin:20% 100%}
 html body .gd-pick.below{bottom:auto;top:calc(100% + 6px);transform-origin:20% 0}
-html body .gd-pick button{width:36px;height:36px;padding:0;border:0;border-radius:18px;background:none;font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+html body .gd-pick{max-width:min(calc(100vw - 48px),412px);overflow-x:auto;overflow-y:hidden;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;
+  -webkit-mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent)}   /* the rest of the reactions a swipe away (28/11/2026) */
+html body .gd-pick::-webkit-scrollbar{display:none}
+html body .gd-pick.end{-webkit-mask-image:none;mask-image:none}
+html body .gd-pick button{flex:0 0 auto;width:36px;height:36px;padding:0;border:0;border-radius:18px;background:none;font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
 html body .gd-pick button.on{background:var(--hl)}
 html body .gd-react-tip{display:block;align-self:flex-start;margin:-4px 0 2px 4px;font:500 var(--fs-s)/1.3 var(--sans);color:var(--muted);animation:gdTipIn .4s ease both} @keyframes gdTipIn{from{opacity:0}to{opacity:1}}   /* the one-time "hold a message to react" line, under the answer */
 @media (hover:hover){html body .gd-pick button:hover{background:color-mix(in srgb,var(--ink) 12%,transparent)}}
@@ -3757,7 +3764,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
 
   <section class="sec" id="shelves" aria-labelledby="sh">
     <div class="sec-head"><span class="cap" id="sh" role="heading" aria-level="2"><span class="sh-t">Coffees</span><span class="ro-title" id="roName" translate="no"></span></span><span class="ro-tools"><a class="chip ro-shop-top" id="roShopTop" target="_blank" rel="noopener" hidden>Visit shop</a><button type="button" class="chip ro-follow" id="roFollow" aria-pressed="false">Follow</button></span><button type="button" class="chip fy-pill" id="fyPill" aria-pressed="false">For you</button></div>
-    <nav class="co-tabs" id="coTabs" aria-label="Kinds of coffee"><div class="co-in"><button type="button" data-q="" data-en="New today" data-it="Nuovi oggi" aria-pressed="true">New today</button><button type="button" data-q="this week" data-en="This week" data-it="Questa settimana" aria-pressed="false">This week</button><button type="button" data-q="__near" data-en="Near you" data-it="Vicino a te" aria-pressed="false">Near you</button><button type="button" data-q="fruity" data-en="Fruity" data-it="Fruttati" aria-pressed="false">Fruity</button><button type="button" data-q="chocolatey" data-en="Chocolatey" data-it="Cioccolato" aria-pressed="false">Chocolatey</button><button type="button" data-q="floral" data-en="Floral" data-it="Floreali" aria-pressed="false">Floral</button><button type="button" data-q="nutty" data-en="Nutty" data-it="Frutta secca" aria-pressed="false">Nutty</button><button type="button" data-q="something funky" data-en="Wild ferments" data-it="Fermentazioni" aria-pressed="false">Wild ferments</button><button type="button" data-q="natural" data-en="Natural" data-it="Naturali" aria-pressed="false">Natural</button><button type="button" data-q="decaf" data-en="Decaf" data-it="Deca" aria-pressed="false">Decaf</button><button type="button" data-q="espresso" data-en="Espresso" data-it="Espresso" aria-pressed="false">Espresso</button><button type="button" data-q="under £15" data-en="Under £15" data-it="Sotto 15 £" aria-pressed="false">Under £15</button><button type="button" data-q="over £30" data-en="Over £30" data-it="Oltre 30 £" aria-pressed="false">Over £30</button></div></nav>
+    <nav class="co-tabs" id="coTabs" aria-label="Kinds of coffee"><div class="co-in"><button type="button" data-q="" data-en="New today" data-it="Nuovi oggi" aria-pressed="true">New today</button><button type="button" data-q="this week" data-en="This week" data-it="Questa settimana" aria-pressed="false">This week</button><button type="button" data-q="__near" data-en="Near you" data-it="Vicino a te" aria-pressed="false">Near you</button><button type="button" data-q="goccio's drop" data-en="Drop" data-it="Goccia" aria-pressed="false">Drop</button><button type="button" data-q="fruity" data-en="Fruity" data-it="Fruttati" aria-pressed="false">Fruity</button><button type="button" data-q="chocolatey" data-en="Chocolatey" data-it="Cioccolato" aria-pressed="false">Chocolatey</button><button type="button" data-q="floral" data-en="Floral" data-it="Floreali" aria-pressed="false">Floral</button><button type="button" data-q="nutty" data-en="Nutty" data-it="Frutta secca" aria-pressed="false">Nutty</button><button type="button" data-q="something funky" data-en="Wild ferments" data-it="Fermentazioni" aria-pressed="false">Wild ferments</button><button type="button" data-q="natural" data-en="Natural" data-it="Naturali" aria-pressed="false">Natural</button><button type="button" data-q="decaf" data-en="Decaf" data-it="Deca" aria-pressed="false">Decaf</button><button type="button" data-q="espresso" data-en="Espresso" data-it="Espresso" aria-pressed="false">Espresso</button><button type="button" data-q="light roast" data-en="Light roast" data-it="Tostatura chiara" aria-pressed="false">Light roast</button><button type="button" data-q="under £15" data-en="Under £15" data-it="Sotto 15 £" aria-pressed="false">Under £15</button><button type="button" data-q="over £30" data-en="Over £30" data-it="Oltre 30 £" aria-pressed="false">Over £30</button></div></nav>
     <p class="fy-note fy-top" id="followNote" hidden></p>
     <p class="fy-note fy-top" id="fyNote" role="status" hidden></p>
     <p class="shelf-meta" id="shelfMeta" hidden></p>
@@ -4482,7 +4489,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     if (ws.some((w) => /^\p{Lu}\p{Ll}+$/u.test(w))) return n[0].toUpperCase() + n.slice(1);
     return ws.map((w, i) => (i && small.has(w)) || w !== w.toLowerCase() ? w : w.charAt(0).toUpperCase() + w.slice(1)).join(" "); };
   const calm = (s) => String(s || "").replace(/\b[A-ZÀ-Ý]{4,}\b/g, (w) => (w.match(/[AEIOUYÀ-Ý]/g) || []).length >= 2 ? w[0] + w.slice(1).toLowerCase() : w);
-  const titleCase = (s) => s ? String(s).replace(/\b\w/g, (m) => m.toUpperCase()).replace(/\bSl(\d)/g, "SL$1") : s;
+  const titleCase = (s) => s ? String(s).replace(/(^|[^\p{L}\p{N}'’])(\p{L})/gu, (m, a, b) => a + b.toUpperCase()).replace(/ (And|Or|De|Del|La|Los|Di|Da|Do) /g, (m, w) => " " + w.toLowerCase() + " ").replace(/\bSl(\d)/g, "SL$1") : s;   // a letter after an accented one starts no word ("Paraíso", not "ParaíSo"; 28/11/2026)
   const dmy = (d) => { const x = d instanceof Date ? d : new Date(d); if (isNaN(x)) return ""; return `${x.getDate()} ${MON[typeof LANG !== "undefined" && LANG === "it" ? "it" : "en"][x.getMonth()]} ${x.getFullYear()}`; };   // 19 Nov 2026: the month in letters, never slashes
   const isoDmy = (iso) => { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || ""); return m ? `${+m[3]} ${MON[typeof LANG !== "undefined" && LANG === "it" ? "it" : "en"][+m[2] - 1]} ${m[1]}` : ""; };
   // a day and month in words, without the year: 19 Nov (19 nov in Italian)
@@ -7923,7 +7930,9 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   const varName = (v) => { let t = String(v).trim(); if (/^74\s?\/?\d{2,3}\b/.test(t)) return "Ethiopian " + t.replace(/74\s?\/(\d)/g, "74$1"); if (/^[\d\s,.]+$/.test(t)) return "";
     t = t.split(/\s*,\s*(?!\d{3}\b)/).filter((x) => x && !VAR_JUNK.test(x)).map((x) => { const shout = /[A-Z]{3}/.test(x) && x === x.toUpperCase();   // a part all in capitals: every word calmed but the codes (JARC, SLN, IHCAFE, SL28)
         return x.split(/(\s+|-)/).map((w) => shout && /^[A-ZÀ-Ý]{3,}$/.test(w) && !/^(?:JARC|SLN|IHCAFÉ?|CCI|EAP)$/.test(w) ? varWord(w[0] + w.slice(1).toLowerCase()) : varWord(w)).join(""); }).join(", "); return t; };
-  const varietyTag = (v0) => { const v = varName(v0); if (!v) return ""; const k = String(v).toLowerCase().trim(); let h = 0; for (const c of k) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  // a long list of varieties (York's Magarciy names seven) keeps the first two and says how many more, so the tag stays on its line (28/11/2026)
+  const varShort = (v) => { const ps = String(v).split(/\s*,\s*|\s+(?:and|&|e)\s+/).filter(Boolean); return ps.length > 3 ? `${ps.slice(0, 2).join(", ")} +${ps.length - 2}` : v; };
+  const varietyTag = (v0) => { const v = varShort(varName(v0) || ""); if (!v) return ""; const k = String(v).toLowerCase().trim(); let h = 0; for (const c of k) h = (h * 31 + c.charCodeAt(0)) >>> 0;
     return `<span class="tg vdot" style="--vc:hsl(${h % 360} 62% 50%)">${esc(titleCase(v))}</span>`; };
   const procTone = (p) => /decaf/i.test(p || "") ? "p-decaf" : PROC_TONE[bucket(p)];
   const PROC_TONE = { natural: "p-nat", washed: "p-wash", honey: "p-honey", exp: "p-exp", other: "p-other" };
@@ -8135,6 +8144,35 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   // never shown as a taste: page markup the scanner once kept (an image's address, a tag) and a brew guide's headings (Ratios, dose, bloom)
   const NOTE_SENT = /(?:^(?:group|profile)_|vc_column|^order$|^journal$|^(?:corp|aciditate)\s)|(?:^|[^\p{L}])(?:instagram|facebook|blog|twitter|tiktok|newsletter|jetzt|erleben|convinced|apparent|imagine|create|für|ihren?|ihre|lieben|liebt|perfekt|unsere?[rsn]?|dieser?|dieses|wird|werden|sind|kaffee|viel|wenig|klassisch|blend|perfect for|for those|who loves?|if you like)(?![\p{L}])/iu, NOTE_BADGE = /^(?:new|new in|new arrival|just landed|sold out|out of stock|sale|on sale|best ?seller|limited(?: edition)?|pre-?order|back in stock)!?$/i, NOTE_JUNK = /[<>]|=\s*["'“”]|https?:|\/\/|\.(?:png|jpe?g|gif|svg|webp|avif)\b|\b\d{2,4}w\b|\bsizes=|\bsrcset\b/i, NOTE_BREW = /^(?:ratios?|brew(?:ing)? ratios?|dos(?:e|es|age)|bloom(?:ing)?|grind(?: size)?|water(?: temp(?:erature)?)?|temp(?:erature)?|yield|recipe|pours?|time|timings?|method|agitation|siebtr[äa]ger(?:maschine)?|vollautomat|herdkocher|herdkanne|handfilter|filter(?:kaffee)?maschine|french ?press|pour[- ]?over|aero ?press|kaffeekapseln|kapseln|lungo|direkt vom ursprung|deutschland|germany)$/i;
   // the roaster's own notes, cleaned, as the card shows them (shared by the big line and the small one)
+  /* Drop (28/11/2026): one coffee Goccio picks for the day, and why. From the last days' arrivals: a single origin with its notes, process and
+     origin named, scored on what makes a coffee worth trying (a rare variety or process, the roaster's own recipe, a fair price, concrete notes).
+     The same pick all day for everyone, changing with the date */
+  const DROP_Q = /^(?:goccio'?s drop|drop|goccia|la goccia di goccio)$/i;
+  let dropCache = null;
+  const goccioDrop = () => { const t = new Date(), day = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`;
+    if (dropCache && dropCache.day === day && dropCache.n === shelf.length) return dropCache;
+    const it = LANG === "it", RARE_V = /\b(gesha|geisha|sidra|sl-?28|sl-?34|pink bourbon|wush ?wush|laurina|eugenioides|pacamara|java|maragogype|typica mejorado|mejorado|chiroso|ombligon|caturra rosado|bourbon aji)\b/i,
+      RARE_P = /anaerob|carbonic|co-?ferment|thermal|yeast|koji|mosto|lactic|double|wine|barrel|black honey|purple honey/i, conc = (r) => noteList(r).filter((n) => !/^(sweet|juicy|clean|bright|balanced|complex|smooth|rich|delicate|tart|floral|fruity)$/i.test(String(n).trim()));
+    const recent = (k) => { const c = new Date(); c.setDate(c.getDate() - k); return `${c.getFullYear()}-${String(c.getMonth() + 1).padStart(2, "0")}-${String(c.getDate()).padStart(2, "0")}`; };
+    const ok = (r, k) => String(r.found || "") >= recent(k) && r.origin && !/[\/,&+]| and /.test(String(r.origin)) && r.process && !isDecaf(r) && !/\bblend\b/i.test(r.name || "") && conc(r).length >= 2 && r.url;
+    let pool = shelf.filter((r) => ok(r, 2)); if (pool.length < 8) pool = shelf.filter((r) => ok(r, 7)); if (!pool.length) return null;
+    const hash = (str) => { let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0) / 4294967296; };
+    const p250 = (r) => r._p100 != null ? r._p100 * 2.5 : null;
+    const score = (r) => (RARE_V.test(r.variety || "") ? 2 : 0) + (RARE_P.test(r.process || "") ? 1.5 : 0) + (r.roaster_recipe ? 1.5 : 0) + (r.variety ? 0.5 : 0) + Math.min(conc(r).length, 4) * 0.4
+      + (p250(r) != null && p250(r) <= 16 ? 1 : p250(r) != null && p250(r) > 35 ? -1 : 0) + hash(day + r.url) * 2.2;   // the date's share keeps it changing day to day
+    const r = pool.map((x) => [score(x), x]).sort((a, b) => b[0] - a[0])[0][1];
+    // why, in Goccio's words: what it is, then what made it stand out
+    const ns = conc(r).slice(0, 3).map((n) => String(n).toLowerCase()), and = it ? " e " : " and ", nl = ns.length > 1 ? ns.slice(0, -1).join(", ") + and + ns[ns.length - 1] : ns[0];
+    const why = [], pr = p250(r);
+    if (RARE_V.test(r.variety || "")) why.push(it ? `una varietà rara (${r.variety})` : `a rare variety (${r.variety})`);
+    if (RARE_P.test(r.process || "")) why.push(it ? `un processo fuori dal comune (${String(r.process).toLowerCase()})` : `an unusual process (${String(r.process).toLowerCase()})`);
+    if (r.roaster_recipe) why.push(it ? "la torrefazione dà la sua ricetta" : "its roaster shares their own recipe");
+    if (pr != null && pr <= 16) why.push(it ? "un prezzo onesto" : "a fair price");
+    if (!why.length) why.push(it ? "note chiare e un'origine ben raccontata" : "clear notes and a well-told origin");
+    const wl = why.length > 1 ? why.slice(0, -1).join(", ") + and + why[why.length - 1] : why[0];
+    const text = it ? `La Goccia di oggi: ${shownNameOf(r)} di ${r.roaster}, sa di ${nl}. Scelto per ${wl}.` : `Today's drop: ${shownNameOf(r)} from ${r.roaster}, tasting of ${nl}. Picked for ${wl}.`;
+    return dropCache = { day, n: shelf.length, r, text }; };
+  const shownNameOf = (r) => String(r.name || "").replace(/\s*\[[^\]]*\]\s*/g, " ").trim();
   const noteList = (r) => (Array.isArray(r.notes) ? r.notes : []).filter((n) => !NOTE_JUNK.test(n) && !NOTE_BREW.test(String(n).trim()) && !NOTE_BADGE.test(String(n).trim()) && !NOTE_SENT.test(String(n))).map(noteClean).filter((n) => /\p{L}/u.test(n));
   // notes first (27/11/2026): a coffee that lists how it tastes says so in big type, where its name was, the first note in ink and the
   // next two fading; the name comes under it, in the roaster line's weight. Guessed "typical" notes never go big: they stay a small line
@@ -8263,7 +8301,9 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       const ws = term.split(" ").map((w) => new RegExp("(?:^|[^a-zà-ü])" + w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"));
       return k === "notes" ? (r) => { const t = tasteText(r); return !!t && ws.every((w) => w.test(t)); }
         : (r) => { const t = (r.roaster || "") + " " + (typeof roasteryName === "function" ? roasteryName(r.roaster) : ""); return ws.every((w) => w.test(t)); }; })();
-    if (scoped) { list = list.filter(scoped); askWant = null; askRank = null; }
+    const drop = q && DROP_Q.test(q.trim()) ? goccioDrop() : null;
+    if (q && DROP_Q.test(q.trim())) { list = drop ? [drop.r] : []; askWant = null; askRank = null; }
+    else if (scoped) { list = list.filter(scoped); askWant = null; askRank = null; }
     else if (q && isAsk(q)) { askWant = readAsk(q); const sc = askScore(askWant), rank = new Map();
       list.forEach((r) => { const v = sc(r); if (v > 0) rank.set(r, v); });
       list = list.filter((r) => rank.has(r)); askRank = rank; }
@@ -8302,7 +8342,10 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       const found = LANG === "it" ? `${n0.toLocaleString("it-IT")} caffè§ in ${secs.toFixed(2).replace(".", ",")} secondi` : `${n0.toLocaleString("en-GB")} coffee${n0 === 1 ? "" : "s"}§ in ${secs.toFixed(2)} seconds`;
       var askFound = (q || askWant) ? found : ""; }
     { const n = $("askNote"), t = !q ? "" : (() => { const qq = $("shelfQ").value.trim(), it = LANG === "it", f0 = typeof askFound === "string" && askFound ? askFound : "";   /* said as done: "200 coffees for “blueberry” in 0.12 seconds" */
+          if (DROP_Q.test(qq)) { const d = goccioDrop(); return d ? d.text : (it ? "Nessuna Goccia oggi: niente di nuovo da scegliere, per ora." : "No drop today: nothing new to pick from yet."); }
           const nr = /^(near (you|me)|vicino a (te|me))$/i.test(qq) && window.NEAR;   /* Near you says how near (27/11/2026) */
+          if (nr && window.NEAR.none) return it ? `Vicino a te: consenti la posizione per vedere i caffè torrefatti entro ${window.NEAR.dist} da te.` : `Near you: allow your location to see coffees roasted within ${window.NEAR.dist} of you.`;
+          if (nr && f0 && !list.length) return it ? `Nessuna torrefazione entro ${window.NEAR.dist} da te, per ora.` : `No roasters within ${window.NEAR.dist} of you yet.`;
           return f0 && nr ? f0.replace("§", it ? ` torrefatti entro ${window.NEAR.dist} da te` : ` roasted within ${window.NEAR.dist} of you`) : f0 ? f0.replace("§", it ? ` per “${qq}”` : ` for “${qq}”`) : (it ? `Ricerca “${qq}”` : `Searching for “${qq}”`); })()
         + (askWant && list.length ? (LANG === "it" ? ". I più vicini per primi." : ". Best match first.") : ""); const f = $("fyNote");   // what the list is showing, in grey under Coffees (and read out to screen readers)   // with For you's line showing, the two read as one paragraph
       if (t && !f.hidden) { f.textContent = f.textContent.trim() + " " + t; n.hidden = true; n.textContent = ""; } else { n.hidden = !t; n.textContent = t; }
@@ -10450,24 +10493,16 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       // the kinds row: a tap shows that kind at once; "New today" is the whole list again. It lights the kind the list is on
       const tabs = $("coTabs"); if (tabs) { tabs.querySelectorAll("[data-en]").forEach((b) => b.textContent = it ? b.dataset.it : b.dataset.en);
         const light = () => { const sq = $("shelfQ").value.trim().toLowerCase(); tabs.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String((b.dataset.q2 || b.dataset.q).toLowerCase() === sq))); };
-        const NEAR = { "Europe/London": "the UK", "Europe/Belfast": "the UK", "Europe/Dublin": "Ireland", "Europe/Copenhagen": "Denmark", "Europe/Stockholm": "Sweden", "Europe/Oslo": "Norway", "Europe/Helsinki": "Finland",
-          "Europe/Berlin": "Germany", "Europe/Paris": "France", "Europe/Rome": "Italy", "Europe/Madrid": "Spain", "Europe/Lisbon": "Portugal", "Europe/Amsterdam": "the Netherlands", "Europe/Brussels": "Belgium",
-          "Europe/Zurich": "Switzerland", "Europe/Vienna": "Austria", "Europe/Prague": "Czechia", "Europe/Warsaw": "Poland", "Europe/Bratislava": "Slovakia", "Europe/Bucharest": "Romania", "Europe/Riga": "Latvia",
-          "Europe/Vilnius": "Lithuania", "Europe/Tallinn": "Estonia", "Europe/Ljubljana": "Slovenia", "Europe/Budapest": "Hungary", "Europe/Athens": "Greece", "Asia/Tokyo": "Japan", "Asia/Singapore": "Singapore",
-          "Pacific/Auckland": "New Zealand", "America/Toronto": "Canada", "America/Vancouver": "Canada", "America/Montreal": "Canada", "America/Edmonton": "Canada", "America/Halifax": "Canada", "America/Winnipeg": "Canada" };
-        const nearQ = () => { let tz = ""; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) {}
-          const c = NEAR[tz] || (/^Australia\//.test(tz) ? "Australia" : /^America\/(?!Toronto|Vancouver|Montreal|Edmonton|Halifax|Winnipeg|Sao_Paulo|Bogota|Mexico|Lima|Santiago|Buenos)/.test(tz) ? "the United States" : "");
-          if (c) return "from " + c; const rg = (navigator.language || "").split("-")[1]; let nm = ""; try { nm = rg ? new Intl.DisplayNames(["en"], { type: "region" }).of(rg.toUpperCase()) : ""; } catch (e) {} return nm ? "from " + nm : "from the UK"; };
         // Near you (27/11/2026): the browser asks for the location; from it, the closest ring of roasters that has a dozen coffees.
         // Said no, or no fix: the country the clock is set to. Nothing leaves the page
         const nearAt = (la, lo, done) => fetch("/data/near.json").then((x) => x.json()).then((m) => {
           const rad = Math.PI / 180, km = (p) => { const dl = (p[0] - la) * rad, dn = (p[1] - lo) * rad, h = Math.sin(dl / 2) ** 2 + Math.cos(la * rad) * Math.cos(p[0] * rad) * Math.sin(dn / 2) ** 2; return 12742 * Math.asin(Math.sqrt(h)); };
           const d = new Map(Object.entries(m).map(([k, p]) => [k, km(p)])), key = (r) => String(r.roaster_city || "").trim() + "|" + (r.roaster_country || "GB");
-          const steps = it ? [25, 50, 100, 200, 400].map((n) => [n, n + " km"]) : [15, 30, 60, 120, 250].map((n) => [n * 1.609, n + " miles"]);
-          for (const [lim, dist] of steps) { const set = new Set([...d].filter(([, v]) => v <= lim).map(([k]) => k));
-            if (shelf.filter((r) => set.has(key(r))).length >= 12) { window.NEAR = { set, dist }; return done("near you"); } }
-          done(null); }).catch(() => done(null));
-        const goNear = (b, run) => { const fall = () => { b.removeAttribute("aria-busy"); run(nearQ()); };
+          // 10 miles from you, always (28/11/2026: it widened to the whole country when few roasters were near). None near says so
+          const set = new Set([...d].filter(([, v]) => v <= 16.09).map(([k]) => k)); window.NEAR = { set, dist: it ? "16 km" : "10 miles" }; done("near you");
+          }).catch(() => done(null));
+        // no location (said no, or none found): the list stays put and the line under the menu says what Near you needs
+        const goNear = (b, run) => { const fall = () => { b.removeAttribute("aria-busy"); window.NEAR = { set: new Set(), dist: it ? "16 km" : "10 miles", none: true }; run("near you"); };
           if (!navigator.geolocation) return fall(); b.setAttribute("aria-busy", "true");
           navigator.geolocation.getCurrentPosition((p) => nearAt(p.coords.latitude, p.coords.longitude, (q) => { b.removeAttribute("aria-busy"); q ? run(q) : fall(); }), fall, { timeout: 12000, maximumAge: 600000 }); };
         tabs.addEventListener("click", (e) => { const b = e.target.closest("button[data-q]"); if (!b) return;
@@ -11308,13 +11343,25 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     let padded = null;   // the section given extra room at its foot, if any
     const leafBottom = (el) => { let b = -Infinity; el.querySelectorAll("button, a, p, span, h2, h3, input, label, img, .item").forEach((x) => { if (x.closest("[hidden]") || !x.offsetHeight) return; const cs = getComputedStyle(x); if (cs.position === "fixed" || cs.position === "sticky") return; const r = x.getBoundingClientRect(); if (r.bottom > b) b = r.bottom; }); return b; };
     const fit = () => { raf0 = 0; const g = $("gdrop"); if (!sign || !sec || !g || !sign.offsetHeight) return;
+      // the scan screen (nothing brewing yet): Goccio sits at the foot of the screen, and what's above him in his own section (a scan's
+      // review sheet, 28/11/2026) can grow down to him. He keeps the list's distance from it: his line moves down when it has to, never up past the foot
+      let cb0 = -Infinity; if (document.documentElement.classList.contains("no-recipe")) [...sec.children].forEach((c) => { if (c !== sign && c.offsetHeight && !c.hidden) cb0 = Math.max(cb0, leafBottom(c)); });
+      if (isFinite(cb0)) { if (padded) { padded.style.paddingBottom = ""; padded = null; }   // only on the scan screen: on the home page his section shows nothing but him
+        const cb = cb0, tg = sign.querySelector(".gd-beta"), want = 43, gt = g.getBoundingClientRect().top;   // 43 px clear, as the sign-off is from Load more
+        const d = Math.max(want - (gt - cb), tg && tg.offsetHeight ? 16 - (tg.getBoundingClientRect().top - cb) : -Infinity);   /* his tag, up by his shoulder, keeps 16 px clear too */
+        const m = parseFloat(getComputedStyle(sign).marginTop) || 0;
+        if (d > 1) { sign.style.marginTop = (m + d) + "px"; sign.dataset.extra = "1"; }   // pushed down by what it takes (the foot-of-screen margin is 0 by now)
+        else if (sign.dataset.extra && d < -1) { sign.style.marginTop = ""; sign.dataset.extra = ""; fitSoon(); }   // room again: back to the foot of the screen
+        return; }
+      if (sign.dataset.extra) { sign.style.marginTop = ""; sign.dataset.extra = ""; }
       let prev = sec.previousElementSibling; while (prev && (prev.hidden || !prev.offsetHeight)) prev = prev.previousElementSibling; if (!prev) return;
       if (padded && padded !== prev) { padded.style.paddingBottom = ""; padded = null; return fitSoon(); }
       const cb = leafBottom(prev); if (!isFinite(cb)) return; const was = prev === padded ? parseFloat(prev.style.paddingBottom) || 0 : 0, gt = g.getBoundingClientRect().top;
       if (prev.id === "shelves") { if (was) { prev.style.paddingBottom = ""; padded = null; return fitSoon(); } K = gt - cb; return; }   // the list sets the distance
       const want = K === null ? 0 : K; const d = Math.max(-was, want - (gt - cb)); if (Math.abs(d) > 1) { prev.style.paddingBottom = Math.round(was + d) + "px"; padded = prev; } };
     const fitSoon = () => { if (!raf0) raf0 = requestAnimationFrame(fit); };
-    if (sign && "ResizeObserver" in window) { const ro = new ResizeObserver(fitSoon); ["shelves", "bags", "journal", "coffee"].forEach((id) => { const e = $(id); if (e) ro.observe(e); }); }
+    if (sign && "ResizeObserver" in window) { const ro = new ResizeObserver(fitSoon); ["shelves", "bags", "journal", "coffee"].forEach((id) => { const e = $(id); if (e) ro.observe(e); });
+      document.querySelectorAll("#coffee > :not(.wb-sign)").forEach((e) => ro.observe(e)); }   // what's above him in his own section (the scan's review) grows inside a section of fixed height
     addEventListener("resize", fitSoon, { passive: true }); setTimeout(fitSoon, 1500); }
   // a day heading pinned under the top bar fills the strip above it (the 12 px that match the space under its text)
   // and it stays only as long as its own coffees: when its line meets the bottom of the last one's buttons, they go up together
@@ -12119,7 +12166,8 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       try { const body = JSON.stringify({ q, lang: LANG === "it" ? "it" : "en", why }); if (!(navigator.sendBeacon && navigator.sendBeacon("/api/learn", new Blob([body], { type: "application/json" })))) fetch("/api/learn", { method: "POST", headers: { "content-type": "application/json" }, body, keepalive: true }).catch(() => {}); } catch (e) {} };
     // the question a message of its answered: the last thing you said before it
     const askedFor = (m) => { const i = msgs.indexOf(m && m._rec); for (let k = (i < 0 ? msgs.length : i) - 1; k >= 0; k--) if (msgs[k].w === "me") return msgs[k].t; return ""; };
-    const TAPS = ["❤️", "👍", "👎", "😂", "🔥", "☕", "🙏", "🤤", "😍"];   // nine fit a phone's row (26/11/2026: 🔥 ☕ 🙏 added; 🤤 😍 in place of ‼️ ❓)
+    // nine fit a phone's row; more wait to the right, a swipe away (28/11/2026: 😱 🤯 🫪 asked for, and a few more a coffee chat calls for)
+    const TAPS = ["❤️", "👍", "👎", "😂", "🔥", "☕", "🙏", "🤤", "😍", "😱", "🤯", "🫪", "🤔", "😮", "👏", "🎉", "😴", "🥲", "💯"];   // nine fit a phone's row (26/11/2026: 🔥 ☕ 🙏 added; 🤤 😍 in place of ‼️ ❓)
     const feel = (e) => { const docked = document.documentElement.classList.contains("gd-docked");
       if (!docked && D && !still()) { D.free(); (e === "❤️" ? D.happy : e === "👍" ? D.happy : e === "😂" ? D.happy : e === "‼️" ? D.surprised : e === "❓" ? D.hmm : D.no)(); }
       if (e === "👎" && Math.random() < 0.7) setTimeout(() => sayNow(pick([T("Oops, sorry! Try asking me another way?", "Ops, scusa! Prova a chiedermelo in un altro modo?"), T("Fair. I'm still learning, one drop at a time.", "Giusto. Sto ancora imparando, una goccia alla volta.")]), null, null), 700);
@@ -12129,6 +12177,10 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       else if (e === "☕" && Math.random() < 0.5) setTimeout(() => sayNow(pick([T("Kettle on? ☕", "Metto su l'acqua? ☕"), T("Coffee break it is.", "Pausa caffè, allora.")]), null, null), 700);
       else if (e === "🤤" && Math.random() < 0.5) setTimeout(() => sayNow(pick([T("Same. I'd drink that right now.", "Anche io. Lo berrei subito."), T("I know, right? 🤤", "Vero? 🤤")]), null, null), 700);
       else if (e === "😍" && Math.random() < 0.4) setTimeout(() => sayNow(pick([T("It's a beauty, isn't it?", "È una meraviglia, vero?"), T("Love at first sip.", "Amore al primo sorso.")]), null, null), 700);
+      else if ((e === "😱" || e === "🤯" || e === "🫪" || e === "😮") && Math.random() < 0.5) setTimeout(() => sayNow(pick([T("I know! Coffee is wild.", "Lo so! Il caffè è pazzesco."), T("Right? I was shocked too.", "Vero? Anch'io sono rimasto a bocca aperta."), T("Mind, blown. Cup, full.", "Testa esplosa, tazza piena.")]), null, null), 700);
+      else if (e === "🤔" && Math.random() < 0.5) setTimeout(() => sayNow(pick([T("Not sure? Ask me about any part of it.", "Non sei convinto? Chiedimi di qualsiasi parte."), T("Hmm, let me know what doesn't add up.", "Mmm, dimmi cosa non torna.")]), null, null), 700);
+      else if ((e === "👏" || e === "🎉" || e === "💯") && Math.random() < 0.4) setTimeout(() => sayNow(pick([T("Thank you, thank you. 🙇", "Grazie, grazie. 🙇"), T("Cheers! ☕", "Salute! ☕")]), null, null), 700);
+      else if (e === "😴" && Math.random() < 0.5) setTimeout(() => sayNow(pick([T("Sounds like you need a coffee.", "Mi sa che ti serve un caffè."), T("Wake-up call: kettle on?", "Sveglia: metto su l'acqua?")]), null, null), 700);
       else if (e === "🙏" && Math.random() < 0.5) setTimeout(() => sayNow(pick([T("Any time!", "Quando vuoi!"), T("Happy to help. Brew well!", "Felice di aiutarti. Buon caffè!")]), null, null), 700); };
     let picker = null; const unpick = () => { if (picker) { picker.remove(); picker = null; } };
     // how people learn they can react: once per device, under the first answer to something they asked, a small line says how.
@@ -12148,7 +12200,9 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       saveChat(); };
     const pickFor = (m) => { unpick(); if (!m || !m.classList.contains("gd-it") || m.classList.contains("gd-typing")) return; picker = document.createElement("span"); picker.className = "gd-pick"; picker.setAttribute("role", "group"); picker.setAttribute("aria-label", T("React", "Reagisci"));
       TAPS.forEach((e) => { const b = document.createElement("button"); b.type = "button"; b.textContent = e; if (m._rec && m._rec.r === e) b.className = "on"; b.onclick = (ev) => { ev.stopPropagation(); tapOn(m, e); unpick(); }; picker.appendChild(b); });
-      if (m.getBoundingClientRect().top - sayEl.getBoundingClientRect().top < 52) picker.classList.add("below"); m.appendChild(picker); if (navigator.vibrate) try { navigator.vibrate(8); } catch (e) {} };
+      if (m.getBoundingClientRect().top - sayEl.getBoundingClientRect().top < 52) picker.classList.add("below"); m.appendChild(picker);
+      const endF = () => picker && picker.classList.toggle("end", picker.scrollWidth - picker.clientWidth - picker.scrollLeft < 4); picker.addEventListener("scroll", endF, { passive: true }); endF();
+      if (navigator.vibrate) try { navigator.vibrate(8); } catch (e) {} };
     { let holdT = 0, lastTap = 0, lastEl = null; const it = (e) => e.target.closest && e.target.closest(".gd-it");
       sayEl.addEventListener("pointerdown", (e) => { const m = it(e); if (!m || e.target.closest(".gd-pick")) return; clearTimeout(holdT); holdT = setTimeout(() => pickFor(m), 450); });
       ["pointerup", "pointercancel", "pointerleave"].forEach((t) => sayEl.addEventListener(t, () => clearTimeout(holdT)));
@@ -13176,6 +13230,11 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
         say(T(`${partly ? "Not all of that in one cup, but close: " : ""}try ${shownName(r)} from ${roasteryName(r.roaster)}${r.origin ? ", " + r.origin : ""}. ${tastesOf(ns)}${cs.length > 1 ? ` (${cs.length} on Goccio have ${want.length > 1 && !partly ? "those notes" : "that note"}.)` : ""}`.replace(/^t/, "T"), `${partly ? "Non tutto in una tazza, ma ci siamo: " : ""}prova ${shownName(r)} della ${roasteryName(r.roaster)}${r.origin ? ", " + r.origin : ""}. Sa di ${andList(ns)}.`.replace(/^p/, "P")),
           [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(r); } }, T("Another one", "Un altro")], happy); };
     const ANSWERS = [
+      // "Yeah give me a good one", "pick me a coffee", "surprise me" (28/11/2026: after "First coffee of the day, let's make it a good one" it said "I don't know"): today's Drop, and why
+      [/^(?:(?:yeah|yes|yep|sure|ok(?:ay)?|go on|please|si|sì|dai)[,!. ]+)?(?:(?:give|get|show|find|pick|choose|recommend|suggest)(?: me| us)?(?: a| one| something)?(?: (?:good|nice|great|tasty|decent|special|lovely))? ?(?:one|coffee|cup|bean|pick)?|surprise me|your pick|you pick|pick for me|dammi(?: un)?(?: buon)?(?: caff[eè])?|consigliami(?: un caff[eè])?|scegli tu|sorprendimi)[ !.?]*$/i, () => {
+        const d = goccioDrop(); if (!d) return say(T("Nothing new has landed yet today. Ask me again later!", "Oggi non è ancora arrivato niente di nuovo. Richiedimelo più tardi!"), null, hmm);
+        lastCo = { r: d.r, at: Date.now() }; picked.add(d.r.url);
+        say(d.text, [{ t: T("Show me", "Fammelo vedere"), f: () => { closeTalk(); showCo(d.r); } }, T("Another one", "Un altro")], happy); }],
       [/^(what('?s| is)( an?| the)?|cos'?[eè]( una?| il| la| lo)?|che cos'?[eè]( una?| il| la| lo)?) (v-?60|aero ?press|chemex|french press|cafeti[eè]re|moka( pot)?|bialetti|kalita( wave)?|origami|hario switch|clever( dripper)?)\b[ ?!.]*$/i,
         () => { const b = BREWER_IS.find(([re]) => re.test(curQ)); if (!b) return false; say(T(b[1][0], b[1][1]), null, curious); }],
       [/^(hi|hello|hey|hiya|ciao|salve|buongiorno|buonasera|yo)\b/i, () => say(name ? T(`Hi ${name}! What are we brewing?`, `Ciao ${name}! Cosa prepariamo?`) : T("Hi! I'm Goccio. Ask me anything about coffee.", "Ciao! Sono Goccio. Chiedimi qualcosa sul caffè."), null, happy)],
