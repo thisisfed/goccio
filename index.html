@@ -1784,7 +1784,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
   .ps.xdense .ps-pours{font-size:9pt} .ps.xdense .ps-pours td{padding:.9mm 0} .ps.xdense .ps-kick{margin-top:6mm} .ps.xdense .ps-nums{margin-top:7mm}
 }
 #bagBtn[hidden], #buyBtn[hidden], #calBtn[hidden], #mUse[hidden]{display:none!important}
-html body #shelf > .item.co-flash{animation:coflash 1.8s ease-out} @keyframes coflash{0%,30%{background:color-mix(in srgb,var(--hl,#ff5a14) 12%,var(--bg))}100%{background:var(--bg)}}   /* the coffee Goccio showed you, lit for a moment */
+html body #shelf > .item.co-flash{animation:coflash 1.8s ease-out} @keyframes coflash{0%,30%{background:color-mix(in srgb,var(--hl,#d2643c) 12%,var(--bg))}100%{background:var(--bg)}}   /* the coffee Goccio showed you, lit for a moment */
 /* the count ("44 added today") is no longer a line under the Coffees title: it shows as soon as it pins under the bar.
    The line keeps its place (20 px up, so the rule sits under the title), so nothing moves when its words appear */
 html body #shelf > .grp.day-g:first-child, html body #shelf > .grp.bare:first-child + .grp.day-g{margin-top:-33px!important}
@@ -2035,8 +2035,8 @@ footer .fcol > p + .foot-x{margin-top:14px}
 .qr-box .qr-img svg{display:block;width:100%;height:100%}
 .qr-box p{margin:0;font:500 var(--fs-s)/1.3 var(--sans);color:var(--muted)}   /* same gap as Scan the bag and Scan the beans */
 /* one accent, used only where something is happening or new: signal orange, black text on it */
-:root{--hl:#ff4f00;--on-hl:#000;--go:#00a646}
-:root[data-theme="dark"]{--hl:#ff5a14;--go:#12b052}
+:root{--hl:#d2643c;--on-hl:#000;--go:#00a646}   /* terracotta (28/11/2026, was #ff4f00): the clay of a café cup and a well-roasted bean; black on it 5.6:1 */
+:root[data-theme="dark"]{--hl:#dc6c44;--go:#12b052}
 .go-big, .dock .btn{background:var(--hl)!important;color:var(--on-hl)!important}          /* Start brewing: the one main action */
 .bv-go:not(.running){background:var(--go)!important;color:var(--on-hl)!important}        /* brew screen: Start, green for go */
 .bv .bv-drain{background:var(--go)!important;color:var(--on-hl)!important}                 /* Drained: green */
@@ -3676,6 +3676,7 @@ html body #detected .roast-ask.w-row + .roast-ask.w-row{border-top:0}
 html body #detected .roast-ask.w-row::-webkit-scrollbar{display:none}
 html body #detected .w-opt{flex:none;display:flex;align-items:center;gap:6px;height:44px;padding:1.66px 0 0!important;margin:0 0 -1px;background:none!important;border:0;border-bottom:2px solid transparent;border-radius:0;font:500 var(--fs-s)/1.2 var(--sans);color:color-mix(in srgb,var(--muted) 62%,var(--bg))!important;white-space:nowrap;cursor:pointer}
 html body #detected .w-opt:hover{color:var(--ink)!important}
+html body #detected .w-opt[aria-selected="true"]{color:var(--ink)!important;border-bottom-color:var(--ink)}   /* Scan the beans: the one in use, as the top bar shows its tab (28/11/2026) */
 html body #detected .w-opt svg{width:16px;height:16px}
 html body #detected .w-opt .beta{margin-left:2px;color:inherit;opacity:.75;font-weight:500}
 html body #specs .spec .big-row button{flex:none;scroll-snap-align:start;scroll-snap-stop:always;background:none!important;border:0;border-radius:0;padding:0 0 .04em;margin:0;font:inherit;font-size:39px;font-weight:500;letter-spacing:-.045em;line-height:1.15;color:color-mix(in srgb,var(--muted) 62%,var(--bg));opacity:1;cursor:pointer;white-space:nowrap}   /* the others in the grey of the labels: lighter than the one in use, still easy to read (28/11/2026) */
@@ -6402,7 +6403,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     { const it = LANG === "it", PLUS = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`, MINUS = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
       // Scan the beans first; the round + opens the five levels, as the + does everywhere else on the site
       // the answers in a line of words that scrolls sideways, like the brewer's and the menu at the top: no pills (28/11/2026)
-      const ask = miss.includes("roast") ? `<span class="roast-ask w-row" role="group" aria-label="${it ? "Tostatura" : "Roast"}">${PHOTO_CHIP.replace('class="chip rp-go"', 'class="w-opt rp-go"')}${[["vlight", "Very light"], ["light", "Light"], ["medium", "Medium"], ["mdark", "Medium-dark"], ["dark", "Dark"]].map(([v, t]) => `<button type="button" class="w-opt" data-roast="${v}">${esc(tr(t))}</button>`).join("")}</span>` : ""; void PLUS; void MINUS;
+      const ask = miss.includes("roast") ? `<span class="roast-ask w-row" role="group" aria-label="${it ? "Tostatura" : "Roast"}">${PHOTO_CHIP.replace('class="chip rp-go"', 'class="w-opt rp-go" aria-selected="true"')}${[["vlight", "Very light"], ["light", "Light"], ["medium", "Medium"], ["mdark", "Medium-dark"], ["dark", "Dark"]].map(([v, t]) => `<button type="button" class="w-opt" data-roast="${v}">${esc(tr(t))}</button>`).join("")}</span>` : ""; void PLUS; void MINUS;
       // one warning for each thing the recipe needs and doesn't have, each with its answers as pills. Nothing missing: nothing shown
       const where = state.bag ? "on the listing" : "given";
       const pAsk = miss.includes("process") ? `<span class="roast-ask w-row" role="group" aria-label="${it ? "Processo" : "Process"}">${[["washed", "Washed"], ["natural", "Natural"], ["honey", "Honey"], ["anaerobic", "Anaerobic"], ["cofer", "Co-ferment / Infused"], ["decaf", "Decaf"]].map(([v, t]) => `<button type="button" class="w-opt" data-proc="${v}">${esc(tr(t))}</button>`).join("")}</span>` : "";
@@ -6587,7 +6588,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     if (hasT && K !== "shot") why.push(false && r.temp > 93
       ? `At equal strength and extraction, UC Davis panels found almost no difference between 87, 90 and 93°C (Batali et al. 2020). Hotter water was not tested: we use ${r.temp}°C ${K === "pour" ? "because the coarse grind needs it, " : ""}as brewers of light roasts commonly do.`
       : `Temperature, grind and agitation are all ways to reach the same extraction. At equal strength and extraction, UC Davis panels found almost no difference between 87, 90 and 93°C (Batali et al. 2020), so ${r.temp}°C is set together with the grind, not on its own.`);
-    if (["anaerobic", "cofer", "natural", "decaf"].includes(c.process) && hasT && K !== "shot") why.push(`For ${pl.toLowerCase()} coffees this recipe runs a little cooler and gentler: that is roasters’ practice, not a measured difference in extraction. If yours tastes thin, sour or sharply vinegary, it is under-extracted: go 2°C hotter, as the dial-in tips say.`);
+    if (["anaerobic", "cofer", "natural", "decaf", "hulled", "monsooned", "aerobic"].includes(c.process) && hasT && K !== "shot") why.push(`For ${pl.toLowerCase()} coffees this recipe runs a little cooler and gentler: that is roasters’ practice, not a measured difference in extraction. If yours tastes thin, sour or sharply vinegary, it is under-extracted: go 2°C hotter, as the dial-in tips say.`);
     if (r.goal && K !== "shot") why.push(`Strength comes from the ratio (1:${r.ratio}). In UC Davis tests, sweetness went down as strength went up (Frost et al. 2020): a lighter ratio tastes sweeter, a stronger one heavier.`);
     if (K !== "shot" && CUP[r.m]) why.splice(Math.min(1, why.length), 0, CUP[r.m].how);   // how this brewer and method shape the cup
     { const what = [c.roast !== "unsure" ? ROAST[c.roast].label.toLowerCase() + " roast" : "", c.process !== "unsure" ? PROCESS[c.process].label.toLowerCase() : ""].filter(Boolean).join(", ");
@@ -6617,7 +6618,8 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
         ct.appendChild(p); });
       /* asked for: the words give way to the question itself, right here: Roast, Scan the beans, + 5 */
       // (28/11/2026) the warnings stay; the answers come under them as a bar like the menu at the top, between them and the brewer
-      if (D && ct.nextElementSibling !== D) ct.after(D);
+      // (28/11/2026) and now under Total time, the last line of the numbers: the recipe reads first, the roast is what sharpens it
+      { const sp = $("specs"); if (D && sp && sp.nextElementSibling !== D) sp.after(D); else if (D && !sp && ct.nextElementSibling !== D) ct.after(D); }
       /* and the water, first of the notes, under the same triangle: every recipe's warnings sit together, here at the top, not one of them down in the pour */
       { const w = document.createElement("p"); w.className = "cons-top cons-w"; w.textContent = LANG === "it" ? "Usa acqua filtrata o un’acqua in bottiglia poco dura." : "Use filtered or soft bottled water."; ct.prepend(w);
         // a moka is a small pressure boiler: the one warning that keeps fingers safe (28/11/2026)
@@ -6641,9 +6643,11 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       // water temperature
       if (r.temp != null) { const RT = c.roast !== "unsure" ? ROAST[c.roast].T : null, why0 = c.roast === "vlight" || c.roast === "light" ? (it ? "le tostature chiare sono dense e vogliono calore per venire dolci, non acide" : "light roasts are dense and need the heat to come out sweet, not sour")
             : c.roast === "mdark" || c.roast === "dark" ? (it ? "le tostature scure si sciolgono facilmente e con acqua più calda diventano amare" : "darker roasts dissolve easily and turn bitter with hotter water")
+            : c.roast === "unsure" && c.lean === "filter" ? (it ? "la tostatura non è indicata, ma la torrefazione lo vende per filtro: si scalda come una tostatura chiara, perché venga dolce e non acido" : "the roast isn’t stated, but the roaster sells it for filter, so it gets the heat of a light roast, to come out sweet, not sour")
+            : c.roast === "unsure" && c.lean === "espresso" ? (it ? "la tostatura non è indicata, ma la torrefazione lo vende per espresso: più fresca, come una tostatura medio-scura, per non rischiare l'amaro" : "the roast isn’t stated, but the roaster sells it for espresso, so it runs cooler, like a medium-dark roast, to keep away from bitterness")
             : c.roast === "unsure" ? (it ? "la tostatura non è indicata, quindi resta nel mezzo, un filo più fresca, per non rischiare l'amaro" : "the roast isn't stated, so it stays in the middle, a touch cooler, to keep away from bitterness")
             : (it ? "una tostatura media sta nel mezzo: calda abbastanza per la dolcezza, non tanto da diventare amara" : "a medium roast sits in the middle: hot enough for sweetness, not so hot it turns bitter");
-        const ferm = ["anaerobic", "cofer", "natural", "decaf"].includes(c.process) ? (it ? `; ${pr} va un filo più fresco, perché spinto diventa aspro` : `; ${pr} runs a little cooler, because pushed it turns harsh`) : "";
+        const ferm = ["anaerobic", "cofer", "natural", "decaf", "hulled", "monsooned", "aerobic"].includes(c.process) ? (it ? `; ${pr} va un filo più fresco, perché spinto diventa aspro` : `; ${pr} runs a little cooler, because pushed it turns harsh`) : "";
         // where it grew, when the roaster says (28/11/2026): the height the cherries ripened at, and what it does to the kettle
         const A = c.alt, ft = A ? Math.round(A.m * 3.281 / 100) * 100 : 0, nf = (v) => v.toLocaleString(it ? "it-IT" : "en-GB");
         const at = !A ? "" : (A.lo !== A.hi ? `${nf(A.lo)}–${nf(A.hi)} m` : `${nf(A.lo)} m`);
@@ -12298,7 +12302,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     // a burst of little drops flying out from him, ink and one orange, then gone
     const joyBurst = () => { if (still()) return; const br = body.getBoundingClientRect(), cx = br.left + br.width / 2, cy = br.top + br.height / 2, R = Math.max(br.width, br.height) * 0.62;
       for (let k = 0; k < 16; k++) { const d = document.createElement("i"), a = (k / 16) * Math.PI * 2 + Math.random() * 0.3, r1 = R * (1.35 + Math.random() * 0.45), sz = 10 + Math.random() * 10;
-        d.style.cssText = `position:fixed;left:${cx}px;top:${cy}px;width:${sz}px;height:${sz}px;margin:${-sz / 2}px 0 0 ${-sz / 2}px;border-radius:50% 50% 50% 0;rotate:${(a * 180 / Math.PI + 135).toFixed(0)}deg;background:${k % 3 ? "var(--ink)" : "#ff5a14"};z-index:2147482990;pointer-events:none`;
+        d.style.cssText = `position:fixed;left:${cx}px;top:${cy}px;width:${sz}px;height:${sz}px;margin:${-sz / 2}px 0 0 ${-sz / 2}px;border-radius:50% 50% 50% 0;rotate:${(a * 180 / Math.PI + 135).toFixed(0)}deg;background:${k % 3 ? "var(--ink)" : "var(--hl)"};z-index:2147482990;pointer-events:none`;
         document.body.appendChild(d);
         const an = d.animate([{ transform: `translate(${(Math.cos(a) * R * 0.9).toFixed(0)}px,${(Math.sin(a) * R * 0.9).toFixed(0)}px) scale(.3)`, opacity: 0 }, { transform: `translate(${(Math.cos(a) * R * 1.05).toFixed(0)}px,${(Math.sin(a) * R * 1.05).toFixed(0)}px) scale(1)`, opacity: 1, offset: 0.25 }, { transform: `translate(${(Math.cos(a) * r1).toFixed(0)}px,${(Math.sin(a) * r1 + 40).toFixed(0)}px) scale(.6)`, opacity: 0 }], { duration: 900 + Math.random() * 300, easing: "cubic-bezier(.2,.7,.4,1)" });
         an.onfinish = () => d.remove(); } };
