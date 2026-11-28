@@ -19,6 +19,7 @@ ul{list-style:none;margin:0;padding:0}li{padding:8px 0;border-bottom:1px solid #
 <p class="m" id="when">Loading…</p>
 <h2>Last scan</h2><div class="g" id="scan"></div><p class="m" id="limits"></p>
 <h2>Brew answers</h2><div class="g" id="taste"></div><ul id="top"></ul>
+<h2>Recipes opened, by brewer</h2><p class="m" id="useN"></p><div class="g" id="use"></div><ul id="usel"></ul>
 <h2>Roasters added</h2><div class="g" id="added"></div><ul id="addl"></ul>
 <h2>New roasters, first scanned in the last 7 days</h2><ul id="newro"></ul>
 <h2>Shops the scan couldn't read</h2><p class="m" id="badn"></p><ul id="bad"></ul>
@@ -43,6 +44,15 @@ const sum = (o) => o ? (o.sour || 0) + (o.balanced || 0) + (o.bitter || 0) : 0;
     $("addl").innerHTML = wk.length ? wk.sort((a, b) => b.added.localeCompare(a.added) || a.name.localeCompare(b.name)).map((r) => `<li><a href="${esc(r.shop)}" rel="noopener">${esc(r.name)}</a><span class="m">${esc(d(r.added))}, ${esc([r.city, r.country].filter(Boolean).join(", "))}, from ${esc(r.source || "the map")}</span></li>`).join("")
       : '<li class="m">None dated yet: roasters the finder adds are dated from its next run on.</li>';
   }
+  // recipes opened and brews started, by brewer (functions/api/count.js): the numbers to show a brewer's maker
+  fetch("/api/count?stats=1", { cache: "no-cache" }).then((r) => r.ok ? r.json() : null).catch(() => null).then((u) => {
+    if (!u || !u.db) { $("use").innerHTML = card("—", "no database"); return; }
+    const NAME = { v60: "V60", neo: "V60 NEO", kalita: "Kalita Wave", april: "April Brewer", orea: "Orea V4", melitta: "Melitta", chemex: "Chemex", origami: "Origami", switch: "Hario Switch", clever: "Clever Dripper", aero: "AeroPress", press: "French Press", cold: "Cold brew", espresso: "Espresso", mocca: "Moccamaster", moka: "Bialetti Moka Express", cupping: "Cupping" };
+    const tot = (rows, k) => (rows || []).filter((r) => r.kind === k).reduce((t, r) => t + r.n, 0), of = (rows, b, k) => ((rows || []).find((r) => r.brewer === b && r.kind === k) || {}).n || 0;
+    $("useN").textContent = u.since ? `Counted since ${d(u.since)}. One number a day per brewer: no coffee, no person.` : "Nothing counted yet.";
+    $("use").innerHTML = card(tot(u.today, "open"), "opened today") + card(tot(u.week, "open"), "opened, last 7 days") + card(tot(u.month, "open"), "opened, last 30 days") + card(tot(u.all, "open"), "opened, all time") + card(tot(u.month, "brew"), "brews started, last 30 days") + card(tot(u.all, "brew"), "brews started, all time");
+    const bs = [...new Set((u.all || []).map((r) => r.brewer))].sort((a, z) => of(u.month, z, "open") - of(u.month, a, "open") || of(u.all, z, "open") - of(u.all, a, "open"));
+    $("usel").innerHTML = bs.map((b) => `<li><b>${esc(NAME[b] || b)}</b><span class="m">${of(u.month, b, "open").toLocaleString("en-GB")} opened and ${of(u.month, b, "brew").toLocaleString("en-GB")} brewed in the last 30 days; ${of(u.week, b, "open").toLocaleString("en-GB")} opened in the last 7; ${of(u.all, b, "open").toLocaleString("en-GB")} opened in all</span></li>`).join("") || '<li class="m">No recipes counted yet.</li>'; });
   $("when").textContent = rel ? `Coffee list updated ${d(rel.updated)}. Page read ${new Date().toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}.` : "Couldn't read the coffee list.";
   if (rep) {
     const notReached = (rep.roasters_not_reached || []).length;
