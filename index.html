@@ -3641,7 +3641,8 @@ html body #coffee:not(.empty) .kit > .scan-opt .scan-msg{text-align:left}
 .spec b.dstep-b{display:inline-flex;align-items:center;gap:10px}
 .spec b.dstep-b .chip[disabled]{opacity:.35;cursor:default}
 .spec b.dstep-b small{margin-left:-4px}
-html body .spec b.dstep-b{display:inline-flex!important;justify-content:space-between;gap:6px;max-width:100%}   /* ‹ 18 g ›, as wide as Back under it when there's room (28/11/2026) */
+html body .spec b.dstep-b{display:inline-flex!important;justify-content:space-between;gap:6px;max-width:none}
+html.brew-in body #specs .spec b.dstep-b{width:var(--step-w,auto)}   /* as long as Brew + Buy, as Back is */   /* ‹ 18 g ›, as wide as Back under it when there's room (28/11/2026) */
 html body .spec b.dstep-b > .dstep-n{flex:none;min-width:1.6em;text-align:center;white-space:nowrap;font-variant-numeric:tabular-nums}   /* one width for 18 g, 25 g and 38: nothing moves as the number changes (28/11/2026) */
 html body .spec b.dstep-b > .dstep-n small{margin-left:0}   /* "60 g" as "1080 g": the same space before the unit */
 html body #specs .spec:is(.brewer, .key){position:relative}
@@ -6307,7 +6308,9 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
         const mk = (d) => { const x = document.createElement("button"); x.type = "button"; x.className = "chip gear-more"; x.dataset.zstep = d; x.setAttribute("aria-label", d < 0 ? (LANG === "it" ? "Uno scatto più fine" : "One click finer") : (LANG === "it" ? "Uno scatto più grosso" : "One click coarser"));
           x.innerHTML = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="${d < 0 ? "M7.5 2.5 4 6l3.5 3.5" : "M4.5 2.5 8 6 4.5 9.5"}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`; return x; };
         fig.prepend(mk(-1)); fig.appendChild(mk(1)); } }
-    try { window.__fitStep && __fitStep(); } catch (e) {} }
+    // big type (a wide screen) can need more than Brew + Buy: then Back and both steppers take the steppers' own least width
+    try { const ds = [...sp.querySelectorAll("b.dstep-b")].filter((d) => d.offsetWidth); if (ds.length) { const need = Math.ceil(Math.max(...ds.map((d) => [...d.children].reduce((t, c) => t + c.getBoundingClientRect().width, 0) + 6 * (d.children.length - 1))));
+        const cur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--step-w")) || 0; if (need > cur) { document.documentElement.style.setProperty("--step-w", need + "px"); const nav = document.querySelector(".botnav"); if (nav) { nav.style.setProperty("--back-w", need + "px"); nav.classList.add("back-fit"); } } } } catch (e) {} }
   document.addEventListener("click", (e) => { const z = e.target.closest && e.target.closest("[data-zstep]"); if (!z) return; e.preventDefault(); e.stopPropagation(); try { setZero(+z.dataset.zstep); } catch (er) {} }, true);
   function placePicks() { try { wheels(); } catch (e) {} const rb = $("rbody"), sp = $("specs"); if (!rb || !sp) return; const b = pickPan("brew"), m = pickPan("mill");
     const bc = sp.querySelector(".spec.brewer"); if (bc) { bc.after(b); b.style.order = "0"; } else if (b.parentNode !== rb) rb.insertBefore(b, rb.firstElementChild);
@@ -11228,7 +11231,8 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   { const fitStep = () => {}; window.__fitStep = fitStep; }   // the width is the CSS's own now (the figure's fixed room), so nothing is measured late and nothing jumps
   // Back as long as the coffee's Brew and Buy together, set the moment Brew is tapped, so it never stretches on the way in (28/11/2026)
   { const rowW = (r) => { const k = r ? [...r.children].filter((c) => c.offsetWidth) : []; if (!k.length) return 0; return Math.round(k[k.length - 1].getBoundingClientRect().right - k[0].getBoundingClientRect().left); };
-    const setBack = (w) => { const nav = document.querySelector(".botnav"); if (!nav || !w) return; nav.style.setProperty("--back-w", w + "px"); nav.classList.add("back-fit"); };
+    // and the steppers' › ends there too: Back, ‹ 15 g › and ‹ 22 › all as long as Brew and Buy (28/11/2026)
+    const setBack = (w) => { const nav = document.querySelector(".botnav"); if (!nav || !w) return; nav.style.setProperty("--back-w", w + "px"); nav.classList.add("back-fit"); document.documentElement.style.setProperty("--step-w", w + "px"); };
     document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("#shelf .item > .r button[data-i]"); if (b) setBack(rowW(b.closest(".r"))); }, true);
     // reached another way (a scan, a link, Goccio): the open coffee's row if it shows, otherwise the first coffee's in the list
     const keep = () => { if (!document.documentElement.classList.contains("brew-in")) return; const nav = document.querySelector(".botnav"); if (!nav || nav.classList.contains("back-fit")) return;
