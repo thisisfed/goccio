@@ -6522,7 +6522,10 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       if (cups.length < 2) { if (cp) cp.remove(); } else { if (!cp) { cp = document.createElement("div"); cp.id = "cupPick"; }
         const it = LANG === "it", NM = { light: it ? "Leggera e dolce" : "Light & sweet", balanced: it ? "Equilibrata" : "Balanced", syrupy: it ? "Ricca e sciropposa" : "Rich & syrupy" };
         cp.innerHTML = `<span class="xp-t">${it ? "Tazza" : "Cup"}</span><span class="w-row" role="listbox" aria-label="${it ? "Tazza" : "Cup"}">${cups.map((k) => `<button type="button" class="w-opt" role="option" data-cup="${k}" aria-selected="${(r.goal || "light") === k}">${esc(NM[k])}</button>`).join("")}</span>`;
-        cp.querySelectorAll("[data-cup]").forEach((x) => x.onclick = () => { if (state.goal === x.dataset.cup) return; state.goal = x.dataset.cup; window.__specFlash = performance.now() + 1500; saveState(); renderAllOpts(); render(); });
+        cp.querySelectorAll("[data-cup]").forEach((x) => x.onclick = () => { if (state.goal === x.dataset.cup) return; state.goal = x.dataset.cup; window.__specFlash = performance.now() + 1500;
+          // the page stays put: the Cup line keeps its place on the screen while the recipe above and below it changes (28/11/2026)
+          const top0 = cp.getBoundingClientRect().top, hold = () => { const c = $("cupPick"); if (!c) return; const d = c.getBoundingClientRect().top - top0; if (Math.abs(d) > 0.5) scrollTo(0, scrollY + d); };
+          saveState(); renderAllOpts(); render(); hold(); requestAnimationFrame(hold); [120, 400, 1000].forEach((ms) => setTimeout(hold, ms)); });
         const d0 = $("detected"), after = d0 && !d0.hidden && d0.previousElementSibling === sp1 ? d0 : sp1; if (after && after.nextElementSibling !== cp) after.after(cp); } }
     $("specs").querySelectorAll("[data-dstep]").forEach((x) => x.onclick = () => { const ds = BREWERS[r.brewer].doses, i = ds.findIndex(([v]) => v === r.dose), n = ds[i + Number(x.dataset.dstep)];
       if (!n) return; const d = Number(x.dataset.dstep); state.dose = n[0]; saveState(); renderAllOpts(); render();   // the figures simply change: the split-flap flip was tried and taken out
