@@ -2916,16 +2916,11 @@ html body #millPick .zr-ctl .step{width:100%!important;display:flex!important;ju
 #whyNums .wn-h{margin:0 0 8px;font-size:var(--fs-s);font-weight:500;color:var(--ink)}
 #whyNums .wn{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:var(--fs-s);line-height:1.35;color:var(--muted)}
 #whyNums .wn b{color:var(--ink);font-weight:500;margin-right:4px}   /* plain words, as How to pour is: no pill round them */
-/* two columns, one paragraph (28/11/2026): the word on the left, its line on the right, each a line down from the last, no gaps between */
-html body #rbody :is(#whyNums .wn, #expect, #dial){display:grid!important;grid-template-columns:7.4em minmax(0,1fr)!important;column-gap:14px!important;row-gap:0!important;line-height:1.4!important;font-size:var(--fs-s)!important;padding:0!important;list-style:none!important}
-html body #rbody :is(#whyNums .wn, #expect, #dial) > li{display:contents!important}
-html body #rbody :is(#whyNums .wn, #expect, #dial) > li > b:first-child{grid-column:1;color:var(--ink)!important;font-weight:500!important;margin:0!important}
-html body #rbody :is(#whyNums .wn, #expect, #dial) > li > .lg-t{grid-column:2;color:var(--muted)}
-html body #rbody :is(#whyNums .wn, #expect, #dial) > li.lg-wide > .lg-t{grid-column:1 / -1}
-html body #rbody :is(#whyNums .wn, #expect) .lg-k{color:var(--ink);font-weight:500}
-html body #rbody #dial > li > .lg-t{color:var(--ink)}
-html body #rbody #dial > li.lg-wide > .lg-t{color:var(--muted)}
-@media (min-width:600px){ html body #rbody :is(#whyNums .wn, #expect, #dial){grid-template-columns:9.6em minmax(0,1fr)!important;column-gap:18px!important} }
+/* one paragraph (28/11/2026): each line a line down from the last, no gaps between, the word in ink then its line in grey */
+html body #rbody :is(#whyNums .wn, #expect, #dial){display:block!important;line-height:1.4!important;font-size:var(--fs-s)!important;padding:0!important;margin:0!important;list-style:none!important;color:var(--muted)}
+html body #rbody :is(#whyNums .wn, #expect, #dial) > li{display:block!important;margin:0!important;padding:0!important}
+html body #rbody :is(#whyNums .wn, #expect, #dial) > li > b:first-child{color:var(--ink)!important;font-weight:500!important;margin:0 .3em 0 0!important}
+html body #rbody :is(#whyNums .wn, #expect, #dial) > li > .lg-t{color:var(--muted)}
 /* What to expect, Dial it in and the clicks: read like Why these numbers (28/11/2026). Always open, a plain heading, a rule on top,
    each line a word in ink then the rest in grey */
 html body #rbody :is(#expBox, #dialBox, #clkHow){display:block;margin:0 0 4px!important;padding:12px 0 var(--xp-pb,0px)!important;border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;background:none!important;box-shadow:none!important}
@@ -6450,8 +6445,8 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       const cols = () => { document.querySelectorAll("#whyNums .wn > li, #expect > li, #dial > li").forEach((li) => { if (li.querySelector(":scope > .lg-t")) return; const b = li.querySelector(":scope > b"), sp = document.createElement("span"); sp.className = "lg-t";
           if (!b) { while (li.firstChild) sp.appendChild(li.firstChild); li.appendChild(sp); li.classList.add("lg-wide"); return; }
           let n = b.nextSibling; while (n) { const nx = n.nextSibling; sp.appendChild(n); n = nx; }
-          if (li.closest("#dial")) { li.appendChild(sp); return; }   // Dial it in: the case on the left, the fix on the right, as it is
-          const [k, r] = cut(sp.textContent.replace(/^\s*:?\s*/, "")); sp.textContent = ""; if (k) { const ks = document.createElement("span"); ks.className = "lg-k"; ks.textContent = k; sp.appendChild(ks); } sp.appendChild(document.createTextNode(r)); li.appendChild(sp); }); };
+          if (li.closest("#dial")) { if (sp.firstChild && sp.firstChild.nodeType === 3) sp.firstChild.nodeValue = sp.firstChild.nodeValue.replace(/^\s+/, ""); li.appendChild(sp); return; }   // the same small space after the word as in the others   // Dial it in: the case on the left, the fix on the right, as it is
+          const [k, r] = cut(sp.textContent.replace(/^\s*:?\s*/, "")); sp.textContent = ""; sp.appendChild(document.createTextNode(k + r)); li.appendChild(sp); }); };
       const both = () => { pol(); cols(); };
       ["expect", "dial", "whyNums"].forEach((id) => { const el = $(id); if (el) new MutationObserver(() => requestAnimationFrame(both)).observe(el, { childList: true, subtree: false }); }); both(); window.__xpCols = both; }
     renderMine(r);
