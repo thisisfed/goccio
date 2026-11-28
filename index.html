@@ -3644,7 +3644,7 @@ html body #coffee:not(.empty) .kit > .scan-opt .scan-msg{text-align:left}
 html body .spec b.dstep-b{display:inline-flex!important;justify-content:space-between;gap:6px;max-width:none}
 html.brew-in body #specs .spec b.dstep-b{width:var(--step-w,auto)}   /* as long as Brew + Buy, as Back is */
 html.brew-in body #recipe .share{display:flex!important}   /* the row (and its rule) the full width; Buy and its two icons together as long as Back (28/11/2026) */
-html.brew-in body #recipe .share #buyBtn{flex:0 0 auto!important;width:calc(var(--step-w, 180px) - 2 * var(--pill-h, 43px) - 2 * var(--sh-gap, 4px))!important;min-width:0!important;max-width:none!important;justify-content:center}   /* ‹ 18 g ›, as wide as Back under it when there's room (28/11/2026) */
+html.brew-in body #recipe .share #buyBtn{flex:0 0 auto!important;width:var(--buy-w, calc(var(--step-w, 180px) - 2 * var(--pill-h, 43px) - 2 * var(--sh-gap, 4px)))!important;min-width:0!important;max-width:none!important;justify-content:center}   /* ‹ 18 g ›, as wide as Back under it when there's room (28/11/2026) */
 html body .spec b.dstep-b > .dstep-n{flex:none;min-width:1.6em;text-align:center;white-space:nowrap;font-variant-numeric:tabular-nums}   /* one width for 18 g, 25 g and 38: nothing moves as the number changes (28/11/2026) */
 html body .spec b.dstep-b > .dstep-n small{margin-left:0}   /* "60 g" as "1080 g": the same space before the unit */
 html body #specs .spec.dose{min-width:0}
@@ -6330,7 +6330,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     const ms = $("millSel") || pickPan("mill").querySelector("#millSel");   // it lives in the (hidden) grinder panel, which may be out of the page
     if (kc && ms) {
       let gc = sp.querySelector(".spec.grinder"); if (!gc) { gc = document.createElement("div"); gc.className = "spec grinder"; gc.innerHTML = `<span class="sub2">${LANG === "it" ? "Macinino" : "Grinder"}</span><b></b>`; (bc || kc).after(gc); }
-      bigRow(gc, "mill", [...ms.options].map((o) => { const G = GRINDERS[o.value]; return [o.value, G && G.short ? (o.value === "words" ? (LANG === "it" ? "Altro" : "Other") : o.textContent.replace(/\s*\/.*$/, "")) : (o.value === "words" ? (LANG === "it" ? "Altro" : "Other") : o.textContent.replace(/\s*\/.*$/, ""))]; }), ms.value,
+      bigRow(gc, "mill", [...ms.options].sort((a, z) => (z.value === "words") - (a.value === "words")).map((o) =>   /* Other first (28/11/2026) */ { const G = GRINDERS[o.value]; return [o.value, G && G.short ? (o.value === "words" ? (LANG === "it" ? "Altro" : "Other") : o.textContent.replace(/\s*\/.*$/, "")) : (o.value === "words" ? (LANG === "it" ? "Altro" : "Other") : o.textContent.replace(/\s*\/.*$/, ""))]; }), ms.value,
         (v) => { const m = $("millSel") || pickPan("mill").querySelector("#millSel"); if (!m || v === m.value) return; m.value = v; m.dispatchEvent(new Event("change")); });
       // the setting's own cell: "Clicks" for the C40 (with ‹ ›), "Setting" for a grinder with numbers, the words for any other
       const lb = kc.querySelector("[data-pick]"), G = GRINDERS[ms.value];
@@ -11362,6 +11362,11 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     { const more = scr.querySelector(".wm-more"); if (more && "ResizeObserver" in window) new ResizeObserver(() => fit()).observe(more); }   // the count arrives late
     if (document.fonts) { document.fonts.load('100px "ALT Riviera Regular"').then(fit).catch(() => {}); document.fonts.ready.then(fit); }
   })();
+  // Buy as long as Back under it (28/11/2026), whatever set Back's length: measured from Back itself, whenever it changes
+  { const sync = () => { const bk = document.querySelector('.botnav [data-bn="cancel"]'), w = bk && bk.offsetParent ? Math.round(bk.getBoundingClientRect().width) : 0;
+      if (w) document.documentElement.style.setProperty("--buy-w", w + "px"); else document.documentElement.style.removeProperty("--buy-w"); };
+    const go = () => { const bk = document.querySelector('.botnav [data-bn="cancel"]'); if (!bk) return setTimeout(go, 500); sync(); if ("ResizeObserver" in window) new ResizeObserver(sync).observe(bk); addEventListener("resize", sync, { passive: true }); };
+    go(); }
   // the wordmark animation. One animation for the big wordmark and the header's name,
   // the same timing and curve, each to its exact width. The wordmark plays once the page shows and each time you scroll back
   // up to it; the header's name each time it appears in the bar
