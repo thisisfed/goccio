@@ -3625,6 +3625,9 @@ html body #coffee:not(.empty) .kit > .scan-opt .scan-msg{text-align:left}
 .spec b.dstep-b{display:inline-flex;align-items:center;gap:10px}
 .spec b.dstep-b .chip[disabled]{opacity:.35;cursor:default}
 .spec b.dstep-b small{margin-left:-4px}
+html body .spec b.dstep-b{display:inline-flex!important;justify-content:space-between;gap:10px;max-width:100%}   /* ‹ 18 g ›, as wide as Back under it when there's room (28/11/2026) */
+html body .spec b.dstep-b > .dstep-n{flex:0 1 auto;text-align:center;white-space:nowrap}
+html body .spec b.dstep-b > .dstep-n small{margin-left:.12em}
 .bag-ro .ro-chips{display:contents!important}.bag-ro .ro-chips[hidden]{display:none!important}
 .bag-fzp[aria-pressed="true"]{background:var(--ink)!important;color:var(--bg)!important}
 /* the live dot's rings leave at random moments, set by script: no loop to spot */
@@ -6342,7 +6345,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
         now[k] = [...sp.querySelectorAll("b")].map((x) => x.textContent.replace(/\s+/g, " ").trim()).join("|");
         if (window.__specWas && performance.now() < (window.__specFlash || 0) && window.__specWas[k] !== undefined && window.__specWas[k] !== now[k]) sp.classList.add("chg"); });
       window.__specWas = now; }
-    { const ds = $("specs").querySelector(".dstep"), bb = ds && ds.parentNode.querySelector("b"); if (bb) { bb.classList.add("dstep-b"); bb.prepend(ds.querySelector('[data-dstep="-1"]')); bb.appendChild(ds.querySelector('[data-dstep="1"]')); ds.remove(); } }   // minus before the figure, plus after
+    { const ds = $("specs").querySelector(".dstep"), bb = ds && ds.parentNode.querySelector("b"); if (bb) { bb.classList.add("dstep-b"); { const n = document.createElement("span"); n.className = "dstep-n"; while (bb.firstChild) n.appendChild(bb.firstChild); bb.appendChild(n); } bb.prepend(ds.querySelector('[data-dstep="-1"]')); bb.appendChild(ds.querySelector('[data-dstep="1"]')); ds.remove(); } }   // minus before the figure, plus after
     $("specs").querySelectorAll("[data-dstep]").forEach((x) => x.onclick = () => { const ds = BREWERS[r.brewer].doses, i = ds.findIndex(([v]) => v === r.dose), n = ds[i + Number(x.dataset.dstep)];
       if (!n) return; const d = Number(x.dataset.dstep); state.dose = n[0]; saveState(); renderAllOpts(); render();   // the figures simply change: the split-flap flip was tried and taken out
       const again = $("specs").querySelector(`[data-dstep="${d}"]:not([disabled])`) || $("specs").querySelector("[data-dstep]:not([disabled])"); if (again) again.focus({ preventScroll: true }); });
@@ -11126,6 +11129,11 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       c.style.minWidth = W + "px"; c.style.flex = "0 0 auto"; bb.style.minWidth = Math.max(0, W - Math.round(ic)) + "px"; bb.style.justifyContent = "center"; };
     addEventListener("resize", fitBuy); new MutationObserver(() => requestAnimationFrame(fitBuy)).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
     if ("ResizeObserver" in window) { const c = document.querySelector('.botnav [data-bn="cancel"]'); if (c) new ResizeObserver(fitBuy).observe(c); } setInterval(fitBuy, 2000); window.__fitBuy = fitBuy; }
+  // the dose stepper ends where Back ends below it, or at its cell's edge when Back is wider; never narrower than its own (28/11/2026)
+  { const fitStep = () => { const c = document.querySelector('.botnav [data-bn="cancel"]'), d = document.querySelector("#specs b.dstep-b"); if (!d) return; d.style.width = "";
+      if (!c || !c.offsetWidth || !d.offsetWidth) return; const cell = d.closest(".spec") || d.parentNode, room = cell.getBoundingClientRect().right - d.getBoundingClientRect().left - 24;   // clear of the next column's figure
+      const want = c.getBoundingClientRect().right - d.getBoundingClientRect().left, own = d.getBoundingClientRect().width; const w = Math.min(want, room); if (w > own) d.style.width = Math.round(w) + "px"; };   // to Back's end, or the cell's when Back runs past it
+    addEventListener("resize", () => requestAnimationFrame(fitStep)); setInterval(fitStep, 1500); window.__fitStep = fitStep; }
   window.brewDoneUI = (on) => { document.documentElement.classList.toggle("brew-done", !!on); const c = document.querySelector('.botnav [data-bn="cancel"]'); if (c) { if (!c.dataset.t) c.dataset.t = c.textContent; c.textContent = on ? (LANG === "it" ? "Fatto" : "Done") : c.dataset.t; } };
   document.addEventListener("click", (e) => { if (document.documentElement.classList.contains("brew-done") && e.target.closest && e.target.closest('.shelf .item .btn[data-i], #bags .btn, #bvReset, #wmBag, .botnav [data-bn="cancel"], #coffeeGo')) brewDoneUI(false); }, true);
   /* a roaster's page and an open coffee are not the search's results: the box does not go on showing the search there. It is put back,
