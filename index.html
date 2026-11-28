@@ -3684,6 +3684,14 @@ html body #detected .w-opt:hover{color:var(--ink)!important}
 html body #detected .w-opt[aria-selected="true"]{color:var(--ink)!important;border-bottom-color:var(--ink)}   /* Scan the beans: the one in use, as the top bar shows its tab (28/11/2026) */
 html body #detected .w-opt svg{width:16px;height:16px}
 html body #detected .w-opt .beta{margin-left:2px;color:inherit;opacity:.75;font-weight:500}
+html body #cupPick{display:block;margin:0;padding:0;border-top:1px solid var(--line);min-width:0}   /* the cup: a small line of its own, as the roast's (28/11/2026) */
+html body #detected:not([hidden]) + #cupPick{margin-top:14px}
+html body #cupPick .xp-t{display:block;padding:10px 0 0;font:500 var(--fs-s)/1.35 var(--sans);color:var(--muted)}
+html body #cupPick .w-row{display:flex;flex-wrap:nowrap;gap:28px;height:44px;align-items:stretch;overflow-x:auto;scrollbar-width:none;margin:0 -12px;padding:0 12px;box-sizing:border-box}
+html body #cupPick .w-row::-webkit-scrollbar{display:none}
+html body #cupPick .w-opt{flex:none;display:flex;align-items:center;height:44px;padding:1.66px 0 0;margin:0 0 -1px;background:none;border:0;border-bottom:2px solid transparent;border-radius:0;font:500 var(--fs-s)/1.2 var(--sans);color:color-mix(in srgb,var(--muted) 62%,var(--bg));white-space:nowrap;cursor:pointer}
+html body #cupPick .w-opt:hover{color:var(--ink)}
+html body #cupPick .w-opt[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
 html body #specs .spec .big-row button{flex:none;scroll-snap-align:start;scroll-snap-stop:always;background:none!important;border:0;border-radius:0;padding:0 0 .04em;margin:0;font:inherit;font-size:39px;font-weight:500;letter-spacing:-.045em;line-height:1.15;color:color-mix(in srgb,var(--muted) 62%,var(--bg));opacity:1;cursor:pointer;white-space:nowrap}   /* the others in the grey of the labels: lighter than the one in use, still easy to read (28/11/2026) */
 @media (min-width:1000px){ html body #specs .spec .big-row button{font-size:63px} }
 html body #specs .spec .big-row button[aria-selected="true"]{color:var(--ink);opacity:1;cursor:default}
@@ -4876,6 +4884,12 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
     cafec:     "CAFEC Osmotic Flow",
   };
   const GOAL = { light: "Light & sweet", balanced: "Balanced", syrupy: "Rich & syrupy" };
+  // the cups on offer for this coffee and brewer (28/11/2026). Light & sweet is what every recipe starts as, and Balanced always works.
+  // Rich & syrupy only where it makes a good cup: not a Gesha or its like (the florals drown), not a very light roast (pushed that
+  // strong it turns sour), not a co-ferment (the added fruit takes over). A moka pot, cold brew and a cupping have one way only
+  const cupsFor = (st) => { const B = BREWERS[brewerOf(st)]; if (!B || (!B.ratio && brewerOf(st) !== "v60" && brewerOf(st) !== "neo")) return [];
+    let c = {}; try { c = resolved(st); } catch (e) {} const out = ["light", "balanced"];
+    if (!c.delicate && c.roast !== "vlight" && c.process !== "cofer") out.push("syrupy"); return out; };
   if (/[?&]scantest\b/.test(location.search)) window.__eng = { engine: (st, o) => engine(st, o), brewers: () => Object.keys(BREWERS), state: () => state, listState: (r) => listState(r), defaults: () => ({ ...DEFAULTS }) };   // tests only
   // water is weighed in round numbers: every total and every pour target to the nearest 5 g (50 g, not 51; 500 g, not 501).
   // Espresso shots keep the gram (the callers leave them out), and so does anything under 20 g.
@@ -6501,6 +6515,13 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
         // where it was, then a glide to the one in use, at the start of the line
         const on = row.querySelector('[aria-selected="true"]'); if (window.__doseX != null) row.scrollLeft = window.__doseX;
         requestAnimationFrame(() => { if (!on) return; const x = Math.max(0, on.offsetLeft - row.offsetLeft); if (window.__doseX == null) row.scrollLeft = x; else try { row.scrollTo({ left: x, behavior: "smooth" }); } catch (e) { row.scrollLeft = x; } window.__doseX = x; }); } }
+    // the cup, a small line like the roast's, under the numbers: only the cups that suit this coffee
+    { let cp = $("cupPick"); const cups = cupsFor(state), sp1 = $("specs");
+      if (cups.length < 2) { if (cp) cp.remove(); } else { if (!cp) { cp = document.createElement("div"); cp.id = "cupPick"; }
+        const it = LANG === "it", NM = { light: it ? "Leggera e dolce" : "Light & sweet", balanced: it ? "Equilibrata" : "Balanced", syrupy: it ? "Ricca e sciropposa" : "Rich & syrupy" };
+        cp.innerHTML = `<span class="xp-t">${it ? "Tazza" : "Cup"}</span><span class="w-row" role="listbox" aria-label="${it ? "Tazza" : "Cup"}">${cups.map((k) => `<button type="button" class="w-opt" role="option" data-cup="${k}" aria-selected="${(r.goal || "light") === k}">${esc(NM[k])}</button>`).join("")}</span>`;
+        cp.querySelectorAll("[data-cup]").forEach((x) => x.onclick = () => { if (state.goal === x.dataset.cup) return; state.goal = x.dataset.cup; window.__specFlash = performance.now() + 1500; saveState(); renderAllOpts(); render(); });
+        const d0 = $("detected"), after = d0 && !d0.hidden && d0.previousElementSibling === sp1 ? d0 : sp1; if (after && after.nextElementSibling !== cp) after.after(cp); } }
     $("specs").querySelectorAll("[data-dstep]").forEach((x) => x.onclick = () => { const ds = BREWERS[r.brewer].doses, i = ds.findIndex(([v]) => v === r.dose), n = ds[i + Number(x.dataset.dstep)];
       if (!n) return; const d = Number(x.dataset.dstep); state.dose = n[0]; saveState(); renderAllOpts(); render();   // the figures simply change: the split-flap flip was tried and taken out
       const again = $("specs").querySelector(`[data-dstep="${d}"]:not([disabled])`) || $("specs").querySelector("[data-dstep]:not([disabled])"); if (again) again.focus({ preventScroll: true }); });
@@ -6812,7 +6833,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       // (Rich & syrupy) are pills here, beside the named methods. On the V60 the method that is best for this coffee is
       // named, comes first and carries a Best tag; it follows the coffee and the dose until you pick another
       // no Method row: the recipe always takes the method that is best for this coffee, and Why this recipe names it
-      (() => { if (state.method !== "best" || state.goal !== "light" || (state.aeroWay && state.aeroWay !== "standard")) { state.method = "best"; state.goal = "light"; state.aeroWay = "standard"; } if (!SUMMER && state.serve === "iced") state.serve = "hot"; return null; })(),
+      (() => { if (state.method !== "best" || (state.aeroWay && state.aeroWay !== "standard")) { state.method = "best"; state.aeroWay = "standard"; } if (!cupsFor(state).includes(state.goal)) state.goal = "light";   /* the cup is yours to pick again (28/11/2026), among those that suit this coffee */ if (!SUMMER && state.serve === "iced") state.serve = "hot"; return null; })(),
     ].filter(Boolean).filter((o) => (o.key === "goal") === !!cupOnly);
   };
   const OPTS_MORE = [
@@ -9089,7 +9110,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   function brewThis(r, jump = true, inRow = false) {
     brewIn = !!inRow; bagAskShow = false; brewFresh = !!inRow;
     if (jump) surprisePick = null;
-    Object.assign(state, listState(r)); state.roastPhoto = null;
+    Object.assign(state, listState(r)); state.roastPhoto = null; state.goal = "light";   // every coffee opens on the cup the recipe is built for
     // a roast or process you said for this coffee is kept for it (28/11/2026): a refresh, or opening it again, doesn't ask twice
     try { const pk = r && r.url && (JSON.parse(localStorage.getItem("v60.picks") || "{}") || {})[r.url]; if (pk) { if (pk.roast && !r.roast) state.roast = pk.roast; if (pk.process && !r.process) state.process = pk.process;   /* the roaster's own word wins, when there is one */ } } catch (e) {}
     $("coffeeIn").value = state.text; saveState(); renderAllOpts(); render();
@@ -10549,7 +10570,7 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
       if (window.__phSearch || document.querySelector(".shelf .grp.day-g.stuck:not([hidden])")) { window.__phSearch = true; return LANG === "it" ? "Cerca" : "Search"; }
       const wkH = null;   // This week's numbers are in the band under the kinds row, not in the box (27/11/2026)
       const n = wkH ? wkH.n : window.__coN || (typeof shelfPart !== "undefined" && shelfPart) || (typeof shelf !== "undefined" && shelf.length) || 0;   // the whole list, also while only its first part is in
-      const box = document.getElementById("askIn"), nr = box && box.clientWidth && box.clientWidth < 290 ? 0 : (window.__roN || 0);   // and the roasters: "Search 8,757 coffees, 732 roasters" (a very narrow phone keeps just the coffees)
+      const nr = 0;   // (unused since the wordings below pick what fits; its read of the box's width made the page work out every style, each time)   // and the roasters: "Search 8,757 coffees, 732 roasters" (a very narrow phone keeps just the coffees)
       // the size of the list: "Search 9,033 coffees from 754 roasters" (the roasters are left out until their count is in)
       const r0 = wkH ? wkH.ro : window.__roN || 0, g = { useGrouping: "always" };
       if (!n) return "";   // nothing until the count is in: a hint flashing first was one change too many
@@ -10559,11 +10580,18 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
         : wkH ? (it ? [`${N} caffè di ${R} torrefazioni questa settimana`, `${N} caffè, ${R} torrefazioni`, `${N} caffè questa settimana`, `${N} caffè`] : [`${N} coffees from ${R} roasters this week`, `${N} coffees, ${R} roasters this week`, `${N} coffees, ${R} roasters`, `${N} coffees this week`, `${N} coffees`])
         : it ? [`${N} caffè di ${R} torrefazioni`, `${N} caffè, ${R} torrefazioni`, `${N} caffè · ${R} torrefattori`, `${K} caffè, ${R} torrefazioni`, `${N} caffè`]
         : [`${N} coffees from ${R} roasters`, `${N} coffees, ${R} roasters`, `${N} coffees · ${R} roasters`, `${K} coffees, ${R} roasters`, `${N} coffees`];   /* (28/11/2026) shorter ways to keep the roasters on a phone: the comma, then 10.8k */
-      const room = ph.clientWidth; if (!room) return forms[0];
+      // the room for the words: read once, then kept up to date by an observer (28/11/2026). Asking the page for it here, every 250 ms,
+      // made the phone work out the style of the whole page each time something else had just changed
+      if (hintText.room == null) { hintText.room = ph.clientWidth; if ("ResizeObserver" in window) new ResizeObserver((es) => { const w = Math.round(es[0].contentRect.width); if (w !== hintText.room) { hintText.room = w; if (window.__searchHint) window.__searchHint(); } }).observe(ph); else addEventListener("resize", () => { hintText.room = ph.clientWidth; }); }
+      const room = hintText.room; if (!room) { hintText.room = null; return forms[0]; }
       // measured once per wording and width (28/11/2026): it is asked every 250 ms while the list loads, and each measure forced a layout of the whole page
       const fk = room + "|" + forms.join("|"); if (hintText.k === fk) return hintText.v;
-      const m = document.createElement("span"); m.className = "ph-t ph-q"; m.style.cssText = "position:absolute;visibility:hidden;white-space:nowrap;width:auto"; ph.appendChild(m);
-      const pick = forms.find((t) => { m.textContent = t; return m.scrollWidth <= room; }) || forms[forms.length - 1]; m.remove(); hintText.k = fk; hintText.v = pick; return pick; };
+      // measured on a canvas in the hint's own type (28/11/2026): a span put in the page to be measured made the phone work out every style again
+      if (!hintText.cv) { const m = document.createElement("span"); m.className = "ph-t ph-q"; m.style.cssText = "position:absolute;visibility:hidden;white-space:nowrap;width:auto"; ph.appendChild(m);
+        const cs = getComputedStyle(m); hintText.cv = document.createElement("canvas").getContext("2d"); hintText.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`; hintText.ls = parseFloat(cs.letterSpacing) || 0; m.remove();
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { hintText.k = null; if (window.__searchHint) window.__searchHint(); }); }
+      hintText.cv.font = hintText.font; const wOf = (t) => hintText.cv.measureText(t).width + hintText.ls * t.length + 1;
+      const pick = forms.find((t) => wOf(t) <= room) || forms[forms.length - 1]; hintText.k = fk; hintText.v = pick; return pick; };
     const settle = () => { if (calm) return; calm = true; roll(hintText(), true); };
     addEventListener("scroll", () => { if (scrollY > 80) settle(); }, { passive: true });
     a.addEventListener("focus", settle);
@@ -11308,8 +11336,10 @@ html.ro-page body #roHead{margin-top:-14px!important}   /* the place line a litt
   const navSync = () => { const n = document.querySelector(".botnav"); if (!n) return; const on = [...n.querySelectorAll(".chip")].filter((c) => !c.hidden && getComputedStyle(c).display !== "none").length >= 2 || document.documentElement.classList.contains("brew-in") ;
     if (document.documentElement.classList.contains("nav-off") === on) document.documentElement.classList.toggle("nav-off", !on); };
   document.addEventListener("click", () => { setTimeout(navSync, 0); setTimeout(navSync, 400); });   /* and after any tap, should a change slip past the observers */
-  navSync(); new MutationObserver(navSync).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
-  new MutationObserver(navSync).observe(document.querySelector(".botnav"), { attributes: true, subtree: true, attributeFilter: ["hidden", "class"] });
+  // once a frame, before it is painted (28/11/2026): run at every change of the page's classes it made the phone work out all the styles eight times as the page opened
+  let navQ = 0; const navSoon = () => { if (!navQ) navQ = requestAnimationFrame(() => { navQ = 0; navSync(); }); };
+  navSync(); new MutationObserver(navSoon).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+  new MutationObserver(navSoon).observe(document.querySelector(".botnav"), { attributes: true, subtree: true, attributeFilter: ["hidden", "class"] });
   new MutationObserver(() => setTimeout(() => { if (!$("recipe").hidden && !document.documentElement.classList.contains("brew-in")) mineOn(); }, 60)).observe($("recipe"), { attributes: true, attributeFilter: ["hidden"] });   /* a recipe for your own coffee (a scan, a link, a bag): not for a coffee opened in the list */
   document.addEventListener("click", (e) => { const t = e.target.closest && e.target.closest("#wmBag, #suBag, #bags .btn"); if (t) mineOn(); }, true);
   // "Scan a bag" does what it says: on a phone, a tap opens the camera on the bag (27/11/2026: it used to drop you at a text box with
